@@ -28,11 +28,11 @@ import {
   assertStepVisible,
 } from "../../_shared/helpers/assertions";
 import {
-  uploadResume,
-  dropResume,
+  uploadIdeaBrief,
+  dropIdeaBrief,
   clickAndUpload,
   uploadBuffer,
-  RESUME_FIXTURES,
+  IDEA_BRIEF_FIXTURES,
 } from "../../_shared/helpers/upload";
 ```
 
@@ -75,13 +75,13 @@ test("login with empty fields shows validation", async ({ page }) => {
 });
 ```
 
-### 4. File upload (resume)
+### 4. File upload (idea brief)
 
 ```ts
-test("upload PDF resume parses to profile", async ({ page }) => {
+test("upload PDF idea brief parses to FounderProfile", async ({ page }) => {
   await page.goto("/");
-  await uploadResume(page, RESUME_FIXTURES.pdfHappy);
-  // Wait for parse to complete and Step 2 (preferences) to render
+  await uploadIdeaBrief(page, IDEA_BRIEF_FIXTURES.pdfHappy);
+  // Wait for parse to complete and Step 2 (launch constraints) to render
   await expect(page.getByText(/Alexandra Chen/i)).toBeVisible({
     timeout: 30_000,
   });
@@ -89,7 +89,7 @@ test("upload PDF resume parses to profile", async ({ page }) => {
 
 test("upload corrupt PDF shows retry", async ({ page }) => {
   await page.goto("/");
-  await uploadResume(page, RESUME_FIXTURES.corruptPdf);
+  await uploadIdeaBrief(page, IDEA_BRIEF_FIXTURES.corruptPdf);
   await expect(page.getByText(/parsing failed.*retry/i)).toBeVisible();
 });
 ```
@@ -101,7 +101,7 @@ The drop-zone code path is separate from the hidden-input change handler. Test b
 ```ts
 test("drag-and-drop into drop-zone", async ({ page }) => {
   await page.goto("/");
-  await dropResume(page, RESUME_FIXTURES.pdfHappy);
+  await dropIdeaBrief(page, IDEA_BRIEF_FIXTURES.pdfHappy);
   await expect(page.getByText(/Alexandra Chen/i)).toBeVisible({
     timeout: 30_000,
   });
@@ -163,19 +163,19 @@ This makes the test forward-compatible: it doesn't fail during the skeleton phas
 
 ## Naming
 
-- File: `<story-or-flow>.spec.ts` (kebab-case). Examples: `login.spec.ts`, `step1-resume.spec.ts`, `balance-bar.spec.ts`.
+- File: `<story-or-flow>.spec.ts` (kebab-case). Examples: `login.spec.ts`, `step1-idea-brief.spec.ts`, `balance-bar.spec.ts`.
 - `test.describe(...)` block: human-readable feature/flow name. One block per file. Nest sub-`describe`s for logical groupings inside.
 - Test title: imperative or "given/when" English. Match the corresponding story in `STORIES.md`.
 
 ## Fixtures + dummy session
 
-For tests that need to start past Step 1 (e.g. testing Step 4 preferences), use `navigateToDummyPlug(page, N)` to seed the Alexandra Chen session at step N. The `_shared/fixtures/dummy-session.json` is the calibrated persona — don't redefine.
+For tests that need to start past Step 1 (e.g. testing Step 4 launch research), use `navigateToDummyPlug(page, N)` to seed the Alexandra Chen founder session at step N. The `_shared/fixtures/dummy-session.json` is the calibrated persona — don't redefine.
 
 When DummyPlug's location.replace race causes flake, fall back to seeding `localStorage` directly via `page.addInitScript`:
 
 ```ts
 await page.addInitScript((session) => {
-  localStorage.setItem("jobSearchApp_session", session);
+  localStorage.setItem("acmeLaunchApp_session", session);
 }, JSON.stringify(loadedSession));
 await page.goto("/");
 ```

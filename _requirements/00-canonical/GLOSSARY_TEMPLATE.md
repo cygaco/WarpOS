@@ -40,7 +40,7 @@
 
 | Step | Display Name | Component | Prerequisites |
 |------|-------------|-----------|--------------|
-| <!-- e.g., 1 --> | <!-- e.g., Upload Resume --> | <!-- e.g., Step1Resume.tsx --> | <!-- None --> |
+| <!-- e.g., 1 --> | <!-- e.g., Idea Brief --> | <!-- e.g., Step1Brief.tsx --> | <!-- None --> |
 
 ---
 
@@ -50,7 +50,7 @@
 
 | Current Name (code) | Should Be | Reason | Blocked By |
 |---------------------|----------|--------|-----------|
-| <!-- e.g., Step2Preferences --> | <!-- e.g., Step3Preferences --> | <!-- Legacy numbering --> | <!-- Requires renumbering --> |
+| <!-- e.g., Step2Constraints --> | <!-- e.g., Step3Constraints --> | <!-- Legacy numbering --> | <!-- Requires renumbering --> |
 
 ---
 

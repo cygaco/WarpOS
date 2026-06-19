@@ -9,7 +9,7 @@ Last verified: 2026-04-28.
 
 ## What runs on Fly
 
-The jobzooka backend (`services/backend/`) — a Hono app + Graphile Worker on a single Docker image, two process groups.
+The AcmeLaunch backend (`services/backend/`) — a Hono app + Graphile Worker on a single Docker image, two process groups.
 
 ## Where wired
 
@@ -26,9 +26,9 @@ The jobzooka backend (`services/backend/`) — a Hono app + Graphile Worker on a
 
 | App | Purpose |
 |---|---|
-| `jobzooka-backend` | Production (region: `iad`) |
-| `jobzooka-backend-staging` | Staging (currently main-only deploys per workflow line 22) |
-| `jobzooka-backend-pr-<N>` (planned) | Per-PR review apps via `.github/workflows/fly-review.yml` (user-data plan Phase 2) |
+| `acmelaunch-backend` | Production (region: `iad`) |
+| `acmelaunch-backend-staging` | Staging (currently main-only deploys per workflow line 22) |
+| `acmelaunch-backend-pr-<N>` (planned) | Per-PR review apps via `.github/workflows/fly-review.yml` (user-data plan Phase 2) |
 
 ## Process groups
 
@@ -41,7 +41,7 @@ The jobzooka backend (`services/backend/`) — a Hono app + Graphile Worker on a
 | Group | Public? | Auto-stop | Purpose |
 |---|---|---|---|
 | `api` | Yes (443 via Nginx mTLS) | Yes (idle) | Public HTTP — proxied by Cloudflare AOP |
-| `worker` | No (Flycast only) | **No — must stay warm** | QStash pushes; stopping mid-chain orphans the job |
+| `worker` | No (Flycast only) | **No — must stay warm** | QStash pushes; stopping mid-chain orphans the launch-plan job |
 
 ## Critical fly.toml keys (DO NOT DROP)
 
@@ -59,7 +59,7 @@ Per GS-BK-33 + PRD §8.14, the CI lint script `scripts/check-fly-toml.js` enforc
 | Group | Size | Memory | Why |
 |---|---|---|---|
 | api | shared-cpu-1x | 512mb | Hono is light |
-| worker | shared-cpu-1x | 1024mb | Claude chain + DOCX/PDF generation needs headroom |
+| worker | shared-cpu-1x | 1024mb | Claude chain + launch-asset PDF/DOCX generation needs headroom |
 
 ## Cloudflare AOP mTLS
 
@@ -73,7 +73,7 @@ Per GS-BK-33 + PRD §8.14, the CI lint script `scripts/check-fly-toml.js` enforc
 
 Non-secret in `fly.toml [env]`:
 - `NODE_ENV=production`, `PORT=3000`, `WORKER_PORT=4000`
-- `WEBAUTHN_RP_ID=jobzooka.app`, `WEBAUTHN_RP_NAME=Jobzooka`
+- `WEBAUTHN_RP_ID=acmelaunch.app`, `WEBAUTHN_RP_NAME=AcmeLaunch`
 - `GRAPHILE_WORKER_CONCURRENCY=5`
 - `ANTHROPIC_PROMPT_CACHE_ENABLED=true`
 

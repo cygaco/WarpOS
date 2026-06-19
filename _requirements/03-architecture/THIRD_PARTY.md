@@ -1,97 +1,99 @@
-# Jobzooka — Third-Party Integrations
+# AcmeLaunch — Third-Party Integrations
 
 > **v3 (2026-04-23)** — Four new integrations added for the backend split: Fly.io (hosting), Cloudflare (edge + WAF + R2 + AOP mTLS), Upstash QStash (job queue egress), Cloudflare R2 (blob store). Anthropic usage gains Prompt Caching requirements per research F14.
 
 ---
 
-## Bright Data (Job Scraping)
+## Launch Research Adapter (Landscape Gathering)
 
 ### Overview
 
 | Field      | Value                                                 |
 | ---------- | ----------------------------------------------------- |
-| Service    | Bright Data LinkedIn Jobs Scraper                     |
-| Dataset ID | `gd_lpfll7v5hcqtkxl6l` (env: `BRIGHTDATA_DATASET_ID`) |
-| Mode       | Discovery (keyword-based search)                      |
-| Base URL   | `https://api.brightdata.com/datasets/v3`              |
-| Auth       | Bearer token (`BRIGHTDATA_API_KEY`)                   |
+| Service    | Launch Research adapter (public launch-landscape sources) |
+| Source set | `web_search`, `public_url`, `directory`, `social_public`, `marketplace`, `uploaded_file`, `crm_import` |
+| Mode       | Founder-approved sources only, keyword-driven         |
+| Base URL   | Per-source adapter endpoint (configured per provider) |
+| Auth       | Per-source credential mode (`none` / `oauth` / `api_key`), set on the `ResearchSource` |
 
-### API Flow
+### Consent & Integrity
+
+Every `LaunchResearchRun` queries only sources the founder approved. Each `ResearchSource` carries `approvedBy`, `scope`, `allowedUse`, `credentialMode`, and `provenanceUrl`. On partial failure the run persists what it gathered, marks the failed sources, and applies a bounded retry — it NEVER synthesizes missing evidence to fill a gap. Failed sources surface to the founder, they are not silently dropped.
+
+### Adapter Flow
 
 ```
-1. TRIGGER: POST /datasets/v3/trigger?dataset_id=...&type=discover_new&discover_by=keyword&limit_per_input=50&include_errors=true
-   → Returns: { snapshot_id: "sd_..." }
+1. TRIGGER: POST /research/run with { launchPlanId, sources[], querySet[] }
+   → creates LaunchResearchRun → Returns: { runId: "lrr_..." }
 
-2. POLL: GET /datasets/v3/snapshot/{snapshotId}?format=json
-   → 202: Still processing
-   → 200 (array): Results ready
-   → 200 (object with status): Processing or failed
+2. POLL: GET /research/run/{runId}?format=json
+   → 202: Still gathering
+   → 200 (array): LaunchResearchResult[] ready (+ ResearchSnapshot refs)
+   → 200 (object with status): Gathering or failed (per-source errors[])
 ```
 
-### Input Schema
+### Query Schema (per source)
 
 ```json
 {
-  "keyword": "search query",
-  "location": "City, State",
+  "query": "landscape probe",
+  "geography": "US",
   "country": "US",
   "time_range": "",
-  "job_type": "Full-time",
-  "experience_level": "",
-  "remote": "Remote",
-  "company": "",
-  "selective_search": false,
-  "jobs_to_not_include": "",
-  "location_radius": ""
+  "sourceType": "web_search",
+  "depth": "",
+  "scope": "public",
+  "exclude": "",
+  "freshness": ""
 }
 ```
 
 ### Valid Values
 
-| Field    | Valid Values (case-sensitive)                                                                       |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| job_type | `"Full-time"`, `"Part-time"`, `"Contract"`, `"Temporary"`, `"Internship"`, `"Volunteer"`, `"Other"` |
-| remote   | `"Remote"` (capital R) or `""` (empty for on-site)                                                  |
-| country  | `"US"`                                                                                              |
+| Field      | Valid Values (case-sensitive)                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------ |
+| sourceType | `"web_search"`, `"public_url"`, `"directory"`, `"social_public"`, `"marketplace"`, `"uploaded_file"`, `"crm_import"` |
+| scope      | `"public"` (public sources only; the adapter never scrapes gated/private content)                                  |
+| country    | `"US"`                                                                                                              |
 
 ### Output Fields (Flexible Mapping)
 
-BD returns inconsistent field names. Jobzooka maps flexibly:
+Sources return inconsistent field names. AcmeLaunch maps each `LaunchResearchResult` flexibly:
 
-| Our Field      | BD Field(s)                                                                 |
+| Our Field      | Source Field(s)                                                              |
 | -------------- | --------------------------------------------------------------------------- |
-| title          | `title` or `job_title`                                                      |
-| company        | `company` or `company_name`                                                 |
-| location       | `location` or `job_location`                                                |
-| description    | `job_summary` > `job_description_formatted` (HTML stripped) > `description` |
-| salary         | `compensation` (JSON stringified) > `job_base_pay_range` > `base_salary`    |
-| seniority      | `job_seniority_level`                                                       |
-| employmentType | `employment_type` or `job_employment_type`                                  |
-| easyApply      | `is_easy_apply` or `easy_apply`                                             |
-| url            | `apply_link` > `job_url` > `url`                                            |
-| industries     | `job_industries`                                                            |
-| jobFunction    | `job_function`                                                              |
-| applicants     | `job_num_applicants`                                                        |
-| postedDate     | `job_posted_date` (first 10 chars → YYYY-MM-DD)                             |
+| signal         | `signal` or `headline`                                                       |
+| channel        | `channel` or `source_name`                                                  |
+| geography      | `geography` or `region`                                                     |
+| snippet        | `snippet` > `excerpt_formatted` (HTML stripped) > `description`             |
+| reach          | `reach` (JSON stringified) > `audience_range` > `estimated_reach`           |
+| segment        | `segment_label`                                                             |
+| signalType     | `signal_type` or `result_type` (opportunity / channel / competitor / audience / pricing) |
+| confidence     | `confidence` or `score`                                                     |
+| url            | `provenance_url` > `source_url` > `url`                                     |
+| topics         | `topics`                                                                    |
+| intent         | `intent`                                                                    |
+| engagement     | `engagement_count`                                                          |
+| observedDate   | `observed_date` (first 10 chars → YYYY-MM-DD)                              |
 
 ### Known Issues
 
-1. **Annual salary for contracts**: BD structured salary fields contain annual figures even for contract roles. Hourly rates must be extracted from description text via regex.
-2. **Thin non-FT data**: Part-time, Contract, Temporary, and other non-full-time types yield significantly fewer results.
-3. **Staffing agency noise**: Staffing agencies post high volumes across different queries, inflating category counts. Detected by: companies with 3+ listings across different queries.
-4. **Rate limiting**: BD has its own rate limits beyond Jobzooka's budget. Very rare in practice with current usage levels.
+1. **Mixed reach units**: Source reach fields can mix organic-audience figures and paid-CPM figures. Paid spend signals must not be read as organic reach; spend ranges are extracted from snippet text via regex when needed.
+2. **Thin niche data**: Narrow segments, new categories, and small communities yield significantly fewer signals.
+3. **Hub/aggregator noise**: Hubs and large communities surface high volumes across different queries, inflating segment counts. Detected by: channels with 3+ signals across different queries.
+4. **Rate limiting**: Some sources have their own rate limits beyond AcmeLaunch's budget. Very rare in practice with current usage levels.
 
-### Hourly Rate Extraction
+### Reach-Signal Extraction
 
-`extractHourlyRates()` in `src/lib/utils.ts`:
+`extractReachSignals()` in `src/lib/utils.ts`:
 
 ```
-Pattern: $XX–$YY/hr (or per hour, /h, /hr, etc.)
-Range: $15–$500/hr (outside this range = filtered out)
+Pattern: $XX–$YY test spend (or CPM, /lead, per-click, etc.)
+Range: $15–$5000 test spend (outside this range = filtered out)
 Context: ±80 characters around match
 ```
 
-Returns: `{ title, company, rate, context }[]`
+Returns: `{ signal, channel, reach, context }[]`
 
 ---
 
@@ -130,7 +132,7 @@ Returns: `{ title, company, rate, context }[]`
 
 ### Error Codes
 
-| Status | Meaning      | Jobzooka Handling    |
+| Status | Meaning      | AcmeLaunch Handling  |
 | ------ | ------------ | -------------------- |
 | 200    | Success      | Extract text content |
 | 429    | Rate limited | Retry with backoff   |
@@ -156,16 +158,16 @@ Returns: `{ title, company, rate, context }[]`
 
 1. **Rate limiting**: Sliding window algorithm for per-IP and global limits
 2. **Daily budgets**: Atomic increment/check for daily request and token counts
-3. **Rocket balances**: `credits:{userId}` key for rocket counts
+3. **Credit balances**: `credits:{userId}` key for credit counts
 4. **Usage tracking**: `usage:{userId}` key for operation counts
-5. **Server sessions**: `session:{userId}` key for SessionData (authenticated users)
+5. **Server sessions**: `session:{userId}` key for SessionData (authenticated founders)
 
 ### Fallback
 
 If Redis is unavailable:
 
 - Rate limiting: In-memory fallback (Map-based, resets on deploy)
-- Rockets: In-memory fallback (development only)
+- Credits: In-memory fallback (development only)
 - Sessions: Falls back to localStorage only
 
 ---
@@ -174,12 +176,12 @@ If Redis is unavailable:
 
 ### Overview
 
-Used for rocket pack purchases. Integration details:
+Used for credit pack purchases. Integration details:
 
 - Checkout flow: Server creates Stripe Checkout Session → redirect to Stripe → callback
-- Return URL: `?rockets=success` query param triggers balance reload
+- Return URL: `?credits=success` query param triggers balance reload
 - Webhook: Verifies Stripe signature for payment confirmation; **three-state idempotency now in Postgres** (v3 — see ERROR_RECOVERY.md Stripe section)
-- Products: Scout ($4.99 / 100), Strike ($12.99 / 300), Arsenal ($24.99 / 750)
+- Products: Starter ($4.99 / 100), Pro ($12.99 / 300), Scale ($24.99 / 750)
 - **v3 staging policy:** production + test-mode keys are separated by the `ENVIRONMENT` flag (staging / production). CI enforces that production keys are never in staging secrets or GitHub Actions.
 
 ---
@@ -210,7 +212,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 
 ### Postgres (Fly)
 
-- Separate Fly app `jobzooka-pg` (Fly-managed Postgres).
+- Separate Fly app `acmelaunch-pg` (Fly-managed Postgres).
 - Connection string via `DATABASE_URL` Fly secret.
 - Two DB roles: `api_role` (ledger/session/admin read-write), `worker_role` (tickets + audit write-only).
 - Daily backups + point-in-time recovery.
@@ -244,7 +246,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 | Bot Fight Mode  | Free         | Blocks known bot signatures; configurable severity                         |
 | Always Use HTTPS | Free        | HTTP→HTTPS upgrade at edge (no unencrypted leg reaches Fly)                |
 | Turnstile       | Free         | Invisible CAPTCHA on anonymous `/claude` endpoints (PARSE, PROFILE)        |
-| HSTS preload    | Free         | `jobzooka.app` submitted to hstspreload.org                                |
+| HSTS preload    | Free         | `acmelaunch.app` submitted to hstspreload.org                              |
 | ASN blocklist   | Free         | Cloudflare firewall rules blocking Tor / residential-proxy / flagged ASNs  |
 | Country blocklist | Free       | Rule-based (per-country block if needed)                                   |
 | **AOP mTLS**    | Free         | Per-zone custom cert upload; origin verifies fingerprint (research F2)     |
@@ -263,7 +265,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 
 ### Turnstile integration
 
-- Frontend includes Turnstile widget (invisible) on AuthModal + resume-upload page.
+- Frontend includes Turnstile widget (invisible) on AuthModal + idea-brief-submit page.
 - On first anonymous `/claude` call, the frontend attaches the Turnstile token in a `CF-Turnstile-Response` header.
 - Backend validates the token with Cloudflare's Siteverify API before processing.
 - Upgrades v2's "accepted risk" on anonymous endpoint abuse → MVP requirement.
@@ -314,11 +316,11 @@ Expected input-token cost reduction: ~90% on cached portions. Cache hit rate exp
 
 ### Batch API (non-interactive chains)
 
-Async jobs that are not user-interactive (resume generation chain, market analysis chain) use Anthropic's Batch API for a further 50% discount.
+Async jobs that are not founder-interactive (asset generation chain, landscape analysis chain) use Anthropic's Batch API for a further 50% discount.
 
 ### Security (research F7 — blast-radius containment)
 
 - Worker gets a **scoped Upstash ACL token** that cannot touch ledger, scope cache, or admin keys.
-- Claude output is parsed as **action proposals**, validated against Zod schemas, routed to main API for authorization — no direct Stripe writes / no direct ledger debits / no direct user DMs from Claude output.
+- Claude output is parsed as **action proposals**, validated against Zod schemas, routed to main API for authorization — no direct Stripe writes / no direct ledger debits / no direct public launch actions from Claude output.
 - All Claude inputs + outputs audit-logged to Postgres `audit_log`.
 - Optional second-pass Haiku 4.5 classifier on output for high-privilege actions.

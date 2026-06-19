@@ -34,31 +34,31 @@ The `/api/stripe/config` endpoint reports `configured: true` only when all requi
 ## Project conventions
 
 - **Hosted Checkout, not Elements.** Zero PCI-DSS surface. Stripe-hosted UI handles 3DS, wallets, disputes. The frontend only redirects.
-- **3-state webhook idempotency** via Postgres `stripe_events` table: `pending → applied → failed`, gated by `ON CONFLICT (event_id) DO NOTHING`. See `_requirements/03-architecture/DATA_FLOW.md` (Rocket Economy section).
-- **Single transaction** for webhook → ledger: `UPDATE stripe_events SET status='applied' WHERE id=$1 AND status='pending' RETURNING *; INSERT INTO rockets_ledger; UPDATE rockets_balance`. If the UPDATE returns no rows, the event was already processed — return 200 (replay-safe).
+- **3-state webhook idempotency** via Postgres `stripe_events` table: `pending → applied → failed`, gated by `ON CONFLICT (event_id) DO NOTHING`. See `_requirements/03-architecture/DATA_FLOW.md` (Credit Economy section).
+- **Single transaction** for webhook → ledger: `UPDATE stripe_events SET status='applied' WHERE id=$1 AND status='pending' RETURNING *; INSERT INTO credits_ledger; UPDATE credits_balance`. If the UPDATE returns no rows, the event was already processed — return 200 (replay-safe).
 - **Metadata convention:** every Checkout session carries `metadata: { userId, packId }` so webhooks can map the event back to a user.
 - **Test-mode keys for all preview deploys.** Live keys never leave production environment.
 
-## Rocket packs
+## Credit packs
 
-| Pack | Rockets | Price |
+| Pack | Credits | Price |
 |---|---|---|
-| Scout | 100 | $4.99 |
-| Strike | 300 | $12.99 |
-| Arsenal | 750 | $24.99 |
+| Starter | 100 | $4.99 |
+| Pro | 300 | $12.99 |
+| Scale | 750 | $24.99 |
 
-Defined in product code (search for `BILLABLE_PROMPTS` and pack definitions in `src/lib/rockets.ts`).
+Defined in product code (search for `BILLABLE_PROMPTS` and pack definitions in `src/lib/credits.ts`).
 
 ## Known issues
 
 - `STRIPE_WEBHOOK_SECRET` per environment: dev, staging, production all need separate webhook endpoints in the Stripe dashboard. Each generates its own secret. Document in env-vars table per Fly app.
-- Stripe Customer Portal (subscription management) is **post-MVP** — current rocket model is one-time pack purchases only.
+- Stripe Customer Portal (subscription management) is **post-MVP** — current credit model is one-time pack purchases only.
 
 ## Failure modes
 
 | Failure | Behavior |
 |---|---|
 | Webhook signature mismatch | 400 + log + alert. No state mutation. |
-| Webhook delayed | Success page polls `GET /api/rockets/balance` for ~30s. Ledger is source of truth. |
+| Webhook delayed | Success page polls `GET /api/credits/balance` for ~30s. Ledger is source of truth. |
 | Replay (same event_id) | UPDATE returns 0 rows → 200, no double-credit |
 | Network error post-Checkout, pre-redirect | User stays on Stripe page; Stripe retries internally. No client-side retry needed. |

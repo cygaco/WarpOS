@@ -1,4 +1,4 @@
-# Jobzooka — Persistence Model
+# AcmeLaunch — Persistence Model
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Storage is **three-tier**: client-side encrypted localStorage, Postgres (financial + audit + admin, authoritative), and Redis (cache + scratch + rate limits, eventually-consistent). The v2 statement "no traditional database" is overturned in v3 per research F1 — Postgres is now in MVP for any state that must survive a Redis failover.
 
@@ -7,7 +7,7 @@
 ## Overview
 
 - **Encrypted client-side localStorage** — always. Survives offline. Device-fingerprint-derived key. Full SessionData.
-- **Postgres (Fly)** — authoritative for financial state, admin identity, durable audit, apply outcomes. Failover-durable. ACID.
+- **Postgres (Fly)** — authoritative for financial state, admin identity, durable audit, launch outcomes. Failover-durable. ACID.
 - **Redis (Upstash)** — cache, ticket scratch, rate-limit counters, WebAuthn challenges, scope cache (read-through). Eventually-consistent only — **never the authoritative store for payment-bearing state**.
 - **Cloudflare R2** — blob store for oversized results (>256KB) and nightly audit-log archive with Object Lock.
 
@@ -116,14 +116,14 @@ On app initialization:
 | ---------------- | ------------------- |
 | currentStep      | Integer, 0–10       |
 | maxStep          | Integer, 0–10       |
-| personal         | Object (if present) |
-| resumeStructured | Object (if present) |
-| profile          | Object (if present) |
+| founder          | Object (if present) |
+| briefStructured  | Object (if present) |
+| founderProfile   | Object (if present) |
 | generatedQueries | Array (if present)  |
-| rankedCategories | Array (if present)  |
-| formAnswers      | Array (if present)  |
-| resumeRaw        | String, max 500KB   |
-| marketRaw        | String, max 1MB     |
+| rankedSegments   | Array (if present)  |
+| channelAnswers   | Array (if present)  |
+| briefRaw         | String, max 500KB   |
+| researchResults  | String, max 1MB     |
 
 Invalid data is rejected — falls back to the next source or starts fresh.
 
@@ -171,14 +171,14 @@ Three-store split. **Every value that must survive a Redis failover lives in Pos
 
 | Table                           | Purpose                                                                  | Partitioning       |
 | ------------------------------- | ------------------------------------------------------------------------ | ------------------ |
-| `rockets_ledger`                | Append-only ledger entries: debit, refund, grant, Stripe top-up          | Monthly            |
-| `rockets_balances`              | Denormalized current balance per user; kept in sync by trigger           | —                  |
+| `credits_ledger`                | Append-only ledger entries: debit, refund, grant, Stripe top-up          | Monthly            |
+| `credit_balances`               | Denormalized current balance per user; kept in sync by trigger           | —                  |
 | `stripe_webhook_idempotency`    | Three-state (queued / processing / done) for Stripe event replay safety  | —                  |
 | `admin_users`                   | User IDs with `admin` scope, plus who granted and when                   | —                  |
 | `passkey_credentials`           | WebAuthn credentials: credential_id, public_key, counter, device_name    | —                  |
 | `admin_recovery_codes`          | Argon2id-hashed one-time recovery codes (10 per admin)                   | —                  |
-| `apply_outcomes`                | Per-user applied/skipped/failed job records from the extension           | Monthly            |
-| `audit_log`                     | All auth, rocket, admin, Stripe events (durable, compliance-grade)       | Monthly + R2 archive |
+| `launch_outcomes`               | Per-user succeeded/skipped/failed launch-action records from the Runner  | Monthly            |
+| `audit_log`                     | All auth, credit, admin, Stripe events (durable, compliance-grade)       | Monthly + R2 archive |
 | `graphile_worker.jobs`          | Transactional job queue (internal; Graphile Worker library-managed)      | —                  |
 
 **Key guarantees:**
@@ -198,14 +198,15 @@ Three-store split. **Every value that must survive a Redis failover lives in Pos
 | `ticket:{id}`                     | Ticket progress scratch (authoritative is Postgres)      | 24 hours           |
 | `idempotency:{userId}:{key}`      | `X-Idempotency-Key` dedup window                         | 5 min              |
 | `qstash:last_rotation_deployed_at`| Guard flag for QStash signing-key rotation (F5)          | —                  |
-| `rockets:ledger:{userId}` (stream)| Ops-UI live-tail cache (Postgres is authoritative)       | `XADD MAXLEN ~ 500000` |
+| `credits:ledger:{userId}` (stream)| Ops-UI live-tail cache (Postgres is authoritative)       | `XADD MAXLEN ~ 500000` |
+| `launch:outcomes:{userId}` (stream)| Ops-UI live-tail of launch-action outcomes (Postgres authoritative) | `XADD MAXLEN ~ 500000` |
 | `audit:events` (stream)           | Ops-UI live-tail of `audit_log` (Postgres authoritative) | `XADD MAXLEN ~ 500000` |
 
 ### R2 — blob storage
 
 - Ticket results >256KB: `{userId}/{ticketId}/result.{ext}`, signed URLs ≤15-min TTL, private bucket
 - Audit-log archive: `audit-log/YYYY/MM/*.jsonl.gz`, Object Lock enabled (tamper-evidence for compliance)
-- Extension ZIP cache: built on demand, not stored
+- Launch-plan / asset-pack bundles: `users/{userId}/tickets/{ticketId}/launch-plan.zip`, signed URLs ≤15-min TTL, private bucket
 
 ---
 

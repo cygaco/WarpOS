@@ -7,35 +7,35 @@
       "required": true,
       "ordered": true,
       "description": "Strictly required pre-dashboard sequence. User cannot reach the dashboard until these complete.",
-      "steps": ["UPLOAD", "PREFERENCES", "PROFILE", "SEARCH", "MARKET_ANALYSIS"]
+      "steps": ["BRIEF", "CONSTRAINTS", "PROFILE", "RESEARCH", "LANDSCAPE_ANALYSIS"]
     },
     "dashboard": {
       "required": false,
       "ordered": false,
       "description": "Dashboard + every optional activity users launch from it. Users opt in after baseline dashboard entry.",
-      "steps": ["DEEP_DIVE", "SKILLS", "RESUMES", "LINKEDIN", "AUTO_APPLY"]
+      "steps": ["DEEP_DIVE", "SKILLS", "LAUNCH_PLANS", "CHANNELS", "LAUNCH_RUN"]
     }
   },
   "steps": {
-    "UPLOAD": {
+    "BRIEF": {
       "position": 1,
       "phase": "onboarding",
-      "component": "Step1Resume",
-      "component_file": "src/components/steps/Step1Resume.tsx",
+      "component": "Step1Brief",
+      "component_file": "src/components/steps/Step1Brief.tsx",
       "feature": "onboarding",
       "shipped_int": 1,
       "requires_data": null,
-      "produces_data": "resumeRaw"
+      "produces_data": "briefRaw"
     },
-    "PREFERENCES": {
+    "CONSTRAINTS": {
       "position": 2,
       "phase": "onboarding",
-      "component": "Step3Preferences",
-      "component_file": "src/components/steps/Step3Preferences.tsx",
+      "component": "Step3Constraints",
+      "component_file": "src/components/steps/Step3Constraints.tsx",
       "feature": "onboarding",
       "shipped_int": 2,
       "requires_data": null,
-      "produces_data": "preferences"
+      "produces_data": "constraints"
     },
     "PROFILE": {
       "position": 3,
@@ -44,28 +44,28 @@
       "component_file": "src/components/steps/Step4Profile.tsx",
       "feature": "onboarding",
       "shipped_int": 3,
-      "requires_data": "resumeRaw",
+      "requires_data": "briefRaw",
       "produces_data": "profile"
     },
-    "SEARCH": {
+    "RESEARCH": {
       "position": 4,
       "phase": "onboarding",
       "component": "StepCollect",
       "component_file": "src/components/steps/StepCollect.tsx",
-      "feature": "market-research",
+      "feature": "landscape-research",
       "shipped_int": 4,
       "requires_data": "profile",
-      "produces_data": "marketRaw"
+      "produces_data": "landscapeRaw"
     },
-    "MARKET_ANALYSIS": {
+    "LANDSCAPE_ANALYSIS": {
       "position": 5,
       "phase": "onboarding",
       "component": "Step6Analysis",
       "component_file": "src/components/steps/Step6Analysis.tsx",
-      "feature": "market-research",
+      "feature": "landscape-research",
       "shipped_int": 5,
-      "requires_data": "marketRaw",
-      "produces_data": "marketAnalysis"
+      "requires_data": "landscapeRaw",
+      "produces_data": "landscapeAnalysis"
     },
     "DEEP_DIVE": {
       "position": 10,
@@ -74,7 +74,7 @@
       "component_file": "src/components/DeepDiveQA.tsx",
       "feature": "deep-dive-qa",
       "shipped_int": 6,
-      "requires_data": "marketAnalysis",
+      "requires_data": "landscapeAnalysis",
       "produces_data": "miningResults",
       "moved_in_target_state": true,
       "notes": "Shipped code runs this as onboarding Step 6 (shipped_int 6). Target state places it in dashboard as an optional tier-jump activity. The next skeleton build will reconcile; guard warns on hardcoded checks in the meantime."
@@ -84,42 +84,42 @@
       "phase": "dashboard",
       "component": "Step8Skills",
       "component_file": "src/components/steps/Step8Skills.tsx",
-      "feature": "skills-curation",
+      "feature": "scope-curation",
       "shipped_int": 7,
       "requires_data": "miningResults",
       "produces_data": "exclusions",
       "moved_in_target_state": true,
       "notes": "Shipped code runs this as onboarding Step 7. Target state moves it to dashboard following deep-dive-qa."
     },
-    "RESUMES": {
+    "LAUNCH_PLANS": {
       "position": 12,
       "phase": "dashboard",
-      "component": "Step10Resumes",
-      "component_file": "src/components/steps/Step10Resumes.tsx",
-      "feature": "resume-generation",
+      "component": "Step10Plans",
+      "component_file": "src/components/steps/Step10Plans.tsx",
+      "feature": "plan-generation",
       "shipped_int": 10,
       "requires_data": "profile",
-      "produces_data": "masterResume"
+      "produces_data": "masterPlan"
     },
-    "LINKEDIN": {
+    "CHANNELS": {
       "position": 13,
       "phase": "dashboard",
-      "component": "Step11LinkedIn",
-      "component_file": "src/components/steps/Step11LinkedIn.tsx",
-      "feature": "linkedin",
+      "component": "Step11Channels",
+      "component_file": "src/components/steps/Step11Channels.tsx",
+      "feature": "channels",
       "shipped_int": 11,
-      "requires_data": "masterResume",
-      "produces_data": "linkedin"
+      "requires_data": "masterPlan",
+      "produces_data": "channels"
     },
-    "AUTO_APPLY": {
+    "LAUNCH_RUN": {
       "position": 14,
       "phase": "dashboard",
-      "component": "Step13Apply",
-      "component_file": "src/components/steps/Step13Apply.tsx",
-      "feature": "auto-apply",
+      "component": "Step13Run",
+      "component_file": "src/components/steps/Step13Run.tsx",
+      "feature": "launch-run",
       "shipped_int": 13,
-      "requires_data": "masterResume",
-      "produces_data": "extension_runs"
+      "requires_data": "masterPlan",
+      "produces_data": "run_actions"
     }
   }
 }

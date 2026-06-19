@@ -1,4 +1,4 @@
-# Jobzooka — Shared Granular Stories
+# AcmeLaunch — Shared Granular Stories
 
 ## Purpose
 
@@ -81,9 +81,9 @@ Shared stories are **not standalone** — they are inherited by feature-specific
 
 ---
 
-## CS-006: Rocket Cost Guard
+## CS-006: Credit Cost Guard
 
-> As a System, I want to verify sufficient rocket balance before executing a paid operation, so that the credit system cannot be bypassed.
+> As a System, I want to verify sufficient credit balance before executing a paid operation, so that the credit system cannot be bypassed.
 
 **Acceptance Criteria:**
 
@@ -103,10 +103,10 @@ Shared stories are **not standalone** — they are inherited by feature-specific
 **Acceptance Criteria:**
 
 - Requests exceeding the rate limit receive a 429 response with a `Retry-After` header
-- Rate-limited requests do not consume rockets or trigger downstream processing
+- Rate-limited requests do not consume credits or trigger downstream processing
 - Rate limits reset after the specified window
 
-**Verifiable by:** Nth+1 request within window returns 429; `Retry-After` header is present; rocket balance unchanged for rate-limited requests.
+**Verifiable by:** Nth+1 request within window returns 429; `Retry-After` header is present; credit balance unchanged for rate-limited requests.
 
 ---
 

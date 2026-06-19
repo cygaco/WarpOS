@@ -7,7 +7,7 @@
 - **status:** active
 - **version:** 1.0.0
 - **changeType:** none
-- **used by:** onboarding, resume-generation, auto-apply, dashboard
+- **used by:** onboarding, plan-generation, launch-run, dashboard
 
 ## 1. Shape
 
@@ -15,17 +15,17 @@
 interface WorkspaceState {
   userId: string;
   onboardingProgress: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;  // 7-step onboarding gate
-  savedResumes: Array<{
+  savedPlans: Array<{
     id: string;
     title: string;
     s3Key: string;
   }>;
-  applicationHistory: Array<{
-    jobId: string;
-    status: "READY" | "AIM" | "FIRE" | "REJECTED";
-    appliedAt: string;
+  launchActionHistory: Array<{
+    actionId: string;
+    status: "PLAN" | "PREP" | "LAUNCH" | "HELD";
+    executedAt: string;
   }>;
-  profileVector: Record<string, number>;  // Embedding vector for skill matching
+  profileVector: Record<string, number>;  // Embedding vector for audience/segment matching
 }
 ```
 
@@ -36,19 +36,19 @@ interface WorkspaceState {
 
 ## 3. Consumers
 
-- `src/app/dashboard/page.tsx` (determines READY / AIM / FIRE layout)
+- `src/app/dashboard/page.tsx` (determines PLAN / PREP / LAUNCH layout)
 - `src/components/workspace/*` (UI rendering)
-- `services/backend/src/services/auto-apply.ts`
+- `services/backend/src/services/launch-run.ts`
 
 ## 4. Breaking changes
 
 - Altering the 0-7 `onboardingProgress` scale (adds / removes steps without migration)
-- Changing application status enums from the READY / AIM / FIRE domain model
+- Changing launch-action status enums from the PLAN / PREP / LAUNCH domain model
 - Changing `profileVector` from a key-value embedding shape to an array
 
 ## 5. Required tests
 
-- State machine transitions for `applicationHistory` statuses
+- State machine transitions for `launchActionHistory` statuses
 - Enforced validation that `profileVector` meets expected dimensionality bounds
 - Schema validation mapping exact JSON response fields to frontend types
 
@@ -61,5 +61,5 @@ interface WorkspaceState {
 
 - Patch: documentation or display-only field.
 - Minor: optional field with default values and no permission change.
-- Major: onboarding progress scale, application status, saved resume shape, or profile vector semantics change.
-- On any version bump, notify: onboarding, resume-generation, auto-apply, dashboard.
+- Major: onboarding progress scale, launch-action status, saved plan shape, or profile vector semantics change.
+- On any version bump, notify: onboarding, plan-generation, launch-run, dashboard.

@@ -45,7 +45,7 @@ Hook system is functionally strong but strategically incomplete. If builders ran
 | # | Finding | Location | Fix |
 |---|---|---|---|
 | 7 | Decision logger path matching is case-sensitive, Unix-only | scripts/hooks/decision-logger.js | Normalize path comparison for cross-platform |
-| 8 | Boss boundary detection relies on store.json heartbeat (single point) | scripts/hooks/boss-boundary.js | Graceful fallback exists; acceptable |
+| 8 | Orchestrator boundary detection relies on store.json heartbeat (single point) | scripts/hooks/orchestrator-boundary.js | Graceful fallback exists; acceptable |
 
 ### Resilience Assessment
 
@@ -62,7 +62,7 @@ All 14 hooks have **excellent error handling**:
 |---|---|---|
 | Edit/Write | secret-guard, decision-logger, format, lint, typecheck | COVERED (missing: foundation guard, ownership guard) |
 | Agent | gate-check, gauntlet-gate, cycle-enforcer | COVERED |
-| Read/Grep/Glob | boss-boundary | PARTIAL (Boss only) |
+| Read/Grep/Glob | orchestrator-boundary | PARTIAL (Orchestrator only) |
 | SessionStart | session-start | COVERED |
 | UserPromptSubmit | prompt-logger | COVERED |
 | PostCompact | compact-saver | COVERED |

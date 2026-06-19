@@ -2,12 +2,12 @@
 # Contract: PAYMENT
 
 - **id:** PAYMENT
-- **owner:** rockets-economy
+- **owner:** credits-economy
 - **introducedIn:** 2026-04-30
 - **status:** active
 - **version:** 1.0.0
 - **changeType:** none
-- **used by:** rockets-economy, deus-mechanicus, shell
+- **used by:** credits-economy, dev-console, shell
 
 ## 1. Shape
 
@@ -17,7 +17,7 @@ interface LedgerEntry {
   userId: string;
   amount: number;                                           // Fiat amount in cents
   currency: "USD";
-  rocketsCredited: number;                                  // Exact conversion injected
+  creditsCredited: number;                                  // Exact conversion injected
   stripeEventId: string;                                    // Unique Stripe idempotency key
   status: "pending" | "completed" | "refunded" | "failed";
 }
@@ -30,21 +30,21 @@ interface LedgerEntry {
 
 ## 3. Consumers
 
-- `services/backend/src/models/user.ts` (syncs ledger with `User.rockets` balance)
+- `services/backend/src/models/user.ts` (syncs ledger with `User.credits` balance)
 - `src/app/settings/billing/page.tsx` (purchase history)
 
 ## 4. Breaking changes
 
 - Changing fiat amount representation from integer cents to float
 - Modifying the status enum state machine
-- Ignoring `stripeEventId`, resulting in non-idempotent rocket crediting
+- Ignoring `stripeEventId`, resulting in non-idempotent credit crediting
 - Modifying webhook signature validation requirements
 
 ## 5. Required tests
 
 - Cryptographic signature validation of incoming Stripe webhook payloads
 - Strict idempotency checks preventing double-crediting of `stripeEventId`
-- Rollback transaction testing if `rocketsCredited` fails to apply to the User
+- Rollback transaction testing if `creditsCredited` fails to apply to the User
 
 ## 6. Drift gate
 
@@ -56,4 +56,4 @@ interface LedgerEntry {
 - Patch: documentation or event wording only.
 - Minor: backward-compatible metadata field or optional receipt data.
 - Major: checkout state, ledger semantics, idempotency, balance mutation, or webhook verification change.
-- On any version bump, notify: rockets-economy, deus-mechanicus, shell.
+- On any version bump, notify: credits-economy, dev-console, shell.

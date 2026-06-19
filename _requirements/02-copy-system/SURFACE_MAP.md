@@ -1,6 +1,6 @@
-# Jobzooka — Copy Surface Map
+# AcmeLaunch — Copy Surface Map
 
-This document defines **every copy surface** in the Jobzooka product and the rules that apply to each.
+This document defines **every copy surface** in the AcmeLaunch product and the rules that apply to each.
 
 Its purpose is to:
 
@@ -33,7 +33,7 @@ Each surface includes:
 
 These surfaces prioritize trust, clarity, and user safety. Personality must never override seriousness here.
 
-### Payment & Rocket Transactions
+### Payment & Credit Transactions
 
 - **Intent:** Confirm cost, execute purchase
 - **Stakes:** High
@@ -74,14 +74,14 @@ These surfaces prioritize trust, clarity, and user safety. Personality must neve
 
 These surfaces make up most of the app. Clarity and consistency matter more than personality.
 
-### Phase Pills (READY / AIM / FIRE)
+### Phase Pills (PLAN / PREP / LAUNCH)
 
 - **Intent:** Orient the user in the flow
 - **Stakes:** Medium
 - **Structure:** Single word, ALL CAPS (structural convention)
 - **Tone range:** Neutral
 
-### Step Labels (Search, Analyze, Deep Dive, Skills, Resumes, LinkedIn, Launch)
+### Step Labels (Research, Analyze, Deep Dive, Scope, Plans, Channels, Launch)
 
 - **Intent:** Name the current activity
 - **Stakes:** Medium
@@ -131,9 +131,9 @@ Notes:
 
 Examples:
 
-- "Analyzing market data..."
-- "Generating resume..."
-- "Scraping job listings..."
+- "Analyzing landscape data..."
+- "Generating plan..."
+- "Gathering launch signals..."
 
 ### Success Messages (Toasts, Inline)
 
@@ -162,13 +162,13 @@ These surfaces influence perception of progress and momentum.
 - **Structure:** Fragment header + 1 sentence body
 - **Tone range:** Calm, honest, encouraging
 
-### Competitiveness Score Labels
+### Launch-Readiness Score Labels
 
 - **Intent:** Contextualize the score
 - **Stakes:** Medium
 - **Structure:** 1–3 words
 - **Tone range:** Neutral to encouraging
-- **Labels (from code):** "Getting started" (0–39), "Building momentum" (40–69), "Strong arsenal" (70–89), "Maximum firepower" (90–100), "OVERKILL" (>100)
+- **Labels (from code):** "Getting started" (0–39), "Building momentum" (40–69), "Strong plan" (70–89), "Launch-ready" (90–100), "OVERKILL" (>100)
 
 ### Celebration Messages (GlazeToast, ConfettiBurst)
 
@@ -177,37 +177,37 @@ These surfaces influence perception of progress and momentum.
 - **Structure:** Short fragment or sentence
 - **Tone range:** Positive, energetic (the ONE place for enthusiasm)
 
-### Discovery Recommendations
+### Opportunity Recommendations
 
 - **Intent:** Suggest non-obvious opportunities
 - **Stakes:** Medium
 - **Structure:** Title + short explanation
 - **Tone range:** Informative, intriguing
 
-### Market Intelligence Summaries
+### Landscape Intelligence Summaries
 
 - **Intent:** Present data insights
 - **Stakes:** Medium
 - **Structure:** Structured data with labels
 - **Tone range:** Factual, authoritative
 
-### Competitiveness Gain Indicators
+### Launch-Readiness Gain Indicators
 
-- **Intent:** Show score impact of pending actions (e.g., "+12%" next to a category toggle)
+- **Intent:** Show score impact of pending actions (e.g., "+12%" next to a segment toggle)
 - **Stakes:** Low
 - **Structure:** Fragment with delta indicator ("+X%")
 - **Tone range:** Neutral, motivating
 
-### Category Selection & Ranking
+### Segment Selection & Ranking
 
-- **Intent:** Let user prioritize job categories
+- **Intent:** Let user prioritize audience segments
 - **Stakes:** Medium
-- **Structure:** Category name + short descriptor + toggle controls
+- **Structure:** Segment name + short descriptor + toggle controls
 - **Tone range:** Neutral, informative
 
 ### Deep-Dive QA (Mining Accordion)
 
-- **Intent:** Surface hidden career strengths through targeted questions
+- **Intent:** Surface hidden launch strengths through targeted questions
 - **Stakes:** Medium
 - **Structure:** Question (1–2 sentences) + text area for answer
 - **Tone range:** Conversational, curious
@@ -253,43 +253,43 @@ Notes:
 
 ---
 
-## TIER 4 — CHROME EXTENSION & AUTO-APPLY
+## TIER 4 — LAUNCH CONSOLE & LAUNCH RUN
 
-### Extension Status Messages
+### Runner Status Messages
 
-- **Intent:** Communicate automation state
+- **Intent:** Communicate launch-run state
 - **Stakes:** High
 - **Structure:** Short status fragment
 - **Tone range:** Neutral, factual
 
-### Application Heuristics Display
+### Launch Rules Display
 
-- **Intent:** Show apply/skip reasoning
+- **Intent:** Show do/skip reasoning
 - **Stakes:** Medium
 - **Structure:** Bullet list, short fragments
 - **Tone range:** Factual, direct
 
-### Chrome Prompt (Generated)
+### Run Prompt (Generated)
 
-- **Intent:** Instruct Claude for Chrome
+- **Intent:** Instruct the AcmeLaunch Runner
 - **Stakes:** High
 - **Structure:** Structured markdown, explicit instructions
 - **Tone range:** Technical, precise (not user-facing)
 
 ---
 
-## TIER 5 — DEV TOOLS (Deus Mechanicus)
+## TIER 5 — DEV TOOLS (Dev Console)
 
 ### Dev Tool Labels & Status
 
 - **Intent:** Developer information
 - **Stakes:** Low
 - **Structure:** Technical labels
-- **Tone range:** Warhammer 40K themed (brass, void, Omnissiah references — allowed ONLY in DM context)
+- **Tone range:** Technical, unconstrained (developer-only surface)
 
 Notes:
 
-- Deus Mechanicus is the only surface where themed personality is unrestricted
+- Dev Console is the only surface where copy constraints are relaxed
 - These are never shown to end users
 
 ---

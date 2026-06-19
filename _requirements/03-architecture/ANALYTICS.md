@@ -17,7 +17,7 @@ WarpOS-generated apps use a small, stable event vocabulary. Events describe user
 
 - Use snake_case names.
 - Use stable IDs, not display names, for users, workspaces, plans, and features.
-- Never log secrets, raw prompts, uploaded files, resumes, payment details, or OAuth tokens.
+- Never log secrets, raw prompts, uploaded files, idea briefs, payment details, or OAuth tokens.
 - Every event must have an owner, retention policy, and purpose.
 - Product analytics and framework runtime events stay separate. Framework runtime events use the existing event logger.
 

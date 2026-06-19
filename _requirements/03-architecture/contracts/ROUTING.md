@@ -7,9 +7,9 @@
 - **status:** active
 - **version:** 2.0.0
 - **changeType:** major
-- **used by:** auth, backend, frontend, extension
+- **used by:** auth, backend, frontend, launch-console
 
-> **2.0.0 (breaking, 2026-05-04):** shape rewritten from generic `Route` TS interface to product-specific Vercel / Next.js rewrite config — reflects actual Jobzooka routing surface promoted into canonical at v0.2.0. Consumers that depended on the framework-template `Route` interface must adopt the rewrite-config shape.
+> **2.0.0 (breaking, 2026-05-04):** shape rewritten from generic `Route` TS interface to product-specific Vercel / Next.js rewrite config — reflects actual AcmeLaunch routing surface promoted into canonical at v0.2.0. Consumers that depended on the framework-template `Route` interface must adopt the rewrite-config shape.
 
 ## 1. Shape
 
@@ -17,9 +17,9 @@
 // Vercel / Next.js rewrite configuration shape
 {
   "source": "/api/:path*",
-  "destination": "https://api.jobzooka.fly.dev/api/:path*",
+  "destination": "https://api.acmelaunch.fly.dev/api/:path*",
   "headers": [
-    { "key": "X-Forwarded-Host", "value": "jobzooka.com" }
+    { "key": "X-Forwarded-Host", "value": "acmelaunch.com" }
   ]
 }
 ```
@@ -33,7 +33,7 @@
 ## 3. Consumers
 
 - `src/lib/api.ts` (frontend fetch client utilizing relative `/api` paths)
-- `extension/background.js` (browser extension API calls)
+- `src/launch-console/controller.ts` (Launch Console queue/outcome API calls)
 
 ## 4. Breaking changes
 
@@ -58,5 +58,5 @@
 
 - Patch: label or documentation change only.
 - Minor: additive route with safe default navigation.
-- Major: rewrite, destination domain, CORS, cookie forwarding, or extension API route semantics change.
-- On any version bump, notify: auth, backend, frontend, extension.
+- Major: rewrite, destination domain, CORS, cookie forwarding, or Launch Console API route semantics change.
+- On any version bump, notify: auth, backend, frontend, launch-console.

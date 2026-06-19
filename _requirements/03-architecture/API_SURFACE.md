@@ -1,4 +1,4 @@
-# Jobzooka — API Surface
+# AcmeLaunch — API Surface
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Every route has moved from same-origin `/api/*` on Vercel to the dedicated backend service on Fly.io (`${API_BASE_URL}/...`). Legacy `/api/*` routes remain deployed for a 7-day rollback window behind `LEGACY_ROUTES_ENABLED=true`, with full new-backend security-layer parity during the window (see backend PRD §8.11). The section headings below use the new paths (no `/api` prefix) since that is the post-cutover canonical form.
 
@@ -8,9 +8,9 @@
 
 | Method | Route                                 | Purpose                             | Auth Required                  | Security layers (ref §8.2) |
 | ------ | ------------------------------------- | ----------------------------------- | ------------------------------ | --------------------------- |
-| POST   | `/claude`                             | Synchronous Claude (PARSE, PROFILE, MARKET) | Optional (required for billable) | 0,2,3,4,5,7,8,10 |
+| POST   | `/claude`                             | Synchronous Claude (PARSE, PROFILE, LANDSCAPE) | Optional (required for billable) | 0,2,3,4,5,7,8,10 |
 | POST   | `/claude/chain`                       | Async chained Claude (returns ticketId) | Yes (JWT user)             | 0,2,3,4,5,6,7,8,9,10 |
-| POST   | `/jobs/scrape`                        | Async BD scrape (returns ticketId)  | Yes (JWT user)                 | 0,2,3,4,5,6,7,8,9,10 |
+| POST   | `/research/run`                       | Async launch research (returns ticketId) | Yes (JWT user)              | 0,2,3,4,5,6,7,8,9,10 |
 | GET    | `/tickets/{id}`                       | Poll async ticket (ownership-checked) | Yes (JWT user; sub = ticket.ownerUserId) | 0,2,3,4,5,6,7,8,10 |
 | GET    | `/session`                            | Load server session                 | Yes (JWT)                      | 0,2,3,4,5,6,7,10 |
 | POST   | `/session`                            | Save server session                 | Yes (JWT)                      | 0,2,3,4,5,6,7,10 |
@@ -23,16 +23,18 @@
 | PUT    | `/auth/reset`                         | Password reset token redemption     | No (token-gated)               | 0,2,3,4,7,8,9,10 |
 | GET    | `/auth/oauth/google`                  | Start Google OAuth                  | No                             | 0,2,3,4,10 |
 | GET    | `/auth/oauth/google/callback`         | Google OAuth callback               | No (state-gated)               | 0,2,3,4,7,9,10 |
-| GET    | `/auth/oauth/linkedin`                | Start LinkedIn OAuth                | No                             | 0,2,3,4,10 |
-| GET    | `/auth/oauth/linkedin/callback`       | LinkedIn OAuth callback             | No (state-gated)               | 0,2,3,4,7,9,10 |
-| GET    | `/rockets`                            | Balance + usage + ledger tail       | Yes (JWT)                      | 0,2,3,4,6,10 |
-| POST   | `/rockets/debit`                      | Debit rockets (server-initiated)    | Yes (JWT)                      | 0,2,3,4,6,7,8,9,10 |
-| POST   | `/rockets/grant`                      | Grant rockets                       | **Yes (JWT admin scope)**      | 0,2,3,4,6,7,9,10 |
+| GET    | `/channels`                           | List connected launch channels      | Yes (JWT user)                 | 0,2,3,4,6,10 |
+| GET    | `/channels/connect/{provider}`        | Start channel OAuth (linkedin, x, reddit, ...) | Yes (JWT user)        | 0,2,3,4,10 |
+| GET    | `/channels/connect/{provider}/callback` | Channel OAuth callback            | Yes (state-gated)              | 0,2,3,4,7,9,10 |
+| GET    | `/credits`                            | Balance + usage + ledger tail       | Yes (JWT)                      | 0,2,3,4,6,10 |
+| POST   | `/credits/debit`                      | Debit credits (server-initiated)    | Yes (JWT)                      | 0,2,3,4,6,7,8,9,10 |
+| POST   | `/credits/grant`                      | Grant credits                       | **Yes (JWT admin scope)**      | 0,2,3,4,6,7,9,10 |
 | GET    | `/stripe/config`                      | `{configured: boolean}` for UI gating | No                           | 0,2,3,4,10 |
 | POST   | `/stripe/checkout`                    | Create checkout session             | Yes (JWT)                      | 0,2,3,4,6,7,9,10 |
 | POST   | `/stripe/webhook`                     | Stripe webhook handler              | Stripe signature               | 0,3,4,7,9,10 |
-| POST   | `/apply/outcomes`                     | Extension reports apply outcomes    | Yes (JWT user)                 | 0,2,3,4,6,7,8,9,10 |
-| GET    | `/extension`                          | Download Chrome extension ZIP (5/hr/IP) | No                         | 0,2,3,4,8,10 |
+| GET    | `/launch-console/queue`               | Runner pulls the launch action queue | Yes (JWT user)                | 0,2,3,4,6,7,8,10 |
+| GET    | `/launch-console/prompts/{queueItemId}` | Runner fetches the action prompt for one queue item | Yes (JWT user)  | 0,2,3,4,6,7,8,10 |
+| POST   | `/launch-console/outcomes`            | Runner reports launch-action outcomes | Yes (JWT user)               | 0,2,3,4,6,7,8,9,10 |
 | GET    | `/health`                             | Liveness (returns `{ok:true}` only) | No                             | — |
 | GET    | `/admin`                              | Admin panel HTML                    | Yes (JWT admin scope + passkey)| 0,2,3,4,6,9,10 |
 | GET    | `/admin/status`                       | Ops metrics (queue depth, worker lag, Redis ping, `is_claude_healthy`) | Yes (admin) | 0,2,3,4,6,9,10 |
@@ -41,8 +43,8 @@
 | POST   | `/admin/tickets/{id}/replay`          | Re-enqueue stuck ticket (write)     | Yes (admin + fresh passkey)    | 0,2,3,4,6,7,9,10 |
 | GET    | `/admin/ledger`                       | Ledger search                       | Yes (admin)                    | 0,2,3,4,6,9,10 |
 | GET    | `/admin/users/{email}`                | User lookup                         | Yes (admin)                    | 0,2,3,4,6,9,10 |
-| POST   | `/admin/users/{id}/grant`             | Grant rockets (write)               | Yes (admin + fresh passkey)    | 0,2,3,4,6,7,9,10 |
-| GET    | `/admin/outcomes`                     | APPLY_OUTCOME stream live-tail      | Yes (admin)                    | 0,2,3,4,6,9,10 |
+| POST   | `/admin/users/{id}/grant`             | Grant credits (write)               | Yes (admin + fresh passkey)    | 0,2,3,4,6,7,9,10 |
+| GET    | `/admin/outcomes`                     | LAUNCH_OUTCOME stream live-tail     | Yes (admin)                    | 0,2,3,4,6,9,10 |
 | GET    | `/admin/diagnostics`                  | Port of `/api/test` check modes     | Yes (admin)                    | 0,2,3,4,6,9,10 |
 | POST   | `/admin/webauthn/register`            | Passkey enrollment (≥2 required)    | Yes (admin bootstrap flow)     | 0,2,3,4,6,9,10 |
 | POST   | `/admin/webauthn/challenge`           | Generate WebAuthn challenge         | Yes (admin)                    | 0,2,3,4,6,9,10 |
@@ -52,31 +54,34 @@
 
 | Method | Route                       | Purpose                                     |
 | ------ | --------------------------- | ------------------------------------------- |
-| GET    | `/.well-known/api-config`   | **Deprecation banner only** (per §16 decision 12). Returns `{ok: true}` in steady state, or `{deprecated: true, newUrl: "..."}` during a cutover. Extension prod URL is **hardcoded in the manifest**; this endpoint is **not** primary discovery. |
+| GET    | `/.well-known/api-config`   | **Deprecation banner only** (per §16 decision 12). Returns `{ok: true}` in steady state, or `{deprecated: true, newUrl: "..."}` during a cutover. The AcmeLaunch Runner reads its backend URL from its connection record on pairing; this endpoint is **not** primary discovery. |
 
 **Deprecated in v3 (no longer exists):**
 
 - `GET /api/test` — ported to `/admin/diagnostics` (admin-scoped). The legacy `NEXT_PUBLIC_DUMMY_PLUG_CODE` gate is **removed** (per backend PRD §16 decision 16; the env var was exposed in the client bundle per SECURITY.md pre-publish action item).
+- `GET /extension` — the standalone browser-extension download is **removed**. Launch execution now runs through the first-party **AcmeLaunch Runner**, which authenticates as a normal app session (no separate ZIP, no extension origin). Its queue/outcome/prompt surface lives under `/launch-console/*`.
 
 ---
 
 ## Async API (the ticket model)
 
-All long-running operations (BD scrape, chained Claude, resume+DOCX/PDF build) return a ticket rather than blocking on the response. The client polls `GET /tickets/{id}` for status/result.
+All long-running operations (launch research, chained Claude, plan + asset-pack/PDF build) return a ticket rather than blocking on the response. The client polls `GET /tickets/{id}` for status/result.
 
-### POST /jobs/scrape (example)
+### POST /research/run (example)
 
 ```
 Headers:
   X-Idempotency-Key: <uuid>   // required — same key within 5min → same ticket, no double debit
   Authorization: Bearer <jwt> // or cookie
 Body:
-  { queries: string[1-6], location: string, employmentTypes?: string[], remote?: "Remote" }
+  { queries: string[1-6], geography: string, channels?: string[], sourceTypes?: string[] }
 Response 200:
   { ticketId: string, status: "queued" }
 Errors:
   400 (schema), 401, 429, 503 { error: "QUEUE_UNAVAILABLE" }  // QStash down → no ticket written
 ```
+
+`sourceTypes` selects which approved research sources the run may use (`web_search`, `public_url`, `directory`, `social_public`, `marketplace`, `uploaded_file`, `crm_import`); each source on the run carries its own consent record (`approvedBy`, `scope`, `allowedUse`, `credentialMode`, `provenanceUrl`).
 
 ### POST /claude/chain (example)
 
@@ -109,7 +114,7 @@ Errors:
 
 ## POST /claude (synchronous)
 
-Used for single-shot prompts that fit inside the 60s window: `PARSE`, `PROFILE`, `MARKET` (unless known to exceed 60s, in which case route to `/claude/chain`).
+Used for single-shot prompts that fit inside the 60s window: `PARSE`, `PROFILE`, `LANDSCAPE` (unless known to exceed 60s, in which case route to `/claude/chain`).
 
 ### Request
 
@@ -132,31 +137,30 @@ Unchanged from v2 in shape; enforcement has moved to Hono middleware on the Fly 
 
 Every call is wrapped in the shared `callClaude()` helper that applies `cache_control: {type: "ephemeral"}` on the system prompt + PROMPT_RULES + canonical context region. Cache hit rate exposed via `/admin/status` cache_hit_rate. Alert fires if cache hit rate drops <80% over 1h — indicates cached region is drifting (spec drift signal).
 
-### Rocket Billing
+### Credit Billing
 
-Billable prompt keys: `MARKET_PREP`, `TARGETED`, `LINKEDIN`, `APPLY`. Debit-before-run via Postgres transactional enqueue (see §8.13 in backend PRD). Response schemas unchanged; 402 error now includes `remaining` and `cost` as before.
+Billable prompt keys: `LANDSCAPE_PREP`, `SEGMENT_PLAN`, `CHANNELS`, `LAUNCH_RUN`. Debit-before-run via Postgres transactional enqueue (see §8.13 in backend PRD). Response schemas unchanged; 402 error now includes `remaining` and `cost` as before.
 
 ---
 
-## POST /apply/outcomes (new in v3)
+## POST /launch-console/outcomes (new in v3)
 
-Extension reports every apply attempt back to the backend for durable counts + admin visibility + competitiveness scoring.
+The AcmeLaunch Runner reports every launch-action attempt back to the backend for durable counts + admin visibility + readiness scoring.
 
 ```
 Headers:
-  Authorization: Bearer <jwt>   // user scope
-  Origin: chrome-extension://<extension-id>  // allowed via CORS in addition to web app
+  Authorization: Bearer <jwt>   // user scope — normal first-party app session
 Body: {
   outcomes: Array<{
-    jobId: string
-    jobUrl: string
-    jobTitle: string
-    company: string
-    status: "applied" | "skipped" | "failed"
-    reason?: string        // required if skipped or failed
-    heuristicVersion: string
-    appliedAt: number      // unix ms
-    ticketId?: string      // if originated from auto-apply ticket
+    actionId: string
+    targetUrl: string
+    actionTitle: string
+    channel: string        // email | social | community | marketplace | ads | content
+    status: "succeeded" | "skipped" | "failed" | "needs_manual"
+    reason?: string        // required if skipped, failed, or needs_manual
+    ruleVersion: string
+    executedAt: number     // unix ms
+    ticketId?: string      // if originated from a launch-run ticket
   }>
 }
 Response 200:
@@ -164,33 +168,33 @@ Response 200:
 Rate limit: 100 outcomes per user per minute
 ```
 
-**Dedup:** Same `{userId, jobUrl, status}` within 24h is counted as duplicate; returns in `duplicates` count but does not produce a second row. Prevents extension retry loops from inflating counts.
+**Dedup:** Same `{userId, targetUrl, status}` within 24h is counted as duplicate; returns in `duplicates` count but does not produce a second row. Prevents runner retry loops from inflating counts.
 
 **Persistence:** written atomically (single Postgres INSERT + Redis XADD) to:
-1. Postgres `apply_outcomes` (authoritative, monthly partitions)
-2. Postgres `audit_log` with `type=APPLY_OUTCOME` (durable audit)
-3. Redis stream `apply:outcomes:{userId}` (ops-UI cache only)
+1. Postgres `launch_outcomes` (authoritative, monthly partitions)
+2. Postgres `audit_log` with `type=LAUNCH_OUTCOME` (durable audit)
+3. Redis stream `launch:outcomes:{userId}` (ops-UI cache only)
 
-**Competitiveness linkage:** `src/lib/competitiveness.ts` reads the user's `apply_outcomes` count (via a thin backend endpoint or denormalized in session state).
+**Readiness linkage:** `src/lib/readiness.ts` reads the founder's `launch_outcomes` count (via a thin backend endpoint or denormalized in session state).
 
 ---
 
-## /rockets — schema change
+## /credits — schema change
 
-### GET /rockets (superset schema — v3)
+### GET /credits (superset schema — v3)
 
 ```typescript
 Response 200: {
-  rockets: number,       // legacy field (backward-compat during rollback window)
-  balance: number,       // canonical v3 field (same value as `rockets`)
+  credits: number,       // legacy field (backward-compat during rollback window)
+  balance: number,       // canonical v3 field (same value as `credits`)
   recentLedger: Array<{ ts, delta, reason, balanceAfter, ticketId? }>,  // last 20 entries
   usage: { ... },
-  costs: ROCKET_COSTS,
-  packs: ROCKET_PACKS
+  costs: CREDIT_COSTS,
+  packs: CREDIT_PACKS
 }
 ```
 
-### POST /rockets/grant — **gating change**
+### POST /credits/grant — **gating change**
 
 **v3:** Gated by `scope=admin` JWT only. The legacy `NEXT_PUBLIC_DUMMY_PLUG_CODE` gate is **removed** (client-bundle-exposed env var was flagged in SECURITY.md pre-publish action and migrated in backend PRD §16 decision 16). Dev grants now go through a server-side seed script or local admin CLI.
 
@@ -224,14 +228,14 @@ Errors: 400, 401, 403 (not admin scope), 429
 - **Generates `X-Idempotency-Key` UUID on every call** (v3 — for replay safety)
 - Retry: 2 retries for transient errors (network, 502, 504); 429 waits `3000ms × (attempt + 1)`
 - Client timeout: 100 seconds
-- For billable prompts: throws `RocketError` on 401/402
+- For billable prompts: throws `CreditError` on 401/402
 
-### fetchJobs(queries, location, employmentTypes?, onProgress?, remote?)
+### runResearch(queries, geography, channels?, onProgress?, sourceTypes?)
 
-- **Now ticket-based:** calls `POST ${API_BASE_URL}/jobs/scrape` → receives ticketId → polls `GET /tickets/{id}` every 5s
+- **Now ticket-based:** calls `POST ${API_BASE_URL}/research/run` → receives ticketId → polls `GET /tickets/{id}` every 5s
 - Progress callback fires on every poll
-- Result: `{ jobs, total, queryStats, warnings }`
-- No longer re-implements BD trigger/poll in the client — that lives in the worker
+- Result: `{ results, total, queryStats, warnings }`
+- No longer re-implements research-provider trigger/poll in the client — that lives in the worker
 
 ### cleanJson(raw)
 
@@ -245,7 +249,7 @@ Every route handler in `services/backend/src/routes/` MUST carry a JSDoc block l
 
 ```typescript
 /**
- * @route POST /rockets/debit
+ * @route POST /credits/debit
  * @security-layers [0,2,3,4,6,7,8,9,10]
  * @notes Layer 11 does not apply (this is an API route, not a worker route).
  */

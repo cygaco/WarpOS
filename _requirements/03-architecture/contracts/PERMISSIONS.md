@@ -7,7 +7,7 @@
 - **status:** active
 - **version:** 1.0.0
 - **changeType:** none
-- **used by:** auth, backend, deus-mechanicus, shell
+- **used by:** auth, backend, dev-console, shell
 
 ## 1. Shape
 
@@ -61,4 +61,4 @@ interface PermissionModel {
 - Patch: permission documentation only.
 - Minor: new permission that defaults to denied until explicitly granted.
 - Major: changed allow/deny semantics, scope inheritance, admin behavior, or tenant boundary.
-- On any version bump, notify: auth, backend, deus-mechanicus, shell.
+- On any version bump, notify: auth, backend, dev-console, shell.

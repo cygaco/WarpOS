@@ -55,7 +55,7 @@ Auto-detected from project root. No `vercel.json` currently — defaults work.
 | Environment vars | Configured per scope (Production / Preview / Development) in Vercel dashboard |
 | Edge runtime | Not used; we run Node runtime everywhere |
 | ISR | Not used (app is dynamic per-user) |
-| `BACKEND_URL` env | Per-scope: production points to `api.jobzooka.app`, preview deploys point to per-PR Fly review apps (per user-data plan Phase 2) |
+| `BACKEND_URL` env | Per-scope: production points to `api.acmelaunch.app`, preview deploys point to per-PR Fly review apps (per user-data plan Phase 2) |
 
 ## Known issues
 

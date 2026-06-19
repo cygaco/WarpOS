@@ -1,4 +1,4 @@
-# Jobzooka — Stack & Deployment
+# AcmeLaunch — Stack & Deployment
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. The v1 stack was Vercel-only with a hard 60s function-timeout constraint; v3 splits into **Vercel frontend + Fly backend (API + worker) + Fly Postgres** behind Cloudflare, which removes the 60s cap entirely.
 
@@ -30,8 +30,8 @@
 | Cache / scratch    | Upstash Redis                    | —            | Rate limit, WebAuthn challenges, scope cache (read-through), ticket scratch, ops-UI audit live-tail. Not financial-state authoritative. |
 | Blob store         | Cloudflare R2                    | —            | Signed URLs ≤15 min TTL, private bucket, object-key `{userId}/{ticketId}/result.{ext}`, Object Lock for audit-log archives. Free egress. |
 | AI                 | Anthropic Claude                 | claude-sonnet-4-6 / claude-opus-4-7 | Prompt Caching mandatory from day 1 (research F14 — ~90% input cost reduction). Batch API for non-interactive chains. |
-| Job scraping       | Bright Data                      | LinkedIn Jobs Scraper | Dataset: `gd_lpfll7v5hcqtkxl6l`. Called from worker, not API.                  |
-| Auth               | JWT + OAuth + WebAuthn           | `arctic` ^3.7.0, `@simplewebauthn/server` latest | Google/LinkedIn OAuth, email/password, cookie-based JWT on apex (`__Host-` prefix preferred), WebAuthn for admin (≥2 passkeys + 10 Argon2id recovery codes). |
+| Launch research    | Research adapter                 | Public-source landscape gathering | Founder-approved `ResearchSource` set; persists partial + marks failed sources, never synthesizes. Called from worker, not API. |
+| Auth               | JWT + OAuth + WebAuthn           | `arctic` ^3.7.0, `@simplewebauthn/server` latest | Google OAuth, email/password, cookie-based JWT on apex (`__Host-` prefix preferred), WebAuthn for admin (≥2 passkeys + 10 Argon2id recovery codes). Channel-provider OAuth is a separate scoped flow that mints `ChannelConnection`, not app sign-in. |
 | Payments           | Stripe                           | `stripe-js` ^8.11.0 | Three-state idempotency in Postgres `stripe_webhook_idempotency`.               |
 | Rate limiting      | `@upstash/ratelimit`             | latest       | Sliding window; per-IP, per-user, per-ASN (CF), global, daily budget.                 |
 
@@ -108,7 +108,7 @@
 
 **Required** per research F18 / backend PRD §9:
 
-- Separate Fly app (`jobzooka-backend-staging`)
+- Separate Fly app (`acmelaunch-backend-staging`)
 - Separate Upstash Redis + QStash projects
 - Separate Fly Postgres cluster
 - Stripe **test-mode keys** (production keys never in staging; CI enforces)
@@ -155,15 +155,16 @@
 │   │   └── .well-known/
 │   │       └── api-config/route.ts  # Deprecation banner only (not primary discovery)
 │   ├── components/ …              # unchanged — UI components
+│   ├── launch-console/            # In-app Launch Console module (controller, runner, outcomes)
 │   └── lib/                       # Client-side helpers
 │       ├── api.ts                 # Boundary — every fetch uses ${API_BASE_URL} prefix
 │       ├── storage.ts             # Client AES-GCM encrypted localStorage
 │       ├── pipeline.ts            # Pipeline tracer
-│       ├── competitiveness.ts     # Client-side scoring (reads apply outcomes)
-│       └── …                      # dummy data, test harness, DM helpers
+│       ├── launch-readiness.ts    # Client-side scoring (reads launch outcomes)
+│       └── …                      # dummy data, test harness, Dev Console helpers
 ├── packages/
 │   └── shared/                    # NEW in v3 — shared across Next.js + backend
-│       ├── rockets.ts             # ROCKET_COSTS, ROCKET_PACKS (migrated from src/lib/)
+│       ├── credits.ts             # CREDIT_COSTS, CREDIT_PACKS (migrated from src/lib/)
 │       ├── prompts.ts             # PROMPTS, wrapUntrustedData()
 │       ├── types.ts               # Server-relevant types
 │       ├── errors.ts              # safeErrorMessage(), error code enum
@@ -176,7 +177,7 @@
 │       ├── src/
 │       │   ├── api.ts             # Hono entrypoint
 │       │   ├── worker.ts          # QStash + Graphile consumer + drain handler
-│       │   ├── routes/            # auth, rockets, stripe, claude, jobs, tickets, apply, extension, admin, health
+│       │   ├── routes/            # auth, credits, stripe, claude, research, tickets, launch-console, channels, admin, health
 │       │   ├── middleware/        # origin-pin, qstash-verify, scope, idempotency
 │       │   ├── ledger.ts          # Postgres-backed atomic ledger
 │       │   ├── tickets.ts         # Ticket lifecycle + ownership check
@@ -192,7 +193,6 @@
 │       ├── fly.toml               # [processes] api + worker; kill_timeout=300
 │       └── scripts/
 │           └── seed-admin.js      # One-time admin-scope provisioning
-├── extension/                     # Chrome extension (Manifest V3)
 ├── ops/
 │   └── runbooks/
 │       ├── rotate-slug.md         # Slug rotation procedure

@@ -1,209 +1,209 @@
-# Jobzooka — User Cohorts
+# AcmeLaunch — User Cohorts
 
-This document defines the user segments Jobzooka serves, their needs, behaviors, and what success looks like for each.
+This document defines the user segments AcmeLaunch serves, their needs, behaviors, and what success looks like for each.
 
 ---
 
 ## Primary Audience
 
-Job seekers with an existing resume who want AI-assisted, market-driven application materials.
+Founders with an early product idea who want an AI-assisted, landscape-driven launch plan and assets.
 
 **Common traits:**
 
-- Have at least a rough resume (even outdated)
-- Are in the US job market (or targeting US roles)
+- Have at least a rough idea brief (even half-formed)
+- Are launching into the US market (or targeting US audiences)
 - Are comfortable using web-based tools
-- Want speed and quality over manual crafting
+- Want speed and quality over manual planning
 - Value data-driven decisions over gut feeling
 
 ---
 
-## Cohort 1: Active Searchers
+## Cohort 1: First-Time Launchers
 
 ### Who They Are
 
-Currently job hunting. May be unemployed, in notice period, or actively interviewing. High urgency.
+Preparing their first launch right now. May be pre-revenue, in build, or sitting on a finished product they haven't shipped. High urgency.
 
 ### Needs
 
-- Speed: "I need materials ready NOW"
-- Volume: "I need to apply to many jobs quickly"
-- Targeting: "I want each application to be tailored, not generic"
-- Market awareness: "What are companies actually looking for?"
+- Speed: "I need a plan ready NOW"
+- Coverage: "I need to cover every part of a launch I haven't done before"
+- Targeting: "I want my launch tailored to my audience, not generic"
+- Landscape awareness: "What does a launch in my space actually look like?"
 
 ### Behaviors
 
 - Will complete the full wizard in one session if the flow is smooth
-- Most likely to purchase rocket packs (need targeted resumes for multiple categories)
-- Most likely to use auto-apply (step 10)
-- Will revisit to re-run market analysis as their search evolves
+- Most likely to purchase credit packs (need segment plans for multiple audiences)
+- Most likely to use the launch run (step 10)
+- Will revisit to re-run landscape analysis as their idea evolves
 
 ### Success
 
 - Completed wizard in under 60 minutes
-- Generated 3+ targeted resume variants
-- Launched auto-apply or manually applied with generated materials
-- Feels confident their materials match market demand
+- Generated 3+ segment plan variants
+- Started a launch run or executed launch tasks with generated assets
+- Feels confident their plan matches what the market rewards
 
 ### Pain Points
 
-- "I've been sending the same resume to every job"
-- "I don't know which keywords to use"
-- "Applying takes forever — I spend 30 minutes per application"
-- "I have no idea if my resume is competitive"
+- "I have a product but no idea how to launch it"
+- "I don't know which channels are worth my time"
+- "Planning a launch takes forever — I keep starting over"
+- "I have no idea if I'm actually ready to launch"
 
 ---
 
-## Cohort 2: Career Changers
+## Cohort 2: Relaunchers
 
 ### Who They Are
 
-Currently employed but looking to shift roles, industries, or seniority levels. Medium urgency. Often insecure about positioning.
+Already launched once but it fell flat, or repositioning an existing product for a new audience or market. Medium urgency. Often unsure about positioning.
 
 ### Needs
 
-- Positioning: "How do I frame my experience for a different field?"
-- Validation: "Is this career move realistic?"
-- Gap analysis: "What am I missing for this new direction?"
-- Confidence: "Am I competitive in this new market?"
+- Positioning: "How do I frame this product for a different audience?"
+- Validation: "Is this relaunch worth the effort?"
+- Gap analysis: "What did I miss the first time?"
+- Confidence: "Am I competitive in this new segment?"
 
 ### Behaviors
 
-- Spend more time in onboarding (career direction is the key decision)
-- Engage deeply with Deep-Dive QA (step 6) — their answers bridge the gap between old and new careers
-- Value discovery recommendations highly (non-obvious pivots)
-- May generate fewer targeted resumes but spend more time customizing skills
+- Spend more time in onboarding (positioning is the key decision)
+- Engage deeply with Deep-Dive QA (step 6) — their answers bridge the old launch and the new one
+- Value opportunity recommendations highly (non-obvious channels and segments)
+- May generate fewer segment plans but spend more time curating scope
 
 ### Success
 
-- Market analysis reveals viable categories they hadn't considered
-- Competitiveness score shows they're more competitive than expected
-- Targeted resume successfully repositions their experience for the new direction
-- Mining Q&A surfaced transferable experience they forgot to highlight
+- Landscape analysis reveals segments they hadn't considered
+- Launch-readiness score shows they're more ready than expected
+- Segment plan successfully repositions the product for the new direction
+- Mining Q&A surfaced proof and traction they forgot to highlight
 
 ### Pain Points
 
-- "I don't know how to translate my experience to a new field"
-- "My resume screams [old field] — I need it to say [new field]"
-- "I feel like I'm starting over even though I have 10 years of experience"
-- "Am I qualified for this, or am I dreaming?"
+- "My first launch flopped and I don't know why"
+- "My positioning screams [old audience] — I need it to reach [new audience]"
+- "I feel like I'm starting from scratch even though the product is built"
+- "Is this relaunch realistic, or am I kidding myself?"
 
 ---
 
-## Cohort 3: Passive Lookers
+## Cohort 3: Explorers
 
 ### Who They Are
 
-Employed and not urgently searching, but curious about their market position. Low urgency. Exploratory mindset.
+Building something but not urgently launching, curious about what a launch would take. Low urgency. Exploratory mindset.
 
 ### Needs
 
-- Market intelligence: "What's out there for someone like me?"
-- Benchmarking: "Am I being paid fairly?"
-- Preparedness: "I want materials ready in case something comes up"
+- Landscape intelligence: "What's the launch landscape for something like this?"
+- Benchmarking: "What do channels actually cost?"
+- Preparedness: "I want a plan ready for when I'm done building"
 - Low commitment: "I don't want to spend hours on this"
 
 ### Behaviors
 
-- May complete onboarding + READY phase and stop
-- Engage with market analysis and competitiveness scoring more than resume generation
-- Less likely to use auto-apply
+- May complete onboarding + PLAN phase and stop
+- Engage with landscape analysis and readiness scoring more than plan generation
+- Less likely to use the launch run
 - May return weeks later to continue the wizard
 - Free tier is often sufficient for their needs
 
 ### Success
 
-- Got market intelligence in under 15 minutes
-- Understands their compensation position
-- Has a general resume ready if needed
-- Didn't feel pressured to buy rockets
+- Got landscape intelligence in under 15 minutes
+- Understands what their launch would cost and where their audience is
+- Has an overview plan ready if needed
+- Didn't feel pressured to buy credits
 
 ### Pain Points
 
-- "I haven't updated my resume in years"
-- "I have no idea what my market value is"
-- "I want to be ready to jump if the right opportunity appears"
-- "I don't want to commit to a full job search right now"
+- "I've been heads-down building and haven't thought about launch"
+- "I have no idea what channels cost or which ones matter"
+- "I want to be ready to launch the moment the product is done"
+- "I don't want to commit to a full launch plan right now"
 
 ---
 
-## Cohort 4: Specialists & Niche Roles
+## Cohort 4: Niche & Technical Products
 
 ### Who They Are
 
-Highly specialized professionals (engineers, data scientists, niche consultants) whose resumes need precise keyword matching and technical accuracy.
+Founders of highly specialized products (developer tools, technical B2B, niche verticals) whose launch needs precise audience targeting and credible technical messaging.
 
 ### Needs
 
-- Keyword precision: "Generic keywords won't work — I need exact tech stack matches"
-- Technical accuracy: "Don't dumb down my experience"
-- Category clarity: "Contract data engineering is NOT the same as full-time data engineering"
-- ATS optimization: "My resume gets filtered out before a human sees it"
+- Audience precision: "Generic channels won't work — I need exactly where my buyers are"
+- Message accuracy: "Don't dumb down what the product does"
+- Segment clarity: "Selling to platform teams is NOT the same as selling to individual developers"
+- Channel fit: "My audience ignores the channels everyone recommends"
 
 ### Behaviors
 
-- Spend significant time in Skills Curation (step 7) — toggling specific technical skills
-- Value the keyword frequency data from market analysis
-- Generate more targeted resume variants (different tech stacks = different variants)
-- Most likely to re-run market analysis with refined queries
+- Spend significant time in Scope Curation (step 7) — toggling specific positioning angles
+- Value the channel-fit and audience-language data from landscape analysis
+- Generate more segment plan variants (different buyer types = different variants)
+- Most likely to re-run landscape analysis with refined queries
 
 ### Success
 
-- Keywords match actual job listings, not generic industry terms
-- Each targeted resume emphasizes the right technical stack for that category
-- ATS-safe formatting passes automated screening
-- Skills they excluded don't appear in generated materials
+- Channels match where the audience actually is, not generic launch advice
+- Each segment plan emphasizes the right message for that buyer
+- Positioning stays credible and technically accurate
+- Angles they excluded don't appear in generated assets
 
 ### Pain Points
 
-- "AI resume tools make me sound like a generalist"
-- "They keep adding buzzwords I don't actually know"
-- "My resume should say 'Kubernetes' not 'container orchestration'"
-- "I need different versions for different tech stacks"
+- "AI launch tools make my product sound like everything else"
+- "They keep suggesting channels my buyers don't use"
+- "My positioning should say what the product does, not buzzwords"
+- "I need different messaging for different buyer types"
 
 ---
 
-## Cohort 5: Recent Graduates / Early Career
+## Cohort 5: Solo & First-Time Founders
 
 ### Who They Are
 
-0–3 years of experience. Limited resume content. May not know their market well.
+0–1 prior launches. Limited launch experience. May not know their market well.
 
 ### Needs
 
-- Content amplification: "I don't have much experience — help me make the most of what I have"
-- Market education: "What roles am I actually qualified for?"
-- Guidance: "What should I even be applying to?"
-- Confidence: "Do I have a chance?"
+- Guidance amplification: "I don't know much about launching — help me make the most of what I have"
+- Market education: "Which audiences am I actually a fit for?"
+- Direction: "What should I even be doing to launch?"
+- Confidence: "Do I have a real shot at this?"
 
 ### Behaviors
 
-- Shorter resumes mean faster parsing and simpler profiles
-- Discovery recommendations are highly valuable (they don't know what's out there)
-- Mining Q&A is crucial — surfaces projects, coursework, and skills they undervalue
-- Less likely to need many targeted variants (narrower focus)
+- Simpler idea briefs mean faster extraction and simpler profiles
+- Opportunity recommendations are highly valuable (they don't know what's out there)
+- Mining Q&A is crucial — surfaces proof, early traction, and angles they undervalue
+- Less likely to need many segment variants (narrower focus)
 - Most price-sensitive — free tier matters most to this cohort
 
 ### Success
 
-- Discovered job categories they didn't know existed
-- Mining Q&A surfaced internship projects and coursework worth highlighting
-- Resume positions them as a strong entry-level candidate
-- Competitiveness score gave them confidence to start applying
+- Discovered audience segments and channels they didn't know existed
+- Mining Q&A surfaced early traction and proof worth highlighting
+- Plan positions them as a credible launch despite being first-time
+- Launch-readiness score gave them confidence to start
 
 ### Pain Points
 
-- "I only have one internship and a few projects"
-- "Every job listing wants 3+ years of experience"
-- "I don't know what employers actually look for in new grads"
-- "My resume is half a page"
+- "I've never launched anything before"
+- "Every launch guide assumes I already have an audience"
+- "I don't know what actually works for a first launch"
+- "My launch plan is a blank page"
 
 ---
 
 ## Cross-Cohort Design Principles
 
 1. **The wizard must work for all cohorts.** No cohort-specific branching in the flow.
-2. **Speed scales with urgency.** Active searchers should be able to blast through. Passive lookers can stop after READY.
-3. **Free tier is meaningful.** Every cohort gets real value from 150 rockets. The gate is on volume, not core functionality.
-4. **No patronizing.** Specialists know their field. Don't over-explain. Don't suggest irrelevant keywords.
-5. **Mining Q&A is the equalizer.** It surfaces hidden strengths for career changers and early career. It refines positioning for specialists. It's optional for those who don't need it.
+2. **Speed scales with urgency.** First-time launchers should be able to blast through. Explorers can stop after PLAN.
+3. **Free tier is meaningful.** Every cohort gets real value from 150 credits. The gate is on volume, not core functionality.
+4. **No patronizing.** Niche founders know their space. Don't over-explain. Don't suggest irrelevant channels.
+5. **Mining Q&A is the equalizer.** It surfaces hidden proof for relaunchers and first-time founders. It refines positioning for niche products. It's optional for those who don't need it.

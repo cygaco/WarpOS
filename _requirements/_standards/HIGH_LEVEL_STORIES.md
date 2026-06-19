@@ -1,8 +1,8 @@
-# Jobzooka — High-Level Story Standards
+# AcmeLaunch — High-Level Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for Jobzooka.
+This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for AcmeLaunch.
 
 High-Level Stories establish **product intent, scope, and outcomes**. They describe _what success means_ without prescribing UI, interaction patterns, sequencing, or implementation details.
 
@@ -39,19 +39,19 @@ High-Level Stories must be **platform-agnostic**. They describe outcomes, not de
 
 ### Why
 
-Stories feed into one-shot code generation alongside PRD Feature Descriptions. The Feature Description specifies platform details (Chrome extension, mobile app, API). If stories also name platforms, they couple intent to a specific implementation — breaking portability and making full-codebase regeneration brittle.
+Stories feed into one-shot code generation alongside PRD Feature Descriptions. The Feature Description specifies platform details (Launch Console runner, mobile app, API). If stories also name platforms, they couple intent to a specific implementation — breaking portability and making full-codebase regeneration brittle.
 
 ### Rules
 
-- Name the **outcome**, not the **vehicle**: "automation agent" not "Chrome extension", "the app" not "the browser"
-- Platform-specific features (e.g., the Chrome extension PRD) may reference their platform in the Feature Description, but even their HL stories should describe the outcome generically where possible
+- Name the **outcome**, not the **vehicle**: "launch runner" not "Launch Console app", "the app" not "the browser"
+- Platform-specific features (e.g., the Launch Console PRD) may reference their platform in the Feature Description, but even their HL stories should describe the outcome generically where possible
 - If a story only makes sense on one platform, that's a sign it might be a Granular Story instead
 
 ### Disallowed Terms in HL Stories
 
 | Instead of                      | Write                                                        |
 | ------------------------------- | ------------------------------------------------------------ |
-| Chrome extension                | automation agent                                             |
+| Launch Console app              | launch runner                                                |
 | browser                         | app / page                                                   |
 | click / tap                     | (omit — describe the outcome, not the gesture)               |
 | button / dropdown / modal / tab | (omit — UI elements belong in Granular Stories)              |
@@ -60,7 +60,7 @@ Stories feed into one-shot code generation alongside PRD Feature Descriptions. T
 
 ### Exception
 
-Feature PRDs whose entire scope IS a platform (e.g., the Chrome extension PRD) keep platform language in their **Feature Description** and **Granular Stories**. Their HL stories still describe the user outcome generically.
+Feature PRDs whose entire scope IS a platform (e.g., the Launch Console PRD) keep platform language in their **Feature Description** and **Granular Stories**. Their HL stories still describe the user outcome generically.
 
 ---
 
@@ -95,7 +95,7 @@ High-Level Stories must use **normalized, generic roles** only.
 
 ### Disallowed
 
-- UI- or surface-specific roles (e.g., "resume uploader", "rocket purchaser")
+- UI- or surface-specific roles (e.g., "idea-brief submitter", "credit purchaser")
 - Persona-style roles encoding context or motivation
 - Roles that imply implementation detail
 

@@ -26,8 +26,8 @@ vercel env pull .env.local      # syncs Production/Preview env vars to local
 
 | Scope | Branch | URL pattern | Purpose |
 |---|---|---|---|
-| Production | `main` | jobzooka.app | Live users |
-| Preview | every other branch | `jobzooka-<hash>-vercel.app` | Auto per push |
+| Production | `main` | acmelaunch.app | Live users |
+| Preview | every other branch | `acmelaunch-<hash>-vercel.app` | Auto per push |
 | Development | local | localhost:3000 | `npm run dev` |
 
 ## Env vars
@@ -36,7 +36,7 @@ Set per scope in Vercel dashboard or via `vercel env add`:
 
 | Var | Production | Preview | Dev |
 |---|---|---|---|
-| `BACKEND_URL` | `https://api.jobzooka.app` | per-PR Fly review app (planned) | `http://localhost:4000` |
+| `BACKEND_URL` | `https://api.acmelaunch.app` | per-PR Fly review app (planned) | `http://localhost:4000` |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | live key | test key | test key |
 | `UPSTASH_REDIS_REST_URL` | prod Upstash | dev Upstash | dev Upstash |
 | `UPSTASH_REDIS_REST_TOKEN` | prod token | dev token | dev token |
@@ -79,9 +79,9 @@ CSP `connect-src` allowlists `https://va.vercel-scripts.com` and `https://vitals
 ## Per-PR review app integration (planned, user-data plan Phase 2)
 
 Workflow `.github/workflows/fly-review.yml` will:
-1. Spawn a Fly review app per PR (`jobzooka-backend-pr-<N>`)
+1. Spawn a Fly review app per PR (`acmelaunch-backend-pr-<N>`)
 2. Create a Neon Postgres branch per PR
-3. Set `BACKEND_URL=https://jobzooka-backend-pr-<N>.fly.dev` on the Vercel preview env via `vercel env add`
+3. Set `BACKEND_URL=https://acmelaunch-backend-pr-<N>.fly.dev` on the Vercel preview env via `vercel env add`
 4. Tear down all three on PR close
 
 This gives end-to-end testable previews — Vercel preview frontend + Fly preview backend + Neon preview DB + Stripe test mode.

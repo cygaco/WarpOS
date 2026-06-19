@@ -6,6 +6,8 @@ Sources of truth:
 - Fixtures: `_requirements/_shared/fixtures/files/`
 - Live status: `npm run test:stale-check`
 
+The upload helper exposes the idea-brief fixtures as `IDEA_BRIEF_FIXTURES`.
+
 ✓ = file exists and tests pass · ⚠ = file exists, tests pending or partial · ✗ = file not yet written
 
 ## P0 (production-critical surfaces)
@@ -14,25 +16,25 @@ Sources of truth:
 |---|---|---|---|
 | onboarding | `onboarding/tests/smoke.spec.ts` | ✓ | App loads, intro renders, health check |
 | onboarding | `onboarding/tests/step-walk.spec.ts` | ✓ | Dummy-plug walks all 10 steps + dark theme + persistence |
-| onboarding | `onboarding/tests/step1-resume.spec.ts` | ✓ | Upload PDF/DOCX/corrupt/empty/PNG/drop-zone — 7 tests |
-| onboarding | `onboarding/tests/step2-preferences.spec.ts` | ✗ | Location, employment type, comp filters |
-| onboarding | `onboarding/tests/step3-profile.spec.ts` | ✗ | Parsed-resume editing |
-| onboarding | `onboarding/tests/step4-search.spec.ts` | ✗ | StepCollect — job listing collection |
-| onboarding | `onboarding/tests/step5-analysis.spec.ts` | ✗ | Step6Analysis — market analysis |
+| onboarding | `onboarding/tests/step1-idea-brief.spec.ts` | ✓ | Upload PDF/DOCX/corrupt/empty/PNG/drop-zone — 7 tests |
+| onboarding | `onboarding/tests/step2-constraints.spec.ts` | ✗ | Geography, launch type, budget constraints |
+| onboarding | `onboarding/tests/step3-profile.spec.ts` | ✗ | Parsed idea-brief editing |
+| onboarding | `onboarding/tests/step4-research.spec.ts` | ✗ | StepCollect — launch-signal collection |
+| onboarding | `onboarding/tests/step5-analysis.spec.ts` | ✗ | Step6Analysis — landscape analysis |
 | onboarding | `onboarding/tests/step6-deep-dive.spec.ts` | ✗ | DeepDiveQA |
-| onboarding | `onboarding/tests/step7-skills.spec.ts` | ✗ | Step8Skills — exclusions |
-| onboarding | `onboarding/tests/step8-resumes.spec.ts` | ✗ | Step10Resumes — generation |
-| onboarding | `onboarding/tests/step9-linkedin.spec.ts` | ✗ | Step11LinkedIn |
-| onboarding | `onboarding/tests/step10-apply.spec.ts` | ✗ | Step13Apply — extension setup |
+| onboarding | `onboarding/tests/step7-scope.spec.ts` | ✗ | Step8Scope — milestone/task exclusions |
+| onboarding | `onboarding/tests/step8-assets.spec.ts` | ✗ | Step10Assets — asset-pack generation |
+| onboarding | `onboarding/tests/step9-channels.spec.ts` | ✗ | Step11Channels |
+| onboarding | `onboarding/tests/step10-launch.spec.ts` | ✗ | Step13Launch — Launch Console setup |
 | backend | `backend/tests/gate-dodger.spec.ts` | ✓ | API security; 13 tests including BUG-009 regression |
 | auth | `auth/tests/login.spec.ts` | ✓ | Login API + intro CTA — 5 tests including non-leak |
-| auth | `auth/tests/register.spec.ts` | ✗ | Email/password registration + initial 150 rockets |
-| auth | `auth/tests/oauth.spec.ts` | ✗ | Google + LinkedIn OAuth round-trip |
+| auth | `auth/tests/register.spec.ts` | ✗ | Email/password registration + initial 150 credits |
+| auth | `auth/tests/oauth.spec.ts` | ✗ | Google + GitHub OAuth round-trip |
 | auth | `auth/tests/logout.spec.ts` | ✗ | Cookie clear + Redis session delete |
 | auth | `auth/tests/session-persist.spec.ts` | ✗ | Cookie survives reload |
-| rockets-economy | `rockets-economy/tests/balance-bar.spec.ts` | ✓ | Bar renders + API auth surface — 5 tests |
-| rockets-economy | `rockets-economy/tests/store-modal.spec.ts` | ✗ | Pricing modal opens, tier selection |
-| rockets-economy | `rockets-economy/tests/grant-debit.spec.ts` | ✗ | Granting on signup, debit on Claude call |
+| credits-economy | `credits-economy/tests/balance-bar.spec.ts` | ✓ | Bar renders + API auth surface — 5 tests |
+| credits-economy | `credits-economy/tests/store-modal.spec.ts` | ✗ | Pricing modal opens, tier selection |
+| credits-economy | `credits-economy/tests/grant-debit.spec.ts` | ✗ | Granting on signup, debit on Claude call |
 | stripe | `stripe/tests/checkout.spec.ts` | ✗ | Tier-redirect + success callback (Redis-gated) |
 | shell | `shell/tests/nav.spec.ts` | ✗ | Header nav + dashboard mount |
 | shell | `shell/tests/theme-toggle.spec.ts` | ✗ | Dark/light theme switch + no flash |
@@ -41,30 +43,30 @@ Sources of truth:
 
 | Feature | Spec file | Status |
 |---|---|---|
-| market-research | `market-research/tests/job-collection.spec.ts` | ✗ |
-| market-research | `market-research/tests/listings-display.spec.ts` | ✗ |
-| market-research | `market-research/tests/filters.spec.ts` | ✗ |
+| launch-research | `launch-research/tests/signal-collection.spec.ts` | ✗ |
+| launch-research | `launch-research/tests/results-display.spec.ts` | ✗ |
+| launch-research | `launch-research/tests/filters.spec.ts` | ✗ |
 | deep-dive-qa | `deep-dive-qa/tests/qa-mining.spec.ts` | ✗ |
-| skills-curation | `skills-curation/tests/exclusions.spec.ts` | ✗ |
-| skills-curation | `skills-curation/tests/lock-propagation.spec.ts` | ✗ |
-| competitiveness | `competitiveness/tests/score-display.spec.ts` | ✗ |
-| competitiveness | `competitiveness/tests/glaze-toast.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/master-resume.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/targeted-resume.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/download.spec.ts` | ✗ |
-| linkedin | `linkedin/tests/content-package.spec.ts` | ✗ |
-| linkedin | `linkedin/tests/copy-buttons.spec.ts` | ✗ |
+| scope-curation | `scope-curation/tests/exclusions.spec.ts` | ✗ |
+| scope-curation | `scope-curation/tests/lock-propagation.spec.ts` | ✗ |
+| readiness | `readiness/tests/score-display.spec.ts` | ✗ |
+| readiness | `readiness/tests/glaze-toast.spec.ts` | ✗ |
+| asset-generation | `asset-generation/tests/master-narrative.spec.ts` | ✗ |
+| asset-generation | `asset-generation/tests/segment-pack.spec.ts` | ✗ |
+| asset-generation | `asset-generation/tests/download.spec.ts` | ✗ |
+| channels | `channels/tests/asset-pack.spec.ts` | ✗ |
+| channels | `channels/tests/copy-buttons.spec.ts` | ✗ |
 | profile | `profile/tests/edit-fields.spec.ts` | ✗ |
 
-## P2 (extension + debug surfaces)
+## P2 (Launch Console + debug surfaces)
 
 | Feature | Spec file | Status |
 |---|---|---|
-| auto-apply | `auto-apply/tests/extension-handshake.spec.ts` | ✗ |
-| auto-apply | `auto-apply/tests/queue-render.spec.ts` | ✗ |
-| extension | `extension/tests/manifest-load.spec.ts` | ✗ |
-| extension | `extension/tests/popup-render.spec.ts` | ✗ |
-| deus-mechanicus | `deus-mechanicus/tests/dm-modules.spec.ts` | ✗ |
+| launch-run | `launch-run/tests/console-handshake.spec.ts` | ✗ |
+| launch-run | `launch-run/tests/queue-render.spec.ts` | ✗ |
+| launch-console | `launch-console/tests/session-load.spec.ts` | ✗ |
+| launch-console | `launch-console/tests/panel-render.spec.ts` | ✗ |
+| dev-console | `dev-console/tests/dm-modules.spec.ts` | ✗ |
 
 ## Coverage at Phase D close
 

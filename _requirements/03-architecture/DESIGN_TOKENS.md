@@ -1,6 +1,6 @@
-# Jobzooka — Design Tokens (Regen Spec)
+# AcmeLaunch — Design Tokens (Regen Spec)
 
-All visual design tokens are CSS custom properties defined in `src/app/globals.css`. The extension popup has a matching subset in `extension/popup.css`.
+All visual design tokens are CSS custom properties defined in `src/app/globals.css`. The AcmeLaunch Runner popup has a matching subset in `runner/popup.css`.
 
 ---
 
@@ -13,7 +13,7 @@ All visual design tokens are CSS custom properties defined in `src/app/globals.c
 > 3. Animation names and durations in the Animations table are canonical — do not invent new `@keyframes` unless no existing animation fits, and flag it in your output if you do
 > 4. All color comes from CSS custom properties, not Tailwind utility classes — Tailwind is imported for base reset only (see Tailwind Integration section)
 > 5. When a component needs a visual token that does not exist in this file, flag it in your builder output — do not create ad-hoc magic numbers or inline values
-> 6. Extension popup tokens (in `extension/popup.css`) are a separate subset — use those when building extension UI, not the app tokens directly
+> 6. Runner popup tokens (in `runner/popup.css`) are a separate subset — use those when building AcmeLaunch Runner UI, not the app tokens directly
 > 7. There is one theme (dark, warm-tinted corporate). There is no light mode or theme toggle — do not add conditional theming logic
 
 ---
@@ -71,16 +71,16 @@ All visual design tokens are CSS custom properties defined in `src/app/globals.c
 | `--info-light`     | `rgba(212, 160, 84, 0.08)` | Info background tint              |
 | `--info-border`    | `rgba(212, 160, 84, 0.25)` | Info border tint                  |
 
-### Resume Tag Colors
+### Plan Tag Colors
 
 | Token               | Value                       | Usage                          |
 | ------------------- | --------------------------- | ------------------------------ |
-| `--tag-full`        | `#d4a054`                   | Full/master resume tag (gold)  |
-| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Full resume tag background     |
-| `--tag-general`     | `#4b8bf5`                   | General resume tag (blue)      |
-| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | General resume tag background  |
-| `--tag-targeted`    | `#b06be8`                   | Targeted resume tag (purple)   |
-| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Targeted resume tag background |
+| `--tag-full`        | `#d4a054`                   | Master plan tag (gold)         |
+| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Master plan tag background     |
+| `--tag-general`     | `#4b8bf5`                   | Overview plan tag (blue)       |
+| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | Overview plan tag background   |
+| `--tag-targeted`    | `#b06be8`                   | Segment plan tag (purple)      |
+| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Segment plan tag background    |
 
 ### Special
 
@@ -175,7 +175,7 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 
 ### shadcn/ui Aliases
 
-`globals.css` also maps shadcn-style semantic tokens to Jobzooka tokens: `--background`, `--foreground`, `--card`, `--popover`, `--muted`, `--destructive`, `--input`, and `--ring`, plus the corresponding `--color-*` Tailwind theme aliases. When using shadcn/ui primitives, prefer these aliases through component variants instead of introducing parallel color systems.
+`globals.css` also maps shadcn-style semantic tokens to AcmeLaunch tokens: `--background`, `--foreground`, `--card`, `--popover`, `--muted`, `--destructive`, `--input`, and `--ring`, plus the corresponding `--color-*` Tailwind theme aliases. When using shadcn/ui primitives, prefer these aliases through component variants instead of introducing parallel color systems.
 
 ---
 
@@ -190,10 +190,10 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 | `skeleton-pulse`       | component-controlled | Loading skeleton shimmer            |
 | `shimmer`              | component-controlled | Shimmer loading effect              |
 | `card-fill`            | component-controlled | Progress card fill animation        |
-| `score-pop`            | component-controlled | Competitiveness meter score bounce  |
+| `score-pop`            | component-controlled | Readiness meter score bounce        |
 | `delta-fade`           | component-controlled | Score delta fade-out                |
-| `meter-glow-pulse`     | component-controlled | Competitiveness meter glow          |
-| `rocket-spin`          | component-controlled | Rocket icon spin                    |
+| `meter-glow-pulse`     | component-controlled | Readiness meter glow                |
+| `credit-spin`          | component-controlled | Credit icon spin                    |
 | `glaze-slide-in`       | component-controlled | Glaze notification slide in         |
 | `glaze-fade-out`       | component-controlled | Glaze notification fade out         |
 | `pulse-glow`           | component-controlled | Pulsing glow effect (active states) |
@@ -201,9 +201,9 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 
 ---
 
-## Extension Popup Tokens
+## Runner Popup Tokens
 
-`extension/popup.css` defines a subset matching the brand:
+`runner/popup.css` defines a subset matching the brand:
 
 | Token           | Value                      | Notes                             |
 | --------------- | -------------------------- | --------------------------------- |
@@ -211,14 +211,14 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 | `--bg-surface`  | `#1a1010`                  | Maps to app's `--surface`         |
 | `--bg-elevated` | `#241818`                  | Maps to app's `--surface-alt`     |
 | `--primary`     | `#FF5A17`                  | Same as app                       |
-| `--primary-dim` | `rgba(255, 90, 23, 0.15)`  | Extension-only hover tint         |
+| `--primary-dim` | `rgba(255, 90, 23, 0.15)`  | Runner-only hover tint            |
 | `--success`     | `#ACD229`                  | Same as app                       |
-| `--success-dim` | `rgba(172, 210, 41, 0.15)` | Extension-only success tint       |
+| `--success-dim` | `rgba(172, 210, 41, 0.15)` | Runner-only success tint          |
 | `--danger`      | `#ff4444`                  | Slightly different from `--error` |
-| `--danger-dim`  | `rgba(255, 68, 68, 0.15)`  | Extension-only danger tint        |
+| `--danger-dim`  | `rgba(255, 68, 68, 0.15)`  | Runner-only danger tint           |
 | `--text`        | `#f0eded`                  | Same as app                       |
 | `--text-muted`  | `#999`                     | Slightly different from app       |
-| `--text-dim`    | `#666`                     | Extension-only tertiary text      |
+| `--text-dim`    | `#666`                     | Runner-only tertiary text         |
 | `--border`      | `#2a1e1e`                  | Slightly different from app       |
 | `--radius`      | `8px`                      | Larger than app default (4px)     |
 

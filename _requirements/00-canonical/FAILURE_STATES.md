@@ -1,4 +1,4 @@
-# Jobzooka — Failure States
+# AcmeLaunch — Failure States
 
 Unacceptable states organized by domain. If any of these states occur, it is a bug that must be fixed.
 
@@ -9,9 +9,9 @@ Unacceptable states organized by domain. If any of these states occur, it is a b
 | Failure State                                | Why It's Unacceptable                                              |
 | -------------------------------------------- | ------------------------------------------------------------------ |
 | Session data lost without user action        | User loses all progress. Trust destroyed.                          |
-| Downstream data persists after upstream edit | Stale resumes, wrong keywords, misleading analysis.                |
-| Resume contains fabricated experience        | Legal liability, ethical violation, user reputation damage.        |
-| Resume contains excluded skills              | User explicitly removed them. Violates user control.               |
+| Downstream data persists after upstream edit | Stale plans, wrong positioning, misleading analysis.               |
+| Plan contains fabricated traction            | Legal liability, ethical violation, user reputation damage.        |
+| Plan contains excluded angles                | User explicitly removed them. Violates user control.               |
 | Encrypted data decrypted by wrong device     | Security breach. (Should not be possible with device fingerprint.) |
 | Session loads with corrupted/partial data    | App in inconsistent state. Undefined behavior.                     |
 
@@ -23,48 +23,48 @@ Unacceptable states organized by domain. If any of these states occur, it is a b
 | ------------------------------------------------------------ | ----------------------------------------------------------------- |
 | Claude API key exposed to client                             | Security breach. Key compromise.                                  |
 | API call fails silently (no error shown)                     | User stuck in loading state forever.                              |
-| BD scraping hangs with no timeout                            | User waits indefinitely. No recourse.                             |
-| Market analysis uses synthetic/fake data in production       | Entire product value proposition is real data. Fake data = fraud. |
-| MARKET_PREP and MARKET both fail with no fallback            | User cannot proceed past step 5. Dead end.                        |
+| Landscape research hangs with no timeout                     | User waits indefinitely. No recourse.                             |
+| Landscape analysis uses synthetic/fake data in production    | Entire product value proposition is real data. Fake data = fraud. |
+| LANDSCAPE_PREP and LANDSCAPE both fail with no fallback       | User cannot proceed past step 5. Dead end.                        |
 | Prompt injection succeeds (external data alters AI behavior) | Security vulnerability. Could produce harmful output.             |
 | Rate limit hit with no feedback                              | User retries, gets more errors. Frustrating.                      |
 
 ---
 
-## Rocket Economy
+## Credit Economy
 
 | Failure State                                 | Why It's Unacceptable                       |
 | --------------------------------------------- | ------------------------------------------- |
-| Rockets deducted but operation fails          | User pays for nothing. Trust destroyed.     |
+| Credits deducted but operation fails          | User pays for nothing. Trust destroyed.     |
 | Billable operation runs without auth check    | Revenue leak. Free access to paid features. |
-| Rocket balance goes negative                  | Accounting inconsistency.                   |
+| Credit balance goes negative                  | Accounting inconsistency.                   |
 | Purchase completes but balance doesn't update | User confused, may buy again.               |
-| Free first market analysis charges rockets    | Breaks free tier promise.                   |
+| Free first landscape analysis charges credits | Breaks free tier promise.                   |
 | Bulk pricing not applied when applicable      | User overcharged.                           |
 
 ---
 
-## Resume Generation
+## Plan Generation
 
 | Failure State                                      | Why It's Unacceptable                    |
 | -------------------------------------------------- | ---------------------------------------- |
-| Targeted resume generated without master           | No base to apply diff to. Broken output. |
-| Resume diff adds content not in master             | Fabrication risk.                        |
-| DOCX download produces corrupted file              | User can't use the output they paid for. |
-| Non-ASCII characters in ATS-optimized resume       | May break ATS parsing.                   |
-| Education shown when educationVisibility is "hide" | User privacy / preference violation.     |
+| Segment plan generated without master              | No base to apply diff to. Broken output. |
+| Plan diff adds content not in master               | Fabrication risk.                        |
+| Plan download produces corrupted file              | User can't use the output they paid for. |
+| Non-ASCII characters in export-optimized plan      | May break downstream import.             |
+| Proof shown when proofVisibility is "hide"         | User privacy / preference violation.     |
 
 ---
 
-## Auto-Apply
+## Launch Run
 
 | Failure State                                    | Why It's Unacceptable                              |
 | ------------------------------------------------ | -------------------------------------------------- |
-| Application submitted without user review        | Compliance violation. Core product promise broken. |
-| Wrong resume variant selected for category       | Application quality degraded.                      |
-| Personal info (email, phone) entered incorrectly | Broken application. User misses responses.         |
-| Extension bypasses CAPTCHA checks                | Violates bot detection systems.                    |
-| More than 40 applications in one session         | Rate abuse. Platform banning risk.                 |
+| Launch action published without user review      | Compliance violation. Core product promise broken. |
+| Wrong segment plan selected for audience         | Launch quality degraded.                           |
+| Contact info (email, links) entered incorrectly  | Broken launch action. User misses responses.       |
+| Runner bypasses provider safety checks           | Violates platform terms.                           |
+| More than 40 launch actions in one session       | Rate abuse. Platform banning risk.                 |
 
 ---
 
@@ -87,7 +87,7 @@ Unacceptable states organized by domain. If any of these states occur, it is a b
 | Loading state shown indefinitely (spinner of death)                | User stuck. No escape hatch.                               |
 | Error message gives no recovery action                             | User doesn't know what to do.                              |
 | Backward navigation clears data without confirmation               | Violates user control. Data loss.                          |
-| Competitiveness score decreases without explanation                | Confusing. User did something "right" but score went down. |
+| Launch-readiness score decreases without explanation               | Confusing. User did something "right" but score went down. |
 | Celebration triggers for trivial changes                           | Erodes celebration meaning.                                |
 | Modal cannot be dismissed (no close, no escape, no backdrop click) | User trapped.                                              |
 
@@ -104,12 +104,12 @@ Unacceptable states organized by domain. If any of these states occur, it is a b
 
 ---
 
-## Dev Tools (Deus Mechanicus)
+## Dev Tools (Dev Console)
 
 | Failure State                                               | Why It's Unacceptable                         |
 | ----------------------------------------------------------- | --------------------------------------------- |
-| DeusMechanicus accessible without env gate                  | Production users see dev tools.               |
-| DeusMechanicus removed from context provider position       | All child `useDM()` calls break. App crashes. |
+| DevConsole accessible without env gate                      | Production users see dev tools.               |
+| DevConsole removed from context provider position           | All child `useDevConsole()` calls break. App crashes. |
 | Dummy Plug data contaminates production session             | Real user data overwritten with test data.    |
 | Test API endpoint accessible in production without env gate | Information disclosure.                       |
 

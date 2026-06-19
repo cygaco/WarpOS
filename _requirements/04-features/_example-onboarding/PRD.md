@@ -24,9 +24,9 @@ Onboarding is the foundation of the entire product. Every downstream feature dep
 
 ## 4. JTBD (Jobs To Be Done)
 
-> When I start using this product for the first time, I want to quickly provide my information and set my preferences, so I can get personalized results without extensive manual setup.
+> When I start using this product for the first time, I want to quickly provide my idea brief and set my launch constraints, so I can get a personalized launch plan without extensive manual setup.
 
-> When I see my generated profile, I want to verify it understood me correctly, so I can trust the system going forward.
+> When I see my generated FounderProfile, I want to verify it understood my product correctly, so I can trust the system going forward.
 
 ## 5. Emotional Framing
 
@@ -52,38 +52,38 @@ Onboarding is the foundation of the entire product. Every downstream feature dep
 
 <!-- Write this as if building from scratch. No "before/after" language. This is the complete target state. -->
 
-### Step 1: Data Import
+### Step 1: Idea-Brief Import
 
-The user provides their input data via file upload or text paste. Accepted formats: PDF, DOCX, TXT, MD. Max file size: 10MB. The system parses the input using AI and extracts structured data.
+The founder provides their idea brief via file upload or text paste. Accepted formats: PDF, DOCX, TXT, MD. Max file size: 10MB. The system parses the input using AI and extracts a structured idea brief.
 
 **Parsing flow:**
-1. User uploads file or pastes text
+1. Founder uploads file or pastes text
 2. System sends raw text to AI for structured extraction
-3. AI returns typed data object
-4. System displays parsed preview for user review
-5. User confirms or edits the extracted data
+3. AI returns a typed IdeaBrief object
+4. System displays parsed preview for founder review
+5. Founder confirms or edits the extracted idea brief
 
 **Error handling:** If parsing fails, show a clear error with the option to retry or paste text manually. Never show a blank screen.
 
-### Step 2: Preferences
+### Step 2: Launch Constraints
 
-The user sets their preferences through a multi-section form. Each section captures a different dimension of what the user wants.
+The founder sets their launch constraints through a multi-section form. Each section captures a different dimension of how the founder wants to launch.
 
 **Sections:**
-- Direction (what they're looking for)
-- Type (format/category preferences)
-- Constraints (hard requirements)
+- Direction (launch goal — first launch, relaunch, beta, waitlist, paid offer)
+- Audience & Channels (where the launch should reach)
+- Constraints (hard requirements — timeline, budget, geography, risk limits)
 - Quick Check (validation questions)
 
-All preferences persist to encrypted session storage. Each section auto-saves on completion.
+All constraints persist to encrypted session storage. Each section auto-saves on completion.
 
-### Step 3: Profile Generation
+### Step 3: FounderProfile Generation
 
-The system generates a comprehensive profile from the imported data + preferences. This is the AI's understanding of the user — displayed for review and confirmation.
+The system generates a comprehensive FounderProfile from the imported idea brief + launch constraints. This is the AI's understanding of the founder and their product — displayed for review and confirmation.
 
-**Profile includes:** Core identity, domain expertise, key strengths, areas for growth, and recommended focus areas.
+**FounderProfile includes:** Core product identity, target audience, key strengths, launch risks to address, and recommended focus areas.
 
-The user reviews the profile and can regenerate if unsatisfied (costs system resources — track usage).
+The founder reviews the FounderProfile and can regenerate if unsatisfied (costs system resources — track usage).
 
 ## 9. Dependencies / Blockers
 

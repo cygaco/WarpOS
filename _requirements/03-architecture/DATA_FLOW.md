@@ -1,6 +1,6 @@
-# Jobzooka — Data Flow & State Management
+# AcmeLaunch — Data Flow & State Management
 
-> **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Synchronous same-origin `/api/*` flows have moved to the dedicated backend at `${API_BASE_URL}/*`. Long-running operations (scrape, resume chain) use the **ticket model** — the client posts an enqueue request, receives a `ticketId`, and polls `GET /tickets/{id}` for progress/result. Rocket ledger is **Postgres-authoritative**; Redis stream is ops-UI cache only.
+> **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Synchronous same-origin `/api/*` flows have moved to the dedicated backend at `${API_BASE_URL}/*`. Long-running operations (launch research, asset-pack build) use the **ticket model** — the client posts an enqueue request, receives a `ticketId`, and polls `GET /tickets/{id}` for progress/result. Credit ledger is **Postgres-authoritative**; Redis stream is ops-UI cache only.
 
 > **Scope:** Session state structure, data flow between steps, persistence layers. For pipeline stages and error handling, see `PIPELINES.md`. For data contracts between features, see `DATA-CONTRACTS.md`.
 
@@ -10,27 +10,26 @@
 
 ## Central State: SessionData
 
-All user data across all 10 steps lives in a single `SessionData` object. This is the source of truth for the wizard.
+All founder data across all 10 steps lives in a single `SessionData` object. This is the source of truth for the wizard.
 
 ### Key Properties
 
 | Category         | Fields                                                         | Set By Step |
 | ---------------- | -------------------------------------------------------------- | ----------- |
 | **Navigation**   | currentStep, maxStep, schemaVersion                            | System      |
-| **Resume**       | resumeRaw, resumeStructured, personal, education               | 1           |
-| **Context**      | context (career direction, employment status, etc.)            | 1–2         |
-| **Preferences**  | preferences (comp, location, employment types, deal breakers)  | 2           |
-| **Demographics** | demographics (work auth, education, languages, etc.)           | 1           |
-| **Profile**      | profile (discipline, seniority, skills, gaps, differentiators) | 3           |
-| **Search**       | generatedQueries, marketSource, marketRaw, queryStats          | 4           |
-| **Analysis**     | marketPrepReport, marketAnalysis                               | 5           |
-| **Q&A**          | miningQuestions, miningResults, miningChatMsgs                 | 6           |
-| **Categories**   | jobTypes, rankedCategories                                     | 5–6         |
-| **Skills**       | exclusions                                                     | 7           |
-| **Resumes**      | masterResume, generalResume, targetedResumes                   | 8           |
-| **LinkedIn**     | linkedin, formAnswers                                          | 9           |
-| **Apply**        | applyData (heuristics, chromePrompt, manualGuide)              | 10          |
-| **Tracking**     | uploadedResumes                                                | 8           |
+| **IdeaBrief**    | briefRaw, briefStructured, founder, background                 | 1           |
+| **Context**      | context (launch goal, launch stage, etc.)                      | 1–2         |
+| **Constraints**  | constraints (budget, timeline, channels, geography, deal breakers) | 2      |
+| **FounderProfile** | founderProfile (positioning fit, readiness, audiences served, gaps, differentiators) | 1, 3 |
+| **Research**     | generatedQueries, researchSource, researchResults, queryStats | 4           |
+| **Landscape**    | landscapePrepReport, landscapeAnalysis                         | 5           |
+| **Q&A**          | deepDiveQuestions, deepDiveResults, deepDiveChatMsgs           | 6           |
+| **Segments**     | audienceSegments, rankedSegments                               | 5–6         |
+| **Scope**        | exclusions                                                     | 7           |
+| **AssetPacks**   | masterPlan, overviewPlan, segmentPlans                         | 8           |
+| **Channels**     | launchChannels, channelAnswers                                 | 9           |
+| **LaunchRun**    | runData (launch rules, consolePrompt, manualGuide)             | 10          |
+| **Tracking**     | generatedAssetPacks                                            | 8           |
 
 ---
 
@@ -38,7 +37,7 @@ All user data across all 10 steps lives in a single `SessionData` object. This i
 
 ### No State Library
 
-Jobzooka uses React's built-in `useState` in the root `page.tsx` component. State is passed down via props (prop-drilling pattern). There is no Redux, Zustand, or Context API for wizard state.
+AcmeLaunch uses React's built-in `useState` in the root `page.tsx` component. State is passed down via props (prop-drilling pattern). There is no Redux, Zustand, or Context API for wizard state.
 
 ### State Flow
 
@@ -47,13 +46,13 @@ page.tsx (owns SessionData)
   │
   ├─ passes session + callbacks to page composites
   │   ├─ OnboardingPage receives: session, complete(), go()
-  │   ├─ AimPage receives: session, complete(), go()
-  │   ├─ ReadyPage receives: session, complete(), go()
-  │   └─ Step13Apply receives: session, complete(), go()
+  │   ├─ PlanPage receives: session, complete(), go()
+  │   ├─ PrepPage receives: session, complete(), go()
+  │   └─ Step13Run receives: session, complete(), go()
   │
   └─ page composites pass relevant slices to step components
-      └─ Step10Resumes receives: session.profile, session.marketAnalysis,
-         session.exclusions, session.masterResume, etc.
+      └─ Step10Plans receives: session.founderProfile, session.landscapeAnalysis,
+         session.exclusions, session.masterPlan, etc.
 ```
 
 ### State Updates
@@ -98,181 +97,181 @@ See `PERSISTENCE.md` for encryption details.
 ### Step 1 → 3: Onboarding
 
 ```
-Raw resume text/file
+Raw idea-brief text/file
   → POST ${API_BASE_URL}/claude (PARSE prompt) — anonymous endpoint
      ↪ First call per browser triggers Cloudflare Turnstile (invisible; <100ms)
-  → ResumeStructured (personal, roles, education, skills)
-  → User edits personal info, education, demographics
+  → BriefStructured (founder, product, audience hints, background)
+  → User edits founder info, background, constraints
   → POST ${API_BASE_URL}/claude (PROFILE prompt) — anonymous endpoint, Turnstile applies
-  → Profile (discipline, seniority, hardSkills, gaps, differentiators)
+  → FounderProfile (positioning fit, readiness, audiences served, gaps, differentiators)
   → User reviews and confirms
 ```
 
-### Step 4: Search (ticket-based — v3)
+### Step 4: Research (ticket-based — v3)
 
 ```
-Profile + Preferences
+FounderProfile + Constraints
   → POST ${API_BASE_URL}/claude (QUERY_GEN prompt) — synchronous
-  → generatedQueries[] (4–6 LinkedIn search strings)
-  → POST ${API_BASE_URL}/jobs/scrape
+  → generatedQueries[] (4–6 launch-landscape research strings)
+  → POST ${API_BASE_URL}/research/run
      Headers: X-Idempotency-Key (UUID, generated by client; 5min dedup window)
-     Body: { queries, location, employmentTypes?, remote? }
+     Body: { queries, geography, channels?, sourceTypes? }
   → { ticketId, status: "queued" }  — ticket is bound to userId at creation
 
   ─ (backend side: atomic transactional enqueue)
   ─   BEGIN;
-  ─     INSERT INTO rockets_ledger (MARKET_PREP cost, ticket_id);
-  ─     SELECT graphile_worker.add_job('scrape.trigger', {ticketId});
+  ─     INSERT INTO credits_ledger (LANDSCAPE_PREP cost, ticket_id);
+  ─     SELECT graphile_worker.add_job('research.run', {ticketId});
   ─   COMMIT;
   ─   (if Postgres rolls back, ledger + job both absent — no orphan)
 
   → Client polls GET ${API_BASE_URL}/tickets/{ticketId} every 5s
      (ownership: JWT.sub must match ticket.ownerUserId else 403)
-  → Progress updates: stage=BD_TRIGGER → BD_POLL → BD_RESULTS
+  → Progress updates: stage=RESEARCH_DISPATCH → RESEARCH_POLL → RESEARCH_RESULTS
      step/total reflect worker progress
-  → Final: { status: "done", result: { jobs, queryStats, warnings } }
+  → Final: { status: "done", result: { results, queryStats, warnings } }
      OR if >256KB: { status: "done", result: { signedUrl, expiresAt } }
-  → marketRaw (job listings JSON)
+  → researchResults (LaunchResearchResult[] JSON)
 ```
 
 ### Step 5: Analyze (chain-based — v3)
 
 ```
-marketRaw + Profile + Preferences
-  → preprocessMarketData() — normalize, truncate to 30K chars (client-side)
-  → buildMarketPrepPayload() — compact job records, wrap in <untrusted_job_data nonce="..."> (shared package)
+researchResults + FounderProfile + Constraints
+  → preprocessLandscapeData() — normalize, truncate to 30K chars (client-side)
+  → buildLandscapePrepPayload() — compact research records, wrap in <untrusted_research_data nonce="..."> (shared package)
 
   → POST ${API_BASE_URL}/claude/chain
      Headers: X-Idempotency-Key
-     Body: { promptChain: [{key: "MARKET_PREP", message}, {key: "MARKET", message: "<uses prior output>"}] }
+     Body: { promptChain: [{key: "LANDSCAPE_PREP", message}, {key: "LANDSCAPE", message: "<uses prior output>"}] }
   → { ticketId, status: "queued" }
 
   ─ (backend side: Prompt Caching wraps both calls — system prompt + PROMPT_RULES + canonical context cached ephemerally per §8.16)
 
   → Client polls GET ${API_BASE_URL}/tickets/{ticketId} every 3s
-  → Progress: stage=MARKET_PREP_INPUT → MARKET_PREP_OUTPUT → MARKET_INPUT → MARKET_OUTPUT
-  → Final: { marketPrepReport, marketAnalysis }
-  → MarketAnalysis (keywords, jobTypes, compRanges, miningQuestions)
+  → Progress: stage=LANDSCAPE_PREP_INPUT → LANDSCAPE_PREP_OUTPUT → LANDSCAPE_INPUT → LANDSCAPE_OUTPUT
+  → Final: { landscapePrepReport, landscapeAnalysis }
+  → LandscapeAnalysis (positioning language, audienceSegments, channelSignals, deepDiveQuestions)
 ```
 
 ### Step 6: Deep-Dive Q&A (Onboarding — shipped state)
 
 ```
-miningQuestions (from MarketAnalysis, produced during step 5)
+deepDiveQuestions (from LandscapeAnalysis, produced during step 5)
   → Step 6 mounts after step 5 completes
-  → Presented one at a time in MiningAccordion
-  → User answers in chat-like interface
-  → miningResults (per-question: answered/unanswered/not-relevant + text)
-  → Step 6 completes → advances to step 7 (Skills)
+  → Presented one at a time in DeepDiveAccordion
+  → Founder answers in chat-like interface
+  → deepDiveResults (per-question: answered/unanswered/not-relevant + text)
+  → Step 6 completes → advances to step 7 (Scope)
 ```
 
 Per `_requirements/00-canonical/STEPS.json`, Step 6 lives in the onboarding phase. See **Roadmap** section below for planned dashboard relocation (data contract identical; only host surface changes).
 
-### Step 7: Skills
+### Step 7: Scope
 
 ```
-Profile.hardSkills + MarketAnalysis.keywords + ResumeStructured.skills_section
-  → mergeSkillSources() — deduplicate, stem-match, categorize
-  → SkillEntry[] with sources, frequency, category
-  → User toggles include/exclude
-  → exclusions (final skill selection)
+FounderProfile.priorities + LandscapeAnalysis.positioningLanguage + BriefStructured.scope_section
+  → mergeScopeSources() — deduplicate, stem-match, categorize
+  → ScopeEntry[] with sources, frequency, category
+  → Founder toggles include/exclude
+  → exclusions (final scope selection)
 ```
 
-### Step 8: Resumes (chain + R2 — v3)
+### Step 8: Plans & Assets (chain + R2 — v3)
 
 ```
-Profile + MarketAnalysis + miningResults + exclusions
-  → POST ${API_BASE_URL}/claude/chain (RESUME_GEN + per-category TARGETED as chained)
+FounderProfile + LandscapeAnalysis + deepDiveResults + exclusions
+  → POST ${API_BASE_URL}/claude/chain (PLAN_GEN + per-segment SEGMENT_PLAN as chained)
   → { ticketId, status: "queued" }
 
-  ─ (backend: worker runs RESUME_GEN → N × TARGETED → N × DOCX build → N × PDF build)
-  ─ Result bundle typically 1–5 MB; written to R2 at users/{userId}/tickets/{ticketId}/resumes.zip
+  ─ (backend: worker runs PLAN_GEN → N × SEGMENT_PLAN → N × asset-pack render → N × PDF build)
+  ─ Result bundle typically 1–5 MB; written to R2 at users/{userId}/tickets/{ticketId}/launch-plan.zip
 
   → Client polls GET /tickets/{ticketId}
-  → Progress: step 1/N (master) → 2/N (general) → 3/N..N+2/N (targeted) → N+3/N (DOCX) → N+4/N (PDF)
+  → Progress: step 1/N (master) → 2/N (overview) → 3/N..N+2/N (segment) → N+3/N (asset render) → N+4/N (PDF)
   → Final: { status: "done", result: { signedUrl, expiresAt } } — R2 signed URL, ≤15min TTL
-  → Client fetches signed URL → binary ZIP → user downloads
+  → Client fetches signed URL → binary ZIP → founder downloads
 ```
 
-### Step 9: LinkedIn
+### Step 9: Channels
 
 ```
-Profile + Preferences + Demographics + miningResults + #1 category
-  → POST ${API_BASE_URL}/claude (LINKEDIN prompt) — synchronous, Prompt Caching active
-  → linkedin (headline, about, experience, education, skills)
-  → formAnswers (demographic + personal field/value pairs)
+FounderProfile + Constraints + background + deepDiveResults + #1 segment
+  → POST ${API_BASE_URL}/claude (CHANNELS prompt) — synchronous, Prompt Caching active
+  → launchChannels (announcement copy, landing-page content, email sequence, community post, demo script)
+  → channelAnswers (common-question field/value pairs for follow-up templates)
 ```
 
-### Step 10: Apply
+### Step 10: Launch Run
 
 ```
-Profile + Resume + formAnswers + rankedCategories + exclusions + preferences
-  → POST ${API_BASE_URL}/claude (APPLY prompt) — synchronous, Prompt Caching active
-  → heuristics (applyIf, skipIf, unknownFieldFramework, coverLetterGuidance)
-  → manualGuide (searchTerms, applyIf, skipIf)
+FounderProfile + LaunchPlan + channelAnswers + rankedSegments + exclusions + constraints
+  → POST ${API_BASE_URL}/claude (LAUNCH_RUN prompt) — synchronous, Prompt Caching active
+  → launch rules (publishIf, holdIf, unknownFieldFramework, follow-up guidance)
+  → manualGuide (channels, publishIf, holdIf)
 
 Code-assembled (not AI-generated):
-  → buildApplyPrompt(session, heuristics, uploadedResumes)
-  → chromePrompt (markdown, ~3000 words)
+  → buildLaunchRunPrompt(session, rules, generatedAssetPacks)
+  → consolePrompt (markdown, ~3000 words)
 
-Extension runtime (per job):
-  → Extension fetches heuristics from SessionData (already generated)
-  → Extension fills LinkedIn form → pauses for user approval (compliance: never auto-submit)
-  → User clicks submit → extension posts outcome:
-     POST ${API_BASE_URL}/apply/outcomes
-     Body: { outcomes: [{ jobId, jobUrl, jobTitle, company, status, reason?, heuristicVersion, appliedAt, ticketId? }] }
-  → Backend writes to Postgres apply_outcomes (authoritative) + audit_log + Redis stream (ops-UI)
-  → Backend dedup: same {userId, jobUrl, status} within 24h collapses to one row
-  → Competitiveness score reads from Postgres apply_outcomes for user's real apply count
+Runner runtime (per launch action):
+  → AcmeLaunch Runner fetches launch rules from SessionData (already generated)
+  → Runner stages the launch action → pauses for founder approval (control: never auto-publish)
+  → Founder clicks publish → runner posts the outcome:
+     POST ${API_BASE_URL}/launch-console/outcomes
+     Body: { outcomes: [{ actionId, targetUrl, actionTitle, channel, status, reason?, ruleVersion, executedAt, ticketId? }] }
+  → Backend writes to Postgres launch_outcomes (authoritative) + audit_log + Redis stream (ops-UI)
+  → Backend dedup: same {userId, targetUrl, status} within 24h collapses to one row
+  → LaunchReadinessScore reads from Postgres launch_outcomes for the founder's real executed-action count
 ```
 
 ---
 
 ## Cross-Cutting Data Flows
 
-### Competitiveness Score
+### Launch Readiness Score
 
 Computed client-side from SessionData completeness. Not stored — derived on every render.
 
-Inputs: profile existence, market analysis, Q&A completion, skills curated, resumes generated, LinkedIn generated.
+Inputs: founderProfile existence, landscape analysis, Q&A completion, scope curated, plans generated, channels generated.
 
-### Rocket Economy (Postgres-authoritative — v3)
+### Credit Economy (Postgres-authoritative — v3)
 
 ```
-User action (e.g., generate targeted resume)
+Founder action (e.g., generate segment plan)
   → Client checks: is this billable? (BILLABLE_PROMPTS list)
   → POST ${API_BASE_URL}/claude includes auth token + X-Idempotency-Key
-  → Server (api process): checks Postgres rockets_balances for sufficient balance
-     If insufficient → 402 { error: "INSUFFICIENT_ROCKETS", remaining, cost }
+  → Server (api process): checks Postgres credit_balances for sufficient balance
+     If insufficient → 402 { error: "INSUFFICIENT_CREDITS", remaining, cost }
   → Transactional debit-before-run (for async jobs):
      BEGIN;
-       INSERT INTO rockets_ledger (user_id, delta: -cost, reason, ticket_id, request_id, stripe_event_id?);
-       -- trigger updates rockets_balances.balance
+       INSERT INTO credits_ledger (user_id, delta: -cost, reason, ticket_id, request_id, stripe_event_id?);
+       -- trigger updates credit_balances.balance
        (for async) SELECT graphile_worker.add_job('claude.chain', {ticketId});
      COMMIT;
-  → Client updates displayed balance (from GET /rockets → includes recentLedger[20])
+  → Client updates displayed balance (from GET /credits → includes recentLedger[20])
 
 On job failure (worker):
   → BEGIN;
-      INSERT INTO rockets_ledger (user_id, delta: +cost, reason: "REFUND:<original-reason>", ticket_id);
+      INSERT INTO credits_ledger (user_id, delta: +cost, reason: "REFUND:<original-reason>", ticket_id);
       -- trigger restores balance
     COMMIT;
 
-Stripe webhook (rocket purchase):
+Stripe webhook (credit purchase):
   → POST /stripe/webhook → signature verified
   → Three-state idempotency via Postgres stripe_webhook_idempotency table:
      queued → processing → done (atomic transitions)
      ON CONFLICT (event_id) DO NOTHING — replay-safe
   → BEGIN;
        UPDATE stripe_webhook_idempotency SET state = 'processing' WHERE event_id = $1 AND state = 'queued';
-       INSERT INTO rockets_ledger (user_id, delta: +packAmount, reason: "STRIPE:<session_id>", stripe_event_id: $event_id);
+       INSERT INTO credits_ledger (user_id, delta: +packAmount, reason: "STRIPE:<session_id>", stripe_event_id: $event_id);
        UPDATE stripe_webhook_idempotency SET state = 'done' WHERE event_id = $1;
      COMMIT;
   → (if crash between processing and done, cron.stuck-processing-sweep re-claims after 5 min)
 ```
 
 **Note:** Redis is NOT the ledger (v3 change — research F1). Redis retains:
-- Ops-UI live-tail stream `rockets:ledger:{userId}` (synchronized from Postgres writes but not authoritative)
+- Ops-UI live-tail stream `credits:ledger:{userId}` (synchronized from Postgres writes but not authoritative)
 - Rate-limit counters
 - Scope cache (read-through from Postgres admin_users)
 
@@ -281,9 +280,9 @@ Stripe webhook (rocket purchase):
 ### Invalidation
 
 ```
-User navigates backward to step N and changes data
+Founder navigates backward to step N and changes data
   → System snapshots current data for step N fields
-  → User completes step N with new data
+  → Founder completes step N with new data
   → Compare: did anything change?
   → If changed: clear all downstream fields per INVALIDATION_MAP
   → If unchanged: skip invalidation, re-advance
@@ -314,7 +313,7 @@ Ticket {
   id: string            // UUIDv4 external (never expose UUIDv7 timestamps to clients)
   internalId: string    // UUIDv7 for sortable internal audit
   ownerUserId: string   // JWT.sub must match this on every GET /tickets/{id}
-  kind: "scrape" | "claude.chain" | "resume.build" | ...
+  kind: "research.run" | "claude.chain" | "assetpack.build" | ...
   status: "queued" | "running" | "done" | "failed"
   progress: { step: number, total: number, stage: string }  // worker updates
   result?: any | { signedUrl: string, expiresAt: number }   // R2 if >256KB
@@ -342,12 +341,12 @@ Every ticket-creating endpoint accepts `X-Idempotency-Key: <uuid>` header. Same 
 **Client-side (src/lib/api.ts):**
 
 ```typescript
-async function fetchJobs(queries, location) {
+async function runResearch(queries, geography) {
   const idempotencyKey = crypto.randomUUID();
-  const res = await fetch(`${API_BASE}/jobs/scrape`, {
+  const res = await fetch(`${API_BASE}/research/run`, {
     method: "POST",
     headers: { "X-Idempotency-Key": idempotencyKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ queries, location })
+    body: JSON.stringify({ queries, geography })
   });
   // On network error retry, same idempotencyKey is reused — backend returns the original ticketId
 }
@@ -369,8 +368,8 @@ async function fetchJobs(queries, location) {
   API process                    Postgres (Graphile Worker queue)                Worker process
   ───────────                    ─────────────────────────────────                ─────────────
 
-  POST /jobs/scrape
-  debit + add_job ──────────────▶ rockets_ledger   graphile_worker.jobs
+  POST /research/run
+  debit + add_job ──────────────▶ credits_ledger   graphile_worker.jobs
                                   (atomic)         (payload: {ticketId})
 
                                                                                  worker polls Graphile Worker
@@ -381,7 +380,7 @@ async function fetchJobs(queries, location) {
                                                                                  │   UPDATE tickets SET status='running', checkpointedStep=0
                                                                                  │   (execute job steps)
                                                                                  │   UPDATE tickets SET progress=..., checkpointedStep=N
-                                                                                 │   (wrapUntrustedData for any BD data)
+                                                                                 │   (wrapUntrustedData for any research-provider data)
                                                                                  │   (Prompt Caching on Claude calls)
                                                                                  │   ... (on success) UPDATE tickets SET status='done', result=...
                                                                                  │   (on failure) UPDATE tickets SET status='failed', error=... + refund ledger
@@ -391,7 +390,7 @@ async function fetchJobs(queries, location) {
   (ownership check)              
 ```
 
-**Why Graphile Worker for internal enqueue:** the debit + job-add live in a single SQL transaction (`BEGIN; INSERT INTO rockets_ledger; SELECT graphile_worker.add_job; COMMIT`), eliminating the dual-write hazard of "debited but never queued." QStash remains in the stack for **egress** (webhooks out to analytics / downstream services), not for internal job dispatch.
+**Why Graphile Worker for internal enqueue:** the debit + job-add live in a single SQL transaction (`BEGIN; INSERT INTO credits_ledger; SELECT graphile_worker.add_job; COMMIT`), eliminating the dual-write hazard of "debited but never queued." QStash remains in the stack for **egress** (webhooks out to analytics / downstream services), not for internal job dispatch.
 
 **QStash signature verification (Layer 11):** every HTTP push to the worker endpoint verifies Upstash-Signature HMAC using `QSTASH_CURRENT_SIGNING_KEY` / `QSTASH_NEXT_SIGNING_KEY` before processing. Failure → 401, no state mutation. Double-rotation lockout guarded via `qstash:last_rotation_deployed_at` Redis flag.
 
@@ -399,20 +398,20 @@ async function fetchJobs(queries, location) {
 
 ## Ledger Updates (v3 — new)
 
-Every movement in the rocket economy writes a Postgres row (authoritative) + a Redis stream entry (ops-UI cache):
+Every movement in the credit economy writes a Postgres row (authoritative) + a Redis stream entry (ops-UI cache):
 
 ```
-Event                                       Postgres rockets_ledger                       Redis stream
+Event                                       Postgres credits_ledger                       Redis stream
 ─────                                       ───────────────────────                       ────────────
-Debit before job                            delta: -cost, reason: "TARGETED:resume-3"    XADD rockets:ledger:{userId}
-Refund on job failure                       delta: +cost, reason: "REFUND:<original>"   XADD rockets:ledger:{userId}
-Refund on client abort                      delta: +cost, reason: "ABORT:<original>"    XADD rockets:ledger:{userId}
-Stripe top-up                               delta: +packAmount, reason: "STRIPE:..."     XADD rockets:ledger:{userId}
-Admin grant                                 delta: +amount, reason: "ADMIN:<adminUid>"   XADD audit:events + rockets:ledger
-Admin reset                                 delta: setTo(amount), reason: "ADMIN_RESET"  XADD audit:events + rockets:ledger
+Debit before job                            delta: -cost, reason: "SEGMENT_PLAN:plan-3"  XADD credits:ledger:{userId}
+Refund on job failure                       delta: +cost, reason: "REFUND:<original>"   XADD credits:ledger:{userId}
+Refund on client abort                      delta: +cost, reason: "ABORT:<original>"    XADD credits:ledger:{userId}
+Stripe top-up                               delta: +packAmount, reason: "STRIPE:..."     XADD credits:ledger:{userId}
+Admin grant                                 delta: +amount, reason: "ADMIN:<adminUid>"   XADD audit:events + credits:ledger
+Admin reset                                 delta: setTo(amount), reason: "ADMIN_RESET"  XADD audit:events + credits:ledger
 ```
 
-**Postgres is the source of truth.** GET /rockets reads balance + recentLedger[20] from Postgres; if the Redis cache diverges (which it can during a Redis failover — research F1), Postgres wins on next sync.
+**Postgres is the source of truth.** GET /credits reads balance + recentLedger[20] from Postgres; if the Redis cache diverges (which it can during a Redis failover — research F1), Postgres wins on next sync.
 
 **Audit visibility:** every admin action additionally writes to the global `audit_log` Postgres table (partitioned monthly) + nightly archive to R2 with Object Lock.
 
@@ -424,27 +423,27 @@ Admin reset                                 delta: setTo(amount), reason: "ADMIN
 
 ### Step 6: Deep-Dive Q&A → Dashboard relocation
 
-Currently Step 6 (Deep-Dive Q&A) runs as part of onboarding, immediately after Step 5 (Market Analysis). The data contract — `miningQuestions` produced in Step 5 → `miningResults` produced in Step 6 — is identical. Planned change: move the host surface from onboarding to the Dashboard, where users can launch Deep-Dive Q&A as an optional tier-jump activity at any time.
+Currently Step 6 (Deep-Dive Q&A) runs as part of onboarding, immediately after Step 5 (Landscape Analysis). The data contract — `deepDiveQuestions` produced in Step 5 → `deepDiveResults` produced in Step 6 — is identical. Planned change: move the host surface from onboarding to the Dashboard, where founders can launch Deep-Dive Q&A as an optional tier-jump activity at any time.
 
 **Target flow:**
 
 ```
-miningQuestions (still produced during onboarding step 5)
-  → User finishes onboarding and lands on the Dashboard
-  → User clicks "Deep-Dive Q&A" Dashboard activity (optional)
-  → Presented one at a time in MiningAccordion (same component)
-  → User answers in chat-like interface
-  → miningResults (per-question: answered/unanswered/not-relevant + text)
-  → User returns to Dashboard at any time
+deepDiveQuestions (still produced during onboarding step 5)
+  → Founder finishes onboarding and lands on the Dashboard
+  → Founder clicks "Deep-Dive Q&A" Dashboard activity (optional)
+  → Presented one at a time in DeepDiveAccordion (same component)
+  → Founder answers in chat-like interface
+  → deepDiveResults (per-question: answered/unanswered/not-relevant + text)
+  → Founder returns to Dashboard at any time
 ```
 
-**Why:** competitiveness scoring shouldn't gate on Q&A — it's an enhancement, not a blocker. Moving to Dashboard preserves the data flow while removing the onboarding chokepoint.
+**Why:** readiness scoring shouldn't gate on Q&A — it's an enhancement, not a blocker. Moving to Dashboard preserves the data flow while removing the onboarding chokepoint.
 
 **STEPS.json change:** Step 6's `phase` field flips from `"onboarding"` to `"dashboard"`. The component file (`Step6QA.tsx`) stays the same — the host surface (where it's mounted) changes.
 
-### Postgres-first user data (per `user-data-production-plan.md`)
+### Postgres-first founder data (per `user-data-production-plan.md`)
 
-Currently the SessionData JSONB blob lives in Upstash Redis. Phase 1 of the user-data plan migrates this to Postgres (Neon) with Redis as cache only. Auth/payments/rockets all become Postgres-authoritative. See `user-data-production-plan.md` for full phasing.
+Currently the SessionData JSONB blob lives in Upstash Redis. Phase 1 of the user-data plan migrates this to Postgres (Neon) with Redis as cache only. Auth/payments/credits all become Postgres-authoritative. See `user-data-production-plan.md` for full phasing.
 
 ### Per-branch preview deploys
 

@@ -246,14 +246,14 @@ When deselected, BOTH variants show the same empty bordered box — no symbol, n
 
 ## App Chrome Layout (Viewport Pattern)
 
-The app shell uses a fixed viewport layout where chrome (RocketBar, PhaseBar, SidePanel) stays pinned and only the main content area scrolls.
+The app shell uses a fixed viewport layout where chrome (CreditBar, PhaseBar, SidePanel) stays pinned and only the main content area scrolls.
 
 ### Pattern
 
 ```jsx
 <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-  <RocketBar />    {/* fixed top */}
-  <PhaseBar />     {/* fixed top, below RocketBar */}
+  <CreditBar />    {/* fixed top */}
+  <PhaseBar />     {/* fixed top, below CreditBar */}
   <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
     <SidePanel />  {/* fixed left, height: 100% */}
     <main style={{ flex: 1, minWidth: 0, overflowY: "auto" }}>

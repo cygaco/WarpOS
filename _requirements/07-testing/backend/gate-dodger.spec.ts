@@ -55,28 +55,28 @@ test.describe("Gate Dodger — API Security", () => {
       expect(authRejected([401, 403])).toContain(res.status());
     });
 
-    test("GET /api/rockets → 401", async ({ request }, testInfo) => {
-      const res = await request.get("/api/rockets");
+    test("GET /api/credits → 401", async ({ request }, testInfo) => {
+      const res = await request.get("/api/credits");
       annotateIfSkeleton(res, testInfo);
       expect(authRejected([401])).toContain(res.status());
     });
 
     // POST routes with CSRF: in dev, no-origin passes CSRF, then auth check fires → 401.
     // In prod, no-origin fails CSRF → 403. Both are acceptable security behavior.
-    // Rockets grant/debit depend on Redis for billing operations.
+    // Credits grant/debit depend on Redis for billing operations.
     redisTest(
-      "POST /api/rockets/grant rejects without auth",
+      "POST /api/credits/grant rejects without auth",
       async ({ request }, testInfo) => {
-        const res = await request.post("/api/rockets/grant", { data: {} });
+        const res = await request.post("/api/credits/grant", { data: {} });
         annotateIfSkeleton(res, testInfo);
         expect(authRejected([401, 403])).toContain(res.status());
       },
     );
 
     redisTest(
-      "POST /api/rockets/debit rejects without auth",
+      "POST /api/credits/debit rejects without auth",
       async ({ request }, testInfo) => {
-        const res = await request.post("/api/rockets/debit", { data: {} });
+        const res = await request.post("/api/credits/debit", { data: {} });
         annotateIfSkeleton(res, testInfo);
         expect(authRejected([401, 403])).toContain(res.status());
       },
@@ -148,15 +148,15 @@ test.describe("Gate Dodger — API Security", () => {
   });
 
   test.describe("BUG-009 regression — userId spoofing", () => {
-    // Rockets grant depends on Redis for billing
+    // Credits grant depends on Redis for billing
     redisTest(
-      "POST /api/rockets/grant with fake userId → rejected",
+      "POST /api/credits/grant with fake userId → rejected",
       async ({ request }, testInfo) => {
-        const res = await request.post("/api/rockets/grant", {
+        const res = await request.post("/api/credits/grant", {
           data: { userId: "fake-user-id-12345", amount: 100 },
         });
         annotateIfSkeleton(res, testInfo);
-        // Must reject — arbitrary userId in body should not grant rockets
+        // Must reject — arbitrary userId in body should not grant credits
         expect(authRejected([401, 403])).toContain(res.status());
       },
     );

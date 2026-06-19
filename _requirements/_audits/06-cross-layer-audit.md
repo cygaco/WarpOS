@@ -12,37 +12,35 @@
 | MEDIUM | 4 |
 | LOW | 2 |
 
-*Post-verification: Entry State downgraded (only market-research needs it). searchQueries FIXED. Per-user spend limit downgraded to HIGH (spec vs code gap, not security-critical).*
+*Post-verification: Entry State downgraded (only launch-research needs it). searchQueries FIXED. Per-user spend limit downgraded to HIGH (spec vs code gap, not security-critical).*
 
 ## Agent Risk Assessment
 
-Cross-layer seams are the #1 source of agent run failures. Top risks: (1) market-research stories (28) have no Entry State for Steps 4-5 despite FLOW_SPEC defining states — builders will implement only happy paths, (2) ~~field name `searchQueries` FIXED~~, (3) hooks don't enforce file ownership defined in FILE-OWNERSHIP.md — builders can corrupt each other's work.
-
-## Findings
+Cross-layer seams are the #1 source of agent run failures. Top risks: (1) launch-research stories (28) have no Entry State for Steps 4-5 despite FLOW_SPEC defining states — builders will implement only happy paths, (2) ~~field name `searchQueries` FIXED~~, (3) hooks don't enforce file ownership defined in FILE-OWNERSHIP.md — builders can corrupt each other's work.
 
 ### Cross-Check 1: Requirements x Architecture
 
 | # | Severity | Finding | Docs | Fix |
 |---|---|---|---|---|
-| 1 | HIGH | market-research stories (28) have no Entry State for Steps 4-5 despite FLOW_SPEC defining states | FLOW_SPEC.md vs market-research/STORIES.md | Add Entry State to 28 stories per FLOW_SPEC Step 4-5 tables |
+| 1 | HIGH | launch-research stories (28) have no Entry State for Steps 4-5 despite FLOW_SPEC defining states | FLOW_SPEC.md vs launch-research/STORIES.md | Add Entry State to 28 stories per FLOW_SPEC Step 4-5 tables |
 | 2 | ~~CRITICAL~~ FIXED | ~~FLOW_SPEC used `searchQueries`~~ → corrected to `generatedQueries` | FLOW_SPEC.md line 73 | Fixed 2026-03-30 20:30 |
-| 3 | HIGH | FLOW_SPEC Step 5 says "Run two-phase market pipeline" without naming intermediate field `marketPrepReport` — stories describe two distinct phases, architecture doc abstracts them into one | FLOW_SPEC.md vs market-research/STORIES.md GS-MKT-11 | Update FLOW_SPEC to show both phases with field names |
-| 4 | HIGH | Stories reference prompt names (PARSE, PROFILE, etc.) but PROMPT_TEMPLATES.md references non-existent PROMPTS.md for "catalog-level docs" — broken cross-reference | STORIES.md (multiple) vs PROMPT_TEMPLATES.md | Create PROMPTS.md or inline catalog into PROMPT_TEMPLATES |
-| 5 | MEDIUM | Resume-generation competitiveness formula in PRD §11 doesn't match scoring implementation details in INTEGRATION-MAP.md weighted factors table — denominator ambiguous | resume-generation/PRD.md vs INTEGRATION-MAP.md | Clarify scoring formula with examples |
+| 3 | HIGH | FLOW_SPEC Step 5 says "Run two-phase launch-research pipeline" without naming intermediate field `launchResearchPrep` — stories describe two distinct phases, architecture doc abstracts them into one | FLOW_SPEC.md vs launch-research/STORIES.md GS-RES-11 | Update FLOW_SPEC to show both phases with field names |
+| 4 | HIGH | Stories reference prompt names (EXTRACT, PROFILE, etc.) but PROMPT_TEMPLATES.md references non-existent PROMPTS.md for "catalog-level docs" — broken cross-reference | STORIES.md (multiple) vs PROMPT_TEMPLATES.md | Create PROMPTS.md or inline catalog into PROMPT_TEMPLATES |
+| 5 | MEDIUM | Plan-generation LaunchReadinessScore formula in PRD §11 doesn't match scoring implementation details in INTEGRATION-MAP.md weighted factors table — denominator ambiguous | plan-generation/PRD.md vs INTEGRATION-MAP.md | Clarify scoring formula with examples |
 
 ### Cross-Check 2: Requirements x Security
 
 | # | Severity | Finding | Docs | Fix |
 |---|---|---|---|---|
-| 6 | HIGH | Billable operation stories (TARGETED, LINKEDIN, MARKET_PREP rerun) lack security acceptance criteria for insufficient-balance rejection (402 response) | Feature STORIES.md vs SECURITY.md rocket economy section | Add security AC: "Given balance < cost, return 402 with {required, remaining}" |
+| 6 | HIGH | Billable operation stories (SEGMENT_PLAN, CHANNEL_ASSETS, LAUNCH_RESEARCH_PREP rerun) lack security acceptance criteria for insufficient-balance rejection (402 response) | Feature STORIES.md vs SECURITY.md credit economy section | Add security AC: "Given balance < cost, return 402 with {required, remaining}" |
 | 7 | HIGH | Auth stories (GS-ATH-23/24) specify OAuth "coming soon" states but SECURITY.md doesn't document the env-var-gated OAuth flow as a security boundary | auth/STORIES.md vs SECURITY.md | Add OAuth visibility env-var check to SECURITY.md |
-| 8 | MEDIUM | Extension auto-apply stories describe heuristics but SECURITY.md doesn't reference the human-in-the-loop requirement from EXTENSION_SPEC.md | auto-apply/STORIES.md vs SECURITY.md vs EXTENSION_SPEC.md | Cross-reference EXTENSION_SPEC human-in-the-loop in SECURITY.md |
+| 8 | MEDIUM | Launch Console / launch-execution stories describe heuristics but SECURITY.md doesn't reference the human-in-the-loop requirement from LAUNCH_CONSOLE_SPEC.md | launch-execution/STORIES.md vs SECURITY.md vs LAUNCH_CONSOLE_SPEC.md | Cross-reference LAUNCH_CONSOLE_SPEC human-in-the-loop in SECURITY.md |
 
 ### Cross-Check 3: Architecture x Security
 
 | # | Severity | Finding | Docs | Fix |
 |---|---|---|---|---|
-| 9 | HIGH | SECURITY.md specifies 500 rockets/day per-user spend limit, but API_SURFACE.md and actual code only enforce global daily limits — no per-user enforcement exists | SECURITY.md vs API_SURFACE.md vs /api/claude code | Implement per-user daily counter or remove claim from SECURITY.md |
+| 9 | HIGH | SECURITY.md specifies 500 credits/day per-user spend limit, but API_SURFACE.md and actual code only enforce global daily limits — no per-user enforcement exists | SECURITY.md vs API_SURFACE.md vs /api/claude code | Implement per-user daily counter or remove claim from SECURITY.md |
 | 10 | MEDIUM | AUTH_SCHEMAS.md documents OAuth state-based CSRF but SECURITY.md doesn't flag single-use enforcement gap (state replay vulnerability) | AUTH_SCHEMAS.md vs SECURITY.md | Add single-use state requirement to both docs |
 
 ### Cross-Check 4: Skills x Hooks
@@ -56,7 +54,7 @@ Cross-layer seams are the #1 source of agent run failures. Top risks: (1) market
 
 ## Top 5 Actions Before Next Run
 
-1. **Add Entry State metadata to market-research** (28 stories for Steps 4-5) — the only step-component feature missing it (1 finding)
+1. **Add Entry State metadata to launch-research** (28 stories for Steps 4-5) — the only step-component feature missing it (1 finding)
 2. ~~**Fix `searchQueries` → `generatedQueries`**~~ — **FIXED** 2026-03-30 20:30
 3. **Create ownership-guard.js hook** — FILE-OWNERSHIP defines rules but nothing enforces them (1 finding)
 4. **Add security AC to billable stories** — requirements don't cover the 402 rejection path that security requires (1 finding)

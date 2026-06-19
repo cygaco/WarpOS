@@ -1,68 +1,64 @@
-# Jobzooka — Extension Spec (Regen Spec)
+# AcmeLaunch — Launch Console Spec (Regen Spec)
 
-Chrome extension for LinkedIn Easy Apply automation. All files in `extension/`.
+The Launch Console is the in-app surface that runs a guided launch: it sequences queued launch actions, pauses for founder approval before every public action, and records the outcome of each. It is a normal authenticated module of the AcmeLaunch web app — there is no browser extension. All files in `src/launch-console/`.
 
 ---
 
-## Manifest (manifest.json)
+## Module Identity
 
 | Field                  | Value                                                              |
 | ---------------------- | ------------------------------------------------------------------ |
-| Manifest version       | 3                                                                  |
-| Name                   | Jobzooka Launcher                                                  |
+| Module                 | Launch Console                                                     |
 | Version                | 0.1.0                                                              |
-| Permissions            | `activeTab`, `storage`, `tabs`, `scripting`                        |
-| Host permissions       | `https://www.linkedin.com/*`                                       |
-| Background             | Service worker: `background.js`                                    |
-| Content scripts        | `content.js` on `https://www.linkedin.com/jobs/*`, `document_idle` |
-| Action                 | Popup: `popup.html`, icons: 48px + 128px                           |
-| Externally connectable | `https://*.jobzooka.io/*`                                          |
+| Surface                | In-app route `/launch-console` (authenticated)                     |
+| Auth                   | Standard app session (JWT cookie) + scope `user`                   |
+| Server endpoints       | `GET /launch-console/queue`, `POST /launch-console/outcomes`, `GET /launch-console/prompts/:queueItemId` |
+| Channels               | One or more `LaunchChannel` providers (email, social, community, marketplace, ads, content) |
 
-**Pre-publish checklist:** Remove `http://localhost/*` from `externally_connectable` before Chrome Web Store submission. Currently needed for dev/testing.
+**Origin / session model:** Because the Launch Console is a first-party app module (not a cross-extension surface), it uses normal app auth, session, and CSRF protection — the same `X-Session-Nonce` + Origin/Referer allowlist that guards every other route. There is no `externally_connectable` allowlist and no cross-origin message bridge to maintain.
 
 ---
 
 ## Architecture
 
 ```
-Web App (Step13Apply.tsx)
-  │  chrome.runtime.sendMessage (external)
+Launch Run page (LaunchRunPage.tsx)
+  │  fetch GET /launch-console/queue   (load the next LaunchActionQueueItem[])
   ▼
-Background (background.js) — service worker
-  │  chrome.storage.local (session + status)
-  │  chrome.tabs (navigate, create)
+Launch Console controller (launch-console/controller.ts)
+  │  session store (run state + progress, via loadSession/saveSession)
+  │  per-action: load prompt, evaluate run-rules, render for review
   ▼
-Content Script (content.js) — injected on LinkedIn jobs pages
-  │  DOM manipulation (scan, triage, fill, submit)
-  │  chrome.runtime.sendMessage (internal)
+Action Runner (launch-console/runner.ts)
+  │  prepare each action (compose, target channel, stage assets)
+  │  PAUSE for founder approval (review overlay)
   ▼
-Popup (popup.html/js/css) — extension popup UI
-     chrome.storage.local (read status)
-     chrome.runtime.sendMessage (start/pause/stop)
+Outcome Reporter (launch-console/outcomes.ts)
+     POST /launch-console/outcomes   (durable LaunchOutcome trail)
+     reads status back into the Launch Console UI
 ```
 
 ---
 
-## Storage Keys
+## Run State (Session-Backed)
 
-| Key                | Type   | Contents                                                         |
-| ------------------ | ------ | ---------------------------------------------------------------- |
-| `jobzooka_session` | Object | Full payload: queries, profile, heuristics, resumes, preferences |
-| `jobzooka_status`  | Object | Current state, stats, current job, timestamps                    |
+| Key                     | Type   | Contents                                                              |
+| ----------------------- | ------ | -------------------------------------------------------------------- |
+| `launchConsole_run`     | Object | Full payload: queue, profile, run-rules, assets, constraints         |
+| `launchConsole_status`  | Object | Current state, stats, current action, timestamps                     |
 
-### Session Shape
+### Run Shape
 
 ```javascript
 {
-  queries: [{ keywords, location, remote, datePosted, jobTypes, easyApply }],
-  profile: { name, email, phone, location, ... },
-  heuristics: { applyIf: [], skipIf: [], fireThreshold, coverLetterGuidance },
-  preferences: { locationTypes, employmentTypes, dealBreakers, hourlyFloor, salaryFloor, preferredLocation },
-  answers: { fieldLabel: value },  // Form answer map
-  targetedResumes: [],
-  coverLetterGuidance: "",
-  originTabId: number,
-  linkedInTabId: number,
+  queue: [{ queueItemId, actionType, channel, target, assetRef, scheduledFor }],
+  profile: { name, contact, links, ... },
+  runRules: { runIf: [], holdIf: [], runThreshold, outreachGuidance },
+  constraints: { channelScope, actionTypes, dealBreakers, budgetFloor, geography, preferredChannel },
+  followUpTemplates: { questionLabel: value },  // Follow-up answer map
+  assetPacks: [],
+  outreachGuidance: "",
+  runId: string,
   receivedAt: timestamp,
 }
 ```
@@ -71,10 +67,10 @@ Popup (popup.html/js/css) — extension popup UI
 
 ```javascript
 {
-  state: 'idle' | 'scanning' | 'applying' | 'paused' | 'complete' | 'error',
-  currentJob: { title, company } | null,
-  stats: { applied: 0, skipped: 0, failed: 0, total: 0 },
-  currentQueryIndex: 0,
+  state: 'idle' | 'preparing' | 'running' | 'paused' | 'complete' | 'error',
+  currentAction: { actionType, channel, target } | null,
+  stats: { succeeded: 0, skipped: 0, failed: 0, total: 0 },
+  currentSegmentIndex: 0,
   currentPage: 1,
   error: null | string,
   startedAt: timestamp | null,
@@ -84,219 +80,205 @@ Popup (popup.html/js/css) — extension popup UI
 
 ---
 
-## Message Protocol
+## Queue & Outcome Protocol
 
-### Origin Validation
+### Request Authorization
 
-All message handlers validate the sender before processing:
+Every Launch Console request is authorized by the standard app middleware before processing:
 
-**External messages** (`onMessageExternal`): `sender.origin` must match one of:
+- **Session check:** the JWT cookie must be present and valid, scope `user`.
+- **CSRF/origin check:** `X-Session-Nonce` bound to a server-side session record, plus the Origin/Referer allowlist (see `SECURITY.md` layers 4–5).
+- Unauthorized requests receive the standard `{ error: 'AUTH_EXPIRED' | 'CSRF', ... }` envelope; no run state is mutated.
 
-- `https://jobzooka.io`
-- `https://www.jobzooka.io`
-- `http://localhost:3000` (dev)
-- `https://localhost:3000` (dev)
+### Endpoints (App → Backend)
 
-Unauthorized origins receive `{ status: 'error', error: 'Unauthorized origin' }`.
+| Method + Path                              | Purpose                          | Response                                            |
+| ------------------------------------------ | -------------------------------- | --------------------------------------------------- |
+| `GET /launch-console/queue`                | Load next `LaunchActionQueueItem[]` | `{ status: 'ok', queue: [...] }`                 |
+| `GET /launch-console/prompts/:queueItemId` | Load the `LaunchConsolePrompt` for an action | `{ status: 'ok', prompt }` or error     |
+| `POST /launch-console/outcomes`            | Record a batch of `LaunchOutcome` | `{ status: 'ok', recorded }`                       |
 
-**Internal messages** (`onMessage`): If `sender.url` is present, it must start with `https://www.linkedin.com/` OR `sender.id` must equal `chrome.runtime.id` (the extension itself, e.g., popup). This prevents injected scripts on non-LinkedIn pages from sending commands.
+### Run Control (UI → Controller, in-process)
 
-### External Messages (Web App → Background)
+| Action                 | Effect                                        |
+| ---------------------- | --------------------------------------------- |
+| `pause`                | Sets `isPaused = true`                        |
+| `resume`               | Sets `isPaused = false`                       |
+| `stop`                 | Sets `isStopped = true`, clears the run badge |
+| `next_segment`         | Advance to the next ranked segment's actions  |
+| `next_page`            | Advance to the next page of queued actions    |
 
-| Type          | Payload              | Response                           |
-| ------------- | -------------------- | ---------------------------------- |
-| `ping`        | —                    | `{ status: 'ok', version }`        |
-| `start_apply` | Full session payload | `{ status: 'ok', tabId }` or error |
-| `get_status`  | —                    | `{ status: 'ok', data: Status }`   |
-| `pause`       | —                    | `{ status: 'ok' }`                 |
-| `resume`      | —                    | `{ status: 'ok' }`                 |
-| `stop`        | —                    | `{ status: 'ok' }`                 |
+### Outcome Reporting (Runner → Backend)
 
-### Internal Messages (Content Script / Popup → Background)
+After each action resolves, the runner posts a `LaunchOutcome` to `POST /launch-console/outcomes`:
 
-| Type                   | Payload                              | Response                                            |
-| ---------------------- | ------------------------------------ | --------------------------------------------------- |
-| `start_apply_internal` | Session or null                      | `{ status: 'ok', tabId }` or error                  |
-| `get_session`          | —                                    | `{ status: 'ok', data: Session }`                   |
-| `status_update`        | Status patch                         | `{ status: 'ok' }`                                  |
-| `job_result`           | `{ result, title, company, reason }` | `{ status: 'ok' }`                                  |
-| `next_query`           | —                                    | `{ status: 'ok', url }` or `{ status: 'complete' }` |
-| `next_page`            | —                                    | `{ status: 'ok', page }` or complete                |
+```javascript
+{ queueItemId, status, reason, artifactRefs, reportedBy: 'console' | 'system' | 'user' }
+```
 
-### Background → Content Script
-
-| Type     | Effect                                        |
-| -------- | --------------------------------------------- |
-| `pause`  | Sets `isPaused = true`                        |
-| `resume` | Sets `isPaused = false`                       |
-| `stop`   | Sets `isStopped = true`, removes status badge |
-
-### Background → Web App (Relay)
-
-Status updates are relayed to the web app tab via `chrome.tabs.sendMessage` as `{ type: 'jobzooka_status_update', payload: Status }`.
+`status` is one of `skipped | attempted | succeeded | failed | needs_manual`. Outcomes are durable (Postgres-backed audit trail) so a run can be reviewed and resumed across sessions.
 
 ---
 
-## LinkedIn URL Builder
+## Channel Target Builder
 
-`buildLinkedInSearchUrl(query, page)` constructs LinkedIn Jobs search URLs:
+`buildChannelTarget(channel, action)` resolves where a launch action lands per its `LaunchChannel` provider:
 
-| Parameter   | LinkedIn Param | Values                                                                              |
+| Parameter   | Channel Field  | Values                                                                              |
 | ----------- | -------------- | ----------------------------------------------------------------------------------- |
-| Keywords    | `keywords`     | Free text                                                                           |
-| Location    | `location`     | Only set if NOT Remote                                                              |
-| Date posted | `f_TPR`        | `r86400` (24h), `r604800` (week), `r2592000` (month)                                |
-| Job type    | `f_JT`         | `F` (Full-time), `P` (Part-time), `C` (Contract), `T` (Temporary), `I` (Internship) |
-| Remote      | `f_WT`         | `1` (On-site), `2` (Remote), `3` (Hybrid)                                           |
-| Easy Apply  | `f_AL`         | `true` (default on)                                                                 |
-| Pagination  | `start`        | `(page - 1) * 25`                                                                   |
+| Audience    | `segment`      | Free text (the ranked `AudienceSegment` name)                                       |
+| Geography   | `geography`    | Only set if the channel is geo-targeted                                             |
+| Cadence     | `sendOffset`   | `day0`, `day2`, `week1` (relative send schedule)                                     |
+| Action type | `actionType`   | `publish`, `send`, `follow_up`, `export`, `research_review`                          |
+| Channel     | `provider`     | `email`, `social`, `community`, `marketplace`, `ads`, `content`                     |
+| Pacing      | `throttle`     | per-channel send/post pacing (default on)                                            |
+| Pagination  | `cursor`       | batch offset for large send/post lists                                               |
 
 ---
 
-## Content Script: Apply Loop
+## Action Runner: Launch Loop
 
 ### Flow
 
-1. **Init:** Check for active session via `get_session` message
-2. **Wait:** 2s for page to settle
-3. **Scan:** Scroll through job list, scrape all cards (title, company, location, Easy Apply status)
-4. **Filter:** Easy Apply only, not already applied, not already processed
-5. **For each card:**
-   a. Open job detail (click card, wait for description)
-   b. **Triage:** Evaluate against heuristics (see below)
-   c. If `nogo` → skip, report result
-   d. Click Easy Apply button, wait for modal
-   e. **Fill form** (multi-step, up to 10 steps)
-   f. **Pause for review** — show overlay, wait for user approve/skip
-   g. If approved → click Submit, report `applied`
-   h. If skipped → close modal, report `skipped`
-6. **Paginate:** Request next page (max 3 pages per query), then next query
-7. **Complete:** When all queries exhausted
+1. **Init:** Load the active run via `GET /launch-console/queue`
+2. **Wait:** 2s for the page to settle
+3. **Scan:** Walk the queued `LaunchActionQueueItem[]`, read each (actionType, channel, target, asset readiness)
+4. **Filter:** Only ready actions, not already run, not already processed
+5. **For each queued action:**
+   a. Load the action detail + its `LaunchConsolePrompt` (`GET /launch-console/prompts/:queueItemId`)
+   b. **Evaluate:** score against run-rules (see below)
+   c. If `hold` → skip, report outcome
+   d. Compose the action (assemble copy + stage assets), wait for the draft to settle
+   e. **Stage the action** (email draft, social post draft, community post draft — up to 10 prep steps)
+   f. **Pause for review** — show overlay, wait for founder approve/skip
+   g. If approved → execute (publish/send), report `succeeded`
+   h. If skipped → discard the draft, report `skipped`
+6. **Paginate:** Request the next page (max 3 pages per segment), then the next segment
+7. **Complete:** When all queued actions are exhausted
 
-### LinkedIn DOM Selectors
+### Action Surfaces
 
-Key selectors (defined in `SEL` object, content.js lines 22-62):
+Key surfaces the runner composes against (defined in the `SURFACES` map, controller.ts):
 
-- **Job cards:** `.jobs-search-results__list-item`, `.job-card-container`
-- **Job detail:** `.jobs-description-content__text`, `#job-details`
-- **Easy Apply button:** `.jobs-apply-button`, `button[aria-label*="Easy Apply"]`
-- **Modal:** `.jobs-easy-apply-modal`, `.artdeco-modal[role="dialog"]`
-- **Form fields:** `.jobs-easy-apply-form-section__grouping`, `.fb-dash-form-element`
-- **Navigation:** `button[aria-label="Continue to next step"]`, `button[aria-label="Submit application"]`
+- **Queue items:** `LaunchActionQueueItem[]` loaded from `GET /launch-console/queue`
+- **Action detail:** the action's channel, target audience, and `assetRef` into the staged `LaunchAssetPack`
+- **Send/publish control:** the per-channel provider adapter (`email`, `social`, `community`, …)
+- **Draft:** the composed-but-unpublished action body, shown in the review overlay
+- **Form fields:** any provider-side fields the action must fill (subject, audience list, schedule)
+- **Navigation:** "Stage next action", "Publish this action"
 
 ---
 
-## Triage Engine (content.js)
+## Run-Rule Engine (controller.ts)
 
-`triageJob(title, company, description, heuristics, jobLocation, preferences)` returns `{ verdict, reason }`:
+`evaluateAction(actionType, channel, body, runRules, segment, constraints)` returns `{ verdict, reason }`:
 
 ### Verdict Types
 
 | Verdict  | Meaning                                   | Action              |
 | -------- | ----------------------------------------- | ------------------- |
-| `fire`   | Strong match (applyIf score >= threshold) | Proceed to apply    |
+| `run`    | Strong match (runIf score >= threshold)   | Proceed to stage    |
 | `review` | Partial match or no strong signal         | Show review overlay |
-| `nogo`   | Matched skipIf or deal-breaker            | Auto-skip           |
+| `hold`   | Matched holdIf or deal-breaker            | Auto-skip           |
 
 ### Evaluation Order
 
-1. **Location filter:** Remote preference vs job location
-2. **Deal-breakers:** `return-to-office`, `relocation`, `travel`, `unpaid`
-3. **skipIf rules:** Each rule checked against combined text (title + company + description). First match → `nogo`
-4. **applyIf rules:** Each rule contributes weight to `fireScore`. Score >= threshold (default 1) → `fire`
+1. **Channel filter:** Channel-scope preference vs the action's provider
+2. **Deal-breakers:** `unbacked-claim`, `wrong-segment`, `off-brand`, `asset-not-ready`
+3. **holdIf rules:** Each rule checked against combined text (actionType + channel + body). First match → `hold`
+4. **runIf rules:** Each rule contributes weight to `runScore`. Score >= threshold (default 1) → `run`
 5. **Default:** `review`
 
 ### Rule Format
 
 Rules support both string and object format:
 
-- String: `"requires full-time"` — pattern matched against all text
+- String: `"requires backed proof"` — pattern matched against all text
 - Object: `{ pattern, field, reason, weight }` — field-targeted matching
 
 ---
 
-## Form Filling (content.js)
+## Action Composition (runner.ts)
 
 ### Field Mapping
 
-The extension maps form labels to profile values:
+The runner maps action fields to profile + asset values:
 
-| Label Pattern                | Source                            |
-| ---------------------------- | --------------------------------- |
-| "first name"                 | `profile.firstName` or name split |
-| "last name"                  | `profile.lastName` or name split  |
-| "email"                      | `profile.email`                   |
-| "phone" / "mobile"           | `profile.phone`                   |
-| "city" / "location"          | `profile.location`                |
-| "linkedin" / "profile url"   | `profile.linkedinUrl`             |
-| "website" / "portfolio"      | `profile.website`                 |
-| "years" + "experience"       | `profile.yearsExperience`         |
-| "salary" / "compensation"    | `profile.desiredSalary`           |
-| "headline" / "current title" | `profile.headline`                |
+| Field Pattern                | Source                              |
+| ---------------------------- | ----------------------------------- |
+| "from name"                  | `profile.founderName` or name split |
+| "from / reply-to"            | `profile.contactEmail`              |
+| "subject" / "headline"       | `assetPack.announcement`            |
+| "body" / "post"              | `assetPack.landingCopy` excerpt     |
+| "link" / "url"               | `profile.ventureUrl`                |
+| "audience" / "list"          | `segment.name`                      |
+| "schedule" / "send time"     | `channel.sendOffset`                |
+| "cta" / "button"             | `assetPack.cta`                     |
+| "footer" / "sign-off"        | `profile.signature`                 |
 
-### Select Dropdowns
+### Channel Defaults
 
-| Label Pattern          | Default Value                          |
+| Field Pattern          | Default Value                          |
 | ---------------------- | -------------------------------------- |
-| "country"              | "United States"                        |
-| "degree" / "education" | "Bachelor's"                           |
-| "authorized"           | Yes/No from `profile.workAuthorized`   |
-| "sponsor" / "visa"     | Yes/No from `profile.needsSponsorship` |
-| "gender"               | "Prefer not to say"                    |
-| "race" / "ethnicity"   | "Prefer not to say"                    |
-| "veteran"              | "I am not a veteran"                   |
-| "disability"           | "I don't wish to answer"               |
+| "geography"            | "United States"                        |
+| "format"               | "Plain + minimal HTML"                 |
+| "consent"              | Yes/No from `constraints.audienceOptIn`|
+| "sponsor" / "paid"     | Yes/No from `channel.paid`             |
+| "from-domain"          | `profile.sendingDomain` or "(unset)"   |
+| "unsubscribe"          | "Included (required for email)"        |
+| "disclosure"           | "#ad where the channel requires it"    |
+| "reply-to"             | `profile.contactEmail`                 |
 
-### Auto-Checked Checkboxes
+### Auto-Checked Confirmations
 
-Checkboxes with labels containing "agree", "terms", or "acknowledge" are auto-checked.
+Confirmations with labels containing "consent", "terms", or "acknowledge" are surfaced for explicit founder confirmation — never auto-accepted on the founder's behalf for a public action.
 
-### Resume Upload
+### Asset Attachment
 
-Cannot be programmatically filled (browser security). Logged as a note — user must upload manually or use LinkedIn profile resume.
+Large asset binaries (PDF press kit, image variants) are referenced by `assetRef` into the staged `LaunchAssetPack` — the runner attaches the signed-URL reference; it does not inline blobs. Logged as a note when a provider requires manual upload.
 
-### Input Filling Technique
+### Field Filling Technique
 
-Uses React-compatible event dispatching:
+Uses framework-compatible event dispatching for any in-app draft fields:
 
-1. Set value via `HTMLInputElement.prototype.value` setter (bypasses React controlled component)
+1. Set value via the controlled-input setter (state-managed draft body)
 2. Dispatch `input`, `change`, `blur` events with `bubbles: true`
 
 ---
 
-## Popup UI (popup.html/js/css)
+## Launch Console UI (LaunchRunPage.tsx)
 
 ### Tabs
 
 | Tab          | Contents                                                                                  |
 | ------------ | ----------------------------------------------------------------------------------------- |
-| Status       | State label, stats (applied/skipped/failed/total), progress bar, Start/Pause/Stop buttons |
-| Instructions | Profile summary, search queries, editable applyIf/skipIf rules, hard limits, Save button  |
+| Status       | State label, stats (succeeded/skipped/failed/total), progress bar, Start/Pause/Stop buttons |
+| Plan         | Profile summary, queued actions, editable runIf/holdIf rules, hard limits, Save button    |
 
 ### Connection Badge
 
-- **Connected:** Session exists and is < 24h old
-- **Disconnected:** No session or stale
+- **Ready:** Active run loaded and < 24h old
+- **Stale:** No active run or stale
 
-### Sync Button
+### Refresh Button
 
-Finds Jobzooka web app tab (localhost:3000 or jobzooka.io) → requests sync via `jobzooka_request_sync` message.
+Re-fetches the latest queue from `GET /launch-console/queue` → refreshes the staged action list.
 
 ### Status Polling
 
-Reads `jobzooka_status` from `chrome.storage.local` every 3s + on storage change events.
+Re-reads run status from the session store every 3s + on session-change events.
 
 ---
 
 ## Human-in-the-Loop
 
-The extension **always pauses before submission**. The review overlay shows:
+The Launch Console **always pauses before any public action** (publish, send, post). The review overlay shows:
 
-- Job title and company
-- Triage verdict and reason
-- "Skip" and "Approve & Submit" buttons
+- Action type, target channel, and audience segment
+- Run-rule verdict and reason
+- "Skip" and "Approve & Run" buttons
 
-**CRITICAL: The extension MUST NOT auto-submit forms without explicit user approval.** The "Submit" action requires a user click in the extension popup or review overlay. No application is submitted without explicit user approval. This is a compliance requirement, not a preference.
+**CRITICAL: The Launch Console MUST NOT publish, send, or post without explicit founder approval.** The "Run" action requires a founder click in the review overlay. No public action is taken without explicit founder approval. This is a compliance requirement, not a preference.
 
 ---
 
@@ -304,12 +286,12 @@ The extension **always pauses before submission**. The review overlay shows:
 
 | Action                 | Delay                 |
 | ---------------------- | --------------------- |
-| Between jobs           | 500-2000ms (random)   |
-| After card click       | 1500ms                |
-| After Easy Apply click | 1500ms                |
-| Between form steps     | 800-1200ms            |
-| After submit           | 2000ms                |
-| Scroll per card        | 200ms                 |
+| Between actions        | 500-2000ms (random)   |
+| After action select    | 1500ms                |
+| After stage click      | 1500ms                |
+| Between prep steps     | 800-1200ms            |
+| After publish/send     | 2000ms                |
+| Scroll per queue item  | 200ms                 |
 | Generic random delay   | 500 + random(1500) ms |
 
-All delays include +-500ms jitter for human-like behavior.
+All delays include +-500ms jitter so a paid/social channel never sees a burst that looks automated.

@@ -1,6 +1,6 @@
 # QA System Design Brief
 
-> **Purpose:** Reference document for Alex when designing and implementing the Jobzooka QA system.
+> **Purpose:** Reference document for Alex when designing and implementing the AcmeLaunch QA system.
 > **Status:** Design brief — no implementation yet. Code comes after design approval.
 
 ---
@@ -14,28 +14,28 @@ Design a testing and quality system that detects and prevents the seven empirica
 ### 2.1 — The Stale Reader
 Components and agents read state once (on mount or from a cached source) and miss subsequent updates.
 
-**Bugs:** BUG-034 (stale session spread in complete()), BUG-050 (evaluator read wrong worktree, 4x), BUG-059 (Step8Skills missed parent setSession)
+**Bugs:** BUG-034 (stale session spread in complete()), BUG-050 (evaluator read wrong worktree, 4x), BUG-059 (Step8Scope missed parent setSession)
 
 **Detection:** Any component calling `loadSession()` in `useEffect([], [])` without also accepting session as a prop. Any agent reading files without verifying `git branch --show-current`.
 
 ### 2.2 — The Phantom Render
 React component identity issues cause visual artifacts — duplicate mounts, 1-frame flashes, double-triggered effects.
 
-**Bugs:** BUG-032/035 (Strict Mode kills mountedRef/hasRunRef), BUG-037 (file picker opens twice), BUG-060/062 (1-frame gaps between loading phases), BUG-010-r02 (two resume upload screens)
+**Bugs:** BUG-032/035 (Strict Mode kills mountedRef/hasRunRef), BUG-037 (file picker opens twice), BUG-060/062 (1-frame gaps between loading phases), BUG-010-r02 (two idea-brief submit screens)
 
 **Detection:** Grep for `{condition && <Component` patterns where the same component appears under multiple conditions. Check all `useRef(false)` for Strict Mode compatibility. Check substep transitions for loading state gaps.
 
 ### 2.3 — The Cascade Amplifier
 Changes propagate through dependency graphs in ways that amplify rather than converge.
 
-**Bugs:** 10 STALE marker removals generated 44 new markers (confirmed 2026-04-09, fixed with `isStaleOnlyChange()`). BUG-061 (analysis re-runs on "View Your Targets").
+**Bugs:** 10 STALE marker removals generated 44 new markers (confirmed 2026-04-09, fixed with `isStaleOnlyChange()`). BUG-061 (analysis re-runs on "View Your Landscape").
 
 **Detection:** Any operation that should be idempotent but triggers side effects. Spec graph has ~50 edges — a single canonical file change can theoretically mark all 52 downstream files.
 
 ### 2.4 — The Gate Dodger
 Security, billing, and process gates that exist but have alternate paths around them.
 
-**Bugs:** BUG-038 (rockets gate bypassed), BUG-008 (costOverride bypass), BUG-009 (arbitrary userId), BUG-010-r02 (NEXT_PUBLIC as server gate), BUG-046 (Stripe redirect injection), BUG-045 (Boss skipped compliance)
+**Bugs:** BUG-038 (credits gate bypassed), BUG-008 (costOverride bypass), BUG-009 (arbitrary userId), BUG-010-r02 (NEXT_PUBLIC as server gate), BUG-046 (Stripe redirect injection), BUG-045 (Orchestrator skipped compliance)
 
 **Detection:** Every `/api/` route needs: (1) auth via `verifySession()`, (2) rate limiting, (3) input validation, (4) no client-exposed secrets. Every agent gate needs all N reviewers passing before merge.
 
@@ -49,7 +49,7 @@ Agents that dispatch but don't complete properly — missing commits, orphan wor
 ### 2.6 — The Spec Ghost
 Deleted features resurrect because references persist in specs, prompts, or agent configs.
 
-**Bugs:** BUG-058 (category ranking survived 94 refs across 34+ files). Removing field from types.ts but leaving it in prompts.ts causes Claude to re-emit it.
+**Bugs:** BUG-058 (segment ranking survived 94 refs across 34+ files). Removing a field from types.ts but leaving it in prompts.ts causes Claude to re-emit it.
 
 **Detection:** When removing a feature/field, grep ALL layers: `prompts.ts`, `PROMPT_TEMPLATES.md`, every PRD, every STORIES.md, `manifest.json`, `INTEGRATION-MAP.md`, `store.json` features[*].files, `types.ts`. Zero references = safe.
 
@@ -97,7 +97,7 @@ The QA agent is a read-only team member that scans code and infrastructure for f
       "id": "QA-001",
       "persona": "stale-reader",
       "severity": "high|medium|low",
-      "file": "src/components/steps/Step8Skills.tsx",
+      "file": "src/components/steps/Step8Scope.tsx",
       "line": 15,
       "evidence": "loadSession() in useEffect without session prop",
       "suggested_fix": "Accept session as prop, add useEffect sync"
@@ -129,21 +129,21 @@ Invocable as `/qa:check` (passive, on recent changes) or `/qa:audit` (active, fu
 ```
 tests/
   e2e/
-    onboarding.spec.ts     — Steps 1-3 happy path + stale reader tests
-    market-research.spec.ts — Steps 4-5 + loading transition tests
-    skills-curation.spec.ts — Step 6 (simplified MVP)
-    apply.spec.ts           — Step 10 smoke test
+    onboarding.spec.ts       — Steps 1-3 happy path + stale reader tests
+    landscape-research.spec.ts — Steps 4-5 + loading transition tests
+    scope-curation.spec.ts   — Step 6 (simplified MVP)
+    launch-run.spec.ts       — Step 10 smoke test
   fixtures/
-    dummy-session.json      — Pre-built session data for mid-flow tests
+    dummy-session.json       — Pre-built session data for mid-flow tests
   helpers/
-    dummy-plug.ts           — Navigate to /?dummyplug&step=N, wait for ready
-    assertions.ts           — Common assertions (no flash, data persists, etc.)
+    dummy-plug.ts            — Navigate to /?dummyplug&step=N, wait for ready
+    assertions.ts            — Common assertions (no flash, data persists, etc.)
   playwright.config.ts
 ```
 
 ### 4.2 — Key Test Patterns
 
-**Dummy Plug for state setup:** Every test that needs to start mid-wizard uses `/?dummyplug&step=N` to fast-forward. No real API keys or resume uploads needed.
+**Dummy Plug for state setup:** Every test that needs to start mid-wizard uses `/?dummyplug&step=N` to fast-forward. No real API keys or idea-brief submissions needed.
 
 **Persona-targeted tests:**
 
@@ -151,9 +151,9 @@ tests/
 |------|---------|-------------|
 | Speed Runner | Phantom Render | Click Next at 0ms delay through all steps. Assert zero frame flicker (no element appears for <100ms then disappears). |
 | Session Persistence | Stale Reader | Complete step 3, refresh page, verify step 4 loads with all step 3 data intact. |
-| Async Overwrite | Stale Reader | Start resume parse, immediately advance. Verify parse results aren't overwritten by stale snapshot. |
-| Loading Continuity | Phantom Render | During step 4-5 (scrape→analysis), assert a loading indicator is ALWAYS visible — no 1-frame gap. |
-| Gate Probe | Gate Dodger | Call `/api/claude` without auth cookie. Assert 401. Call `/api/rockets/grant` with fake userId. Assert 403. |
+| Async Overwrite | Stale Reader | Start idea-brief parse, immediately advance. Verify parse results aren't overwritten by stale snapshot. |
+| Loading Continuity | Phantom Render | During step 4-5 (research→analysis), assert a loading indicator is ALWAYS visible — no 1-frame gap. |
+| Gate Probe | Gate Dodger | Call `/api/claude` without auth cookie. Assert 401. Call `/api/credits/grant` with fake userId. Assert 403. |
 | Double Mount | Phantom Render | On step transitions, count React mounts of the target component. Assert exactly 1. |
 
 ### 4.3 — Vercel Constraints
@@ -225,7 +225,7 @@ Node.js script (`scripts/qa-health.js`) that runs the infrastructure health prot
 Extend QA agent to walk full codebase. Add Spec Ghost detection (grep for removed features), Gate Dodger (API route audit), Silent Misconfiguration (output existence checks). Invocable via `/qa:audit`.
 
 ### Step 6: Agent-run assertions
-Build pre-merge and post-build checks as scripts callable from the Boss agent prompt. Start with: commit exists, non-trivial diff, worktree cleanup, spec ghost scan.
+Build pre-merge and post-build checks as scripts callable from the Orchestrator agent prompt. Start with: commit exists, non-trivial diff, worktree cleanup, spec ghost scan.
 
 ### Step 7: Persona-specific Playwright tests
 Loading Continuity, Async Overwrite, Double Mount tests. These require understanding the specific component behaviors — build after steps 1-6 establish the patterns.

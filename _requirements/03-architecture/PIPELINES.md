@@ -1,4 +1,4 @@
-# Jobzooka — Data Pipelines
+# AcmeLaunch — Data Pipelines
 
 > **Scope:** Pipeline stages, inputs, outputs, fallback logic, and error handling. For session state structure and data flow between steps, see `DATA_FLOW.md`. For retry strategies, see `ERROR_RECOVERY.md`.
 
@@ -8,31 +8,31 @@ This document describes every data pipeline in the application: stages, inputs, 
 
 ## Pipeline 1: Query Generation
 
-**Trigger:** User completes profile (step 3) and enters Search (step 4)
+**Trigger:** Founder completes profile (step 3) and enters Research (step 4)
 
 ```
-Profile + Preferences + avoidTerms
+Profile + Constraints + avoidTerms
   → QUERY_GEN prompt
-  → 4–6 LinkedIn search query strings
+  → 4–6 launch-research query strings
 ```
 
-**Fallback:** None — if query generation fails, user is shown error and can retry.
+**Fallback:** None — if query generation fails, the founder is shown an error and can retry.
 
 **Pipeline trace stages:** `USER_INPUT` → `QUERY_GEN`
 
 ---
 
-## Pipeline 2: Job Scraping (Bright Data)
+## Pipeline 2: Launch Research (LaunchResearchRun)
 
-**Trigger:** User confirms search queries in step 4
+**Trigger:** Founder confirms research queries in step 4
 
 ```
-Queries + Location + Employment Types + Remote flag
-  → POST /api/jobs (trigger)
-  → BD creates snapshot per query × employment type
-  → Client polls POST /api/jobs (poll) every 10 seconds
-  → BD processes listings (~30–120 seconds)
-  → Deduplicated, normalized JobListing[] returned
+Queries + Geography + Channel scope + Approved sources
+  → POST /api/research (trigger → creates LaunchResearchRun)
+  → adapter fans out one ResearchSource fetch per query × source type
+  → Client polls POST /api/research (poll) every 10 seconds
+  → adapter gathers signals from approved sources (~30–120 seconds)
+  → Deduplicated, normalized LaunchResearchResult[] returned (+ ResearchSnapshot refs)
 ```
 
 **Timing:**
@@ -43,91 +43,93 @@ Queries + Location + Employment Types + Remote flag
 
 **Normalization:**
 
-- HTML stripped from descriptions
-- Descriptions truncated to 2,000 chars
-- Deduplication by title + company (case-insensitive)
-- Flexible field mapping (handles BD's inconsistent field names)
-- Error records separated from job records
+- HTML stripped from snippets
+- Snippets truncated to 2,000 chars
+- Deduplication by signal + source (case-insensitive)
+- Flexible field mapping (handles each source's inconsistent field names)
+- Failed sources separated from result records and marked, never dropped silently
 
-**Fallback:** If all snapshots fail, user sees warning with specific error messages.
+**Consent & integrity:** A run only queries sources the founder approved (`approvedBy` / `scope` / `allowedUse` / `credentialMode` / `provenanceUrl` on each `ResearchSource`). On partial failure the run persists what it has, marks the failed sources, and applies a bounded retry — it NEVER synthesizes missing evidence to fill a gap.
 
-**Pipeline trace stages:** `BD_TRIGGER` → `BD_POLL` → `BD_RESULTS`
+**Fallback:** If all sources fail, the founder sees a warning with specific per-source error messages.
+
+**Pipeline trace stages:** `RESEARCH_TRIGGER` → `RESEARCH_POLL` → `RESEARCH_RESULTS`
 
 ---
 
-## Pipeline 3: Two-Phase Market Analysis
+## Pipeline 3: Two-Phase Landscape Analysis
 
-**Trigger:** Job scraping completes in step 4, analysis begins in step 5
+**Trigger:** Launch research completes in step 4, analysis begins in step 5
 
-### Phase 1: MARKET_PREP (Raw → Intelligence Report)
+### Phase 1: RESEARCH_PREP (Raw → Intelligence Report)
 
 ```
-JobListing[] + Profile (slim) + Employment Types + Query Stats
-  → preprocessMarketData() → normalized, truncated text (max 30K chars)
-  → buildMarketPrepPayload() → compact job records in <untrusted_job_data> tags
-  → extractHourlyRates() → hourly rate matches from descriptions
-  → buildMarketSummary() → markdown summary (top companies, seniority, industry)
-  → POST /api/claude (MARKET_PREP prompt)
-  → marketPrepReport (structured intelligence)
+LaunchResearchResult[] + Profile (slim) + Channel scope + Query Stats
+  → preprocessResearchData() → normalized, truncated text (max 30K chars)
+  → buildResearchPrepPayload() → compact result records in <untrusted_research_data> tags
+  → extractReachSignals() → reach/spend signals from snippets
+  → buildResearchSummary() → markdown summary (top channels, audiences, competitors)
+  → POST /api/claude (RESEARCH_PREP prompt)
+  → researchPrepReport (structured intelligence)
 ```
 
-**Payload Assembly (`buildMarketPrepPayload`):**
+**Payload Assembly (`buildResearchPrepPayload`):**
 
-- Jobs compacted to minimal schema: `{ t, c, loc, et, sal, sq, ea, sen, desc }`
-- Description excerpt: first 300 chars (trimmed to 150 if payload > 35KB)
-- High-volume companies flagged (2+ listings)
-- Profile slimmed: first 5 domains, 15 hard skills
-- Wrapped in `<untrusted_job_data nonce="...">` tags
+- Results compacted to minimal schema: `{ t, src, seg, ch, val, sq, ev, conf, snip }`
+- Snippet excerpt: first 300 chars (trimmed to 150 if payload > 35KB)
+- High-volume channels flagged (2+ signals)
+- Profile slimmed: first 5 markets, 15 strengths
+- Wrapped in `<untrusted_research_data nonce="...">` tags
 - Max payload: 35,000 chars
 
-### Phase 2: MARKET (Report → Final Analysis)
+### Phase 2: LANDSCAPE (Report → Final Analysis)
 
 ```
-marketPrepReport (preferred) OR raw market data (fallback)
-  → POST /api/claude (MARKET prompt)
-  → MarketAnalysis JSON
+researchPrepReport (preferred) OR raw research data (fallback)
+  → POST /api/claude (LANDSCAPE prompt)
+  → LandscapeAnalysis JSON
     ├── keywords[] (top 20–30 by frequency)
-    ├── compRanges (compensation data)
-    ├── jobTypes[] (up to 10 categories, ranked)
-    ├── miningQuestions[] (5–8 questions)
+    ├── channelRanges (reach/spend data)
+    ├── audienceSegments[] (up to 10 segments, ranked)
+    ├── openQuestions[] (5–8 questions)
     ├── discoveryRecs[] (1–3 pivots)
     ├── exclusionTags[]
-    └── educationVisibility
+    └── proofVisibility
 ```
 
 **Fallback Logic:**
 
-1. If MARKET_PREP fails → skip to single-phase MARKET with raw data
-2. If MARKET detects old single-phase output (no categories, stale format) → auto-rerun full pipeline
-3. If both fail → user sees error with retry option
+1. If RESEARCH_PREP fails → skip to single-phase LANDSCAPE with raw data
+2. If LANDSCAPE detects old single-phase output (no segments, stale format) → auto-rerun full pipeline
+3. If both fail → founder sees an error with retry option
 
-**Pipeline trace stages:** `MARKET_PREP_INPUT` → `MARKET_PREP_OUTPUT` → `MARKET_INPUT` → `MARKET_OUTPUT`
+**Pipeline trace stages:** `RESEARCH_PREP_INPUT` → `RESEARCH_PREP_OUTPUT` → `LANDSCAPE_INPUT` → `LANDSCAPE_OUTPUT`
 
 ---
 
-## Pipeline 4: Resume Generation
+## Pipeline 4: Launch Asset Generation
 
-**Trigger:** User initiates resume generation in step 8
+**Trigger:** Founder initiates asset generation in step 8
 
 ### Master + General (Single Call)
 
 ```
-Profile + MarketAnalysis + miningResults (optional) + exclusions
-  → POST /api/claude (RESUME_GEN prompt)
-  → { master: ResumeOutput, general: ResumeOutput }
+Profile + LandscapeAnalysis + founderAnswers (optional) + exclusions
+  → POST /api/claude (ASSET_GEN prompt)
+  → { master: LaunchAssetOutput, general: LaunchAssetOutput }
 ```
 
-> **Spec-ahead-of-code note:** In the target state, `miningResults` is optional. Deep-Dive Q&A is a dashboard activity the user may or may not have completed before generating resumes. The RESUME_GEN prompt must handle an empty/partial `miningResults` gracefully. Shipped code treats it as a required input.
+> **Spec-ahead-of-code note:** In the target state, `founderAnswers` is optional. The Deep-Dive Q&A is a dashboard activity the founder may or may not have completed before generating assets. The ASSET_GEN prompt must handle an empty/partial `founderAnswers` gracefully. Shipped code treats it as a required input.
 
-### Targeted (Per Category, User-Triggered)
+### Variants (Per Segment, Founder-Triggered)
 
 ```
-For each selected category:
-  masterResume + category details (from jobTypes)
-    → POST /api/claude (TARGETED prompt)
-    → ResumeDiff
-    → applyDiff(masterResume, diff)
-    → Targeted ResumeOutput
+For each selected segment:
+  masterAsset + segment details (from audienceSegments)
+    → POST /api/claude (VARIANT prompt)
+    → AssetVariant (diff)
+    → applyDiff(masterAsset, diff)
+    → segment-specific LaunchAssetOutput
 ```
 
 **applyDiff safety:**
@@ -135,45 +137,45 @@ For each selected category:
 - Deep clones master (frozen)
 - Blocks prototype pollution (`__proto__`, `constructor`, `prototype`)
 - Only allows known diff keys
-- Normalizes skill matching (lowercase, alphanumeric)
+- Normalizes keyword matching (lowercase, alphanumeric)
 
 **Cost:**
 
 - Master + General: Free
-- Targeted: 50 rockets per category (bulk: 4–6 @ 35, 7–10 @ 25)
+- Segment variants: 50 credits per segment (bulk: 4–6 @ 35, 7–10 @ 25)
 
-**Pipeline trace stages:** `RESUME_INPUT` → `RESUME_OUTPUT`
-
----
-
-## Pipeline 5: LinkedIn Generation
-
-**Trigger:** User initiates LinkedIn content generation in step 9
-
-```
-Profile + Preferences + Demographics + miningResults + #1 ranked category
-  → POST /api/claude (LINKEDIN prompt)
-  → { headline, about, experience, education, skills, formAnswers }
-```
-
-**Cost:** 75 rockets
-
-**No fallback** — failure shows error with retry option.
+**Pipeline trace stages:** `ASSET_INPUT` → `ASSET_OUTPUT`
 
 ---
 
-## Pipeline 6: Apply Heuristics Generation
+## Pipeline 5: Channel Kit Generation
 
-**Trigger:** User enters step 10
+**Trigger:** Founder initiates channel-kit generation in step 9
 
 ```
-Profile + Resume + formAnswers + rankedCategories + exclusions + preferences + demographics
-  → POST /api/claude (APPLY prompt)
-  → { heuristics, manualGuide }
+Profile + Constraints + Venture data + founderAnswers + #1 ranked segment
+  → POST /api/claude (CHANNEL_KIT prompt)
+  → { announcement, landingCopy, emailSequence, socialPosts, audienceSkills, followUpTemplates }
+```
+
+**Cost:** 75 credits
+
+**No fallback** — failure shows an error with retry option.
+
+---
+
+## Pipeline 6: Launch Run Rules Generation
+
+**Trigger:** Founder enters step 10
+
+```
+Profile + Assets + followUpTemplates + rankedSegments + exclusions + constraints + channels
+  → POST /api/claude (RUN_RULES prompt)
+  → { rules, manualGuide }
 
 Code-assembled (not AI):
-  → buildApplyPrompt(session, heuristics, uploadedResumes)
-  → chromePrompt (markdown text)
+  → buildLaunchConsolePrompt(session, rules, assetPacks)
+  → launchConsolePrompt (markdown text)
 ```
 
 **Cost:** Free
@@ -190,15 +192,15 @@ All pipelines are traced via `src/lib/pipeline.ts`.
 type PipelineStage =
   | "USER_INPUT"
   | "QUERY_GEN"
-  | "BD_TRIGGER"
-  | "BD_POLL"
-  | "BD_RESULTS"
-  | "MARKET_PREP_INPUT"
-  | "MARKET_PREP_OUTPUT"
-  | "MARKET_INPUT"
-  | "MARKET_OUTPUT"
-  | "RESUME_INPUT"
-  | "RESUME_OUTPUT";
+  | "RESEARCH_TRIGGER"
+  | "RESEARCH_POLL"
+  | "RESEARCH_RESULTS"
+  | "RESEARCH_PREP_INPUT"
+  | "RESEARCH_PREP_OUTPUT"
+  | "LANDSCAPE_INPUT"
+  | "LANDSCAPE_OUTPUT"
+  | "ASSET_INPUT"
+  | "ASSET_OUTPUT";
 ```
 
 ### Trace Buffer
@@ -206,20 +208,20 @@ type PipelineStage =
 - In-memory array, max 50 entries
 - Console logged with `[PIPELINE]` prefix
 - Auto-truncates large fields (arrays >10 items, strings >200 chars)
-- Available in Deus Mechanicus Pipeline Tracer module
+- Available in Dev Console Pipeline Tracer module
 - Not persisted — cleared on page reload
 
 ---
 
 ## Error Handling Summary
 
-| Pipeline         | On Failure              | Retry        | Fallback                   |
-| ---------------- | ----------------------- | ------------ | -------------------------- |
-| Query Generation | Show error              | Manual retry | None                       |
-| Job Scraping     | Show warnings per query | Manual retry | Partial results after 3min |
-| MARKET_PREP      | Skip to single-phase    | Automatic    | MARKET with raw data       |
-| MARKET           | Show error              | Manual retry | None                       |
-| Resume Gen       | Show error              | Manual retry | None                       |
-| Targeted Diff    | Show error per category | Manual retry | None                       |
-| LinkedIn         | Show error              | Manual retry | None                       |
-| Apply Heuristics | Show error              | Manual retry | None                       |
+| Pipeline           | On Failure              | Retry        | Fallback                   |
+| ------------------ | ----------------------- | ------------ | -------------------------- |
+| Query Generation   | Show error              | Manual retry | None                       |
+| Launch Research    | Show warnings per source | Manual retry | Partial results after 3min |
+| RESEARCH_PREP      | Skip to single-phase    | Automatic    | LANDSCAPE with raw data    |
+| LANDSCAPE          | Show error              | Manual retry | None                       |
+| Asset Gen          | Show error              | Manual retry | None                       |
+| Variant Diff       | Show error per segment  | Manual retry | None                       |
+| Channel Kit        | Show error              | Manual retry | None                       |
+| Run Rules          | Show error              | Manual retry | None                       |

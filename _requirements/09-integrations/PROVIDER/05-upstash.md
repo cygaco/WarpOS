@@ -20,7 +20,7 @@ Last verified: 2026-04-28.
 | Session sync | `src/lib/storage.ts` (lines ~274-300) | `GET /api/session` and `POST /api/session` — sync encrypted SessionData blob between localStorage and Redis (last-write-wins via timestamps line 354) |
 | Rate limit fallback | `src/lib/rate-limit-fallback.ts` | Local fallback if Redis is unreachable (fail-open with audit log) |
 | API rate limit | `src/lib/api-rate-limit.ts` | Per-user / per-route rate limiting for `/api/*` routes |
-| Ops UI cache (planned) | `services/backend/src/lib/redis.ts` | Live-tail rocket ledger stream, OAuth state nonces |
+| Ops UI cache (planned) | `services/backend/src/lib/redis.ts` | Live-tail credit ledger stream, OAuth state nonces |
 
 ## Env vars
 
@@ -33,8 +33,8 @@ Optional separate read-only token if needed for client-side reads without write 
 
 ## Project conventions
 
-- **Redis is NOT the ledger** (per `_requirements/04-features/backend/PRD.md` v3 §8.13 split rationale). Postgres is the source of truth for the rocket economy. Redis carries:
-  - `rockets:ledger:{userId}` live-tail stream (ops UI only, eventually consistent with Postgres)
+- **Redis is NOT the ledger** (per `_requirements/04-features/backend/PRD.md` v3 §8.13 split rationale). Postgres is the source of truth for the credit economy. Redis carries:
+  - `credits:ledger:{userId}` live-tail stream (ops UI only, eventually consistent with Postgres)
   - Rate-limit counters
   - Scope cache (read-through from Postgres `admin_users`)
   - OAuth state nonces (CSRF)

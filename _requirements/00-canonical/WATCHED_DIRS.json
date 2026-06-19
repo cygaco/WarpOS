@@ -139,11 +139,11 @@
       }
     },
     {
-      "path": "extension/",
-      "category": "extension",
-      "convention": "Chrome extension files. Manifest V3.",
+      "path": "launch-console/",
+      "category": "launch-console",
+      "convention": "Launch Console module files (in-app surface, not a browser extension).",
       "on_new_file": {
-        "action": "register_extension_file",
+        "action": "register_launch_console_file",
         "details": "Verify referenced in manifest.json. Update EXTENSION_SPEC.md if structural."
       }
     }

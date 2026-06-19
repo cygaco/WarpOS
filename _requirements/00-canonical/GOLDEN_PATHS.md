@@ -1,14 +1,14 @@
-# Jobzooka — Golden Paths
+# AcmeLaunch — Golden Paths
 
-<!-- SPEC-AHEAD-OF-CODE: The Primary Path below reflects the target state the next skeleton build will realize. Deep-Dive Q&A moves from an onboarding step into the dashboard as an optional tier-jump activity. Shipped code still sequences deep-dive inside onboarding (between market analysis and skills). -->
+<!-- SPEC-AHEAD-OF-CODE: The Primary Path below reflects the target state the next skeleton build will realize. Deep-Dive Q&A moves from an onboarding step into the dashboard as an optional tier-jump activity. Shipped code still sequences deep-dive inside onboarding (between landscape analysis and scope). -->
 
 Critical user journeys end-to-end. These are the paths that MUST work flawlessly. If any golden path breaks, the product is broken.
 
 ---
 
-## Golden Path 1: Full Journey (Resume → Dashboard → Applications)
+## Golden Path 1: Full Journey (Idea Brief → Dashboard → Launch)
 
-**The primary journey.** Active job seeker completes onboarding and then opts into dashboard activities to reach maximum competitiveness.
+**The primary journey.** A founder preparing a launch completes onboarding and then opts into dashboard activities to reach maximum launch-readiness.
 
 ### Flow (Target State)
 
@@ -20,109 +20,109 @@ Critical user journeys end-to-end. These are the paths that MUST work flawlessly
 **Onboarding phase (linear, required):**
 
 ```
-UPLOAD → PREFERENCES → PROFILE → SEARCH → MARKET_ANALYSIS → [ENTER DASHBOARD]
+BRIEF → CONSTRAINTS → PROFILE → RESEARCH → LANDSCAPE_ANALYSIS → [ENTER DASHBOARD]
 ```
 
 **Dashboard phase (optional, user-ordered):**
 
 ```
-dashboard → {DEEP_DIVE, SKILLS, RESUMES, LINKEDIN, AUTO_APPLY}
+dashboard → {DEEP_DIVE, SKILLS, LAUNCH_PLANS, CHANNELS, LAUNCH_RUN}
 ```
 
-The user enters the dashboard after completing 5 onboarding steps. From the dashboard they opt into any of 5 optional activities in any order — each contributes to the competitiveness score.
+The user enters the dashboard after completing 5 onboarding steps. From the dashboard they opt into any of 5 optional activities in any order — each contributes to the launch-readiness score.
 
 <!-- maps:steps:END (region=golden-paths-flow) -->
 
-The primary path changes from a linear `resume → parse → market → deep-dive → resume → linkedin → auto-apply` to `resume → parse → market → dashboard → (dashboard activities)`. Deep-Dive Q&A is no longer a forced gate before resume generation — users see their baseline dashboard first, then opt into deep-dive (and other activities) to tier-jump.
+The primary path changes from a linear `brief → extract → landscape → deep-dive → plan → channels → launch-run` to `brief → extract → landscape → dashboard → (dashboard activities)`. Deep-Dive Q&A is no longer a forced gate before plan generation — founders see their baseline dashboard first, then opt into deep-dive (and other activities) to tier-jump.
 
 ### Emotional Arc
 
 | Phase      | Step / Activity | Emotion         | What Happens                           |
 | ---------- | --------------- | --------------- | -------------------------------------- |
-| Onboarding | 1               | Trust           | "It parsed my resume correctly"        |
-| Onboarding | 2               | Control         | "I'm setting my terms"                 |
-| Onboarding | 3               | Validation      | "It understood my career"              |
-| Onboarding | 4 (prep)        | Anticipation    | "Let's see what's out there"           |
-| Onboarding | 4 (sweep)       | Momentum        | Recon sweep runs — scrape + analysis, one screen |
-| Onboarding | 4→5 (CTA)       | Satisfaction    | "Analysis complete — targets acquired" |
-| Onboarding | 5 (select)      | Discovery       | "I didn't know about these categories" |
+| Onboarding | 1               | Trust           | "It understood my idea correctly"      |
+| Onboarding | 2               | Control         | "I'm setting my constraints"           |
+| Onboarding | 3               | Validation      | "It understood my product"             |
+| Onboarding | 4 (prep)        | Anticipation    | "Let's see what the landscape looks like" |
+| Onboarding | 4 (sweep)       | Momentum        | Landscape sweep runs — research + analysis, one screen |
+| Onboarding | 4→5 (CTA)       | Satisfaction    | "Analysis complete — landscape mapped" |
+| Onboarding | 5 (select)      | Discovery       | "I didn't know about these segments"   |
 | —          | Dashboard entry | Orientation     | Baseline score visible, clear next unlocks |
 | —          | Auth Gate       | Pause           | Auth prompt at dashboard entry (dismissible) |
-| Dashboard  | Deep-Dive QA    | Depth           | "Now it really knows me" — optional tier-jump |
-| Dashboard  | Skills          | Control → Trust | "These are my skills" → "It caught the bad ones" → "I'll add what I know" |
-| Dashboard  | Resumes         | Tangible output | "I have real, downloadable resumes"    |
-| Dashboard  | LinkedIn        | Completeness    | "LinkedIn is done too"                 |
-| Dashboard  | Auto-Apply      | Momentum        | "Everything is ready. Let's apply."    |
+| Dashboard  | Deep-Dive QA    | Depth           | "Now it really knows my product" — optional tier-jump |
+| Dashboard  | Scope           | Control → Trust | "These are my angles" → "It caught the weak ones" → "I'll add what fits" |
+| Dashboard  | Launch Plans    | Tangible output | "I have real, downloadable launch plans" |
+| Dashboard  | Channel Kits    | Completeness    | "My channel assets are done too"       |
+| Dashboard  | Launch Run      | Momentum        | "Everything is ready. Let's launch."   |
 
-### Recon Sweep Detail (Steps 4-5) — LOCKED FLOW
+### Landscape Sweep Detail (Steps 4-5) — LOCKED FLOW
 
 This flow took weeks to get right. **Do NOT restructure without user approval.**
 
 ```
-RECON MISSION SCREEN (AimPage substep 0)
-├── Query editor: 3-6 editable search vectors
-├── No-fly zones: avoid terms as removable tags
-└── [Launch Recon] button
+LANDSCAPE MISSION SCREEN (PrepPage substep 0)
+├── Query editor: 3-6 editable research vectors
+├── Exclusions: avoid terms as removable tags
+└── [Start Research] button
         │
         ▼
-RECON SWEEP (AimPage substep 0→1, same screen)
-├── Scrape phases:
-│   ├── "Deploying recon drones..."
-│   ├── "Scanning the battlefield..."
-│   ├── "Intercepting target data and comp intel..."
-│   ├── "Sweeping remaining sectors..."
-│   └── "Compiling recon report..."
+LANDSCAPE SWEEP (PrepPage substep 0→1, same screen)
+├── Research phases:
+│   ├── "Gathering launch signals..."
+│   ├── "Scanning the landscape..."
+│   ├── "Collecting audience and channel intel..."
+│   ├── "Sweeping remaining sources..."
+│   └── "Compiling landscape report..."
 ├── Analysis phases (seamless continuation, no screen change):
-│   ├── "Scanning for keywords..."
-│   ├── "Mapping comp ranges..."
-│   ├── "Identifying target categories..."
+│   ├── "Extracting positioning keywords..."
+│   ├── "Mapping channel costs..."
+│   ├── "Identifying audience segments..."
 │   └── "Building targeting dossier..."
-└── "Analysis complete — targets acquired"
-    ├── N target categories identified
-    ├── Comp range summary
-    └── [View Your Targets] CTA
+└── "Analysis complete — landscape mapped"
+    ├── N audience segments identified
+    ├── Channel-cost range summary
+    └── [View Your Segments] CTA
             │
             ▼
-LOCK YOUR TARGETS SCREEN (AimPage substep 2)
-├── Category cards: name, comp range, volume, match badge
+LOCK YOUR SEGMENTS SCREEN (PrepPage substep 2)
+├── Segment cards: name, channel-cost range, demand volume, match badge
 ├── Toggle on/off (NO ranking/reordering)
-├── Discovery recommendations (add up to 10 total)
-├── FOMO warning for deselected categories
-├── [Refresh Analysis] re-runs without re-scraping
-└── [Lock categories (N) →] writes rankedCategories, ends onboarding, enters dashboard
+├── Opportunity recommendations (add up to 10 total)
+├── FOMO warning for deselected segments
+├── [Refresh Analysis] re-runs without re-researching
+└── [Lock segments (N) →] writes rankedSegments, ends onboarding, enters dashboard
             │
             ▼
-DASHBOARD (baseline competitiveness score visible)
+DASHBOARD (baseline launch-readiness score visible)
 ├── Deep-Dive Q&A (optional tier-jump activity)
-├── Skills / Resumes / LinkedIn / Auto-Apply (opt-in)
+├── Scope / Launch Plans / Channel Kits / Launch Run (opt-in)
 ```
 
-> **Target-state note:** Locking categories now advances directly to the **Dashboard** (with a baseline competitiveness score shown), not to a forced Deep Dive step. Deep-Dive Q&A is launchable from the dashboard as an optional tier-jump activity. Shipped code still routes the user directly into Deep Dive after category lock.
+> **Target-state note:** Locking segments now advances directly to the **Dashboard** (with a baseline launch-readiness score shown), not to a forced Deep Dive step. Deep-Dive Q&A is launchable from the dashboard as an optional tier-jump activity. Shipped code still routes the user directly into Deep Dive after segment lock.
 
-**Implementation:** AimPage uses 3-substep architecture with a single Step6Analysis instance (display:none toggle, NOT conditional mount). See FLOW_SPEC.md for the substep table and HYGIENE Rule 53 for why.
+**Implementation:** PrepPage uses 3-substep architecture with a single Step6Analysis instance (display:none toggle, NOT conditional mount). See FLOW_SPEC.md for the substep table and HYGIENE Rule 53 for why.
 
 ### Critical Moments
 
-1. **Resume parsing must succeed** — if it fails, user has no path forward
-2. **Recon sweep must feel continuous** — scrape → analysis → CTA on ONE screen, no flash
-3. **Market analysis must return categories** — empty results = dead end
-4. **Category selection must NOT include ranking** — toggle only, no reorder UI (HYGIENE Rule 52)
-5. **Resume generation must produce valid DOCX** — this is the tangible deliverable
-6. **Competitiveness score must increase** — flat score = no sense of progress
+1. **Idea-brief extraction must succeed** — if it fails, user has no path forward
+2. **Landscape sweep must feel continuous** — research → analysis → CTA on ONE screen, no flash
+3. **Landscape analysis must return segments** — empty results = dead end
+4. **Segment selection must NOT include ranking** — toggle only, no reorder UI (HYGIENE Rule 52)
+5. **Plan generation must produce valid exports** — this is the tangible deliverable
+6. **Launch-readiness score must increase** — flat score = no sense of progress
 
 ---
 
-## Golden Path 2: Market Intelligence Only
+## Golden Path 2: Landscape Intelligence Only
 
-**Passive looker or explorer.** User wants to understand their market position without committing to full job search.
+**Explorer.** Founder wants to understand the launch landscape without committing to a full launch plan.
 
 ### Flow
 
 ```
-Upload resume → Set preferences → Generate profile
-  → Generate queries → Scrape LinkedIn → Market analysis
-  → Review categories, comp ranges, keywords
-  → [STOP or continue to AIM]
+Submit idea brief → Set constraints → Generate profile
+  → Generate queries → Research landscape → Landscape analysis
+  → Review segments, channel-cost ranges, positioning keywords
+  → [STOP or continue to PREP]
 ```
 
 ### Emotional Arc
@@ -131,37 +131,37 @@ Upload resume → Set preferences → Generate profile
 | ---- | ------------------------------------------------ |
 | 1–3  | Quick setup, low commitment                      |
 | 4    | Curiosity                                        |
-| 5    | Insight ("So THAT'S what the market looks like") |
+| 5    | Insight ("So THAT'S what a launch here looks like") |
 
 ### Critical Moments
 
 1. **Must deliver value by step 5** — user may not go further
-2. **Compensation data must feel real** — this is what passive lookers care about most
-3. **Categories must feel actionable** — not abstract academic groupings
-4. **Free tier must cover this path** — market analysis first run is free
+2. **Channel-cost data must feel real** — this is what explorers care about most
+3. **Segments must feel actionable** — not abstract academic groupings
+4. **Free tier must cover this path** — landscape analysis first run is free
 
 ---
 
-## Golden Path 3: Resume Generation Sprint
+## Golden Path 3: Plan Generation Sprint
 
-**User who already knows their market.** Skips deep analysis, focuses on generating targeted resumes as fast as possible.
+**Founder who already knows their market.** Skips deep analysis, focuses on generating segment plans as fast as possible.
 
 ### Flow
 
 ```
-Upload resume → Quick preferences → Profile
-  → Generate queries → Quick market scan → Lock categories
-  → Skip or fast Deep Dive → Quick skills review (4-substep flow) → Generate all resumes
-  → Download DOCX files
+Submit idea brief → Quick constraints → Profile
+  → Generate queries → Quick landscape scan → Lock segments
+  → Skip or fast Deep Dive → Quick scope review (4-substep flow) → Generate all plans
+  → Download plan files
 ```
 
-**Current status:** The app supports this flow — all steps can be completed quickly with minimal input. Deep-Dive QA can be answered briefly or skipped (accordion collapse). Bulk resume generation with ZIP download is implemented.
+**Current status:** The app supports this flow — all steps can be completed quickly with minimal input. Deep-Dive QA can be answered briefly or skipped (accordion collapse). Bulk plan generation with ZIP download is implemented.
 
 ### Critical Moments
 
-1. **Bulk generation must work** — user wants 5+ targeted variants in one pass
-2. **DOCX downloads must work** — the primary deliverable
-3. **Bulk pricing must be clear** — user buying rockets for multiple categories
+1. **Bulk generation must work** — user wants 5+ segment variants in one pass
+2. **Plan downloads must work** — the primary deliverable
+3. **Bulk pricing must be clear** — user buying credits for multiple segments
 4. **Download All must bundle correctly** — ZIP with all variants
 
 ---
@@ -189,51 +189,51 @@ Open app → Session loads from localStorage (or server)
 
 ---
 
-## Golden Path 5: Rocket Purchase
+## Golden Path 5: Credit Purchase
 
-**User hits a paid feature and needs to buy rockets.**
+**User hits a paid feature and needs to buy credits.**
 
 ### Flow
 
 ```
-User triggers billable operation (targeted resume, LinkedIn, market re-run)
-  → Insufficient rockets → Soft prompt or modal
-  → User clicks "Get Rockets" → RocketStore opens
-  → Selects pack (Scout/Strike/Arsenal) → Stripe checkout
-  → Returns with ?rockets=success → Balance updated
+User triggers billable operation (segment plan, channel kit, landscape re-run)
+  → Insufficient credits → Soft prompt or modal
+  → User clicks "Get Credits" → CreditStore opens
+  → Selects pack (Starter/Pro/Scale) → Stripe checkout
+  → Returns with ?credits=success → Balance updated
   → Retries original operation
 ```
 
 ### Critical Moments
 
 1. **Cost must be clear BEFORE the action** — never surprise with a charge
-2. **Stripe redirect must return cleanly** — `?rockets=success` must trigger balance reload
+2. **Stripe redirect must return cleanly** — `?credits=success` must trigger balance reload
 3. **Balance must update immediately** — no stale cache showing old balance
 4. **Original operation must be retryable** — user shouldn't have to redo steps
 
 ---
 
-## Golden Path 6: Auto-Apply via Extension
+## Golden Path 6: Launch Run via Runner
 
-**User launches Chrome extension for LinkedIn Easy Apply automation.**
+**User launches the AcmeLaunch Runner to execute their launch actions.**
 
 ### Flow
 
 ```
-User reaches step 10 → Reviews heuristics → Installs extension (if needed)
-  → Launches auto-apply → Extension scans LinkedIn
-  → For each job: evaluate heuristics → fill form → PAUSE for review
-  → User approves or skips → Extension submits or moves on
-  → Running log of applications
+User reaches step 10 → Reviews launch rules → Connects the runner (if needed)
+  → Starts the launch run → Runner reads the launch action queue
+  → For each action: evaluate launch rules → prepare action → PAUSE for review
+  → User approves or skips → Runner publishes/sends or moves on
+  → Running log of launch actions
 ```
 
 ### Critical Moments
 
-1. **Extension must detect correctly** — clear message if not installed
-2. **Heuristics must be sensible** — apply-if/skip-if signals must match real listings
-3. **NEVER auto-submit** — always pause for user approval
-4. **Form answers must be accurate** — demographics, personal info, work auth
-5. **Resume selection must match category** — right targeted variant for each job type
+1. **Runner must connect correctly** — clear message if not connected
+2. **Launch rules must be sensible** — do/skip signals must match real launch actions
+3. **NEVER auto-publish** — always pause for user approval
+4. **Follow-up answers must be accurate** — audience details, links, offer terms
+5. **Plan selection must match segment** — right segment plan for each audience
 
 ---
 
@@ -242,10 +242,10 @@ User reaches step 10 → Reviews heuristics → Installs extension (if needed)
 1. **Dead ends** — User reaches a state where no action is possible and no guidance is given
 2. **Silent failures** — Operation fails but UI doesn't update or show error
 3. **Data loss** — Session data disappears or corrupts without warning
-4. **Stale outputs** — Resume generated from old market data after user re-ran analysis
-5. **Invisible costs** — Rockets deducted without clear prior notification
+4. **Stale outputs** — Plan generated from old landscape data after user re-ran analysis
+5. **Invisible costs** — Credits deducted without clear prior notification
 6. **Forced commitment** — User feels trapped in a step they can't exit
-7. **Broken downloads** — DOCX file is corrupted or contains wrong content
-8. **Dishonest defaults** — Skills the user doesn't have included by default (market-only skills must default to excluded)
+7. **Broken downloads** — Plan file is corrupted or contains wrong content
+8. **Dishonest defaults** — Angles the user doesn't have proof for included by default (research-only angles must default to excluded)
 9. **iOS toggle switches** — Not part of the design system. All boolean lists use card-row boxes (COMPONENT_LIBRARY.md)
 10. **Colored source dots / star priorities** — Removed in Run 007. Must not reappear in any form

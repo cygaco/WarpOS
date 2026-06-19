@@ -91,8 +91,8 @@ When the INPUTS file doesn't specify a control type explicitly, agents should us
 
 **Step 4: Special cases**
 - Options have a warning/exclusion meaning → use a distinct visual treatment (e.g., reddish cards for dealbreakers)
-- Options come from a large known dataset (cities, majors, schools) → combobox with type-to-filter
-- Options are AI-assessed and user corrects → dropdown with pre-selected AI value (e.g., seniority, degree)
+- Options come from a large known dataset (cities, channels, audience segments) → combobox with type-to-filter
+- Options are AI-assessed and user corrects → dropdown with pre-selected AI value (e.g., audience stage, launch stage)
 
 **When the INPUTS file specifies a control type, that overrides this framework.** The framework is a fallback for unspecified controls.
 
@@ -128,7 +128,7 @@ Every screen with editable fields must have a "Downstream data contracts" table.
 
 | Field(s) | Consumed by |
 |---|---|
-| The session field name or description | Feature + specific usage (e.g., "Resume generation — skills section") |
+| The session field name or description | Feature + specific usage (e.g., "Plan generation — milestones section") |
 
 Rules for these contracts live in `_requirements/03-architecture/DATA-CONTRACTS.md`.
 
@@ -165,7 +165,7 @@ If a screen has async dependencies (API calls, AI generation, parsing), document
 ## Features with no user inputs
 
 If a feature is purely computational, display-only, or system-level, it does not need an INPUTS.md. Examples:
-- **Competitiveness scoring** — computed from other data, no user input
+- **Launch-readiness scoring** — computed from other data, no user input
 - **Shell** — navigation and layout, no editable fields
 
 Note this in the feature's PRD: "This feature has no user-facing input fields. See related features for upstream inputs."
@@ -183,7 +183,7 @@ INPUTS files describe **what** the user does, not **how** they do it on a specif
 - Desktop vs mobile interaction patterns (combobox vs full-screen sheet)
 - Keyboard shortcuts (only exist on desktop)
 - Touch targets and minimum sizes (only matter on mobile)
-- Extension-specific Chrome APIs
+- Launch Console runner-specific APIs
 
 If you find yourself writing "click" or "tap", ask: does the platform matter here? Usually it doesn't.
 

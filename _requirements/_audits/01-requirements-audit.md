@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-30
 **Scope:** All 14 features
-**Features audited:** 14 (auth, auto-apply, competitiveness, deep-dive-qa, deus-mechanicus, extension, linkedin, market-research, onboarding, profile, resume-generation, rockets-economy, shell, skills-curation)
+**Features audited:** 14 (auth, launch-execution, launch-readiness, deep-dive-qa, dev-console, launch-console, channels, launch-research, onboarding, founder-profile, plan-generation, credits-economy, shell, scope-curation)
 
 ## Summary
 
@@ -13,16 +13,16 @@
 | MEDIUM | 18 |
 | LOW | 15 |
 
-*Post-verification: 5 "missing Entry State" findings downgraded (competitiveness, deus-mechanicus, extension, profile, rockets-economy are cross-cutting/overlay — Entry State only required for step components per GRANULAR_STORIES.md). Button text, PROMPTS.md refs, SkillEntry type, AGENTS.md list, extension platform language all FIXED.*
+*Post-verification: 5 "missing Entry State" findings downgraded (launch-readiness, dev-console, launch-console, founder-profile, credits-economy are cross-cutting/overlay — Entry State only required for step components per GRANULAR_STORIES.md). Button text, PROMPTS.md refs, ScopeEntry type, AGENTS.md list, launch-console platform language all FIXED.*
 
 ## Agent Risk Assessment
 
 If we ran builders now, the top risks are:
 
-1. **Missing Entry State metadata** in market-research (28 stories for Steps 4-5) — builders will implement only happy paths.
-2. **Competitiveness scoring formula ambiguity** (resume-generation) — two features will implement contradictory scoring math.
+1. **Missing Entry State metadata** in launch-research (28 stories for Steps 4-5) — builders will implement only happy paths.
+2. **LaunchReadinessScore scoring formula ambiguity** (plan-generation) — two features will implement contradictory scoring math.
 3. **Button text / copy mismatches** across stories, COPY, and INPUTS files (deep-dive-qa, onboarding) — builders will implement wrong labels.
-4. **Missing TypeScript field** (`priority` on `SkillEntry`) — skills-curation builder will fail type checking immediately.
+4. **Missing TypeScript field** (`priority` on `ScopeEntry`) — scope-curation builder will fail type checking immediately.
 
 ## Findings by Category
 
@@ -30,28 +30,28 @@ If we ran builders now, the top risks are:
 
 #### Missing Entry State Metadata (step-component features only)
 
-*Per GRANULAR_STORIES.md: Entry State required only for step/screen component stories. Cross-cutting features (competitiveness, deus-mechanicus, extension, profile, rockets-economy) correctly omit it — their stories are utility/overlay, not wizard steps.*
+*Per GRANULAR_STORIES.md: Entry State required only for step/screen component stories. Cross-cutting features (launch-readiness, dev-console, launch-console, founder-profile, credits-economy) correctly omit it — their stories are utility/overlay, not wizard steps.*
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 1 | HIGH | No `Entry state:` on any of 28 stories for Steps 4-5 | market-research/STORIES.md | Add Entry state per FLOW_SPEC.md Step 4-5 tables |
+| 1 | HIGH | No `Entry state:` on any of 28 stories for Steps 4-5 | launch-research/STORIES.md | Add Entry state per FLOW_SPEC.md Step 4-5 tables |
 | 2 | MEDIUM | auth has only 1 Entry state across 28 stories — auth modal stories could benefit from entry context | auth/STORIES.md | Add Entry state where auth modal entry conditions vary |
 
 #### Systemic: Sparse CS-XXX Inheritance
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 8 | MEDIUM | 22/27 stories missing Inherits field | linkedin/STORIES.md | Add CS-001, CS-005, CS-006 where applicable |
-| 9 | MEDIUM | 13/28 stories missing Inherits field | market-research/STORIES.md | Add CS-008, CS-009 for API call stories |
-| 10 | MEDIUM | Only 1/28 stories has Inherits | competitiveness/STORIES.md | Review all for CS-001 applicability |
-| 11 | MEDIUM | Only 1/29 stories has Inherits | extension/STORIES.md | Add CS-003 where validation occurs |
+| 8 | MEDIUM | 22/27 stories missing Inherits field | channels/STORIES.md | Add CS-001, CS-005, CS-006 where applicable |
+| 9 | MEDIUM | 13/28 stories missing Inherits field | launch-research/STORIES.md | Add CS-008, CS-009 for API call stories |
+| 10 | MEDIUM | Only 1/28 stories has Inherits | launch-readiness/STORIES.md | Review all for CS-001 applicability |
+| 11 | MEDIUM | Only 1/29 stories has Inherits | launch-console/STORIES.md | Add CS-003 where validation occurs |
 
 #### PRD Section Issues
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 12 | HIGH | JTBD uses platform-specific "browser extension", "popup" | extension/PRD.md §4 | Reword to "automation agent" |
-| 13 | HIGH | Goals use "Extension"/"Popup" | extension/PRD.md §6 | Reword to platform-neutral |
-| 14 | HIGH | HL-EXT-06 uses "popup" in title and AC | extension/HL-STORIES.md | Rename to "Agent Status Interface" |
-| 15 | MEDIUM | "heartbeat" is implementation detail in HL story | extension/HL-STORIES.md HL-EXT-07 | Replace with "connectivity monitoring" |
+| 12 | HIGH | JTBD uses platform-specific "browser extension", "popup" | launch-console/PRD.md §4 | Reword to "launch runner" |
+| 13 | HIGH | Goals use "Extension"/"Popup" | launch-console/PRD.md §6 | Reword to platform-neutral |
+| 14 | HIGH | HL-LC-06 uses "popup" in title and AC | launch-console/HL-STORIES.md | Rename to "Runner Status Interface" |
+| 15 | MEDIUM | "heartbeat" is implementation detail in HL story | launch-console/HL-STORIES.md HL-LC-07 | Replace with "connectivity monitoring" |
 
 #### Onboarding-Specific Standards Issues
 | # | Severity | Finding | Location | Suggested Fix |
@@ -66,55 +66,55 @@ If we ran builders now, the top risks are:
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 21 | CRITICAL | Button text mismatch: "Continue deep dive"/"Skip to skills" vs "Keep going"/"Skip & finish" | deep-dive-qa/STORIES.md vs COPY.md & INPUTS.md | Reconcile — INPUTS/COPY is source of truth |
+| 21 | CRITICAL | Button text mismatch: "Continue deep dive"/"Skip to scope" vs "Keep going"/"Skip & finish" | deep-dive-qa/STORIES.md vs COPY.md & INPUTS.md | Reconcile — INPUTS/COPY is source of truth |
 | 22 | CRITICAL | PRD UI mock button text also differs from COPY | deep-dive-qa/PRD.md §12 | Update to match COPY.md |
-| 23 | HIGH | Missing INPUTS controls for form answers/hard limits review pre-launch | auto-apply/INPUTS.md | Add read-only review sections |
-| 24 | HIGH | Missing copy for auto-parse, edit resume text, re-parse flows | onboarding/COPY.md | Add missing copy entries |
-| 25 | MEDIUM | HL-LNK-06 (Preview) scope conflict: Post-MVP in HL but MVP in GS stories | linkedin/HL-STORIES.md vs STORIES.md | Decide and align |
+| 23 | HIGH | Missing INPUTS controls for follow-up responses/risk limits review pre-launch | launch-execution/INPUTS.md | Add read-only review sections |
+| 24 | HIGH | Missing copy for auto-extract, edit idea brief text, re-extract flows | onboarding/COPY.md | Add missing copy entries |
+| 25 | MEDIUM | HL-CHN-06 (Preview) scope conflict: Post-MVP in HL but MVP in GS stories | channels/HL-STORIES.md vs STORIES.md | Decide and align |
 | 26 | MEDIUM | Missing OAuth "coming soon" copy | auth/COPY.md | Add OAuth unavailability section |
 | 27 | MEDIUM | Missing empty/initial state copy | auth/COPY.md | Add initial modal state strings |
-| 28 | MEDIUM | Missing "Strong fit"/"Worth exploring" badge copy | resume-generation/COPY.md | Add 2 missing badge labels |
-| 29 | MEDIUM | FOMO copy discrepancy (positive vs negative framing) | competitiveness/COPY.md vs STORIES.md | Pick one framing, align |
-| 30 | LOW | COPY template variables not documented | linkedin/COPY.md | Add Parameters table |
+| 28 | MEDIUM | Missing "Strong fit"/"Worth exploring" badge copy | plan-generation/COPY.md | Add 2 missing badge labels |
+| 29 | MEDIUM | Urgency copy discrepancy (positive vs negative framing) | launch-readiness/COPY.md vs STORIES.md | Pick one framing, align |
+| 30 | LOW | COPY template variables not documented | channels/COPY.md | Add Parameters table |
 
 ### 3. Horizontal Consistency (Cross-Feature)
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 31 | CRITICAL | Competitiveness scoring formula internally inconsistent — denominator ambiguous | resume-generation/PRD.md §11, GS-RES-15 | Clarify: total_selected vs total_available |
-| 32 | CRITICAL | Parallel build ordering comment inaccurate (GS-RES-08/09/11 deps) | resume-generation/STORIES.md | Fix dependency comment |
-| 33 | HIGH | Step exit gate for targeted resumes unspecified (required or optional?) | resume-generation/INPUTS.md | Clarify step progression rules |
-| 34 | HIGH | Downstream data contract wires incomplete (rankedCategories, uploadedResumes) | resume-generation/INPUTS.md | Expand downstream table |
-| 35 | HIGH | AimPage.tsx listed in shell PRD but owned by market-research | shell/PRD.md §13 | Remove AimPage from shell impl map |
-| 36 | MEDIUM | Cross-feature story inheritance missing — downstream features don't reference RKT stories | rockets-economy (systemic) | Add Inherits: GS-RKT-06 to consuming features |
-| 37 | MEDIUM | Goal clarity gap — free tier "success" scenario ambiguous | rockets-economy/PRD.md §6 | Clarify 1-targeted scenario as baseline |
-| 38 | MEDIUM | GS-RKT-11 idempotency dependency implicit | rockets-economy/STORIES.md | Make AC explicit about Redis check |
+| 31 | CRITICAL | LaunchReadinessScore scoring formula internally inconsistent — denominator ambiguous | plan-generation/PRD.md §11, GS-PLN-15 | Clarify: total_selected vs total_available |
+| 32 | CRITICAL | Parallel build ordering comment inaccurate (GS-PLN-08/09/11 deps) | plan-generation/STORIES.md | Fix dependency comment |
+| 33 | HIGH | Step exit gate for segment-specific asset packs unspecified (required or optional?) | plan-generation/INPUTS.md | Clarify step progression rules |
+| 34 | HIGH | Downstream data contract wires incomplete (rankedSegments, submittedBriefs) | plan-generation/INPUTS.md | Expand downstream table |
+| 35 | HIGH | PrepPage.tsx listed in shell PRD but owned by launch-research | shell/PRD.md §13 | Remove PrepPage from shell impl map |
+| 36 | MEDIUM | Cross-feature story inheritance missing — downstream features don't reference RKT stories | credits-economy (systemic) | Add Inherits: GS-RKT-06 to consuming features |
+| 37 | MEDIUM | Goal clarity gap — free tier "success" scenario ambiguous | credits-economy/PRD.md §6 | Clarify 1-segment-plan scenario as baseline |
+| 38 | MEDIUM | GS-RKT-11 idempotency dependency implicit | credits-economy/STORIES.md | Make AC explicit about Redis check |
 
 ### 4. Agent-Readability
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 39 | CRITICAL | Missing `priority` field on SkillEntry TypeScript interface | src/lib/types.ts line 183-191 | Add `priority?: number` |
-| 40 | HIGH | GS-ONB-03 AC references context/demographics but unclear if PARSE produces them | onboarding/STORIES.md | Clarify which fields come from PARSE vs user |
-| 41 | HIGH | GS-ONB-18 "all preferences saved" gate undefined — which substeps? | onboarding/STORIES.md | List all 6 prerequisite substep story IDs |
+| 39 | CRITICAL | Missing `priority` field on ScopeEntry TypeScript interface | src/lib/types.ts line 183-191 | Add `priority?: number` |
+| 40 | HIGH | GS-ONB-03 AC references context/audience but unclear if EXTRACT produces them | onboarding/STORIES.md | Clarify which fields come from EXTRACT vs user |
+| 41 | HIGH | GS-ONB-18 "all constraints saved" gate undefined — which substeps? | onboarding/STORIES.md | List all 6 prerequisite substep story IDs |
 | 42 | HIGH | GS-DDQ-15 example answers build process under-specified | deep-dive-qa/STORIES.md | Add storage location, count, generation method |
 | 43 | HIGH | GS-DDQ-20 chat message storage — dismissed questions unclear | deep-dive-qa/STORIES.md | Clarify: dismissed = no chat entry |
-| 44 | HIGH | Step 2 vs Step 3 boundary unclear (Quick Check vs Resume Confirm) | onboarding/STORIES.md GS-ONB-23/24 | Clarify data ownership per step |
-| 45 | MEDIUM | Form answer confidence badge UI treatment unspecified | linkedin/INPUTS.md | Add color/icon spec |
-| 46 | MEDIUM | Fire mode entry state should be "Heuristics-complete" not "Any" | auto-apply/STORIES.md GS-APL-12-14 | Update entry state |
-| 47 | MEDIUM | "Finish" button exit gate contradicts competitiveness bonus requirement | auto-apply/INPUTS.md | Clarify bonus vs no-bonus finish paths |
+| 44 | HIGH | Step 2 vs Step 3 boundary unclear (Quick Check vs Brief Confirm) | onboarding/STORIES.md GS-ONB-23/24 | Clarify data ownership per step |
+| 45 | MEDIUM | Follow-up response confidence badge UI treatment unspecified | channels/INPUTS.md | Add color/icon spec |
+| 46 | MEDIUM | Launch-run mode entry state should be "Heuristics-complete" not "Any" | launch-execution/STORIES.md GS-RUN-12-14 | Update entry state |
+| 47 | MEDIUM | "Finish" button exit gate contradicts readiness bonus requirement | launch-execution/INPUTS.md | Clarify bonus vs no-bonus finish paths |
 | 48 | LOW | GS-ONB-12 AC embeds TypeScript hygiene rule | onboarding/STORIES.md | Move to developer note |
-| 49 | LOW | COPY.md "page refreshes" should be "session restore" | competitiveness/STORIES.md GS-CMP-27 | Replace platform term |
+| 49 | LOW | COPY.md "page refreshes" should be "session restore" | launch-readiness/STORIES.md GS-RDY-27 | Replace platform term |
 
 ### 5. Agent Failure Modes
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 50 | HIGH | Seniority dropdown enum in stories not auto-validated against prompts.ts | onboarding/STORIES.md GS-ONB-19 | Reference prompts.ts as source of truth |
-| 51 | HIGH | Component naming debt (Step3Preferences = Step 2, Step4Profile = Step 3) | onboarding/PRD.md §2 | Add explicit mapping table |
-| 52 | MEDIUM | Platform terminology inconsistency in COPY ("Jobzooka Launcher" vs "Chrome extension") | auto-apply/COPY.md | Standardize to "Jobzooka Launcher" in generic text |
-| 53 | MEDIUM | Circular/unclear dependency on form answers in extension payload assembly | auto-apply/STORIES.md GS-APL-20/31 | Add explicit data availability note |
-| 54 | LOW | Missing loading states for extension connection and prompt generation | auto-apply/COPY.md | Add 3 loading copy entries |
+| 50 | HIGH | Audience-stage dropdown enum in stories not auto-validated against prompts.ts | onboarding/STORIES.md GS-ONB-19 | Reference prompts.ts as source of truth |
+| 51 | HIGH | Component naming debt (Step3Constraints = Step 2, Step4Profile = Step 3) | onboarding/PRD.md §2 | Add explicit mapping table |
+| 52 | MEDIUM | Platform terminology inconsistency in COPY ("AcmeLaunch Runner" vs "Launch Console") | launch-execution/COPY.md | Standardize to "AcmeLaunch Runner" in generic text |
+| 53 | MEDIUM | Circular/unclear dependency on follow-up responses in launch-action payload assembly | launch-execution/STORIES.md GS-RUN-20/31 | Add explicit data availability note |
+| 54 | LOW | Missing loading states for launch-console connection and prompt generation | launch-execution/COPY.md | Add 3 loading copy entries |
 
 ### 6. Standards Cross-Check
 
@@ -128,28 +128,28 @@ If we ran builders now, the top risks are:
 
 | # | Severity | Finding | Location | Suggested Fix |
 |---|---|---|---|---|
-| 58 | HIGH | Missing loading states in COPY for 3 features | auto-apply, onboarding COPY.md | Add loading copy |
+| 58 | HIGH | Missing loading states in COPY for 3 features | launch-execution, onboarding COPY.md | Add loading copy |
 | 59 | HIGH | Celebration screen referenced but not detailed | onboarding/STORIES.md GS-ONB-21 | Add celebration screen spec |
 | 60 | HIGH | Location city picker missing tablet breakpoint | onboarding/INPUTS.md | Add 641-1024px guidance |
-| 61 | HIGH | Education "Honors" vs "Notable" purpose unclear | onboarding/INPUTS.md | Clarify relationship |
-| 62 | MEDIUM | Education degree dropdown missing Vocational/Certificate/High School | onboarding/INPUTS.md | Expand options |
-| 63 | MEDIUM | Deal-breaker "On-site only" visibility rule ambiguous | onboarding/INPUTS.md | Clarify: exclusive selection or any inclusion |
+| 61 | HIGH | "Differentiators" vs "Notable" purpose unclear | onboarding/INPUTS.md | Clarify relationship |
+| 62 | MEDIUM | Launch-stage dropdown missing Waitlist/Beta/Relaunch | onboarding/INPUTS.md | Expand options |
+| 63 | MEDIUM | Deal-breaker "Paid channels only" visibility rule ambiguous | onboarding/INPUTS.md | Clarify: exclusive selection or any inclusion |
 | 64 | MEDIUM | Direction presets copy doesn't clarify control type or selection model | onboarding/COPY.md | Expand with card/single-select note |
 | 65 | LOW | Quick Check toggle interaction model (opt-in vs state) ambiguous | onboarding/COPY.md | Clarify default behavior |
 | 66 | LOW | Button text inconsistent tense/arrow usage across onboarding | onboarding/COPY.md | Standardize pattern |
 | 67 | LOW | GS-ONB-25 concurrent save safety not specified | onboarding/STORIES.md | Add debounce/serialization rule |
-| 68 | LOW | Compensation label clarity (primary vs helper) | onboarding/INPUTS.md | Clarify which is primary |
+| 68 | LOW | Budget label clarity (primary vs helper) | onboarding/INPUTS.md | Clarify which is primary |
 | 69 | LOW | City picker fallback interaction unclear (free-text validation, return to list) | onboarding/INPUTS.md | Detail fallback UX |
 
 ## Top 10 Actions Before Next Run
 
-1. **Add Entry State metadata to market-research** (28 stories for Steps 4-5) — only step-component feature missing it (1 finding)
-2. **Fix competitiveness scoring formula** in resume-generation PRD §11 — clarify denominator, cap behavior, OVERKILL threshold (2 findings)
+1. **Add Entry State metadata to launch-research** (28 stories for Steps 4-5) — only step-component feature missing it (1 finding)
+2. **Fix LaunchReadinessScore scoring formula** in plan-generation PRD §11 — clarify denominator, cap behavior, OVERKILL threshold (2 findings)
 3. **Reconcile button text mismatches** in deep-dive-qa (stories vs COPY/INPUTS) and onboarding (PRD UI ref vs COPY) (3 findings)
-4. **Add `priority?: number` to SkillEntry** in types.ts — type blocker for skills-curation builder (1 finding)
-5. **Fix extension platform-neutrality violations** — JTBD, Goals, and HL story "popup" references (4 findings)
+4. **Add `priority?: number` to ScopeEntry** in types.ts — type blocker for scope-curation builder (1 finding)
+5. **Fix launch-console platform-neutrality violations** — JTBD, Goals, and HL story "popup" references (4 findings)
 6. **Reclassify 3 onboarding HL stories** from Post-MVP to MVP to match PRD (3 findings)
-7. **Add missing INPUTS controls** for auto-apply form answers/hard limits review (1 finding)
-8. **Complete CS-XXX inheritance audit** across linkedin (22 stories), market-research (13), competitiveness (27), extension (28) (4 findings)
+7. **Add missing INPUTS controls** for launch-execution follow-up responses/risk limits review (1 finding)
+8. **Complete CS-XXX inheritance audit** across channels (22 stories), launch-research (13), launch-readiness (27), launch-console (28) (4 findings)
 9. **Fix onboarding exit gates** that are vacuous due to pre-selected defaults (1 finding, 4 sections)
-10. **Add missing COPY entries** across auth (OAuth "coming soon"), resume-generation (2 badges), auto-apply (3 loading states), onboarding (re-edit flow) (5 findings)
+10. **Add missing COPY entries** across auth (OAuth "coming soon"), plan-generation (2 badges), launch-execution (3 loading states), onboarding (re-edit flow) (5 findings)

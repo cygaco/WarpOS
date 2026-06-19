@@ -1,4 +1,4 @@
-# Jobzooka — UX Principles & Emotional Design
+# AcmeLaunch — UX Principles & Emotional Design
 
 ---
 
@@ -10,14 +10,14 @@ The user must always know:
 
 - What step they're on (PhaseBar, SidePanel, progress pill)
 - What's happening right now (loading states, progress indicators)
-- What they've accomplished (competitiveness score, completed phases)
+- What they've accomplished (launch readiness score, completed phases)
 - What comes next (step labels, CTA buttons)
 
 **Current implementation:**
 
-- PhaseBar with READY/AIM/FIRE pills + step indicators
+- PhaseBar with PLAN/PREP/LAUNCH pills + step indicators
 - ProgressSteps component during multi-phase operations
-- Competitiveness meter showing cumulative progress
+- Launch readiness meter showing cumulative progress
 - Loading text with ellipsis during API calls
 
 ### 2. User Control & Freedom
@@ -67,9 +67,9 @@ The system should prevent errors before they happen:
 The user shouldn't have to remember information:
 
 - Step labels describe what each step does
-- Market analysis surfaces keywords and categories (user selects, doesn't generate)
-- Form answers are pre-filled from earlier data
-- Profile is AI-generated from resume (user verifies, doesn't write from scratch)
+- Landscape research surfaces audience segments and channels (founder selects, doesn't generate)
+- Follow-up answers are pre-filled from earlier data
+- FounderProfile is AI-generated from the idea brief (founder verifies, doesn't write from scratch)
 
 ### 6. Flexibility & Efficiency
 
@@ -77,7 +77,7 @@ Power users should be able to move faster:
 
 - Keyboard shortcuts (Backspace, "?")
 - Direct step navigation via SidePanel
-- Bulk operations (Download All resumes, Select All categories)
+- Bulk operations (Download All asset packs, Select All segments)
 - Dirty tracking skips invalidation when nothing changed
 
 ### 7. Aesthetic & Minimalist Design
@@ -99,9 +99,9 @@ What the user should FEEL at each phase of the wizard.
 
 **Target emotion:** "This is going to work."
 
-- Resume parsing should feel like magic (fast, accurate extraction)
-- Profile generation should validate the user's experience ("It understood my career")
-- Preferences should feel comprehensive but not overwhelming
+- Idea-brief parsing should feel like magic (fast, accurate extraction)
+- FounderProfile generation should validate the founder's idea ("It understood my product")
+- Launch constraints should feel comprehensive but not overwhelming
 - Celebration at onboarding completion reinforces commitment
 
 **Design signals:**
@@ -110,53 +110,53 @@ What the user should FEEL at each phase of the wizard.
 - AI badge on generated content (shows intelligence, not templates)
 - Celebration overlay with confetti after step 3
 
-### READY Phase (Steps 4–5): Curiosity
+### PLAN Phase (Steps 4–5): Curiosity
 
-**Target emotion:** "Show me what's out there."
+**Target emotion:** "Show me my launch landscape."
 
-- Search queries should feel targeted (not generic)
-- Market analysis should reveal insights the user didn't know
-- Categories should feel like real opportunities, not abstract groupings
-- Compensation data should give context ("Am I being paid fairly?")
+- Research queries should feel targeted (not generic)
+- Landscape research should reveal insights the founder didn't know
+- Audience segments should feel like real opportunities, not abstract groupings
+- Channel and benchmark data should give context ("Where does my audience actually spend time?")
 
 **Design signals:**
 
-- Real job count from real scraping (not synthetic)
-- Category descriptions explain WHY each is relevant to the user
+- Real signal count from real launch research (not synthetic)
+- Segment descriptions explain WHY each is relevant to the founder
 - Discovery recommendations spark "I hadn't thought of that"
-- Competitiveness score gives a baseline ("Here's where I stand")
+- Launch readiness score gives a baseline ("Here's where I stand")
 
-### AIM Phase (Steps 6–9): Control
+### PREP Phase (Steps 6–9): Control
 
 **Target emotion:** "I'm in the driver's seat."
 
-- Deep-Dive QA lets the user add context the resume missed
-- Skills curation gives direct control over keyword inclusion
-- Resume generation produces tangible, downloadable output
-- LinkedIn content is ready to use immediately
+- Deep-Dive Q&A lets the founder add context the idea brief missed
+- Scope curation gives direct control over which milestones and tasks are included
+- Asset-pack generation produces tangible, downloadable output
+- Channel-ready launch assets are ready to use immediately
 
 **Design signals:**
 
-- Toggle controls for every skill (include/exclude)
-- Category selection (toggle on/off) at Step 5 lock
-- DOCX download = real, usable artifact
-- Competitiveness score climbing with each completed step
+- Toggle controls for every milestone and task (include/exclude)
+- Segment selection (toggle on/off) at Step 5 lock
+- Asset-pack export = real, usable artifact
+- Launch readiness score climbing with each completed step
 - Score celebrations reinforce progress
 
-### FIRE Phase (Step 10): Momentum
+### LAUNCH Phase (Step 10): Momentum
 
 **Target emotion:** "Let's go. I'm ready."
 
-- Everything is assembled: resumes, LinkedIn, form answers, heuristics
-- Auto-apply path is clear and straightforward
-- Manual guide provides fallback if extension isn't used
-- The system has done the hard work; user just needs to execute
+- Everything is assembled: asset packs, channel posts, follow-up sequences, launch rules
+- The guided launch run path is clear and straightforward
+- A manual checklist provides a fallback if the Launch Console isn't used
+- The system has done the hard work; the founder just needs to execute
 
 **Design signals:**
 
-- Chrome prompt is one click to copy
-- Heuristics are concrete (apply-if/skip-if lists)
-- Resume selection is automatic per category
+- The Launch Console handoff is one click to copy
+- Launch rules are concrete (publish-if/hold-if lists)
+- Asset-pack selection is automatic per segment
 - Session summary shows everything that was generated
 
 ---
@@ -170,14 +170,14 @@ What the user should FEEL at each phase of the wizard.
 3. **Active content** — Cards, data displays, form fields
 4. **Secondary actions** — Ghost/outline buttons, text links
 5. **Helper text** — Muted color, smaller font
-6. **System chrome** — PhaseBar, RocketBar, SidePanel (present but not attention-grabbing)
+6. **System chrome** — PhaseBar, CreditBar (credit balance), SidePanel (present but not attention-grabbing)
 
 ### Progressive Disclosure Pattern
 
 - **Default visible:** Primary content, main CTA, current step
 - **Expand to see:** Details, sub-sections, additional options
 - **Modal/overlay:** Confirmations, settings, purchases, auth
-- **Hidden:** Dev tools (Deus Mechanicus), keyboard shortcuts
+- **Hidden:** Dev tools (Dev Console), keyboard shortcuts
 
 ---
 
@@ -194,7 +194,7 @@ What the user should FEEL at each phase of the wizard.
 
 - No ARIA labels on custom components
 - No skip-to-content link
-- CompetitivenessMeter (SVG arc) has no text alternative
+- LaunchReadinessMeter (SVG arc) has no text alternative
 - Color alone used for some state indicators (should add icons/text)
 - Tab order not explicitly managed
 - No reduced-motion media query support

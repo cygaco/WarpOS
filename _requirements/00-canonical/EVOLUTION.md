@@ -1,4 +1,4 @@
-# Jobzooka — Product Evolution Spec
+# AcmeLaunch — Product Evolution Spec
 
 Future ideas and post-MVP vision. Nothing in this document is canonical — these are possibilities, not commitments.
 
@@ -17,37 +17,37 @@ Some items listed below have already been implemented. This table distinguishes 
 | PDF export | DONE | `src/lib/pdf-generator.ts` |
 | DOCX export | DONE | `src/lib/docx-generator.ts` |
 | Mobile responsive | FUTURE | Desktop-first per FLOW_SPEC |
-| Cover letter generation | FUTURE | Not in current feature backlog |
-| Multi-platform scraping | FUTURE | Only LinkedIn via Bright Data |
-| Application tracking | FUTURE | No tracking beyond apply history |
+| Press-kit generation | FUTURE | Not in current feature backlog |
+| Multi-source research | FUTURE | Single Launch Research adapter today |
+| Launch tracking | FUTURE | No tracking beyond launch-run history |
 
 ---
 
 ## Near-Term Improvements (Enhance What Exists)
 
-### Multi-Platform Job Scraping
+### Multi-Source Landscape Research
 
-- Add Indeed, Glassdoor, and other job boards alongside LinkedIn
+- Add directories, communities, and marketplaces alongside the default research sources
 - Normalize data across sources
-- Richer market intelligence from broader data set
+- Richer landscape intelligence from a broader signal set
 
-### Application Tracking
+### Launch Tracking
 
-- Track which jobs were applied to (from auto-apply logs)
-- Status tracking: applied → interview → offer → rejected
+- Track which launch actions were executed (from launch-run logs)
+- Status tracking: planned → published → responded → converted
 - Follow-up reminders
 
-### Resume Format Options
+### Plan Format Options
 
-- Multiple DOCX templates (modern, traditional, ATS-optimized)
+- Multiple plan templates (lean, detailed, investor-ready)
 - PDF export alongside DOCX
 - Custom formatting controls (font, spacing, sections)
 
-### Improved Market Re-Runs
+### Improved Landscape Re-Runs
 
-- Show diff between old and new market analysis
-- Track how the market has changed over time
-- Alert when new high-match categories appear
+- Show diff between old and new landscape analysis
+- Track how the landscape has changed over time
+- Alert when new high-fit segments appear
 
 ### Mobile Responsive
 
@@ -59,57 +59,57 @@ Some items listed below have already been implemented. This table distinguishes 
 
 ## Medium-Term Features (Expand Scope)
 
-### Cover Letter Generation
+### Press-Kit Generation
 
-- Context-aware cover letters per category or per company
+- Context-aware press kits per segment or per outlet
 - Templated sections with personalized content
 - Tone control (formal, conversational, technical)
 
-### Interview Prep
+### Launch-Day Prep
 
-- Generated interview questions based on job categories
-- Suggested answer frameworks using user's experience
-- Company research summaries
+- Generated launch-day checklists based on audience segments
+- Suggested response frameworks using the founder's positioning
+- Channel research summaries
 
-### Networking Recommendations
+### Outreach Recommendations
 
-- Identify companies where user's connections work
+- Identify communities and creators where the audience gathers
 - Generate outreach message templates
-- LinkedIn connection request copy
+- Partner and influencer intro copy
 
 ### Multi-Language Support
 
-- Resume generation in multiple languages
-- Market analysis for non-US markets
-- Localized form answers
+- Plan generation in multiple languages
+- Landscape analysis for non-US markets
+- Localized follow-up templates
 
 ---
 
 ## Long-Term Vision (Transform the Product)
 
-### Continuous Market Intelligence
+### Continuous Landscape Intelligence
 
-- Ongoing market monitoring (not just one-time analysis)
-- Alerts when new matching jobs appear
-- Market trend reports over time
+- Ongoing landscape monitoring (not just one-time analysis)
+- Alerts when new matching segments or channels appear
+- Landscape trend reports over time
 
-### Team / Enterprise Features
+### Team / Agency Features
 
-- Recruiter-side view for staffing agencies
-- Batch resume processing
+- Agency-side view for launch consultants managing multiple products
+- Batch plan processing
 - Team analytics and reporting
 
 ### API / Integration Layer
 
-- Jobzooka as a service (API access to resume generation, market analysis)
-- Integration with ATS systems
-- Webhook notifications for job alerts
+- AcmeLaunch as a service (API access to plan generation, landscape analysis)
+- Integration with launch and marketing tools
+- Webhook notifications for landscape alerts
 
 ### AI Agent Improvements
 
-- Smarter auto-apply with learning from user feedback
-- A/B testing of resume variants (track which gets more responses)
-- Autonomous job search with user-defined criteria
+- Smarter launch runs with learning from founder feedback
+- A/B testing of plan variants (track which drives more conversion)
+- Autonomous launch execution with founder-defined criteria
 
 ---
 
@@ -118,15 +118,15 @@ Some items listed below have already been implemented. This table distinguishes 
 ### Architecture
 
 - Replace prop-drilling with proper state management (Zustand or Context)
-- Fix component naming inconsistencies (AimPage ↔ ReadyPage mismatch)
+- Fix component naming inconsistencies (PrepPage ↔ PlanPage mismatch)
 - Standardize styling approach (one system: CSS custom properties OR Tailwind, not both)
 - Add proper error boundaries at the step level
 
 ### Performance
 
 - Upgrade from Vercel Hobby to Pro (longer function timeouts)
-- Implement proper caching for market data
-- Optimize large component re-renders (Step10Resumes is very large)
+- Implement proper caching for landscape data
+- Optimize large component re-renders (Step10Plans is very large)
 
 ### Quality
 
@@ -141,8 +141,8 @@ Some items listed below have already been implemented. This table distinguishes 
 
 For clarity, these ideas have been considered and rejected:
 
-1. **Social features** — Jobzooka is a personal tool, not a social platform
-2. **Gamification beyond competitiveness score** — No achievements, streaks, or leaderboards
-3. **Resume templates / visual editor** — Content-first, not design-first
-4. **Free unlimited access** — Rocket economy is fundamental to sustainability
-5. **B2B enterprise play** — Focus on individual job seekers first
+1. **Social features** — AcmeLaunch is a launch-planning tool, not a social platform
+2. **Gamification beyond launch-readiness score** — No achievements, streaks, or leaderboards
+3. **Plan templates / visual editor** — Content-first, not design-first
+4. **Free unlimited access** — Credit economy is fundamental to sustainability
+5. **Full agency platform** — Focus on individual founders first

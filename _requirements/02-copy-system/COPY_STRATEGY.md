@@ -1,6 +1,6 @@
-# Jobzooka — Master Copy Strategy
+# AcmeLaunch — Master Copy Strategy
 
-This document defines the non-negotiable principles that govern **all in-app copy** at Jobzooka.
+This document defines the non-negotiable principles that govern **all in-app copy** at AcmeLaunch.
 
 It applies to:
 
@@ -14,17 +14,17 @@ If there is a conflict between documents, **this document wins**.
 
 ## Purpose
 
-The purpose of in-app copy at Jobzooka is to:
+The purpose of in-app copy at AcmeLaunch is to:
 
 - Help users understand what is happening immediately
-- Reduce anxiety around job searching
+- Reduce anxiety around launching
 - Guide users toward the next meaningful action
 - Do so in a way that feels competent and direct, not corporate or patronizing
-- Reflect Jobzooka's personality without sacrificing clarity
+- Reflect AcmeLaunch's personality without sacrificing clarity
 
-Jobzooka copy is not marketing copy.
-Jobzooka copy is not documentation.
-Jobzooka copy is a **product interface**.
+AcmeLaunch copy is not marketing copy.
+AcmeLaunch copy is not documentation.
+AcmeLaunch copy is a **product interface**.
 
 ---
 
@@ -32,9 +32,9 @@ Jobzooka copy is a **product interface**.
 
 Primary audience:
 
-- Job seekers under stress (unemployed, underemployed, or anxious about career change)
-- Mix of technical and non-technical professionals
-- Range from recent graduates to senior professionals
+- Founders under pressure (preparing a first launch, relaunch, or paid offer with limited time)
+- Mix of technical and non-technical founders
+- Range from first-time founders to experienced operators
 - Mobile and desktop users
 
 Implications:
@@ -80,7 +80,7 @@ If a line requires "and," "but," or multiple clauses, it should be split.
 
 ### 3. Reduce Anxiety, Don't Create It
 
-Job searching is inherently stressful. Jobzooka copy must never add to that stress.
+Launching is inherently stressful. AcmeLaunch copy must never add to that stress.
 
 Therefore:
 
@@ -99,7 +99,7 @@ Copy should make action feel:
 
 Reducing anxiety does not mean removing confidence.
 
-When the product signal is strong (e.g., market data loaded, resume generated, score increased), copy should:
+When the product signal is strong (e.g., landscape data loaded, plan generated, score increased), copy should:
 
 - State what happened clearly
 - Invite the next step
@@ -115,13 +115,13 @@ The goal is calm confidence, not reassurance-by-withdrawal.
 
 ### 4. Personality Is a Tool, Not the Goal
 
-Jobzooka has a direct, competent personality — like a skilled recruiter who cuts through the noise.
+AcmeLaunch has a direct, competent personality — like a seasoned launch operator who names the next concrete action.
 
 However:
 
 - Personality exists to **help the user**, not entertain itself
-- Military metaphors (READY/AIM/FIRE) are structural, not decorative
-- Rocket imagery is functional (credits), not whimsical
+- The phase names (PLAN/PREP/LAUNCH) are structural, not decorative
+- Credit imagery is functional (the currency), not whimsical
 
 If removing personality does not reduce effectiveness, it should be removed.
 
@@ -147,18 +147,18 @@ All copy decisions must follow this order:
    - CTA vs modal vs toast vs tooltip
    - Stakes of the moment
 
-4. **Jobzooka personality**
+4. **AcmeLaunch personality**
    - Direct, competent tone
-   - Military/tactical metaphors (sparingly)
-   - Rocket/launch imagery (where relevant)
+   - Structural phase framing (sparingly)
+   - Credit imagery (where relevant)
 
-Jobzooka personality may **never override** items 1–3.
+AcmeLaunch personality may **never override** items 1–3.
 
 ---
 
-## What "Good Copy" Means at Jobzooka
+## What "Good Copy" Means at AcmeLaunch
 
-Good Jobzooka copy is:
+Good AcmeLaunch copy is:
 
 - Immediately understandable
 - Shorter than expected
@@ -173,13 +173,13 @@ Good copy does **not**:
 - Try to be clever at the expense of meaning
 - Sound like marketing
 - Sound like a chatbot trying to be your friend
-- Use job-search jargon the user doesn't know
+- Use launch jargon the user doesn't know
 
 ---
 
 ## Conversion Philosophy
 
-At Jobzooka, conversion does not mean pressure.
+At AcmeLaunch, conversion does not mean pressure.
 
 Conversion means:
 
@@ -187,18 +187,18 @@ Conversion means:
 - Making that step feel easy and low-risk
 - Removing uncertainty, not adding urgency
 
-Jobzooka optimizes for:
+AcmeLaunch optimizes for:
 
 - Completing the current step
 - Moving forward in the wizard
 - Generating one more output
 - Coming back to finish later
 
-Jobzooka does **not** optimize for:
+AcmeLaunch does **not** optimize for:
 
 - Forcing commitment
 - Artificial urgency
-- FOMO-based pressure ("others are applying NOW")
+- FOMO-based pressure ("others are launching NOW")
 - Loud hype language
 
 Copy should make users think:
@@ -217,8 +217,8 @@ There are moments where personality actively harms trust.
 
 In these contexts, copy must be neutral and direct:
 
-- Error messages (API failures, parsing errors)
-- Payment and rocket transactions
+- Error messages (API failures, extraction errors)
+- Payment and credit transactions
 - Authentication and account access
 - Data privacy and export
 - Destructive or irreversible actions (data clearing, session reset)
@@ -229,7 +229,7 @@ In these moments:
 - Use full sentences
 - Use plain language
 - Do not joke
-- Do not reference rockets metaphorically
+- Do not reference credits metaphorically
 - Do not soften seriousness with humor
 
 Trust > tone.
@@ -238,20 +238,20 @@ Trust > tone.
 
 ## Emotional Safety
 
-Jobzooka copy must never:
+AcmeLaunch copy must never:
 
 - Shame the user
 - Blame the user
 - Imply incompetence
-- Create guilt about job search progress
+- Create guilt about launch progress
 - Suggest the user is behind or failing
 
 Avoid phrasing like:
 
 - "You failed to…"
-- "Your resume is missing…"
+- "Your plan is missing…"
 - "You should have…"
-- "Other candidates are…"
+- "Other founders are…"
 
 Prefer phrasing like:
 
@@ -268,7 +268,7 @@ The app is always on the user's side.
 
 A piece of copy is successful if:
 
-1. A job seeker under stress can understand it instantly
+1. A founder under pressure can understand it instantly
 2. The next step is obvious
 3. The user does not feel judged or pressured
 4. The copy feels intentional and competent
@@ -309,7 +309,7 @@ If a future document contradicts this strategy, this strategy takes precedence.
 
 ## Final Principle
 
-Jobzooka copy should feel:
+AcmeLaunch copy should feel:
 
 - Easy to read
 - Easy to trust

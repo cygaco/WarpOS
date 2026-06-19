@@ -1,4 +1,4 @@
-# Jobzooka — Validation Rules (Regen Spec)
+# AcmeLaunch — Validation Rules (Regen Spec)
 
 Field constraints, input sanitization, and output validation scattered across components and lib files. A regen agent needs these to reproduce the same guardrails.
 
@@ -17,12 +17,12 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ### Limits
 
-| Constraint         | Value         | Location                             |
-| ------------------ | ------------- | ------------------------------------ |
-| Max file size      | 10 MB         | `upload.ts:25`, `Step1Resume.tsx:60` |
-| Max PDF pages      | 50            | `upload.ts:26`                       |
-| Max extracted text | 500,000 chars | `upload.ts:27`                       |
-| Parse timeout      | 15,000 ms     | `upload.ts:28`                       |
+| Constraint         | Value         | Location                              |
+| ------------------ | ------------- | ------------------------------------- |
+| Max file size      | 10 MB         | `upload.ts:25`, `Step1Brief.tsx:60`   |
+| Max PDF pages      | 50            | `upload.ts:26`                        |
+| Max extracted text | 500,000 chars | `upload.ts:27`                        |
+| Parse timeout      | 15,000 ms     | `upload.ts:28`                        |
 
 ### Validation Pipeline
 
@@ -32,15 +32,15 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ---
 
-## Personal Info (Step1Resume.tsx)
+## Founder Info (Step1Brief.tsx)
 
 | Field     | Rule                                                      | Error Message                                                    |
 | --------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
 | Name      | Required, non-empty                                       | "Name is required"                                               |
 | Email     | Required, non-empty                                       | "Email is required"                                              |
-| Phone     | Required, non-empty                                       | "Phone is required"                                              |
-| Location  | Required, non-empty                                       | "Location is required"                                           |
-| Portfolio | Optional; if set, must parse as valid URL with http/https | "Portfolio link must be a valid URL (e.g. https://yoursite.com)" |
+| Product   | Required, non-empty                                       | "Product name is required"                                       |
+| Geography | Required, non-empty                                       | "Launch geography is required"                                   |
+| Website   | Optional; if set, must parse as valid URL with http/https | "Website link must be a valid URL (e.g. https://yoursite.com)"   |
 
 ---
 
@@ -54,7 +54,7 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ---
 
-## Search Queries (src/lib/validators.ts)
+## Research Queries (src/lib/validators.ts)
 
 ### sanitizeQueries()
 
@@ -66,11 +66,11 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ---
 
-## ATS Output Sanitization (src/lib/validators.ts)
+## Launch-Asset Output Sanitization (src/lib/validators.ts)
 
-### sanitizeAts()
+### sanitizeAssetText()
 
-Applied to all Claude resume/LinkedIn output before use:
+Applied to all Claude plan/asset/channel output before use:
 
 | Input Character           | Replacement |
 | ------------------------- | ----------- |
@@ -95,15 +95,15 @@ Shared utility imported by all mutation API routes. Checks `Origin` header (prim
 | Route                | Method            | Since                             |
 | -------------------- | ----------------- | --------------------------------- |
 | `/api/claude`        | POST              | Original (inline, same logic)     |
-| `/api/jobs`          | POST              | Original (inline, same logic)     |
-| `/api/rockets/debit` | POST              | Security fix                      |
-| `/api/rockets/grant` | POST              | Security fix                      |
+| `/api/research`      | POST              | Original (inline, same logic)     |
+| `/api/credits/debit` | POST              | Security fix                      |
+| `/api/credits/grant` | POST              | Security fix                      |
 | `/api/session`       | GET, POST, DELETE | Security fix (DELETE was missing) |
 | `/api/auth/login`    | POST              | Security fix                      |
 | `/api/auth/logout`   | POST              | Security fix                      |
 | `/api/auth/register` | POST              | Security fix                      |
 
-**Not applied to:** `/api/stripe/webhook` (legitimately cross-origin — Stripe calls our endpoint, verified by signature), `/api/extension` (public GET), `/api/test` (gated by env var).
+**Not applied to:** `/api/stripe/webhook` (legitimately cross-origin — Stripe calls our endpoint, verified by signature), `/api/test` (gated by env var). The `/api/launch-console/*` routes are first-party app sessions and carry the standard origin/auth check.
 
 **Behavior:** Returns `false` if neither `Origin` nor `Referer` matches an allowed origin. Route responds with HTTP 403. Check runs BEFORE auth, rate limiting, or body parsing.
 
@@ -113,18 +113,18 @@ Shared utility imported by all mutation API routes. Checks `Origin` header (prim
 
 ### validateExclusions()
 
-Checks that skills the user marked as "exclude" do not appear in any output. Scanned areas:
+Checks that scope items the founder marked as "exclude" do not appear in any output. Scanned areas:
 
-- Master resume: summary, core competencies, role bullets
-- General resume: summary, core competencies, role bullets
-- Targeted resumes: summary, core competencies, role bullets, diff fields (summary_replacement, core_competencies_reorder, bullets_rewrite replacements)
-- LinkedIn: headline, about, skills
-- Chrome apply prompt
-- Form answers
+- Master launch plan: summary, key milestones, task descriptions
+- Overview plan: summary, key milestones, task descriptions
+- Segment plans: summary, key milestones, task descriptions, diff fields (summary_replacement, milestones_reorder, tasks_rewrite replacements)
+- Channels: announcement headline, landing copy, email sequence
+- Launch Console prompt
+- Channel follow-up answers
 
-Uses both `skillMatch()` and case-insensitive `includes()`.
+Uses both `scopeMatch()` and case-insensitive `includes()`.
 
-**`skillMatch()` algorithm:** Normalizes both strings by lowercasing and stripping all non-alphanumeric characters (`/[^a-z0-9]/g`), then compares for exact equality. No fuzzy matching for MVP.
+**`scopeMatch()` algorithm:** Normalizes both strings by lowercasing and stripping all non-alphanumeric characters (`/[^a-z0-9]/g`), then compares for exact equality. No fuzzy matching for MVP.
 
 ---
 
@@ -132,11 +132,11 @@ Uses both `skillMatch()` and case-insensitive `includes()`.
 
 ### validateOutputFidelity()
 
-| Check                    | Pass Condition              | Fail Condition           |
-| ------------------------ | --------------------------- | ------------------------ |
-| Search queries in prompt | All queries appear verbatim | None appear              |
-| Excluded skills          | Zero violations             | Any excluded skill found |
-| Form answers populated   | All populated               | 4+ empty                 |
+| Check                      | Pass Condition              | Fail Condition           |
+| -------------------------- | --------------------------- | ------------------------ |
+| Research queries in prompt | All queries appear verbatim | None appear              |
+| Excluded scope items       | Zero violations             | Any excluded item found  |
+| Channel answers populated  | All populated               | 4+ empty                 |
 
 ### validateContracts()
 
@@ -144,7 +144,7 @@ Checks that required session fields exist and are non-null before each prompt ca
 
 ### validateAliases()
 
-Checks common abbreviations (PM, ML, AI, UX, UI, FE, BE, SWE, SRE, DevOps, CI/CD, K8s, etc.) — if an abbreviation appears in the resume, either it or its expansion should appear in the output.
+Checks common abbreviations (PMF, MRR, ARR, CAC, LTV, CTA, SEO, B2B, B2C, MVP, ICP, NPS, etc.) — if an abbreviation appears in the idea brief, either it or its expansion should appear in the output.
 
 ---
 
@@ -154,61 +154,61 @@ Checks common abbreviations (PM, ML, AI, UX, UI, FE, BE, SWE, SRE, DevOps, CI/CD
 
 Full end-to-end session validation:
 
-| Check                | Expected                                  |
-| -------------------- | ----------------------------------------- |
-| Resume parsed        | `resumeStructured` exists                 |
-| Personal data        | `personal.name` non-empty                 |
-| Profile generated    | `profile` exists                          |
-| Market data          | `marketRaw` exists                        |
-| Market analysis      | `marketAnalysis` exists                   |
-| Categories ranked    | `rankedCategories.length > 0`             |
-| Master resume        | Exists, has summary and roles             |
-| General resume       | `generalResume` exists                    |
-| Targeted resumes     | `targetedResumes` has 1+ entries          |
-| LinkedIn             | `linkedin.headline` exists                |
-| Form answers         | `formAnswers.length > 0`                  |
-| Apply data           | `applyData.chromePrompt` exists (SKIP ok) |
-| Exclusion compliance | Zero violations                           |
-| Data contracts       | All prompt contracts satisfied (WARN ok)  |
+| Check                | Expected                                      |
+| -------------------- | --------------------------------------------- |
+| Brief parsed         | `briefStructured` exists                      |
+| Founder data         | `founder.name` non-empty                      |
+| Profile generated    | `founderProfile` exists                       |
+| Research data        | `researchResults` exists                      |
+| Landscape analysis   | `landscapeAnalysis` exists                    |
+| Segments ranked      | `rankedSegments.length > 0`                   |
+| Master plan          | Exists, has summary and milestones            |
+| Overview plan        | `overviewPlan` exists                         |
+| Segment plans        | `segmentPlans` has 1+ entries                 |
+| Channels             | `launchChannels.announcement` exists          |
+| Channel answers      | `channelAnswers.length > 0`                   |
+| Run data             | `runData.consolePrompt` exists (SKIP ok)      |
+| Exclusion compliance | Zero violations                               |
+| Data contracts       | All prompt contracts satisfied (WARN ok)      |
 
 ---
 
-## Market Data Limits (src/lib/utils.ts)
+## Landscape Data Limits (src/lib/utils.ts)
 
-| Constraint               | Value                                     | Location                   |
-| ------------------------ | ----------------------------------------- | -------------------------- |
-| Max market text          | 30,000 chars                              | `preprocessMarketData()`   |
-| Max MARKET_PREP payload  | 35,000 chars                              | `buildMarketPrepPayload()` |
-| Description excerpt      | 300 chars (default), 150 chars (fallback) | `buildMarketPrepPayload()` |
-| High-volume company flag | 2+ listings                               | `buildMarketPrepPayload()` |
-
----
-
-## Rate Limits (src/app/api/claude/route.ts, src/app/api/jobs/route.ts)
-
-| Limit                 | Value               | Scope        |
-| --------------------- | ------------------- | ------------ |
-| Claude per-IP         | 20/min              | Per IP       |
-| BD per-IP             | 10/min              | Per IP       |
-| Global Claude         | 60/min              | All users    |
-| Daily Claude requests | 500 (default)       | ENV override |
-| Daily Claude tokens   | 2,000,000 (default) | ENV override |
-| Daily BD requests     | 100 (default)       | ENV override |
+| Constraint                | Value                                     | Location                      |
+| ------------------------- | ----------------------------------------- | ----------------------------- |
+| Max landscape text        | 30,000 chars                              | `preprocessLandscapeData()`   |
+| Max LANDSCAPE_PREP payload| 35,000 chars                              | `buildLandscapePrepPayload()` |
+| Description excerpt       | 300 chars (default), 150 chars (fallback) | `buildLandscapePrepPayload()` |
+| High-signal source flag   | 2+ results                                | `buildLandscapePrepPayload()` |
 
 ---
 
-## Resume Length Heuristic (Step10Resumes.tsx)
+## Rate Limits (src/app/api/claude/route.ts, src/app/api/research/route.ts)
+
+| Limit                   | Value               | Scope        |
+| ----------------------- | ------------------- | ------------ |
+| Claude per-IP           | 20/min              | Per IP       |
+| Research per-IP         | 10/min              | Per IP       |
+| Global Claude           | 60/min              | All users    |
+| Daily Claude requests   | 500 (default)       | ENV override |
+| Daily Claude tokens     | 2,000,000 (default) | ENV override |
+| Daily research requests | 100 (default)       | ENV override |
+
+---
+
+## Plan Length Heuristic (Step10Plans.tsx)
 
 ```typescript
-function isLongResume(resume: ResumeOutput): boolean {
-  return (resume.roles || []).length > 3 || totalBullets > 20;
+function isLargePlan(plan: PlanOutput): boolean {
+  return (plan.milestones || []).length > 3 || totalTasks > 20;
 }
 ```
 
-If the master resume is "long", a separate trimmed general resume is used. Otherwise, the master serves as both.
+If the master plan is "large", a separate trimmed overview plan is used. Otherwise, the master serves as both.
 
 ---
 
-## Skill Exclusion Warning (Step8Skills.tsx)
+## Scope Exclusion Warning (Step8Scope.tsx)
 
-If > 50% of skills in a category are excluded, a warning is shown to the user. Minimum 3 skills in a category before this check fires.
+If > 50% of items in a category are excluded, a warning is shown to the founder. Minimum 3 items in a category before this check fires.

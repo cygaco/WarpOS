@@ -1,4 +1,4 @@
-# Jobzooka — Error Recovery (Regen Spec)
+# AcmeLaunch — Error Recovery (Regen Spec)
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. The existing client-side + server-side recovery patterns below remain correct; **new sections at the bottom** cover the async ticket model: idempotency-key deduplication, worker redelivery after crash, client abort after debit, stuck-ticket sweep cron, and Redis connection failures during idempotency checks.
 
@@ -15,22 +15,24 @@ Fallback logic, retry strategies, and graceful degradation patterns across the p
 | HTTP 429 (rate limit)           | Wait 3s \* (attempt + 1), retry | 2           |
 | HTTP 502 + "overloaded"         | Wait 3s \* (attempt + 1), retry | 2           |
 | Network error (TypeError)       | Wait 2s \* (attempt + 1), retry | 2           |
-| HTTP 402 (insufficient rockets) | Throw immediately, no retry     | 0           |
+| HTTP 402 (insufficient credits) | Throw immediately, no retry     | 0           |
 | HTTP 401 (auth error)           | Throw immediately, no retry     | 0           |
 | Caller abort (signal)           | Throw "Cancelled" immediately   | 0           |
 | Client timeout (100s)           | Throw "Request timed out"       | 0           |
 | All retries exhausted           | Throw "Failed after retries"    | —           |
 
-### fetchJobs() (BD Scraper)
+### fetchResearch() (Launch Research adapter)
 
-| Phase   | Timeout    | Behavior                                               |
-| ------- | ---------- | ------------------------------------------------------ |
-| Trigger | —          | Fire all queries in parallel; collect errors per-query |
-| Poll    | 360s total | Poll every 10s                                         |
-| Force   | After 180s | Set `force: true` — accept partial results             |
-| Timeout | After 360s | Throw "Job search timed out"                           |
+| Phase   | Timeout    | Behavior                                                  |
+| ------- | ---------- | --------------------------------------------------------- |
+| Trigger | —          | Fire all queries in parallel; collect errors per-source   |
+| Poll    | 360s total | Poll every 10s                                            |
+| Force   | After 180s | Set `force: true` — accept partial results                |
+| Timeout | After 360s | Throw "Launch research timed out"                         |
 
 Progress callback: `onProgress(pending, total)` called each poll cycle.
+
+**Integrity note:** A forced or timed-out run returns whatever signals were gathered and marks the rest as failed sources — it never fills the gap with synthesized evidence.
 
 ---
 
@@ -38,7 +40,7 @@ Progress callback: `onProgress(pending, total)` called each poll cycle.
 
 ### safeErrorMessage()
 
-Prevents internal details from leaking to users:
+Prevents internal details from leaking to founders:
 
 1. **Safe patterns** (pass through): rate limit, timeout, cancelled, usage limit, overloaded, auth, credit/billing, file errors, parse failures
 2. **Block patterns** (return fallback): messages > 200 chars, or containing `stack`, `trace`, `at \w`, `/api/`, `key`, `token`, `secret`
@@ -46,63 +48,63 @@ Prevents internal details from leaking to users:
 
 ---
 
-## Two-Phase Market Pipeline (Step6Analysis.tsx)
+## Two-Phase Landscape Pipeline (Step6Analysis.tsx)
 
-### Phase 1: MARKET_PREP
+### Phase 1: RESEARCH_PREP
 
 ```
-try runMarketPrep(data)
+try runResearchPrep(data)
   → success: prepReport string (feeds into Phase 2)
   → failure: log warning, return null (Phase 2 runs without prep)
 ```
 
-### Phase 2: MARKET
+### Phase 2: LANDSCAPE
 
 ```
-try callClaude("MARKET", input)
+try callClaude("LANDSCAPE", input)
   → failure: retry with smaller input (slim profile only, no raw data)
-    → failure: throw to user
+    → failure: throw to founder
 ```
 
-### buildMarketSummary Fallback
+### buildResearchSummary Fallback
 
 ```
-try JSON.parse(data) → buildMarketSummary()
+try JSON.parse(data) → buildResearchSummary()
   → failure: silently skip summary (/* ignore */)
 ```
 
-### User-Facing
+### Founder-Facing
 
-On error: error card with retry button + hint "If this keeps failing, go back and try pasting less data."
+On error: error card with retry button + hint "If this keeps failing, go back and try narrowing your research queries."
 
 ---
 
-## BD API Error Handling (src/app/api/jobs/route.ts)
+## Research Adapter Error Handling (src/app/api/research/route.ts)
 
 ### Trigger Phase
 
-- Individual query failures don't block others
-- Failed triggers return error message, successful ones return snapshotId
-- If zero snapshots succeed → error returned to client
+- Individual source failures don't block others
+- Failed sources return an error message, successful ones return their signal batch
+- If zero sources succeed → error returned to client
 
 ### Poll Phase
 
-- Each snapshot polled independently
-- BD error records separated from job records (`include_errors=true`)
+- Each source polled independently
+- Failed-source records separated from result records (`include_errors=true`)
 - Error codes and samples logged for debugging
 
 ### Force-Complete
 
 When `force: true` (client sends after 3 min):
 
-- Pending snapshots skipped with warning: `"X query(s) timed out and were skipped"`
-- Ready snapshots processed normally
+- Pending sources skipped with warning: `"X source(s) timed out and were skipped"`
+- Ready sources processed normally
 - All warnings surfaced in response `warnings[]` array
 
 ### Thin Data Warnings
 
-- BD error records → `"query": N listings returned errors (error_code)`
-- Timeout skips → `"N query(s) timed out and were skipped"`
+- Failed-source records → `"source": N signals returned errors (error_code)`
+- Timeout skips → `"N source(s) timed out and were skipped"`
 - Deduplication applied to all results
 
 ---
@@ -118,7 +120,7 @@ When `force: true` (client sends after 3 min):
 
 ### Anthropic Error Mapping
 
-| Anthropic Status | Mapped Status | User Message                                                          |
+| Anthropic Status | Mapped Status | Founder Message                                                       |
 | ---------------- | ------------- | --------------------------------------------------------------------- |
 | 400              | 502           | "Bad request to AI service. Try going back and re-running this step." |
 | 401              | 502           | "AI service authentication failed. Check your API key."               |
@@ -139,11 +141,11 @@ try await request.json()
 
 ---
 
-## Rocket Debit Atomicity (src/lib/rockets.ts)
+## Credit Debit Atomicity (src/lib/credits.ts)
 
 ### Atomic Debit via Lua Script
 
-The `debitRockets()` function uses a Lua script executed atomically in Redis to prevent race conditions where concurrent requests could debit more rockets than available:
+The `debitCredits()` function uses a Lua script executed atomically in Redis to prevent race conditions where concurrent requests could debit more credits than available:
 
 ```lua
 local bal = tonumber(redis.call('GET', KEYS[1]))
@@ -182,8 +184,8 @@ BEGIN;
   -- If no rows affected, another deliverer is processing → return 200 with note
 
   -- Do the actual side effects inside the same transaction
-  INSERT INTO rockets_ledger (user_id, delta: $2, reason: $3, stripe_event_id: $1);
-  -- trigger updates rockets_balances
+  INSERT INTO credits_ledger (user_id, delta: $2, reason: $3, stripe_event_id: $1);
+  -- trigger updates credit_balances
 
   UPDATE stripe_webhook_idempotency SET state = 'done', finished_at = now() WHERE event_id = $1;
 COMMIT;
@@ -231,43 +233,43 @@ Neither save failure blocks the UI.
 
 ---
 
-## Resume Generation (Step10Resumes.tsx)
+## Launch Asset Generation (Step10Assets.tsx)
 
-### Base Resume Failure
+### Base Asset Failure
 
 ```
-try callClaude("RESUME_GEN", ...)
+try callClaude("ASSET_GEN", ...)
   → success: set master + general, move to "selecting" phase
-  → failure: show error message, move to "done" phase (user can retry)
+  → failure: show error message, move to "done" phase (founder can retry)
 ```
 
-### Targeted Resume Failure
+### Segment Variant Failure
 
 ```
-try callClaude("TARGETED", ...)
-  → success: apply diffs, set targeted resumes
-  → failure: show "Targeted resume generation failed. Your base resumes are ready."
+try callClaude("VARIANT", ...)
+  → success: apply diffs, set segment asset packs
+  → failure: show "Segment-specific assets failed. Your base launch assets are ready."
 ```
 
-Partial success: base resumes are preserved even if targeted generation fails.
+Partial success: base assets are preserved even if segment-variant generation fails.
 
 ### Download Failure
 
 ```
-try generateDocxBlob() / generateZipBlob()
+try generatePdfBlob() / generateZipBlob()
   → failure: "Download failed — try again." (non-destructive, can retry)
 ```
 
-### Rocket Balance Fetch
+### Credit Balance Fetch
 
 ```
-try fetch("/api/rockets")
+try fetch("/api/credits")
   → failure: silent fallback to initial balance (150)
 ```
 
 ---
 
-## Resume Parsing (Step1Resume.tsx)
+## Idea-Brief Parsing (Step1IdeaBrief.tsx)
 
 ### File Extraction
 
@@ -280,11 +282,11 @@ try extractText(file)
 
 ```
 try callClaude("PARSE", text) → JSON.parse(cleanJson(r))
-  → failure: "Resume parsing failed. Please try again."
+  → failure: "Idea-brief parsing failed. Please try again."
   → cancel: "Cancelled. You can try again."
 ```
 
-Both errors are surfaced inline with the upload form.
+Both errors are surfaced inline with the idea-brief form.
 
 ---
 
@@ -292,37 +294,37 @@ Both errors are surfaced inline with the upload form.
 
 ```
 try callClaude("PROFILE", ...)
-  → failure: safeErrorMessage(err, "Profile generation failed. Try again or go back to edit your resume.")
+  → failure: safeErrorMessage(err, "Profile generation failed. Try again or go back to edit your idea brief.")
 ```
 
 ---
 
-## Apply Prompt (Step13Apply.tsx)
+## Launch Run Prompt (Step13LaunchRun.tsx)
 
 ### Prompt Generation
 
 ```
-try callClaude("APPLY", ...)
-  → failure: "Apply prompt generation failed. Please try again."
+try callClaude("RUN_RULES", ...)
+  → failure: "Launch run setup failed. Please try again."
 ```
 
-### Extension Communication
+### Launch Console Communication
 
 ```
-try chrome.runtime.sendMessage(extensionId, { type: "start_apply", ... })
-  → response.status !== "ok": show response.error
-  → catch: "Extension communication failed. Is the extension still loaded?"
+try fetch("/launch-console/queue")
+  → response not ok: show response.error
+  → catch: "Couldn't load the launch queue. Please refresh and try again."
 
-try chrome.runtime.sendMessage(extensionId, { type: "ping" })
-  → timeout: "Extension not responding. Check the ID and make sure it's loaded."
-  → catch: "Could not reach extension. Make sure Chrome extensions API is available."
+try fetch("/launch-console/outcomes", { method: "POST", body })
+  → timeout: "Saving the outcome timed out. We'll retry on the next action."
+  → catch: "Could not record the outcome. Check your connection and retry."
 ```
 
 ---
 
 ## Data Truncation Fallbacks (src/lib/utils.ts)
 
-### preprocessMarketData()
+### preprocessResearchData()
 
 ```
 1. Try JSON.parse → build summary header + concat objects
@@ -331,57 +333,57 @@ try chrome.runtime.sendMessage(extensionId, { type: "ping" })
 3. If text > 30,000 chars: substring truncate
 ```
 
-### buildMarketPrepPayload()
+### buildResearchPrepPayload()
 
 ```
-1. Build compact jobs with 300-char description excerpts
+1. Build compact results with 300-char snippet excerpts
 2. If payload > 35,000 chars: retry with 150-char excerpts
 ```
 
 ---
 
-## Hourly Rate Extraction (src/lib/utils.ts)
+## Reach-Signal Extraction (src/lib/utils.ts)
 
-### extractHourlyRates()
+### extractReachSignals()
 
-Workaround for BD returning annual salaries for contract roles:
+Workaround for sources mixing organic-reach and paid-spend figures:
 
-- Regex: `$XX-$YY/hr` patterns from job description text
-- Filters: $15-$500 range (rejects unreasonable values)
-- Source: `buildMarketPrepPayload()` passes these as `hourlyRatesFound` to MARKET_PREP prompt
+- Regex: `$XX-$YY test`/CPM/per-lead patterns from research-snippet text
+- Filters: $15-$5000 range (rejects unreasonable values)
+- Source: `buildResearchPrepPayload()` passes these as `reachSignalsFound` to RESEARCH_PREP prompt
 
 ---
 
-## Extension Error Recovery (content.js)
+## Launch Console Error Recovery (runner.ts)
 
-### Per-Job Error
+### Per-Action Error
 
 ```
-try processJob(card)
-  → catch: reportJobResult('failed', { reason: err.message }), closeModal()
+try processAction(item)
+  → catch: reportOutcome('failed', { reason: err.message }), discardDraft()
 ```
 
-Individual job failures don't stop the loop — processing continues with the next card.
+Individual action failures don't stop the loop — processing continues with the next queued action.
 
 ### Page-Level
 
 ```
-try waitForElement(SEL.jobCards, 15000)
-  → timeout: updateStatus({ state: 'error', error: 'No job cards found' })
+try waitForQueue(15000)
+  → timeout: updateStatus({ state: 'error', error: 'No launch actions found' })
 ```
 
 ### Loop Completion
 
 ```
-runApplyLoop().catch(err => {
+runLaunchLoop().catch(err => {
   updateStatus({ state: 'error', error: err.message })
   showStatusBadge('Error — check console', '#ff4444')
 })
 ```
 
-### Modal Cleanup
+### Draft Cleanup
 
-On any error during job processing, `closeModal()` is called to dismiss any open Easy Apply modal, including handling the "Discard application?" confirmation dialog.
+On any error during action processing, `discardDraft()` is called to dismiss any open compose/preview draft, including handling the "Discard this draft?" confirmation dialog.
 
 ---
 
@@ -391,18 +393,18 @@ On any error during job processing, `closeModal()` is called to dismiss any open
 | -------------------- | ------------------------------------------------------------------------- |
 | Network              | 2x retry with exponential backoff + X-Idempotency-Key (dedup on retry)    |
 | Claude API           | Retry on 429/502, immediate fail on 401/402. Prompt Caching on every call |
-| BD Scraper           | Async ticket; force-complete after 3 min; warnings for skipped             |
-| Market Pipeline      | `/claude/chain` async; worker checkpoints after MARKET_PREP; resume on crash |
-| Rocket Debit         | **Postgres transactional** — ledger + job enqueue in one BEGIN/COMMIT      |
+| Research Adapter     | Async ticket; force-complete after 3 min; warnings for skipped sources     |
+| Landscape Pipeline   | `/claude/chain` async; worker checkpoints after RESEARCH_PREP; resume on crash |
+| Credit Debit         | **Postgres transactional** — ledger + job enqueue in one BEGIN/COMMIT      |
 | Stripe Webhook       | Postgres three-state idempotency + stale-claim steal + stuck-sweep cron   |
 | Session              | Server → localStorage → null (never blocks UI)                             |
-| Resume Gen           | Base preserved if targeted fails; async ticket with R2 signed URL         |
+| Asset Gen            | Base preserved if segment variants fail; async ticket with R2 signed URL   |
 | Ticket Failure       | Refund ledger entry, audit log, stuck-sweep transition                    |
 | Worker Crash         | SIGTERM drain (270s) + Postgres checkpoint + QStash redelivery            |
 | Client Abort         | Abort signal checked post-debit; refund + QStash cancel                   |
 | Redis Failure        | Worker returns non-200 to QStash (retry) if idempotency check unconfirmed |
-| Extension            | Per-job error isolation; modal cleanup; `/apply/outcomes` for durable trail |
-| User Messages        | safeErrorMessage() contract: code + short message + requestId only        |
+| Launch Console       | Per-action error isolation; draft cleanup; `/launch-console/outcomes` for durable trail |
+| Founder Messages     | safeErrorMessage() contract: code + short message + requestId only        |
 
 ---
 
@@ -413,13 +415,13 @@ Every ticket-creating endpoint accepts `X-Idempotency-Key: <uuid>` header. The b
 **Flow:**
 
 ```
-POST /jobs/scrape with X-Idempotency-Key: k1
+POST /research/run with X-Idempotency-Key: k1
   → Redis GET idempotency:{userId}:k1
      If exists → return stored {ticketId}  (no debit, no enqueue)
      If absent → continue
   → BEGIN;
      INSERT idempotency record (Redis SET with NX + 5min TTL)
-     INSERT INTO rockets_ledger (debit)
+     INSERT INTO credits_ledger (debit)
      SELECT graphile_worker.add_job(...)
     COMMIT
   → Return {ticketId}
@@ -447,13 +449,13 @@ Client-side retry on network error uses the **same idempotency key**, so the sec
 
 ### Stuck-ticket sweep
 
-`cron.stuck-ticket-sweep` runs every minute. Tickets in `running` status for >2× expected duration → transitioned to `failed`, refund ledger entry emitted, user sees ticket failed.
+`cron.stuck-ticket-sweep` runs every minute. Tickets in `running` status for >2× expected duration → transitioned to `failed`, refund ledger entry emitted, founder sees ticket failed.
 
 ---
 
 ## Client Abort After Debit (v3 — new, RT-017 fix)
 
-**Scenario:** Client calls `POST /jobs/scrape`; server receives request, debits rockets, enqueues job; before the response is sent, the client closes the TCP connection (network partition, tab closed, etc.). Client never receives ticketId → retries → double-debit.
+**Scenario:** Client calls `POST /research/run`; server receives request, debits credits, enqueues job; before the response is sent, the client closes the TCP connection (network partition, tab closed, etc.). Client never receives ticketId → retries → double-debit.
 
 **Fix:**
 
@@ -510,4 +512,4 @@ Every error response body and every `ticket.error` field goes through `safeError
 }
 ```
 
-**Never:** stack traces, file paths, Redis key names, Postgres error messages, Anthropic API details, user emails, internal IDs.
+**Never:** stack traces, file paths, Redis key names, Postgres error messages, Anthropic API details, founder emails, internal IDs.

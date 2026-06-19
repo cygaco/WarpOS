@@ -28,7 +28,7 @@ You ──► Alpha (α)  ──► consults Beta (β) for judgment
 ## Build pipeline (oneshot)
 
 1. **Build** — builders run in parallel worktrees, one per feature
-2. **Snapshot** — Boss (Delta) hashes builder output files
+2. **Snapshot** — Orchestrator (Delta) hashes builder output files
 3. **Gauntlet** — reviewer + compliance + security run **in parallel**
 4. **Wait gate** — all 3 must finish before fix or next phase
 5. **Fix** — unified fix brief, max 3 retries, targeted re-review on changed files only
@@ -76,7 +76,7 @@ Each agent type sees a different slice (prevents leaks, keeps focus):
 
 | Agent | Receives | Excluded |
 |---|---|---|
-| Boss / Delta | `store.json`, specs, dependency tree | App source code, golden fixtures |
+| Orchestrator / Delta | `store.json`, specs, dependency tree | App source code, golden fixtures |
 | Builder | PRD, STORIES, FLOW_SPEC, COPY, HYGIENE, foundation spec | Reviewer rubric, golden fixtures, other builders' output |
 | Reviewer | Golden fixtures, step expectations, builder output | Other builders, learner analysis |
 | Compliance | Builder diff, acceptance criteria, hygiene rules | Golden fixtures, reviewer rubric |

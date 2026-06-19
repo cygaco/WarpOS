@@ -1,4 +1,4 @@
-# Jobzooka — Color Semantics
+# AcmeLaunch — Color Semantics
 
 This document defines the CSS custom properties and their semantic meanings. Colors are not just values — they carry meaning about state, hierarchy, and user action.
 
@@ -6,7 +6,7 @@ This document defines the CSS custom properties and their semantic meanings. Col
 
 ## Theme: Dark Corporate
 
-Jobzooka uses a dark theme with warm undertones. The palette is built around deep reds/browns for backgrounds, bright orange for primary actions, and lime green for success states.
+AcmeLaunch uses a dark theme with warm undertones. The palette is built around deep reds/browns for backgrounds, bright orange for primary actions, and lime green for success states.
 
 ---
 
@@ -71,7 +71,7 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 
 | Variable           | Value                    | Meaning                                                                                  |
 | ------------------ | ------------------------ | ---------------------------------------------------------------------------------------- |
-| `--warning`        | `#eab308`                | Warning/in-progress state. Amber/yellow. Used for: low rocket balance, caution messages. |
+| `--warning`        | `#eab308`                | Warning/in-progress state. Amber/yellow. Used for: low credit balance, caution messages. |
 | `--warning-light`  | `rgba(234, 179, 8, 0.1)` | Warning background tint.                                                                 |
 | `--warning-border` | `rgba(234, 179, 8, 0.3)` | Warning border.                                                                          |
 
@@ -87,16 +87,16 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 
 ## Specialized Colors
 
-### Resume Tags
+### Launch Asset Pack Tags
 
-| Variable            | Value                       | Meaning                         |
-| ------------------- | --------------------------- | ------------------------------- |
-| `--tag-full`        | `#d4a054`                   | Full/master resume tag. Gold.   |
-| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Master resume tag background.   |
-| `--tag-general`     | `#4b8bf5`                   | General resume tag. Blue.       |
-| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | General resume tag background.  |
-| `--tag-targeted`    | `#b06be8`                   | Targeted resume tag. Purple.    |
-| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Targeted resume tag background. |
+| Variable            | Value                       | Meaning                                      |
+| ------------------- | --------------------------- | -------------------------------------------- |
+| `--tag-full`        | `#d4a054`                   | Master launch narrative pack tag. Gold.      |
+| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Master narrative pack tag background.        |
+| `--tag-general`     | `#4b8bf5`                   | Baseline (general) launch pack tag. Blue.    |
+| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | Baseline launch pack tag background.         |
+| `--tag-targeted`    | `#b06be8`                   | Segment-specific launch pack tag. Purple.    |
+| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Segment-specific launch pack tag background. |
 
 ### Magic / AI
 

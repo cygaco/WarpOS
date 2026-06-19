@@ -1,7 +1,10 @@
 import { test, expect, Page } from "@playwright/test";
-import { uploadResume, RESUME_FIXTURES } from "../../_shared/helpers/upload";
+import {
+  uploadIdeaBrief,
+  IDEA_BRIEF_FIXTURES,
+} from "../../_shared/helpers/upload";
 
-// Full-flow E2E — exercises the 12-step user journey end-to-end.
+// Full-flow E2E — exercises the 12-step founder journey end-to-end.
 // Generated 2026-05-02 alongside ISSUES.md as part of the QA sweep.
 // Each test maps to one or more bugs (BUG-NNN) so regression-after-fix is
 // auditable. Use `npm run test -- _requirements/full-flow` to run.
@@ -12,9 +15,9 @@ const SCAN_TIMEOUT = 90_000;
 async function uploadAndAdvanceFromIntro(page: Page): Promise<void> {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  await uploadResume(page, RESUME_FIXTURES.docxHappy);
+  await uploadIdeaBrief(page, IDEA_BRIEF_FIXTURES.docxHappy);
   // After drop, page advances to step 2 (CONFIRM) automatically.
-  await expect(page.getByText(/Resume parsed/i)).toBeVisible({
+  await expect(page.getByText(/Idea brief parsed/i)).toBeVisible({
     timeout: STEP_TIMEOUT,
   });
 }
@@ -22,25 +25,25 @@ async function uploadAndAdvanceFromIntro(page: Page): Promise<void> {
 test.describe("Full E2E — happy path", () => {
   test.setTimeout(180_000);
 
-  test("intro → upload → search → market scan → dashboard", async ({
+  test("intro → upload → research → landscape scan → dashboard", async ({
     page,
   }) => {
     await uploadAndAdvanceFromIntro(page);
 
-    // Step 2 sub-flow: direction → work-type → comp → location → quick-check → skip-list → confirm.
+    // Step 2 sub-flow: direction → audience → budget → geography → quick-check → skip-list → confirm.
     // Defaults are pre-selected; just hit Next through each.
     // The disabled "Next step" progress-bar arrow at the top has the same
     // role+name pattern as the page's actual "Next →" button. Filter to the
     // enabled one only — that's the one we click.
     const nextBtn = page.locator('button:has-text("Next →"):not([disabled])');
 
-    // Direction page (Same or similar role pre-selected)
+    // Direction page (First launch pre-selected)
     await nextBtn.first().click();
-    // Work type page (Full-time + Immediately pre-selected)
+    // Audience page (Early adopters + Soon pre-selected)
     await nextBtn.first().click();
-    // Comp page (open to discussion default)
+    // Budget page (open to discussion default)
     await nextBtn.first().click();
-    // Location page (Remote default)
+    // Geography page (US default)
     await nextBtn.first().click();
     // Quick-check page
     await page.getByRole("button", { name: /Looks good, let's go/i }).click();
@@ -54,31 +57,33 @@ test.describe("Full E2E — happy path", () => {
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
 
-    // Interstitial → recon
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await expect(page.getByText(/Recon Mission/i)).toBeVisible({
+    // Interstitial → launch research
+    await page
+      .getByRole("button", { name: /Continue to launch research/i })
+      .click();
+    await expect(page.getByText(/Research Run/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
 
-    // Launch recon
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    // Launch research run
+    await page.getByRole("button", { name: /Start research run/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
 
-    // Targets → lock → deep dive → skip → skills → dashboard
+    // Segments → lock → deep dive → skip → scope → dashboard
     await page
-      .getByRole("button", { name: /View your target categories/i })
+      .getByRole("button", { name: /View your audience segments/i })
       .click();
     await expect(
-      page.getByRole("heading", { name: /Lock Your Targets/i }),
+      page.getByRole("heading", { name: /Lock Your Segments/i }),
     ).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
     await page
-      .getByRole("button", { name: /Lock your target categories/i })
+      .getByRole("button", { name: /Lock your audience segments/i })
       .click();
 
     await expect(page.getByText(/Deep Dive/i)).toBeVisible({
@@ -87,12 +92,12 @@ test.describe("Full E2E — happy path", () => {
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
 
-    await expect(page.getByText(/Here are your skills/i)).toBeVisible({
+    await expect(page.getByText(/Here is your launch scope/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
     await page
       .getByRole("button", {
-        name: /Save skill selections and continue to dashboard/i,
+        name: /Save scope selections and continue to dashboard/i,
       })
       .click();
 
@@ -121,9 +126,9 @@ test.describe("Regression — BUG-001 (toggle pill style shorthand)", () => {
     await uploadAndAdvanceFromIntro(page);
     const next = page.locator('button:has-text("Next →"):not([disabled])');
 
-    // Direction → Work-type page → click "Contract" pill (a known repro)
+    // Direction → Audience page → click "Beta" pill (a known repro)
     await next.first().click();
-    await page.getByRole("button", { name: /^Contract$/ }).click();
+    await page.getByRole("button", { name: /^Beta$/ }).click();
 
     // BUG-001: this assertion fails on current (unfixed) code.
     // After fix, it passes.
@@ -131,10 +136,10 @@ test.describe("Regression — BUG-001 (toggle pill style shorthand)", () => {
   });
 });
 
-test.describe("Regression — BUG-004 (Dashboard vs Resumes pts mismatch)", () => {
+test.describe("Regression — BUG-004 (Dashboard vs Assets pts mismatch)", () => {
   test.setTimeout(180_000);
 
-  test("Dashboard Competitiveness == Resumes Competitiveness for same session", async ({
+  test("Dashboard Readiness == Assets Readiness for same session", async ({
     page,
   }) => {
     await uploadAndAdvanceFromIntro(page);
@@ -150,24 +155,26 @@ test.describe("Regression — BUG-004 (Dashboard vs Resumes pts mismatch)", () =
     await page
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    await page
+      .getByRole("button", { name: /Continue to launch research/i })
+      .click();
+    await page.getByRole("button", { name: /Start research run/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
     await page
-      .getByRole("button", { name: /View your target categories/i })
+      .getByRole("button", { name: /View your audience segments/i })
       .click();
     await page
-      .getByRole("button", { name: /Lock your target categories/i })
+      .getByRole("button", { name: /Lock your audience segments/i })
       .click();
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
     await page
       .getByRole("button", {
-        name: /Save skill selections and continue to dashboard/i,
+        name: /Save scope selections and continue to dashboard/i,
       })
       .click();
 
@@ -175,39 +182,41 @@ test.describe("Regression — BUG-004 (Dashboard vs Resumes pts mismatch)", () =
     await expect(
       page.getByRole("heading", { name: /Command Console/i }),
     ).toBeVisible({ timeout: STEP_TIMEOUT });
-    // Locator the competitiveness number in Command Console.
+    // Locator the readiness number in Command Console.
     const dashPts = await page
-      .locator("text=/Competitiveness/i")
+      .locator("text=/Readiness/i")
       .locator("..")
       .locator("..")
       .innerText();
 
-    // Navigate to Resumes page
-    await page.getByRole("button", { name: /Open Resumes section/i }).click();
-    await expect(page.getByText(/Load Your Warheads/i)).toBeVisible({
+    // Navigate to Assets page
+    await page
+      .getByRole("button", { name: /Open Asset Packs section/i })
+      .click();
+    await expect(page.getByText(/Load Your Launch Assets/i)).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
-    const resumesPts = await page
-      .locator('[role="status"][aria-label*="Competitiveness"]')
+    const assetsPts = await page
+      .locator('[role="status"][aria-label*="Readiness"]')
       .innerText()
       .catch(() => "");
 
-    // BUG-004: Dashboard reads "0 pts Rookie", Resumes reads "140 pts Elite".
+    // BUG-004: Dashboard reads "0 pts Rookie", Assets reads "140 pts Elite".
     // After fix: both should agree on the baseline number.
     const dashHas140 = /140/.test(dashPts);
-    const resumesHas140 = /140/.test(resumesPts);
+    const assetsHas140 = /140/.test(assetsPts);
 
     expect(
-      dashHas140 === resumesHas140,
-      `Dashboard pts text="${dashPts}", Resumes pts text="${resumesPts}" — they disagree on whether 140 pts is the current score.`,
+      dashHas140 === assetsHas140,
+      `Dashboard pts text="${dashPts}", Assets pts text="${assetsPts}" — they disagree on whether 140 pts is the current score.`,
     ).toBe(true);
   });
 });
 
-test.describe("Regression — BUG-005 (skill miscategorization)", () => {
+test.describe("Regression — BUG-005 (launch-item miscategorization)", () => {
   test.setTimeout(180_000);
 
-  test("Mixpanel is categorized as a Tool, not Methodology", async ({
+  test("Email sequence is categorized as a Channel, not Operations", async ({
     page,
   }) => {
     await uploadAndAdvanceFromIntro(page);
@@ -221,35 +230,39 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
     await page
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    await page
+      .getByRole("button", { name: /Continue to launch research/i })
+      .click();
+    await page.getByRole("button", { name: /Start research run/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
     await page
-      .getByRole("button", { name: /View your target categories/i })
+      .getByRole("button", { name: /View your audience segments/i })
       .click();
     await page
-      .getByRole("button", { name: /Lock your target categories/i })
+      .getByRole("button", { name: /Lock your audience segments/i })
       .click();
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
 
-    await expect(page.getByText(/Here are your skills/i)).toBeVisible({
+    await expect(page.getByText(/Here is your launch scope/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
 
-    // BUG-005: Mixpanel appears under "Methodology", should be under "Tools".
-    const mixpanelButton = page.getByRole("button", { name: /^Mixpanel/i });
-    if ((await mixpanelButton.count()) === 0) {
-      // Resume parser is non-deterministic (BUG-006); skip if Mixpanel didn't
-      // show up this run.
+    // BUG-005: "Email sequence" appears under "Operations", should be under "Channels".
+    const emailSequenceButton = page.getByRole("button", {
+      name: /^Email sequence/i,
+    });
+    if ((await emailSequenceButton.count()) === 0) {
+      // Idea-brief parser is non-deterministic (BUG-006); skip if the email
+      // sequence task didn't show up this run.
       test.skip();
     }
     // Walk up the DOM to find the category heading sibling.
-    const category = await mixpanelButton.evaluate((el) => {
+    const category = await emailSequenceButton.evaluate((el) => {
       // Find the closest container whose first child is a category label.
       let cur: HTMLElement | null = el;
       while (cur && cur.parentElement) {
@@ -257,7 +270,7 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
         const firstChild = cur.firstElementChild as HTMLElement | null;
         if (
           firstChild?.textContent &&
-          /^(Leadership|Domain|Technical|Tools|Methodology|Other)$/i.test(
+          /^(Positioning|Audience|Channels|Assets|Operations|Other)$/i.test(
             firstChild.textContent.trim(),
           )
         ) {
@@ -269,7 +282,7 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
 
     expect(
       category.toLowerCase(),
-      `Mixpanel was categorized under "${category}"`,
-    ).toBe("tools");
+      `Email sequence was categorized under "${category}"`,
+    ).toBe("channels");
   });
 });

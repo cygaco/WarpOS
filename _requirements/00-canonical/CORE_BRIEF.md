@@ -77,7 +77,7 @@ The wizard is thorough (10 steps, deep-dive Q&A, scope curation) but must feel f
 
 ### Free vs Paid
 
-Free tier (150 rockets) covers core value: landscape research + 2 segment plans. Premium features (more segments, full asset packs, re-runs) require purchase. The tension: free tier must deliver real value without feeling crippled.
+Free tier (150 credits) covers core value: landscape research + 2 segment plans. Premium features (more segments, full asset packs, re-runs) require purchase. The tension: free tier must deliver real value without feeling crippled.
 
 ### Specificity vs Breadth
 

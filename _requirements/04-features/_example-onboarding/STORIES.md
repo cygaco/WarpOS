@@ -10,17 +10,17 @@
 
 ---
 
-## Parent: HL-ONB-01 — Data Import (MVP)
+## Parent: HL-ONB-01 — Idea-Brief Import (MVP)
 
 <!-- parallel-safe: GS-ONB-01, GS-ONB-02 can be implemented independently -->
 
 ### GS-ONB-01: File Upload Acceptance
 
-> As a User, I want to provide my data as a PDF, DOCX, TXT, or MD file, so that the system can extract structured information from my existing document.
+> As a Founder, I want to provide my idea brief as a PDF, DOCX, TXT, or MD file, so that the system can extract structured information from my existing document.
 
 **Depends on:** none
 **Data:** `SessionData.rawInput` → `src/lib/types.ts`
-**Entry state:** Fresh — first arrival at Step 1, no data uploaded yet
+**Entry state:** Fresh — first arrival at Step 1, no idea brief uploaded yet
 **Verifiable by:** Upload a `.pdf` → file accepted and `rawInput` populated; upload a `.exe` → error message displayed naming accepted formats.
 **Inherits:** CS-003
 
@@ -37,7 +37,7 @@
 > As a System, I want to reject files exceeding 10MB, so that processing resources are not consumed by unreasonably large uploads.
 
 **Depends on:** none
-**Data:** none (validation before data enters the model)
+**Data:** none (validation before the idea brief enters the model)
 **Entry state:** Any
 **Verifiable by:** Upload an 11MB file → error message with size limit; upload a 5MB file → accepted.
 
@@ -50,11 +50,11 @@
 
 ### GS-ONB-03: Text Paste Alternative
 
-> As a User, I want to paste my text directly instead of uploading a file, so that I can use the system even if I don't have a file handy.
+> As a Founder, I want to paste my idea brief directly instead of uploading a file, so that I can use the system even if I don't have a file handy.
 
 **Depends on:** none
 **Data:** `SessionData.rawInput` → `src/lib/types.ts`
-**Entry state:** Fresh — no data uploaded or pasted yet
+**Entry state:** Fresh — no idea brief uploaded or pasted yet
 **Verifiable by:** Paste 500 words of text → rawInput populated; paste empty string → validation error.
 
 **Acceptance Criteria:**
@@ -68,7 +68,7 @@
 
 ### GS-ONB-04: AI Parsing
 
-> As a User, I want my uploaded data to be automatically parsed into structured fields, so I don't have to manually enter everything.
+> As a Founder, I want my uploaded idea brief to be automatically parsed into structured fields, so I don't have to manually enter everything.
 
 **Depends on:** GS-ONB-01 or GS-ONB-03
 **Data:** `SessionData.rawInput` → `SessionData.parsed` → `src/lib/types.ts`
@@ -86,44 +86,44 @@
 
 ---
 
-## Parent: HL-ONB-02 — Preferences (MVP)
+## Parent: HL-ONB-02 — Launch Constraints (MVP)
 
-### GS-ONB-05: Preference Collection
+### GS-ONB-05: Constraint Collection
 
-> As a User, I want to set my preferences through a guided form, so the system knows what I'm looking for.
+> As a Founder, I want to set my launch constraints through a guided form, so the system knows how I want to launch.
 
 **Depends on:** GS-ONB-04
 **Data:** `SessionData.preferences` → `src/lib/types.ts`
-**Entry state:** Returning — parsed data exists, preferences not yet set
-**Verifiable by:** Complete all preference sections → preferences object fully populated in session.
+**Entry state:** Returning — parsed idea brief exists, constraints not yet set
+**Verifiable by:** Complete all constraint sections → constraints object fully populated in session.
 
 **Acceptance Criteria:**
 
-- All preference sections are presented sequentially
+- All constraint sections are presented sequentially
 - Each section auto-saves on completion
-- User can navigate back to previous sections
+- Founder can navigate back to previous sections
 - All fields persist across browser refresh
 **Inherits:** CS-001
 
 ---
 
-## Parent: HL-ONB-03 — Profile Generation (MVP)
+## Parent: HL-ONB-03 — FounderProfile Generation (MVP)
 
-### GS-ONB-06: Profile Generation
+### GS-ONB-06: FounderProfile Generation
 
-> As a User, I want the system to generate a comprehensive profile from my data and preferences, so I can verify it understands me correctly.
+> As a Founder, I want the system to generate a comprehensive FounderProfile from my idea brief and launch constraints, so I can verify it understands me correctly.
 
 **Depends on:** GS-ONB-05
 **Data:** `SessionData.parsed` + `SessionData.preferences` → `SessionData.profile` → `src/lib/types.ts`
-**Entry state:** Returning — preferences complete, profile not yet generated
-**Verifiable by:** Click generate → profile displayed with all expected sections; profile fields are derived from parsed data (not hallucinated).
+**Entry state:** Returning — constraints complete, FounderProfile not yet generated
+**Verifiable by:** Click generate → FounderProfile displayed with all expected sections; profile fields are derived from the parsed idea brief (not hallucinated).
 
 **Acceptance Criteria:**
 
-- Profile generated from parsed data + preferences via AI call
-- Profile displayed in a reviewable card format
-- User can regenerate if unsatisfied (with usage tracking)
-- Generated profile is verified against input data (no hallucinated fields)
+- FounderProfile generated from parsed idea brief + launch constraints via AI call
+- FounderProfile displayed in a reviewable card format
+- Founder can regenerate if unsatisfied (with usage tracking)
+- Generated FounderProfile is verified against the input idea brief (no hallucinated fields)
 - Loading state during generation
 **Inherits:** CS-002
 
@@ -131,7 +131,7 @@
 
 ### GS-ONB-07: Session Persistence Across Refresh
 
-> As a User, I want my onboarding progress to survive a page refresh, so I don't lose my work.
+> As a Founder, I want my onboarding progress to survive a page refresh, so I don't lose my work.
 
 **Depends on:** none
 **Data:** All SessionData fields → encrypted localStorage
