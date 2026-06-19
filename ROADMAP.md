@@ -831,6 +831,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260619-001](.claude/project/sprint/sprints/SP-20260619-001/) | E-DISPATCH-PERFECT-001 W4: genericize jobzooka out of the shipped _requirements/ baseline (neutral example product) | planning | 2026-06-19T00:58:41.456Z |  |  |
 | [SP-20260618-002](.claude/project/sprint/sprints/SP-20260618-002/) | E-MC-READINESS-ANALYSIS-001: Track-1 hardening-sim + consolidate findings register + reconcile (analysis-only) | planning | 2026-06-18T23:46:32.450Z |  |  |
 | [SP-20260618-001](.claude/project/sprint/sprints/SP-20260618-001/) | E-CONTENT-DELIVERY-001: templates-migration to _warpos/ end-state + provenance-seed + update-parity confirm | done | 2026-06-18T19:19:43.785Z | 2026-06-18 | gauntlet GREEN (backend+qa+security, 1 security fix-cycle); ff-merge to main @5238dc44; engine-sprint RI-001 |
 | [SP-20260616-001](.claude/project/sprint/sprints/SP-20260616-001/) | E-DISPATCH-SHAPE-001 W2-core: shape-door report-only parity + per-wrapper enforce-ramp scaffolding | planning | 2026-06-16T18:24:59.291Z |  |  |
