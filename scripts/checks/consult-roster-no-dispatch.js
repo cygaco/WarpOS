@@ -34,12 +34,17 @@
  * lists `Bash`/`Agent` is a violation.
  *
  * THE KNOWN RESIDUAL (β honesty floor — do NOT let it read green silently): `quality-lead`
- * is summoned at the `design` consult step AND carries `[Read,Grep,Glob,Bash,Agent]`
- * (its OTHER job is pod-coordination — fanning out qa-reviewers/design-quality/test-runner
+ * is summoned at the `design` consult step AND carries `[Read,Grep,Glob,Agent]` — `Bash`
+ * was REMOVED (W5/gauntlet HIGH-1; it was over-granted drift, the registry already had
+ * tools:["Agent"]), closing the DIRECT Bash→dispatch-claude.js route. It keeps ONLY `Agent`
+ * (its OTHER job is pod-coordination — Agent-fanning-out qa-reviewer/design-quality/test-runner
  * to GATHER EVIDENCE, a sanctioned one-hop dispatch). One spec can't be tool-restricted
  * per-hook-point, so its design-consult use is trusted-read-only via the scopeContract
  * (writes-nothing). This is recorded as an EXPLICIT, ED-debt-tracked exemption (ED-065)
- * and REPORTED as a known-exemption line — NOT silently passed. A future-proof one-hop
+ * and REPORTED as a known-exemption line — NOT silently passed. THE TWO-HOP RESIDUAL the
+ * exemption leaves open (quality-lead→Agent→a reviewer→Bash→dispatch-claude.js builder; the
+ * reviewer carries Bash by design) is a PRE-EXISTING reviewer-tool-set property, out-of-scope
+ * for the structural check, tracked as ED-065. A future-proof one-hop
  * reviewer-dispatch assertion (a summoned pod-coordinator may dispatch ONLY its own
  * pod's reviewers) is the ED-065 follow-up.
  *
@@ -96,14 +101,16 @@ function readSpecTools(specRel) {
   } catch {
     return out; // unreadable → determined:false → fail-closed
   }
-  // FRONTMATTER-BOUNDING (gauntlet r2 MEDIUM): parse `tools:` ONLY within the leading
-  // YAML frontmatter block (between the first `---` fence pair), so a BODY/prose line
-  // like "tools: you may use Bash" can't be read as the role's tool grant. If there is
-  // no frontmatter fence, fall back to scanning the head of the file (the `(Tools: …)`
-  // agents-list form lives outside frontmatter) — but the inline/block `tools:` forms
-  // are matched against the FRONTMATTER ONLY.
+  // FRONTMATTER-BOUNDING (gauntlet r2+r3 MEDIUM): parse the YAML `tools:` form ONLY
+  // within the leading `---...---` frontmatter block — so a BODY/prose line like
+  // "tools: you may use Bash" can NEVER be read as the role's grant. CRUCIAL (r3 fix):
+  // if there is NO frontmatter fence, the YAML `tools:` search runs against the EMPTY
+  // string (not the body) — an unfenced file yields NO YAML tools match, so it stays
+  // determined:false (fail-closed) unless the distinct `(Tools: …)` agents-list form
+  // is present (a non-YAML format searched separately against the whole file). A real
+  // role spec always has frontmatter; an unfenced one with no `(Tools:)` is unconfirmable.
   const fm = raw.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
-  const txt = fm ? fm[1] : raw; // the frontmatter block, or the whole file if unfenced
+  const txt = fm ? fm[1] : ""; // ONLY the frontmatter block; empty when unfenced (never the body)
   const addTokens = (s) => {
     for (const t of String(s).split(/[,\s]+/)) {
       const tok = t.trim().toLowerCase().replace(/[\[\]"'`]/g, "");
@@ -129,8 +136,11 @@ function readSpecTools(specRel) {
     }
     return out;
   }
-  // Fallback: the parenthetical `(Tools: Read, Grep, ...)` form some specs/agents-lists use.
-  m = txt.match(/\(Tools:\s*([^)]+)\)/i);
+  // Fallback: the parenthetical `(Tools: Read, Grep, ...)` agents-list form — a DISTINCT
+  // non-YAML format (not frontmatter), so it is searched against the WHOLE file (raw),
+  // not the frontmatter block. This is the one tools source that legitimately lives
+  // outside the `---` fence.
+  m = raw.match(/\(Tools:\s*([^)]+)\)/i);
   if (m) {
     out.source = "agents-list";
     out.determined = true;

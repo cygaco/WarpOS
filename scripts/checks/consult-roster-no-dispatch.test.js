@@ -182,6 +182,31 @@ h.test("r2-MEDIUM: a body-prose `tools: Bash` line is IGNORED; only frontmatter 
     fx.cleanup();
   }
 });
+// ── gauntlet r3 MEDIUM: an UNFENCED spec (no leading ---...---) with only a body
+// `tools:` line must NOT be read as determined (the fallback-to-body defect). It
+// stays determined:false → fail-closed at evaluate.
+h.test("r3-MEDIUM: an UNFENCED spec with a body `tools:` line is UNCONFIRMABLE (fail-closed), not false-clean", () => {
+  const { readSpecTools } = require("./consult-roster-no-dispatch");
+  const fx = h.sealedDir({
+    "nofm.md": "# A spec with NO frontmatter fence\nSome prose. tools: Read, Grep — but this is the BODY.\n",
+    "agentslist.md": "# spec\n(Tools: Read, Grep, Glob)\n", // the distinct agents-list form IS still read (whole file)
+  });
+  try {
+    const nofm = readSpecTools(fx.file("nofm.md"));
+    assert(nofm.determined === false, "an unfenced body `tools:` line is NOT a confirmable grant (fail-closed)");
+    // and that role, run through evaluate, is a VIOLATION (fail-closed), not clean:
+    const r = evaluate({
+      regDoc: { roles: { "nofm-consult": { spec: fx.file("nofm.md") } } },
+      hpDoc: { attachments: [{ role: "nofm-consult", step: "design" }] },
+    });
+    assert(r.ok === false, "an unconfirmable unfenced spec at a consult step => violation (fail-closed)");
+    // the distinct (Tools: ...) agents-list form is still read from the whole file:
+    const al = readSpecTools(fx.file("agentslist.md"));
+    assert(al.determined === true && al.tools.has("read") && !al.tools.has("bash"), "the (Tools:) agents-list form parses (whole-file)");
+  } finally {
+    fx.cleanup();
+  }
+});
 
 // ── gauntlet MEDIUM (setHas): token EQUALITY, not substring — a tool named "subagent"
 // (contains "agent") must NOT be read as the Agent dispatch tool.
