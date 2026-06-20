@@ -16,10 +16,12 @@
  *
  * SAFETY (β H-002 exposure-model discipline — a kill is a privilege surface):
  *   A process is reaped ONLY when ALL of these hold (any ambiguity ⇒ SKIP):
- *     1. SIGNATURE — its command line matches a WarpOS dispatch subprocess
- *        (dispatch-claude.js / dispatch-agent.js, or a provider CLI carrying our
- *        WARPOS_RUN_ID / dispatch telemetry marker). A bare "node" or a foreign
- *        "claude" is NEVER a candidate.
+ *     1. SIGNATURE — it is a real `node <abs-wrapper>` invocation of one of THIS
+ *        project's dispatch wrapper scripts (dispatch-claude.js / dispatch-agent.js):
+ *        argv[0]=node AND argv[1] is the absolute, canonical wrapper path (see
+ *        isDispatchProc). A bare "node", a foreign "claude"/"codex", a flag-before-
+ *        the-script, or the wrapper name in an arg is NEVER a candidate. (A reaped
+ *        grandchild provider CLI is taken down via the wrapper's tree, taskkill /T.)
  *     2. ORPHANED — its parent PID is DEAD, or it has been reparented to init
  *        (PPID == 1 on POSIX). A child of a LIVE session is NOT an orphan.
  *     3. AGE — older than ORPHAN_MIN_AGE_MS (default 20min, ≥ the longest legit
