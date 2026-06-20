@@ -56,21 +56,18 @@ const NAME = "reap-orphans";
 const ORPHAN_MIN_AGE_MS = 20 * 60 * 1000;
 
 // The CANONICAL absolute paths of THIS project's dispatch wrapper scripts. The
-// signature match (HIGH-5) anchors on these REAL paths — a token in the command
-// line that RESOLVES to one of them — not a loose `dispatch-agent.js` substring (so
-// `python worker.py --file /tmp/dispatch-agent.js` does NOT match). Lower-cased +
-// forward-slashed for comparison (Windows is case-insensitive; cmd lines vary).
+// signature match anchors on these REAL paths: the matcher requires `node <abs-path>`
+// where <abs-path> (canonicalized) EQUALS one of these — never a loose substring, a
+// non-operand token, or a ROOT-relative resolution a foreign cwd could forge. Lower-
+// cased + forward-slashed for comparison (Windows is case-insensitive; cmd lines vary).
 const DISPATCH_SCRIPT_PATHS = ["dispatch-claude.js", "dispatch-agent.js"].map((b) =>
   path.resolve(ROOT, "scripts", b).replace(/\\/g, "/").toLowerCase(),
 );
-// The known runtime/provider executables a real dispatch child runs as argv[0].
-const KNOWN_EXES = new Set(["node", "node.exe", "claude", "claude.exe", "codex", "codex.exe", "gemini", "gemini.exe"]);
-// Telemetry env markers the wrappers set on the spawn (dispatch-agent.js exports
-// WARPOS_RUN_ID/PHASE_ID/SPRINT_ID onto wrapper env; a child inherits them). Matched
-// only when a SINGLE argv TOKEN IS the assignment (the whole token is
-// `WARPOS_RUN_ID=<value>`) — anchored ^…$ so the marker buried inside a larger arg
-// (e.g. `--prompt=…WARPOS_RUN_ID=…`) does NOT match. Combined with argv[0]=known exe.
-const TELEMETRY_MARKER_TOKEN_RE = /^(?:WARPOS_RUN_ID|WARPOS_DISPATCH[A-Z_]*)=\S*$/;
+// NOTE (r3 redesign): the telemetry-marker-in-argv branch + the broad known-exe set
+// were REMOVED as unsound — a WARPOS_RUN_ID=… token can be a user-supplied --prompt
+// value, and we cannot read another process's ENV (where the real marker lives). A
+// provider CLI (claude/codex/gemini) is therefore matched ONLY via the wrapper's
+// process TREE (its node parent), never on its own argv. See isDispatchProc.
 
 // ── pidAlive: reuse the concurrency-lock primitive (EPERM ⇒ treat as alive). ──
 let pidAlive;
@@ -405,38 +402,67 @@ function classify(input) {
 /** Does this process identify as a WarpOS dispatch subprocess? Decides on the argv
  *  ARRAY (never a flattened string — a flattened-then-retokenized cmdline lets a
  *  single argv value containing whitespace forge a separate wrapper/marker token,
- *  the r2 HIGH). Each check is per-TOKEN. Two narrow ways:
- *    (a) argv[0] is a known runtime (node/claude/…) AND SOME later argv token,
- *        RESOLVED to an absolute path, EQUALS one of THIS project's real wrapper
- *        script paths. `python worker.py --file /tmp/dispatch-agent.js` fails (argv[0]
- *        ≠ runtime AND path ≠ ours); `node /tmp/evil/dispatch-claude.js` fails (path
- *        not under our scripts/).
- *    (b) argv[0] is a known runtime AND a SINGLE argv token is exactly an
- *        assignment-form telemetry marker (`WARPOS_RUN_ID=…` as its OWN token — NOT
- *        `--prompt "…WARPOS_RUN_ID=…"`, where the marker is buried inside one quoted
- *        argv value and is therefore not a standalone token). This closes the r2 HIGH
- *        where a foreign `claude --prompt WARPOS_RUN_ID=demo` was treated as ours.
- *  Accepts an argv array OR (back-compat for callers/tests) a raw string it tokenizes.
- *  NOTE: string tokenization can't perfectly recover the original argv boundaries, so
- *  the STRING form is best-effort; the production enumerators pass the real argv. */
+ *  the r2 HIGH). ONE sound, conservative rule (r3 redesign — the marker-in-argv
+ *  branch was dropped as UNSOUND: a WARPOS_RUN_ID=… token can be a user-supplied
+ *  --prompt VALUE, and we cannot read another process's ENV where the real marker
+ *  lives; and "any later token resolves to the path" false-matched `node -e "…"
+ *  <wrapper-path>` where the wrapper is just a `-e` argument):
+ *
+ *    argv[0] basename is `node`/`node.exe`  AND  the SCRIPT OPERAND — the first
+ *    NON-OPTION argument after node (skipping `-e/--eval/-p/--print` + THEIR values,
+ *    and other `-…` flags) — is an ABSOLUTE path that, canonicalized, EQUALS one of
+ *    THIS project's real wrapper script paths (DISPATCH_SCRIPT_PATHS).
+ *
+ *  So `node -e "..." <abs-wrapper>` fails (the operand after `-e <code>` is the code,
+ *  not the wrapper), `python worker.py --file /…/dispatch-agent.js` fails (argv[0] ≠
+ *  node), `node /tmp/evil/dispatch-claude.js` fails (not our canonical path), and a
+ *  RELATIVE `node scripts/dispatch-agent.js` fails (we require an ABSOLUTE operand —
+ *  no ROOT-relative resolution, which a foreign cwd could forge). This NARROWS what
+ *  the reaper recognizes to a real `node <abs-our-wrapper>` invocation — the
+ *  conservative, false-kill-resistant choice for a process-killer (a reaped grandchild
+ *  provider CLI is taken down via taskkill /T on the wrapper's tree). Accepts an argv
+ *  array OR (back-compat) a raw string it tokenizes best-effort. */
 function isDispatchProc(input) {
   const argv = Array.isArray(input) ? input.map((t) => String(t)) : tokenizeCmd(String(input || ""));
-  if (argv.length === 0) return false;
-  // argv[0] must be a known runtime/provider executable (by basename).
+  if (argv.length < 2) return false;
+  // argv[0] must be node (the runtime our wrappers run under). A provider CLI
+  // (claude/codex/gemini) is matched only via the wrapper's process TREE, never on
+  // its own — its argv carries user content we must not trust as identity.
   const exe0 = path.basename(String(argv[0]).replace(/\\/g, "/")).toLowerCase();
-  if (!KNOWN_EXES.has(exe0)) return false;
-  // (a) does any later token resolve to one of our real wrapper script paths?
-  for (const tok of argv.slice(1)) {
-    if (!/dispatch-(?:claude|agent)\.js$/i.test(tok)) continue; // cheap pre-filter
-    const norm = tok.replace(/\\/g, "/").toLowerCase();
-    const candidates = [norm, path.resolve(ROOT, tok).replace(/\\/g, "/").toLowerCase()];
-    if (candidates.some((cand) => DISPATCH_SCRIPT_PATHS.includes(cand))) return true;
+  if (exe0 !== "node" && exe0 !== "node.exe") return false;
+  const operand = nodeScriptOperand(argv.slice(1));
+  if (!operand) return false;
+  // The operand must be ABSOLUTE (no ROOT-relative forgery from a foreign cwd) and,
+  // canonicalized (slashes + case), equal to a real wrapper path.
+  if (!path.isAbsolute(operand)) return false;
+  const norm = operand.replace(/\\/g, "/").toLowerCase();
+  return DISPATCH_SCRIPT_PATHS.includes(norm);
+}
+
+/** Given node's args (argv after argv[0]=node), return the SCRIPT OPERAND — the first
+ *  non-option token — correctly skipping the eval/print flags that CONSUME the next
+ *  token as code (`-e <code>`, `--eval <code>`, `-p <code>`, `--print <code>`) and
+ *  other bare `-…` flags. Returns null if node is running inline code (`-e`/`-p` with
+ *  no script operand) or there is no operand. This is what stops `node -e "<code>"
+ *  <wrapperpath>` from treating the trailing path as the invoked script. */
+function nodeScriptOperand(args) {
+  const EVAL_FLAGS = new Set(["-e", "--eval", "-p", "--print", "--require", "-r"]);
+  for (let i = 0; i < args.length; i++) {
+    const a = String(args[i]);
+    if (a === "--") {
+      return i + 1 < args.length ? String(args[i + 1]) : null;
+    }
+    if (EVAL_FLAGS.has(a)) {
+      // -e/-p/-r consume the NEXT token as their value; if it's -e/-p, node runs
+      // inline code and there is no script operand at all.
+      if (a === "-e" || a === "--eval" || a === "-p" || a === "--print") return null;
+      i++; // -r/--require: skip the module value, keep scanning for the operand
+      continue;
+    }
+    if (a.startsWith("-")) continue; // some other node flag (no value, or =value form)
+    return a; // first non-option token = the script operand
   }
-  // (b) a STANDALONE assignment-form telemetry marker token (not buried in an arg).
-  for (const tok of argv.slice(1)) {
-    if (TELEMETRY_MARKER_TOKEN_RE.test(tok)) return true;
-  }
-  return false;
+  return null;
 }
 
 /** Minimal command-line tokenizer (back-compat for the STRING form of isDispatchProc
