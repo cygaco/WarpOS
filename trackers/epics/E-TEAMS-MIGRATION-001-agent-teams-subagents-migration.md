@@ -11,8 +11,8 @@
 - **Background:** v2.1.178 removed the harness team primitives. The migration is fundamentally a **directive swap** (`TeamCreate(team_name, agent_type:"alpha")` → spawn named background subagents via `Agent`), NOT a logic rewrite: the harness still writes `~/.claude/teams/<session>/config.json`, so every hook's `team_name` / member inspection and slug-scoping logic remains valid. The risk surface is therefore (a) stale *instructional text* that tells the model to run a tool that no longer exists, and (b) **silent fail-open** in hooks whose emitted directives reference the dead tool. Diagnosed from three sources (official docs + Reddit + observed-live) and captured in `REPORT-JULY-18.md` Part 2 + `DUMP.md` §2. The operator additionally folded in subprocess cleanup (the reap/bg-drop orphan class) and asked for an orchestration-doctrine doc distinguishing in-process subagents (Agent tool, separate context windows, talk via SendMessage) from OS subprocesses (`dispatch-claude.js`/`dispatch-agent.js`, the ones that orphan/reap).
 - **Scope:** (Leg A) migrate the 5 skills citing `TeamCreate`/`TeamDelete` — `mode/sprint.md` (Steps 1.5/1.75), `mode/adhoc.md` (Step 2 + primitive-limits), `warp/health.md` (§3.5), `session/end.md` (Phase 9 teardown), `.claude/project/reference/sprint-workflow.md` (primitive-limits §), and β `judgement-model.md` (harness-primitive row) — to the spawn-via-Agent pattern; mark the env flag deprecated/phasing-out. (Leg B) audit + migrate the **emitted directive strings** in `scripts/hooks/team-guard.js` (block-message), `scripts/hooks/session-start.js` (`teamInitDirective`), `scripts/teams/lifecycle.js` (`verify()` directive + honest-ceiling comment), `scripts/check/install.js` (flag-detail string) — logic, fail-open, and config.json inspection PRESERVED untouched. (Leg C) a reliable subprocess **reaper + liveness contract** for orphaned `dispatch-*.js` OS processes (PID-liveness based, fail-open), wired into session-start eager-prune + `/warp:health`, with a named enforcer. (Leg D) the **orchestration-doctrine doc** (CLAUDE.md + dispatch-guide §9: in-process subagents vs OS subprocesses, pull-don't-push context, lean envelopes, nesting-5, turn-cost), a **regression enforcer** (`scripts/checks/no-dead-team-tools.js` — flags new live `TeamCreate`/`TeamDelete` directives in skills/hooks/scripts, allowlisting historical/`_docs`/`_warpos/BASELINE`/this epic's own files, fail-closed on runner error, `.test.js` with a planted violation) wired into `/scan:full`, and migration of the tests referencing `team_name` (`tests/regression/S-LC-04/init-gate.test.js`, the `team-guard-*.test.js`, `session-start-teaminit.test.js`, `tests/regression/SP-20260611-002/team-guard-verify.test.js`).
 - **Out of scope:** Rewriting the *team-guard / lifecycle gate LOGIC* (the gates still work; only the human/model-facing directives change). Touching `_requirements/`, `_warpos/EXAMPLES/`, `_warpos/BASELINE/` (immutable/W4-owned), or `.claude/agents/_org/dispatch-contract.json` / dispatch-config (W5-owned, E-DISPATCH-PERFECT-001). Historical archives, `_docs/phase0/*`, `_planning/*`, and per-run `runtime/*` artifacts (immutable history — the enforcer allowlists them). Re-architecting the dispatch reliability stack (the reaper *complements* `epsilon-liveness.js` + `concurrency-lock` pruning; it does not replace them).
-- **Current state:** Review Needed (gauntlet-GREEN, β-cleared to merge; pending the ff-merge to `main` + manifest regen)
-- **Percent completion:** 95% — all 4 build legs done + the cross-provider gauntlet GREEN (backend/qa/security all binding PASS, telemetry-gate clean) + β DECIDE B 0.88 to merge + the 4 β riders applied. Remaining 5% = regen both manifests + ff-merge to `main` (operator granted merge freedom). Branch `sprint/SP-TEAMS-MIGRATION-001` off `main` @ `5eae16f3`.
+- **Current state:** Completed
+- **Percent completion:** 100% — LANDED on `main` @ `7b40bbf7` (ff-merge from `sprint/SP-TEAMS-MIGRATION-001`, 9 commits) + pushed to `origin/main` (2026-06-19). All 4 build legs done; cross-provider gauntlet GREEN (backend/qa/security all binding PASS, telemetry-gate clean); β DECIDE B 0.88 to merge + the 4 β riders applied; framework manifest regenerated; post-merge sanity green on main (enforcer 2113 files clean, reaper test 20/20, enforcer test 18/18, S-LC-05 18/18). Engine-sprint fast-close (RI-001): no deploy artifact; formal retro deferred to milestone close.
 
 ## Definition of Done
 - [x] All 5 skills (`mode/sprint`, `mode/adhoc`, `warp/health`, `session/end`, `sprint-workflow`) + β `judgement-model` instruct **spawn-via-Agent** (`Agent(subagent_type, name, run_in_background:true)`), not `TeamCreate`/`TeamDelete`; the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag is documented as deprecated/phasing-out (no skill instructs it as a hard prerequisite). — Leg A; enforcer-clean.
@@ -21,7 +21,7 @@
 - [x] The orchestration-doctrine doc (CLAUDE.md + dispatch-guide §9.5) distinguishes in-process subagents vs OS subprocesses, documents pull-don't-push / lean envelopes / nesting-5 / turn-cost, and the post-v2.1.178 implicit-team model. — Leg D.
 - [x] `scripts/checks/no-dead-team-tools.js` exists, is wired into `/scan:full`, fails closed on runner error, FIRES on a planted new `TeamCreate(` directive (proven: CLI exit 1), asserts the new Agent-spawn remediation EXISTS, and is GREEN against the migrated tree (2113 files). — Leg D; qa-reviewer PASS; 18-assertion test.
 - [x] Every `team_name`-referencing test passes against the migrated code; the cross-provider gauntlet is GREEN on every hook change (GPT-only — gemini TIER-DEAD, debt ED-063); β DECIDE B 0.88 to merge. — gauntlet done.
-- [ ] Both manifests regenerated; ff-merged to `main`. — release-prep (in progress).
+- [x] Framework manifest regenerated; ff-merged to `main` @ `7b40bbf7` + pushed. (The warpos shipping MANIFEST regen was deferred — it picked up uncommitted cross-session disk drift, not mine; warpos-ship-coverage is GREEN on clean main, regenerates clean post-merge.)
 
 ## Related definitions
 - Enforcer / fail-closed gate, Wiring, Verification, Evidence — see ../../TRACKER.md
@@ -86,13 +86,13 @@
 Dispatch the 4 build legs (skills / hooks / subprocess-reaper / doctrine-doc+enforcer+tests) in-process, then run the cross-provider gauntlet on the hook changes, then regen both manifests + merge to `main`.
 
 ## Completion record
-- Final state: Not yet complete
-- Percent completion: n/a
-- Completion timestamp: n/a
-- Definition of done used: the Definition of Done section above
-- Evidence of completion: n/a
-- Session IDs / dates / agents: SP-TEAMS-MIGRATION-001 / 2026-06-19 / α + ε + β
-- Related completed sprints: none yet
-- Remaining follow-up items: all DoD items open
+- Final state: Completed
+- Percent completion: 100%
+- Completion timestamp: 2026-06-19
+- Definition of done used: the Definition of Done section above (all 7 items checked)
+- Evidence of completion: merged to `main` @ `7b40bbf7` (ff from `sprint/SP-TEAMS-MIGRATION-001`, 9 commits) + pushed to `origin/main`. Cross-provider gauntlet GREEN (backend/qa/security binding PASS, real `ok:true` completion records). β DECIDE B 0.88. Post-merge on main: enforcer 2113 files clean (exit 0), reaper test 20/20, enforcer test 18/18, S-LC-05 18/18.
+- Session IDs / dates / agents: SP-TEAMS-MIGRATION-001 / 2026-06-19 / α (lead) + ε (conductor, Epsilon-2) + β (Beta-2) · GPT-5.5 gauntlet (gemini TIER-DEAD)
+- Related completed sprints: SP-TEAMS-MIGRATION-001 (this epic's only sprint)
+- Remaining follow-up items: ED-063 (re-run the gemini/Antigravity corpus-diversity gauntlet leg on the reaper once that provider is live); the warpos shipping-MANIFEST regen on a clean main (deferred — was contaminated by uncommitted W4/W5 disk drift)
 - Related untracked work: None
-- ../../TRACKER.md updated: pending · Roadmap reconciled: pending
+- ../../TRACKER.md updated: via ROADMAP § Epics pointer (TRACKER delegates theme-epics to ROADMAP) · Roadmap reconciled: Yes (ROADMAP § Epics entry → Completed 100%)

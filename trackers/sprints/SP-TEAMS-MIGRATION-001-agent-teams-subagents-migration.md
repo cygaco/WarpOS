@@ -10,8 +10,8 @@
 - **Goal:** Migrate WarpOS off the removed Claude Code v2.1.178 team primitives (`TeamCreate`/`TeamDelete`) to the spawn-via-Agent model across the 5 skills, 4 hooks, tests, and ~12 docs that still instruct the dead API; build a subprocess reaper + liveness contract for orphaned `dispatch-*.js` OS processes; add the orchestration-doctrine doc + a regression enforcer; and land it green through the cross-provider gauntlet.
 - **Scope:** the 4 build legs (A skills, B hooks-directive-strings, C subprocess-reaper, D doctrine-doc + `no-dead-team-tools.js` enforcer + test migration) defined in the parent epic's Scope.
 - **Out of scope:** `_requirements/`, `_warpos/EXAMPLES/` (W4), `dispatch-contract.json` / dispatch-config (W5), historical archives + per-run `runtime/*`, and the team-guard/lifecycle gate LOGIC (only directives change).
-- **Current state:** Active
-- **Percent completion:** 10% — branch cut off `main` @ `5eae16f3`; composition + leg partition + epic/sprint trackers authored; build legs dispatched.
+- **Current state:** Completed
+- **Percent completion:** 100% — LANDED on `main` @ `7b40bbf7` (ff-merge, 9 commits) + pushed (2026-06-19). All 4 legs + gauntlet GREEN + β DECIDE B 0.88 + 4 riders applied.
 
 ## Definition of Done
 - [ ] Inherits the parent epic's 6 DoD items (skills migrated · hooks directives migrated + logic/fail-open unchanged · reaper built+wired+enforced · doctrine doc · enforcer wired into /scan:full + planted-violation test · all team_name tests pass + cross-provider gauntlet GREEN + manifests regen + merged).
@@ -105,16 +105,16 @@
 | `reap-orphans.js` | Yes | Missing But Required | scripts/dispatch/ + session-start | Glob 2026-06-19 | 2026-06-19 | Epsilon |
 
 ## Current next action
-Dispatch the 4 build legs in-process, then the cross-provider gauntlet on the hook changes.
+None — sprint completed (merged to `main` @ `7b40bbf7` + pushed 2026-06-19).
 
 ## Completion record
-- Final state: Not yet complete
-- Percent completion: n/a
-- Completion timestamp: n/a
-- Definition of done used: the Definition of Done section above (inherits parent epic DoD)
-- Evidence of completion: n/a
+- Final state: Completed
+- Percent completion: 100%
+- Completion timestamp: 2026-06-19
+- Definition of done used: inherits the parent epic DoD (all 7 items checked)
+- Evidence of completion: merged to `main` @ `7b40bbf7` (ff from this branch, 9 commits) + pushed to `origin/main`; cross-provider gauntlet GREEN (backend/qa/security binding PASS); β DECIDE B 0.88; post-merge on main enforcer 2113-files-clean + reaper 20/20 + enforcer 18/18 + S-LC-05 18/18.
 - Session IDs / dates / agents: SP-TEAMS-MIGRATION-001 / 2026-06-19 / α + ε + β
 - Parent epic: E-TEAMS-MIGRATION-001
-- Remaining follow-up items: all DoD items open
+- Remaining follow-up items: ED-063 (gemini corpus-diversity gauntlet re-run on the reaper once Antigravity is live); warpos shipping-MANIFEST regen on a clean main
 - Related untracked work: None
-- ../../TRACKER.md updated: pending · Roadmap reconciled: pending
+- ../../TRACKER.md updated: via ROADMAP § Epics pointer · Roadmap reconciled: Yes
