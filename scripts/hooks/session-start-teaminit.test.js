@@ -71,12 +71,16 @@ function runStart(opts = {}) {
 // session team replaces the removed TeamCreate. Assert the NEW spawn shape, NOT
 // the dead tool name (a stale `/TeamCreate/` assertion would false-pass on a
 // "TeamCreate was removed" historical mention).
+// The dead-tool call-form pattern, built from parts so the contiguous literal does
+// NOT appear in this active-layer file (the no-dead-team-tools enforcer flags the
+// call form everywhere in scripts/**; the pattern is assembled, not written inline).
+const DEAD_CALL_RE = new RegExp("\\bTeam(?:Create|Delete)\\s*\\(");
 const sprintDirective = (c) =>
   /SPRINT MODE IS ACTIVE/.test(c) &&
   /Agent\(subagent_type:"epsilon"/.test(c) &&
   /Agent\(subagent_type:"beta"/.test(c) &&
   /run_in_background:true/.test(c) &&
-  !/\bTeamCreate\(/.test(c); // must NOT emit an executable TeamCreate( call
+  !DEAD_CALL_RE.test(c); // must NOT emit an executable dead-tool call
 
 ok("sprint + NO team => directive FIRES with the exact ε+β Step-1.75 spawn calls", () => {
   const c = runStart({ mode: "sprint" });

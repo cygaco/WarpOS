@@ -35,8 +35,9 @@ h.test("the planted TeamCreate( yields exactly one offender on the right line", 
 h.violation("a live TeamDelete( directive (no marker) is flagged", () =>
   evaluate({ files: [{ path: "b.js", content: "cleanup(); TeamDelete(team_name);\n" }] }));
 
-// 3) EXEMPT — a historical mention ("removed in v2.1.178") must pass.
-h.pass("historical 'TeamCreate/TeamDelete were removed in v2.1.178' is exempt", () =>
+// 3) PASS — a historical mention in NON-CALL form (no open-paren) passes. Prose in
+// the active layer describes the tools by NAME, never the call form.
+h.pass("historical 'TeamCreate/TeamDelete were removed in v2.1.178' (non-call form) passes", () =>
   evaluate({
     files: [
       {
@@ -46,11 +47,11 @@ h.pass("historical 'TeamCreate/TeamDelete were removed in v2.1.178' is exempt", 
     ],
   }));
 
-// 4) EXEMPT — a descriptive 'surrogate for TeamDelete' line must pass.
-h.pass("'the Node-side surrogate for TeamDelete' is exempt (surrogate marker)", () =>
+// 4) PASS — a descriptive 'surrogate for TeamDelete' line (NON-call form) passes.
+h.pass("'the Node-side surrogate for TeamDelete' (non-call form) passes", () =>
   evaluate({
     files: [
-      { path: "notes.md", content: "We kept the Node-side surrogate for TeamDelete() during migration.\n" },
+      { path: "notes.md", content: "We kept the Node-side surrogate for TeamDelete during migration.\n" },
     ],
   }));
 
@@ -68,5 +69,39 @@ h.pass("the clean migrated Agent(run_in_background:true) directive passes", () =
       },
     ],
   }));
+
+// ── qa-CRITICAL: a MASKED live call (a real TeamCreate( with a stray marker WORD
+// appended) must STILL be flagged — the prior whole-line substring exemption
+// false-PASSED `TeamCreate(...) // legacy`, defeating the enforcer. The fix requires
+// a REMOVAL-CONTEXT phrase, not a stray keyword.
+h.violation("qa-CRIT: a live TeamCreate(...) with a trailing '// legacy' marker word is STILL flagged", () =>
+  evaluate({ files: [{ path: "sneaky.js", content: 'TeamCreate(team_name:"x"); // legacy path\n' }] }));
+h.violation("qa-CRIT: a live TeamCreate(...) with a trailing 'deprecated' word is STILL flagged", () =>
+  evaluate({ files: [{ path: "sneaky2.md", content: 'Run TeamCreate(team_name:"x") (deprecated wrapper)\n' }] }));
+h.violation("qa-CRIT: a live TeamDelete(...) followed by the word 'gone' is STILL flagged", () =>
+  evaluate({ files: [{ path: "sneaky3.js", content: 'TeamDelete(t); // the old team is gone now\n' }] }));
+
+// ── qa-HIGH: whitespace before the paren must NOT bypass (`TeamCreate (`).
+h.violation("qa-HIGH: `TeamCreate (` with a space before the paren is flagged", () =>
+  evaluate({ files: [{ path: "ws.js", content: 'TeamCreate ("x")\n' }] }));
+
+// The masked-call tests, exactly one offender each (not a coincidental fail).
+h.test("qa-CRIT: the masked live call yields exactly one offender", () => {
+  const r = evaluate({ files: [{ path: "s.js", content: 'TeamCreate(team_name:"x"); // legacy\n' }] });
+  assert.strictEqual(r.ok, false, "masked live call must be ok:false");
+  assert.strictEqual(r.offenders.length, 1, "exactly one offender");
+});
+
+// Prose in NON-CALL form (the tool by name, no open-paren) is never flagged — the
+// active layer describes the removed tools this way; the call form is reserved for
+// (and only legitimate in) the path-skipped history/decision layer (adr/, _docs, …).
+h.pass("non-call-form prose ('the TeamCreate call is no longer available') passes", () =>
+  evaluate({ files: [{ path: "doc2.md", content: "The TeamCreate call is no longer available as of v2.1.178.\n" }] }));
+
+// And a CALL-FORM in prose, even with removal language, IS flagged in the active
+// layer (the reviewer's CRITICAL: no marker-word escape; rephrase to non-call form
+// or move to the path-skipped doc layer).
+h.violation("a call-form in prose ('TeamCreate(...) was removed') IS flagged in the active layer", () =>
+  evaluate({ files: [{ path: "active.md", content: "TeamCreate(team_name) was removed in v2.1.178.\n" }] }));
 
 h.done();

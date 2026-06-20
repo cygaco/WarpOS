@@ -22,7 +22,7 @@
  */
 
 const { harness } = require("../checks/lib/fixture-harness");
-const { classify, isDispatchProc } = require("./reap-orphans");
+const { classify, isDispatchProc, terminate, ORPHAN_MIN_AGE_MS } = require("./reap-orphans");
 
 const h = harness("reap-orphans");
 
@@ -131,6 +131,90 @@ h.test("mixed batch: only the genuine orphan is flagged; live/young/foreign spar
   });
   assert(res.orphans.length === 1 && res.orphans[0].pid === 800, "exactly one orphan (pid 800)");
   assert(!isOrphan(res, 801) && !isOrphan(res, 802) && !isOrphan(res, 803), "others spared");
+});
+
+// ── GAUNTLET HARDENING (security-reviewer fix-cycle 1) ───────────────────────
+// CRIT-1: a NON-FINITE age (unknown start time) is ambiguity, never "old" => SKIP.
+h.test("CRIT-1: age-unknown (ageMs=Infinity) => SKIP, never reaped", () => {
+  const res = run({ pid: 1000, ppid: 1, ageMs: Infinity, startMs: NaN, cmd: "node scripts/dispatch-agent.js reviewer p.txt" });
+  assert(isSkipped(res, 1000) && !isOrphan(res, 1000), "unknown age must be spared");
+  assert(res.skipped.find((s) => s.pid === 1000).reasons.includes("age-unknown"), "reason age-unknown");
+});
+// CRIT-2: a NaN or below-floor minAgeMs must NOT disable the age gate (defaults to floor).
+h.test("CRIT-2: minAgeMs=NaN does not disable the age gate", () => {
+  const res = classify({
+    procs: [{ pid: 1001, ppid: 1, ageMs: 5000, startMs: Date.now() - 5000, cmd: "node scripts/dispatch-agent.js reviewer p.txt" }],
+    selfTree: new Set(), livePids: new Set(), now: Date.now(), minAgeMs: NaN,
+  });
+  assert(!isOrphan(res, 1001), "a 5s proc must NOT be reaped even with minAgeMs=NaN (floor applies)");
+});
+h.test("CRIT-2: minAgeMs=0 does not disable the age gate", () => {
+  const res = classify({
+    procs: [{ pid: 1002, ppid: 1, ageMs: 5000, startMs: Date.now() - 5000, cmd: "node scripts/dispatch-agent.js reviewer p.txt" }],
+    selfTree: new Set(), livePids: new Set(), now: Date.now(), minAgeMs: 0,
+  });
+  assert(!isOrphan(res, 1002), "minAgeMs=0 must clamp to the floor, not reap a 5s proc");
+});
+// HIGH-4: lock-state-unknown (locksOk:false) => spare EVERYTHING.
+h.test("HIGH-4: locksOk=false (lock enum failed) => every candidate spared", () => {
+  const res = classify({
+    procs: [{ pid: 1003, ppid: 1, ageMs: OLD, startMs: Date.now() - OLD, cmd: "node scripts/dispatch-agent.js reviewer p.txt" }],
+    selfTree: new Set(), livePids: new Set(), locksOk: false, now: Date.now(), minAgeMs: MIN,
+  });
+  assert(!isOrphan(res, 1003), "cannot read locks => cannot reap");
+  assert(res.skipped.find((s) => s.pid === 1003).reasons.includes("lock-state-unknown"), "reason lock-state-unknown");
+});
+// HIGH-5 (r2): structural — only a REAL wrapper-script invocation or an assignment-
+// form marker on a known runtime matches; a foreign process carrying the name/marker
+// in a free-text arg does NOT. Matched against the project's REAL resolved paths.
+h.test("HIGH-5: only a real wrapper invocation / assigned marker matches; foreign args do not", () => {
+  const path = require("path");
+  const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
+  const realClaude = path.resolve(ROOT, "scripts", "dispatch-claude.js");
+  // NEGATIVES — must NOT match:
+  assert(!isDispatchProc('vim --note "remember WARPOS_RUN_ID is set by the wrapper"'), "loose marker substring (no =) must not match");
+  assert(!isDispatchProc("grep dispatch-agent.js somefile.txt"), "a foreign grep of the name must not match (argv[0]=grep)");
+  assert(!isDispatchProc("python worker.py --file /tmp/dispatch-agent.js"), "argv[0]=python + foreign path must not match (the reviewer's HIGH-5 case)");
+  assert(!isDispatchProc("node /tmp/evil/dispatch-claude.js"), "a dispatch-claude.js NOT under our scripts/ must not match");
+  // POSITIVES — must match:
+  assert(isDispatchProc("codex exec --foo  WARPOS_RUN_ID=abc123"), "assigned marker as a standalone token + codex matches");
+  assert(isDispatchProc("node " + realClaude + " builder p.txt"), "the REAL resolved wrapper path matches");
+  assert(isDispatchProc("node scripts/dispatch-agent.js reviewer p.txt"), "a relative wrapper path resolving under ROOT matches");
+  // r3 NEGATIVES — the marker BURIED inside a single arg must NOT match (the r2 HIGH):
+  assert(!isDispatchProc(["claude", "--prompt", "remember WARPOS_RUN_ID=demo is the id"]), "marker buried in a quoted arg (argv form) must not match");
+  assert(!isDispatchProc('claude --prompt "do X with WARPOS_RUN_ID=demo"'), "marker buried in a quoted arg (string form) must not match");
+  // r3 POSITIVE via the argv ARRAY form (the production path):
+  assert(isDispatchProc(["node", "scripts/dispatch-claude.js", "builder"]), "argv array with a real wrapper path matches");
+  assert(isDispatchProc(["codex", "exec", "WARPOS_RUN_ID=xyz"]), "argv array with a standalone marker token matches");
+  // a /proc-style argv where a single value has whitespace + the wrapper path must NOT forge a match:
+  assert(!isDispatchProc(["node", "evil arg /tmp/scripts/dispatch-agent.js"]), "a single argv value containing the path is one token, not the invoked script");
+});
+// HIGH-6: pid<=1 is dropped by classify (defense in depth even if enum let it through).
+h.test("HIGH-6: a candidate with pid<=1 is never classified as an orphan", () => {
+  const res = classify({
+    procs: [{ pid: 1, ppid: 0, ageMs: OLD, startMs: 1, cmd: "node scripts/dispatch-agent.js reviewer p.txt" }],
+    selfTree: new Set(), livePids: new Set(), now: Date.now(), minAgeMs: MIN,
+  });
+  assert(!isOrphan(res, 1) && !isSkipped(res, 1), "pid<=1 must be dropped entirely");
+});
+// MEDIUM-7: terminate() refuses pid<=1 and self.
+h.test("MEDIUM-7: terminate() refuses pid<=1, pid 0, and our own pid", () => {
+  assert(terminate(0).signalled === false, "pid 0 refused");
+  assert(terminate(1).signalled === false, "pid 1 refused");
+  assert(terminate(-5).signalled === false, "negative pid refused");
+  assert(terminate(process.pid).signalled === false, "own pid refused");
+});
+// MEDIUM-8: descendants of the reaper's own tree are excluded too.
+h.test("MEDIUM-8: a descendant of the reaper's tree is spared (own-process-tree)", () => {
+  // selfTree built from a snapshot where pid 1100 is OUR child (ppid=process.pid path).
+  const procs = [
+    { pid: 1100, ppid: 1101, ageMs: OLD, startMs: Date.now() - OLD, cmd: "node scripts/dispatch-agent.js reviewer p.txt" },
+    { pid: 1101, ppid: process.pid, ageMs: OLD, startMs: Date.now() - OLD, cmd: "node middle" },
+  ];
+  const { selfTree } = require("./reap-orphans");
+  const res = classify({ procs, selfTree: selfTree(procs), livePids: new Set(), now: Date.now(), minAgeMs: MIN });
+  assert(!isOrphan(res, 1100), "a descendant of our tree must be spared");
+  assert(res.skipped.find((s) => s.pid === 1100).reasons.includes("own-process-tree"), "reason own-process-tree");
 });
 
 // ── P5 planted-violation: the reaper DOES flag a real orphan (not a no-op) ─────

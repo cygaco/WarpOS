@@ -69,40 +69,27 @@ const SKIP_PATH_SUBSTRINGS = ["tests/regression", "tests\\regression"];
 const SELF_FILES = new Set(["no-dead-team-tools.js", "no-dead-team-tools.test.js"]);
 const SCAN_ROOTS = ["scripts", ".claude/commands", ".claude/agents", ".claude/project"];
 
-// The executable directive shape: the dead tool name immediately followed by `(`.
-const DEAD_TOOL_RE = /\bTeam(?:Create|Delete)\(/;
+// The executable directive shape: the dead tool name + optional whitespace + `(`.
+// qa-HIGH: `\s*` so `TeamCreate (` (a space before the paren) does NOT bypass.
+const DEAD_TOOL_RE = /\bTeam(?:Create|Delete)\s*\(/;
 
-// Exemption markers (case-insensitive substring anywhere on the line) that mark a
-// line as a LEGITIMATE HISTORICAL / DESCRIPTIVE mention, not a live directive.
-const EXEMPT_MARKERS = [
-  "removed",
-  "no longer",
-  "deprecat",
-  "surrogate",
-  "were removed",
-  "v2.1.178",
-  "historical",
-  "legacy",
-  "e-teams-migration",
-  "do not use",
-  "don't use",
-  "gone",
-  "phased out",
-  "phasing out",
-  "must not emit", // a negative regression-assertion ("must NOT emit a TeamCreate( call")
-  // The enforcer's / its test's own identifiers — so this file + its fixtures
-  // never self-flag when they quote the pattern.
-  "no-dead-team-tools",
-  "exempt_markers",
-  "dead_tool_re",
-];
+// ── Exemption policy (qa-CRITICAL fix): NO marker-word inline exemption. The prior
+// "any marker word anywhere on the line exempts it" false-PASSED a masked live call
+// (`TeamCreate(...) // legacy`), defeating the enforcer; and a proximity-based
+// removal-context regex can't reliably tell a real call ("TeamDelete(t); // team is
+// gone") from prose describing one ("the TeamCreate(...) call is no longer available")
+// on a single line — the distinction is semantic. So we adopt the reviewer's other
+// recommendation: a CALL FORM (`TeamCreate(` / `TeamDelete(`) is ALWAYS a violation in
+// the scanned ACTIVE layer (skills/hooks/scripts/agent specs); legitimate prose simply
+// AVOIDS the call form (write "the TeamCreate call" / `TeamCreate`, not "TeamCreate(…)").
+// The history/decision layer that NEEDS the call form (adr/, _docs, _planning, _reports,
+// _warpos, events, tests/regression) is PATH-SCOPED out (SKIP_DIRS / SKIP_SEGMENTS).
+// The only inline carve-out is this enforcer's OWN pattern-definition files (they must
+// quote the pattern) — and those are ALSO skipped wholesale by SELF_FILES.
+const SELF_PATTERN_RE = /no-dead-team-tools|DEAD_TOOL_RE|SELF_PATTERN_RE/;
 
 function lineIsExempt(line) {
-  const low = line.toLowerCase();
-  for (const m of EXEMPT_MARKERS) {
-    if (low.includes(m)) return true;
-  }
-  return false;
+  return SELF_PATTERN_RE.test(line);
 }
 
 /**
@@ -163,32 +150,41 @@ function relSkipped(rel) {
 }
 
 /**
- * SECOND positive check (β rider): confirm the NEW remediation primitive still
- * EXISTS — the Agent-spawn `run_in_background` shape must be present in at least
- * one migrated skill — so a dead-tool migration can never leave NO working path.
- * Uses fs (kept OUT of the pure `evaluate`). Returns an offender object or null.
+ * SECOND positive check (β rider, hardened per qa-HIGH): confirm the NEW remediation
+ * primitive still EXISTS AND is a REAL Agent-spawn shape — not merely the substring
+ * `run_in_background`. Each migrated MODE skill (sprint + adhoc) must contain an
+ * actual `Agent( … subagent_type … run_in_background … )` invocation, so a dead-tool
+ * migration can never leave NO working path (and a future edit can't reduce the
+ * remediation to a bare keyword). Uses fs (kept OUT of the pure `evaluate`). Returns
+ * an array of offender objects (one per mode skill missing the shape); [] = all good.
  */
 function assertRemediationExists() {
-  const candidates = [
-    ".claude/commands/mode/sprint.md",
-    ".claude/commands/mode/adhoc.md",
-  ];
-  for (const rel of candidates) {
+  // The real spawn shape: an `Agent(` call that, within the same call, names a
+  // subagent_type AND sets run_in_background. Multiline (the call spans lines), so we
+  // match `Agent(` then require both tokens before the next blank line / closing.
+  const AGENT_SPAWN_RE =
+    /Agent\(\s*[\s\S]{0,400}?subagent_type[\s\S]{0,400}?run_in_background\s*[:=]\s*true/i;
+  const required = [".claude/commands/mode/sprint.md", ".claude/commands/mode/adhoc.md"];
+  const offenders = [];
+  for (const rel of required) {
     const abs = path.join(ROOT, rel);
+    let ok = false;
     try {
-      const txt = fs.readFileSync(abs, "utf8");
-      if (txt.includes("run_in_background")) return null; // remediation present
+      ok = AGENT_SPAWN_RE.test(fs.readFileSync(abs, "utf8"));
     } catch {
-      /* missing candidate — keep looking */
+      ok = false; // missing/unreadable migrated skill ⇒ remediation not provable
+    }
+    if (!ok) {
+      offenders.push({
+        path: rel,
+        line: 0,
+        lineno: 0,
+        text:
+          "NEW remediation not found: no real Agent(subagent_type…, run_in_background:true) spawn shape in this migrated mode skill — a dead-tool migration must leave a WORKING spawn path, not just the keyword",
+      });
     }
   }
-  return {
-    path: candidates[0],
-    line: 0,
-    lineno: 0,
-    text:
-      "NEW remediation (Agent run_in_background spawn) not found in migrated skills — dead-tool migration would leave no working path",
-  };
+  return offenders;
 }
 
 function run() {
@@ -210,12 +206,13 @@ function run() {
   }
   const base = evaluate({ files });
   const offenders = base.offenders.slice();
-  const remediationMiss = assertRemediationExists();
-  if (remediationMiss) offenders.push(remediationMiss);
+  // assertRemediationExists now returns an ARRAY (one offender per mode skill that
+  // lacks the real Agent-spawn shape) — push them all.
+  for (const miss of assertRemediationExists()) offenders.push(miss);
   return { ok: offenders.length === 0, offenders, scanned };
 }
 
-module.exports = { evaluate };
+module.exports = { evaluate, assertRemediationExists };
 
 if (require.main === module) {
   const JSON_OUT = process.argv.includes("--json");

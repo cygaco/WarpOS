@@ -168,8 +168,11 @@ legacy team panel — `/warp:health` §3.5 reports it as informational only.
    sessions in `~/.claude/teams/`.
 
 2. Spawn ε + β as in-process teammates **in parallel** (single message, two Agent calls).
-   The harness still accepts a `team_name`/`name` on the Agent tool and still writes the
-   `members[]` config even though the Agent schema doesn't list them — pass them anyway.
+   `name` is the addressable handle (required). `team_name` is OPTIONAL back-compat metadata —
+   the harness still accepts it and writes the `members[]` config, but it is no longer the
+   session-team identity: as of v2.1.178 the team is the IMPLICIT session-scoped team (named
+   `session-<uuid>`) the first named spawn creates, and project scoping is by member `cwd`. Pass
+   `team_name` only as a human-readable label.
    **The `name` MUST be a plain alphanumeric
    token** — the harness now enforces `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` and REJECTS the old
    parens+unicode forms (`Epsilon (ε)`, `Beta (β)`); use plain `Epsilon` / `Beta`

@@ -154,7 +154,7 @@ Claude Code v2.1.178 (2026-06-15) REMOVED the `TeamCreate`/`TeamDelete` tools (t
 node scripts/checks/no-dead-team-tools.js   # scans scripts/** + .claude/commands|agents|project for a live TeamCreate(/TeamDelete( call; exit 0/1/2, fail-closed
 ```
 
-A non-zero exit names the file + line of the offending directive. Historical/descriptive mentions ("TeamCreate was removed in v2.1.178", "the Node-side surrogate for TeamDelete") are exempt via marker; only an executable `TeamCreate(`/`TeamDelete(` call without an exemption marker fails. Per-run telemetry (`events/`), history (`_docs`/`_planning`/`_reports`), the shipped baseline (`_warpos`/`BASELINE`/`EXAMPLES`), and `tests/regression` fixtures are skipped.
+A non-zero exit names the file + line of the offending directive. The enforcer flags only the executable CALL FORM (the `TeamCreate` / `TeamDelete` token immediately followed by an open paren) in the active skill/hook/script/agent layer; prose that names the tools without the call form (e.g. "TeamCreate was removed in v2.1.178", "the Node-side surrogate for TeamDelete") is fine. The history/decision layer that legitimately quotes the call form — `adr/`, `_docs`, `_planning`, `_reports`, the shipped baseline (`_warpos`/`BASELINE`/`EXAMPLES`), per-run telemetry (`events/`), and `tests/regression` fixtures — is path-skipped.
 
 **Regression seed — the bug-class lens** *(default + `--deep`)*
 

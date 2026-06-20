@@ -111,11 +111,14 @@ implicitly creates the session team.
   starts clean. Stale members from a dead session are reconciled via
   `SendMessage {type:"shutdown_request"}` (NEVER by editing `config.json`).
 
-2.2 Spawn β as an in-process teammate. **Critical:** `team_name` and `name` are
-required extra params on the Agent tool — they ARE accepted by the harness even though
-the tool's documented schema in the prompt does NOT list them. Pass them anyway.
-Validated 2026-05-14 (RT-006 + L-2026-05-14-test-the-call-before-declaring-impossible),
-re-confirmed under v2.1.178 — the harness still writes the `members[]` config keyed by session.
+2.2 Spawn β as an in-process teammate. `name` is the addressable teammate handle (required —
+plain-token regex below). `team_name` is OPTIONAL back-compat metadata: the harness still ACCEPTS
+it (even though the Agent tool's documented schema doesn't list it) and records it, but it is NO
+LONGER the session-team identity — as of v2.1.178 the team is the IMPLICIT session-scoped team
+the harness creates on the first named spawn (named `session-<uuid>`), and project scoping is by
+member **`cwd`**, not `team_name`. So pass `team_name` for a human-readable, sibling-project-distinct
+label if you like; do not rely on it to identify or create the team. The harness still writes the
+`members[]` config keyed by session. Validated 2026-05-14 (RT-006), re-confirmed under v2.1.178.
 
 **The `name` MUST be a plain alphanumeric token** — the harness now enforces
 `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` on the spawn `name` and REJECTS the old
