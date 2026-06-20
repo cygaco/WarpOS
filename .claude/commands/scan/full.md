@@ -156,6 +156,16 @@ node scripts/checks/no-dead-team-tools.js   # scans scripts/** + .claude/command
 
 A non-zero exit names the file + line of the offending directive. The enforcer flags only the executable CALL FORM (the `TeamCreate` / `TeamDelete` token immediately followed by an open paren) in the active skill/hook/script/agent layer; prose that names the tools without the call form (e.g. "TeamCreate was removed in v2.1.178", "the Node-side surrogate for TeamDelete") is fine. The history/decision layer that legitimately quotes the call form — `adr/`, `_docs`, `_planning`, `_reports`, the shipped baseline (`_warpos`/`BASELINE`/`EXAMPLES`), per-run telemetry (`events/`), and `tests/regression` fixtures — is path-skipped.
 
+**No-deep-cascade gate — ε is the sole builder-dispatcher** *(default + `--deep`)*
+
+ADR-0014 lets the ε conductor summon the in-process roster in any spawn context. The no-cascade invariant (E-DISPATCH-PERFECT-001 W5): a summoned roster CONSULT must NOT be able to dispatch the build chain or cascade — the spawn-hand stays with the conductor. The dispatch-route-guard hook can't enforce this (it has no spawn-lineage signal), so the real guarantee is STRUCTURAL — a role summoned at a CONSULT/author hook-point (sprint step ∈ {plan, design}) must carry a no-dispatch tool-set (no `Bash`, no `Agent`):
+
+```bash
+node scripts/checks/consult-roster-no-dispatch.js   # asserts no consult-summonable role's SPEC lists Bash/Agent (reads real frontmatter × the hook-point join); exit 0/1/2, fail-closed
+```
+
+It reads each consult role's ACTUAL spec `tools:` (the `.md` the role-registry `spec` points at — rename-proof, fires on real frontmatter), joined with the consult hook-points. A consult role whose spec gains a dispatch tool FAILS the gate. The one documented dual-role exemption (`quality-lead` — its design-consult is trusted-read-only, its `[Bash,Agent]` serve the gauntlet pod fan-out) is REPORTED, not silently passed (ED-065 tracks the one-hop reviewer-dispatch follow-up). Report-only in `/scan:full` until the ED-065 one-hop assertion lands (then blocking).
+
 **Regression seed — the bug-class lens** *(default + `--deep`)*
 
 `/scan:regressions` — runs the **26 recurring bug classes** (`_requirements/07-testing/recurring-bug-classes.json`) as detectors and reports a catch-rate. Several detectors overlap the tiers above; this is the roll-up view + the 0.17.0 test-suite core. Surfaces `gap`/`partial`/`n/a` classes as the system's backlog.
