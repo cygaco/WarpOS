@@ -54,7 +54,7 @@ Call β at the plan→design boundary. β returns DECIDE | DIRECTIVE | ESCALATE.
 ### 2. design
 Dispatch author-consults as registry conditions fire: `product-lead` (always), `director-of-engineering` (code units), `quality-lead` (risk ≥ medium), `design-lead` (UI units), `copy-lead` (marketing/copy units). These are ephemeral-per-step — spawn, advise, die. They do NOT dispatch builders; that is your responsibility alone.
 
-Author-consults carry `tools: [Read, Grep, Glob]` only — structural guarantee they cannot dispatch. A consult that attempts a builder dispatch is blocked by the advisory-row-that-dispatched PostToolUse hook.
+Most author-consults carry `tools: [Read, Grep, Glob]` only — a structural guarantee they cannot dispatch (enforced by `scripts/checks/consult-roster-no-dispatch.js`: no consult-summonable role's spec may list Bash/Agent). The ONE documented exception is `quality-lead`, which retains `Agent` (not Bash) for its sanctioned one-hop fan-out to leaf reviewers (qa-reviewer/design-quality/visual-review/test-runner) when it gathers gauntlet evidence — bounded by the `dispatch-route-guard` in-process build-chain block (it cannot Agent-spawn a builder). Its remaining residual — a reviewer it summons could itself Bash-dispatch the build chain (reviewers carry Bash to run checks) — is tracked as ED-065 (the precise one-hop-reviewer-only assertion). ε remains the sole builder-dispatcher.
 
 Call β at the design→build boundary.
 

@@ -2,11 +2,21 @@
 "use strict";
 
 /**
- * consult-roster-no-dispatch.js — the no-deep-cascade enforcer (E-DISPATCH-PERFECT-001
- * W5 / ADR-0014). The DoD "enforced" item: when ε summons the in-process roster
- * directly (in any spawn context, per ADR-0014), the **spawn-hand stays with the
- * conductor** — a summoned roster CONSULT must NOT be able to dispatch the build chain
- * or cascade further. ε remains the SOLE builder-dispatcher.
+ * consult-roster-no-dispatch.js — the consult-roster no-dispatch enforcer
+ * (E-DISPATCH-PERFECT-001 W5 / ADR-0014). The DoD "enforced" item, SCOPED to exactly
+ * what a tool-set check can structurally guarantee (β arbitration 2026-06-19): when ε
+ * summons the in-process roster directly (any spawn context, per ADR-0014), a role
+ * summoned at a CONSULT/author hook-point CANNOT dispatch the build chain BY
+ * CONSTRUCTION — its spec carries no Bash/Agent. ε remains the SOLE builder-dispatcher.
+ *
+ * SCOPE / known residual (β honesty floor — NOT a blanket "no-cascade"): this closes the
+ * DIRECT consult→dispatch route. It does NOT close a deeper `lead→reviewer→Bash→
+ * dispatch-claude.js builder` cascade — the one documented exemption `quality-lead`
+ * retains Agent for its sanctioned one-hop fan-out to leaf reviewers, and reviewers
+ * carry Bash BY DESIGN (they run checks). That two-hop reviewer→builder cascade is a
+ * PRE-EXISTING reviewer-tool-set property W5 did not introduce; closing it needs a
+ * lineage-aware one-hop-reviewer-only assertion (tracked: ED-065). The PreToolUse
+ * dispatch-route-guard is a narrow backstop only (it has no spawn lineage — see below).
  *
  * WHY A STRUCTURAL CHECK, NOT A HOOK (DoE judgment): the dispatch-route-guard PreToolUse
  * hook sees a SINGLE tool call with NO lineage/depth signal, so it cannot distinguish
@@ -80,12 +90,20 @@ function readSpecTools(specRel) {
   const out = { tools: new Set(), determined: false, source: "none", specPath: specRel };
   if (!specRel) return out; // no spec → can't confirm → fail-closed at the caller
   const abs = path.isAbsolute(specRel) ? specRel : path.join(ROOT, specRel);
-  let txt;
+  let raw;
   try {
-    txt = fs.readFileSync(abs, "utf8");
+    raw = fs.readFileSync(abs, "utf8");
   } catch {
     return out; // unreadable → determined:false → fail-closed
   }
+  // FRONTMATTER-BOUNDING (gauntlet r2 MEDIUM): parse `tools:` ONLY within the leading
+  // YAML frontmatter block (between the first `---` fence pair), so a BODY/prose line
+  // like "tools: you may use Bash" can't be read as the role's tool grant. If there is
+  // no frontmatter fence, fall back to scanning the head of the file (the `(Tools: …)`
+  // agents-list form lives outside frontmatter) — but the inline/block `tools:` forms
+  // are matched against the FRONTMATTER ONLY.
+  const fm = raw.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
+  const txt = fm ? fm[1] : raw; // the frontmatter block, or the whole file if unfenced
   const addTokens = (s) => {
     for (const t of String(s).split(/[,\s]+/)) {
       const tok = t.trim().toLowerCase().replace(/[\[\]"'`]/g, "");

@@ -164,6 +164,25 @@ h.test("MEDIUM: a YAML block-list `tools:` with Bash is detected (not missed)", 
   }
 });
 
+// ── gauntlet r2 MEDIUM (frontmatter-bounding): a BODY/prose `tools:` line must NOT be
+// read as the role's grant — only the YAML frontmatter block counts.
+h.test("r2-MEDIUM: a body-prose `tools: Bash` line is IGNORED; only frontmatter tools count", () => {
+  const { readSpecTools } = require("./consult-roster-no-dispatch");
+  const fx = h.sealedDir({
+    "bodytools.md": "---\nname: x\ntools: [Read, Grep, Glob]\n---\n# body\nYou may use tools: Bash and Agent when running checks.\n",
+    "fmbash.md": "---\nname: y\ntools: [Read, Grep, Bash]\n---\n# body, no tools line\n",
+  });
+  try {
+    const body = readSpecTools(fx.file("bodytools.md"));
+    assert(body.determined === true, "frontmatter present → determined");
+    assert(!body.tools.has("bash") && !body.tools.has("agent"), "the BODY tools: Bash/Agent line is NOT read (frontmatter-bounded)");
+    const fmbash = readSpecTools(fx.file("fmbash.md"));
+    assert(fmbash.tools.has("bash"), "a Bash IN the frontmatter IS read");
+  } finally {
+    fx.cleanup();
+  }
+});
+
 // ── gauntlet MEDIUM (setHas): token EQUALITY, not substring — a tool named "subagent"
 // (contains "agent") must NOT be read as the Agent dispatch tool.
 h.pass("MEDIUM: a consult role with a tool CONTAINING 'agent' (e.g. 'subagent') is NOT flagged (token equality)", () =>
