@@ -53,31 +53,36 @@ these is a single registry row in `sprint-hook-points.json`; the persistent team
   outcome (a reap = 0-byte-on-exit-0 → `ok:false`); `recordAgentDispatch` refuses to write
   without a real boolean outcome (the fake-green guard). Proven: real `gpt-5.5` + `gemini-3.1-pro-preview`
   dispatches through ε wrote real completion records (315s / 107s wall-clock, real output bytes).
-- **In-process roster — REAL via the top-level orchestrator + the Agent tool (Increment B):** managers/leads/directors
+- **In-process roster — REAL via the ε conductor + the Agent tool (Increment B; ADR-0014):** managers/leads/directors
   (`claude-agent`) and the Claude-pinned `design-quality`/`visual-review` (`agent-tool`) CANNOT be
-  spawned by a node process — only the harness Agent tool can, and that tool is callable ONLY by the
-  **top-level orchestrator (α, wearing the ε conductor face)**, never by a teammate-spawned ε (ED-041:
-  "Agent is not available inside subagents"). So the top-level orchestrator dispatches them via
-  `Agent(subagent_type: <role>)`, captures the returned envelope to a file, and records with
-  `record-inprocess --evidence <file>` — whose `ok` is **derived from the real Agent-return bytes**
-  (0-byte = reap → `ok:false`; no evidence = REFUSE, no record). Proven: a real `product-lead`
-  Agent-tool spawn → evidence-bound record (`via:epsilon-agent`, 514 real bytes + `evidence_sha`).
+  spawned by a node process — only the harness Agent tool can. That tool is a **per-spec capability**:
+  ε's spec lists `Agent`, so **the ε conductor — top-level OR teammate-spawned — dispatches the roster
+  directly** (ADR-0014 retired the ED-041 "α-only" doctrine; ED-041 was a per-spec misstatement —
+  a Claude subagent HAS `Agent` iff its spec grants it, which ε/γ/δ/α/β do). ε dispatches them via
+  `Agent(subagent_type: <role>)` + a `scopeContract`, captures the returned envelope to a file, and
+  records with `record-inprocess --evidence <file>` — whose `ok` is **derived from the real Agent-return
+  bytes** (0-byte = reap → `ok:false`; no evidence = REFUSE, no record). A node script still can't call
+  Agent — the runtime returns `spawned:false, reason:requires-orchestrator`, handing the spawn to the
+  **ε-agent** (not α-only). **No-cascade invariant:** a summoned roster consult must NOT dispatch the
+  build chain — ε is the sole builder-dispatcher; the spawn-hand stays with the conductor. Proven:
+  a real `product-lead` Agent-tool spawn → evidence-bound record (`via:epsilon-agent`, 514 real bytes
+  + `evidence_sha`).
 
-### The in-process conduct loop (α, the top-level orchestrator wearing the ε face)
+### The in-process conduct loop (the ε conductor — top-level OR teammate)
 
-> **Who may call the Agent tool (ED-041):** the in-process-roster dispatch below uses the harness
-> Agent tool, which is available ONLY to the **top-level orchestrator (α, wearing the ε conductor
-> face)**. A **teammate-spawned ε** CANNOT call the Agent tool — *"Agent is not available inside
-> subagents."* So when ε is itself a teammate, it dispatches the **CLI-routable roster only**
-> (subprocess-claude builders via `dispatch-claude.js`, subprocess-cross-provider reviewers via
-> `dispatch-agent.js`) and leaves the `in-process-agent` shape (managers/leads/design-quality/
-> visual-review) to the top-level orchestrator. The `in-process-agent` shape is **α-only** (see
-> `dispatch-contract.json` → `mode_profiles.sprint.alpha_only_shapes`). The loop below is therefore
-> run by the top-level orchestrator.
+> **Who may call the Agent tool (ADR-0014):** the in-process-roster dispatch below uses the harness
+> Agent tool, which is a **per-spec capability** — a Claude subagent has `Agent` iff its agent-definition
+> lists it (ε/γ/δ/α/β do; `general-purpose`/`*` does not). ε's spec lists `Agent`, so **the ε conductor
+> dispatches the roster directly in ANY spawn context — top-level OR teammate-spawned ε alike.** ADR-0014
+> retired the old "α-only" framing (ED-041 was a per-spec misstatement); `mode_profiles.sprint.alpha_only_shapes`
+> is now `[]` — NO shape is α-only. Each roster spawn supplies a `scopeContract` (enforced by
+> `scope-contract-guard`). **No-cascade invariant:** a summoned roster consult must NOT dispatch the
+> build chain or cascade further — ε is the sole builder-dispatcher; the spawn-hand stays with the
+> conductor. The loop below is therefore run by the ε conductor.
 
 For each plan entry whose route is `claude-agent` / `agent-tool` (the ε runtime returns these as
-`spawned:false, reason:requires-orchestrator` — it cannot spawn them from a node process, and only
-the top-level orchestrator can spawn them via the Agent tool):
+`spawned:false, reason:requires-orchestrator` — a node process cannot call Agent, so the runtime hands
+the spawn to the **ε-agent**, which spawns them via the Agent tool):
 
 1. Dispatch via the harness Agent tool: `Agent(subagent_type: <role>, prompt: <step prompt>)`.
 2. Capture the agent's returned envelope to a file (e.g. `.claude/runtime/epsilon-prompts/<sprint>-<step>-<role>.return.txt`).

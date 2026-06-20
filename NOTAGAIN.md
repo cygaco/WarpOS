@@ -70,7 +70,7 @@ All from (history #1–#40). "Law" = invariant number in the table below.
 | 29 | 06-08 | S-7 rename merged on green bijection, imperative sweep incomplete | 1 | 16-file sweep (0061b6a) | — |
 | 30 | 06-09 | classifier sits ABOVE permissions.allow; turbo broad grant denied | — | per-action approvals | — |
 | 31 | 06-09 | teammate name `Beta (β)` rejected by harness regex | 13 | plain names | **ED-040 open** |
-| 32 | 06-10 | ED-041: teammate-ε cannot use Agent tool; skill carried false premise | 14 | alpha_only_shapes in contract (975ed5c) | test debt open |
+| 32 | 06-10 | ED-041: teammate-ε cannot use Agent tool; skill carried false premise | 14 | alpha_only_shapes in contract (975ed5c) | **[RESOLVED ADR-0014 W5 2026-06-19]** — the "false premise" is now corrected: **ED-041 was itself the false premise.** Teammate-ε CAN use the Agent tool (per-spec capability; ε's spec lists `Agent`). ADR-0014 set `alpha_only_shapes`→`[]`; ε (top-level OR teammate) summons the roster directly under the no-cascade invariant. |
 | 33 | 06-10 | **auth-posture drift**: #23's fix clobbered OAuth → 3 days metered billing → "credits mystery", misdiagnosed twice as weather | 8 | ROADMAP item 6 filed (d14eb8e) | **open**; blocked the owed GPT 2nd-pass |
 | 34 | 06-10 | **quota cascade + fallback fork**: both families down; --provider claude REFUSED; raw + Agent-tool lanes recordless; hand-rolled everything | 2,12 | hand-rolled only | **open**: recorded lane, auto-route, breaker |
 | 35 | 06-10 | `builder` advisory noise on EVERY build dispatch; "fail-closed" wording lies | 5 | none | **open**: role-id reconciliation |
@@ -181,7 +181,7 @@ From session §9 + history fixed-column:
 - model pins fail-closed (WG-2; surfaced 4 un-pinned reviewer specs) · contract shape-vs-route parity (WG-5)
 - sanctioned teammate-ε subprocess routes + startup self-check (WG-4) · stall rules + epsilon-liveness.js (WG-6)
 - release.js unspoofable product-detect (WG-9) · research deep-run.js standalone + quota probe (MC-WG-2/3)
-- ED-041 honesty corrections: `alpha_only_shapes` in dispatch-contract + CLAUDE.md/sprint.md (975ed5c)
+- ED-041 honesty corrections: `alpha_only_shapes` in dispatch-contract + CLAUDE.md/sprint.md (975ed5c) **[SUPERSEDED ADR-0014 W5 2026-06-19 — `alpha_only_shapes` is now `[]`: ED-041 was a per-spec misstatement, no shape is α-only, and the ε conductor (top-level OR teammate) summons the in-process roster directly; the spawn-hand-stays-with-the-conductor / no-cascade invariant replaces the α-only framing]**
 - Earlier, still standing (history): S-12 hard team gate DEFAULT-ON (394b696, ED-035 resolved) · ED-021/023/024/025/026 enforced · safe-spawn kernel 27/27 · spend-ledger spoof fixes (f4eb8d7)
 
 ## 7. The answer: one dispatch-shape decision spine (the epic)

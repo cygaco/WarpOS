@@ -115,10 +115,14 @@ Phase 2 routes through ε's hook-point roster rather than a bare scaffold call:
 
 - ε dispatches in-process Agent-tool calls for the design roster (product-lead, design-lead,
   req-reviewer, and per-phase peers listed in `epsilon.md`'s hook-point registry).
-- **ED-041 constraint:** ε, when a teammate (spawned by α via the Agent tool), CANNOT call the
-  Agent tool itself. In that posture, α acts as the relay: it runs the design roster agents
-  directly as in-process Agent-tool dispatches and writes their completion records.
-  Top-level α (wearing the ε face) does NOT have this constraint and calls the roster directly.
+- **Agent-tool capability (ADR-0014):** ε — top-level OR teammate-spawned — CAN call the Agent tool
+  and summon the in-process roster directly, each spawn supplying a `scopeContract`. The Agent tool
+  is a per-spec capability (ε's spec lists it); ADR-0014 retired the old ED-041 "α-only" constraint
+  (`mode_profiles.sprint.alpha_only_shapes` is now `[]`). The only node-script limit is that the
+  runtime returns `spawned:false, reason:requires-orchestrator` — handing the spawn to the ε-agent,
+  which runs the roster agents as in-process Agent-tool dispatches and writes their completion records.
+  No-cascade invariant: a summoned roster consult must not dispatch the build chain (ε is the sole
+  builder-dispatcher).
 - Every roster completion is recorded to `paths.dispatchCompletionsFile`
   (`.claude/runtime/dispatch-completions.jsonl`) with `{sprint, step:"design", ok:true}`.
 - After design.js succeeds, the orchestrator checks for those records and emits a
@@ -374,8 +378,10 @@ trace in v0.1.
   halts regardless of preset. ε-conduct is the default in sprint sessions (see above).
 - **Sprint (session-level):** When `/mode:sprint` is active, the orchestrator auto-enables
   `epsilon + epsilonDispatch` — ε conducts the full lifecycle via the ADR-0009 registry-driven
-  runtime. α wears the ε face at the top level and calls the in-process roster directly (no
-  ED-041 constraint); a teammate-spawned ε uses CLI routes only.
+  runtime. The ε conductor — top-level OR teammate-spawned — calls the in-process roster directly
+  with a `scopeContract` (ADR-0014 retired the ED-041 "α-only" constraint; `alpha_only_shapes` is
+  now `[]`). The only node-script limit is the runtime's `requires-orchestrator` hand-off to the
+  ε-agent.
 - **Oneshot:** NOT supported. `--mode oneshot` is rejected. Oneshot is
   for skeleton rebuilds, not sprint pipelines.
 

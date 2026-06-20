@@ -290,23 +290,31 @@ the tens-of-thousands-of-tokens of sub-output (memory:
 when the prompt already asks for a lean / envelope / write-file-then-summarize
 return.
 
-### Teammate-ε conduct routes (ED-041)
+### ε conduct routes (ADR-0014 — ED-041 retired)
 
-When ε is a **teammate** (spawned via `Agent(subagent_type:"epsilon")` into a team), the
-harness Agent tool is unavailable — *"Agent is not available inside subagents"* (ED-041).
-**Sanctioned subprocess-only routes:**
+ED-041 ("Agent is not available inside subagents") is **retired as a per-spec misstatement**
+(ADR-0014): a Claude subagent has the Agent tool **iff its spec lists it**, and ε's does. So a
+**teammate-spawned ε** (via `Agent(subagent_type:"epsilon")`) CAN call the Agent tool and summons
+the in-process roster directly — the conduct route is the **same in both contexts**:
 
 | Work | Route |
 |------|-------|
 | Build-chain (builders/fixers) | `node scripts/dispatch-claude.js <role> <prompt-file> -w` |
 | Cross-provider (reviewers/security) | `node scripts/dispatch-agent.js <role> <prompt-file>` |
 | Non-build Claude roles (test-runner) | `claude -p --agent <role> < "$PROMPT_FILE"` |
-| In-process roster (managers/leads/design-quality/visual-review) | **DEFERRED to α** — report `spawned:false, reason:requires-orchestrator`; α dispatches via Agent tool |
+| In-process roster (managers/leads/design-quality/visual-review) | **`Agent(subagent_type:<role>, …)` — supply a `scopeContract`** (the `scope-contract-guard` is the real gate; for a read-only consult, a non-empty `forbiddenFiles` = writes-nothing). The node RUNTIME still returns `spawned:false, reason:requires-orchestrator` (a node SCRIPT can't call Agent) — that hands the spawn to **the ε-agent** (you), not α |
 
-**Blocking-only dispatch (WG-6):** teammate-ε MUST dispatch subprocesses **foreground/blocking**
-and record completions **in the same turn**. NEVER go idle with an outstanding subprocess — the
-harness does NOT re-wake a teammate when a background process completes. Observed as 25-minute
-stalls (WG-6 ×3). See `.claude/agents/president/epsilon.md` TEAMMATE STALL RULES.
+The **spawn-hand stays with the conductor**: a summoned roster consult must NOT dispatch the build
+chain or cascade — ε is the sole builder-dispatcher (enforced structurally by
+`scripts/checks/consult-roster-no-dispatch.js` + the `dispatch-route-guard` in-process build-chain
+block). (See §9.5 for the in-process-vs-OS-subprocess lane model; the two sections agree — §9.5's
+"in-process subagents have their own context" is the *why*, this table is the *how*.)
+
+**Blocking-only dispatch (WG-6):** teammate-ε MUST dispatch **OS subprocesses** (dispatch-claude.js /
+dispatch-agent.js) **foreground/blocking** and record completions **in the same turn**. NEVER go idle
+with an outstanding OS subprocess — the harness does NOT re-wake a teammate when a background process
+completes. Observed as 25-minute stalls (WG-6 ×3). (An in-process Agent-tool spawn returns to you
+directly, a different lane — §9.5.) See `.claude/agents/president/epsilon.md` TEAMMATE STALL RULES.
 
 ---
 
