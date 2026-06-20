@@ -42,6 +42,10 @@ Thumbs.db
 
 # Session handoff dump (regenerable via /session:dump — do NOT commit)
 DUMP.md
+# Operator-requested session export/report (local handoff, not a shipped artifact —
+# was tripping warpos-ship-coverage as an unclassified root .md). E-DISPATCH-PERFECT-001 W5.
+REPORT-JULY-18.md
+REPORT-*.md
 
 # WarpOS runtime/transaction/consult scratch — all per-machine transient (G5.7).
 # Broad ignore so consult outputs, fixtures, ping prompts, etc. are never tracked.

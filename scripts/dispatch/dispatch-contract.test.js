@@ -24,6 +24,23 @@ const h = harness("dispatch-contract");
 // ── known-answer: real contract is internally consistent ────
 h.pass("validateContractFile() passes on the real keystone", () => validateContractFile());
 
+// ── W5 (ADR-0014): NO shape is α-only — mode_profiles.sprint.alpha_only_shapes is
+// EMPTY. ε summons the in-process roster in any spawn context (top-level OR teammate-ε)
+// with a scopeContract; the α-only overlay (975ed5c) is retired. Lock the empty state
+// so a future re-add of "in-process-agent" (a doctrine regression) fails loudly here.
+h.test("W5/ADR-0014: mode_profiles.sprint.alpha_only_shapes is [] (no shape is α-only)", () => {
+  const contract = JSON.parse(fs.readFileSync(CONTRACT_PATH, "utf8"));
+  const aos = contract.mode_profiles && contract.mode_profiles.sprint && contract.mode_profiles.sprint.alpha_only_shapes;
+  assert.ok(Array.isArray(aos), "sprint.alpha_only_shapes must still be an array (retained-but-empty for reversal)");
+  assert.strictEqual(aos.length, 0, "sprint.alpha_only_shapes must be EMPTY (ADR-0014 retired the α-only doctrine)");
+  assert.ok(!aos.includes("in-process-agent"), "in-process-agent must NOT be α-only (ε summons the roster in any context)");
+});
+// The contract still REJECTS a build-chain role via in-process-agent — that invariant
+// is INDEPENDENT of the α-only retirement (the no-cascade / context-lever guarantee
+// stands: a builder is never dispatched in-process, by anyone, ε included).
+h.violation("W5: build-chain role via in-process-agent is STILL rejected (no-cascade invariant survives)", () =>
+  validateDispatch({ role: "backend-builder", shape: "in-process-agent" }));
+
 // ── class derivation is correct ─────────────────────────────
 h.test("class derivation: builder=build_chain_worker, security-reviewer=cross_provider_reviewer, design-quality=claude_pinned_reviewer, alpha=face", () => {
   assert.strictEqual(classForRole("frontend-builder"), "build_chain_worker");
