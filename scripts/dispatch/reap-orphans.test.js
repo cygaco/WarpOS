@@ -197,6 +197,17 @@ h.test("SIGNATURE: only `node <abs-operand-wrapper>` matches; every spoof is rej
   assert(!isDispatchProc(["claude", "--prompt", "remember " + realAgent + " is the path"]), "claude (not node) with the path inside a --prompt value");
   assert(!isDispatchProc(["node", "--prompt", "WARPOS_RUN_ID=demo"]), "a marker as a --prompt value is NOT identity (r4 HIGH — marker branch removed)");
   assert(!isDispatchProc(["node", "evil arg " + realAgent]), "a single argv value containing the path is ONE token, not the operand");
+  // security-final: a value-consuming node flag must NOT promote the wrapper to operand:
+  assert(!isDispatchProc(["node", "--import", realAgent, "x"]), "--import <wrapper> — wrapper is the flag value, not the operand");
+  assert(!isDispatchProc(["node", "--loader", realAgent]), "--loader <wrapper> — flag value, not operand");
+  assert(!isDispatchProc(["node", "--env-file", realAgent, "x"]), "--env-file <wrapper> — flag value, not operand");
+  assert(!isDispatchProc("node --eval=\"setInterval(()=>{},1e6)\" " + realAgent), "--eval=<code> <wrapper> — inline eval, wrapper is not the operand");
+  assert(!isDispatchProc(["node", "--unknown-future-flag", realAgent]), "any BARE flag before the wrapper => ambiguous => no match (conservative)");
+  // a self-contained --flag=value BEFORE the wrapper is fine (can't eat the next token):
+  assert(isDispatchProc(["node", "--max-old-space-size=4096", realAgent, "x"]), "--flag=value then the wrapper operand still matches");
+  // the wrapper written with a `..` segment still matches (false-negative close):
+  const wrapDotted = realAgent.replace(/dispatch-agent\.js$/, "x/../dispatch-agent.js");
+  assert(isDispatchProc(["node", wrapDotted]), "a real wrapper path with a .. segment resolves + matches");
 });
 // HIGH-6: pid<=1 is dropped by classify (defense in depth even if enum let it through).
 h.test("HIGH-6: a candidate with pid<=1 is never classified as an orphan", () => {

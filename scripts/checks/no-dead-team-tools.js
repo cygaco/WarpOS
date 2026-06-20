@@ -38,36 +38,52 @@ const path = require("path");
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "no-dead-team-tools";
 const TEXT_EXT = new Set([".js", ".md", ".json", ".ts", ".mjs", ".cjs"]);
-// Per-run / historical / shipped-baseline / test-fixture trees legitimately carry
-// the old literals (telemetry of the migration itself, the prior installed clone,
-// regression fixtures that PLANT the dead call on purpose). events/ is the
-// append-only event log — the per-run telemetry sibling of runtime/.
-const SKIP_DIRS = new Set([
-  "node_modules",
-  ".git",
-  "runtime",
-  ".provider-tmp",
-  ".worktrees",
+
+// UNIVERSAL non-source dirs — skipped by basename ANYWHERE (they are never the active
+// product layer: deps, VCS, temp, isolated worktrees). Narrow on purpose.
+const UNIVERSAL_SKIP_DIRS = new Set([".git", "node_modules", ".provider-tmp", ".worktrees"]);
+
+// qa-final fix: PATH-QUALIFIED skip PREFIXES (relative, forward-slashed). The
+// history/decision/per-run/shipped-baseline trees legitimately carry the call form;
+// they are skipped by their REAL location — NOT by a bare dir basename (which would
+// also skip an ACTIVE path like `.claude/commands/events/*` or `scripts/runtime/…`).
+// A path is skipped iff it equals or is under one of these prefixes.
+const SKIP_PREFIXES = [
+  ".claude/project/events", // the append-only event log (per-run telemetry)
+  ".claude/agents/president/_system/policy/adr", // settled ADRs (decision records)
   "_docs",
   "_planning",
   "_reports",
-  "_warpos",
-  "events",
-  // adr/ = settled Architecture Decision RECORDS — documentation that necessarily
-  // quotes the migrated APIs in prose ("TeamCreate(…) now instructs Agent(…)"). Like
-  // _docs/_planning/_reports, they are history-of-decision, never executable
-  // directives a model runs. Skipped wholesale (the migration's own ADR-0015 lives here).
-  "adr",
-]);
-// A path that contains a segment named exactly "BASELINE" or "EXAMPLES", or the
-// regression-fixture tree, is historical/shipped/fixture and is skipped wholesale.
+  "_warpos", // shipped baseline / examples / templates
+  "runtime",
+  "tests/regression", // fixtures that PLANT the dead call on purpose
+];
+// A path with a segment named exactly "BASELINE" or "EXAMPLES" anywhere is shipped
+// history (kept as a segment match — these can appear under several roots).
 const SKIP_SEGMENTS = new Set(["BASELINE", "EXAMPLES"]);
-const SKIP_PATH_SUBSTRINGS = ["tests/regression", "tests\\regression"];
-// This enforcer's OWN files quote the dead-tool pattern + the marker list as their
-// pattern definition (doc comments, fixtures) — they must never self-flag. Skipping
-// by basename is the robust form of the spec's "exempt the enforcer's own pattern".
-const SELF_FILES = new Set(["no-dead-team-tools.js", "no-dead-team-tools.test.js"]);
+// This enforcer's OWN two files quote the dead-tool pattern as their pattern
+// definition (doc comments, fixtures) — they must never self-flag. qa-final fix:
+// matched by EXACT relative path (forward-slashed), NOT basename — so a FUTURE active
+// file that happens to share the basename anywhere is NOT skipped wholesale.
+const SELF_FILES = new Set([
+  "scripts/checks/no-dead-team-tools.js",
+  "scripts/checks/no-dead-team-tools.test.js",
+]);
 const SCAN_ROOTS = ["scripts", ".claude/commands", ".claude/agents", ".claude/project"];
+
+/** Is this relative path (forward-slashed) skipped? Path-PREFIX (under a SKIP_PREFIXES
+ *  root) OR an exact-segment BASELINE/EXAMPLES match OR the enforcer's own exact files. */
+function relSkipped(rel) {
+  const norm = String(rel).replace(/\\/g, "/");
+  if (SELF_FILES.has(norm)) return true;
+  for (const pre of SKIP_PREFIXES) {
+    if (norm === pre || norm.startsWith(pre + "/")) return true;
+  }
+  for (const s of norm.split("/")) {
+    if (SKIP_SEGMENTS.has(s)) return true;
+  }
+  return false;
+}
 
 // The executable directive shape: the dead tool name + optional whitespace + `(`.
 // qa-HIGH: `\s*` so `TeamCreate (` (a space before the paren) does NOT bypass.
@@ -126,27 +142,19 @@ function* walk(dir) {
     return;
   }
   for (const ent of entries) {
+    const full = path.join(dir, ent.name);
+    const rel = path.relative(ROOT, full).replace(/\\/g, "/");
     if (ent.isDirectory()) {
-      if (SKIP_DIRS.has(ent.name)) continue;
-      if (SKIP_SEGMENTS.has(ent.name)) continue;
-      yield* walk(path.join(dir, ent.name));
+      // Prune universal non-source dirs by basename + any path-qualified skip prefix /
+      // BASELINE/EXAMPLES segment (so we don't descend into the doc/history layer).
+      if (UNIVERSAL_SKIP_DIRS.has(ent.name)) continue;
+      if (relSkipped(rel)) continue;
+      yield* walk(full);
     } else if (ent.isFile() && TEXT_EXT.has(path.extname(ent.name).toLowerCase())) {
-      if (SELF_FILES.has(ent.name)) continue; // the enforcer's own pattern-definition files
-      yield path.join(dir, ent.name);
+      if (relSkipped(rel)) continue; // exact self-file OR a skipped path
+      yield full;
     }
   }
-}
-
-function relSkipped(rel) {
-  const norm = rel.replace(/\\/g, "/");
-  const segs = norm.split("/");
-  for (const s of segs) {
-    if (SKIP_SEGMENTS.has(s)) return true;
-  }
-  for (const sub of SKIP_PATH_SUBSTRINGS) {
-    if (rel.includes(sub)) return true;
-  }
-  return false;
 }
 
 /**
@@ -212,7 +220,7 @@ function run() {
   return { ok: offenders.length === 0, offenders, scanned };
 }
 
-module.exports = { evaluate, assertRemediationExists };
+module.exports = { evaluate, assertRemediationExists, relSkipped };
 
 if (require.main === module) {
   const JSON_OUT = process.argv.includes("--json");

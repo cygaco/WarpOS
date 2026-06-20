@@ -13,9 +13,27 @@
 
 const assert = require("node:assert");
 const { harness } = require("./lib/fixture-harness");
-const { evaluate } = require("./no-dead-team-tools");
+const { evaluate, relSkipped } = require("./no-dead-team-tools");
 
 const h = harness("no-dead-team-tools");
+
+// qa-final: PATH-SCOPING precision — skips are path-qualified, NOT bare basenames, so
+// an ACTIVE path that happens to contain a skip-named segment is STILL scanned.
+h.test("qa-final: skips are path-prefix-scoped, not basename-scoped", () => {
+  // SKIPPED (the real history/decision/per-run/baseline locations):
+  assert(relSkipped(".claude/project/events/events.jsonl"), "the event log is skipped");
+  assert(relSkipped(".claude/agents/president/_system/policy/adr/0015-x.md"), "ADRs are skipped");
+  assert(relSkipped("_warpos/BASELINE/_requirements/x.md"), "the shipped baseline is skipped");
+  assert(relSkipped("tests/regression/X/y.test.js"), "regression fixtures are skipped");
+  assert(relSkipped("scripts/checks/no-dead-team-tools.js"), "the enforcer's own file (exact path) is skipped");
+  // NOT skipped (ACTIVE paths a bare-basename skip would have wrongly excluded):
+  assert(!relSkipped("scripts/runtime/governance.js"), "an ACTIVE scripts/runtime/* file is scanned (not the runtime/ basename skip)");
+  assert(!relSkipped(".claude/commands/events/log.md"), "an ACTIVE commands/events/* file is scanned");
+  assert(!relSkipped("scripts/events/cli.js"), "an ACTIVE scripts/events/* file is scanned");
+  assert(!relSkipped("scripts/dispatch/reap-orphans.js"), "a normal active script is scanned");
+  // a future active file sharing the enforcer's BASENAME elsewhere is NOT skipped:
+  assert(!relSkipped("scripts/other/no-dead-team-tools.js"), "a same-basename file in a DIFFERENT path is NOT skipped (exact-path self-exempt)");
+});
 
 // 1) PLANTED VIOLATION — a live TeamCreate( directive with NO exemption marker.
 // h.violation asserts the enforcer result is NOT a pass (ok:false ⇒ caught).

@@ -432,35 +432,44 @@ function isDispatchProc(input) {
   if (exe0 !== "node" && exe0 !== "node.exe") return false;
   const operand = nodeScriptOperand(argv.slice(1));
   if (!operand) return false;
-  // The operand must be ABSOLUTE (no ROOT-relative forgery from a foreign cwd) and,
-  // canonicalized (slashes + case), equal to a real wrapper path.
+  // The operand must be ABSOLUTE (no ROOT-relative forgery from a foreign cwd). Then
+  // canonicalize: path.resolve() collapses `.`/`..` segments (so a real wrapper path
+  // written with `..` still matches — closes the security-final false-NEGATIVE note),
+  // then normalize slashes + case for the compare against the resolved wrapper paths.
   if (!path.isAbsolute(operand)) return false;
-  const norm = operand.replace(/\\/g, "/").toLowerCase();
+  const norm = path.resolve(operand).replace(/\\/g, "/").toLowerCase();
   return DISPATCH_SCRIPT_PATHS.includes(norm);
 }
 
-/** Given node's args (argv after argv[0]=node), return the SCRIPT OPERAND — the first
- *  non-option token — correctly skipping the eval/print flags that CONSUME the next
- *  token as code (`-e <code>`, `--eval <code>`, `-p <code>`, `--print <code>`) and
- *  other bare `-…` flags. Returns null if node is running inline code (`-e`/`-p` with
- *  no script operand) or there is no operand. This is what stops `node -e "<code>"
- *  <wrapperpath>` from treating the trailing path as the invoked script. */
+/** Given node's args (argv after argv[0]=node), return the SCRIPT OPERAND or null.
+ *  SECURITY (security-final, the false-operand class): Node's flag grammar is large +
+ *  evolving — many flags CONSUME the next token as a value (`-e`/`--eval`, `-p`,
+ *  `-r`/`--require`, `--import`, `--loader`, `--experimental-loader`, `--env-file`,
+ *  `--conditions`, …). Enumerating them all is a losing game: a flag we don't model
+ *  promotes its VALUE to "operand" and can false-match a wrapper path used as a flag
+ *  value (`node --import <wrapper> …`). So instead of modeling node's grammar, we
+ *  exploit a FACT about REAL WarpOS dispatch: it is ALWAYS `node <wrapper> <args…>` —
+ *  the wrapper is argv[1], with NO node flags before it (verified: every dispatch
+ *  site is `node scripts/dispatch-{claude,agent}.js <role> <prompt>`). So:
+ *    • the operand is the FIRST arg, IF it is not a flag; else
+ *    • we skip ONLY self-contained `--flag=value` tokens (which CANNOT consume the
+ *      next token) and keep looking; but
+ *    • a BARE `-…` flag (which MIGHT consume the next token — unknowable here) makes
+ *      the operand AMBIGUOUS ⇒ return null (NO match — the conservative, false-kill-
+ *      resistant choice; a real dispatch never has a bare flag before the wrapper).
+ *  This closes the whole class (`node -e <code> <w>`, `node --import <w> …`,
+ *  `node --eval=<code> <w>`) without chasing node's flag list. */
 function nodeScriptOperand(args) {
-  const EVAL_FLAGS = new Set(["-e", "--eval", "-p", "--print", "--require", "-r"]);
+  // The eval/print family means "run inline code — NO script operand", in BOTH the
+  // bare (`-e <code>`) and the `=value` (`--eval=<code>`) forms.
+  const EVAL_PREFIX = /^(?:-e|--eval|-p|--print)(?:=|$)/;
   for (let i = 0; i < args.length; i++) {
     const a = String(args[i]);
-    if (a === "--") {
-      return i + 1 < args.length ? String(args[i + 1]) : null;
-    }
-    if (EVAL_FLAGS.has(a)) {
-      // -e/-p/-r consume the NEXT token as their value; if it's -e/-p, node runs
-      // inline code and there is no script operand at all.
-      if (a === "-e" || a === "--eval" || a === "-p" || a === "--print") return null;
-      i++; // -r/--require: skip the module value, keep scanning for the operand
-      continue;
-    }
-    if (a.startsWith("-")) continue; // some other node flag (no value, or =value form)
-    return a; // first non-option token = the script operand
+    if (a === "--") return i + 1 < args.length ? String(args[i + 1]) : null; // end-of-options
+    if (!a.startsWith("-")) return a; // first non-flag token = the script operand
+    if (EVAL_PREFIX.test(a)) return null; // inline code (bare or =value) ⇒ no operand
+    if (a.includes("=")) continue; // any OTHER self-contained --flag=value: cannot eat the next token
+    return null; // a BARE flag may consume the next token ⇒ operand ambiguous ⇒ no match
   }
   return null;
 }
