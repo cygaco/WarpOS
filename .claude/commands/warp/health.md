@@ -48,13 +48,13 @@ Read `.claude/settings.json` and verify hooks are registered for:
 For each missing lifecycle event: YELLOW — "Some automation won't work."
 If no hooks at all: RED — "Hooks are the backbone. Re-run the installer."
 
-### 3.5 Experimental agent-teams flag
-Read `.claude/settings.json` and verify `settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS === "1"`.
+### 3.5 Experimental agent-teams flag (legacy)
+Read `.claude/settings.json` and report `settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` as **informational only**.
 
-Why this matters: `/mode:adhoc` documents persistent β/γ teammates created via Claude Code's `TeamCreate`/`SendMessage` primitives. Those primitives only load when this env flag is set. Without it, the harness shows no team panel and `/mode:adhoc` falls back to one-shot Agent dispatches that don't persist (a confusing UX gap — see RT-005, L-2026-05-14-verify-claude-code-primitives-before-declaring-absent).
+Why this is now legacy: as of Claude Code v2.1.178 (2026-06-15) the agent-teams tools (`TeamCreate`/`TeamDelete`) were removed and teams became implicit + session-scoped — a teammate is created by spawning a named background subagent via `Agent(run_in_background: true)`, and the harness auto-creates the session team. The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag is being phased out. `/mode:adhoc` documents persistent β/γ teammates created via the `Agent` background-subagent spawn + `SendMessage` (see RT-005, L-2026-05-14-verify-claude-code-primitives-before-declaring-absent).
 
-If missing: YELLOW — "Add `\"env\": { \"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS\": \"1\" }` to .claude/settings.json, then restart Claude Code. After restart, /mode:adhoc creates a real persistent team."
-If set to anything other than `"1"`: RED — "Flag present but value is wrong. Set to the string `\"1\"`."
+If the flag is ABSENT: INFO — "No longer required; teams work without it on current Claude Code (v2.1.178+)."
+If the flag is PRESENT (any value): INFO — "Harmless; legacy flag, being phased out — safe to remove."
 
 ### 3.6 Adhoc team hygiene
 Run `node scripts/checks/adhoc-team-hygiene.js`. Flags any `~/.claude/teams/*` whose members carry a `-N` de-dup suffix (`Beta (β)-2`) or reference a stale `leadSessionId` — the W-21 cross-session accretion bug.
@@ -221,6 +221,28 @@ The preferred-tier config (`.claude/runtime/provider-tier-config.json`,
 Run `node scripts/dispatch/prune-dead-locks.js`. Report `scanned`/`removed_dead`
 and per-provider before/after counts. Non-blocking — eager cleanup that costs
 nothing when nothing is dead.
+
+### 12.5 Orphaned Dispatch Subprocesses (E-TEAMS-MIGRATION-001)
+
+Run `node scripts/dispatch/reap-orphans.js` (DRY-RUN — reports, kills nothing).
+This detects ORPHANED WarpOS dispatch subprocesses: a provider CLI (claude /
+codex / gemini) whose `dispatch-*.js` wrapper was reaped by the harness (the
+ED-039 / RI-004 reap class) and is still running with no completion record —
+holding a model session + slot + memory. Distinct from §12: prune-dead-locks
+clears the dead lock FILE; this finds the orphaned PROCESS.
+
+Report `scanned` + `orphanCount` + the per-orphan `pid`/`age`/`cmd` lines. It is
+**conservative by construction + fail-open** — a process is flagged ONLY when its
+command line matches a WarpOS dispatch signature AND its parent is dead/reparented
+AND it is older than ~20min AND it holds no fresh concurrency lock AND it is not
+this session's own tree; any ambiguity ⇒ it is SKIPPED (a missed orphan is cheap;
+killing a live builder loses uncommitted work).
+
+- `orphanCount: 0` → GREEN ("no orphaned dispatch subprocesses").
+- `orphanCount > 0` → YELLOW with the offending pids: "orphaned dispatch
+  subprocess(es) detected — reap with `node scripts/dispatch/reap-orphans.js
+  --apply` (SIGTERM-first; tree-terminate on Windows)." The apply is a deliberate
+  operator action, never automatic.
 
 ## Output Format
 

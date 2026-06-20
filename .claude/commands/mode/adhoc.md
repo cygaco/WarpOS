@@ -65,8 +65,8 @@ Before substantial long-running work, read `TRACKER.md` (spec §7.2 / §28.1) an
 ### Step 1.75: Classify any existing team state (Phase 0 workstream I)
 
 Before spawning a new team, classify the current team state. The team
-primitives (TeamCreate, SendMessage, maxTurns reap) live in the Claude
-Code harness and are NOT directly inspectable from this repo — so this is
+primitives (the Agent-spawn + SendMessage + maxTurns-reap primitives) live
+in the Claude Code harness and are NOT directly inspectable from this repo — so this is
 a checklist Alpha walks through with the user, not an automated probe.
 
 Classification:
@@ -94,23 +94,28 @@ reappears). This probe is also wired into `/warp:health`.
 
 ### Step 2: Create team and spawn teammates
 
-**Prerequisite:** `.claude/settings.json` must set `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`.
-If absent, /warp:health Section 3.5 flags it. Without the flag, `TeamCreate` and
-`SendMessage` are not loaded — enable, restart Claude Code, re-run /mode:adhoc.
+**Prerequisite (none — flag phased out):** As of Claude Code v2.1.178 (2026-06-15) the
+experimental agent-teams flag (`env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`) is being phased out
+and is **no longer required**. Teams are implicit + session-scoped: each teammate spawns via
+`Agent(run_in_background: true)` and `SendMessage` is built-in. Back-compat: older Claude Code
+builds may still use the flag — /warp:health Section 3.5 reports it as informational only.
 
 **Concrete tool calls — execute these directly, do not wrap them in prompt-style language:**
 
-2.1 `TeamCreate(team_name: "<project>-adhoc", description: "...", agent_type: "alpha")`
-- Convention: prefix with project slug (`warpos-adhoc`, `jobhunter-adhoc`, etc.) to
-  avoid global-namespace collisions with sibling-project `adhoc` teams in `~/.claude/teams/`.
-- If `TeamCreate` errors "team already exists" and you want a clean slate,
-  `TeamDelete` first (only succeeds when current members are idle).
+2.1 There is **no explicit team-create call** — the first named background subagent (Step 2.2)
+implicitly creates the session team.
+- Convention: prefix the teammate `name` with the project slug (`warpos-adhoc`,
+  `jobhunter-adhoc`, etc.) to avoid global-namespace collisions with sibling-project `adhoc`
+  members in `~/.claude/teams/`.
+- Clean slate: there is no `TeamDelete` tool. Teams are session-scoped, so a fresh session
+  starts clean. Stale members from a dead session are reconciled via
+  `SendMessage {type:"shutdown_request"}` (NEVER by editing `config.json`).
 
 2.2 Spawn β as an in-process teammate. **Critical:** `team_name` and `name` are
-required extra params on the Agent tool — they ARE accepted by the harness when
-teams are enabled, even though the tool's documented schema in the prompt does
-NOT list them. Pass them anyway. Validated 2026-05-14 (RT-006 +
-L-2026-05-14-test-the-call-before-declaring-impossible).
+required extra params on the Agent tool — they ARE accepted by the harness even though
+the tool's documented schema in the prompt does NOT list them. Pass them anyway.
+Validated 2026-05-14 (RT-006 + L-2026-05-14-test-the-call-before-declaring-impossible),
+re-confirmed under v2.1.178 — the harness still writes the `members[]` config keyed by session.
 
 **The `name` MUST be a plain alphanumeric token** — the harness now enforces
 `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` on the spawn `name` and REJECTS the old
@@ -210,8 +215,10 @@ If the operator passed their own `--scope`/`--ttl`/`--reason`, use those values 
 Phase 0 workstream I documented several harness behaviours we cannot fix
 from inside the repo:
 
-- **`TeamCreate --force-replace`** does not exist. The only way to refresh
-  a defunct team is to recreate manually.
+- **`TeamCreate`/`TeamDelete` no longer exist** as of Claude Code v2.1.178 —
+  teams are implicit + session-scoped. There is no team-refresh primitive:
+  to "refresh a defunct team," start a fresh session (the implicit team is
+  recreated clean) or re-spawn the named subagents via `Agent(run_in_background: true)`.
 - **`SendMessage` IS available in the harness** — the Agent tool's spawn
   output returns a stable `agentId` and an explicit hint `Use SendMessage
   with to: <id> to continue this agent.` The remaining limitation is that

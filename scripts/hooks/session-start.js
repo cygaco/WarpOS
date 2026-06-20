@@ -400,6 +400,25 @@ process.stdin.on("end", () => {
         /* prune is non-blocking */
       }
 
+      // E-TEAMS-MIGRATION-001: detect ORPHANED dispatch subprocesses (the reap /
+      // bg-drop class — a provider CLI whose wrapper was reaped, still running with
+      // no completion record). pruneDeadLocks above clears the dead lock FILE; this
+      // surfaces the orphaned PROCESS. REPORT-ONLY here (dry-run, never auto-kills on
+      // session start — the kill is a deliberate /warp:health --apply or manual
+      // action). Conservative-by-construction + fail-open (reaps nothing on any
+      // ambiguity); wrapped so a slow/failed enumeration never blocks session start.
+      try {
+        const { run: reapOrphans } = require("../dispatch/reap-orphans");
+        const r = reapOrphans({ apply: false });
+        if (r && r.orphanCount > 0) {
+          checks.push(
+            `Dispatch orphans: ${r.orphanCount} orphaned subprocess(es) detected — run \`node scripts/dispatch/reap-orphans.js --apply\` to reap`,
+          );
+        }
+      } catch {
+        /* orphan detection is non-blocking, fail-open */
+      }
+
       // Prune old session/instance log directories (keep last 5)
       // Dirs are named "s-{sid}_{iid}" (new) or "s-{sid}" (legacy)
       try {
@@ -627,19 +646,28 @@ process.stdin.on("end", () => {
           }
           if (!live) {
             const team = `${slug}-${curMode}`;
-            const calls = [
-              `  TeamCreate(team_name:"${team}", agent_type:"alpha", description:"${curMode} persistent team — ${spec.desc}")`,
-              ...spec.spawns.map(
+            // Claude Code v2.1.178 (2026-06-15) REMOVED TeamCreate/TeamDelete. The
+            // team is now IMPLICIT + session-scoped: the FIRST named background
+            // subagent the harness spawns creates the session team (and the harness
+            // still writes ~/.claude/teams/<session>/config.json with members[]).
+            // So there is no separate TeamCreate call — the directive is just the
+            // named Agent spawns. team_name is still ACCEPTED by the harness (kept
+            // for a stable, sibling-project-distinct handle), but is no longer the
+            // thing that creates the team. (E-TEAMS-MIGRATION-001.)
+            const calls = spec.spawns
+              .map(
                 ([t, nm, load]) =>
-                  `  Agent(subagent_type:"${t}", team_name:"${team}", name:"${nm}", run_in_background:true, prompt:"STARTUP DIRECTIVE — SendMessage readiness to team-lead, then go idle (do NOT auto-claim tasks). Load: ${load}.")`,
-              ),
-            ].join("\n");
+                  `  Agent(subagent_type:"${t}", name:"${nm}", run_in_background:true, team_name:"${team}", prompt:"STARTUP DIRECTIVE — SendMessage readiness to team-lead, then go idle (do NOT auto-claim tasks). Load: ${load}.")`,
+              )
+              .join("\n");
             teamInitDirective =
               `⛔ ${curMode.toUpperCase()} MODE IS ACTIVE (mode.json) but the persistent team is NOT up. ` +
-              `Per /mode:${curMode} Step 1.75, your FIRST action MUST be to stand up the company faces — ` +
-              `the SYSTEM's procedure with the RIGHT agents, NOT improvised general-purpose workers, NOT a memory summary:\n${calls}\n` +
+              `Per /mode:${curMode} Step 1.75, your FIRST action MUST be to stand up the company faces by spawning them ` +
+              `as NAMED BACKGROUND SUBAGENTS — the SYSTEM's procedure with the RIGHT agents, NOT improvised ` +
+              `general-purpose workers, NOT a memory summary. The first spawn implicitly creates the session-scoped team ` +
+              `(TeamCreate/TeamDelete were removed in Claude Code v2.1.178):\n${calls}\n` +
               `Then WAIT for both readiness pings (SendMessage to team-lead) before any boundary consult or work; do NOT proceed with the task until the team acks. ` +
-              `(E-SYSTEM-ORG-001 S-12 / ED-035; this team-skip recurred 2026-06-06 & 2026-06-08 — "where's the team?" / "where's epsilon?".)`;
+              `(E-SYSTEM-ORG-001 S-12 / ED-035 / E-TEAMS-MIGRATION-001; this team-skip recurred 2026-06-06 & 2026-06-08 — "where's the team?" / "where's epsilon?".)`;
           }
         }
       } catch {

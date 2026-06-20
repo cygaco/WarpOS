@@ -528,8 +528,11 @@ issues in jsonl), which remains owned by `/issues:log`,
 
 ## Built-in primitive limits (carried forward from Phase 0)
 
-The Claude Code harness's TeamCreate / SendMessage / maxTurns
-primitives cannot be fully fixed in-repo. Sprint v0.1 mitigations:
+The Claude Code harness's team / SendMessage / maxTurns primitives cannot
+be fully fixed in-repo. (Note: `TeamCreate`/`TeamDelete` were removed in
+Claude Code v2.1.178 — teams are now implicit + session-scoped, spawned via
+`Agent(run_in_background: true)`; the durable-tracker mitigations below still
+apply.) Sprint v0.1 mitigations:
 
 - Sprint tracker is the durable task-truth source — never team-task
   ownership.

@@ -66,12 +66,21 @@ function runStart(opts = {}) {
   }
 }
 
+// E-TEAMS-MIGRATION-001: the directive now instructs spawning NAMED BACKGROUND
+// SUBAGENTS (Agent(subagent_type:..., run_in_background:true)) — the implicit
+// session team replaces the removed TeamCreate. Assert the NEW spawn shape, NOT
+// the dead tool name (a stale `/TeamCreate/` assertion would false-pass on a
+// "TeamCreate was removed" historical mention).
 const sprintDirective = (c) =>
-  /SPRINT MODE IS ACTIVE/.test(c) && /TeamCreate/.test(c) && /epsilon/.test(c) && /beta/.test(c);
+  /SPRINT MODE IS ACTIVE/.test(c) &&
+  /Agent\(subagent_type:"epsilon"/.test(c) &&
+  /Agent\(subagent_type:"beta"/.test(c) &&
+  /run_in_background:true/.test(c) &&
+  !/\bTeamCreate\(/.test(c); // must NOT emit an executable TeamCreate( call
 
-ok("sprint + NO team => directive FIRES with the exact ε+β Step-1.75 calls", () => {
+ok("sprint + NO team => directive FIRES with the exact ε+β Step-1.75 spawn calls", () => {
   const c = runStart({ mode: "sprint" });
-  assert.ok(sprintDirective(c), "must inject the system-sourced TeamCreate+epsilon+beta init");
+  assert.ok(sprintDirective(c), "must inject the named-Agent ε+β spawn init (no TeamCreate call)");
   assert.ok(/FIRST action MUST be/.test(c), "must be framed as the mandatory first action");
 });
 

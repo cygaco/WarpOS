@@ -310,6 +310,62 @@ stalls (WG-6 ×3). See `.claude/agents/president/epsilon.md` TEAMMATE STALL RULE
 
 ---
 
+## §9.5 — Orchestration doctrine: in-process subagents vs OS subprocesses (E-TEAMS-MIGRATION-001)
+
+WarpOS dispatch runs across **two distinct lanes**. Conflating them is the root of a recurring
+class of confusion ("are ε/β subprocesses?", "why did the dispatch vanish?"). Know which lane you
+are in before you dispatch.
+
+| | **In-process subagents** (Agent tool) | **OS subprocesses** (Bash → wrapper) |
+|---|---|---|
+| Spawned by | `Agent(subagent_type:…, run_in_background:true)` | `node scripts/dispatch-claude.js` / `dispatch-agent.js` |
+| Who | α/ε/β/γ/δ + the roster (directors/leads/builders-as-teammates), reviewers via `general-purpose` | the provider CLIs: `claude` / `codex` / `gemini` |
+| Lives in | the harness; its OWN separate context window | a separate OS process tree |
+| Talks via | `SendMessage` (to a name or `team-lead`) | stdout/exit-code → a completion record on the ledger |
+| Reaped by | the harness (maxTurns) — leaves a member entry in the session team config | the harness reaping the *wrapper* can ORPHAN the grandchild CLI (ED-039/RI-004) |
+| Cleanup | session-scoped — torn down with the session | `pruneDeadLocks` (lock file) + `reap-orphans.js` (the orphaned PROCESS) |
+
+### Teams are IMPLICIT + session-scoped (Claude Code v2.1.178, 2026-06-15)
+
+`TeamCreate` / `TeamDelete` were **removed**. You no longer create a team — the **first named
+background subagent you spawn implicitly creates the session team**, and the harness still writes
+`~/.claude/teams/<session>/config.json` with a `members[]` array as agents join. Consequences:
+
+- **Spawn a teammate** = `Agent(subagent_type:"…", name:"…", run_in_background:true)`. `SendMessage`
+  is unchanged. Nesting is allowed up to **5 levels deep**.
+- **The team is named `session-<uuid>`, NOT `<slug>-<mode>`.** Any logic that scoped a team to a
+  project by its NAME slug is now dead — scope by **member `cwd`** instead (the harness records each
+  member's `cwd`; `scripts/teams/lifecycle.js#teamBelongsToProject` + `team-guard.js#isProjectScopedTeam`
+  do this). A name-only slug match silently fails to find your own team.
+- **No cross-session persistence.** `/resume` does not restore teammates (the task list persists). Re-spawn the team each session.
+- The `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env flag is **phasing out** and is no longer required.
+
+### Sharing context without bloating it — pull, don't push
+
+Every in-process subagent has its **own** context window; its reasoning never enters yours. So:
+
+- **Push the question, let the agent pull the facts.** Send a lean consult (scope + question +
+  constraints, ~15 lines); the subagent Read/Greps its own detail. Only its lean **verdict envelope**
+  returns to you. ("Orchestrator holds envelopes, not content" — §13 + ED-021.)
+- **Heavy work → write-file-then-envelope.** A sub-agent running a heavy skill writes its full output
+  to a file and returns ≤8 lines (verdict + counts + path). The Agent tool otherwise dumps 50–100K
+  tokens of sub-output into your context (the §9 hard rule for build-chain roles).
+- **Turn cost is asymmetric.** For the *subagent*, work happens in its isolated context (free to you).
+  For *you*, each message you send/receive adds only its **text** to your history — so the parallel-subagent
+  model is MORE context-efficient than doing it all inline, provided you keep returns lean. The real
+  cost is coordination round-trips — batch consults, reserve the team for genuine judgment boundaries.
+
+### Orphaned-subprocess hygiene
+
+When the harness reaps a `dispatch-*.js` wrapper, the OS can leave the grandchild provider CLI
+running with no completion record (holding a model session + slot + memory). `pruneDeadLocks`
+clears the dead **lock file**; `node scripts/dispatch/reap-orphans.js` finds + (with `--apply`)
+SIGTERM-terminates the orphaned **process** — conservative-by-construction (signature + PPID-orphan
++ age + no-live-lock + not-own-tree; any ambiguity ⇒ skip) and fail-open. It runs report-only on
+session start and is surfaced in `/warp:health` §12.5.
+
+---
+
 ## §10 — Worktree isolation (build-chain only)
 
 Builders and fixers run in `.worktrees/wt-<feature>` (built from current HEAD).

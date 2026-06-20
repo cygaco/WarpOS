@@ -150,20 +150,27 @@ exists, `SendMessage {type:"shutdown_request"}` it **before** spawning. Cleanup 
 `shutdown_request`, NEVER edit `config.json`. Classify fresh / stale / defunct exactly as
 `/mode:adhoc` Step 1.75 does; when in doubt, recreate.
 
-**Prerequisite:** `.claude/settings.json` must set `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`
-(else `TeamCreate`/`SendMessage` are not loaded — `/warp:health` §3.5 flags it).
+**Prerequisite (none — flag phased out):** As of Claude Code v2.1.178 (2026-06-15) the
+experimental agent-teams flag (`env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`) is being phased out
+and is **no longer required**. Teams are now implicit + session-scoped: each teammate is spawned
+via the `Agent` tool (`run_in_background: true`) and the harness auto-creates the session team;
+`SendMessage` is built-in. Back-compat: on older Claude Code builds the flag may still gate the
+legacy team panel — `/warp:health` §3.5 reports it as informational only.
 
-### Step 1.75: Create the persistent team + spawn ε + β
+### Step 1.75: Spawn the persistent team (ε + β) as named background subagents
 
 **Concrete tool calls — execute directly, do not wrap in prompt-style language:**
 
-1. `TeamCreate(team_name: "<project>-sprint", description: "Sprint mode persistent team — α lead + ε conductor + β judgment", agent_type: "alpha")`
-   - Prefix with the project slug (`warpos-sprint`, etc.) to avoid `~/.claude/teams/` collisions
-     with sibling-project teams. If "team already exists" and you want a clean slate, `TeamDelete` first (members must be idle).
+1. There is **no separate team-create call** anymore — the team is implicit. The FIRST spawned
+   named background subagent (item 2) implicitly creates the session team. Use a stable
+   project-prefixed `name` convention for each teammate (e.g. `Epsilon`, `Beta`, or
+   `warpos-Epsilon`) so members are addressable AND distinguishable from sibling-project
+   sessions in `~/.claude/teams/`.
 
 2. Spawn ε + β as in-process teammates **in parallel** (single message, two Agent calls).
-   `team_name` and `name` ARE accepted by the harness when teams are enabled even though the
-   Agent schema doesn't list them — pass them anyway. **The `name` MUST be a plain alphanumeric
+   The harness still accepts a `team_name`/`name` on the Agent tool and still writes the
+   `members[]` config even though the Agent schema doesn't list them — pass them anyway.
+   **The `name` MUST be a plain alphanumeric
    token** — the harness now enforces `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` and REJECTS the old
    parens+unicode forms (`Epsilon (ε)`, `Beta (β)`); use plain `Epsilon` / `Beta`
    (L-2026-06-09-team-name-regex-rejects-parens-unicode). Each gets a STARTUP DIRECTIVE: acknowledge

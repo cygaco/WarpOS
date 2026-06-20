@@ -491,8 +491,11 @@ process.stdin.on("end", () => {
 
     // ── Sprint-context persistent-team advisory (ED-035) ──────────────────
     // In sprint mode the operator expects work to flow through a PERSISTENT team
-    // (TeamCreate + named members, reusable + DM-able), NOT fire-and-forget one-off
-    // agents. The team-spawn step lives inside /mode:sprint's body — bypassed when a
+    // (named background subagents — reusable + DM-able via SendMessage), NOT
+    // fire-and-forget one-off agents. (As of Claude Code v2.1.178 the team is the
+    // IMPLICIT session-scoped team the harness creates on the first named spawn;
+    // TeamCreate/TeamDelete were removed — E-TEAMS-MIGRATION-001.)
+    // The team-spawn step lives inside /mode:sprint's body — bypassed when a
     // session kicks off from a /clear'd handoff with "/mode:sprint" as embedded text
     // (treated as context, the Skill never invoked) — so it skips SILENTLY and recurs
     // (RT-2026-06-06-sprint-team-orphaned-by-node-seam + the 2026-06-08 recurrence).
@@ -667,12 +670,14 @@ process.stdin.on("end", () => {
             decision: "block",
             reason:
               `⛔ SPRINT MODE + no correct team live (${why}). Stand up the company ` +
-              `faces FIRST — TeamCreate {name:"warpos-sprint"}, then ` +
-              `Agent(subagent_type:epsilon …) + Agent(subagent_type:beta …) — then ` +
-              `dispatch workers through the team (pass team_name). Bootstrap calls ` +
-              `(faces / explore / plan / any team_name) are allowed. Kill-switch: ` +
+              `faces FIRST by spawning them as named background subagents — ` +
+              `Agent(subagent_type:"epsilon", name:"Epsilon", run_in_background:true) + ` +
+              `Agent(subagent_type:"beta", name:"Beta", run_in_background:true) (the first ` +
+              `spawn implicitly creates the session-scoped team — TeamCreate/TeamDelete were ` +
+              `REMOVED in Claude Code v2.1.178). Then dispatch workers as named subagents. ` +
+              `Bootstrap calls (faces / explore / plan) are allowed. Kill-switch: ` +
               `WARPOS_DISABLE_TEAM_GATE=1 or touch .claude/runtime/.team-gate-off. ` +
-              `(E-SYSTEM-ORG-001 S-12c)`,
+              `(E-SYSTEM-ORG-001 S-12c; E-TEAMS-MIGRATION-001)`,
           }),
         );
         process.exit(0);
@@ -694,8 +699,10 @@ process.stdin.on("end", () => {
       }
       if (!teamReady && n >= 2) {
         const advice = !teamActive
-          ? `no active persistent team — stand up the company faces (TeamCreate + ` +
-            `subagent_type epsilon + beta; α leads, ε conducts) before fanning out`
+          ? `no active persistent team — stand up the company faces by spawning named ` +
+            `background subagents (Agent subagent_type:epsilon + subagent_type:beta, ` +
+            `run_in_background:true; α leads, ε conducts; the first spawn implicitly creates ` +
+            `the session team — TeamCreate was removed in v2.1.178) before fanning out`
           : `a team is active but it is MISSING ε (Epsilon — the sprint conductor / ` +
             `quality-gate). The persistent SPRINT team is the named faces α+ε+β, not ` +
             `generic general-purpose workers — spawn subagent_type:epsilon into the team`;

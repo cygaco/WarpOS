@@ -146,6 +146,16 @@ node scripts/checks/no-nul-bytes.js   # scans scripts/** + .claude/** text sourc
 
 A non-zero exit names the corrupted file + byte offset. The fix is `\u0000` (the escape) not a literal NUL. This is the enforcer pairing for the regex-charclass-space-becomes-NUL learning; it caught a real latent NUL in `scripts/trackers/validate.js` on first run.
 
+**Dead team-tools gate — TeamCreate/TeamDelete regression** *(default + `--deep`)*
+
+Claude Code v2.1.178 (2026-06-15) REMOVED the `TeamCreate`/`TeamDelete` tools (teams are now implicit + session-scoped; teammates spawn via `Agent(run_in_background:true)`). This gate (E-TEAMS-MIGRATION-001) prevents a new LIVE directive instructing the removed tools from creeping back into the active skill/hook/script layer, and ALSO asserts the POSITIVE — that the NEW remediation (`Agent` background-subagent spawn) is actually present, so a future edit can't trade one dead tool-name for another:
+
+```bash
+node scripts/checks/no-dead-team-tools.js   # scans scripts/** + .claude/commands|agents|project for a live TeamCreate(/TeamDelete( call; exit 0/1/2, fail-closed
+```
+
+A non-zero exit names the file + line of the offending directive. Historical/descriptive mentions ("TeamCreate was removed in v2.1.178", "the Node-side surrogate for TeamDelete") are exempt via marker; only an executable `TeamCreate(`/`TeamDelete(` call without an exemption marker fails. Per-run telemetry (`events/`), history (`_docs`/`_planning`/`_reports`), the shipped baseline (`_warpos`/`BASELINE`/`EXAMPLES`), and `tests/regression` fixtures are skipped.
+
 **Regression seed — the bug-class lens** *(default + `--deep`)*
 
 `/scan:regressions` — runs the **26 recurring bug classes** (`_requirements/07-testing/recurring-bug-classes.json`) as detectors and reports a catch-rate. Several detectors overlap the tiers above; this is the roll-up view + the 0.17.0 test-suite core. Surfaces `gap`/`partial`/`n/a` classes as the system's backlog.

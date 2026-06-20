@@ -140,6 +140,18 @@ NEVER implies API dispatch. Enforcer: `scripts/dispatch/dispatch-contract.js val
 orchestrator reads only the ≤8-line envelope (verdict + counts + path). This is the structural
 answer to context-limit exhaustion mid-task.
 
+**Two lanes — in-process subagents vs OS subprocesses (don't conflate).** *In-process subagents*
+(Agent tool: α/ε/β/γ/δ + the roster + reviewers) each have their OWN context window, talk via
+`SendMessage`, and are session-scoped. *OS subprocesses* (`dispatch-claude.js`/`dispatch-agent.js` →
+the provider CLIs) are separate processes whose output lands as a completion record — and whose
+grandchild CLI can ORPHAN when the harness reaps the wrapper (ED-039/RI-004). Share context by
+**pulling, not pushing**: send a lean question, let the subagent Read/Grep its own detail, take back
+only the envelope. As of **Claude Code v2.1.178 (2026-06-15)** teams are **implicit + session-scoped**
+— `TeamCreate`/`TeamDelete` were removed; the first named `Agent(…, run_in_background:true)` spawn
+creates the team (named `session-<uuid>`, so scope a team to a project by member **cwd**, not name).
+Orphaned dispatch processes: `node scripts/dispatch/reap-orphans.js` (report-only on session start;
+`--apply` to reap). Full doctrine: `paths.agentDispatchGuide` §9.5 (E-TEAMS-MIGRATION-001).
+
 ## Tool Use
 
 Behavioral rules for the harness tools. Violations are hard to notice because the tool returns

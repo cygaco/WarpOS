@@ -8,9 +8,13 @@
 // ─────────────────────────────────────────────────────────────────────────
 // THE HONEST CEILING (feasibility-corrected 2026-06-08; plan §8.4 / §20)
 // ─────────────────────────────────────────────────────────────────────────
-//   • Teams are a HARNESS primitive (TeamCreate / TeamDelete / SendMessage /
-//     Agent). A Node script CANNOT spawn a teammate, CANNOT call TeamDelete,
-//     and CANNOT force-kill a live in-process teammate. So:
+//   • Teams are a HARNESS primitive. As of Claude Code v2.1.178 (2026-06-15) they
+//     are IMPLICIT + session-scoped: a teammate is spawned via Agent(name,
+//     run_in_background:true) — the first such spawn creates the session team
+//     (TeamCreate / TeamDelete were REMOVED; SendMessage is unchanged). A Node
+//     script CANNOT spawn a teammate, CANNOT delete a team (no TeamDelete; and the
+//     session team is reaped with the session), and CANNOT force-kill a live
+//     in-process teammate. So: (E-TEAMS-MIGRATION-001)
 //       - verify()   REPORTS liveness + returns the EXACT spawn directive for
 //                    the model to execute — it does not itself spawn.
 //       - teardown() is BEST-EFFORT: it RECORDS the shutdown request, (only in
@@ -176,36 +180,63 @@ function listTeams(opts = {}) {
   return out;
 }
 
-// ── THE LOAD-BEARING SLUG FILTER ────────────────────────────────────────────
-/** Does `teamName` belong to the project identified by `slug`?
- *  TRUE  iff name === slug  OR  name startsWith `${slug}-`.
- *  The trailing "-" is load-bearing: it stops prefix bleed (slug "warp" must
- *  NOT match "warpos-sprint"; slug "warpos" must NOT match "warposx-sprint").
- *  A team that cannot be attributed (UUID name, foreign slug) is NOT ours and
- *  is therefore NEVER eligible for a kill — the conservative, safe default. */
-function teamBelongsToProject(teamName, slug) {
-  const t = String(teamName || "").toLowerCase();
+// ── THE LOAD-BEARING PROJECT-SCOPE FILTER (name-slug OR member-cwd) ───────────
+// E-TEAMS-MIGRATION-001: Claude Code v2.1.178 (2026-06-15) made teams IMPLICIT +
+// session-scoped — the harness now names a team `session-<uuid>` (NOT the
+// `<slug>-<mode>` handle session-start mints). So the name-slug arm ALONE silently
+// stops matching our own team: every WarpOS team reads as FOREIGN, projectTeams()
+// goes empty, verify() falsely reports "no team live", AND teardown never reaps the
+// real team (it's mistaken for another project's). The harness STILL writes
+// members[] with each member's `cwd`, so we add a member-CWD arm (mirrors
+// team-guard.js isProjectScopedTeam arm (b), the existing project-scope authority).
+// SAFETY IS PRESERVED: a team matches ONLY if its NAME carries our slug OR a MEMBER
+// CWD is our project root exactly / strictly under it. A team with neither (foreign
+// slug + foreign/empty member cwd) is STILL not ours → never kill-eligible (the
+// conservative default the wrong-project-survives invariant depends on). The
+// member-cwd arm is STRICT containment (=== root or startsWith root + "/"), never
+// parent-containment — a team rooted ABOVE the project is not ours.
+/** Does `team` belong to the project identified by `slug` + `projectDir`?
+ *  TRUE iff (a) name === slug OR name startsWith `${slug}-`  [legacy handle], OR
+ *          (b) any member cwd is the project root exactly, or strictly under it
+ *              [v2.1.178 implicit session-team].
+ *  `team` may be the team object ({name, members}) OR a bare name string (back-
+ *  compat — bare string has no members, so only arm (a) can match). */
+function teamBelongsToProject(team, slug, projectDir) {
+  const isObj = team && typeof team === "object";
+  const name = String((isObj ? team.name || team.team_name : team) || "")
+    .toLowerCase();
   const s = String(slug || "").toLowerCase();
-  if (!t || !s) return false;
-  return t === s || t.startsWith(s + "-");
+  // (a) legacy name-slug arm. The trailing "-" stops prefix bleed (slug "warp"
+  // must NOT match "warpos-sprint"; "warpos" must NOT match "warposx-sprint").
+  if (s && name && (name === s || name.startsWith(s + "-"))) return true;
+  // (b) member-cwd arm (v2.1.178 session-<uuid> teams). STRICT containment only.
+  const normProject = String(projectDir || "").replace(/\\/g, "/").toLowerCase();
+  if (!normProject) return false; // no project anchor → cannot attribute by cwd
+  const members = isObj && Array.isArray(team.members) ? team.members : [];
+  return members.some((mem) => {
+    const c = String((mem && mem.cwd) || "").replace(/\\/g, "/").toLowerCase();
+    return c && (c === normProject || c.startsWith(normProject + "/"));
+  });
 }
 
-/** Project-scoped teams (kill-eligible) for the resolved slug. */
+/** Project-scoped teams (kill-eligible) for the resolved slug + project dir. */
 function projectTeams(opts = {}) {
   const slug = projectSlug(opts);
-  return listTeams(opts).filter((t) => teamBelongsToProject(t.name, slug));
+  const dir = projectDir(opts);
+  return listTeams(opts).filter((t) => teamBelongsToProject(t, slug, dir));
 }
 
 /** FOREIGN teams — every team that does NOT belong to this project. These MUST
  *  survive every teardown (the wrong-project-survives invariant). */
 function foreignTeams(opts = {}) {
   const slug = projectSlug(opts);
-  return listTeams(opts).filter((t) => !teamBelongsToProject(t.name, slug));
+  const dir = projectDir(opts);
+  return listTeams(opts).filter((t) => !teamBelongsToProject(t, slug, dir));
 }
 
 // ── Verify (REPORT + spawn directive; never spawns) ─────────────────────────
 /** Is the correct team live for this mode? Returns a status + (when not live)
- *  the EXACT TeamCreate/Agent directive the model must run. Never spawns. */
+ *  the EXACT named-Agent spawn directive the model must run. Never spawns. */
 function verify(opts = {}) {
   const slug = projectSlug(opts);
   const mode = currentMode(opts);
@@ -229,15 +260,16 @@ function verify(opts = {}) {
   let directive = null;
   if (!live && faces.length) {
     const team = `${slug}-${mode}`;
+    // E-TEAMS-MIGRATION-001: no TeamCreate call — v2.1.178 removed it. The first
+    // named background subagent implicitly creates the session-scoped team; the
+    // harness still accepts team_name + writes the members[] config. The directive
+    // is therefore just the named Agent spawns (run_in_background:true).
     directive = {
       team_name: team,
-      calls: [
-        `TeamCreate(team_name:"${team}", agent_type:"alpha")`,
-        ...faces.map(
-          (f) =>
-            `Agent(subagent_type:"${f}", team_name:"${team}", name:"${f}", run_in_background:true)`,
-        ),
-      ],
+      calls: faces.map(
+        (f) =>
+          `Agent(subagent_type:"${f}", name:"${f}", run_in_background:true, team_name:"${team}")`,
+      ),
     };
   }
 

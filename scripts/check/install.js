@@ -108,7 +108,14 @@ function main() {
       if (!fs.existsSync(dir)) return false;
       return fs.readdirSync(dir).some((f) => f.endsWith(".md"));
     }),
-    check("settings.json sets CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1", () => {
+    // E-TEAMS-MIGRATION-001: as of Claude Code v2.1.178 (2026-06-15) the
+    // experimental agent-teams tools (TeamCreate/TeamDelete) were REMOVED and teams
+    // became IMPLICIT + session-scoped (teammates spawn via Agent(run_in_background));
+    // CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is phasing out and is NO LONGER REQUIRED.
+    // So this is now an INFORMATIONAL presence check, NOT an install-completeness
+    // gate: present OR absent both PASS (an unparseable settings.json is still a real
+    // failure, caught here and by the dedicated settings.json check above).
+    check("agent-teams flag (legacy — informational, no longer required)", () => {
       const f = path.join(REPO_ROOT, ".claude", "settings.json");
       if (!fs.existsSync(f))
         return { ok: false, detail: "settings.json missing" };
@@ -119,11 +126,12 @@ function main() {
         return { ok: false, detail: `unparseable: ${e.message}` };
       }
       const v = s && s.env && s.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS;
-      if (v === "1" || v === 1 || v === true) return true;
+      const present = v === "1" || v === 1 || v === true;
       return {
-        ok: false,
-        detail:
-          'missing — /mode:adhoc persistent teams (TeamCreate/SendMessage) require this. Add settings.env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS="1" then restart Claude Code.',
+        ok: true,
+        detail: present
+          ? "present (legacy flag — harmless; v2.1.178 made teams implicit, safe to remove)"
+          : "absent (fine — v2.1.178 removed TeamCreate/TeamDelete; teams are implicit + session-scoped, spawn via Agent)",
       };
     }),
     // WG-4: sprint-subsystem readiness. WG-1/2/3/10 all survived /warp:setup and
