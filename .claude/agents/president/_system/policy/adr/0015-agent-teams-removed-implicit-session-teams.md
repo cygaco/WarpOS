@@ -81,6 +81,24 @@ edit can't trade one dead tool-name for another. Fail-closed on runner error; pl
   (or `/warp:health`) is the safe default. The reaper's conservative gates make a false-kill unlikely,
   but defense-in-depth keeps the kill explicit.
 
+## Known limitations (documented by design — β rider 3)
+
+- **The reaper recognizes only `node <abs-wrapper>` invocations** (argv[0]=node, argv[1] = the
+  canonical absolute path of `dispatch-claude.js`/`dispatch-agent.js`). A **directly-orphaned
+  grandchild provider CLI** (a `claude`/`codex`/`gemini` process whose node wrapper already exited,
+  leaving the CLI reparented on its own) is **out of scope by design** — it is reaped only when its
+  wrapper is still present (the wrapper's process tree is taken down via `taskkill /T`). This is the
+  deliberate conservative trade: a node invocation with ANY flag before the script, or a lone
+  provider CLI, is NOT recognized — a missed orphan is cheap (it ages out / is caught next session),
+  a false kill of a live process is expensive (lost uncommitted work). The signature was hardened
+  across a multi-round security review to this `argv[1]`-must-be-the-wrapper rule precisely because
+  every looser rule (telemetry-marker-in-argv, any-token-resolves, flag-skipping) was shown trickable.
+- **The cross-provider gauntlet ran GPT-only** for this sprint — gemini is TIER-DEAD
+  (`IneligibleTierError` → Antigravity migration), so the security 2nd-pass corpus-diversity leg was
+  unavailable. Logged as cross-provider debt with a resumption trigger (re-run the gemini/Antigravity
+  leg on the reaper once that provider is live). Acceptable here because the changes are dev-tooling
+  (not product/security-critical runtime) and the reaper is report-only without `--apply`.
+
 ## Enforcement
 
 - `scripts/checks/no-dead-team-tools.js` (`/scan:full`) — no new dead-tool directives + remediation present.

@@ -152,6 +152,33 @@ ok("AC-5.2 teamBelongsToProject: exact + prefix, no bleed", () => {
   assert.strictEqual(b("anything", ""), false, "empty slug never matches");
 });
 
+// ── AC-5.2b — E-TEAMS-MIGRATION-001: the member-CWD arm (v2.1.178 session-<uuid>). ─
+// The harness now names teams `session-<uuid>` (NOT <slug>-<mode>), so the name-slug
+// arm alone can't find our own team. The cwd arm identifies it by a member cwd at /
+// under the project root — WHILE the wrong-project-survives invariant HOLDS (a foreign
+// session-<uuid> team rooted elsewhere is NEVER ours). β rider 4: pin this so a future
+// harness rename to a THIRD scheme fails loudly rather than silently widening scope.
+ok("AC-5.2b teamBelongsToProject: member-cwd arm finds OUR session-<uuid> team, excludes foreign", () => {
+  const b = lifecycle.teamBelongsToProject;
+  const proj = process.platform === "win32" ? "C:\\proj\\warpos" : "/proj/warpos";
+  const underProj = process.platform === "win32" ? "C:\\proj\\warpos\\sub" : "/proj/warpos/sub";
+  const sibling = process.platform === "win32" ? "C:\\proj\\doogle" : "/proj/doogle";
+  const parent = process.platform === "win32" ? "C:\\proj" : "/proj";
+  const team = (members) => ({ name: "session-3c48a70b-7089-4c31-b168-06a51373d69c", members });
+  // OURS — a uuid-named team with a member cwd AT the project root:
+  assert.strictEqual(b(team([{ agentType: "epsilon", cwd: proj }]), "warpos", proj), true, "member cwd == project root => ours");
+  // OURS — a member cwd strictly UNDER the project root:
+  assert.strictEqual(b(team([{ name: "Beta", cwd: underProj }]), "warpos", proj), true, "member cwd under project root => ours");
+  // FOREIGN — a sibling-project uuid team (the wrong-project-survives invariant):
+  assert.strictEqual(b(team([{ agentType: "epsilon", cwd: sibling }]), "warpos", proj), false, "sibling-project member cwd => NOT ours (survives teardown)");
+  // FOREIGN — a team rooted ABOVE the project (parent-containment is NOT ownership):
+  assert.strictEqual(b(team([{ cwd: parent }]), "warpos", proj), false, "parent-dir member cwd => NOT ours");
+  // FOREIGN — a uuid team with NO member cwd evidence + a foreign slug name:
+  assert.strictEqual(b(team([{ agentType: "epsilon" }]), "warpos", proj), false, "no cwd evidence + uuid name => NOT ours");
+  // legacy name-slug arm still works alongside the cwd arm:
+  assert.strictEqual(b({ name: "warpos-sprint", members: [] }, "warpos", proj), true, "legacy <slug>- name still ours");
+});
+
 // ── AC-5.3 — orphan/stale + duplicate (-N accretion) detection ───────────────
 ok("AC-5.3 stale-team handle detected (config older than STALE_HOURS)", () => {
   const { teamsRoot, stateDir } = freshDirs();
