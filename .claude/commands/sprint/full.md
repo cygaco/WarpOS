@@ -113,8 +113,12 @@ events to `paths.eventsFile`.
 **When ε-conduct is active** (`epsilonDispatch: true` — the default in sprint sessions, see above),
 Phase 2 routes through ε's hook-point roster rather than a bare scaffold call:
 
-- ε dispatches in-process Agent-tool calls for the design roster (product-lead, design-lead,
-  req-reviewer, and per-phase peers listed in `epsilon.md`'s hook-point registry).
+- ε dispatches the design roster by each role's REGISTRY-DERIVED route, not a single shape: the
+  GPT roles (product-lead, design-lead — `provider: openai`) go via **subprocess** (`dispatch-agent.js`,
+  the `cross_provider_consult_lead` class), while the Claude roles (the directors, `design-quality`)
+  go **in-process via the Agent tool**. (`req-reviewer` no longer exists — it was absorbed into
+  `qa-reviewer`, summoned at the gauntlet, not design.) The per-step set is `epsilon.md`'s hook-point
+  registry.
 - **Agent-tool capability (ADR-0014):** ε — top-level OR teammate-spawned — CAN call the Agent tool
   and summon the in-process roster directly, each spawn supplying a `scopeContract`. The Agent tool
   is a per-spec capability (ε's spec lists it); ADR-0014 retired the old ED-041 "α-only" constraint

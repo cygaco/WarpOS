@@ -55,38 +55,71 @@ const DISPATCH_TOOLS = ["bash", "agent"];
 // gauntlet pod-coordination. Keyed by EXACT role id — a different role gaining a
 // dispatch tool is NOT exempt and fails the gate.
 const KNOWN_EXEMPTIONS = new Map([
-  ["quality-lead", "ED-065: dual-role pod-coordinator — design-consult is trusted-read-only via scopeContract; [Bash,Agent] serve the gauntlet one-hop evidence fan-out. Follow-up: a one-hop reviewer-dispatch assertion."],
+  // quality-lead is a dual-role pod-coordinator: summoned at the design CONSULT step to
+  // author qa-plan/AC-coverage (read-only), it ALSO fans out qa-reviewer/design-quality/
+  // visual-review/test-runner via the Agent tool to GATHER EVIDENCE (a sanctioned one-hop
+  // pod dispatch the registry lists). W5/gauntlet HIGH-1 fix: `Bash` was REMOVED from its
+  // spec (over-granted drift — the registry already had tools:["Agent"], and its body
+  // never used Bash), which CLOSES the Bash→dispatch-claude.js cascade route the reviewer
+  // found. It keeps ONLY `Agent`, bounded by the dispatch-route-guard in-process
+  // build-chain block (it cannot Agent-spawn a builder) — its one-hop is to leaf
+  // reviewers. The residual (a precise one-hop-reviewer-only assertion vs this exemption)
+  // is ED-065.
+  ["quality-lead", "ED-065: dual-role pod-coordinator — design-consult is read-only; retains ONLY Agent (Bash removed, gauntlet HIGH-1) for its sanctioned one-hop fan-out to leaf reviewers (bounded by the dispatch-route-guard in-process build-chain block). Follow-up: a precise one-hop-reviewer-only assertion."],
 ]);
 
 /** Read a role's ACTUAL spec frontmatter `tools:` as a lowercased token set. Returns
- *  { tools:Set, source:"frontmatter"|"agents-list"|"none", specPath } — fires on the
- *  real spec, not a registry field a rename could desync. */
+ *  `{ tools:Set, determined:boolean, source, specPath }`. SECURITY (gauntlet HIGH-2 +
+ *  MEDIUM): `determined` is FALSE when the tool-set cannot be CONFIRMED — no spec path,
+ *  unreadable spec, or no parseable `tools` declaration. The caller FAILS CLOSED on
+ *  `determined:false` (an unconfirmable consult role is a violation, never silently
+ *  clean — a renamed/moved spec must not read green). Parses three forms: the inline
+ *  `tools: Read, Grep, Glob`, an inline bracket `tools: [Read, Grep]`, AND a YAML BLOCK
+ *  list (`tools:\n  - Read\n  - Bash`) — the MEDIUM form the same-line regex missed. */
 function readSpecTools(specRel) {
-  const out = { tools: new Set(), source: "none", specPath: specRel };
-  if (!specRel) return out;
+  const out = { tools: new Set(), determined: false, source: "none", specPath: specRel };
+  if (!specRel) return out; // no spec → can't confirm → fail-closed at the caller
   const abs = path.isAbsolute(specRel) ? specRel : path.join(ROOT, specRel);
   let txt;
   try {
     txt = fs.readFileSync(abs, "utf8");
   } catch {
-    return out; // spec unreadable — caller treats an empty tool-set as "can't confirm"
+    return out; // unreadable → determined:false → fail-closed
   }
-  // Primary: a YAML/markdown `tools:` frontmatter line (e.g. `tools: Read, Grep, Glob`).
-  let m = txt.match(/^tools:\s*(.+)$/m);
-  if (m) {
-    out.source = "frontmatter";
-  } else {
-    // Fallback: the parenthetical `(Tools: Read, Grep, ...)` form some specs use.
-    m = txt.match(/\(Tools:\s*([^)]+)\)/i);
-    if (m) out.source = "agents-list";
-  }
-  if (m) {
-    for (const t of m[1].split(/[,\s]+/)) {
+  const addTokens = (s) => {
+    for (const t of String(s).split(/[,\s]+/)) {
       const tok = t.trim().toLowerCase().replace(/[\[\]"'`]/g, "");
-      if (tok) out.tools.add(tok);
+      if (tok && tok !== "-") out.tools.add(tok);
     }
+  };
+  // Form 1+2: an inline `tools:` line (bare CSV OR `[ ... ]`).
+  let m = txt.match(/^tools:[ \t]*(\S.*)$/m);
+  if (m && m[1].trim()) {
+    out.source = "frontmatter-inline";
+    out.determined = true;
+    addTokens(m[1]);
+    return out;
   }
-  return out;
+  // Form 3 (MEDIUM): a YAML BLOCK list — `tools:` on its own line, then `  - Item` rows.
+  const block = txt.match(/^tools:[ \t]*\r?\n((?:[ \t]*-[ \t]*\S+[ \t]*\r?\n?)+)/m);
+  if (block) {
+    out.source = "frontmatter-block";
+    out.determined = true;
+    for (const line of block[1].split(/\r?\n/)) {
+      const im = line.match(/^[ \t]*-[ \t]*(.+?)[ \t]*$/);
+      if (im) addTokens(im[1]);
+    }
+    return out;
+  }
+  // Fallback: the parenthetical `(Tools: Read, Grep, ...)` form some specs/agents-lists use.
+  m = txt.match(/\(Tools:\s*([^)]+)\)/i);
+  if (m) {
+    out.source = "agents-list";
+    out.determined = true;
+    addTokens(m[1]);
+    return out;
+  }
+  return out; // no parseable tools declaration → determined:false → fail-closed
 }
 
 /** PURE CORE: given the registry + hook-points docs, return the consult roles whose
@@ -95,7 +128,9 @@ function readSpecTools(specRel) {
 function evaluate(input) {
   const regDoc = (input && input.regDoc) || {};
   const hpDoc = (input && input.hpDoc) || {};
-  const toolReader = (input && input.toolReader) || ((spec) => readSpecTools(spec).tools);
+  // The default reader returns the FULL {tools, determined} shape; a test may inject a
+  // reader that returns either {tools, determined} OR a bare Set (back-compat).
+  const toolReader = (input && input.toolReader) || ((spec) => readSpecTools(spec));
 
   const roles = regDoc.roles || regDoc;
   const rows = hpDoc.attachments || hpDoc.rows || hpDoc.hook_points || (Array.isArray(hpDoc) ? hpDoc : []);
@@ -110,12 +145,28 @@ function evaluate(input) {
   const exemptions = [];
   let scanned = 0;
   for (const roleId of consultRoles) {
+    scanned++;
     const entry = roles[roleId];
     const spec = entry && entry.spec;
-    const tools = toolReader(spec, roleId) || new Set();
-    scanned++;
+    const read = toolReader(spec, roleId);
+    // Normalize the reader result to { tools:Set, determined:boolean }.
+    const tools = read instanceof Set ? read : (read && read.tools) || new Set();
+    const determined = read instanceof Set ? true : !!(read && read.determined);
+
+    // HIGH-2 FAIL-CLOSED: a consult role whose tool-set CANNOT be confirmed (missing from
+    // the registry, no spec, unreadable spec, or no parseable `tools` declaration) is a
+    // VIOLATION — never silently clean. A renamed/moved spec must read RED, not green.
+    if (!entry) {
+      violations.push({ role: roleId, tools: ["<unknown-role>"], spec: "(absent from role-registry)", detail: `consult-summonable role '${roleId}' is at a plan/design hook-point but absent from role-registry.json — cannot confirm its tool-set; fail-closed.` });
+      continue;
+    }
+    if (!determined) {
+      violations.push({ role: roleId, tools: ["<unconfirmable>"], spec: spec || "(no spec in registry)", detail: `consult-summonable role '${roleId}' has no confirmable tools declaration (missing/unreadable spec, or an unparseable tools field at '${spec || "<none>"}') — cannot prove it carries no dispatch tool; fail-closed (a renamed/moved spec must not read green).` });
+      continue;
+    }
+
     const dispatchTools = DISPATCH_TOOLS.filter((t) => setHas(tools, t));
-    if (dispatchTools.length === 0) continue; // clean — no dispatch capability
+    if (dispatchTools.length === 0) continue; // confirmed clean — no dispatch capability
     if (KNOWN_EXEMPTIONS.has(roleId)) {
       exemptions.push({ role: roleId, tools: dispatchTools, reason: KNOWN_EXEMPTIONS.get(roleId) });
     } else {
@@ -135,10 +186,17 @@ function evaluate(input) {
 }
 
 function setHas(set, v) {
-  // tolerant: accept a Set OR an array OR a comma-string of tools.
-  if (set instanceof Set) return set.has(v);
-  if (Array.isArray(set)) return set.map((x) => String(x).toLowerCase()).includes(v);
-  return String(set || "").toLowerCase().includes(v);
+  // TOKEN EQUALITY (gauntlet MEDIUM): never substring — a token like "subagent" must
+  // NOT match "agent". Accept a Set OR an array of tokens; compare each token EXACTLY.
+  // A `*` (catch-all) token is treated as HAVING the dispatch tool (unsafe for a consult
+  // role — a `tools: *` grant includes Bash/Agent, so it must fail the gate).
+  const tokens = set instanceof Set ? [...set] : Array.isArray(set) ? set : [];
+  for (const t of tokens) {
+    const tok = String(t).toLowerCase();
+    if (tok === v) return true;
+    if (tok === "*") return true; // catch-all grant = has every tool incl. Bash/Agent
+  }
+  return false;
 }
 
 function run() {

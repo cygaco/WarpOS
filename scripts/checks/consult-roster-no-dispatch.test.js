@@ -13,6 +13,8 @@
  *   node scripts/checks/consult-roster-no-dispatch.test.js
  */
 
+const fs = require("fs");
+const path = require("path");
 const { harness } = require("./lib/fixture-harness");
 const { evaluate } = require("./consult-roster-no-dispatch");
 
@@ -122,15 +124,91 @@ h.test("a builder with Bash at the BUILD step is NOT flagged (consult-scoped)", 
   assert(r.ok === true, "a builder at the build step does not violate the consult invariant");
 });
 
-// 6) FAIL-CLOSED — malformed input must not green-light.
-h.failClosed("evaluate(null) does not read green", () => {
-  const r = evaluate(null);
-  // empty rows => no consult roles => ok:true vacuously; to satisfy failClosed we
-  // assert the runner-level fail-closed instead: the CLI exits 2 on a throw. Here we
-  // throw on the degenerate shape to signal fail-closed-ok.
-  if (r && r.ok && r.scanned === 0) throw new Error("ok: vacuous-empty is acceptable (no consult roles to check)");
-  return { ok: false };
+// ── gauntlet HIGH-2: FAIL-CLOSED on an unconfirmable consult spec (missing role,
+// no spec, unreadable spec, unparseable tools) — must NOT read green. Uses the REAL
+// readSpecTools via the default reader (no injected toolReader) against synthetic
+// registry specs that don't exist on disk.
+h.violation("HIGH-2: a consult role pointing at a MISSING spec is FLAGGED (fail-closed, not green)", () =>
+  evaluate({
+    regDoc: { roles: { "ghost-consult": { spec: "specs/does-not-exist-xyz.md" } } },
+    hpDoc: { attachments: [{ role: "ghost-consult", step: "design" }] },
+    // no toolReader → uses the real readSpecTools → unreadable → determined:false
+  }));
+h.violation("HIGH-2: a consult role ABSENT from the registry is FLAGGED (fail-closed)", () =>
+  evaluate({
+    regDoc: { roles: {} },
+    hpDoc: { attachments: [{ role: "unregistered-consult", step: "plan" }] },
+  }));
+h.violation("HIGH-2: a consult role with NO spec field is FLAGGED (fail-closed)", () =>
+  evaluate({
+    regDoc: { roles: { "no-spec-consult": {} } },
+    hpDoc: { attachments: [{ role: "no-spec-consult", step: "design" }] },
+  }));
+
+// ── gauntlet MEDIUM: a YAML BLOCK-list tools form is parsed (the same-line regex
+// missed it). Prove via the REAL readSpecTools against a sealed fixture spec.
+h.test("MEDIUM: a YAML block-list `tools:` with Bash is detected (not missed)", () => {
+  const { readSpecTools } = require("./consult-roster-no-dispatch");
+  const fx = h.sealedDir({
+    "block.md": "---\nname: x\ntools:\n  - Read\n  - Grep\n  - Bash\n---\n# body\n",
+    "inline.md": "---\nname: y\ntools: [Read, Grep, Glob]\n---\n# body\n",
+  });
+  try {
+    const block = readSpecTools(fx.file("block.md"));
+    assert(block.determined === true, "block form is determined");
+    assert(block.tools.has("bash"), "block-list Bash is detected (MEDIUM fix)");
+    const inline = readSpecTools(fx.file("inline.md"));
+    assert(inline.determined === true && inline.tools.has("glob") && !inline.tools.has("bash"), "inline bracket form parses");
+  } finally {
+    fx.cleanup();
+  }
 });
+
+// ── gauntlet MEDIUM (setHas): token EQUALITY, not substring — a tool named "subagent"
+// (contains "agent") must NOT be read as the Agent dispatch tool.
+h.pass("MEDIUM: a consult role with a tool CONTAINING 'agent' (e.g. 'subagent') is NOT flagged (token equality)", () =>
+  evaluate({
+    regDoc: { roles: { "sub-consult": { spec: "specs/sc.md" } } },
+    hpDoc: { attachments: [{ role: "sub-consult", step: "design" }] },
+    toolReader: () => new Set(["read", "grep", "glob", "subagent"]), // 'subagent' must NOT match 'agent'
+  }));
+// ── gauntlet MEDIUM (`*`): a `tools: *` catch-all grant on a consult role is UNSAFE
+// (it includes Bash/Agent) → must be FLAGGED.
+h.violation("MEDIUM: a consult role with a `*` catch-all tool-set is FLAGGED (includes Bash/Agent)", () =>
+  evaluate({
+    regDoc: { roles: { "star-consult": { spec: "specs/star.md" } } },
+    hpDoc: { attachments: [{ role: "star-consult", step: "design" }] },
+    toolReader: () => new Set(["*"]),
+  }));
+
+// FAIL-CLOSED (backend-reviewer HIGH — the prior `evaluate(null)`-throws test was
+// THEATER: the harness counts a manual throw as success, proving only that the test
+// can throw, not that the ENFORCER fails closed). REAL test: invoke the enforcer's
+// CLI as a subprocess with the project root pointed at a dir that has NO registry, so
+// run() throws on the readFileSync — and assert the CLI exits 2 (fail-closed integrity),
+// NOT 0. This exercises the actual require.main fail-closed path.
+h.test("FAIL-CLOSED: the CLI exits 2 (not 0) when run() can't read the registry [real, not theater]", () => {
+  const { spawnSync } = require("child_process");
+  const os = require("os");
+  const emptyRoot = fs.mkdtempSync(path.join(os.tmpdir(), "no-registry-"));
+  try {
+    const r = spawnSync(process.execPath, [path.join(__dirname, "consult-roster-no-dispatch.js"), "--json"], {
+      env: { ...process.env, CLAUDE_PROJECT_DIR: emptyRoot },
+      encoding: "utf8",
+      timeout: 15000,
+    });
+    assert(r.status === 2, `expected fail-closed exit 2, got ${r.status} (a scanner that can't read its inputs must NOT exit 0/green)`);
+    const out = JSON.parse(r.stdout || "{}");
+    assert(out.ok === false, "fail-closed JSON must report ok:false");
+  } finally {
+    fs.rmSync(emptyRoot, { recursive: true, force: true });
+  }
+});
+// And the pure core, given an EMPTY hook-points doc, is vacuously clean (no consult
+// roles to check) — that is correct, NOT a fail-closed case; the fail-closed concern is
+// an UNCONFIRMABLE role (covered by the HIGH-2 violation tests above), not zero roles.
+h.pass("evaluate with no consult roles is vacuously clean (zero roles ≠ a hole)", () =>
+  evaluate({ regDoc: { roles: {} }, hpDoc: { attachments: [] } }));
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg || "assertion failed");

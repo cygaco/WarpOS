@@ -9,7 +9,7 @@ description: >-
   Carries a PROGRAMMABLE principles field (must-follow rules); seed principle =
   Product Priority over Severity. Sibling of product-lead and design-lead,
   scoped to quality judgment.
-tools: [Read, Grep, Glob, Bash, Agent]
+tools: [Read, Grep, Glob, Agent]
 model: claude-opus-4-8
 provider: claude
 effort: high
