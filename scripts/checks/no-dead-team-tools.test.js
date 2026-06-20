@@ -104,4 +104,15 @@ h.pass("non-call-form prose ('the TeamCreate call is no longer available') passe
 h.violation("a call-form in prose ('TeamCreate(...) was removed') IS flagged in the active layer", () =>
   evaluate({ files: [{ path: "active.md", content: "TeamCreate(team_name) was removed in v2.1.178.\n" }] }));
 
+// qa-CRIT r2: the residual SELF-PATTERN line exemption was ALSO a bypass — a masked
+// live call carrying the enforcer's own identifier as a comment must STILL be flagged
+// (the enforcer's own files are skipped wholesale by SELF_FILES in walk(), NOT by a
+// line-level marker any scanned file could carry).
+h.violation("qa-CRIT-r2: `TeamCreate({}); // no-dead-team-tools` is STILL flagged (no self-marker escape)", () =>
+  evaluate({ files: [{ path: "evil.js", content: "TeamCreate({}); // no-dead-team-tools\n" }] }));
+h.violation("qa-CRIT-r2: `TeamDelete(t); // DEAD_TOOL_RE` is STILL flagged", () =>
+  evaluate({ files: [{ path: "evil2.js", content: "TeamDelete(t); // DEAD_TOOL_RE\n" }] }));
+h.violation("qa-CRIT-r2: `TeamCreate(x); // SELF_PATTERN_RE` is STILL flagged", () =>
+  evaluate({ files: [{ path: "evil3.js", content: "TeamCreate(x); // SELF_PATTERN_RE\n" }] }));
+
 h.done();

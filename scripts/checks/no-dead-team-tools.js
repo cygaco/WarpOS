@@ -73,23 +73,23 @@ const SCAN_ROOTS = ["scripts", ".claude/commands", ".claude/agents", ".claude/pr
 // qa-HIGH: `\s*` so `TeamCreate (` (a space before the paren) does NOT bypass.
 const DEAD_TOOL_RE = /\bTeam(?:Create|Delete)\s*\(/;
 
-// ── Exemption policy (qa-CRITICAL fix): NO marker-word inline exemption. The prior
-// "any marker word anywhere on the line exempts it" false-PASSED a masked live call
-// (`TeamCreate(...) // legacy`), defeating the enforcer; and a proximity-based
-// removal-context regex can't reliably tell a real call ("TeamDelete(t); // team is
-// gone") from prose describing one ("the TeamCreate(...) call is no longer available")
-// on a single line — the distinction is semantic. So we adopt the reviewer's other
-// recommendation: a CALL FORM (`TeamCreate(` / `TeamDelete(`) is ALWAYS a violation in
-// the scanned ACTIVE layer (skills/hooks/scripts/agent specs); legitimate prose simply
-// AVOIDS the call form (write "the TeamCreate call" / `TeamCreate`, not "TeamCreate(…)").
-// The history/decision layer that NEEDS the call form (adr/, _docs, _planning, _reports,
-// _warpos, events, tests/regression) is PATH-SCOPED out (SKIP_DIRS / SKIP_SEGMENTS).
-// The only inline carve-out is this enforcer's OWN pattern-definition files (they must
-// quote the pattern) — and those are ALSO skipped wholesale by SELF_FILES.
-const SELF_PATTERN_RE = /no-dead-team-tools|DEAD_TOOL_RE|SELF_PATTERN_RE/;
-
-function lineIsExempt(line) {
-  return SELF_PATTERN_RE.test(line);
+// ── Exemption policy (qa-CRITICAL + its r2 residual): there is NO inline exemption.
+// The prior "any marker word exempts the line" false-PASSED a masked live call
+// (`TeamCreate(...) // legacy`); the follow-up self-pattern exemption was ALSO a
+// bypass (`TeamCreate({}); // no-dead-team-tools` false-passed). A proximity-based
+// removal-context regex can't reliably separate a real call ("TeamDelete(t); // team
+// is gone") from prose describing one — the distinction is semantic. So the rule is
+// absolute: a CALL FORM (`TeamCreate(` / `TeamDelete(`, incl. whitespace) is ALWAYS a
+// violation in the scanned ACTIVE layer (skills/hooks/scripts/agent specs). Legitimate
+// prose AVOIDS the call form (write "the TeamCreate call" / `TeamCreate`, never
+// "TeamCreate(…)"). The history/decision layer that NEEDS the call form (adr/, _docs,
+// _planning, _reports, _warpos, events, tests/regression) is PATH-SCOPED out
+// (SKIP_DIRS / SKIP_SEGMENTS). This enforcer's OWN two pattern-definition files are
+// skipped WHOLESALE by SELF_FILES in walk() — NOT by a line-level marker (which any
+// scanned file could carry to bypass the gate). lineIsExempt is therefore the empty
+// policy: nothing exempts a call-form line.
+function lineIsExempt(/* line */) {
+  return false;
 }
 
 /**
