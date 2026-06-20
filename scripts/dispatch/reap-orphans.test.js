@@ -202,9 +202,12 @@ h.test("SIGNATURE: only `node <abs-operand-wrapper>` matches; every spoof is rej
   assert(!isDispatchProc(["node", "--loader", realAgent]), "--loader <wrapper> — flag value, not operand");
   assert(!isDispatchProc(["node", "--env-file", realAgent, "x"]), "--env-file <wrapper> — flag value, not operand");
   assert(!isDispatchProc("node --eval=\"setInterval(()=>{},1e6)\" " + realAgent), "--eval=<code> <wrapper> — inline eval, wrapper is not the operand");
-  assert(!isDispatchProc(["node", "--unknown-future-flag", realAgent]), "any BARE flag before the wrapper => ambiguous => no match (conservative)");
-  // a self-contained --flag=value BEFORE the wrapper is fine (can't eat the next token):
-  assert(isDispatchProc(["node", "--max-old-space-size=4096", realAgent, "x"]), "--flag=value then the wrapper operand still matches");
+  assert(!isDispatchProc(["node", "--unknown-future-flag", realAgent]), "any flag before the wrapper => not our shape => no match (conservative)");
+  // FINAL tightening: ANY flag before the wrapper (even a benign --flag=value or an
+  // entry-mode switch like --test=/--run=) => no match. Real dispatch is `node <w>`.
+  assert(!isDispatchProc(["node", "--max-old-space-size=4096", realAgent, "x"]), "--flag=value before the wrapper => no match (argv[1] must be the wrapper)");
+  assert(!isDispatchProc("node --test=abc " + realAgent), "--test=<x> (entry-mode switch) before the wrapper => no match (the security-final HIGH)");
+  assert(!isDispatchProc("node --run=foo " + realAgent), "--run=<x> (entry-mode switch) before the wrapper => no match");
   // the wrapper written with a `..` segment still matches (false-negative close):
   const wrapDotted = realAgent.replace(/dispatch-agent\.js$/, "x/../dispatch-agent.js");
   assert(isDispatchProc(["node", wrapDotted]), "a real wrapper path with a .. segment resolves + matches");

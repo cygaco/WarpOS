@@ -442,36 +442,24 @@ function isDispatchProc(input) {
 }
 
 /** Given node's args (argv after argv[0]=node), return the SCRIPT OPERAND or null.
- *  SECURITY (security-final, the false-operand class): Node's flag grammar is large +
- *  evolving — many flags CONSUME the next token as a value (`-e`/`--eval`, `-p`,
- *  `-r`/`--require`, `--import`, `--loader`, `--experimental-loader`, `--env-file`,
- *  `--conditions`, …). Enumerating them all is a losing game: a flag we don't model
- *  promotes its VALUE to "operand" and can false-match a wrapper path used as a flag
- *  value (`node --import <wrapper> …`). So instead of modeling node's grammar, we
- *  exploit a FACT about REAL WarpOS dispatch: it is ALWAYS `node <wrapper> <args…>` —
- *  the wrapper is argv[1], with NO node flags before it (verified: every dispatch
- *  site is `node scripts/dispatch-{claude,agent}.js <role> <prompt>`). So:
- *    • the operand is the FIRST arg, IF it is not a flag; else
- *    • we skip ONLY self-contained `--flag=value` tokens (which CANNOT consume the
- *      next token) and keep looking; but
- *    • a BARE `-…` flag (which MIGHT consume the next token — unknowable here) makes
- *      the operand AMBIGUOUS ⇒ return null (NO match — the conservative, false-kill-
- *      resistant choice; a real dispatch never has a bare flag before the wrapper).
- *  This closes the whole class (`node -e <code> <w>`, `node --import <w> …`,
- *  `node --eval=<code> <w>`) without chasing node's flag list. */
+ *  SECURITY (the false-operand class — final): Node's flag grammar is large, evolving,
+ *  and includes ENTRY-MODE switches (`--test`, `--run=<name>`, `-e`/`--eval`, …) AND
+ *  value-consuming flags (`--import`, `--loader`, `--env-file`, …). ANY attempt to
+ *  skip flags and find a "later operand" can promote a flag VALUE or a post-mode-switch
+ *  token to "the executed script" and false-match (`node --import <w>`, `node --test=x
+ *  <w>`, `node --eval=<code> <w>`). So we do NOT model node's grammar at all. We use
+ *  the verified FACT that REAL WarpOS dispatch is ALWAYS `node <wrapper> <args…>` —
+ *  the wrapper is argv[1], with NO node flag before it (every dispatch site is
+ *  `node scripts/dispatch-{claude,agent}.js <role> <prompt>`). So the operand is
+ *  argv[1] iff argv[1] is not a flag; otherwise there is NO operand we will trust
+ *  (return null ⇒ NO match). This is the tightest, conservative, false-kill-proof
+ *  rule: a node invocation with ANY flag before the script is simply not recognized
+ *  (a missed orphan is cheap; we never invoke our wrappers that way). */
 function nodeScriptOperand(args) {
-  // The eval/print family means "run inline code — NO script operand", in BOTH the
-  // bare (`-e <code>`) and the `=value` (`--eval=<code>`) forms.
-  const EVAL_PREFIX = /^(?:-e|--eval|-p|--print)(?:=|$)/;
-  for (let i = 0; i < args.length; i++) {
-    const a = String(args[i]);
-    if (a === "--") return i + 1 < args.length ? String(args[i + 1]) : null; // end-of-options
-    if (!a.startsWith("-")) return a; // first non-flag token = the script operand
-    if (EVAL_PREFIX.test(a)) return null; // inline code (bare or =value) ⇒ no operand
-    if (a.includes("=")) continue; // any OTHER self-contained --flag=value: cannot eat the next token
-    return null; // a BARE flag may consume the next token ⇒ operand ambiguous ⇒ no match
-  }
-  return null;
+  if (args.length === 0) return null;
+  const first = String(args[0]);
+  if (first.startsWith("-")) return null; // a flag in the operand slot ⇒ not our shape
+  return first; // argv[1] is the script operand
 }
 
 /** Minimal command-line tokenizer (back-compat for the STRING form of isDispatchProc
