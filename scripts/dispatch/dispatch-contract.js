@@ -507,14 +507,18 @@ function validateContractFile() {
         }
       }
     }
-    // ── alpha_only_shapes (ED-041): a RECOGNIZED annotation naming which of a
-    // mode's listed shapes are α-ONLY — only the TOP-LEVEL orchestrator (α, the ε
-    // conductor face) may spawn them (a teammate-spawned ε cannot call the Agent
-    // tool: "Agent is not available inside subagents"). It does NOT narrow class_shapes;
-    // it records WHO may use the shape. It must be an ARRAY whose entries are all
-    // KNOWN shapes (the same shape vocabulary as allowed_shapes); an unknown shape
-    // is a typo'd annotation and is REJECTED. Recognizing the key here keeps it from
-    // being silently ignored and lets the validator FAIL a malformed annotation.
+    // ── alpha_only_shapes (ADR-0014): a RECOGNIZED annotation naming which of a
+    // mode's listed shapes are α-ONLY. As of ADR-0014 NO shape is α-only — the array
+    // is RETAINED-BUT-EMPTY (`[]`): the in-process-agent roster is summonable by the ε
+    // conductor in ANY spawn context (top-level OR teammate-ε) supplying a
+    // scopeContract, because ED-041 ("Agent unavailable inside subagents") was a
+    // per-spec misstatement (a Claude subagent has Agent iff its spec lists it; ε's
+    // does). The key is kept (not removed) so a reversal is a one-line re-add. It does
+    // NOT narrow class_shapes; it records WHO may use the shape. It must be an ARRAY
+    // whose entries are all KNOWN shapes (the allowed_shapes vocabulary); an unknown
+    // shape is a typo'd annotation and is REJECTED — recognizing the key here keeps it
+    // from being silently ignored and lets the validator FAIL a malformed annotation
+    // (an EMPTY array is valid + the post-ADR-0014 expected state).
     if ("alpha_only_shapes" in profile) {
       const aos = profile.alpha_only_shapes;
       if (!Array.isArray(aos)) {

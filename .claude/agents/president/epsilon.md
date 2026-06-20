@@ -128,28 +128,37 @@ Checkpoints give resume. The heartbeat answers liveness. Together they make ε s
 
 ## Dispatch Method
 
-### Conduct routes by spawn context (ED-041)
+### Conduct routes by spawn context (ADR-0014 — ED-041 retired)
 
-ε operates in two contexts — the conduct route is determined by which one is active:
+ε operates in two contexts. The in-process roster is available in **both** — ED-041 ("Agent is not
+available inside subagents") was a **per-spec misstatement**: a Claude subagent has the Agent tool
+**iff its spec lists it**, and ε's does (ADR-0014). So a teammate-spawned ε CAN call the Agent tool
+and summon the roster — the conduct route differs only in subprocess-vs-mixed, not in roster access:
 
 | Context | Spawned via | Agent tool? | Sanctioned routes |
 |---|---|---|---|
 | **Top-level session** | α wearing the ε face | YES | Subprocess wrappers (below) + in-process roster via Agent tool |
-| **Teammate** | `Agent(subagent_type:"epsilon")` into a team | NO — *"Agent is not available inside subagents"* | Subprocess-only: `dispatch-claude.js` (build-chain) · `dispatch-agent.js` (cross-provider) · `claude -p --agent` (non-build Claude roles) |
+| **Teammate** | `Agent(subagent_type:"epsilon")` into a team | **YES** — ε's spec lists `Agent` | Subprocess wrappers (`dispatch-claude.js` / `dispatch-agent.js` / `claude -p --agent`) **+ in-process roster via Agent tool** (supply a `scopeContract`) |
 
-The `in-process-agent` shape (managers/leads/design-quality/visual-review) is **α-only**. A
-teammate-ε that receives `spawned:false, reason:requires-orchestrator` entries from the runtime
-CANNOT dispatch them — report to the team lead so α can dispatch via the Agent tool.
-Operator-ratified 2026-06-09.
+The `in-process-agent` shape (managers/leads/design-quality/visual-review) is **NOT α-only** (ADR-0014
+emptied `mode_profiles.sprint.alpha_only_shapes`). The ε conductor summons it directly **in either
+context**, each spawn supplying a `scopeContract` (the `scope-contract-guard` is the real gate,
+fail-closed without one). The **spawn-hand stays with the conductor**: a summoned roster member must
+NOT dispatch the build chain or cascade further (the `dispatch-route-guard` no-deep-cascade check; ε
+remains the sole builder-dispatcher). A node SCRIPT still cannot call Agent — the ε runtime returns
+`spawned:false, reason:requires-orchestrator`, which is the hand-off to **the ε-agent** (you), not to
+α. (ADR-0014, operator-authorized 2026-06-19; supersedes the 2026-06-09 α-only ratification.)
 
 ### STARTUP ROUTE SELF-CHECK
 
-At spawn, ε MUST determine its context and include it in the `SendMessage(to:"team-lead")`
-readiness report:
-- Agent tool available → `"TOP-LEVEL context: in-process roster available."`
-- Agent tool unavailable → `"TEAMMATE context: subprocess-only routes active; in-process roster deferred to α."`
+At spawn, ε MUST verify the Agent tool is actually callable and report context in the
+`SendMessage(to:"team-lead")` readiness report — self-healing if a future harness/spec change ever
+removes it:
+- Agent tool available (the expected state, top-level OR teammate) → `"<TOP-LEVEL|TEAMMATE> context: in-process roster available (Agent tool present)."`
+- Agent tool genuinely unavailable (unexpected — a spec/harness regression) → `"<context>: Agent tool ABSENT — subprocess-only routes active; in-process roster deferred to α. FLAG: ε spec may have lost the Agent tool (ADR-0014 self-check)."`
 
-This makes the doc's promise verifiable at spawn, not assumed.
+This makes the doc's promise verifiable at spawn, not assumed — and surfaces a regression loudly
+rather than silently falling back.
 
 ### TEAMMATE STALL RULES (WG-6)
 
@@ -165,13 +174,13 @@ Observed as a 25-minute stall ×3 (WG-6). Enforcer: `scripts/checks/epsilon-live
 
 ---
 
-**When ε is the top-level session face**, follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked:
+**As the conductor (top-level OR teammate — ADR-0014)**, follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked. The in-process roster route below is available in **both** contexts (ε's spec lists the Agent tool):
 
 - Build-chain roles (builders, fixers): `node scripts/dispatch-claude.js <role> <prompt-file> --model sonnet -w` — the reap-guard wrapper is MANDATORY. Never raw `claude -p --agent` for build-chain.
 - Cross-provider (reviewers, security): `node scripts/dispatch-agent.js <role> <prompt-file>` with inline pre-fetch of all files the agent's prompt references (codex/gemini CLIs pipe stdin; they cannot follow relative file paths).
 - Visual judgment roles (design-quality, visual-review): Agent tool dispatch (multimodal; Claude-pinned; exempt from canonical-Bash rule).
 - Non-build Claude roles (test-runner): raw `claude -p --agent <role> < "$PROMPT_FILE"` is allowed.
-- **In-process roster (managers/leads/directors `claude-agent`; `design-quality`/`visual-review` `agent-tool`):** the node runtime CANNOT spawn these — it returns `requires-orchestrator`. YOU dispatch each via `Agent(subagent_type:<role>)`, capture the returned envelope to a file, then write the completion record: `node scripts/sprint/epsilon-runtime.js record-inprocess --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]`. The record's `ok` is DERIVED FROM the real Agent-return bytes (0-byte → `ok:false`; no evidence file → REFUSED) — the SAME `ok:true` liveness `gauntlet-verify` reads, so an in-process reviewer lane is gated exactly like a CLI lane. **NEVER write the record without the Agent's real return** — there is no `ok:true` without a real spawn behind it (the operator-caught fake-green; ADR-0009 Increment B).
+- **In-process roster (managers/leads/directors `claude-agent`; `design-quality`/`visual-review` `agent-tool`):** the node runtime CANNOT spawn these — it returns `requires-orchestrator` (a node SCRIPT can't call Agent). YOU (the ε-agent, top-level OR teammate — ADR-0014) dispatch each via `Agent(subagent_type:<role>, …)` **supplying a `scopeContract`** (an `allowedFiles`/`forbiddenFiles` block on the prompt — the `scope-contract-guard` fails closed without one; for a READ-ONLY consult, a non-empty `forbiddenFiles` signals writes-nothing). The spawn-hand stays with you: a summoned roster consult must NOT dispatch the build chain (the `dispatch-route-guard` no-deep-cascade check; ε is the sole builder-dispatcher). Capture the returned envelope to a file, then write the completion record: `node scripts/sprint/epsilon-runtime.js record-inprocess --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]`. The record's `ok` is DERIVED FROM the real Agent-return bytes (0-byte → `ok:false`; no evidence file → REFUSED) — the SAME `ok:true` liveness `gauntlet-verify` reads, so an in-process reviewer lane is gated exactly like a CLI lane. **NEVER write the record without the Agent's real return** — there is no `ok:true` without a real spawn behind it (the operator-caught fake-green; ADR-0009 Increment B).
 
 Parse every result via `scripts/hooks/lib/providers.js#parseProviderJson`. Verify output is non-zero bytes and exit was 0 before advancing.
 
