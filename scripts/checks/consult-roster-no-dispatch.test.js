@@ -46,17 +46,41 @@ const READONLY = ["read", "grep", "glob"];
 const WITH_AGENT = ["read", "grep", "glob", "agent"];
 const WITH_BASH = ["read", "grep", "glob", "bash"];
 
-// 1) CLEAN — every consult role read-only; only quality-lead carries dispatch (exempt).
-h.pass("clean: pure consults are read-only; quality-lead is the documented exemption", () =>
+// 1) HONEST-RED — quality-lead's documented exemption is a KNOWN OPEN HOLE, NOT a green pass
+// (lead 2026-06-20: "honest-RED beats green-with-exemption; never the latter"). With every OTHER
+// consult read-only and ONLY quality-lead carrying Agent: NO new violation, but the exemption
+// makes the overall result NON-clean (ok:false) while cleanOfNewViolations stays true.
+h.test("honest-RED: quality-lead's exemption is a known-open-hole (ok:false, NOT green-with-exemption)", () => {
+  const r = evaluate({
+    regDoc: reg,
+    hpDoc: hp,
+    toolReader: tools({
+      "specs/doe.md": READONLY,
+      "specs/pl.md": READONLY,
+      "specs/ql.md": WITH_AGENT, // quality-lead — exempt, but a KNOWN OPEN HOLE (ED-065)
+      "specs/bb.md": WITH_BASH, // a builder with Bash — but NOT a consult step => ignored
+      "specs/evil.md": READONLY, // clean consult
+    }),
+  });
+  assert(r.ok === false, "a documented exemption must read RED (ok:false) — never green-with-exemption");
+  assert(r.cleanOfNewViolations === true, "no NEW (untracked) cascade hole — only the known one");
+  assert(r.violations.length === 0, "no new violations");
+  assert(r.knownOpenHoles === 1, "exactly one known open hole (quality-lead)");
+  assert(r.exemptions.some((e) => e.role === "quality-lead"), "quality-lead reported as the open hole (not silent)");
+});
+
+// 1b) TRULY CLEAN — when NO consult role carries any dispatch tool (not even quality-lead),
+// the check is genuinely green. This is the only ok:true shape.
+h.pass("truly clean: NO consult role carries a dispatch tool => ok:true (the only green)", () =>
   evaluate({
     regDoc: reg,
     hpDoc: hp,
     toolReader: tools({
       "specs/doe.md": READONLY,
       "specs/pl.md": READONLY,
-      "specs/ql.md": WITH_AGENT, // quality-lead — exempt, must NOT fail
-      "specs/bb.md": WITH_BASH, // a builder with Bash — but NOT a consult step => ignored
-      "specs/evil.md": READONLY, // clean consult
+      "specs/ql.md": READONLY, // even quality-lead read-only here => no open hole => green
+      "specs/bb.md": WITH_BASH, // non-consult step => ignored
+      "specs/evil.md": READONLY,
     }),
   }));
 
@@ -121,7 +145,11 @@ h.test("a builder with Bash at the BUILD step is NOT flagged (consult-scoped)", 
       "specs/evil.md": READONLY,
     }),
   });
-  assert(r.ok === true, "a builder at the build step does not violate the consult invariant");
+  // The builder at the BUILD step adds NO consult violation — cleanOfNewViolations stays true.
+  // (Overall ok is false only because of the pre-existing quality-lead known-open-hole, which is
+  // the honest-RED signal — not anything the build-step builder caused.)
+  assert(r.cleanOfNewViolations === true, "a builder at the build step does not add a NEW consult violation");
+  assert(r.violations.length === 0, "no consult violations from a build-step role");
 });
 
 // ── gauntlet HIGH-2: FAIL-CLOSED on an unconfirmable consult spec (missing role,

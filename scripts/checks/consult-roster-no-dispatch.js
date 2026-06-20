@@ -48,9 +48,18 @@
  * reviewer-dispatch assertion (a summoned pod-coordinator may dispatch ONLY its own
  * pod's reviewers) is the ED-065 follow-up.
  *
- * EXIT: 0 = clean (only the documented exemption present), 1 = a NEW pure-consult role
- * gained a dispatch tool, 2 = runner error (FAIL-CLOSED — a scanner that errors must
- * NOT read green). `--json` for machine output.
+ * HONEST-RED (lead 2026-06-20 convergence bound): a documented exemption is reported as a KNOWN
+ * OPEN HOLE in the OUTPUT — "honest-RED beats green-with-exemption; never the latter" — but the
+ * EXIT respects the /scan:full report-only contract so a known, ED-tracked residual does not break
+ * the scan.
+ * EXIT: 0 = TRULY clean (no violations, no known open holes) OR report-only honest-RED (a KNOWN
+ *       open hole printed but no NEW violation, default mode) — the scan is not broken;
+ *       1 = a NEW untracked pure-consult role gained a dispatch tool (ALWAYS hard-fails — the real
+ *       regression) OR (under `--enforce`, the blocking-flip ramp) a KNOWN open hole is present;
+ *       2 = runner error (FAIL-CLOSED — a scanner that errors must NOT read green).
+ * `ok` is true ONLY when truly clean (no violations AND no open holes); `cleanOfNewViolations` is
+ * true when no NEW untracked hole exists (the known one may still be open). `--json` carries
+ * {ok, cleanOfNewViolations, violations, exemptions, knownOpenHoles, enforce}.
  *
  *   node scripts/checks/consult-roster-no-dispatch.js [--json]
  */
@@ -210,7 +219,23 @@ function evaluate(input) {
       });
     }
   }
-  return { ok: violations.length === 0, violations, exemptions, scanned };
+  // HONEST-RED (lead 2026-06-20 convergence bound): a documented exemption is a KNOWN OPEN
+  // HOLE, not a clean pass. "Honest-RED beats green-with-exemption; never the latter." So an
+  // exemption present makes the check NON-clean (ok:false) — it must NOT exit green. We keep
+  // `violations` (NEW, must-fix holes) and `exemptions` (KNOWN, ED-tracked open holes) as
+  // SEPARATE buckets so the report differentiates "a new role gained a dispatch tool" from
+  // "the known quality-lead two-hop residual (ED-065)" — but BOTH are RED. The full structural
+  // close (the quality-lead read-only/​coordinator split) is wide-blast (32 consumers) → the
+  // ED-065 follow-on; until it lands, this check tells the TRUTH: the guarantee is incomplete.
+  const knownOpenHoles = exemptions.length;
+  return {
+    ok: violations.length === 0 && knownOpenHoles === 0,
+    cleanOfNewViolations: violations.length === 0, // no NEW (untracked) cascade hole
+    violations,
+    exemptions,
+    knownOpenHoles,
+    scanned,
+  };
 }
 
 function setHas(set, v) {
@@ -237,6 +262,12 @@ module.exports = { evaluate, readSpecTools };
 
 if (require.main === module) {
   const JSON_OUT = process.argv.includes("--json");
+  // /scan:full report-only convention: a KNOWN OPEN HOLE (the ED-tracked quality-lead exemption)
+  // prints HONEST-RED but exits 0 in default mode (it does NOT break the scan — informational RED,
+  // exactly like tracker-reality-drift / coverage-gate-scan). `--enforce` is the blocking-flip ramp
+  // (gap → exit 1), to be turned on once the ED-065 one-hop-reviewer assertion lands. A NEW UNTRACKED
+  // violation is ALWAYS exit 1 (the real regression this enforcer exists to catch — never report-only).
+  const ENFORCE = process.argv.includes("--enforce");
   let res;
   try {
     res = run();
@@ -248,19 +279,35 @@ if (require.main === module) {
     process.exit(2);
   }
   if (JSON_OUT) {
-    console.log(JSON.stringify({ check: NAME, ...res }));
+    console.log(JSON.stringify({ check: NAME, ...res, enforce: ENFORCE }));
   } else if (res.ok) {
     console.log(
       `OK   [${NAME}] no consult-summonable role carries a dispatch tool ` +
-        `(${res.scanned} consult role(s) scanned; ${res.exemptions.length} documented exemption(s))`,
+        `(${res.scanned} consult role(s) scanned; 0 known open holes)`,
     );
-    for (const ex of res.exemptions) {
-      console.log(`  ~ EXEMPT ${ex.role} [${ex.tools.join(", ")}] — ${ex.reason}`);
-    }
   } else {
-    console.error(`FAIL [${NAME}] ${res.violations.length} consult-summonable role(s) carry a dispatch tool (cascade hole):`);
-    for (const v of res.violations) console.error(`  - ${v.role} [${v.tools.join(", ")}] (${v.spec})\n      ${v.detail}`);
-    for (const ex of res.exemptions) console.error(`  ~ EXEMPT ${ex.role} [${ex.tools.join(", ")}] — ${ex.reason}`);
+    // Separate the NEW must-fix violations from the KNOWN ED-tracked open holes — honest-RED for
+    // BOTH in the OUTPUT (green-with-exemption is the false-green this epic kills), but the EXIT
+    // respects the report-only contract for the KNOWN hole.
+    if (res.violations.length) {
+      console.error(`FAIL [${NAME}] ${res.violations.length} NEW consult-summonable role(s) carry a dispatch tool (untracked cascade hole — must fix):`);
+      for (const v of res.violations) console.error(`  - ${v.role} [${v.tools.join(", ")}] (${v.spec})\n      ${v.detail}`);
+    }
+    if (res.knownOpenHoles) {
+      console.error(
+        `RED  [${NAME}] ${res.knownOpenHoles} KNOWN OPEN HOLE(S) — the guarantee is INCOMPLETE (honest-RED, NOT green-with-exemption):`,
+      );
+      for (const ex of res.exemptions) console.error(`  ~ OPEN ${ex.role} [${ex.tools.join(", ")}] — ${ex.reason}`);
+      console.error(
+        `      Documented + ED-065-tracked, NOT silently passed. The full structural close ` +
+          `(quality-lead read-only/coordinator split) is wide-blast (32 consumers) → the ED-065 follow-on. ` +
+          `REPORT-ONLY here (informational RED, exit 0 — does not break /scan:full); '--enforce' flips it ` +
+          `to exit 1 once the one-hop-reviewer assertion lands.`,
+      );
+    }
   }
-  process.exit(res.ok ? 0 : 1);
+  // A NEW untracked violation always fails (exit 1). A KNOWN open hole fails ONLY under --enforce
+  // (report-only ramp); otherwise it has spoken its honest-RED and exits 0 so the scan is not broken.
+  const hardFail = res.violations.length > 0 || (res.knownOpenHoles > 0 && ENFORCE);
+  process.exit(hardFail ? 1 : 0);
 }
