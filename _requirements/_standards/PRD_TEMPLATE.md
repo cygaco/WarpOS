@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This template defines the mandatory structure for every Product Requirements Document in Jobzooka. PRDs define **what a feature is, what it does, and how to build it**. They do not contain user stories — those live in separate files written in subsequent passes.
+This template defines the mandatory structure for every Product Requirements Document in the product. PRDs define **what a feature is, what it does, and how to build it**. They do not contain user stories — those live in separate files written in subsequent passes.
 
 ## Resolution Cascade
 

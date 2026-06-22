@@ -1,8 +1,8 @@
-# Jobzooka — High-Level Story Standards
+# [Product] — High-Level Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for Jobzooka.
+This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for the product.
 
 High-Level Stories establish **product intent, scope, and outcomes**. They describe _what success means_ without prescribing UI, interaction patterns, sequencing, or implementation details.
 

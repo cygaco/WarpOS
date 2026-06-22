@@ -1,8 +1,8 @@
-# Jobzooka — Granular Story Standards
+# [Product] — Granular Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **Granular User Stories** for Jobzooka.
+This document defines the mandatory rules for writing and reviewing **Granular User Stories** for the product.
 
 Granular Stories translate approved High-Level intent into **explicit, testable system behavior**. They are written so that design, engineering, and QA teams can implement and validate functionality **without inference, interpretation, or follow-up questions**.
 

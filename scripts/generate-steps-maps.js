@@ -15,12 +15,25 @@
  * Flags:
  *   --check   read-only; exit 1 if regen would change anything (CI mode)
  *   --verbose explain every replacement
+ *
+ * Absence-tolerant: this is framework tooling. When the product canon is
+ * absent (no STEPS.json — e.g. WarpOS-canonical, which carries no baked-in
+ * product), there is nothing to regenerate. The script (and --check) no-op
+ * with exit 0 rather than crashing on a missing file. Product canon is
+ * generated per-product at bootstrap:spinup into _requirements/00-canonical/.
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const PROJECT = path.resolve(__dirname, "..");
+// PROJECT root resolves from this script's location in production. The
+// WARPOS_STEPS_ROOT test seam (cf. WARPOS_PURITY_ROOT in framework-purity.js)
+// lets the absence-tolerance regression test point the resolver at a throwaway
+// repo — both the absent-canon case (no STEPS.json → no-op exit 0) and the
+// present-canon happy path. Unset in production → identical behavior.
+const PROJECT = process.env.WARPOS_STEPS_ROOT
+  ? path.resolve(process.env.WARPOS_STEPS_ROOT)
+  : path.resolve(__dirname, "..");
 const STEPS_PATH = path.join(PROJECT, "_requirements/00-canonical/STEPS.json");
 
 const CHECK = process.argv.includes("--check");
@@ -165,6 +178,18 @@ const TARGETS = [
 
 // ── Main ───────────────────────────────────────────────────────────────
 function main() {
+  // Absence-tolerant: no product canon in this repo → nothing to do.
+  // STEPS.json is the source of truth; when it (and therefore the product
+  // step registry) is absent, regen is a no-op. This is the expected state
+  // in WarpOS-canonical, which carries no baked-in product. Exit 0 so the
+  // pre-commit hook + CI --check pass cleanly on a product-less repo.
+  if (!fs.existsSync(STEPS_PATH)) {
+    console.log(
+      "OK: no product canon (STEPS.json absent) — nothing to regenerate.",
+    );
+    return;
+  }
+
   const registry = loadRegistry();
   let wouldChange = false;
   const missing = [];

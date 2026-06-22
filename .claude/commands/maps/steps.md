@@ -44,6 +44,27 @@ This is the loop-closer for the step-registry infrastructure. After it lands: an
 /maps:steps --verbose
 ```
 
+## Absence-tolerance (no product canon → no-op)
+
+`generate-steps-maps.js` is **framework tooling**. The product canon it reads
+(`STEPS.json` + the three canonical step-table docs) lives in the per-product
+canon slot, which is **empty in WarpOS-canonical** — the canonical framework
+carries no baked-in product (W4 RESTRUCTURE; the filled example was relocated to
+`_warpos/EXAMPLES/<product>/_requirements/`). When `STEPS.json` is absent the
+generator (and `--check`, the path the blocking `pre-commit-steps-check.js` hook
+runs) **no-ops with exit 0** — "no product canon in this repo → nothing to
+regenerate" — rather than crashing on the missing file. The companion
+pre-commit hook is absence-safe by construction (it only fires when STEPS.json
+or a canon doc is *staged*, which can't happen once they're relocated out of
+`_requirements/`).
+
+- **Enforcer (named):** `scripts/checks/test-steps-maps-absent-canon.js` — the
+  bite-test for this contract. It pins the absent-canon no-op (bare + `--check`
+  exit 0) AND that the generator still does real work (round-trips a present
+  canon) AND that the drift gate still bites (a corrupted region → `--check`
+  exit 1), so absence-tolerance can't silently turn into a defanged blanket-0
+  stub. Test seam: `WARPOS_STEPS_ROOT` (cf. `WARPOS_PURITY_ROOT`).
+
 ## What gets regenerated (per region)
 
 | Doc | Region | Content |

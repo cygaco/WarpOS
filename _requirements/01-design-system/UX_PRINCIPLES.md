@@ -1,4 +1,4 @@
-# Jobzooka — UX Principles & Emotional Design
+# [Product] — UX Principles & Emotional Design
 
 ---
 

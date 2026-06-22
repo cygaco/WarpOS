@@ -156,6 +156,7 @@ const ALLOW_CLIENT_SLUG_PATHS = [
   /^ROADMAP\.md$/, // the purge plan itself
   /^trackers\/epics\//, // epic trackers legitimately NAME the product they document de-contaminating (same class as ROADMAP "the purge plan itself" — e.g. an E-DISPATCH-PERFECT/E-BOUNDARY/E-MULTIPRODUCT tracker that records "sweep jobzooka vocab"); a tracker is a planning/history record, never shipped framework content
   /^_planning\/epics\//, // the epic trackers' companion plan artifacts (same rationale)
+  /^_warpos\/EXAMPLES\//, // W4: the sanctioned home for the ONE labeled example product — it LEGITIMATELY carries its own brand (e.g. _warpos/EXAMPLES/Jobzooka/) because it IS the example, kept aside so canonical _requirements/ stays product-agnostic (same class as ROADMAP "the purge plan itself"). Operator-authorized 2026-06-22.
   /^RELEASES\.md$/, // shipped release history
   /^_index\//, // any product index
 ];

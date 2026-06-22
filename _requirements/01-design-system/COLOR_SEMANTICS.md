@@ -1,4 +1,4 @@
-# Jobzooka — Color Semantics
+# [Product] — Color Semantics
 
 This document defines the CSS custom properties and their semantic meanings. Colors are not just values — they carry meaning about state, hierarchy, and user action.
 
@@ -6,7 +6,7 @@ This document defines the CSS custom properties and their semantic meanings. Col
 
 ## Theme: Dark Corporate
 
-Jobzooka uses a dark theme with warm undertones. The palette is built around deep reds/browns for backgrounds, bright orange for primary actions, and lime green for success states.
+[Product] uses a dark theme with warm undertones. The palette is built around deep reds/browns for backgrounds, bright orange for primary actions, and lime green for success states. (Example palette — replace with the product's own theme.)
 
 ---
 

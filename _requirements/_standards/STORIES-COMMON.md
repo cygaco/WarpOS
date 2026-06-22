@@ -1,4 +1,4 @@
-# Jobzooka — Shared Granular Stories
+# [Product] — Shared Granular Stories
 
 ## Purpose
 
