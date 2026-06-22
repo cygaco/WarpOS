@@ -154,6 +154,8 @@ const ALLOW_CLIENT_SLUG_PATHS = [
   /^scripts\/checks\/framework-purity\.js$/, // self-reference for the slug list
   /^scripts\/checks\/framework-purity-allow\.js$/, // allow-list (future)
   /^ROADMAP\.md$/, // the purge plan itself
+  /^trackers\/epics\//, // epic trackers legitimately NAME the product they document de-contaminating (same class as ROADMAP "the purge plan itself" — e.g. an E-DISPATCH-PERFECT/E-BOUNDARY/E-MULTIPRODUCT tracker that records "sweep jobzooka vocab"); a tracker is a planning/history record, never shipped framework content
+  /^_planning\/epics\//, // the epic trackers' companion plan artifacts (same rationale)
   /^RELEASES\.md$/, // shipped release history
   /^_index\//, // any product index
 ];

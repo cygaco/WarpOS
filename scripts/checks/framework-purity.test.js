@@ -50,6 +50,23 @@ h.violation("a planted client slug is a hard finding (fails the gate)", () => {
   return f.client_slug; // non-empty array ⇒ isPass() returns false ⇒ counted as the required planted-violation
 });
 
+// ── PATH-SCOPED EXEMPTION: an epic tracker legitimately NAMES the product it documents
+// de-contaminating (ALLOW_CLIENT_SLUG_PATHS, same class as ROADMAP). This is PATH-scoped, NOT
+// a slug-detector weakening — the SAME slug in a non-exempt canonical path (docs/leak.md above)
+// still FAILS. Guards against the false-positive that blocked the W5 reconcile commit.
+h.test("an epic tracker is EXEMPT for a client slug (it documents removing it) — but a non-exempt path is NOT", () => {
+  const exempt = scan(
+    "trackers/epics/E-DISPATCH-PERFECT-001-perfecting-agent-dispatch.md",
+    "Remaining: sweep jobzooka vocab from the contaminated specs (~40 residual jobzooka occurrences).",
+  );
+  assert.strictEqual(exempt.client_slug.length, 0, "an epic tracker naming the slug it removes must be exempt (path-scoped)");
+  const planExempt = scan("_planning/epics/E-DISPATCH-PERFECT-001.md", "The jobzooka genericization plan.");
+  assert.strictEqual(planExempt.client_slug.length, 0, "the plan-artifact mirror is exempt too");
+  // The SAME slug in a non-exempt canonical path still fails — proving this is path-scoped.
+  const notExempt = scan("docs/some-canonical-doc.md", "This canonical doc mentions Jobzooka.");
+  assert.ok(notExempt.client_slug.length > 0, "a non-exempt canonical path with the SAME slug must STILL fail (not a slug-detector weakening)");
+});
+
 // ── PLANTED ADVISORY: each banned domain identifier is DETECTED ──────────
 h.test("debitRockets is flagged by the domain-vocab advisory", () => {
   const f = scan("agents/example.md", "Call debitRockets() before the model call.");
