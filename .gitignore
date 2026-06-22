@@ -113,3 +113,33 @@ runtime/skill-runs/
 runtime/sprint/
 runtime/notes/
 runtime/agent-system-plan/
+
+# ── Secrets / keys / credentials / backups — defense-in-depth (operator-requested) ──
+# Real credentials live OUTSIDE the repo (~/.gemini/.env, ~/.codex/auth.json, etc.).
+# These patterns stop any in-repo key/secret/backup from ever being swept in (cf. the
+# 2026-06-08 `git add -A` scratch-leak). Example/sample/template variants are placeholders,
+# not secrets, and don't match these patterns, so they stay tracked
+# (e.g. _warpos/templates/app-scaffold/.env.local.example.tmpl).
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.ppk
+auth.json
+.auth.json
+secrets.json
+secrets.yaml
+secrets.yml
+credentials.json
+*-credentials.json
+# Backups / editor-swap / settings-backup rings
+*.bak
+*.backup
+*.orig
+*~
