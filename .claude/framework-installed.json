@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "0.17.0",
-  "installedCommit": "10404cebd9baa22c99e63514e3339a4e26aa63fb",
-  "installedAt": "2026-06-28T03:14:54.184Z",
+  "installedCommit": "c5ca1273966f45443b7421133138f7d4477759ef",
+  "installedAt": "2026-06-28T05:12:15.720Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -604,8 +604,8 @@
       "dest": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2",
-      "currentHashAtInstall": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2",
+      "installedHash": "35c501d555967e411758fa4d923f75ddb8d110300dfbdbbd5181ffedf751c42f",
+      "currentHashAtInstall": "35c501d555967e411758fa4d923f75ddb8d110300dfbdbbd5181ffedf751c42f",
       "introducedIn": "0.0.0"
     },
     {
@@ -7704,8 +7704,8 @@
       "dest": "scripts/dispatch/coverage-gate.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ff410a6a6d61acfe4ce8317f647d12f9d37a1cf60e7d87654b48dc88b0c24d55",
-      "currentHashAtInstall": "ff410a6a6d61acfe4ce8317f647d12f9d37a1cf60e7d87654b48dc88b0c24d55",
+      "installedHash": "972fbed46d1494085c1e3add29f968cf313d600078082bd026d2207475997ace",
+      "currentHashAtInstall": "972fbed46d1494085c1e3add29f968cf313d600078082bd026d2207475997ace",
       "introducedIn": "0.0.0"
     },
     {
@@ -7744,8 +7744,8 @@
       "dest": "scripts/dispatch/dispatch-contract.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "929e12ec49067f01436cfceb602050a7f5d32de5134b65fdcc8aa334d64e34a5",
-      "currentHashAtInstall": "929e12ec49067f01436cfceb602050a7f5d32de5134b65fdcc8aa334d64e34a5",
+      "installedHash": "9a29d7fe13af7f92f4f5e3daec309e1da1246a86149de13e00d167cf806b115c",
+      "currentHashAtInstall": "9a29d7fe13af7f92f4f5e3daec309e1da1246a86149de13e00d167cf806b115c",
       "introducedIn": "0.0.0"
     },
     {
@@ -7774,8 +7774,8 @@
       "dest": "scripts/dispatch/dispatch-shape.test.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d3feab29789fa3083eba58efe2446133f9d18227c4efcd48accb55e897f1ae83",
-      "currentHashAtInstall": "d3feab29789fa3083eba58efe2446133f9d18227c4efcd48accb55e897f1ae83",
+      "installedHash": "b3e7b25ababf94a395169dc25b9d4c63acfa33c12da4b858ab11a405557668e1",
+      "currentHashAtInstall": "b3e7b25ababf94a395169dc25b9d4c63acfa33c12da4b858ab11a405557668e1",
       "introducedIn": "0.0.0"
     },
     {
@@ -13344,8 +13344,8 @@
       "dest": "scripts/dispatch-agent.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac",
-      "currentHashAtInstall": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac",
+      "installedHash": "73269ef6c43feadf55a858e1ecebacfda2a85d29de75b61e1204f27c7f5c27ab",
+      "currentHashAtInstall": "73269ef6c43feadf55a858e1ecebacfda2a85d29de75b61e1204f27c7f5c27ab",
       "introducedIn": "0.0.0"
     },
     {
@@ -13354,8 +13354,8 @@
       "dest": "scripts/dispatch-claude.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938",
-      "currentHashAtInstall": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938",
+      "installedHash": "55968e47ce336f56ac583e04b7e78abbc0c40670d52c4dd3d3a76ada2d57a6e8",
+      "currentHashAtInstall": "55968e47ce336f56ac583e04b7e78abbc0c40670d52c4dd3d3a76ada2d57a6e8",
       "introducedIn": "0.0.0"
     },
     {

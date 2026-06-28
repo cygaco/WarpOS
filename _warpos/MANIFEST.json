@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-28T03:14:54.499Z",
+  "generatedAt": "2026-06-28T05:12:15.907Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "35488bb56f519158cb5a11f1dff82ec8b8e202f83beda938545610b3d5616329",
-      "installedSha": "35488bb56f519158cb5a11f1dff82ec8b8e202f83beda938545610b3d5616329"
+      "sha256": "5f9e8fdeddf70f206cc567b91837610d24850c52daf994e1812ae4448087bd0e",
+      "installedSha": "5f9e8fdeddf70f206cc567b91837610d24850c52daf994e1812ae4448087bd0e"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -4918,6 +4918,27 @@
       "sha256": "0412fa28238b6a8fc9bfc55621400bf5f5af741f1a4d6ac2472f2cfc87866064",
       "installedSha": "0412fa28238b6a8fc9bfc55621400bf5f5af741f1a4d6ac2472f2cfc87866064"
     },
+    "tests/regression/SP-20260627-001/enforce-correctness.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "798c7a5babf3264ff2d0dcf0abae942cbd23124e388375034b698d7304310803",
+      "installedSha": "798c7a5babf3264ff2d0dcf0abae942cbd23124e388375034b698d7304310803"
+    },
+    "tests/regression/SP-20260627-001/negative-fixtures.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "91d8c81efe816fcdd256c2335a68b4d73037266f4e9d0e69834b23336c897737",
+      "installedSha": "91d8c81efe816fcdd256c2335a68b4d73037266f4e9d0e69834b23336c897737"
+    },
+    "tests/regression/SP-20260627-001/w3-lane-policy.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "sha256": "a1711c133ec9108356582d335cd4f77a417bb92770b5f8513e4b4233ed4da847",
+      "installedSha": "a1711c133ec9108356582d335cd4f77a417bb92770b5f8513e4b4233ed4da847"
+    },
     "tests/regression/SP-20260616-004/admin-session-hardening.test.js": {
       "owner": "framework",
       "managed": true,
@@ -4964,8 +4985,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "677862c22017cbc76ecfa4997088e0e75c13aae159329f6f5aa64efa2d236545",
-      "installedSha": "677862c22017cbc76ecfa4997088e0e75c13aae159329f6f5aa64efa2d236545"
+      "sha256": "f3796dd76651bc23458112106c8e663e71613d7b38b5b13e958958671cabc832",
+      "installedSha": "f3796dd76651bc23458112106c8e663e71613d7b38b5b13e958958671cabc832"
     },
     "tests/regression/SP-20260615-002/aggregator-epics.test.js": {
       "owner": "framework",
@@ -6182,15 +6203,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac",
-      "installedSha": "67fb95b9d09bfd7d56418e013699984f6af5ab80303b8c2d7a5cb1ec1fff30ac"
+      "sha256": "73269ef6c43feadf55a858e1ecebacfda2a85d29de75b61e1204f27c7f5c27ab",
+      "installedSha": "73269ef6c43feadf55a858e1ecebacfda2a85d29de75b61e1204f27c7f5c27ab"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938",
-      "installedSha": "f4178fbde1292e38f58109a22d8c1bea98ee73bc4ae984d2c918ab3bdf628938"
+      "sha256": "55968e47ce336f56ac583e04b7e78abbc0c40670d52c4dd3d3a76ada2d57a6e8",
+      "installedSha": "55968e47ce336f56ac583e04b7e78abbc0c40670d52c4dd3d3a76ada2d57a6e8"
     },
     "scripts/dispatch-review.js": {
       "owner": "framework",
@@ -9423,8 +9444,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/coverage-gate.js",
-      "sha256": "ff410a6a6d61acfe4ce8317f647d12f9d37a1cf60e7d87654b48dc88b0c24d55",
-      "installedSha": "ff410a6a6d61acfe4ce8317f647d12f9d37a1cf60e7d87654b48dc88b0c24d55"
+      "sha256": "972fbed46d1494085c1e3add29f968cf313d600078082bd026d2207475997ace",
+      "installedSha": "972fbed46d1494085c1e3add29f968cf313d600078082bd026d2207475997ace"
     },
     "scripts/dispatch/coverage-gate.test.js": {
       "owner": "framework",
@@ -9451,8 +9472,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-contract.js",
-      "sha256": "929e12ec49067f01436cfceb602050a7f5d32de5134b65fdcc8aa334d64e34a5",
-      "installedSha": "929e12ec49067f01436cfceb602050a7f5d32de5134b65fdcc8aa334d64e34a5"
+      "sha256": "9a29d7fe13af7f92f4f5e3daec309e1da1246a86149de13e00d167cf806b115c",
+      "installedSha": "9a29d7fe13af7f92f4f5e3daec309e1da1246a86149de13e00d167cf806b115c"
     },
     "scripts/dispatch/dispatch-contract.test.js": {
       "owner": "framework",
@@ -9472,8 +9493,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-shape.test.js",
-      "sha256": "d3feab29789fa3083eba58efe2446133f9d18227c4efcd48accb55e897f1ae83",
-      "installedSha": "d3feab29789fa3083eba58efe2446133f9d18227c4efcd48accb55e897f1ae83"
+      "sha256": "b3e7b25ababf94a395169dc25b9d4c63acfa33c12da4b858ab11a405557668e1",
+      "installedSha": "b3e7b25ababf94a395169dc25b9d4c63acfa33c12da4b858ab11a405557668e1"
     },
     "scripts/dispatch/frontmatter.js": {
       "owner": "framework",
@@ -14322,7 +14343,27 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/tickets/T-20260628-357.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260628-358.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/tickets/T-20260628-359.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260627-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260627-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -15131,6 +15172,46 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/S-LC-01/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260627-001/trace.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -18982,6 +19063,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260628-0082.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -19271,6 +19360,34 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/.gitkeep": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/beta-boundaries.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T02-47-21-260Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T03-25-05-563Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T03-32-13-059Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T03-43-19-304Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T04-38-42-024Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-07-22-800Z.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -22095,6 +22212,38 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260616-001-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0001.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0002.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0003.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0004.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0005.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0006.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0007.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0008.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -24939,8 +25088,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0013-two-dispatch-shape-gates.md",
       "kind": "md",
-      "sha256": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2",
-      "installedSha": "1cbda3b6b0a95457d09f98836093d0595b03a9107aabeaac28c9076e0fe85ba2"
+      "sha256": "35c501d555967e411758fa4d923f75ddb8d110300dfbdbbd5181ffedf751c42f",
+      "installedSha": "35c501d555967e411758fa4d923f75ddb8d110300dfbdbbd5181ffedf751c42f"
     },
     ".claude/agents/president/_system/policy/adr/0014-epsilon-direct-roster-dispatch.md": {
       "owner": "framework",
