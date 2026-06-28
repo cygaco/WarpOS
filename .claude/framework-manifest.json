@@ -8243,7 +8243,7 @@
         "src": "scripts/checks/warpos-ship-coverage.js",
         "dest": "scripts/checks/warpos-ship-coverage.js",
         "kind": "check_tool",
-        "sha256": "ae111bfca67b93269bd1e99ca8e35cd3b5fcc52e95251ed27598d8b38ae36fcd",
+        "sha256": "7e4565a0d597a715e7a2986e29f58c8945319cc55bb4acbcc50ef30647033f17",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

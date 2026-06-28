@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-28T02:40:01.880Z",
+  "generatedAt": "2026-06-28T02:57:17.046Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.16.0",
   "migrations": [],
@@ -10592,8 +10592,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-ship-coverage.js",
-      "sha256": "ae111bfca67b93269bd1e99ca8e35cd3b5fcc52e95251ed27598d8b38ae36fcd",
-      "installedSha": "ae111bfca67b93269bd1e99ca8e35cd3b5fcc52e95251ed27598d8b38ae36fcd"
+      "sha256": "7e4565a0d597a715e7a2986e29f58c8945319cc55bb4acbcc50ef30647033f17",
+      "installedSha": "7e4565a0d597a715e7a2986e29f58c8945319cc55bb4acbcc50ef30647033f17"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",
