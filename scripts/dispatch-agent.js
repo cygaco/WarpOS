@@ -539,7 +539,11 @@ try {
 }
 if (contractMod) {
   const { validateDispatch, contractEnforceMode } = contractMod;
-  const { normalizeRole } = require("./hooks/lib/role-aliases");
+  // Claude gauntlet LOW: load normalizeRole defensively so an unloadable role-aliases module
+  // fails OPEN (identity) — symmetric with the contract module-load availability design above,
+  // instead of crashing uncaught.
+  let normalizeRole = (r) => r;
+  try { normalizeRole = require("./hooks/lib/role-aliases").normalizeRole || normalizeRole; } catch { /* identity fallback */ }
   const currentMode = detectMode();
   // W2 flip (β DECIDE 0.87, ADR-0013 amended SP-20260627-001): the contract gate enforces by
   // DEFAULT (it checks api-when-CLI + forbidden_shapes + in-process-hard + cwd the shape-door
