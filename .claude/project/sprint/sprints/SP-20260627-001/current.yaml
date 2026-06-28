@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
-id: "SP-20260627-001"
+id: SP-20260627-001
 title: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Make the dispatch-contract enforce gate default to ENFORCE without false-refusing legitimate dispatches, and add the per-failure-class minimum-review-lane policy — closing E-DISPATCH-SHAPE-001's last two DoD items and unblocking E-DISPATCH-PERFECT-001 W3 (the codex-doer build shape)."
+status: designing
 created_at: "2026-06-28T02:47:21.101Z"
-updated_at: "2026-06-28T02:47:21.101Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-06-28T03:35:47.869Z"
+source_request: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy (keystone, unblocks E-DISPATCH-PERFECT W3)."
+interpreted_intent: "Repair the ADR-0013 dispatch-contract enforce path so its default-enforce mode stops false-refusing legitimate `-w` build-chain dispatches (cwd=canonical at validation time because the wrapper creates the worktree afterward), generic `fixer` dispatches, and normalized legacy role names; then flip contractEnforceMode to enforce-by-default while preserving the env override and kill-switch. Separately, formalize the W3 per-failure-class minimum-review-lane policy so each risk class declares the review lanes it requires, wired into the sprint hook-points + coverage-gate with a planted fixture per class."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml"
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: design
+recommended_mode: adhoc
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -23,7 +23,10 @@ tickets:
   proposed: []
   planned: []
   designed: []
-  ready_for_execution: []
+  ready_for_execution:
+    - T-20260628-357
+    - T-20260628-358
+    - T-20260628-359
   in_progress: []
   blocked: []
   waiting_on_human: []
@@ -38,31 +41,64 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\SP-20260627-001\\release-plan.md"
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260628-0082.report.md"
   design: null
   execution: null
   release: null
@@ -74,10 +110,14 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint SP-20260627-001 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane:
+  type: branch
+  value: sprint/SP-20260627-001
+  isolation_notes: "Local sprint branch from main (after Phase A drift-reconcile @3b981751); ff-merge to main when gauntlet-GREEN per operator's in-session push/merge grant."

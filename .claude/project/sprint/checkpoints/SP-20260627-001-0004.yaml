@@ -1,6 +1,6 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260627-001
-updated_at: "2026-06-28T03:32:13.093Z"
+updated_at: "2026-06-28T03:32:13.044Z"
 current_phase: design
 current_command: "/sprint:full"
 current_ticket: null
@@ -8,7 +8,7 @@ current_task: null
 current_loop: null
 status: halted
 last_completed_step: sprint_full_design_halted
-next_action: "Phase 2 (design) scaffolded requirements at scale=m. The skill body must now: (1) review and fill the rendered templates in .claude/project/sprint/requirements/SP-20260627-001/, (2) mint tickets via `node scripts/sprint/ticket.js create --sprint SP-20260627-001 --title \"<title>\" --type <type> --risk <level>` for each story, setting status=ready_for_execution. Then resume: `/sprint:full --sprint SP-20260627-001 --resume`."
+next_action: "Skill body: review design scaffold, fill placeholders, mint tickets via ticket.js, then /sprint:full --sprint SP-20260627-001 --resume"
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -21,6 +21,6 @@ issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
 resume_command: "/sprint:full --sprint SP-20260627-001 --resume"
-resume_notes: "halt_reason=tickets_pending"
+resume_notes: "Design scaffolded at scale=m; awaiting ticket minting"
 safe_to_continue: true
 stop_reason: null
