@@ -10,6 +10,7 @@ Every `version.json` bump that produced a capsule under `framework/releases/X.Y.
 
 | Version | Released | Capsule | Summary |
 |---|---|---|---|
+| `0.17.0` | 2026-06-28 | [0.17.0/release.json](framework/releases/0.17.0/release.json) | Patch bump to 0.17.0. Fill in via release notes. |
 | `0.16.0` | 2026-06-12 | [0.16.0/release.json](framework/releases/0.16.0/release.json) | Patch bump to 0.16.0. Fill in via release notes. |
 | `0.15.4` | 2026-06-08 | [0.15.4/release.json](framework/releases/0.15.4/release.json) | Patch bump to 0.15.4. Fill in via release notes. |
 | `0.15.3` | 2026-06-07 | [0.15.3/release.json](framework/releases/0.15.3/release.json) | Patch bump to 0.15.3. Fill in via release notes. |

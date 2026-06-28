@@ -321,6 +321,14 @@ const TOP_LEVEL_SCRIPTS = [
   // Note: scripts/dispatch/dispatch-claude.test.js ships via the scripts/dispatch/ dir
   // walk (kind: dispatch_engine) — no duplicate entry needed here.
   { src: "scripts/dispatch-claude.js", kind: "top_script" },
+  // dispatch-skill.js + dispatch-review.js are peer dispatch wrappers referenced by
+  // SHIPPED scan skills (scan/full.md → dispatch-review.js; scan/admin-suite-coverage.md
+  // + scan/panel-registry-coverage.md → dispatch-skill.js). Without these entries the
+  // shipped skills reference scripts the installer never shipped — the same closed-trap
+  // class as WG-1 (dispatch-claude.js), surfaced by release-build's dangling-ref check
+  // at the 0.17.0 release. Same class as dispatch-claude/agent: ship them.
+  { src: "scripts/dispatch-skill.js", kind: "top_script" },
+  { src: "scripts/dispatch-review.js", kind: "top_script" },
   // warp-setup.js is NOT shipped to target projects — it's the installer itself.
   //   Clients invoke it from ../WarpOS/, not from their own scripts/.
 ];
