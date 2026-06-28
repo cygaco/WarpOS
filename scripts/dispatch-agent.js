@@ -525,19 +525,43 @@ if (provider === "claude") {
 // reviewer routed here, is a routing error). REPORT-ONLY by default (PLAN §4 ramp);
 // WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a violation fatal. Fail-OPEN on any
 // contract-read error so the contract never crashes a working cross-provider dispatch.
+// β edge (SP-20260627-001): split the two error classes. A MODULE-LOAD failure (require
+// throws — a broken/absent contract module) fails OPEN: the contract must never brick a
+// working cross-provider dispatch, and the kill-switch needs no loadable module. An
+// EVALUATION failure (the gate ran and threw on input) fails CLOSED under enforce (BC-16).
+// β pin 2b: legacy role names are normalized (pure 1-hop alias) BEFORE validation so an
+// alias like `redteam`/`advisor` resolves instead of false-refusing under enforce-by-default.
+let contractMod = null;
 try {
-  const { validateDispatch, contractEnforceMode } = require("./dispatch/dispatch-contract");
+  contractMod = require("./dispatch/dispatch-contract");
+} catch (e) {
+  process.stderr.write(`[dispatch-agent] dispatch-contract module unloadable — failing OPEN (advisory only; set WARPOS_DISPATCH_CONTRACT_ENFORCE=off to silence): ${e && e.message}\n`);
+}
+if (contractMod) {
+  const { validateDispatch, contractEnforceMode } = contractMod;
+  const { normalizeRole } = require("./hooks/lib/role-aliases");
   const currentMode = detectMode();
-  const verdict = validateDispatch({
-    role,
-    shape: "subprocess-cross-provider",
-    toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
-    mode: currentMode,
-  });
-  if (!verdict.ok) {
-    // W2 flip (β DECIDE 0.87, ADR-0013): contract gate enforces by DEFAULT (it checks api-when-CLI
-    // + forbidden_shapes + in-process-hard + cwd the shape-door doesn't). Escapes via the helper.
-    const blocking = contractEnforceMode("DISPATCH_AGENT", process.env);
+  // W2 flip (β DECIDE 0.87, ADR-0013 amended SP-20260627-001): the contract gate enforces by
+  // DEFAULT (it checks api-when-CLI + forbidden_shapes + in-process-hard + cwd the shape-door
+  // doesn't). Escapes via the helper (report|off|0).
+  const blocking = contractEnforceMode("DISPATCH_AGENT", process.env);
+  let verdict;
+  try {
+    verdict = validateDispatch({
+      role: normalizeRole(role),
+      shape: "subprocess-cross-provider",
+      toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+      mode: currentMode,
+    });
+  } catch (evalErr) {
+    process.stderr.write(`[dispatch-agent] dispatch-contract EVALUATION error — ${blocking ? "failing CLOSED" : "advisory"}: ${evalErr && evalErr.message}\n`);
+    if (blocking) {
+      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_contract_eval_error" }));
+      process.exit(1);
+    }
+    verdict = { ok: true, violations: [] };
+  }
+  if (verdict && !verdict.ok) {
     process.stderr.write(
       `[dispatch-agent] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${verdict.violations.join("; ")}\n`,
     );
@@ -546,8 +570,6 @@ try {
       process.exit(1);
     }
   }
-} catch {
-  /* fail-open — contract consult never blocks a working dispatch */
 }
 
 // ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────

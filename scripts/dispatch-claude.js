@@ -135,7 +135,13 @@ const BUILD_CHAIN_ROLES = new Set([
 // build-chain sentinel. Fix: for a generic id, re-validate against build_chain_worker
 // directly (the class dispatch-claude.js already enforces via BUILD_CHAIN_ROLES +
 // the isolation gate). The wrapper and the contract then AGREE on the truthful result.
-const GENERIC_BUILD_IDS = new Set(["builder"]);
+// β pin 2a (SP-20260627-001): `fixer` is a generic build id (like `builder`) — the GUIDE
+// mandates bare `fixer` for build-chain fix dispatches but it was absent here, so a generic
+// `fixer` fell through to the honest "(fail-closed)" path under enforce. Adding it lets the
+// class-level helper resolve it truthfully. NOTE: this only CLASSIFIES fixer as a build role;
+// it does NOT exempt fixer from the build-chain→NOT-in-process refusal (validateDispatch's
+// hard invariant at dispatch-contract.js still fires for an in-process fixer).
+const GENERIC_BUILD_IDS = new Set(["builder", "fixer"]);
 
 // T-20260611-312 (R-3): build-chain membership is DERIVED from the registry class
 // (build_chain_worker) — the literal BUILD_CHAIN_ROLES Set above is the EXPLICIT
@@ -369,6 +375,10 @@ try {
     toolId: "claude",
     cwd: runCwd,
     mode: currentMode,
+    // β pin 1: `-w` makes claude create the worktree AFTER this validation runs, so cwd is
+    // canonical now. Signal worktree-pending so the conditioned predicate tolerates it
+    // (without -w, canonical cwd still violates).
+    worktreePending: passW,
   });
   if (!verdict.ok && GENERIC_BUILD_IDS.has(role.toLowerCase())) {
     // G1 / β option (c): re-validate against build_chain_worker class directly.
@@ -385,6 +395,7 @@ try {
       toolId: "claude",
       cwd: runCwd,
       mode: currentMode,
+      worktreePending: passW, // β pin 1: -w worktree created post-validation
     });
     if (classVerdict.ok) {
       // Truthful informational: generic id resolved to a real class, shape OK.

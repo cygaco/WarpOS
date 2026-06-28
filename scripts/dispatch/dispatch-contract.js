@@ -179,9 +179,18 @@ function validateDispatch(req) {
     }
   }
   if (c.cwd_policy === "worktree-required") {
-    // GPT-5.5 review R2 MEDIUM: omitting cwd is NOT a bypass — a worktree-required
-    // dispatch MUST name its isolated worktree. Absent OR canonical-root => violation.
-    if (!req.cwd) {
+    // β pin 1 (SP-20260627-001): a `-w` build-chain dispatch creates its isolated worktree
+    // AFTER validation — `claude … -w` makes the worktree itself (dispatch-claude.js:200
+    // `passW`), and validateDispatch runs BEFORE that (dispatch-claude.js:366). At check
+    // time there is no worktree path yet and cwd=canonical. The wrapper signals this with
+    // `worktreePending:true`. cwd=canonical/absent is then LEGITIMATE (the worktree is
+    // pending). CONDITIONED, NOT a blanket pass: without worktreePending, canonical/absent
+    // STILL violates (the real cwd-worktree-violation — a builder that would edit the live
+    // repo). GPT-5.5 review R2 MEDIUM (omitting cwd is not a bypass) still holds for the
+    // non-pending case.
+    if (req && req.worktreePending === true) {
+      // legitimate `-w`: worktree will be created post-validation — no violation.
+    } else if (!req.cwd) {
       violations.push(`role '${role}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
     } else if (path.resolve(req.cwd) === PROJECT_ROOT) {
       violations.push(`role '${role}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
@@ -248,7 +257,12 @@ function validateDispatchForClass(req) {
     }
   }
   if (resolved.cwd_policy === "worktree-required") {
-    if (!req.cwd) {
+    // β pin 1 (SP-20260627-001): worktree-pending tolerance for `-w` (worktree created
+    // AFTER validation). CONDITIONED — without worktreePending, canonical/absent STILL
+    // violates. Mirrors validateDispatch so the generic-build-id (class) path agrees.
+    if (req && req.worktreePending === true) {
+      // legitimate `-w`: worktree will be created post-validation — no violation.
+    } else if (!req.cwd) {
       violations.push(`class '${className}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
     } else if (path.resolve(req.cwd) === PROJECT_ROOT) {
       violations.push(`class '${className}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
@@ -547,20 +561,29 @@ function validateContractFile() {
 //   (legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block still enforces — now the default)
 function contractEnforceMode(wrapperKey, env) {
   const e = env || process.env;
-  // SAFE DEFAULT = report-only (enforce is OPT-IN). ADR-0013 DECIDED the flip-to-enforce, but the
-  // cross-family gauntlet (2026-06-16) caught that default-enforce FALSE-REFUSED a legitimate `-w`
-  // build-chain dispatch: cwd_policy:worktree-required sees cwd=canonical because claude creates the
-  // worktree AFTER validation (no worktree path to pass yet, and "omitting cwd is not a bypass"); plus
-  // the generic `fixer` path (not in GENERIC_BUILD_IDS) + raw legacy names in dispatch-agent. Reverted
-  // to report-only pending those fixes (worktree-pending semantics for `-w`). Enforce is opt-in:
-  //   WARPOS_DISABLE_SHAPE_DOOR=1                              → force report (master)
-  //   WARPOS_DISPATCH_CONTRACT_ENFORCE=enforce|block          → opt INTO enforce (fleet)
-  //   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=enforce|block → opt INTO enforce (per-wrapper)
+  // ADR-0013 (amended SP-20260627-001): ENFORCE BY DEFAULT. The original 2026-06-16 flip was
+  // reverted to report-only because default-enforce FALSE-REFUSED legitimate dispatches —
+  // a `-w` build-chain dispatch (worktree created AFTER validation, so cwd=canonical at check
+  // time), the generic `fixer` path (not in GENERIC_BUILD_IDS), and raw legacy role names.
+  // Those three are now FIXED (worktree-pending predicate in validateDispatch/forClass,
+  // `fixer` in GENERIC_BUILD_IDS, role normalization), so the flip is safe: enforce is the
+  // default. Reversibility is preserved via RECOVERABLE kill-switches — no code edit needed,
+  // and (β edge, SP-20260627-001) they short-circuit independent of a broken contract MODULE
+  // (callers fail-OPEN on module-load error; this gate only decides EVALUATION-error posture):
+  //   WARPOS_DISABLE_SHAPE_DOOR=1                              → master kill (both dispatch gates)
+  //   WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0           → fleet kill (back to report-only)
+  //   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=report|off|0 → per-wrapper kill
+  //   WARPOS_DISPATCH_CONTRACT_ENFORCE[_<WRAPPER>]=enforce|block → explicit enforce (now also the default)
   if (/^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""))) return false;
+  const isOff = (v) => /^(report|off|0|false|no)$/.test(v);
+  const isOn = (v) => /^(enforce|block|1|true|yes)$/.test(v);
   const per = String(e[`WARPOS_DISPATCH_CONTRACT_ENFORCE_${wrapperKey}`] || "").toLowerCase();
-  if (per === "enforce" || per === "block") return true;
+  if (isOff(per)) return false;
+  if (isOn(per)) return true;
   const g = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "").toLowerCase();
-  return g === "enforce" || g === "block"; // else report-only (safe default)
+  if (isOff(g)) return false;
+  if (isOn(g)) return true;
+  return true; // DEFAULT = enforce (ADR-0013 amended SP-20260627-001)
 }
 
 module.exports = {
