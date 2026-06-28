@@ -361,14 +361,24 @@ const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
 const currentMode = detectMode();
 
 // ── Dispatch-contract consult (§17.1 keystone) ──────────────
-// Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude
-// shape, so it asserts the role is contract-allowed to be dispatched this way (a
-// cross-provider reviewer routed here, or a role that forbids subprocess-claude,
-// is a routing error). REPORT-ONLY by default (PLAN §4 ramp: report-only -> blocking);
-// set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
-// on any contract-read error — the contract must never crash a working dispatch.
+// Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude shape,
+// so it asserts the role is contract-allowed to be dispatched this way. ENFORCE by default
+// (ADR-0013 amended SP-20260627-001); WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0 reverts.
+// β edge (SP-20260627-001): split the two error classes. A MODULE-LOAD failure (require throws
+// — a broken/absent contract module) fails OPEN: the contract must never brick a working
+// dispatch, and the kill-switch needs no loadable module. An EVALUATION failure (the gate RAN
+// and threw on input — e.g. a malformed WARPOS_DISPATCH_CONTRACT_PATH) fails CLOSED under
+// enforce (BC-16); it must NOT be swallowed into a silent bypass (GPT-5.5 gauntlet BLOCKER).
+let __contractMod = null;
 try {
-  const { validateDispatch, validateDispatchForClass, sanctionedLane, contractEnforceMode } = require("./dispatch/dispatch-contract");
+  __contractMod = require("./dispatch/dispatch-contract");
+} catch (e) {
+  process.stderr.write(`[dispatch-claude] dispatch-contract module unloadable — failing OPEN (advisory only; set WARPOS_DISPATCH_CONTRACT_ENFORCE=off to silence): ${e && e.message}\n`);
+}
+if (__contractMod) {
+  const { validateDispatch, validateDispatchForClass, sanctionedLane, contractEnforceMode } = __contractMod;
+  const __evalBlocking = contractEnforceMode("DISPATCH_CLAUDE", process.env);
+  try {
   const verdict = validateDispatch({
     role,
     shape: "subprocess-claude",
@@ -451,8 +461,16 @@ try {
       }
     }
   }
-} catch {
-  /* fail-open — contract consult never blocks a working dispatch */
+  } catch (__evalErr) {
+    // β edge / BC-16: an EVALUATION error (the gate ran and threw) fails CLOSED under enforce —
+    // NOT swallowed into a silent bypass. Advisory in report-only. (A module-load failure is the
+    // separate fail-OPEN path above; the two error classes are deliberately distinct.)
+    process.stderr.write(`[dispatch-claude] dispatch-contract EVALUATION error — ${__evalBlocking ? "failing CLOSED" : "advisory"}: ${__evalErr && __evalErr.message}\n`);
+    if (__evalBlocking) {
+      console.log(JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_eval_error" }));
+      process.exit(1);
+    }
+  }
 }
 
 // ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────
