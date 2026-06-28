@@ -87,6 +87,37 @@ Legacy `WARPOS_DISPATCH_CONTRACT_ENFORCE=block` still enforces (now the default)
 Set `WARPOS_DISPATCH_CONTRACT_ENFORCE=report` (fleet) to return the contract gate to advisory without a
 code change; or revert `contractEnforceMode` to `=== "block"` for the old enable-to-enforce semantics.
 
+## Amendment — SP-20260627-001 (2026-06-28): enforce-correctness model + no-widen invariant
+
+The 2026-06-16 default-enforce flip was reverted to report-only because it FALSE-REFUSED three
+legitimate dispatch cases. SP-20260627-001 fixes the three and re-flips `contractEnforceMode` to
+ENFORCE-by-default (β DECIDE 0.89/0.90 — the repair of THIS ADR, not a new decision):
+
+1. **Conditioned worktree-pending predicate (β pin 1).** A `-w` build-chain dispatch creates its
+   isolated worktree AFTER validation (`claude … -w`; dispatch-claude.js:200 `passW`, validateDispatch
+   at :366). `validateDispatch`/`validateDispatchForClass` now accept a `worktreePending:true` signal so
+   cwd=canonical/absent is legitimate for that case ONLY. CONDITIONED, not a blanket pass: without
+   `worktreePending`, canonical/absent STILL violates (the real cwd-worktree-violation).
+2. **`fixer` in GENERIC_BUILD_IDS (β pin 2a)** — classifies bare `fixer` as a build role so it resolves
+   truthfully, but does NOT exempt it from the build-chain→NOT-in-process refusal.
+3. **Role normalization before validation (β pin 2b)** — `dispatch-agent` passes `normalizeRole(role)`
+   (pure 1-hop legacy→canonical alias) so legacy names resolve instead of fail-closing under enforce.
+
+**No-widen invariant (β pin 3) — the named enforcer is NEGATIVE fixtures**, not the prose claim:
+`tests/regression/SP-20260627-001/negative-fixtures.test.js` plants one genuinely-wrong dispatch per
+refused class (api-when-CLI / build-chain-in-process / real cwd-worktree-violation / forbidden_shape),
+each asserted to STILL fail under enforce-by-default, plus BC-16 fail-closed on the gate's own
+EVALUATION error. **Error-class split (β edge):** a contract MODULE-LOAD failure fails OPEN (a broken
+contract module must never brick the build chain; the kill-switch needs no loadable module); an
+EVALUATION error fails CLOSED under enforce. The cross-provider gauntlet (GPT-5.5 + Claude) backstops the diff.
+
+**W3 review-lane policy (report-only ramp):** `coverage-gate.js#reviewLanePolicy` READS a per-class
+minimum-review-lane map (`W3_REVIEW_LANE_MIN`) and ACTS (warnings) — a real consumer, not a declarative
+key (`tests/regression/SP-20260627-001/w3-lane-policy.test.js`). The report-only→blocking flip is a
+future ramp gated on a green per-class fixture.
+
+This AMENDS ADR-0013 in place — no new ADR (β: OPEN_ADR false).
+
 ## References
 
 - `scripts/dispatch/dispatch-contract.js#contractEnforceMode`/`validateDispatch`,

@@ -271,7 +271,50 @@ function parseExpect(spec) {
     });
 }
 
-module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect };
+// ── W3 (SP-20260627-001): per-failure-class minimum review-lane policy ──────────────
+// β pin: each risk class declares the MINIMUM review lanes a change in that class needs.
+// REPORT-ONLY ramp — `reviewLanePolicy()` READS this map and ACTS (emits warnings); it is
+// a REAL consumer, not a declarative key no loop reads (β: Policy-key-must-fire, DP-gap #41(b)).
+// The report-only→blocking flip is a future ramp gated on a green per-class fixture; both
+// declared classes ship WITH a fixture (w3-lane-policy.test.js), so neither is an aspirational
+// blocking rule. A class lacking a testable fixture must carry logged enforcement-debt instead
+// of a declared minimum (β: honesty-ceiling P-061).
+const W3_REVIEW_LANE_MIN = Object.freeze({
+  // Enforcer / gate changes must be EXERCISED, not merely code-read.
+  enforcer_or_gate_change: ["execution_access"],
+  // Distribution-sensitive logic (ships to installs) needs a cross-family second opinion.
+  distribution_sensitive: ["cross_family_diff"],
+});
+
+/**
+ * W3 review-lane policy consumer (REPORT-ONLY ramp). For each risk class in
+ * `classesUnderChange`, checks `lanesRun` includes the class's minimum lanes from
+ * W3_REVIEW_LANE_MIN. Returns { ok, warnings[], enforce }. ok is always true in the
+ * report-only default (it ACTS by emitting warnings); when opts.enforce, ok flips false
+ * on any missing required lane (the gated blocking ramp). This is the named consumer the
+ * AC-3.1 fixture asserts FIRES on the lane-min key.
+ *   reviewLanePolicy(["enforcer_or_gate_change"], [])               → warnings:[…], ok:true (report)
+ *   reviewLanePolicy(["enforcer_or_gate_change"], ["execution_access"]) → warnings:[], ok:true
+ */
+function reviewLanePolicy(classesUnderChange, lanesRun, opts) {
+  const enforce = !!(opts && opts.enforce);
+  const run = new Set(Array.isArray(lanesRun) ? lanesRun : []);
+  const warnings = [];
+  for (const cls of Array.isArray(classesUnderChange) ? classesUnderChange : []) {
+    const min = W3_REVIEW_LANE_MIN[cls];
+    if (!min) continue; // no declared minimum (or the class carries enforcement-debt)
+    for (const lane of min) {
+      if (!run.has(lane)) {
+        warnings.push(
+          `W3 review-lane policy: risk class '${cls}' requires lane '${lane}' but it was not run (lanes run: ${[...run].join(", ") || "<none>"}).`,
+        );
+      }
+    }
+  }
+  return { ok: enforce ? warnings.length === 0 : true, warnings, enforce };
+}
+
+module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect, reviewLanePolicy, W3_REVIEW_LANE_MIN };
 
 // ── CLI ─────────────────────────────────────────────────────
 if (require.main === module) {
