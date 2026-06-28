@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-28T05:12:15.907Z",
+  "generatedAt": "2026-06-28T05:22:59.942Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "5f9e8fdeddf70f206cc567b91837610d24850c52daf994e1812ae4448087bd0e",
-      "installedSha": "5f9e8fdeddf70f206cc567b91837610d24850c52daf994e1812ae4448087bd0e"
+      "sha256": "a2467aa975a80ba09b02f3603fff8311afe273d9d3300ceac07e66697f34f1f7",
+      "installedSha": "a2467aa975a80ba09b02f3603fff8311afe273d9d3300ceac07e66697f34f1f7"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -19391,6 +19391,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-20-00-885Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-21-27-605Z.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/full-reports/SP-20260616-001/beta-boundaries.json": {
       "owner": "runtime",
       "managed": false
@@ -22244,6 +22252,14 @@
       "managed": false
     },
     ".claude/project/sprint/checkpoints/SP-20260627-001-0008.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0009.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/checkpoints/SP-20260627-001-0010.yaml": {
       "owner": "runtime",
       "managed": false
     },
