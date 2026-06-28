@@ -59,14 +59,18 @@ console.log("(1) report-mode-no-regression-both-wrappers:");
   ok("report-mode shape-door advisory is byte-identical legacy form (no mode label — β#4)",
     /shape-resolver advisory: role/.test(r.stderr || "") && !/shape-resolver advisory \(/.test(r.stderr || ""),
     (r.stderr || "").slice(0, 220));
-  // ADR-0013 is REVERTED to report-only DEFAULT pending the `-w` worktree-pending fix (the cross-family
-  // gauntlet caught default-enforce false-refusing a legit `builder -w`); enforce is now OPT-IN.
-  // backend-reviewer via the claude wrapper is a real shape-not-allowed violation: under explicit
-  // enforce it refuses exit 1 (contract VIOLATION, distinct from the door's exit 2); the DEFAULT is report.
+  // ADR-0013 (amended SP-20260627-001): the `-w` worktree-pending fix shipped (+ fixer in
+  // GENERIC_BUILD_IDS + role normalization), so the contract gate now ENFORCES BY DEFAULT.
+  // backend-reviewer via the claude wrapper is a real shape-not-allowed violation: under the
+  // default it refuses exit 1 (contract VIOLATION, distinct from the door's exit 2). The
+  // report-only kill-switch (WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0) still reverts it.
   const rEnf = runClaude({ role: "backend-reviewer", env: { WARPOS_DISPATCH_CONTRACT_ENFORCE: "enforce" } });
-  ok("dispatch-claude contract enforce (OPT-IN) → exit 1 (VIOLATION) on a real shape-not-allowed", rEnf.status === 1, `status=${rEnf.status} stderr=${(rEnf.stderr || "").slice(0, 200)}`);
-  ok("dispatch-claude contract DEFAULT is report-only (no opt-in) → exit 0 (no refuse)",
-    runClaude({ role: "backend-reviewer" }).status === 0);
+  ok("dispatch-claude contract enforce (explicit, = the default now) → exit 1 (VIOLATION) on a real shape-not-allowed", rEnf.status === 1, `status=${rEnf.status} stderr=${(rEnf.stderr || "").slice(0, 200)}`);
+  // The report-only kill-switch still reverts to advisory (exit 0) — reversibility preserved.
+  ok("dispatch-claude contract =report kill-switch → exit 0 (advisory, reversible)",
+    runClaude({ role: "backend-reviewer", env: { WARPOS_DISPATCH_CONTRACT_ENFORCE: "report" } }).status === 0);
+  ok("dispatch-claude contract DEFAULT is now ENFORCE (ADR-0013 amended SP-20260627-001) → exit 1 (VIOLATION)",
+    runClaude({ role: "backend-reviewer" }).status === 1);
 }
 
 console.log("\n(2) dispatch-claude-sanctioned-lane-preserved (new WARPOS_SHAPE_DOOR toggle):");

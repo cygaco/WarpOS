@@ -68,8 +68,8 @@ test("agent: backend-reviewer → subprocess-cross-provider", () => {
 test("agent: director-of-engineering → in-process-agent (manager/face class)", () => {
   assert.strictEqual(resolveShape({ kind: "agent", id: "director-of-engineering" }).shape, "in-process-agent");
 });
-test("agent: product-lead → in-process-agent", () => {
-  assert.strictEqual(resolveShape({ kind: "agent", id: "product-lead" }).shape, "in-process-agent");
+test("agent: product-lead → subprocess-cross-provider (GPT cross_provider_consult_lead, W2 — provider:openai)", () => {
+  assert.strictEqual(resolveShape({ kind: "agent", id: "product-lead" }).shape, "subprocess-cross-provider");
 });
 
 // ── 2. skill → skillExecution, fail-closed on the earn-it proof ──────────────
