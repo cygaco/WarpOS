@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated": "2026-06-16T22:20:39.214Z",
-    "lastUpdated": "2026-06-16T22:20:39.214Z",
+    "generated": "2026-06-28T02:37:50.334Z",
+    "lastUpdated": "2026-06-28T02:37:50.334Z",
     "total_hooks": 77,
     "total_lib_modules": 18,
     "registered_hooks": 65,
@@ -96,8 +96,8 @@
       "path": "scripts/hooks/dispatch-route-guard.js",
       "registered": true,
       "exists": true,
-      "size": 28003,
-      "modified": "2026-06-10T22:27:30.681Z"
+      "size": 33548,
+      "modified": "2026-06-17T00:30:34.317Z"
     },
     {
       "id": "hook:edit-watcher",
@@ -438,8 +438,8 @@
       "path": "scripts/hooks/session-start-teaminit.test.js",
       "registered": false,
       "exists": true,
-      "size": 4665,
-      "modified": "2026-06-08T19:49:48.192Z"
+      "size": 5504,
+      "modified": "2026-06-20T05:24:57.811Z"
     },
     {
       "id": "hook:session-start",
@@ -447,8 +447,8 @@
       "path": "scripts/hooks/session-start.js",
       "registered": true,
       "exists": true,
-      "size": 30063,
-      "modified": "2026-06-10T00:04:52.691Z"
+      "size": 31856,
+      "modified": "2026-06-20T05:24:57.811Z"
     },
     {
       "id": "hook:session-stop-sentinel.test",
@@ -618,8 +618,8 @@
       "path": "scripts/hooks/team-guard.js",
       "registered": true,
       "exists": true,
-      "size": 40737,
-      "modified": "2026-06-11T20:50:28.863Z"
+      "size": 41386,
+      "modified": "2026-06-20T05:24:57.811Z"
     },
     {
       "id": "hook:template-fillability",
@@ -719,8 +719,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 10962,
-      "modified": "2026-05-30T01:25:39.589Z"
+      "size": 11716,
+      "modified": "2026-06-16T23:13:06.421Z"
     },
     {
       "id": "hook-lib:context-sources",
@@ -809,8 +809,8 @@
       "registered": false,
       "type": "lib",
       "exists": true,
-      "size": 11303,
-      "modified": "2026-06-15T04:16:17.743Z"
+      "size": 11297,
+      "modified": "2026-06-18T23:27:09.572Z"
     },
     {
       "id": "hook-lib:paths",
@@ -850,7 +850,7 @@
       "type": "lib",
       "exists": true,
       "size": 46285,
-      "modified": "2026-06-10T22:27:30.681Z"
+      "modified": "2026-06-17T22:39:54.208Z"
     },
     {
       "id": "hook-lib:role-aliases",

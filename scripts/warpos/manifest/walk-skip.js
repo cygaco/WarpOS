@@ -54,6 +54,11 @@ const WALK_SKIP_FILES = new Set([
   // DISPATCH-ERRORS.md — operator-directed dispatch-failure census + redesigns
   // (2026-06-11), companion to NOTAGAIN.md; same per-repo-operator-doc class.
   "DISPATCH-ERRORS.md",
+  // REPORT-JULY-18.md — operator-requested export (2026-06-19, W4/teams-migration
+  // situation write-up); gitignored transient OUTPUT, same per-repo-operator-doc
+  // class as DUMP.md/DISPATCH-ERRORS.md. Without this skip the build chokes
+  // "unclassified path" and the 29-file managed-drift can't be reconciled.
+  "REPORT-JULY-18.md",
   "WARPOS-PROMPT.md",
   "MASTERCONSOLE-PROMPT.md",
   ".DS_Store",

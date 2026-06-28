@@ -1,8 +1,8 @@
 # Skills Map
 
-Generated: 2026-06-16T22:20:39.214Z
+Generated: 2026-06-28T02:37:50.334Z
 
-Total: **228** skills across **47** namespaces. 98 user-invocable.
+Total: **229** skills across **47** namespaces. 98 user-invocable.
 
 ## By namespace
 
@@ -335,7 +335,7 @@ Total: **228** skills across **47** namespaces. 98 user-invocable.
 | next | The 1-idea alternative to /roadmap:ideas — the single highest-leverage next roadmap entry (the role- | 2 | 2 |
 | prioritize | Role-aware roadmap prioritization — runs /roadmap:cleanup first, then consults the Product Lead (sin | 4 | 0 |
 
-### scan (52)
+### scan (53)
 
 | Name | Description | Calls | Called by |
 |---|---|---|---|
@@ -353,10 +353,11 @@ Total: **228** skills across **47** namespaces. 98 user-invocable.
 | etc-harness | Audit the /etc authoring+eval harness — fail-closed enforcer that rejects an invented authoring form | 2 | 1 |
 | framework-purity | Refuse product-content leaks in canonical — scans for client slugs, maintainer abs paths, root-level | 2 | 4 |
 | framework-views-fresh | Verify .claude/commands and .claude/agents are byte-identical regenerations of their _warpos/ source | 2 | 3 |
-| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 58 | 26 |
+| full | Run every scan in parallel — a full system scan across project health, governance, and WarpOS distri | 59 | 27 |
 | ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clones) for un-firewalle | 0 | 1 |
 | install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, settings. | 1 | 4 |
 | issues | Pattern-mine events.jsonl for repeat audit-block signatures — surface candidates for /issues:log | 5 | 2 |
+| model-chain | The named enforcer (ED-058) for the role-registry model/effort CHAIN — opus-4.8 is the shipped top,  | 2 | 1 |
 | node-procs | Read-only diagnostic — list Node processes on the host with PID, start-time, working-set KB, and com | 1 | 2 |
 | panel-registry-coverage | Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` row is well-shaped ({ | 4 | 1 |
 | patterns | Cross-run intelligence and automation proposals — diagnose recurring patterns or propose prevention | 8 | 5 |
@@ -366,7 +367,7 @@ Total: **228** skills across **47** namespaces. 98 user-invocable.
 | regressions | Run the regression-seed suite — the 26 recurring bug classes from the 0.17.0 spec, made runnable. Re | 2 | 1 |
 | requirements | Specification consistency, coverage, and drift — static audit, change-driven propagation check, or p | 7 | 10 |
 | roadmap-trace | "Assert every done/retrospected/released sprint has BOTH a Sprints-table ledger row AND a Shipped na | 2 | 3 |
-| role-parity | The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail- | 0 | 2 |
+| role-parity | The one check that owns role parity across the org map, the dispatch catalog, and team-guard — fail- | 0 | 3 |
 | scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is complete and coherent —  | 2 | 1 |
 | scan-coverage | Scan-suite self-inventory — asserts every /scan:* skill is delegated by /scan:full or explicitly exc | 1 | 7 |
 | skill-hook-coverage | Bidirectional coverage of the skill hook-point registry — REVERSE (registry coherent vs role-registr | 4 | 2 |
@@ -473,7 +474,7 @@ Total: **228** skills across **47** namespaces. 98 user-invocable.
 
 Top callers (skills that invoke the most others):
 
-- `/scan:full` → /knowledge:coverage, /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:admin-suite-coverage, /scan:architecture, /scan:coherence, /scan:cutover-completeness, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:node-procs, /scan:panel-registry-coverage, /scan:patterns, /scan:planning-principles, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:skill-hook-coverage, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /trackers:validate, /warp:doctor, /warp:health
+- `/scan:full` → /knowledge:coverage, /maps:all, /oneshot:preflight, /scan:ac-coverage, /scan:adhoc-fail-override, /scan:adhoc-team-hygiene, /scan:admin-suite-coverage, /scan:architecture, /scan:coherence, /scan:cutover-completeness, /scan:design-system, /scan:dispatch-routing-parity, /scan:docker-secrets, /scan:environment, /scan:etc-harness, /scan:framework-purity, /scan:framework-views-fresh, /scan:ingest-firewall, /scan:install, /scan:issues, /scan:model-chain, /scan:node-procs, /scan:panel-registry-coverage, /scan:patterns, /scan:planning-principles, /scan:privacy, /scan:references, /scan:regressions, /scan:requirements, /scan:roadmap-trace, /scan:role-parity, /scan:scaffold-coverage, /scan:scan-coverage, /scan:skill-hook-coverage, /scan:sprint-beta-honesty, /scan:sprint-hook-coverage, /scan:sprint-manager-consult, /scan:system, /scan:timeline, /scan:version-coherence, /scan:warpos-applied-migrations, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-manifest-honesty, /scan:warpos-migration-coverage, /scan:warpos-migration-presence, /scan:warpos-path-resolution, /scan:warpos-ship-coverage, /scan:warpos-staleness, /scan:warpos-structure-parity, /scan:warpos-tracked-transients, /scan:warpos-version-quorum, /sleep:deep, /sprint:full, /trackers:validate, /warp:doctor, /warp:health
 - `/warp:tour` → /fix:fast, /learn:deep, /maps:all, /maps:architecture, /mode:adhoc, /mode:oneshot, /mode:solo, /portfolio:list, /portfolio:open, /research:simple, /session:handoff, /session:read, /session:write, /sleep:quick, /warp:health
 - `/session:end` → /beta:integrate, /beta:mine, /commit:land, /enforcement:log, /learn:deep, /learn:integrate, /mode:adhoc, /mode:sprint, /session:checkpoint, /session:dump, /session:handoff, /sleep:deep, /sleep:quick, /trackers:validate
 - `/bootstrap:lastmile` → /guides:integrate, /learn:ingest, /learn:integrate, /qa:audit, /redteam:full, /research:deep, /roadmap:add, /scan:install, /scan:roadmap-trace, /sprint:design, /sprint:execute, /sprint:plan
@@ -486,7 +487,7 @@ Top callers (skills that invoke the most others):
 
 Top called (skills others invoke the most):
 
-- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:admin-suite-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:node-procs, /scan:panel-registry-coverage, /scan:planning-principles, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:turbo-spend, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
+- `/scan:full` ← /bootstrap:ponder, /check:all, /commit:land, /guides:coverage, /karpathy:run, /knowledge:coverage, /learn:integrate, /maps:coverage, /scan:ac-coverage, /scan:admin-suite-coverage, /scan:cutover-completeness, /scan:dispatch-routing-parity, /scan:model-chain, /scan:node-procs, /scan:panel-registry-coverage, /scan:planning-principles, /scan:regressions, /scan:roadmap-trace, /scan:scan-coverage, /scan:system, /scan:turbo-spend, /scan:version-coherence, /scan:warpos-install-baseline, /scan:warpos-ship-coverage, /sprint:full, /warp:doctor, /warp:reconcile
 - `/sleep:deep` ← /beta:integrate, /beta:mine, /bootstrap:ponder, /learn:deep, /reasoning:score, /scan:architecture, /scan:environment, /scan:full, /scan:patterns, /scan:references, /scan:requirements, /scan:system, /session:end, /sleep:quick
 - `/warp:update` ← /commit:both, /guides:write, /portfolio:sync, /scan:warpos-capsule-resolvable, /scan:warpos-install-baseline, /scan:warpos-layer-diff, /scan:warpos-manifest-coverage, /scan:warpos-migration-presence, /scan:warpos-staleness, /scan:warpos-structure-parity, /warp:diff, /warp:doctor, /warp:reconcile, /warp:sync
 - `/warp:health` ← /agents:test, /mode:adhoc, /mode:sprint, /scan:adhoc-team-hygiene, /scan:architecture, /scan:environment, /scan:full, /scan:system, /warp:doctor, /warp:setup, /warp:tour, /warp:uninstall, /warp:update

@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generated": "2026-06-16T22:20:39.214Z",
-    "lastUpdated": "2026-06-16T22:20:39.214Z",
-    "total_skills": 228,
+    "generated": "2026-06-28T02:37:50.334Z",
+    "lastUpdated": "2026-06-28T02:37:50.334Z",
+    "total_skills": 229,
     "namespaces": 47,
     "user_invocable": 98,
     "regenerated_by": "scripts/regen-maps.js"
@@ -2410,7 +2410,7 @@
     },
     "scan": {
       "namespace": "scan",
-      "count": 52,
+      "count": 53,
       "skills": [
         {
           "id": "scan:ac-coverage",
@@ -2678,6 +2678,7 @@
               "/scan:ingest-firewall",
               "/scan:install",
               "/scan:issues",
+              "/scan:model-chain",
               "/scan:node-procs",
               "/scan:panel-registry-coverage",
               "/scan:patterns",
@@ -2765,6 +2766,22 @@
               "/issues:resolve",
               "/learn:deep",
               "/oneshot:retro"
+            ]
+          }
+        },
+        {
+          "id": "scan:model-chain",
+          "name": "model-chain",
+          "description": "The named enforcer (ED-058) for the role-registry model/effort CHAIN — opus-4.8 is the shipped top, max is alpha-only, no `fable` as a model, every role carries a scaled model+effort, and the live dispatch consumers (catalog.js/providers.js) resolve to the SAME provider+effort the registry declares. Report-only in /scan:full.",
+          "file": ".claude/commands/scan/model-chain.md",
+          "user_invocable": null,
+          "data_flow": {
+            "reads": [],
+            "writes": [],
+            "references": [],
+            "calls": [
+              "/scan:full",
+              "/scan:role-parity"
             ]
           }
         },
@@ -4162,12 +4179,12 @@
   "summary": {
     "by_invocability": {
       "user_invocable": 98,
-      "system_only": 130
+      "system_only": 131
     },
     "most_referenced_namespaces": [
       {
         "namespace": "scan",
-        "count": 52
+        "count": 53
       },
       {
         "namespace": "warp",

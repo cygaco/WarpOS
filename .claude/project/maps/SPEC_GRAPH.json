@@ -1,17 +1,15 @@
 {
   "schema": "warpos/spec-graph/v1",
-  "generatedAt": "2026-06-16T22:20:39.347Z",
+  "generatedAt": "2026-06-28T02:37:50.493Z",
   "sources": {
     "sprintRequirements": ".claude/project/sprint/requirements",
     "canonicalSpecs": "_requirements/04-features",
     "canonicalSteps": "_requirements/00-canonical/STEPS.json"
   },
   "counts": {
-    "nodes": 2422,
-    "edges": 3212,
+    "nodes": 2403,
+    "edges": 3188,
     "byKind": {
-      "feature": 7,
-      "phase": 2,
       "ac": 325,
       "copy": 272,
       "story-hl": 197,
@@ -21,65 +19,16 @@
       "trace": 250,
       "other": 23,
       "external-service": 1,
-      "step": 10,
       "ticket": 3
     },
     "byEdgeKind": {
       "implements": 449,
       "satisfies": 872,
       "references": 1337,
-      "traces": 530,
-      "implements-feature": 10,
-      "belongs-to": 10,
-      "precedes": 4
+      "traces": 530
     }
   },
   "nodes": [
-    {
-      "id": "FEATURE-auto-apply",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-deep-dive-qa",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-linkedin",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-market-research",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-onboarding",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-resume-generation",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "FEATURE-skills-curation",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "feature"
-    },
-    {
-      "id": "PHASE-DASHBOARD",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "phase"
-    },
-    {
-      "id": "PHASE-ONBOARDING",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "phase"
-    },
     {
       "id": "S-LC-01:AC-1",
       "source": ".claude/project/sprint/requirements/S-LC-01/acceptance-criteria.md",
@@ -14479,56 +14428,6 @@
       "source": ".claude/project/sprint/requirements/SP-20260616-001/trace.md",
       "kind": "trace",
       "sprint": "SP-20260616-001"
-    },
-    {
-      "id": "STEP-AUTO_APPLY",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-DEEP_DIVE",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-LINKEDIN",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-MARKET_ANALYSIS",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-PREFERENCES",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-PROFILE",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-RESUMES",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-SEARCH",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-SKILLS",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
-    },
-    {
-      "id": "STEP-UPLOAD",
-      "source": "_requirements/00-canonical/STEPS.json",
-      "kind": "step"
     },
     {
       "id": "T-073",
@@ -33677,150 +33576,6 @@
       "to": "SP-20260616-001:S-5",
       "kind": "traces",
       "source": ".claude/project/sprint/requirements/SP-20260616-001/trace.md"
-    },
-    {
-      "from": "STEP-AUTO_APPLY",
-      "to": "FEATURE-auto-apply",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-AUTO_APPLY",
-      "to": "PHASE-DASHBOARD",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-DEEP_DIVE",
-      "to": "FEATURE-deep-dive-qa",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-DEEP_DIVE",
-      "to": "PHASE-DASHBOARD",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-LINKEDIN",
-      "to": "FEATURE-linkedin",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-LINKEDIN",
-      "to": "PHASE-DASHBOARD",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-MARKET_ANALYSIS",
-      "to": "FEATURE-market-research",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-MARKET_ANALYSIS",
-      "to": "PHASE-ONBOARDING",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PREFERENCES",
-      "to": "FEATURE-onboarding",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PREFERENCES",
-      "to": "PHASE-ONBOARDING",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PREFERENCES",
-      "to": "STEP-PROFILE",
-      "kind": "precedes",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PROFILE",
-      "to": "FEATURE-onboarding",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PROFILE",
-      "to": "PHASE-ONBOARDING",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-PROFILE",
-      "to": "STEP-SEARCH",
-      "kind": "precedes",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-RESUMES",
-      "to": "FEATURE-resume-generation",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-RESUMES",
-      "to": "PHASE-DASHBOARD",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-SEARCH",
-      "to": "FEATURE-market-research",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-SEARCH",
-      "to": "PHASE-ONBOARDING",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-SEARCH",
-      "to": "STEP-MARKET_ANALYSIS",
-      "kind": "precedes",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-SKILLS",
-      "to": "FEATURE-skills-curation",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-SKILLS",
-      "to": "PHASE-DASHBOARD",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-UPLOAD",
-      "to": "FEATURE-onboarding",
-      "kind": "implements-feature",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-UPLOAD",
-      "to": "PHASE-ONBOARDING",
-      "kind": "belongs-to",
-      "source": "_requirements/00-canonical/STEPS.json"
-    },
-    {
-      "from": "STEP-UPLOAD",
-      "to": "STEP-PREFERENCES",
-      "kind": "precedes",
-      "source": "_requirements/00-canonical/STEPS.json"
     }
   ]
 }

@@ -1,19 +1,19 @@
 # Systems Manifest
 
-Generated: 2026-06-16T22:20:39.214Z
+Generated: 2026-06-28T02:37:50.334Z
 
-Total: **88** systems across **2** categories. Files referenced: 87, missing on disk: 1.
+Total: **90** systems across **2** categories. Files referenced: 89, missing on disk: 1.
 
 ## By status
 
 | Status | Count |
 |---|---|
 | active | 1 |
-| untested | 87 |
+| untested | 89 |
 
 ## By category
 
-### cognition (87)
+### cognition (89)
 
 | id | name | status | files |
 |---|---|---|---|
@@ -43,6 +43,7 @@ Total: **88** systems across **2** categories. Files referenced: 87, missing on 
 | skill-learn-ingest | Ingest external knowledge from files, links, or YouTube videos and apply learnin | untested | 1 |
 | skill-maps-all | Registry of all maps — shows every map, its source, last updated, and staleness | untested | 1 |
 | skill-maps-coverage | Maps-suite self-inventory — asserts every /maps:* skill is registered in /maps:a | untested | 1 |
+| skill-maps-steps | Regenerate step tables in canonical docs from _requirements/00-canonical/STEPS.j | untested | 1 |
 | skill-mode-adhoc | Enter adhoc team mode — Alpha + Beta + Gamma for collaborative feature developme | untested | 1 |
 | skill-mode-oneshot | Initiate a oneshot build — launch Delta as standalone orchestrator for full skel | untested | 1 |
 | skill-mode-solo | Enter solo mode — just Alpha and the user, no agent team | untested | 1 |
@@ -77,6 +78,7 @@ Total: **88** systems across **2** categories. Files referenced: 87, missing on 
 | skill-scan-full | Run every scan in parallel — a full system scan across project health, governanc | untested | 1 |
 | skill-scan-ingest-firewall | Audit the ingest stores (_docs/research, _docs/imports, _docs/briefs, _docs/clon | untested | 1 |
 | skill-scan-install | Verify a fresh WarpOS install — manifest, paths, agents, hooks, version, setting | untested | 1 |
+| skill-scan-model-chain | The named enforcer (ED-058) for the role-registry model/effort CHAIN — opus-4.8  | untested | 1 |
 | skill-scan-panel-registry-coverage | Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` r | untested | 1 |
 | skill-scan-role-parity | The one check that owns role parity across the org map, the dispatch catalog, an | untested | 1 |
 | skill-scan-scaffold-coverage | Verify the WarpOS app scaffold (Next+Tailwind v4+shadcn/ui+Radix+Lucide) is comp | untested | 1 |

@@ -1,8 +1,8 @@
 # Tools Map
 
-Generated: 2026-06-16T22:20:39.214Z
+Generated: 2026-06-28T02:37:50.334Z
 
-Scripts: **176** | npm scripts: **0** | External CLIs: **3**
+Scripts: **178** | npm scripts: **0** | External CLIs: **3**
 
 ## Utility scripts (scripts/*.js)
 
@@ -48,9 +48,11 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | delta-store-review.js | 1684 | 2026-06-05T01:45:08.445Z |
 | delta-update-heartbeat.js | 882 | 2026-06-08T21:05:42.942Z |
 | dismiss-drift-entry.js | 647 | 2026-05-30T01:25:39.566Z |
-| dispatch-agent.js | 36244 | 2026-06-16T19:14:31.872Z |
-| dispatch-claude.js | 35669 | 2026-06-16T19:14:31.873Z |
-| dispatch-skill.js | 33443 | 2026-06-16T19:14:31.873Z |
+| dispatch-agent.js | 36888 | 2026-06-17T00:40:58.729Z |
+| dispatch-claude.js | 36590 | 2026-06-17T00:42:07.671Z |
+| dispatch-review.js | 7675 | 2026-06-18T00:29:57.630Z |
+| dispatch-review.test.js | 3653 | 2026-06-18T00:29:57.630Z |
+| dispatch-skill.js | 33837 | 2026-06-16T22:49:44.202Z |
 | dispatch-skill.test.js | 11813 | 2026-06-08T21:08:33.109Z |
 | dispatch.js | 20217 | 2026-06-08T04:56:41.298Z |
 | drift-apply-decisions.js | 2075 | 2026-05-30T01:25:39.571Z |
@@ -64,20 +66,20 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | drift-verify.js | 5846 | 2026-05-30T01:25:39.574Z |
 | drift-write-decisions.js | 1743 | 2026-05-30T01:25:39.574Z |
 | fix-deep-trace-run09-cleanup.js | 3626 | 2026-05-30T01:25:39.575Z |
-| generate-framework-manifest.js | 27957 | 2026-06-16T10:30:04.428Z |
+| generate-framework-manifest.js | 28113 | 2026-06-18T23:27:09.571Z |
 | generate-maps.js | 12732 | 2026-05-30T01:25:39.577Z |
 | generate-skill-catalog.js | 9320 | 2026-05-30T01:25:39.577Z |
-| generate-steps-maps.js | 8346 | 2026-05-30T01:25:39.578Z |
+| generate-steps-maps.js | 9717 | 2026-06-22T19:00:47.811Z |
 | generate-test-fixtures.js | 6074 | 2026-05-30T01:25:39.578Z |
 | learn-conversation-2026-04-24.js | 5692 | 2026-05-30T01:25:39.611Z |
 | learn-events-analyze.js | 8423 | 2026-05-30T01:25:39.611Z |
 | learn-events-write.js | 6069 | 2026-05-30T01:25:39.612Z |
 | learn-integrate-candidates.js | 2383 | 2026-05-30T01:25:39.612Z |
-| lint-hl-stories.js | 11013 | 2026-05-30T01:25:39.614Z |
+| lint-hl-stories.js | 11013 | 2026-06-20T03:50:59.582Z |
 | lint-json-bom.js | 2554 | 2026-05-30T01:25:39.614Z |
-| lint-prds.js | 21998 | 2026-05-30T01:25:39.615Z |
+| lint-prds.js | 21998 | 2026-06-20T03:50:59.583Z |
 | lint-staleness.js | 2004 | 2026-05-30T01:25:39.615Z |
-| lint-stories.js | 17687 | 2026-05-30T01:25:39.616Z |
+| lint-stories.js | 17687 | 2026-06-20T03:50:59.583Z |
 | materialize-decisions.js | 4165 | 2026-05-30T01:25:39.617Z |
 | migrate-page-tsx-step-refs.js | 2607 | 2026-05-30T01:25:39.618Z |
 | mode-set.js | 10572 | 2026-06-11T20:50:28.863Z |
@@ -162,10 +164,10 @@ Scripts: **176** | npm scripts: **0** | External CLIs: **3**
 | test-requirement-format-guard.js | 4756 | 2026-05-30T01:25:39.679Z |
 | test-response-size-guard.js | 2469 | 2026-05-30T01:25:39.680Z |
 | test-settings-edit-guard.js | 3000 | 2026-06-04T21:24:41.662Z |
-| test-sprint-hooks.js | 55673 | 2026-05-30T01:25:39.680Z |
+| test-sprint-hooks.js | 55645 | 2026-06-18T23:27:09.578Z |
 | test-sprint-migration.js | 20071 | 2026-05-30T01:25:39.680Z |
 | test-sprint-tracker-autoinject.js | 6472 | 2026-05-30T01:25:39.681Z |
-| test-sprint.js | 16394 | 2026-06-08T20:28:50.029Z |
+| test-sprint.js | 16392 | 2026-06-18T23:27:09.579Z |
 | test-staged-drift-reconciler.js | 4458 | 2026-05-30T01:25:39.681Z |
 | test-team-guard.js | 4559 | 2026-05-30T01:25:39.682Z |
 | test-update-discovery.js | 6620 | 2026-05-30T01:25:39.682Z |

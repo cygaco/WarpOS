@@ -1,6 +1,6 @@
 # Hooks Map
 
-Generated: 2026-06-16T22:20:39.214Z
+Generated: 2026-06-28T02:37:50.334Z
 
 **77** hook scripts (65 registered, 12 orphan), **18** lib modules, **74** wiring entries.
 
@@ -120,7 +120,7 @@ Generated: 2026-06-16T22:20:39.214Z
 | create-worktree-from-head.js | no | 4250 | 2026-05-30T01:25:39.581Z |
 | cycle-enforcer.js | yes | 7071 | 2026-05-30T01:25:39.582Z |
 | dependency-admission-guard.js | yes | 1300 | 2026-05-30T01:25:39.583Z |
-| dispatch-route-guard.js | yes | 28003 | 2026-06-10T22:27:30.681Z |
+| dispatch-route-guard.js | yes | 33548 | 2026-06-17T00:30:34.317Z |
 | edit-watcher.js | yes | 29693 | 2026-05-30T01:25:39.583Z |
 | event-contract.js | yes | 4048 | 2026-05-30T01:25:39.585Z |
 | excalidraw-guard.js | yes | 920 | 2026-05-30T01:25:39.585Z |
@@ -158,8 +158,8 @@ Generated: 2026-06-16T22:20:39.214Z
 | secret-guard.js | yes | 2786 | 2026-05-30T01:25:39.600Z |
 | self-mod-governance.js | yes | 923 | 2026-05-30T01:25:39.601Z |
 | session-end-team-teardown.js | yes | 5181 | 2026-06-11T20:50:28.863Z |
-| session-start-teaminit.test.js | no | 4665 | 2026-06-08T19:49:48.192Z |
-| session-start.js | yes | 30063 | 2026-06-10T00:04:52.691Z |
+| session-start-teaminit.test.js | no | 5504 | 2026-06-20T05:24:57.811Z |
+| session-start.js | yes | 31856 | 2026-06-20T05:24:57.811Z |
 | session-stop-sentinel.test.js | no | 5847 | 2026-06-08T22:03:39.609Z |
 | session-stop.js | yes | 19907 | 2026-06-08T22:01:59.750Z |
 | session-tracker.js | yes | 9491 | 2026-05-30T01:25:39.602Z |
@@ -178,7 +178,7 @@ Generated: 2026-06-16T22:20:39.214Z
 | systems-sync.js | yes | 7605 | 2026-05-30T01:25:39.607Z |
 | team-guard-gate.test.js | no | 12211 | 2026-06-11T20:50:28.863Z |
 | team-guard-sprint.test.js | no | 6934 | 2026-06-11T20:50:28.863Z |
-| team-guard.js | yes | 40737 | 2026-06-11T20:50:28.863Z |
+| team-guard.js | yes | 41386 | 2026-06-20T05:24:57.811Z |
 | template-fillability.js | yes | 2939 | 2026-05-30T01:25:39.607Z |
 | test.js | no | 11730 | 2026-05-30T01:25:39.608Z |
 | tracker-completion-gate.js | yes | 3400 | 2026-06-07T03:35:59.240Z |
@@ -194,7 +194,7 @@ Generated: 2026-06-16T22:20:39.214Z
 | Module | Size | Modified |
 |---|---|---|
 | banner.js | 4392 | 2026-05-30T01:25:39.588Z |
-| concurrency-lock.js | 10962 | 2026-05-30T01:25:39.589Z |
+| concurrency-lock.js | 11716 | 2026-06-16T23:13:06.421Z |
 | context-sources.js | 8286 | 2026-05-30T01:25:39.589Z |
 | gate-schema.js | 3894 | 2026-05-30T01:25:39.589Z |
 | injection-patterns.js | 2949 | 2026-05-31T00:23:04.879Z |
@@ -203,11 +203,11 @@ Generated: 2026-06-16T22:20:39.214Z
 | mode-lifecycle.js | 6175 | 2026-06-10T00:04:52.690Z |
 | mode.js | 2944 | 2026-06-10T00:04:52.691Z |
 | oneshot-store.js | 2337 | 2026-06-08T21:07:45.656Z |
-| paths.generated.js | 11303 | 2026-06-15T04:16:17.743Z |
+| paths.generated.js | 11297 | 2026-06-18T23:27:09.572Z |
 | paths.js | 6608 | 2026-06-05T01:45:08.446Z |
 | project-config.js | 4488 | 2026-05-30T01:25:39.591Z |
 | provider-health.js | 10306 | 2026-05-30T01:25:39.592Z |
-| providers.js | 46285 | 2026-06-10T22:27:30.681Z |
+| providers.js | 46285 | 2026-06-17T22:39:54.208Z |
 | role-aliases.js | 3333 | 2026-06-08T05:23:57.530Z |
 | skill-telemetry.js | 5275 | 2026-05-30T01:25:39.593Z |
 | untrusted-content.js | 2482 | 2026-05-31T00:20:08.687Z |

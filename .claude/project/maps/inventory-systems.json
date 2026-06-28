@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated": "2026-06-16T22:20:39.214Z",
-    "lastUpdated": "2026-06-16T22:20:39.214Z",
-    "total_systems": 88,
+    "generated": "2026-06-28T02:37:50.334Z",
+    "lastUpdated": "2026-06-28T02:37:50.334Z",
+    "total_systems": 90,
     "categories": 2,
-    "total_files_referenced": 87,
+    "total_files_referenced": 89,
     "missing_files_on_disk": 1,
     "regenerated_by": "scripts/regen-maps.js"
   },
@@ -16,7 +16,7 @@
       ]
     },
     "untested": {
-      "count": 87,
+      "count": 89,
       "ids": [
         "skill-roadmap-ideas",
         "skill-roadmap-next",
@@ -104,7 +104,9 @@
         "skill-panel-admin",
         "skill-panel-roadmap",
         "skill-panel-list",
-        "skill-scan-panel-registry-coverage"
+        "skill-scan-panel-registry-coverage",
+        "skill-scan-model-chain",
+        "skill-maps-steps"
       ]
     }
   },
@@ -121,7 +123,7 @@
       ]
     },
     "cognition": {
-      "count": 87,
+      "count": 89,
       "systems": [
         {
           "id": "skill-_report_skill_tmp",
@@ -329,6 +331,14 @@
           "status": "untested",
           "files": [
             ".claude/commands/maps/coverage.md"
+          ]
+        },
+        {
+          "id": "skill-maps-steps",
+          "name": "Regenerate step tables in canonical docs from _requirements/00-canonical/STEPS.json — closes the last loop in the step-registry infrastructure.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/maps/steps.md"
           ]
         },
         {
@@ -604,6 +614,14 @@
           ]
         },
         {
+          "id": "skill-scan-model-chain",
+          "name": "The named enforcer (ED-058) for the role-registry model/effort CHAIN — opus-4.8 is the shipped top, max is alpha-only, no `fable` as a model, every role carries a scaled model+effort, and the live dispatch consumers (catalog.js/providers.js) resolve to the SAME provider+effort the registry declares. Report-only in /scan:full.",
+          "status": "untested",
+          "files": [
+            ".claude/commands/scan/model-chain.md"
+          ]
+        },
+        {
           "id": "skill-scan-panel-registry-coverage",
           "name": "Coverage enforcer for the panel-registry (the /panel:* suite) — every `panels` row is well-shaped ({name, opener, description, run_context}; run_context ∈ {in_app, cli}) and its opener resolves to a real backing target (a `node <script>` file exists; a `/ns:name` skill resolves via dispatch-skill --resolve). An orphan/phantom/unsafe opener is a hard finding. Fail-CLOSED (exit ≥2) on the enforcer's OWN corrupt input — distinct from a clean pass (0) and a finding (1). Wired REPORT-ONLY into /scan:full.",
           "status": "untested",
@@ -836,13 +854,13 @@
       "id": "agents",
       "name": "Agent team + build chains",
       "category": "agents",
-      "count": 68
+      "count": 72
     },
     {
       "id": "skills",
       "name": "Skills",
       "category": "capability",
-      "count": 230
+      "count": 231
     },
     {
       "id": "hooks",
