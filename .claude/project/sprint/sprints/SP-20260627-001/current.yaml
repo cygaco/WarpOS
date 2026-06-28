@@ -2,9 +2,9 @@ schema: warpos/sprint/current-sprint/v1
 id: SP-20260627-001
 title: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy"
 objective: "Make the dispatch-contract enforce gate default to ENFORCE without false-refusing legitimate dispatches, and add the per-failure-class minimum-review-lane policy — closing E-DISPATCH-SHAPE-001's last two DoD items and unblocking E-DISPATCH-PERFECT-001 W3 (the codex-doer build shape)."
-status: designing
+status: done
 created_at: "2026-06-28T02:47:21.101Z"
-updated_at: "2026-06-28T03:35:47.869Z"
+updated_at: "2026-06-28T04:20:42.559Z"
 source_request: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy (keystone, unblocks E-DISPATCH-PERFECT W3)."
 interpreted_intent: "Repair the ADR-0013 dispatch-contract enforce path so its default-enforce mode stops false-refusing legitimate `-w` build-chain dispatches (cwd=canonical at validation time because the wrapper creates the worktree afterward), generic `fixer` dispatches, and normalized legacy role names; then flip contractEnforceMode to enforce-by-default while preserving the env override and kill-switch. Separately, formalize the W3 per-failure-class minimum-review-lane policy so each risk class declares the review lanes it requires, wired into the sprint hook-points + coverage-gate with a planted fixture per class."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml"
@@ -23,10 +23,7 @@ tickets:
   proposed: []
   planned: []
   designed: []
-  ready_for_execution:
-    - T-20260628-357
-    - T-20260628-358
-    - T-20260628-359
+  ready_for_execution: []
   in_progress: []
   blocked: []
   waiting_on_human: []
@@ -34,7 +31,10 @@ tickets:
   in_review: []
   qa_failed: []
   redteam_failed: []
-  done: []
+  done:
+    - T-20260628-357
+    - T-20260628-358
+    - T-20260628-359
   released: []
   deferred: []
   abandoned: []

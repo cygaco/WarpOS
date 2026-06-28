@@ -1081,7 +1081,7 @@ sprints:
     updated_at: "2026-06-18T23:46:32.450Z"
   - id: SP-20260627-001
     title: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy"
-    status: planning
+    status: done
     lane:
       type: default
       value: null

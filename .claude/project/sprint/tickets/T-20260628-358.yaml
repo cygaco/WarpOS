@@ -2,10 +2,10 @@ schema: warpos/sprint/ticket/v1
 id: T-20260628-358
 title: "WS-2 no-widen: negative fixture per refused class (exit-1 under enforce) + BC-16 fail-closed + cross-provider gauntlet on the diff"
 type: qa
-status: ready_for_execution
+status: done
 sprint: SP-20260627-001
 created_at: "2026-06-28T03:35:09.838Z"
-updated_at: "2026-06-28T03:35:47.819Z"
+updated_at: "2026-06-28T04:20:42.482Z"
 owner: null
 owner_agent: null
 risk_level: high
