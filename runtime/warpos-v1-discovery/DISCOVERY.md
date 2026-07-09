@@ -108,6 +108,24 @@ The single best subsystem is the **dispatch kernel** (already MECH-NEUTRAL with 
 15. Product security scanner class (rls/route-matrix/api-boundary/demo-data/env-sep — greenfield) + founder-panel store/generator + proof-based launch gates.
 16. Truth/Release pack: widen version-quorum to all ~8 surfaces; ownership-manifest commit gate (symmetry); fleet-reconcile enforcer (portfolio staleness); release-notes honesty gate; close the `--skip` bypass (non-skippable critical gates or audit-logged reason); engine-sprint release lane (RI-001). Immediate fixes: WARPOS.md header 0.14.0→0.17.0, recreate `_requirements/02-copy-system/`.
 
+## 6a. Systems discovery addendum (/discover:systems, 2026-07-09)
+
+Six-angle system discovery (declarative/structural/behavioral/refgraph/convention/historical) ran post-synthesis — full rollup + angle reports in `systems/ROLLUP.md`. ~49 systems classified: **~22 Solid · ~10 Emergent · ~10 Ghost · ~7 Fragile**. Headline additions to the backlog:
+
+**P2 additions (interop/infra):**
+- **Logging/observability charter (the operator-named gap):** ~10 ownerless log streams (17MB events monolith, 9.2MB tools, team-guard-debug, CODEX-LOG.md, per-session logs, runtime/*.log) with no rotation/schema/owner, split across ≥4 roots — only ONE is declared. Unify into the v1 event-streams design (dated dirs + schema + rotation + query CLI); the query CLI doubles as the post-smart-context memory surface.
+- Rebuild the systems register (systems.jsonl is 90 skill-echoes naming ~0 systems); seed from ROLLUP.
+- Repoint literal writers to decayed path keys (dispatchLocks/dispatchDeathsFile) + add missing root keys (trackers/, migrations/, _guides/, _knowledge/, _planning/).
+- Register the codex-lane (.codex/ + CODEX-LOG.md) as a first-class provider system.
+- Automate dual-manifest regen at the commit hook (the hottest co-commit edge — 196 in 90d — is pure bookkeeping tax).
+
+**P3 additions (hygiene):**
+- Scratch/archive GC policy: .warpos/ (11,244 files, largest dir in repo), runtime/ vs .claude/runtime/ dual-root unification, handoffs (97), gamma transcripts (100+), sprint-state accretion (2,379 files).
+- Fix stale constitution text: AGENTS.md §Review Protocol (describes the retired 4-agent gauntlet), CLAUDE.md §Prompt Pipeline (smart-context now disabled), CLAUDE.md §Skill Use (ranker never fired).
+- Add bite-tests for the 43/77 enforcers lacking one; reconcile the two test-naming conventions.
+- Delete after verify: drift-*.js suite (~10 files), ~30 orphan one-off scripts, absent declared event fan-outs.
+- **"Stores lag enforcers" anomaly:** cognitive-memory writes (learnings/traces/β-store) dormant 3–6 weeks while guards fire thousands/day — the learning loop stopped writing; revive via the promotion gate + memory CLI.
+
 ## 7. Lane report index
 
 | # | Lane | File |
