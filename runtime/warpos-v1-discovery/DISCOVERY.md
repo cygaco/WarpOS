@@ -112,8 +112,16 @@ The single best subsystem is the **dispatch kernel** (already MECH-NEUTRAL with 
 
 Six-angle system discovery (declarative/structural/behavioral/refgraph/convention/historical) ran post-synthesis — full rollup + angle reports in `systems/ROLLUP.md`. ~49 systems classified: **~22 Solid · ~10 Emergent · ~10 Ghost · ~7 Fragile**. Headline additions to the backlog:
 
+**P1 addition — LOGGING REBUILD (operator directive 2026-07-09: "logging needs to be fixed — fine for small projects, now enormous"):**
+Promote the logging charter from P2 to a named P1 workstream. Design (v1 packet doc 12 + measured reality):
+- **Layout:** split the 17.2MB monolith into `_events/YYYY-MM-DD/<subsystem>.jsonl` (dispatch/hooks/sprint/session/release/panel/product) — one-shot migration script splits the existing log; old file archived, never mutated.
+- **One writer, schema-validated:** logger.js v2 enforces `warpos/event/v1` at write time (fail-closed on malformed), replacing today's append-anything.
+- **Rotation + compaction:** `events/compact.js`; unrotated-size budget check as a standing enforcer.
+- **Materialized views:** maps/inventories regenerated FROM events (kills the chronic staleness class — inventory currently wrong by ~1,400 events).
+- **Query CLI:** `warpos events query` — indexed reads replacing today's O(17MB) backwards scan; this is also the helm-neutral memory/recall surface post-smart-context.
+- **Stream registry:** every log stream registered (owner, schema, rotation policy); an enforcer flags unregistered log files at the known roots — ends the "every subsystem invents its own log" pattern (team-guard-debug.log, CODEX-LOG.md, runtime/*.log all get registered or routed).
+
 **P2 additions (interop/infra):**
-- **Logging/observability charter (the operator-named gap):** ~10 ownerless log streams (17MB events monolith, 9.2MB tools, team-guard-debug, CODEX-LOG.md, per-session logs, runtime/*.log) with no rotation/schema/owner, split across ≥4 roots — only ONE is declared. Unify into the v1 event-streams design (dated dirs + schema + rotation + query CLI); the query CLI doubles as the post-smart-context memory surface.
 - Rebuild the systems register (systems.jsonl is 90 skill-echoes naming ~0 systems); seed from ROLLUP.
 - Repoint literal writers to decayed path keys (dispatchLocks/dispatchDeathsFile) + add missing root keys (trackers/, migrations/, _guides/, _knowledge/, _planning/).
 - Register the codex-lane (.codex/ + CODEX-LOG.md) as a first-class provider system.
