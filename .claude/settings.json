@@ -1,7 +1,19 @@
 {
+  "_disabled_hooks": {
+    "smart-context": {
+      "event": "UserPromptSubmit",
+      "hook": {
+        "type": "command",
+        "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/smart-context.js\""
+      },
+      "disabledAt": "2026-07-09",
+      "reason": "Operator directive (WarpOS-v1 plan): automatic prompt context injector off. Re-enable: move this hook back into hooks.UserPromptSubmit[0].hooks, flip enabled:true in framework/hooks.registry.json, run scripts/hooks/build.js + scripts/warpos/settings/compile.js."
+    }
+  },
   "hooks": {
     "SessionStart": [
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -11,27 +23,23 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-start-of-work.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "UserPromptSubmit": [
       {
+        "matcher": "*",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/smart-context.js\""
-          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-logger.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "PreToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -69,10 +77,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/version-bump-guard.js\""
           }
-        ],
-        "matcher": "Bash"
+        ]
       },
       {
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -138,10 +146,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/lint-hook-output.js\""
           }
-        ],
-        "matcher": "Edit|Write"
+        ]
       },
       {
+        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",
@@ -175,37 +183,37 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-validator.js\""
           }
-        ],
-        "matcher": "Agent"
+        ]
       },
       {
+        "matcher": "Read|Grep|Glob",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/boss-boundary.js\""
           }
-        ],
-        "matcher": "Read|Grep|Glob"
+        ]
       },
       {
+        "matcher": "mcp__claude_ai_Excalidraw__*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/excalidraw-guard.js\""
           }
-        ],
-        "matcher": "mcp__claude_ai_Excalidraw__*"
+        ]
       },
       {
+        "matcher": "AskUserQuestion",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/beta-gate.js\""
           }
-        ],
-        "matcher": "AskUserQuestion"
+        ]
       },
       {
+        "matcher": "SlashCommand|Skill",
         "hooks": [
           {
             "type": "command",
@@ -215,12 +223,12 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/mode-lifecycle-guard.js\""
           }
-        ],
-        "matcher": "SlashCommand|Skill"
+        ]
       }
     ],
     "PostToolUse": [
       {
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -230,10 +238,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/ledger-presence-guard.js\""
           }
-        ],
-        "matcher": "Bash"
+        ]
       },
       {
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -307,10 +315,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/memory-enforcement-guard.js\""
           }
-        ],
-        "matcher": "Edit|Write"
+        ]
       },
       {
+        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",
@@ -320,41 +328,41 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/response-size-guard.js\""
           }
-        ],
-        "matcher": "Agent"
+        ]
       },
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-tracker.js\""
           }
-        ],
-        "matcher": ""
+        ]
       },
       {
+        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/untrusted-content-firewall.js\""
           }
-        ],
-        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool"
+        ]
       }
     ],
     "PostCompact": [
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/compact-saver.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "Stop": [
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -362,19 +370,27 @@
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-completion-gate.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-completion-gate.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "SessionEnd": [
       {
+        "matcher": "*",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
+          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
@@ -383,19 +399,22 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-end-team-teardown.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "StopFailure": [
       {
+        "matcher": "*",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
+          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
           }
-        ],
-        "matcher": ""
+        ]
       }
     ]
   },
@@ -426,7 +445,7 @@
     ]
   },
   "_compiledBy": "warpos/settings-compiler/v1",
-  "_compiledAt": "2026-06-10T02:45:26.217Z",
-  "_defaultsSha": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e",
+  "_compiledAt": "2026-07-09T22:11:19.868Z",
+  "_defaultsSha": "77691d86dca8af1a13fc190bf31cdda9f5ef6d5690968bef4c6d83bddcb7e2db",
   "_localSha": "6d12f563441d4a8271a5d2c85c92c0b58ece50d84e6abfd756ee52543568f0f2"
 }

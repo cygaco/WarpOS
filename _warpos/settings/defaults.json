@@ -1,4 +1,15 @@
 {
+  "_disabled_hooks": {
+    "smart-context": {
+      "event": "UserPromptSubmit",
+      "hook": {
+        "type": "command",
+        "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/smart-context.js\""
+      },
+      "disabledAt": "2026-07-09",
+      "reason": "Operator directive (WarpOS-v1 plan): automatic prompt context injector off. Re-enable: move this hook back into hooks.UserPromptSubmit[0].hooks, flip enabled:true in framework/hooks.registry.json, run scripts/hooks/build.js + scripts/warpos/settings/compile.js."
+    }
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -18,10 +29,6 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/smart-context.js\""
-          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-logger.js\""
