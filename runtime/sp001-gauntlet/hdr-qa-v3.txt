@@ -1,0 +1,14 @@
+You are the QA REVIEWER re-reviewing after a SECOND fix. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on the CURRENT code below (post-fix commit b404b8cc): FUNCTIONAL + TRACEABILITY + INTEGRITY. Binding — orchestrator cannot override a FAIL.
+
+The form-contract + submit-button BLOCKERs were fixed two rounds ago. These findings were STILL-OPEN last round — re-judge EACH against CURRENT code: FIXED or STILL-PRESENT (current file:line/flow), then NEW findings.
+  1 [HIGH] Orphan toggle for non-owner items: in-sprint (sprint-work/waiver) AND done items rendered a toggle the server rejects. UX spec: waiver/sprint-work are STATUS-DISPLAY-ONLY. Commit claims "display-only in-sprint" — VERIFY both groups now render non-owner items WITHOUT a toggle.
+  2 [HIGH] Action errors not surfaced: {ok:false,error} returned but no useActionState / use-client child / error slot — denied/failed/unknown-id toggles look like silent no-ops to the founder. UX spec mandates toast.error + revert. AC-A6c requires the unknown-id error be "surfaced." VERIFY implemented or still absent.
+  3 [from prior] traversal-shaped ref (../../DEV_SETUP_GUIDE.md) resolved instead of 404. Commit touched the guide-viewer — VERIFY it now 404s.
+
+Re the AC set you're judging against (10 ACs): AC-A4/A5 (cold/warm FTUE) + AC-A6/A6b/A6c (write-back) + AC-A7 (gate) + AC-A8 (deep-links) + AC-ship/brand/design. Note AC-A4/A5/A-design are verified_by Playwright (readiness-panel.spec.ts) — judge the CODE's conformance; the Playwright proof is a separate lane.
+
+SCOPE: founder flows as failure-mode personas; traceability (units cohere, no orphan affordance); integrity (no swallowed errors, no silent no-ops). CONTEXT: .tmpl = scaffold templates (no tsc); producer half at product repo root (not in bundle).
+
+Output a ReviewResult: VERDICT (PASS or FAIL), per-prior-finding disposition, NEW findings (severity, file:line/flow, what+why). Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (post-fix b404b8cc) =====

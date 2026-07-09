@@ -1,0 +1,35 @@
+You are the Director of Product (DoP) for WarpOS, an autonomous AI software company. Consulted at
+the PLAN step of sprint SP-20260619-001. Read-only: strategic judgment, not edits. Return a concise
+envelope (≤22 lines).
+
+YOUR LENS (DoP): strategy / what the example should TEACH / risk appetite / opportunity cost.
+
+=== SPRINT BRIEF (self-contained) ===
+GOAL: WarpOS ships a "baseline" set of requirement templates/examples to every consumer product at
+install (`_requirements/**` — product brief, product model, user cohorts, glossary, golden paths,
+copy strategy, architecture contracts). These currently use a PAST example product, "jobzooka," as
+the worked example. jobzooka is a resume/job-search SaaS ("turns your resume into a targeted job
+search machine — market-aware resumes, LinkedIn content, one-click applications, Bright Data scraping,
+a Chrome extension"). W4 genericizes jobzooka OUT and replaces it with a NEUTRAL generic example
+product that reads well as a shipped example a NEW founder learns the requirement structure from.
+
+SCOPE: 76 files (38 canonical `_requirements/**` + 38 mirrored `_warpos/BASELINE/_requirements/**`),
+226 hits. Clusters: 00-canonical (CORE_BRIEF/PRODUCT_MODEL/USER_COHORTS/GLOSSARY/GOLDEN_PATHS), 02-copy
+(COPY_STRATEGY 18-hit voice doc + SURFACE_MAP), 03-architecture (~15 files: API/auth/data-flow/contracts).
+The replacement must be COHERENT across all of them (name + persona + value-prop + "not-X" boundaries +
+the copy voice), not find-replace that orphans references.
+
+=== YOUR DECISION ===
+1. What KIND of neutral example product best serves a SHIPPED baseline a new founder learns from? The
+   candidates: a generic productivity/SaaS (task manager, notes, scheduling, lightweight CRM, habit
+   tracker)? It should (a) be neutral/uncontroversial, (b) map cleanly onto the EXISTING doc structure
+   (so the genericization is a substitution not a rewrite), (c) be realistic enough to teach real
+   requirement-writing, (d) NOT be a real product (avoid trademark/brand). Recommend ONE archetype +
+   why; or a naming approach (e.g. a clearly-fictional product name like "Acme<X>" / "Example<X>").
+2. Should the example stay in the SAME domain shape as jobzooka (a data-driven SaaS with scraping/AI/
+   extension) to minimize rewrite, or shift to a SIMPLER neutral domain (cleaner teaching example)?
+   Tradeoff: same-shape = least edit churn; simpler = better baseline teaching value.
+3. Risk: this baseline SHIPS — a confusing/incoherent example teaches a new founder badly. What's the
+   acceptance bar for "reads well as a shipped example"?
+Return: VERDICT + the recommended example-product archetype/name + the reads-well bar.
+Do NOT descope; this is a TOP-epic ship-now wave. Operator-greenlit.

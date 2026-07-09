@@ -1,0 +1,3 @@
+[sprint:full] cost-gate OFF — heuristic cost halts disabled for this run (hard ceilings + the real >$5 operator rule are unaffected).
+resume: release record already prepared (RL-20260628-046) — skipping
+/sprint:full halted (beta_consult_pending). See C:\Users\Vlad\Desktop\Claude\Projects\WarpOS\.claude\project\sprint\full-reports\SP-20260627-001\halt-2026-06-28T05-38-51-353Z.md

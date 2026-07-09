@@ -1,0 +1,52 @@
+You are the backend-builder. CLUSTER 1 of a jobzooka→AcmeLaunch genericization, in an isolated
+worktree. Re-domain ONLY the 00-canonical requirement docs (+ their BASELINE mirrors) from the past
+example product "jobzooka" (a resume/job-search SaaS) to "AcmeLaunch" (a launch-planning SaaS). The
+baseline SHIPS to consumers — a coherent re-domaining, NOT a find-replace. DOCS only.
+
+═══ THIS CLUSTER'S FILES (edit each canonical + its BASELINE mirror with the SAME edits) ═══
+- _requirements/00-canonical/CORE_BRIEF.md          + _warpos/BASELINE/_requirements/00-canonical/CORE_BRIEF.md
+- _requirements/00-canonical/PRODUCT_MODEL.md       + _warpos/BASELINE/_requirements/00-canonical/PRODUCT_MODEL.md
+- _requirements/00-canonical/USER_COHORTS.md        + _warpos/BASELINE/_requirements/00-canonical/USER_COHORTS.md
+- _requirements/00-canonical/GLOSSARY.md            + _warpos/BASELINE/_requirements/00-canonical/GLOSSARY.md
+- _requirements/00-canonical/GOLDEN_PATHS.md        + _warpos/BASELINE/_requirements/00-canonical/GOLDEN_PATHS.md
+- _requirements/00-canonical/EVOLUTION.md           + _warpos/BASELINE/_requirements/00-canonical/EVOLUTION.md
+- _requirements/00-canonical/FAILURE_STATES.md      + _warpos/BASELINE/_requirements/00-canonical/FAILURE_STATES.md
+(First `grep -ril jobzooka _requirements/00-canonical/` to confirm which of these actually contain it;
+edit only those + their mirrors. Touch NOTHING outside 00-canonical this cluster.)
+
+═══ ACMELAUNCH (the product these docs describe) ═══
+Value prop: turns a rough product idea into a launch-ready operating plan (milestones, tasks, launch
+assets, customer follow-up, controlled launch run). Persona: solo founders/small teams (first launch/
+relaunch/beta/waitlist). Voice: calm, practical, launch-operator, reduces founder anxiety, no hype.
+Not-X: not a PM clone / template library / social scheduler / CRM / black-box auto-launcher.
+Core flow: idea brief → constraints → audience/channel research → milestones → tasks → assets →
+launch run → customer follow-up.
+Core entities (use these names): LaunchPlan, IdeaBrief, FounderProfile, Milestone, Task, LaunchAsset,
+AudienceSegment, CustomerLead, FollowUpSequence, LaunchRun, LaunchReadinessScore (+ a launch-research
+spine: LaunchResearchRun/ResearchSource for any "research"/"market data" the brief mentions).
+
+═══ RE-DOMAINING MAP (for 00-canonical: identity/cohorts/glossary/golden-flows/risks) ═══
+- job seeker/applicant → founder/operator · recruiter/employer → customer/early-adopter/launch-audience
+- resume → IdeaBrief or LaunchPlan (by context) · profile → FounderProfile
+- preferences → launch constraints (timeline/budget/channels/audience/geography)
+- job listing/job market → launch opportunity landscape (audience segments, channels, competitors, pains)
+- targeted resume variant → segment-specific launch asset pack · auto-apply → guided launch execution
+- "market-aware resumes / LinkedIn content / one-click applications" (the jobzooka tagline) → AcmeLaunch's
+  launch-planning value (a market-aware launch plan, channel-ready assets, guided launch execution)
+- READY/AIM/FIRE → PLAN/PREP/LAUNCH · competitiveness score → LaunchReadinessScore
+- jobzooka's "not a job board / not a resume template tool" → AcmeLaunch's not-X (above)
+- RISKS (FAILURE_STATES): job-search risks (no jobs found, bad resume match) → launch risks (vague
+  positioning, missing audience, stale tasks, asset drift, over-automation, skipped follow-up)
+- COHERENCE: re-domain the MEANING, not just the name — a sentence about "the applicant's job search"
+  becomes "the founder's launch," not "the applicant's launch." No surviving resume/job-search concepts.
+
+═══ DONE WHEN ═══
+1. `grep -ril jobzooka _requirements/00-canonical/ _warpos/BASELINE/_requirements/00-canonical/` = ZERO.
+2. No surviving job-app domain concepts in these files (recruiter/applicant/job-seeker/cover-letter/
+   resume/job-listing/job-board) except justified non-domain usage you note.
+3. The canonical edit and its BASELINE mirror are byte-consistent for each file.
+4. No file reads like a partial find-replace; AcmeLaunch reads as ONE coherent product across the cluster.
+5. No newly-introduced warpos/masterconsole/alex.
+COMMIT your work in the worktree (`git add` the edited files + commit with a clear message). Report what
+you edited + the grep-zero result on 00-canonical (both trees). This is ONE cluster — do NOT touch
+02-copy-system, 03-architecture, or any other dir. STOP + report if you can't re-domain something coherently.

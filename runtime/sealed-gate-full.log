@@ -1,0 +1,10 @@
+sealed-capsule-contract-gate — current canonical manifest (--full)
+  ok    shipped manifest current
+  ok    sealed 1311/1311 assets, all hashes verified
+  ok    isolated out-of-tree repo (outside canonical) 
+  ok    canonical unreachable from sealed install (no reach-back)
+  ok    scan:install certifies the sealed install
+  ok    matrix: all 4 cells (role×mode) passed
+
+PASS — sealed-capsule-contract-gate (0 failures)
+EXIT=0

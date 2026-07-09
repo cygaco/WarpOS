@@ -1,0 +1,1 @@
+{"ok":true,"provider":"openai","model":"gpt-5.5","actualModel":"gpt-5.5","output":"VERDICT=PASS BLOCKERS=0 NOTES=6","stderrBytes":4036,"cmd":"codex exec --sandbox workspace-write -c model_reasoning_effort=xhigh -m gpt-5.5 -","role":"backend-reviewer","specModel":"gpt-5.5","envelopeValidation":{"ok":false,"errors":["no JSON object found"],"normalized":null}}

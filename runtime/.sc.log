@@ -1,0 +1,1 @@
+OK   [warpos-ship-coverage] every framework-owned path ships or is allowlisted (1907 paths scanned, 0 hard_gaps, 0 info_gaps, 0 boundary_violations); seeded_from: 0 dangling (0.16.0: prefix-drift reconciled in the generator; KNOWN_DANGLING_SET empty; zero-tolerance).

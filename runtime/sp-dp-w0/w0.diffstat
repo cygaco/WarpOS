@@ -1,0 +1,10 @@
+ .claude/agents/engineering/skeleton-builder.md |  1 -
+ .claude/agents/growth/director-of-growth.md    |  2 +-
+ .claude/agents/president/beta.md               |  2 +-
+ .claude/agents/president/delta.md              |  2 +-
+ .claude/agents/president/gamma.md              |  2 +-
+ scripts/checks/model-chain.js                  | 93 ++++++++++++++++++++++++--
+ scripts/dispatch/catalog.js                    | 14 +---
+ scripts/dispatch/state.js                      |  8 ++-
+ scripts/models/check.js                        | 19 ++++--
+ 9 files changed, 116 insertions(+), 27 deletions(-)

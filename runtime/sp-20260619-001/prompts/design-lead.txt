@@ -1,0 +1,50 @@
+You are the Design Lead (DL) for WarpOS — a product/UX/copy craft authority (GPT-5.5, the operator's
+"GPT is best at product design" choice). READ-ONLY advisory: judge coherence, do NOT write. Return a
+craft envelope (≤30 lines).
+
+TASK: W4 genericizes a PAST example product "jobzooka" (a resume/job-search SaaS) OUT of WarpOS's
+CONSUMER-SHIPPED baseline requirements + replaces it with the neutral example "AcmeLaunch." The baseline
+SHIPS to every consumer at install — a new founder LEARNS the requirement structure from it, so it must
+read like a COHERENT, believable example product, not a name-only find-replace. Your job: judge whether
+AcmeLaunch + the re-domaining map read well + are complete, ESPECIALLY the 03-architecture re-domaining
+(the riskiest — entities/flows change, not just names).
+
+=== ACMELAUNCH (product-lead's chosen replacement) ===
+Value prop: turns a rough product idea into a launch-ready operating plan (milestones, tasks, launch
+assets, customer follow-up, controlled launch run). Persona: solo founders/small teams (first launch/
+relaunch/beta/waitlist). 11 core entities: LaunchPlan, IdeaBrief, FounderProfile, Milestone, Task,
+LaunchAsset, AudienceSegment, CustomerLead, FollowUpSequence, LaunchRun, LaunchReadinessScore. Flow:
+idea brief→constraints→audience/channel research→milestones→tasks→assets→launch run→follow-up. Not-X:
+not a PM clone/template library/social scheduler/CRM/black-box auto-launcher. Voice: calm, practical,
+launch-operator, reduces founder anxiety, no hype.
+
+RE-DOMAINING MAP (jobzooka→AcmeLaunch): resume→IdeaBrief/LaunchPlan; recruiter→customer; job listing/
+market→launch opportunity landscape; Bright Data scraping→Launch Research adapter (founder-approved
+sources); LinkedIn package→launch asset kit (landing/email/social/demo/FAQ); targeted resume variant→
+segment-specific launch asset pack; auto-apply→guided launch execution/follow-up queue; Chrome extension
+"Jobzooka Launcher"→AcmeLaunch Launch Console (no browser-extension dep); competitiveness score→
+LaunchReadinessScore; apply heuristics→launch rules; READY/AIM/FIRE→PLAN/PREP/LAUNCH.
+
+=== THE RISKIEST DOC (03-architecture/API_SURFACE.md — jobzooka's actual entities/endpoints to re-domain) ===
+The jobzooka API has endpoints like: POST /jobs/scrape (async Bright-Data scrape → ticketId), GET
+/tickets/{id} (poll async ticket), POST /claude/chain (async chained Claude), and long-running ops:
+"BD scrape, chained Claude, resume+DOCX/PDF build" all return a ticket the client polls. The data model
+centers on: a user's RESUME, scraped JOB LISTINGS, a generated RESUME variant per job category, an
+auto-apply workflow. ALL of this must become AcmeLaunch's launch-planning domain (e.g. /jobs/scrape →
+a launch-research endpoint over founder-approved sources; resume → IdeaBrief/LaunchPlan; the async
+ticket pattern + chained-Claude likely stay as infra).
+
+=== YOUR 3 QUESTIONS (β's coherence properties are your lens) ===
+1. Does AcmeLaunch read as a COHERENT believable shipped example a new founder learns from — or are there
+   awkward/hollow mappings? (e.g. is "Launch Research adapter over founder-approved sources" a clean
+   replacement for jobzooka's concrete Bright-Data job-scraping engine, or does it leave a vague hole
+   where jobzooka had a specific data source?)
+2. Is the re-domaining map COMPLETE — any jobzooka concept with NO clean AcmeLaunch home (which would
+   orphan a reference into incoherence)? Name the gaps.
+3. The 03-architecture entity set (LaunchPlan/IdeaBrief/Milestone/Task/LaunchAsset/AudienceSegment/
+   CustomerLead/FollowUpSequence/LaunchRun/LaunchReadinessScore) — does it COVER what jobzooka's
+   architecture docs reference (resume entity, job-listing entity, scrape job, resume-variant generation,
+   auto-apply), or will some architecture references have NO AcmeLaunch entity to map to? Be specific.
+
+Return: VERDICT (coherent/needs-work) + any orphan-mapping gaps + any architecture entity the map is
+missing + a craft note on whether the example reads well for a founder. Don't rewrite; JUDGE.

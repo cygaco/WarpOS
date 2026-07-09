@@ -1,0 +1,52 @@
+You are the ops-analyst running the cross-cycle RETRO for sprint SP-20260618-001
+(E-CONTENT-DELIVERY-001 templates-migration). You analyze patterns across the cycle and
+propose adjustments. Read-only analysis; return a structured retro synthesis (≤40 lines).
+For each proposed change, assign a class: A (auto-applyable, trivial/safe), B (needs an ADR),
+or C (escalate — strategic/irreversible). ε defers self-management to α+β, so your output is
+ADVISORY (non-blocking).
+
+=== THE SPRINT (what happened) ===
+Migrated framework/templates (9 dirs/108 files) → _warpos/templates end-state home + built
+_warpos/BASELINE + added install seed-zone provenance + confirmed install update-parity.
+3 backend units (U1 cutover → U2 provenance → U3 parity), backend-first. HIGH risk.
+RESULT: gauntlet GREEN, all 4 epic DoD met, epic → Completed 100%. Commit chain
+a35df99d→eff3b1a0→57476d73→0c802292→54a7acff→85bd9bc9.
+
+=== SIGNALS TO ANALYZE (the cross-cycle learnings) ===
+
+1. DISPATCH-INFRA RELIABILITY (the dominant pain — 5 distinct failure modes in one sprint):
+   - U1 builder REAPED 3× at the 540s foreground clamp: dispatch-claude.js clamps to 540s UNLESS
+     WARPOS_DISPATCH_BACKGROUND=1 is set. The clamp is SILENT (a caller asking for 1800000ms gets
+     540000ms with no signal).
+   - U2 attempt-1 SILENT-DEATH: a backgrounded dispatch + its monitor were DROPPED by the harness
+     after ~47min with NO completion notification (WG-6). Going idle on a bg dispatch = infinite wait.
+   - U2 attempt-2 timeout-cut: even WITH the bg-signal, the OUTER `timeout 560` wrapper is the binding
+     ceiling once the harness backgrounds the call → builder cut mid-finish (builder_nonzero_exit, not
+     a real fail; ε committed the landed work + ran the gates).
+   - Builders did NOT commit incrementally despite the prompt mandate → ε committed partial work after
+     each cut (the U1-lesson recovery pattern).
+   What recurring class is this? What enforcer/change would make the clamp/drop/ceiling self-detecting?
+
+2. PROVIDER READINESS: gemini-3.1-pro-preview (security-reviewer PRIMARY pass) failed with a TIER
+   error (IneligibleTierError → Antigravity migration). NOT a transient — account-level. Caught only
+   mid-gauntlet; sanctioned GPT-2nd-pass failover covered it. Logged ED-060. What pre-flight would
+   catch a tier-dead provider before a binding gauntlet lane depends on it?
+
+3. GAUNTLET VALUE: the cross-provider gauntlet caught a REAL path-traversal in U2's seed-provenance
+   writer that the green build gates (ship-coverage, the unit tests) all MISSED — a binding security
+   FAIL → fix-cycle → PASS. This is the Nth time the gauntlet caught a defect a green gate missed on a
+   HIGH-risk sprint. What does this reinforce about gate design (every gate must be hardened against
+   the thing it checks lying green)?
+
+4. VERIFY-DON'T-INHERIT: the epic tracker (12 days stale) was WRONG twice (claimed populate-source.js
+   absent when it existed under a different role; claimed DoD#4 unconfirmed when structure-parity
+   enforced it). Ground-truthing against disk caught both. Recurring class?
+
+5. STALE-LEAD-STATE: the conductor (ε) and lead (α) message-crossed repeatedly during long silent
+   build stretches — α's watchdog fired on ~40min-old state and nearly reverted the worktree to an
+   earlier commit (would have destroyed U3 + the security fix). ε held ground with live commit-chain
+   evidence + a protective tag. What coordination change would reduce stale-state false-alarms?
+
+=== YOUR OUTPUT ===
+A retro synthesis: the top recurring classes (with the class A/B/C per proposed change), what to
+auto-apply vs ADR vs escalate, and the single highest-leverage change. Be concrete.

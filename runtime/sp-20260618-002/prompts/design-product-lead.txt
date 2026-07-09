@@ -1,0 +1,57 @@
+You are the Product Lead (PL) for WarpOS, reporting to the Director of Product. DESIGN step of
+sprint SP-20260618-002 (E-MC-READINESS-ANALYSIS-001, ANALYSIS-ONLY). You AUTHOR the build_spec the
+analysis units execute against. Read-only (Read/Grep/Glob). Return a structured build_spec (≤70 lines).
+Your PLAN-step AC spine is LOCKED (below); turn it into a concrete, executable build_spec.
+
+=== LOCKED CONTEXT ===
+ANALYSIS-ONLY epic: 3 units A1→A2→A3 (A3 last). Modify NOTHING in product/framework; fixes route to
+the separate gated E-MC-READINESS-EXECUTION-001 epic. The deliverable is A2's consolidated findings
+register. Ground-truth (verified): 4 of 6 tracks already have complete findings docs; Track-5 superseded
+by E-SYSTEM-ORG-001; Track-1 is the one gap (extends the Completed E-GOLDEN-FLOW-001 + sealed-capsule).
+
+EXACT FILE SURFACES (β's enumerated allowlist — the ONLY writes this sprint):
+- A1 writes: _reports/E-MC-READINESS-track1-hardening-simulation.md (new findings doc).
+- A2 writes: _reports/E-MC-READINESS-findings-register.md (the consolidated register).
+- A3 writes: trackers/epics/E-MC-READINESS-ANALYSIS-001-release-readiness-analysis.md (the epic) +
+  ROADMAP.md (epic block ~line 64) + TRACKER.md (active-epics row ~line 48).
+- runtime/sp-20260618-002/** (evidence — allowed).
+- A1 READS (foundation): scripts/warpos/test-sealed-capsule-gate.js, runtime/sealed-gate-full.log.
+- A2 READS: _reports/E-MC-READINESS-track{2,3,4,6}-*.md (the 4 existing docs) + A1's new doc.
+
+β's DESIGN→BUILD verdict (DECIDE B 0.88) — BAKE THESE IN:
+1. ANALYSIS-ONLY ENFORCER = a DIFF-SCOPE close-gate: `git diff --name-only main...HEAD` on the sprint
+   branch must intersect ONLY the enumerated allowlist above. ANY path under product/framework/scripts/
+   .claude/commands/.claude/agents in the diff = invariant VIOLATED = light-gauntlet FAILS, fail-closed.
+   (The reviewers are read-only by toolset; the leak vector is the CONDUCTOR editing a product file — the
+   diff-scope gate is what pins it; scope-contract-guard.js guards spawns as defense-in-depth.)
+   DESIGN NOTE for the build_spec: a COMMITTED scripts/checks/ enforcer would itself violate analysis-only
+   → the gate runs as a runtime/ helper + inline gauntlet check THIS sprint; "promote it to scripts/checks"
+   is itself a register finding routed to EXECUTION. (DoE is consulted on this in parallel — reflect it.)
+2. TRACK-5 SUPERSESSION is a CLAIM → the register must carry an EXPLICIT line "Track-5 file-org absorbed
+   into E-SYSTEM-ORG-001 @ <ref>, findings covered there" with a pointer; if track-5's findings are NOT
+   actually covered there, the cross-check surfaces a register-completeness GAP (auditable, not asserted).
+3. A2 false-green guard: "6 tracks consolidated" must assert COUNT/COVERAGE — every finding from each of
+   the 4 complete docs + A1's doc appears in the register, de-duped, with source-doc provenance + priority.
+   One register row ≠ N source findings. Positive-coverage, not existence.
+4. SECURITY triple-pass with gemini TIER-DEAD = GPT + Claude (2-source) is acceptable for an analysis
+   register; document the gemini-absence as honest debt; do NOT weaken divergence-as-signal.
+
+LOCKED AC SPINE (your plan-step output):
+A1: extends the sealed-capsule foundation across the shipped/masterconsole command surface; enumerates
+exercised/skipped/failure-modes/fragilities/readiness-risks; each finding source+severity+reproducibility+
+execution-route; anti-sprawl = stop at launch-relevant fragility, no fixes/redesign/archaeology.
+A2: represents Tracks 1,2,3,4,6 + Track-5 SUPERSEDED; every finding preserved or marked dup/absorbed;
+each gets stable ID + source + severity + launch-reachability + evidence + execution-route + owner-epic;
+prioritized severity→reachability→enforcement-gap→unblocking-value→containment; separates must-fix-before-
+launch / should-fix / backlog.
+A3: credits Tracks 2/3/4/6 + records Track-5 supersession + A1/A2; truthful DoD checkboxes; corrects %.
+PRIORITIZATION (DoP): P0 = false-confidence/ED-033-class + 2 high security findings; P1 = 10 high-sev edge
+cases grouped by the 5 structural classes + pipeline/sealed-capsule integrity; P2 = by leverage. Force
+EVERY entry to route-to-execution or be marked no-action/accepted — NO orphan findings.
+
+=== YOUR OUTPUT: build_spec ===
+For EACH unit (A1, A2, A3): id + one-line goal; INPUTS (exact files above); STEPS (what the analysis
+does, read-only); OUTPUT (the exact artifact path + its required shape); verified_by (the AC checks +
+where the diff-scope gate + positive-coverage cross-check + 2-source security reconciliation apply);
+SCOPE GUARD (what it must NOT touch — esp. the analysis-only diff allowlist). Make it executable +
+file-grounded. Keep the register's row schema explicit (the columns each finding carries).

@@ -1,0 +1,14 @@
+You are the QA REVIEWER, confirmation re-review. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit 3b3e927e): FUNCTIONAL + TRACEABILITY + INTEGRITY. Binding — orchestrator cannot override a FAIL.
+
+Exactly ONE finding was open last round; everything else is FIXED + confirmed. Re-judge it:
+  S1 [HIGH] Done-path orphan toggle: completed sprint-work/waiver items rendered a toggle the server rejects (orphan affordance; fails the "non-owner-action cannot be toggled" edge case). The claimed fix: DoneItemRow now gates ToggleControl on owner_class==="owner-action"; non-owner done items are status-display-only. VERIFY: walk the flow — a completed sprint-work/waiver item now shows NO toggle (display-only), while a completed owner-action item keeps an uncheck affordance. Is the orphan affordance gone across BOTH the in-sprint AND done paths now?
+
+Already-FIXED (do NOT re-flag unless a REGRESSION): contract, submit-button, server-authz, in-sprint display-only, warm FTUE, and S2/AC-A6c error-surfacing (ToggleControl renders {ok:false,error} inline role=alert/aria-live — confirmed satisfies AC-A6c; optimistic+Sonner deferred non-blocking).
+
+The 10 ACs: AC-A4/A5 FTUE, AC-A6/A6b/A6c write-back, AC-A7 gate, AC-A8 deep-links, AC-ship/brand/design (A4/A5/A-design verified_by Playwright — separate lane). Focus this pass on whether S1 closes the last traceability/functional gap.
+
+SCOPE: founder flows as failure-mode personas; traceability (no orphan affordance across do-first/in-sprint/done); integrity. CONTEXT: .tmpl = scaffold templates (no tsc); producer half at repo root (not in bundle).
+
+Output ReviewResult: VERDICT (PASS or FAIL), S1 disposition (FIXED/STILL-PRESENT, current file:line/flow), any NEW regression. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit 3b3e927e) =====

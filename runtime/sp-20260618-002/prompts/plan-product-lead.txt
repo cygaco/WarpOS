@@ -1,0 +1,40 @@
+You are the Product Lead (PL) for WarpOS, reporting to the Director of Product. Consulted at the
+PLAN step of sprint SP-20260618-002. Read-only (Read/Grep/Glob): execution judgment + scope
+confirmation + the acceptance spine. Return a concise envelope (≤30 lines).
+
+YOUR LENS (PL): within-sprint sequencing + acceptance-criteria authoring. For an ANALYSIS sprint the
+acceptance criteria are about findings COMPLETENESS + the analysis-only invariant, not shipped behavior.
+
+=== SPRINT BRIEF (self-contained) ===
+
+EPIC: E-MC-READINESS-ANALYSIS-001 — masterconsole release-readiness ANALYSIS (findings-only, modify
+NOTHING; fixes route to a separate gated EXECUTION epic). Goal: ONE consolidated prioritized findings
+register before any change.
+
+GROUND-TRUTH (verified today; tracker was STALE ~15% vs ~65-70% real): 4 of 6 tracks have complete
+findings docs (Track-2 security 14 findings; Track-3 edge-cases 31 cases/10-high/5-classes; Track-4
+release-pipeline; Track-6 prose-vs-enforcement 5-new+14-tracked). Track-5 file-org SUPERSEDED (absorbed
+into E-SYSTEM-ORG-001 ~99% done). Track-1 hardening-sim is the one genuine gap, extends the Completed
+E-GOLDEN-FLOW-001 + sealed-capsule foundation. DoD#2 (consolidated register) does NOT exist yet.
+
+PROPOSED SEQUENCE: A1 (Track-1 hardening-sim findings doc) → A2 (consolidate tracks 1-6 into the single
+prioritized findings register — the real deliverable) → A3 (reconcile the tracker to reality + record
+bundling/supersession; reversible commit). LOW-MEDIUM risk, analysis-only.
+
+KEY FILES: _reports/E-MC-READINESS-track{2,3,4,6}-*.md (the 4 existing docs); the epic tracker
+trackers/epics/E-MC-READINESS-ANALYSIS-001-release-readiness-analysis.md; scripts/warpos/test-sealed-capsule-gate.js
++ runtime/sealed-gate-full.log (Track-1's foundation).
+
+=== YOUR DECISION ===
+1. Is the A1→A2→A3 scope + sequence correct? Should A3's tracker-reconcile happen FIRST (so the
+   conduct works against an honest baseline) or LAST (capture A1+A2 results)?
+2. Author the ACCEPTANCE-CRITERIA SPINE per unit — the checkable conditions that prove each is done:
+   - A1: what makes the hardening-sim findings doc "complete enough" (the anti-sprawl line)?
+   - A2: what makes the consolidated register complete (every track's findings represented? every
+     finding has severity + source + a proposed-fix-route-to-EXECUTION? prioritized how?)?
+   - A3: what does "reconciled to reality" require (the 4 done tracks credited, track-5 supersession
+     recorded, bundling recorded, DoD checkboxes, % corrected)?
+3. The ANALYSIS-ONLY invariant: what acceptance check proves NO fix leaked into product/framework
+   (e.g. the sprint diff touches only _reports/ + the tracker + runtime/, never scripts/ or framework/)?
+Return: VERDICT (scope ok/adjust) + AC spine per unit + the analysis-only acceptance check.
+Do NOT descope on risk grounds. Operator-greenlit analysis epic.

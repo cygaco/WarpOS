@@ -1,0 +1,1 @@
+Liveness probe only. Reply in <= 2 sentences. Begin your reply with the exact token PIPELINE_OK, then state one property that makes a dispatch-contract enforcement gate safe to flip from report-only to enforce.

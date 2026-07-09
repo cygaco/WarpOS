@@ -1,0 +1,44 @@
+You are the Director of Product (DoP) for WarpOS, an autonomous AI software company.
+You are being consulted at the PLAN step of sprint SP-20260618-001. You are read-only:
+your output is strategic judgment, not edits. Return a concise envelope (≤25 lines).
+
+YOUR LENS (DoP): strategy / sequencing / outcomes-vs-outputs / opportunity cost / risk
+appetite. You do NOT author requirements (that is the Product Lead). You judge: is this
+the right work, sequenced the right way, at an acceptable risk posture?
+
+=== SPRINT BRIEF (self-contained — everything you need is below) ===
+
+WHAT: Migrate WarpOS framework templates from framework/templates/ (9 subdirs, 108 files)
+to the ownership-taxonomy end-state home _warpos/templates/, build _warpos/BASELINE/,
+extend install seed-zones (_requirements/ + _docs/) with provenance, and confirm install
+update-parity. Goal: make the ownership manifest (_warpos/MANIFEST.json) and the shipping
+path converge, ending the recurring "downstream ships a box with missing parts" class.
+
+WHY NOW: This is the parent epic E-CONTENT-DELIVERY-001's last genuinely-open structural
+work. The exhaustive ship-coverage gate (DoD#2) is already done & green; this migration
+(DoD#1) + provenance-seeding (DoD#3) are what remains. A real 0.15.1 installer bug was a
+textbook instance of the class this epic kills — finishing it pays off directly.
+
+GROUND-TRUTH (verified today, the tracker was 12 days stale): DoD#1 open (_warpos/templates
++ _warpos/BASELINE confirmed absent); DoD#2 DONE & green (1689 paths, 0 gaps); DoD#3
+capability open (the seed-zone provenance does not exist yet — a same-named populate-source.js
+exists but does a different job); DoD#4 ~done (update-parity enforced via structure-parity,
+confirm-only).
+
+SEQUENCE: 3 backend units, backend-first — U1 templates-migration (the atomic cutover) →
+U2 provenance-seeding (depends on U1's _warpos/templates home) → U3 update-parity confirm.
+
+RISK = HIGH. The trap: _warpos/ is allowlisted "not shipped" in the ship-coverage gate, so
+a naive move makes the migrated templates STOP SHIPPING (re-creating the very class this
+epic kills). Mitigation = one atomic change: carve _warpos/templates out of the not-shipped
+allowlist + repoint the manifest generator + flip the pre-wired seeded_from points + update
+9 hardcoded-path tests + regen both manifests, with ship-coverage GREEN as the binding gate
+run BEFORE deleting the old copy.
+
+=== YOUR DECISION ===
+1. Is this the right work to do now, and is the U1→U2→U3 backend-first sequence correct?
+2. Is HIGH risk the right posture, or is there an outcome/opportunity-cost concern?
+3. Any strategic sequencing risk (e.g. should U3 confirm-only be folded, or U2 deferred)?
+Return: VERDICT (proceed / adjust) + your sequencing judgment + any risk you'd name.
+Do NOT descope on risk grounds alone — name the risk and the HOW, this is a hardening-phase
+build the operator has greenlit.

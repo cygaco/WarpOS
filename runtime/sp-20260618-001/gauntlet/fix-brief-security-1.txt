@@ -1,0 +1,57 @@
+You are the security-fixer. Fix ONE specific security issue from a BINDING security-reviewer
+FAIL, in an isolated worktree. Do NOT refactor or add features beyond the fix.
+
+═══ THE FINDING (binding FAIL, severity MEDIUM) ═══
+File: scripts/warpos/views/populate-seed-provenance.js (the U2 seed-zone provenance writer).
+VULN: path-traversal / write-outside-target. populateSeedProvenance() trusts opts.zones, then
+writes path.join(targetRoot, zoneRel, ".provenance.json") via fs.writeFileSync WITHOUT rejecting
+".." segments, absolute paths, drive-qualified paths, or symlink/junction escapes.
+CONFIRMED by the reviewer: zones:["../..."] writes OUTSIDE targetRoot, and an existing _docs
+junction causes the marker to be written outside the product tree. scaffold-core passes trusted
+constants today, but the EXPORTED writer + existing-product filesystem state do not enforce the
+"only within product seed zones" contract.
+
+═══ CURRENT CODE (the gap) ═══
+- normalizeZone(zone) (line ~95) only does: String(zone).replace(/\\/g,"/").replace(/\/+$/,"")
+  — strips trailing slash + normalizes backslash. It does NOT reject .., absolute, or drive paths.
+- The write loop (line ~170-195): for each rawZone → zoneRel = normalizeZone(rawZone) →
+  markerAbs = path.join(targetRoot, zoneRel, PROVENANCE_FILE) → fs.mkdirSync(dirname) + fs.writeFileSync.
+- defaultZones() (line ~124) pulls scaffold-core.SKELETON_DIRS (the trusted allowed set).
+
+═══ THE FIX (exactly the reviewer's prescription) ═══
+1. VALIDATE each zone before use. Reject and SKIP (push to result.failed with a reason) any zone that:
+   - contains a ".." path segment (after normalization),
+   - is absolute (path.isAbsolute) or drive-qualified (/^[A-Za-z]:/ or starts with "/" or "\\"),
+   - does not match the allowed seed-zone set. The allowed set is scaffold-core.SKELETON_DIRS
+     (defaultZones()) — a zone passed in opts.zones must be a member of that set (or a subpath of a
+     member if subpaths are legitimately seeded; prefer exact-membership unless the existing tests
+     require subpaths). Validate against that canonical list, not a hand-rolled regex alone.
+2. REALPATH-CHECK the destination stays under the real target root, defeating symlink/junction escape:
+   - resolve realTarget = fs.realpathSync(targetRoot).
+   - for the marker's parent dir: after mkdir, resolve realParent = fs.realpathSync(path.dirname(markerAbs))
+     (or realpath the deepest existing ancestor before mkdir), and assert realParent starts with
+     realTarget + path.sep (or === realTarget). If it escapes, do NOT write — push to result.failed
+     with reason "zone escapes target root" and continue. Preserve existing user content (never clobber).
+3. Add TESTS to scripts/warpos/test-seed-provenance.js for:
+   - a zone "../escape" (or "../../x") → asserts NO file written outside targetRoot + the zone is in
+     result.failed (not silently written).
+   - a _docs symlink/junction pointing outside the tree → asserts the marker is NOT written through it
+     (write refused / escape detected). (On Windows use a junction via fs.symlinkSync(target, link, "junction")
+     or skip-with-note if the test env can't create one — but the ".." case is mandatory + portable.)
+
+═══ SCOPE GUARD ═══
+- Fix ONLY this path-traversal issue in populate-seed-provenance.js (+ its test). Do NOT touch U1's
+  migration, the manifests, the allowlist, or U3's matrix work.
+- Keep the existing behavior for VALID zones identical (idempotent, skip-if-user-modified, byte-stable).
+- Do NOT weaken any existing assertion to make a test pass.
+
+═══ verified_by (the fix is done when) ═══
+1. node scripts/warpos/test-seed-provenance.js → all pass INCLUDING the new ../escape + junction tests.
+2. The valid-zone behavior is unchanged (the original 9 assertions still pass).
+3. node scripts/checks/warpos-ship-coverage.js → exit 0 (no regression).
+4. A manual check: populateSeedProvenance({targetRoot:<tmp>, zones:["../pwned"]}) writes NOTHING
+   outside <tmp> and reports the zone in result.failed.
+
+Work in the worktree; commit your fix. Report what you changed + the verified_by results.
+If you cannot make the escape-prevention work, STOP and report — do NOT ship a partial fix that
+still allows traversal.

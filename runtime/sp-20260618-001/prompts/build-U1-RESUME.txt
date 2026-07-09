@@ -1,0 +1,104 @@
+You are the backend-builder RESUMING U1 (a HIGH-RISK templates migration) in your isolated
+worktree. A prior attempt already completed the slow part — DO NOT REDO IT. Start from STEP 2.
+
+═══ ALREADY DONE (verify, do NOT repeat) ═══
+- `_warpos/templates/` is ALREADY POPULATED with all 9 subdirs + 108 files (app-scaffold, canonical,
+  lastmile, portfolio, product-bootstrap, product-clone, product-import, report, sprint). Confirm with
+  `find _warpos/templates -type f | wc -l` → expect 108. If 108, the copy is DONE — skip it.
+- `framework/templates/` is STILL PRESENT (108 files) — this is correct (the two-copies-coexist safety
+  window). It gets deleted in STEP 10, not before.
+- Nothing is committed yet; no tracked files modified yet.
+
+═══ DO THESE NOW (the wiring + gates the reap didn't reach) ═══
+
+STEP 2 — CREATE _warpos/BASELINE/ (inline):
+  Content = a pristine snapshot of the owner=project SEEDED SKELETON: the _requirements/ + _docs/
+  directory structure (the zones a fresh install seeds). Mirror the CURRENT canonical _requirements/
+  and _docs/ dir tree into _warpos/BASELINE/ (preserve subdir structure; include the shippable
+  skeleton files / .gitkeep present in canonical). This is NOT an update-diff, NOT a templates copy —
+  it is the post-install baseline validate.js will later diff against (validate.js:30, a deferred consumer).
+  Keep it simple + reproducible-by-inspection. Verify: `Test-Path _warpos/BASELINE` true.
+
+STEP 3 — CARVE THE SHIP-COVERAGE ALLOWLIST (negative-then-positive, order-sensitive):
+  In scripts/checks/warpos-ship-coverage.js, the KNOWN_NOT_SHIPPED array (~line 73) has:
+    { prefix: "_warpos/", reason: "product-generated source mirror, not shipped from canonical" }
+  REPLACE that single blanket entry with TWO NARROW entries (keep MANIFEST.json + settings not-shipped):
+    { prefix: "_warpos/MANIFEST.json", reason: "build-output ownership manifest, not shipped from canonical" },
+    { prefix: "_warpos/settings/", reason: "layered-settings compiler source, not shipped from canonical" }
+  Do NOT add any entry for _warpos/templates/ — it MUST fall through.
+  MECHANISM (β-verified, get the LABEL right): _warpos/ is NOT in HARD_SIGNAL_ROOTS (= framework/,
+  schemas/, patterns/, .claude/commands/, .claude/agents/ — ship-coverage.js:215-221). So an unshipped
+  _warpos/templates path → isHardSignal=FALSE → lands in **infoGaps**, NOT hardGaps (line ~262
+  else-branch). It STILL BLOCKS via the FIX1 clause `infoGaps.length === 0` in the `ok` condition
+  (line ~286). Any test you write MUST assert **infoGaps membership + ok===false**, NEVER hard_gaps.
+
+STEP 4 — REPOINT THE MANIFEST GENERATOR:
+  In scripts/generate-framework-manifest.js (~line 277): change
+    { src: "framework/templates", kind: "template" } → { src: "_warpos/templates", kind: "template" }
+  Check ASSET_DIRS (~line 165) for any framework/templates entry and repoint it too.
+
+STEP 5 — REPOINT THE PATH REGISTRY (SOURCE, then regen in STEP 8):
+  framework/paths.registry.json is SOURCE (never edit generated .claude/paths.json). Change the 3 LIVE
+  keys (find by value): "framework/templates/app-scaffold" → "_warpos/templates/app-scaffold";
+  "framework/templates/sprint" → "_warpos/templates/sprint"; "framework/templates/portfolio" →
+  "_warpos/templates/portfolio". Leave "_note" prose strings as-is.
+
+STEP 6 — REPOINT ALL OTHER LIVE LITERALS (repo-wide, do NOT trust a count):
+  Run: rg -n "framework/templates" -g"*.js" -g"*.json" -g"*.md" .
+  Repoint EVERY live reference to _warpos/templates, INCLUDING regression tests that hardcode the path
+  (tests/regression/S-PF-01/*, SP-20260614-001/*, SP-20260616-004/*, SP-20260518-007/*) AND the
+  reason-string at scripts/warpos/manifest/walk-skip.js (~line 35: "framework/templates/report/").
+  EXCLUDE only: runtime/, synthetic test fixtures, .claude/worktrees/, archived sprint prd.md/changelog.md,
+  any KNOWN_DANGLING reason-string. When unsure if "live", repoint it (stale prose is harmless; a missed
+  live ref is the whole bug class).
+
+STEP 7 — FLIP build.js seeded_from (ONLY if the target file now exists):
+  In scripts/warpos/manifest/build.js (~lines 201, 217) the two seeded_from values point at the matched
+  file itself. Flip to _warpos/templates/... ONLY IF that template file physically exists under
+  _warpos/templates (e.g. _warpos/templates/policy/decision-policy.md; _warpos/templates/_requirements/<rest>).
+  A seeded_from pointing at a non-existent file = a NEW dangling pointer = hard RED (zero-tolerance).
+  If the target does NOT exist under _warpos/templates, LEAVE the current self-referential value as-is +
+  note it. Do not create a dangle.
+
+STEP 8 — REGEN BOTH MANIFESTS + PATHS (this order):
+  node scripts/paths/build.js
+  node scripts/generate-framework-manifest.js
+  node scripts/warpos/manifest/build.js
+  Then VERIFY survival: grep _warpos/templates in .claude/paths.json AND scripts/hooks/lib/paths.generated.js
+  (both must show the new value).
+
+STEP 9 — PRE-DELETE GREEN (both copies still present):
+  node scripts/checks/warpos-ship-coverage.js   # MUST exit 0
+  POSITIVE assertion (count/membership, NOT single-string): prove ALL 9 _warpos/templates subtrees +
+  the 108 files are in the shipped set (framework-manifest assets). NEGATIVE: prove _warpos/MANIFEST.json
+  + _warpos/settings/defaults.json are NOT shipped. If RED or any assertion fails → STOP, fix wiring,
+  re-run. Do NOT delete until green.
+
+STEP 10 — DELETE THE OLD COPY (point of no return — only after STEP 9 green):
+  git rm -r framework/templates
+
+STEP 11 — POST-DELETE GREEN (end-state gate):
+  node scripts/checks/warpos-ship-coverage.js   # MUST exit 0 again
+  Repeat the positive count/membership + negative assertions (this catches the orphaned-old-copy mask).
+  Assert _warpos/templates NOT in WALK_SKIP_DIRS:
+    node -e 'const {WALK_SKIP_DIRS}=require("./scripts/warpos/manifest/walk-skip.js"); if([...WALK_SKIP_DIRS].some(d=>d==="templates"||d==="_warpos")){process.exit(1)} console.log("OK not walk-skipped")'
+
+STEP 12 — PIN FIX1 AGAINST REGRESSION (BC-16 planted-violation):
+  Add a test near scripts/checks/test-warpos-ship-coverage.js (it already drives the gate over synthetic
+  manifests, cases (a)-(f)) that builds a manifest fixture with an owner=framework `_warpos/templates/<x>`
+  path NOT in the shipped set, runs the gate evaluation, and asserts: (i) that path is in infoGaps (NOT
+  hard_gaps), AND (ii) ok===false. This locks the value-inversion protection against a future infoGaps
+  loosening. Follow the existing test file's idiom.
+
+═══ COMMIT + REPORT ═══
+Commit your work IN THE WORKTREE (git add + git commit) so it's durable against another reap.
+Commit incrementally if helpful (e.g. after STEP 8 regen, after STEP 9 green) so progress survives.
+Report which verified_by items pass:
+1. _warpos/templates 9 dirs/108 files + framework/templates removed  2. _warpos/BASELINE exists
+3. ship-coverage exit 0 pre+post delete  4. positive count/membership both times  5. negative assertion
+6. all 3 builders regen clean  7. registry keys survived  8. rg framework/templates zero live refs
+9. _warpos/templates not walk-skipped  10. FIX1-pinning test exists + passes.
+If a gate goes RED and you can't resolve it, STOP and report — do NOT force past a red gate.
+
+SCOPE GUARD: do NOT hand-edit _warpos/MANIFEST.json (generator output); do NOT broaden the _warpos/
+not-shipped rule; do NOT modify template FILE CONTENTS; do NOT touch U2 provenance logic.

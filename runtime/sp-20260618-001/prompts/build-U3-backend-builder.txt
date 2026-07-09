@@ -1,0 +1,53 @@
+You are the backend-builder building U3 (install update-parity CONFIRM) in an isolated worktree.
+U1 (templates migration) + U2 (seed-provenance) are landed; your worktree branches from them.
+This is the LIGHTEST unit — CONFIRM/tighten the parity guarantee, do NOT rebuild anything.
+
+═══ U3 GOAL (DoD#4) ═══
+Prove that both fresh-install AND update preserve the migrated shipped structure: every product
+(fresh or upgraded) ends with _warpos/templates + _warpos/BASELINE + the REQUIRED_DIRS skeleton
+present, and no stale framework/templates dependency. This is the install-time e2e the GOLDEN
+user relies on (quality-lead: the install-matrix is the real golden-path proof; ship-coverage
+alone never exercises a real install).
+
+═══ WHAT EXISTS (verified — you EXTEND, not create) ═══
+- scripts/checks/warpos-structure-parity.js — the single-source REQUIRED_DIRS list (24 skeleton
+  dirs incl. _requirements/* + _docs + framework). Already green; called post-update by the matrix.
+- scripts/warpos/test-install-matrix.js — scenario1 (clean_install) + scenario2 (existing_install_upgrade).
+  CLI: `--scenarios <list> --json --fixture-root <path>`. Fixtures install via warp-setup/scaffold-core
+  + copyManifestAssets; final fixture state is asserted per scenario.
+
+═══ WHAT TO BUILD (confirm + tighten only) ═══
+
+1. EXTEND the matrix's final-fixture assertions (scenario 1 AND scenario 2) to assert the migrated
+   shipped structure is present in the installed fixture:
+   - `_warpos/templates/` exists with its 9 subdirs in the fixture (the install actually placed the
+     migrated templates — proves the ASSET_DIRS repoint reaches a real install, not just ship-coverage).
+   - `_warpos/BASELINE/` exists in the fixture.
+   - NEGATIVE: the fixture has NO `framework/templates/` dir (proves no stale dependency shipped).
+   Use the existing matrix helpers / assertion idiom (mkAssert, the fixtureDir final-state checks) —
+   do NOT invent a new harness.
+
+2. CONFIRM structure-parity still green (it gates post-update in scenario 2 already) — if
+   _warpos/templates / _warpos/BASELINE should be in REQUIRED_DIRS, judge whether to add them
+   (they are shipped ASSETS, not necessarily skeleton REQUIRED_DIRS — the existing REQUIRED_DIRS is
+   skeleton-meta dirs like _requirements/_audits; templates ship as assets via the manifest, so they
+   may NOT belong in REQUIRED_DIRS). Default: do NOT add them to REQUIRED_DIRS unless a scenario shows
+   a fresh/upgrade install missing them — assert their presence in the MATRIX fixture instead (step 1),
+   which is the install-actually-placed-them proof. Document your call.
+
+═══ verified_by (your unit is done when ALL pass) ═══
+1. node scripts/checks/warpos-structure-parity.js --json → exit 0.
+2. node scripts/warpos/test-install-matrix.js --scenarios 1,2 --json → exit 0, and the JSON shows
+   BOTH scenario 1 (fresh) AND scenario 2 (upgrade) fixtures with _warpos/templates + _warpos/BASELINE
+   present + NO framework/templates.
+3. node scripts/checks/warpos-ship-coverage.js → exit 0 (regression — U1+U2 wiring intact).
+
+═══ SCOPE GUARD (do NOT) ═══
+- CONFIRM ONLY — do NOT perform a DoD#2 release/capsule rebuild.
+- Do NOT alter U1's migration mechanics or U2's provenance writer except to CONSUME their observable
+  outputs (assert their results in the matrix).
+- Do NOT rebuild the manifests or the allowlist.
+- If a matrix scenario is slow/flaky, do NOT weaken its assertions to make it pass — report the flake.
+
+Work in your isolated worktree; commit incrementally. Report which verified_by items pass.
+If a gate goes RED and you can't resolve it, STOP and report — do NOT force past a red gate.

@@ -1,0 +1,116 @@
+{
+  "epicId": "E-DISPATCH-PERFECT-001",
+  "slug": "perfecting-agent-dispatch",
+  "title": "Perfecting Agent Dispatch",
+  "owner": "President Agent",
+  "roadmapArea": "[ROADMAP.md - Epics](../../ROADMAP.md)",
+  "goal": "Make the WarpOS agent-dispatch system correct end-to-end: the right model+provider+effort for every role, genuine cross-provider review, product-agnostic + canon-parameterized agents, a simplified (verified) dispatch hierarchy, and machine enforcement for all of it -- built on this session's RE-VERIFIED premises, not inherited ones.",
+  "background": "This session re-verified the dispatch foundations and found: (1) the Opus-4.8-max model chain is already complete + enforced (model-chain exit 0, role-parity clean, 35 spec pins) -- foundation, no rebuild; (2) ED-041 ('in-process roster is alpha-only / Agent-not-available-inside-subagents') is FALSIFIED on the current harness via live probe (teammate-epsilon spawned a director, a lead, and a depth-3 nest cleanly; the only block was the WarpOS scope-contract-guard policy gate); (3) many silent-death 'reaps' are legitimate LONG tasks exceeding the harness time budget, which Agent-tool spawns bypass (5/5 alive vs 0/4 CLI). The DISPATCH-ERRORS.md census (40 incidents / 8 weeks, families A-H + redesigns R1-R7) is the evidence base. Operator direction: more gruntwork on codex, smartest-orchestrate / different-provider-review / dumber-doers, 3-provider security review, GPT for the product-leadership chain, fix model-catalog freshness, and genericize agents off the jobzooka origin product.",
+  "scope": "Model/provider/effort routing across the full roster (catalog.js + role-registry.json + dispatch-contract.json + spec frontmatter + the model-router panel); the model-catalog freshness mechanism; the 3-provider security review (declared + FIRED + enforced); the GPT product-leadership chain + the director class-derivation rule; the codex-doer build shape; product-agnostic + canon-parameterized agent genericization + a widened framework-purity enforcer; and the (now-small) dispatch-hierarchy simplification post-ED-041. Re-verification of the DISPATCH-ERRORS.md load-bearing premises (verify-don't-inherit).",
+  "outOfScope": "Rebuilding the already-complete Opus-4.8-max chain; the full E-DISPATCH-SHAPE-001 ADR-0013 enforce-flip repair (its own epic -- a W3 dependency, not duplicated here); per-product canon authoring (each product supplies its own canon); a full model-router PANEL visual overhaul beyond registry-derived-rows + scrapped-role cleanup.",
+  "state": "Planned",
+  "percent": 0,
+  "percentRationale": "conservative; plan authored this session on re-verified premises, no sprints landed yet.",
+  "definitionOfDone": [
+    "Model-catalog freshness is HONEST: check.js flags stale snapshots at a tightened threshold + always surfaces snapshot age; gpt-5.3-codex removed from catalog + cache + the route.md example; a regression test covers stale + deprecated-id cases.",
+    "Security review really runs all 3 providers (Gemini-3.1-pro + GPT-5.5 + Claude-opus-4-8): the registry declares the third pass, the enforcers (model-chain + role-parity) validate it, the reviewer protocol + security-lead FIRE all three (not prose-only), and a NAMED enforcer (or logged enforcement-debt) verifies the pass count.",
+    "The GPT product-leadership chain (director-of-product, product-lead, design-lead, director-of-growth) routes correctly via the cross_provider_consult_lead class, with the new director class-derivation rule landed and fallback:claude on every GPT judgment role; role-parity + model-chain green; a GPT director actually dispatches via subprocess-cross-provider (not the manager/in-process shape).",
+    "ED-058 model-chain enforcer covers the frontmatter-effort dimension + flags scrapped roles; the 3 stale frontmatter effort pins are corrected (beta xhigh, gamma/delta high); the model-router panel shows registry-derived rows with the 6 scrapped roles removed.",
+    "The codex-doer build shape exists (subprocess-codex with worktree isolation + reap-safety + completion records) and doers/fixers/skeleton route to gpt-5.4 / gpt-5.4-mini, with security-builder/fixer staying Claude and the coupled reviewer rebalance applied -- gated behind the E-DISPATCH-SHAPE-001 ADR-0013 repair.",
+    "The agent fleet is product-agnostic: jobzooka domain vocabulary is swept from the contaminated specs, product-specific checks are parameterized from each product's canon, and framework-purity catches domain vocabulary (not just the literal token).",
+    "The dispatch hierarchy is simplified: ED-041 is retired by ADR, epsilon summons the in-process roster directly (supplying scopeContract), and the spawn-hand-stays-with-the-conductor invariant is documented + enforced (no deep cascade).",
+    "Every change ships with a planted-violation fixture + mutation check, and every new enforcer is registered as a standing regression class (no hollow ladders)."
+  ],
+  "relatedDefinitions": [
+    "scope-contract-guard -- the WarpOS PreToolUse gate requiring roster/build-chain Agent-tool spawns to carry a scopeContract (or allowed/forbiddenFiles); the ONLY real block surfaced when teammate-epsilon spawns the roster.",
+    "cross_provider_consult_lead -- the dispatch-contract class for a cross-provider (non-Claude) advisory/authoring lead (subprocess-cross-provider, binding_verdict:false); the route the GPT product chain uses.",
+    "ED-041 -- falsified 2026-06-17; the now-retired 'Agent-not-available-inside-subagents / in-process-roster-alpha-only' premise.",
+    "subprocess-codex (new) -- a build dispatch shape with worktree-write isolation + reap-safety + completion records, the W3 vehicle for codex doers (distinct from the read-only subprocess-cross-provider shape)."
+  ],
+  "sprintCandidates": [
+    { "id": "S-DP-W0", "goal": "Model hygiene (SHIP NOW): check.js freshness 30->14d + honest age + regression test; remove gpt-5.3-codex (catalog+cache+route.md); frontmatter effort pins (beta xhigh, gamma/delta high); ED-058 frontmatter-blind-spot + scrapped-role coverage; panel registry-derived rows", "state": "Planned" },
+    { "id": "S-DP-W1", "goal": "3-provider security review (SHIP NOW): registry third_pass + enforcers read it + WIRE THE FIRING (reviewer.md Protocol + security-lead.md) + named pass-count enforcer -- the beta DECIDE 0.88 conditions a-d", "state": "Planned" },
+    { "id": "S-DP-W2", "goal": "GPT product-leadership chain (SHIP NOW, pending beta class-derivation verify): product-lead/design-lead registry edits + director-of-product/growth class-derivation rule + fallback:claude on all GPT judgment roles", "state": "Planned" },
+    { "id": "S-DP-W3", "goal": "Codex-doer migration (DEFERRED -- depends on E-DISPATCH-SHAPE-001 ADR-0013 repair): subprocess-codex build shape + doers->gpt-5.4 / fixers,skeleton->gpt-5.4-mini + security-builder/fixer stay Claude + coupled reviewer rebalance (FE->gemini, BE/QA->claude)", "state": "Planned" },
+    { "id": "S-DP-W4", "goal": "Product-agnostic + canon-based agent genericization (PARALLEL): sweep jobzooka vocab from ~24 specs + parameterize product-specific checks from canon + widen framework-purity to catch domain vocab", "state": "Planned" },
+    { "id": "S-DP-W5", "goal": "Dispatch-hierarchy simplification post-ED-041 (NEAR-TERM): epsilon summons the in-process roster directly + supply scopeContract + ADR retiring ED-041 + the spawn-hand-stays-with-the-conductor invariant", "state": "Planned" }
+  ],
+  "dependencies": [
+    "W3 (codex-doer) depends on E-DISPATCH-SHAPE-001 (~88%) finishing its ADR-0013 dispatch-contract enforce-flip repair (the -w / fixer / normalized-roles fix) -- building a codex build shape on the mid-revert gate inherits its bugs.",
+    "W2's director-of-product/growth rule + W1 + W5 edit role-registry.json AND dispatch-contract.json (shared keystones, the latter mid-flight with the ADR-0013 revert) -- foreground-serial, sequence carefully.",
+    "W0 (catalog/check + panel) and W4 (agent-spec sweep) are independent of the shared keystones and of each other."
+  ],
+  "blockers": [
+    "None hard-blocking the ship-now waves (W0/W1/W2/W5). W3 is blocked on the E-DISPATCH-SHAPE-001 ADR-0013 repair landing."
+  ],
+  "risks": [
+    "Adding the registry third_pass key WITHOUT wiring the firing = a declarative lie (the current 2-pass is prose-only, not code-fired). beta's conditions a-d MUST all land together.",
+    "Re-providering the build chain to codex while ADR-0013 is mid-revert compounds an open wound (beta's split verdict) -- keep W3 gated until the repair lands.",
+    "The director class-derivation rule edits a SECURITY-class invariant (build_chain->subprocess-claude is load-bearing). beta must verify; do NOT solo-trust (alpha's solo routing drafts have shipped real bugs).",
+    "ED-041's falsification is proven for general-purpose + director + lead + depth-3, NOT yet for every roster role under load or the Playwright-MCP reviewers cleanly -- re-verify before retiring the contract.",
+    "Codex headless reliability (reaps, two billing surfaces, Windows stdin) is separate from the model choice -- the plan upgrade fixes capacity, not reliability.",
+    "Genericizing the security agents risks dropping a real check if canon-parameterization misses a product's billing/data model -- keep the generic OWASP/injection/secrets personas intact."
+  ],
+  "decisions": [
+    { "date": "2026-06-17", "text": "ED-041 FALSIFIED on the current harness (live probe) -- re-opened as verify-don't-inherit; the R1/R7 hierarchy redesign collapses to 'let epsilon summon the roster + scopeContract + ADR'." },
+    { "date": "2026-06-17", "text": "Security review -> 3 providers best-of-each, Claude pass LAST (beta DECIDE 0.88) -- must wire the firing, not just the registry key." },
+    { "date": "2026-06-17", "text": "GPT for the product-leadership chain (operator: 'I like how GPT designs product requirements'); director needs a new class-derivation rule (beta-verify pending)." },
+    { "date": "2026-06-17", "text": "Codex-doer migration is a Class-C deferred sub-epic (new build shape); the reviewer-flip is COUPLED to the doer-move; security-builder/fixer stay Claude." },
+    { "date": "2026-06-17", "text": "Doer models floored at gpt-5.4 / gpt-5.4-mini (operator); gpt-5.3-codex removed (superseded in the live OpenAI docs)." },
+    { "date": "2026-06-17", "text": "Spawn-hand stays with epsilon; judgment cascades down; no deep cascade (parent-spawn-then-return orphans children)." }
+  ],
+  "openQuestions": [
+    "Reuse cross_provider_consult_lead for GPT directors, or mint a dedicated cross_provider_consult_director class? (beta to weigh in.)",
+    "ops-analyst: keep on GPT, or move to Gemini for a true 3rd-party audit once doers are GPT?",
+    "Does W4 (genericization) belong in this epic or split into its own (largest, most independent sweep)?",
+    "How far to extend GPT at the judgment tier -- just the product chain + director-of-growth, or also the growth creative leads (copy/conversion)?"
+  ],
+  "acceptanceCriteria": [
+    "Live: node scripts/checks/model-chain.js exits 0 with the frontmatter-effort dimension covered; node scripts/models/check.js flags the stale snapshots + shows ages; gpt-5.3-codex absent from the catalog.",
+    "Live: a real 3-provider security review produces three provider-stamped passes verified by the pass-count enforcer (or the debt is logged + visible at /scan:full).",
+    "Live: role-parity + model-chain green with the GPT product chain + the director rule; a GPT director actually dispatches via subprocess-cross-provider.",
+    "Live: teammate-epsilon conducts the in-process roster directly with scopeContract, end-to-end, on a real sprint phase.",
+    "Each workstream lands with a planted-violation fixture + mutation check; each new enforcer is registered as a standing regression class."
+  ],
+  "dependencyMap": [
+    "W3 -> E-DISPATCH-SHAPE-001 ADR-0013 enforce-flip repair (hard gate).",
+    "W1, W2, W5 -> role-registry.json + dispatch-contract.json (shared keystones; foreground-serial).",
+    "W0, W4 -> independent (no shared-keystone contention)."
+  ],
+  "riskMap": [
+    "HIGH: registry-key-without-firing (W1) = declarative lie -> mitigate with beta conditions a-d landing together.",
+    "HIGH: codex build shape on a mid-revert ADR-0013 gate (W3) -> mitigate by gating W3 on the repair.",
+    "MED: director class-derivation edits a security-class invariant -> mitigate with beta verify + cross-provider plan review.",
+    "MED: codex headless reliability -> mitigate with reap-safety + completion records in the new shape, ramp not big-bang.",
+    "LOW-MED: genericization drops a real check -> mitigate by keeping generic personas + canon-parameterizing only the product-specific ones."
+  ],
+  "requiredAgents": "alpha (orchestrator/spawn-hand), epsilon (conductor), beta (boundary judgment); the engineering pods (frontend/backend/security lead+builder+reviewer+fixer) + qa-reviewer for the gauntlet; cross-provider reviewers (GPT-5.5 / Gemini-3.1-pro); cabinet for cross-provider PLAN review (catches enforcement overclaims before code).",
+  "requiredModes": "sprint (full lifecycle) for the build waves; adhoc for surgical keystone edits (role-registry / dispatch-contract).",
+  "teamBehavior": "Small persistent core alpha+epsilon+beta; coordinators summoned on demand (ED-041 unlocked direct epsilon->roster spawn); spawn-hand stays with the conductor; no standing pods (workers are on-demand, isolation is the feature).",
+  "lifecycleHooks": "scan:model-chain (ED-058), scan:role-parity, scan:dispatch-routing-parity, scan:framework-purity, gauntlet-verify, dispatch-contract validate, scan:full; the mode:init:gate.",
+  "executionGates": [
+    "Cross-provider gauntlet (GPT-5.5 + Gemini) GREEN on every blast-sensitive change (dispatch-contract / role-registry / enforcers / security path).",
+    "beta boundary consults at the four phase boundaries, front-loaded (per ED-030).",
+    "model-chain + role-parity + both manifests + trackers 20/20 green before each commit.",
+    "Planted-violation fixture + mutation check on every new enforcer (no hollow ladders); register each as a standing regression class."
+  ],
+  "approvalPoints": [
+    "Epic ID + title (E-DISPATCH-PERFECT-001 / 'Perfecting Agent Dispatch') -- this approval.",
+    "The codex-doer architecture (W3) before building the subprocess-codex shape (Class-C, after the ADR-0013 repair).",
+    "Whether W4 genericization stays in-epic or splits into its own epic.",
+    "Any scope-reduction of currently-allowed dispatch behavior (beta >=0.95 floor)."
+  ],
+  "blastRadius": [
+    "role-registry.json (the keystone -- provider/model/effort/passes for the roster) + dispatch-contract.json (class-derivation + shapes, mid-flight with ADR-0013) + catalog.js + providers.js (live dispatch resolution) + ~35 agent-spec frontmatter pins.",
+    "The security review path (reviewer.md + security-lead.md + provider-trace) -- a security invariant.",
+    "~24 agent specs carrying jobzooka vocabulary + framework-purity.js.",
+    "The model-router panel (dispatch.js gui) + the research cache (runtime/models-research).",
+    "scripts/checks/model-chain.js + role-parity-scan.js (enforcers extended for third_pass + frontmatter effort)."
+  ],
+  "nextAction": "Get operator approval on the epic ID/title + scope, then mint S-DP-W0 (ship-now model hygiene) via /sprint:plan and wire E-DISPATCH-PERFECT-001 into ROADMAP - Epics + the TRACKER header. W0/W1/W2/W5 are near-term; W3 waits on the E-DISPATCH-SHAPE-001 ADR-0013 repair; W4 runs in parallel.",
+  "changeReason": "operator directed planning this epic via /epic:plan after a design session that re-verified the dispatch foundations (ED-041 falsified, chain-walk already done) and consolidated the model-routing + security + product-chain + genericization + hierarchy decisions.",
+  "date": "2026-06-17",
+  "sessionId": "session-2026-06-17-dispatch",
+  "agent": "Alex",
+  "mode": "sprint"
+}

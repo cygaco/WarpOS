@@ -1,0 +1,47 @@
+You are the ops-analyst running the cross-cycle RETRO for sprint SP-20260618-002
+(E-MC-READINESS-ANALYSIS-001 — the masterconsole release-readiness ANALYSIS epic). Read-only
+analysis; return a structured retro synthesis (≤35 lines). Per proposed change assign class
+A (auto-apply) / B (needs ADR) / C (escalate). ε defers self-management to α+β → ADVISORY.
+
+=== THE SPRINT ===
+Conducted the ANALYSIS-ONLY epic to close: A1 (Track-1 hardening-sim findings doc) → A2 (the
+consolidated findings register, DoD#2, 26 rows R1-R26) → A3 (reconcile tracker to Completed 100%).
+RESULT: gauntlet GREEN, epic Completed, E-MC-READINESS-EXECUTION-001 unblocked with a frozen target.
+Chain c5a3a58e→4c7f69f9→7585da94. ZERO product/framework/scripts edits (analysis-only enforced).
+
+=== SIGNALS TO ANALYZE ===
+
+1. STALE-TRACKER CLASS (recurred AGAIN — 3rd time this session): the epic claimed ~15% but 4 of 6
+   tracks already had complete findings docs (track-2/3/4/6 under-credited or mislabeled "partial").
+   E-CONTENT-DELIVERY had the same (~60% claimed, DoD#2 already done). E-GOLDEN-FLOW had it (keystone
+   "Missing But Required" but built 2026-06-01). ED-056 (tracker-reality-drift) exists but is
+   report-only + only catches the STRUCTURED "Missing But Required" row class, NOT the inverse
+   (under-credited-but-done) or the "claimed-green-but-RED". What's the recurring class + the enforcer
+   that would make BOTH directions of tracker-staleness self-detecting?
+
+2. ANALYSIS-ONLY-AS-DIFF-SCOPE-GATE (a reusable pattern): β required the analysis-only invariant be a
+   NAMED ENFORCER, not prose. The answer = a diff-scope close-gate (`git diff --name-only main...HEAD`
+   ⊆ enumerated allowlist, fail-closed). Built as a runtime/ helper this sprint (committed enforcer
+   would self-violate); the permanent version is register finding R26 (NEW scripts/checks/
+   analysis-only-diff-gate.js / generalize framework-purity.js). Is this a pattern worth generalizing
+   for ALL analysis/audit sprints? (It's the same shape as framework-purity.js — content/path must
+   not appear here.)
+
+3. 2-SOURCE DIVERGENCE VALUE (with gemini tier-dead): A1 ran Claude-primary (sealed probe, file
+   access) + GPT-5.5-second-pass (over the returned doc). GPT AGREED the 8 findings but CAUGHT 4 NEW
+   in the command verbs the Claude pass scoped OUT (per the DoE envelope) + re-ranked 3 severities.
+   The divergence WAS signal. What does this reinforce about the dispatch-shape decision (Claude for
+   read-heavy file access + sealed probe; GPT for the divergence cross-check over the small output)?
+
+4. THE A1-F4 FINDING-CLASS (false-confidence in a CERTIFIED gate): the sealed-capsule gate is
+   Completed/certified GREEN (1311 assets) but runs `update.js --status` ONLY — the mutating spine is
+   never exercised, so the GREEN is false confidence. This is a gate-coverage blind spot in a gate we
+   TRUST. Is "a certified gate must declare what it does NOT cover" a generalizable principle?
+
+5. PROSE-ASSERTS-A-GUARD-THAT-ISNT-THERE (register R4/N-1, ED-033): CLAUDE.md names "Enforcer:
+   scan:tools" but no skill/token/hook exists — worse than an honest gap (suppresses the verify
+   instinct). How should the org prevent prose from asserting un-built enforcers?
+
+=== YOUR OUTPUT ===
+Top recurring classes (with class A/B/C per proposed change), the single highest-leverage change, and
+what to auto-apply vs ADR vs escalate. Concrete.

@@ -1,0 +1,17 @@
+You are the BACKEND REVIEWER, confirmation re-review. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit 3b3e927e). Binding — orchestrator cannot override a FAIL.
+
+Exactly ONE backend finding was open last round; everything else (server-derived authz, atomic write, patch-on-current, unknown-id-no-write, duplicate-id fail-closed, EOL preservation, FE/BE contract, brand-leak fail-closed, scaffold-coverage) is FIXED + confirmed. Re-judge ONLY this one:
+
+  B4-tmp-cleanup [MEDIUM] writeback.ts.tmpl atomic-write catch block. Prior finding: on a write/rename failure, unlinkSync(tmpPath) is attempted but its failure is caught-and-discarded, and the returned error reports ONLY the original atomic-write failure — hiding a possible orphan-tmp / failed-cleanup condition.
+
+CURRENT code (in the bundle below) cleans up on BOTH the writeFileSync- and renameSync-error paths with an existsSync(tmpPath) guard + inner try/catch, with an explicit comment ("Cleanup on EVERY failure path... renameSync error: tmp is fully written but NOT moved — it MUST be removed here"). VERIFY + JUDGE:
+  (a) Is the SUBSTANTIVE orphan-tmp risk now handled on both error paths? (the tmp is removed when it exists, on both writeFileSync and renameSync failure)
+  (b) The narrow residual: a cleanup (unlinkSync) failure is STILL swallowed by the inner catch, and the returned error string still reports only the write failure. Is that narrow point a BLOCKER, or acceptable for this surface (a best-effort last-resort cleanup that "never throws out of cleanup", on a founder-gated server action)? Render your binding judgment — if you judge it acceptable, say PASS; if it must surface the cleanup failure, say FAIL with the specific fix.
+
+Do NOT re-flag the already-FIXED items unless you find a REGRESSION. A new "use client" ToggleControl.tsx.tmpl calls the UNCHANGED server action via useActionState — confirm no server-only leak / no contract change (quick).
+
+CONTEXT: .ts.tmpl = scaffold templates (no tsc). writeback.ts.tmpl IS in the bundle.
+
+Output ReviewResult: VERDICT (PASS or FAIL), B4-tmp disposition + your binding judgment on (b), any NEW regression. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit 3b3e927e) =====

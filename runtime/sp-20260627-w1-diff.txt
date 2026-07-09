@@ -1,0 +1,293 @@
+diff --git a/scripts/dispatch-agent.js b/scripts/dispatch-agent.js
+index 8738893c..d38961a5 100644
+--- a/scripts/dispatch-agent.js
++++ b/scripts/dispatch-agent.js
+@@ -525,19 +525,43 @@ if (provider === "claude") {
+ // reviewer routed here, is a routing error). REPORT-ONLY by default (PLAN §4 ramp);
+ // WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a violation fatal. Fail-OPEN on any
+ // contract-read error so the contract never crashes a working cross-provider dispatch.
++// β edge (SP-20260627-001): split the two error classes. A MODULE-LOAD failure (require
++// throws — a broken/absent contract module) fails OPEN: the contract must never brick a
++// working cross-provider dispatch, and the kill-switch needs no loadable module. An
++// EVALUATION failure (the gate ran and threw on input) fails CLOSED under enforce (BC-16).
++// β pin 2b: legacy role names are normalized (pure 1-hop alias) BEFORE validation so an
++// alias like `redteam`/`advisor` resolves instead of false-refusing under enforce-by-default.
++let contractMod = null;
+ try {
+-  const { validateDispatch, contractEnforceMode } = require("./dispatch/dispatch-contract");
++  contractMod = require("./dispatch/dispatch-contract");
++} catch (e) {
++  process.stderr.write(`[dispatch-agent] dispatch-contract module unloadable — failing OPEN (advisory only; set WARPOS_DISPATCH_CONTRACT_ENFORCE=off to silence): ${e && e.message}\n`);
++}
++if (contractMod) {
++  const { validateDispatch, contractEnforceMode } = contractMod;
++  const { normalizeRole } = require("./hooks/lib/role-aliases");
+   const currentMode = detectMode();
+-  const verdict = validateDispatch({
+-    role,
+-    shape: "subprocess-cross-provider",
+-    toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+-    mode: currentMode,
+-  });
+-  if (!verdict.ok) {
+-    // W2 flip (β DECIDE 0.87, ADR-0013): contract gate enforces by DEFAULT (it checks api-when-CLI
+-    // + forbidden_shapes + in-process-hard + cwd the shape-door doesn't). Escapes via the helper.
+-    const blocking = contractEnforceMode("DISPATCH_AGENT", process.env);
++  // W2 flip (β DECIDE 0.87, ADR-0013 amended SP-20260627-001): the contract gate enforces by
++  // DEFAULT (it checks api-when-CLI + forbidden_shapes + in-process-hard + cwd the shape-door
++  // doesn't). Escapes via the helper (report|off|0).
++  const blocking = contractEnforceMode("DISPATCH_AGENT", process.env);
++  let verdict;
++  try {
++    verdict = validateDispatch({
++      role: normalizeRole(role),
++      shape: "subprocess-cross-provider",
++      toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
++      mode: currentMode,
++    });
++  } catch (evalErr) {
++    process.stderr.write(`[dispatch-agent] dispatch-contract EVALUATION error — ${blocking ? "failing CLOSED" : "advisory"}: ${evalErr && evalErr.message}\n`);
++    if (blocking) {
++      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_contract_eval_error" }));
++      process.exit(1);
++    }
++    verdict = { ok: true, violations: [] };
++  }
++  if (verdict && !verdict.ok) {
+     process.stderr.write(
+       `[dispatch-agent] dispatch-contract ${blocking ? "VIOLATION" : "advisory"}: ${verdict.violations.join("; ")}\n`,
+     );
+@@ -546,8 +570,6 @@ try {
+       process.exit(1);
+     }
+   }
+-} catch {
+-  /* fail-open — contract consult never blocks a working dispatch */
+ }
+ 
+ // ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────
+diff --git a/scripts/dispatch-claude.js b/scripts/dispatch-claude.js
+index 0a4fba19..94b410d3 100644
+--- a/scripts/dispatch-claude.js
++++ b/scripts/dispatch-claude.js
+@@ -135,7 +135,13 @@ const BUILD_CHAIN_ROLES = new Set([
+ // build-chain sentinel. Fix: for a generic id, re-validate against build_chain_worker
+ // directly (the class dispatch-claude.js already enforces via BUILD_CHAIN_ROLES +
+ // the isolation gate). The wrapper and the contract then AGREE on the truthful result.
+-const GENERIC_BUILD_IDS = new Set(["builder"]);
++// β pin 2a (SP-20260627-001): `fixer` is a generic build id (like `builder`) — the GUIDE
++// mandates bare `fixer` for build-chain fix dispatches but it was absent here, so a generic
++// `fixer` fell through to the honest "(fail-closed)" path under enforce. Adding it lets the
++// class-level helper resolve it truthfully. NOTE: this only CLASSIFIES fixer as a build role;
++// it does NOT exempt fixer from the build-chain→NOT-in-process refusal (validateDispatch's
++// hard invariant at dispatch-contract.js still fires for an in-process fixer).
++const GENERIC_BUILD_IDS = new Set(["builder", "fixer"]);
+ 
+ // T-20260611-312 (R-3): build-chain membership is DERIVED from the registry class
+ // (build_chain_worker) — the literal BUILD_CHAIN_ROLES Set above is the EXPLICIT
+@@ -355,20 +361,34 @@ const cmdChecksum = cmdlineChecksum(role, PROVIDER, promptBytes);
+ const currentMode = detectMode();
+ 
+ // ── Dispatch-contract consult (§17.1 keystone) ──────────────
+-// Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude
+-// shape, so it asserts the role is contract-allowed to be dispatched this way (a
+-// cross-provider reviewer routed here, or a role that forbids subprocess-claude,
+-// is a routing error). REPORT-ONLY by default (PLAN §4 ramp: report-only -> blocking);
+-// set WARPOS_DISPATCH_CONTRACT_ENFORCE=block to make a violation fatal. Fail-OPEN
+-// on any contract-read error — the contract must never crash a working dispatch.
++// Every dispatcher READS FROM the contract. This wrapper owns the subprocess-claude shape,
++// so it asserts the role is contract-allowed to be dispatched this way. ENFORCE by default
++// (ADR-0013 amended SP-20260627-001); WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0 reverts.
++// β edge (SP-20260627-001): split the two error classes. A MODULE-LOAD failure (require throws
++// — a broken/absent contract module) fails OPEN: the contract must never brick a working
++// dispatch, and the kill-switch needs no loadable module. An EVALUATION failure (the gate RAN
++// and threw on input — e.g. a malformed WARPOS_DISPATCH_CONTRACT_PATH) fails CLOSED under
++// enforce (BC-16); it must NOT be swallowed into a silent bypass (GPT-5.5 gauntlet BLOCKER).
++let __contractMod = null;
+ try {
+-  const { validateDispatch, validateDispatchForClass, sanctionedLane, contractEnforceMode } = require("./dispatch/dispatch-contract");
++  __contractMod = require("./dispatch/dispatch-contract");
++} catch (e) {
++  process.stderr.write(`[dispatch-claude] dispatch-contract module unloadable — failing OPEN (advisory only; set WARPOS_DISPATCH_CONTRACT_ENFORCE=off to silence): ${e && e.message}\n`);
++}
++if (__contractMod) {
++  const { validateDispatch, validateDispatchForClass, sanctionedLane, contractEnforceMode } = __contractMod;
++  const __evalBlocking = contractEnforceMode("DISPATCH_CLAUDE", process.env);
++  try {
+   const verdict = validateDispatch({
+     role,
+     shape: "subprocess-claude",
+     toolId: "claude",
+     cwd: runCwd,
+     mode: currentMode,
++    // β pin 1: `-w` makes claude create the worktree AFTER this validation runs, so cwd is
++    // canonical now. Signal worktree-pending so the conditioned predicate tolerates it
++    // (without -w, canonical cwd still violates).
++    worktreePending: passW,
+   });
+   if (!verdict.ok && GENERIC_BUILD_IDS.has(role.toLowerCase())) {
+     // G1 / β option (c): re-validate against build_chain_worker class directly.
+@@ -385,6 +405,7 @@ try {
+       toolId: "claude",
+       cwd: runCwd,
+       mode: currentMode,
++      worktreePending: passW, // β pin 1: -w worktree created post-validation
+     });
+     if (classVerdict.ok) {
+       // Truthful informational: generic id resolved to a real class, shape OK.
+@@ -440,8 +461,16 @@ try {
+       }
+     }
+   }
+-} catch {
+-  /* fail-open — contract consult never blocks a working dispatch */
++  } catch (__evalErr) {
++    // β edge / BC-16: an EVALUATION error (the gate ran and threw) fails CLOSED under enforce —
++    // NOT swallowed into a silent bypass. Advisory in report-only. (A module-load failure is the
++    // separate fail-OPEN path above; the two error classes are deliberately distinct.)
++    process.stderr.write(`[dispatch-claude] dispatch-contract EVALUATION error — ${__evalBlocking ? "failing CLOSED" : "advisory"}: ${__evalErr && __evalErr.message}\n`);
++    if (__evalBlocking) {
++      console.log(JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_contract_eval_error" }));
++      process.exit(1);
++    }
++  }
+ }
+ 
+ // ── Shape-resolver self-detection (T-20260608-271) ──────────────────────────
+diff --git a/scripts/dispatch/coverage-gate.js b/scripts/dispatch/coverage-gate.js
+index 9f702060..54129b58 100644
+--- a/scripts/dispatch/coverage-gate.js
++++ b/scripts/dispatch/coverage-gate.js
+@@ -271,7 +271,50 @@ function parseExpect(spec) {
+     });
+ }
+ 
+-module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect };
++// ── W3 (SP-20260627-001): per-failure-class minimum review-lane policy ──────────────
++// β pin: each risk class declares the MINIMUM review lanes a change in that class needs.
++// REPORT-ONLY ramp — `reviewLanePolicy()` READS this map and ACTS (emits warnings); it is
++// a REAL consumer, not a declarative key no loop reads (β: Policy-key-must-fire, DP-gap #41(b)).
++// The report-only→blocking flip is a future ramp gated on a green per-class fixture; both
++// declared classes ship WITH a fixture (w3-lane-policy.test.js), so neither is an aspirational
++// blocking rule. A class lacking a testable fixture must carry logged enforcement-debt instead
++// of a declared minimum (β: honesty-ceiling P-061).
++const W3_REVIEW_LANE_MIN = Object.freeze({
++  // Enforcer / gate changes must be EXERCISED, not merely code-read.
++  enforcer_or_gate_change: ["execution_access"],
++  // Distribution-sensitive logic (ships to installs) needs a cross-family second opinion.
++  distribution_sensitive: ["cross_family_diff"],
++});
++
++/**
++ * W3 review-lane policy consumer (REPORT-ONLY ramp). For each risk class in
++ * `classesUnderChange`, checks `lanesRun` includes the class's minimum lanes from
++ * W3_REVIEW_LANE_MIN. Returns { ok, warnings[], enforce }. ok is always true in the
++ * report-only default (it ACTS by emitting warnings); when opts.enforce, ok flips false
++ * on any missing required lane (the gated blocking ramp). This is the named consumer the
++ * AC-3.1 fixture asserts FIRES on the lane-min key.
++ *   reviewLanePolicy(["enforcer_or_gate_change"], [])               → warnings:[…], ok:true (report)
++ *   reviewLanePolicy(["enforcer_or_gate_change"], ["execution_access"]) → warnings:[], ok:true
++ */
++function reviewLanePolicy(classesUnderChange, lanesRun, opts) {
++  const enforce = !!(opts && opts.enforce);
++  const run = new Set(Array.isArray(lanesRun) ? lanesRun : []);
++  const warnings = [];
++  for (const cls of Array.isArray(classesUnderChange) ? classesUnderChange : []) {
++    const min = W3_REVIEW_LANE_MIN[cls];
++    if (!min) continue; // no declared minimum (or the class carries enforcement-debt)
++    for (const lane of min) {
++      if (!run.has(lane)) {
++        warnings.push(
++          `W3 review-lane policy: risk class '${cls}' requires lane '${lane}' but it was not run (lanes run: ${[...run].join(", ") || "<none>"}).`,
++        );
++      }
++    }
++  }
++  return { ok: enforce ? warnings.length === 0 : true, warnings, enforce };
++}
++
++module.exports = { evaluate, readLedger, isBackedRecord, hasArtifactProof, waiverProvenance, sha256File, parseExpect, reviewLanePolicy, W3_REVIEW_LANE_MIN };
+ 
+ // ── CLI ─────────────────────────────────────────────────────
+ if (require.main === module) {
+diff --git a/scripts/dispatch/dispatch-contract.js b/scripts/dispatch/dispatch-contract.js
+index 0ef2819c..274e2d47 100644
+--- a/scripts/dispatch/dispatch-contract.js
++++ b/scripts/dispatch/dispatch-contract.js
+@@ -179,9 +179,18 @@ function validateDispatch(req) {
+     }
+   }
+   if (c.cwd_policy === "worktree-required") {
+-    // GPT-5.5 review R2 MEDIUM: omitting cwd is NOT a bypass — a worktree-required
+-    // dispatch MUST name its isolated worktree. Absent OR canonical-root => violation.
+-    if (!req.cwd) {
++    // β pin 1 (SP-20260627-001): a `-w` build-chain dispatch creates its isolated worktree
++    // AFTER validation — `claude … -w` makes the worktree itself (dispatch-claude.js:200
++    // `passW`), and validateDispatch runs BEFORE that (dispatch-claude.js:366). At check
++    // time there is no worktree path yet and cwd=canonical. The wrapper signals this with
++    // `worktreePending:true`. cwd=canonical/absent is then LEGITIMATE (the worktree is
++    // pending). CONDITIONED, NOT a blanket pass: without worktreePending, canonical/absent
++    // STILL violates (the real cwd-worktree-violation — a builder that would edit the live
++    // repo). GPT-5.5 review R2 MEDIUM (omitting cwd is not a bypass) still holds for the
++    // non-pending case.
++    if (req && req.worktreePending === true) {
++      // legitimate `-w`: worktree will be created post-validation — no violation.
++    } else if (!req.cwd) {
+       violations.push(`role '${role}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
+     } else if (path.resolve(req.cwd) === PROJECT_ROOT) {
+       violations.push(`role '${role}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
+@@ -248,7 +257,12 @@ function validateDispatchForClass(req) {
+     }
+   }
+   if (resolved.cwd_policy === "worktree-required") {
+-    if (!req.cwd) {
++    // β pin 1 (SP-20260627-001): worktree-pending tolerance for `-w` (worktree created
++    // AFTER validation). CONDITIONED — without worktreePending, canonical/absent STILL
++    // violates. Mirrors validateDispatch so the generic-build-id (class) path agrees.
++    if (req && req.worktreePending === true) {
++      // legitimate `-w`: worktree will be created post-validation — no violation.
++    } else if (!req.cwd) {
+       violations.push(`class '${className}' has cwd_policy 'worktree-required' but NO cwd was supplied — a build-chain dispatch must name its isolated worktree (omitting cwd is not a bypass).`);
+     } else if (path.resolve(req.cwd) === PROJECT_ROOT) {
+       violations.push(`class '${className}' has cwd_policy 'worktree-required' but cwd is the canonical root — a build-chain role must run in an isolated worktree.`);
+@@ -547,20 +561,29 @@ function validateContractFile() {
+ //   (legacy WARPOS_DISPATCH_CONTRACT_ENFORCE=block still enforces — now the default)
+ function contractEnforceMode(wrapperKey, env) {
+   const e = env || process.env;
+-  // SAFE DEFAULT = report-only (enforce is OPT-IN). ADR-0013 DECIDED the flip-to-enforce, but the
+-  // cross-family gauntlet (2026-06-16) caught that default-enforce FALSE-REFUSED a legitimate `-w`
+-  // build-chain dispatch: cwd_policy:worktree-required sees cwd=canonical because claude creates the
+-  // worktree AFTER validation (no worktree path to pass yet, and "omitting cwd is not a bypass"); plus
+-  // the generic `fixer` path (not in GENERIC_BUILD_IDS) + raw legacy names in dispatch-agent. Reverted
+-  // to report-only pending those fixes (worktree-pending semantics for `-w`). Enforce is opt-in:
+-  //   WARPOS_DISABLE_SHAPE_DOOR=1                              → force report (master)
+-  //   WARPOS_DISPATCH_CONTRACT_ENFORCE=enforce|block          → opt INTO enforce (fleet)
+-  //   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=enforce|block → opt INTO enforce (per-wrapper)
++  // ADR-0013 (amended SP-20260627-001): ENFORCE BY DEFAULT. The original 2026-06-16 flip was
++  // reverted to report-only because default-enforce FALSE-REFUSED legitimate dispatches —
++  // a `-w` build-chain dispatch (worktree created AFTER validation, so cwd=canonical at check
++  // time), the generic `fixer` path (not in GENERIC_BUILD_IDS), and raw legacy role names.
++  // Those three are now FIXED (worktree-pending predicate in validateDispatch/forClass,
++  // `fixer` in GENERIC_BUILD_IDS, role normalization), so the flip is safe: enforce is the
++  // default. Reversibility is preserved via RECOVERABLE kill-switches — no code edit needed,
++  // and (β edge, SP-20260627-001) they short-circuit independent of a broken contract MODULE
++  // (callers fail-OPEN on module-load error; this gate only decides EVALUATION-error posture):
++  //   WARPOS_DISABLE_SHAPE_DOOR=1                              → master kill (both dispatch gates)
++  //   WARPOS_DISPATCH_CONTRACT_ENFORCE=report|off|0           → fleet kill (back to report-only)
++  //   WARPOS_DISPATCH_CONTRACT_ENFORCE_<WRAPPER>=report|off|0 → per-wrapper kill
++  //   WARPOS_DISPATCH_CONTRACT_ENFORCE[_<WRAPPER>]=enforce|block → explicit enforce (now also the default)
+   if (/^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""))) return false;
++  const isOff = (v) => /^(report|off|0|false|no)$/.test(v);
++  const isOn = (v) => /^(enforce|block|1|true|yes)$/.test(v);
+   const per = String(e[`WARPOS_DISPATCH_CONTRACT_ENFORCE_${wrapperKey}`] || "").toLowerCase();
+-  if (per === "enforce" || per === "block") return true;
++  if (isOff(per)) return false;
++  if (isOn(per)) return true;
+   const g = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "").toLowerCase();
+-  return g === "enforce" || g === "block"; // else report-only (safe default)
++  if (isOff(g)) return false;
++  if (isOn(g)) return true;
++  return true; // DEFAULT = enforce (ADR-0013 amended SP-20260627-001)
+ }
+ 
+ module.exports = {

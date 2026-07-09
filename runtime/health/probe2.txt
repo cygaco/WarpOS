@@ -1,0 +1,1 @@
+Liveness probe. Reply with exactly: ENFORCE_PROBE_OK

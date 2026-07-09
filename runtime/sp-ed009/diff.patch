@@ -1,0 +1,629 @@
+diff --git a/.claude/commands/admin/preview.md b/.claude/commands/admin/preview.md
+index 4e10dd50..24f814f9 100644
+--- a/.claude/commands/admin/preview.md
++++ b/.claude/commands/admin/preview.md
+@@ -18,9 +18,12 @@ product code.
+ 
+ 1. **Refuses WarpOS as a target FIRST.** Before any scaffold or boot it runs
+    `refuseIfTargetIsWarpOS(targetDir)` — if the resolved instance dir is the
+-   WarpOS canonical root (path match, or its `.claude/manifest.json` carries a
+-   top-level `warpos:` block or `project.slug === "warpos"`) it refuses with a
+-   non-zero exit and **no side effects**. admin:preview targets a PRODUCT app.
++   WarpOS canonical tree (path match, OR a canonical signal via the shared,
++   env-immune resolver `scripts/warpos/repo-role.js#isCanonicalDir`:
++   `_warpos/MANIFEST.json` / `warpos.source === "self"` / `project.slug === "warpos"`
++   / `version.json#name` — a consumer's own `warpos:` install-record block with
++   `source != "self"` is NOT a signal) it refuses with a non-zero exit and **no
++   side effects**. admin:preview targets a PRODUCT app. (ED-009 single-source.)
+ 2. **Reuse-default.** If the fixed throwaway instance
+    (`runtime/admin-preview/instance/`) already has a `package.json` and you did
+    not pass `--force`, it is **reused** — no re-scaffold, no second `npm install`.
+diff --git a/.claude/commands/scan/full.md b/.claude/commands/scan/full.md
+index 90c27180..e6b7dfe6 100644
+--- a/.claude/commands/scan/full.md
++++ b/.claude/commands/scan/full.md
+@@ -107,13 +107,14 @@ node scripts/dispatch/dispatch-contract.js validate   # PLAN §17.1: every role-
+ node scripts/checks/duplicate-doc-drift.js --strict    # PLAN §4 S-6 (BLOCKING — flipped 0.15.5 §4-step-8; Wave 2 consolidation removed the only drift, now 0-drifted): two SHIPPED framework docs sharing a basename with DRIFTED content (the gap scan:references can't see — both files exist, so it's not a broken ref). Non-zero = critical. Sanctioned dupes (per-pod builder/fixer/reviewer/protocol) are allowlisted in scripts/checks/duplicate-doc-drift.allowlist.json. Fail-closed on its own errors.
+ node scripts/checks/provider-api-policy.js --strict    # PLAN §4 N-2 + dispatch-guide §1 (BLOCKING — flipped 0.15.5 §4-step-8; live repo CLEAN at flip): raw provider-API usage (the provider API hosts, the OpenAI/Gemini SDK constructors, or raw fetch to those hosts — see the enforcer for the exact patterns) OUTSIDE the allowlist = an API-when-CLI violation. Non-zero = critical. Allowlist (deep-research + GPT-Pro API-only wrappers) in scripts/checks/provider-api-policy.allowlist.json. Fail-closed on its own errors.
+ node scripts/checks/doc-ref-integrity.js --enforce     # E-SYSTEM-ORG-001 S-13b (MECHANICAL + BLOCKING; baseline 0-broken; ALSO auto-fires at commit/merge via merge-guard.js so it never depends on a human running /scan:full): a high-read CANON doc (root *.md + .claude/agents|commands + trackers) cites a repo-internal relative path (a [text](path) link or a backtick scripts/foo.js-shaped ref) that resolves to NOTHING — the inverse of duplicate-doc-drift (points-at-nothing, not same-name-diverged). The class the .system/ADR-0007/role-rename waves left behind in prose. Allowlist (runtime-generated / dead-tree / planned / historical) in scripts/checks/doc-ref-integrity.allowlist.json; per-line `<!-- doc-ref-ignore -->` for self-documenting/anti-example lines. Non-zero = critical. Fail-closed on its own errors.
++node scripts/checks/repo-role-single-source.js         # ED-009 (REPORT-ONLY — do NOT block this sprint; ramp-to-blocking gated on closing the line-local grep limitation, xprovider review 2026-06-15 BLOCKER-1b): canonical-vs-consumer ROLE derivation in GUARDS must flow through scripts/warpos/repo-role.js (resolveRepoRole / the env-immune isCanonicalDir), not be re-derived inline "from path vibes". Greps scripts/** for inline role-derivation idioms (.warpos-canonical, warpos.source==="self"/?., project.slug==="warpos"/?., _warpos/MANIFEST.json existsSync, version.json#name) OUTSIDE the resolver + the manifest CONTENT-reader allowlist. Live-clean after the admin:* + bootstrap.js adoptions (2026-06-15). LIMITATION (why report-only, not blocking): the grep is line-local — it misses split-var/multi-line + variable-indirection shapes, so a blocking flip would give false assurance; that must be closed (AST-grade scan or accepted-limitation sign-off) first. exit 0/1/2, fail-closed on its own errors.
+ node scripts/checks/mode-lifecycle-registry.js         # E-LIFECYCLE-001 S-LC-01 (REPORT-ONLY this sprint — do NOT block on it yet): the mode/lifecycle keystone analogue of dispatch-contract — verifies the readers (team-guard.js FACE_TYPES, session-start.js TEAM_MODES) resolve required-team-by-mode FROM .claude/agents/_org/mode-lifecycle.json, that lib/mode-lifecycle.js#FALLBACK mirrors the registry (no fail-open drift), and the registry schema is complete (every live mode × roster/requires_team/bindings/provider_tier/dispatch_profile_ref/teardown). exit 0/1/2, fail-closed on its own errors. Ramp-to-blocking tail is S-LC-03/04.
+ node scripts/checks/mode-lifecycle-hooks-coverage.js   # E-LIFECYCLE-001 S-LC-02 (REPORT-ONLY — same tier/treatment as scan:sprint-hook-coverage; do NOT pass --enforce / do NOT block this sprint): the SIBLING coverage enforcer for the VIRTUAL mode-lifecycle EVENT registry (.claude/agents/_org/mode-lifecycle-hooks.json). REVERSE (registry structurally coherent — every row event/when/mode/payload_fields, mode ∈ {block,advisory}, harness_fires the literal false, no dup event) + FORWARD (every declared harness_fires:false event has an emitter — a lifecycle-events.emit("<event>") reference and/or a real lifecycle-event record in paths.eventsFile; an un-wired event listed in mode-lifecycle-hooks-coverage.allowlist.json is wiring-pending INFO, not a gap). Exit contract (P-053 loud-fail): clean→0, gap-only→0 (report-only), parse/unreadable/structurally-broken registry→2 (fail loud — a broken registry must never report "0 gaps"). The --enforce ramp tail (gap→exit 1) is S-LC-03/04, once the emitters land and the allowlist is pruned.
+ node scripts/checks/coverage-gate-scan.js              # E-LIFECYCLE-001 S-LC-06 (REPORT-ONLY + FAIL-OPEN — do NOT pass --enforce / do NOT block this sprint): the LIVE CALLER for coverage-gate.js evaluate() (which was built+P5-tested but had NO live caller — PLAN §2.6 low-hanging wiring). Reads the dispatch-completions ledger (paths.dispatchCompletionsFile), groups records by run_id, derives external expected roles from sprint_id + phase_id/step through the sprint hook-point registry and ticket composition (with claimed ok:true roles unioned as a fallback), and runs evaluate() to surface the sprint-theater class: an omitted hook-point role with no record, an ok:true claim that is unbacked / blind (no artifact proof) / stale-schema, a cross-provider role satisfied by provider=claude, or a hand-authored phantom row. This is the STATIC-scan complement to the per-PHASE runtime gate (coverage-gate.js --run <id> --expect <roles>, BLOCKING). Exit contract: ALWAYS exit 0 in report-only (gaps are printed, not blocked) and FAIL-OPEN (a malformed/unreadable ledger or any internal error → a note + exit 0, never breaks /scan:full). The --expected-source flag can still supply an explicit source; the no-flag /scan:full path is no longer self-derived only. The --enforce ramp tail (gap→exit 1) is a later flip behind operator sign-off.
+ node scripts/checks/planning-principles.js             # /scan:planning-principles — E-LIFECYCLE-001 S-LC-08 (REPORT-ONLY + FAIL-OPEN — do NOT pass --include-plans / do NOT block this sprint): the named enforcer for the planning principles (_planning/principle.md §8.11). Walks the lifecycle-store epic plan artifacts (_planning/epics/**) and flags any plan .md (README.md excluded) that OMITS a principle-required section — a named ENFORCER per policy (#7), PROOF/acceptance (#6/#15), or a BLAST-RADIUS assessment (#5). Makes the "principles live only in a prompt, nothing checks them" gap self-detecting. Exit contract: ALWAYS exit 0 (report-only — gaps printed, not blocked) and FAIL-OPEN (a missing planning dir / unreadable file / any internal error → a note + exit 0, never breaks /scan:full). The --enforce ramp tail is a later flip behind operator sign-off.
+ ```
+ 
+-A non-zero exit (when blocking) is a critical finding (the dispatch contract drifted from the role registry — a role with no class, a class allowing a ghost shape, a build-chain role that could be dispatched in-process). The N-1 coverage gate (`node scripts/dispatch/coverage-gate.js --run <id> --expect <roles>`) is the companion runtime check that makes a backing `ok:true` completion record the precondition for "covered" (kills sprint theater) — now **BLOCKING by default** (PLAN §4 ramp FLIPPED): the §17.4 strengthening makes a record's mere existence insufficient (it must be stamped at the current `argv_schema_version` AND carry artifact proof — `output_digest` or an `artifacts[]` digest — so a stale/backfilled/blind record is rejected), with an auditable `waiver{reason}` escape; `--report-only` opts out. It is a RUNTIME gate (needs a `--run <id>` + `--expect`), so it is invoked per sprint phase. Its STATIC-scan complement is `coverage-gate-scan.js` (S-LC-06, in the block above) — the LIVE CALLER that audits the dispatch-completions ledger run-by-run with no per-run `--expect`, deriving expected roles from sprint registry/ticket composition when run records carry sprint_id + phase_id/step and unioning claimed roles as a fallback. The **duplicate-doc-drift** enforcer (PLAN §4 S-6) is the self-detecting backstop for E-SYSTEM-ORG-001 — it makes the "same-basename shipped doc drifted" class loud. The Wave-2 consolidation removed the `agent-dispatch-guide.md` duplicate (0-drifted), so per §4-step-8 it is now **BLOCKING** (`--strict`). The **provider-api-policy** enforcer (N-2) is likewise **BLOCKING** (live repo clean at the flip). Both keep allowlists for sanctioned cases; both fail-closed on their own errors. The safety kernel (`scripts/dispatch/safe-spawn.js` — now WIRED into the live cross-provider spawn path via `scripts/hooks/lib/providers.js`) + auth-resolver (N-3, `scripts/dispatch/auth-resolver.js`) + each module's `*.test.js` carry the P5 planted-violation tests. The **doc-ref-integrity** enforcer (E-SYSTEM-ORG-001 S-13b) is the navigational-link complement to duplicate-doc-drift: a broken repo-relative ref in high-read canon (the stale-link class the operator hit after the `.system`/ADR-0007/role-rename waves). It ships **REPORT-ONLY** at a 0-broken baseline (168 surfaced refs → fixed-or-categorized); `--enforce` is the ramp tail. `scripts/checks/doc-ref-integrity.test.js` carries the P5 cases.
++A non-zero exit (when blocking) is a critical finding (the dispatch contract drifted from the role registry — a role with no class, a class allowing a ghost shape, a build-chain role that could be dispatched in-process). The N-1 coverage gate (`node scripts/dispatch/coverage-gate.js --run <id> --expect <roles>`) is the companion runtime check that makes a backing `ok:true` completion record the precondition for "covered" (kills sprint theater) — now **BLOCKING by default** (PLAN §4 ramp FLIPPED): the §17.4 strengthening makes a record's mere existence insufficient (it must be stamped at the current `argv_schema_version` AND carry artifact proof — `output_digest` or an `artifacts[]` digest — so a stale/backfilled/blind record is rejected), with an auditable `waiver{reason}` escape; `--report-only` opts out. It is a RUNTIME gate (needs a `--run <id>` + `--expect`), so it is invoked per sprint phase. Its STATIC-scan complement is `coverage-gate-scan.js` (S-LC-06, in the block above) — the LIVE CALLER that audits the dispatch-completions ledger run-by-run with no per-run `--expect`, deriving expected roles from sprint registry/ticket composition when run records carry sprint_id + phase_id/step and unioning claimed roles as a fallback. The **duplicate-doc-drift** enforcer (PLAN §4 S-6) is the self-detecting backstop for E-SYSTEM-ORG-001 — it makes the "same-basename shipped doc drifted" class loud. The Wave-2 consolidation removed the `agent-dispatch-guide.md` duplicate (0-drifted), so per §4-step-8 it is now **BLOCKING** (`--strict`). The **provider-api-policy** enforcer (N-2) is likewise **BLOCKING** (live repo clean at the flip). Both keep allowlists for sanctioned cases; both fail-closed on their own errors. The safety kernel (`scripts/dispatch/safe-spawn.js` — now WIRED into the live cross-provider spawn path via `scripts/hooks/lib/providers.js`) + auth-resolver (N-3, `scripts/dispatch/auth-resolver.js`) + each module's `*.test.js` carry the P5 planted-violation tests. The **doc-ref-integrity** enforcer (E-SYSTEM-ORG-001 S-13b) is the navigational-link complement to duplicate-doc-drift: a broken repo-relative ref in high-read canon (the stale-link class the operator hit after the `.system`/ADR-0007/role-rename waves). It ships **REPORT-ONLY** at a 0-broken baseline (168 surfaced refs → fixed-or-categorized); `--enforce` is the ramp tail. `scripts/checks/doc-ref-integrity.test.js` carries the P5 cases. The **repo-role-single-source** enforcer (ED-009) is the role-derivation analogue of these single-source/no-drift gates: it keeps the canonical-vs-consumer verdict flowing through the ONE resolver (`scripts/warpos/repo-role.js`) so no guard re-derives role "from path vibes" (the false-green class that re-appeared when the admin:* suite hand-rolled its own detection, and that `bootstrap.js#detectMode` was also refactored off). **REPORT-ONLY** (live-clean after the admin:* + bootstrap adoptions 2026-06-15); the ramp-to-blocking is gated on closing the enforcer's line-local grep limitation (it misses split-var / variable-indirection shapes) — via an AST-grade scan or an accepted-limitation sign-off — so it never ships as a false-green BLOCKING gate (xprovider review 2026-06-15 BLOCKER-1b). Allowlist = the resolver + its test + the manifest-tool CONTENT readers; fail-closed on its own errors.
+ 
+ **Sprint conductor liveness** *(default + `--deep`)*
+ 
+diff --git a/.claude/project/sprint/requirements/SP-20260614-002/acceptance-criteria.md b/.claude/project/sprint/requirements/SP-20260614-002/acceptance-criteria.md
+index 699c73a7..e08e0b43 100644
+--- a/.claude/project/sprint/requirements/SP-20260614-002/acceptance-criteria.md
++++ b/.claude/project/sprint/requirements/SP-20260614-002/acceptance-criteria.md
+@@ -13,7 +13,7 @@
+   verified_by: tests/regression/SP-20260614-002/preview-boot-detection.test.js::cold-path-emits-eta-then-waits-for-ready-before-open
+ - AC-R1b: Given a test-instance **already exists** (warm path), when `/admin:preview` runs, then it **reuses the existing instance** (reuse-default — no re-scaffold, no second `npm install`) and boots/opens against it; a run that re-scaffolds or spawns a second instance when one is live FAILS.
+   verified_by: tests/regression/SP-20260614-002/preview-reuse-default.test.js::existing-instance-reused-not-rescaffolded
+-- AC-R1c: Given preconditions are unmet, when `/admin:preview` runs, then it **fails CLEAR with the exact missing step** (`{no Next app / app scaffold absent, npm install failed, dev server not ready/port}`), naming the remediation, and exits non-zero (no silent hang, no open against a dead server, no orphaned dev-server child). AND if the resolved target is the **WarpOS canonical root** (detected via `.claude/manifest.json` `project.slug==="warpos"` OR the `warpos:` self-block), it refuses as an **asserted precondition** (`refuseIfTargetIsWarpOS`) before any scaffold/boot.
++- AC-R1c: Given preconditions are unmet, when `/admin:preview` runs, then it **fails CLEAR with the exact missing step** (`{no Next app / app scaffold absent, npm install failed, dev server not ready/port}`), naming the remediation, and exits non-zero (no silent hang, no open against a dead server, no orphaned dev-server child). AND if the resolved target is the **WarpOS canonical tree** — detected by the `resolved === WARPOS_ROOT` path-belt OR the shared, env-immune resolver `scripts/warpos/repo-role.js#isCanonicalDir` (canonical signals: `_warpos/MANIFEST.json` / `.warpos-canonical` / `warpos.source==="self"` / `warpos.repoRole∈{canonical,framework}` / `project.slug==="warpos"` / `version.json#name`; a consumer's own `warpos:` install-record block with `source != "self"` is NOT a signal — ED-009 single-source, supersedes the original bare-`warpos:`-presence form per β DECIDE 2026-06-15) — it refuses as an **asserted precondition** (`refuseIfTargetIsWarpOS`) before any scaffold/boot.
+   verified_by: tests/regression/SP-20260614-002/preview-failclear.test.js::missing-precondition-exact-message-nonzero AND ::resolved-target-warpos-root-refused-precondition
+ 
+ ## S-2 — `/admin:readiness` + `/admin:guides` sub-route openers (R-2)
+diff --git a/scripts/admin/preview.js b/scripts/admin/preview.js
+index d29ca7dd..891f189a 100644
+--- a/scripts/admin/preview.js
++++ b/scripts/admin/preview.js
+@@ -30,6 +30,7 @@
+ const fs = require("node:fs");
+ const path = require("node:path");
+ const { spawn } = require("node:child_process");
++const { isCanonicalDir } = require("../warpos/repo-role");
+ 
+ const IS_WIN = process.platform === "win32";
+ 
+@@ -74,32 +75,22 @@ function openInBrowser(url) {
+ }
+ 
+ // ── WarpOS refusal guard (AC-R1c) ─────────────────────────────
+-// Refuse if the resolved target is the WarpOS canonical root. Detection:
+-//   (a) path.resolve(targetDir) === WARPOS_ROOT, OR
+-//   (b) target's .claude/manifest.json has a top-level `warpos:` block, OR
+-//   (c) that manifest's project.slug === "warpos".
+-// Deliberately does NOT use getWarpProduct() (would false-positive a product
+-// legitimately named "warpos").
++// Refuse if the resolved target is the WarpOS canonical tree. Detection:
++//   (a) fast belt: path.resolve(targetDir) === WARPOS_ROOT, OR
++//   (b) isCanonicalDir(targetDir) — the env-IMMUNE, signals-only detector in
++//       scripts/warpos/repo-role.js (the single source per ED-009). It covers
++//       the _warpos/MANIFEST.json marker, the manifest self-identity fields, and
++//       the version.json heuristic in ONE place, and ignores WARPOS_REPO_ROLE so
++//       the safety floor can't be env-spoofed (xprovider HIGH #5).
++// Delegates detection to the resolver rather than re-deriving canonical signals
++// inline (which would re-introduce the role-derivation drift ED-009 forbids).
+ function refuseIfTargetIsWarpOS(targetDir) {
+   const resolved = path.resolve(targetDir);
+   if (resolved === WARPOS_ROOT) {
+     return { refuse: true, reason: `resolved target is the WarpOS canonical root (${resolved})` };
+   }
+-  const manifestPath = path.join(resolved, ".claude", "manifest.json");
+-  let manifest = null;
+-  try {
+-    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+-  } catch {
+-    manifest = null; // no manifest → not WarpOS-by-manifest; path check already passed
+-  }
+-  if (manifest) {
+-    if (Object.prototype.hasOwnProperty.call(manifest, "warpos")) {
+-      return { refuse: true, reason: `target manifest has a top-level \`warpos:\` self-block (${manifestPath})` };
+-    }
+-    const slug = manifest.project && manifest.project.slug;
+-    if (String(slug || "").toLowerCase() === "warpos") {
+-      return { refuse: true, reason: `target manifest project.slug === "warpos" (${manifestPath})` };
+-    }
++  if (isCanonicalDir(resolved)) {
++    return { refuse: true, reason: `target resolves to the WarpOS canonical tree (repo-role canonical signal at ${resolved})` };
+   }
+   return { refuse: false };
+ }
+diff --git a/scripts/admin/seed.js b/scripts/admin/seed.js
+index 6acb02ae..2ae13039 100644
+--- a/scripts/admin/seed.js
++++ b/scripts/admin/seed.js
+@@ -37,6 +37,7 @@
+ 
+ const fs = require("fs");
+ const path = require("path");
++const { isCanonicalDir } = require("../warpos/repo-role");
+ 
+ // Repo root resolved from this module's location (scripts/admin/../.. = root).
+ const ROOT = path.resolve(__dirname, "..", "..");
+@@ -100,30 +101,22 @@ function readPointer(pointerPath) {
+ 
+ /**
+  * refuseIfTargetIsWarpOS(targetDir) → { warpos: boolean, reason?: string }
+- * Mirrors the keystone guard EXACTLY (preview.js): never seed into the WarpOS
+- * canonical root. Detection is target-LOCAL and unforgeable — path identity OR the
+- * target's own .claude/manifest.json self-identity (`warpos:` block / project.slug).
+- * Deliberately does NOT use resolveRepoRole: that resolver gives the WARPOS_REPO_ROLE
+- * env var precedence over filesystem signals, so a canonical checkout could be
+- * misclassified as non-canonical when the env says consumer/unknown (xprovider
+- * review HIGH #5). No env override here.
++ * Mirrors the keystone guard (preview.js): never seed into the WarpOS canonical
++ * tree. Detection is target-LOCAL and unforgeable — path identity OR
++ * isCanonicalDir(), the env-IMMUNE signals-only detector in
++ * scripts/warpos/repo-role.js (the single source per ED-009). isCanonicalDir
++ * intentionally ignores WARPOS_REPO_ROLE, so the safety floor cannot be
++ * env-spoofed (xprovider review HIGH #5 — the concern that previously pushed this
++ * guard to hand-roll its own detection). Routing through the resolver keeps the
++ * single-source invariant without losing the env-immunity property.
+  */
+ function refuseIfTargetIsWarpOS(targetDir) {
+   const resolved = path.resolve(targetDir);
+   if (resolved === ROOT) {
+     return { warpos: true, reason: `resolved seed target is the WarpOS canonical root (${resolved})` };
+   }
+-  try {
+-    const manifest = JSON.parse(fs.readFileSync(path.join(resolved, ".claude", "manifest.json"), "utf8"));
+-    if (manifest && Object.prototype.hasOwnProperty.call(manifest, "warpos")) {
+-      return { warpos: true, reason: "seed target manifest has a top-level `warpos:` self-block" };
+-    }
+-    const slug = manifest && manifest.project && manifest.project.slug;
+-    if (String(slug || "").toLowerCase() === "warpos") {
+-      return { warpos: true, reason: 'seed target manifest project.slug === "warpos"' };
+-    }
+-  } catch {
+-    // no/invalid manifest → not WarpOS-by-manifest; the path-identity check already ran.
++  if (isCanonicalDir(resolved)) {
++    return { warpos: true, reason: `seed target resolves to the WarpOS canonical tree (repo-role canonical signal at ${resolved})` };
+   }
+   return { warpos: false };
+ }
+diff --git a/scripts/checks/repo-role-single-source.js b/scripts/checks/repo-role-single-source.js
+index 6582133c..7486047f 100644
+--- a/scripts/checks/repo-role-single-source.js
++++ b/scripts/checks/repo-role-single-source.js
+@@ -39,9 +39,13 @@ const ALLOWLIST_FILES = new Set([
+ 
+ // Entire directories allowlisted — files inside these dirs are legitimate
+ // manifest-tool readers that reference _warpos/MANIFEST.json for CONTENT
+-// (build, validate, test) rather than for role derivation.
++// (build, validate, walk-skip) rather than for role derivation. NOTE: this is a
++// CONTENT-reader carve-out, not a role-derivation hiding place — bootstrap.js's
++// canonical detection (detectMode) was refactored to flow through the resolver
++// (isCanonicalDir) so it no longer re-derives role inline here (xprovider review
++// 2026-06-15 BLOCKER-1a: the dir-allowlist must not mask a LIVE role detector).
+ const ALLOWLIST_DIRS = [
+-  path.join(SCRIPTS_DIR, "warpos", "manifest"), // build.js, validate.js, walk-skip.js, tests, etc.
++  path.join(SCRIPTS_DIR, "warpos", "manifest"), // build.js, validate.js, walk-skip.js content-readers (+ tests)
+ ];
+ 
+ function isAllowlisted(file) {
+@@ -68,13 +72,15 @@ const PATTERNS = [
+   {
+     name: "warpos_source_self",
+     // m.warpos.source === "self" or similar — specific canonical-dev-repo signal.
+-    regex: /warpos[.\[].*source.*===.*['"]self['"]|['"]self['"].*===.*warpos[.\[].*source/,
++    // The (?:\?\.|[.\[]) accessor group also catches optional chaining (warpos?.source).
++    regex: /warpos(?:\?\.|[.\[]).*source.*===.*['"]self['"]|['"]self['"].*===.*warpos(?:\?\.|[.\[]).*source/,
+     description: "warpos.source === \"self\" role check — use resolveRepoRole() instead",
+   },
+   {
+     name: "project_slug_warpos",
+     // m.project.slug === "warpos" — specific canonical role signal.
+-    regex: /project[.\[].*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project[.\[].*slug/,
++    // The (?:\?\.|[.\[]) accessor group also catches optional chaining (project?.slug).
++    regex: /project(?:\?\.|[.\[]).*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project(?:\?\.|[.\[]).*slug/,
+     description: "project.slug === \"warpos\" role check — use resolveRepoRole() instead",
+   },
+   {
+diff --git a/scripts/warpos/manifest/bootstrap.js b/scripts/warpos/manifest/bootstrap.js
+index 6cc9788b..9a8c93c5 100644
+--- a/scripts/warpos/manifest/bootstrap.js
++++ b/scripts/warpos/manifest/bootstrap.js
+@@ -38,6 +38,7 @@
+ const fs = require("fs");
+ const path = require("path");
+ const { spawnSync } = require("child_process");
++const { isCanonicalDir } = require("../repo-role");
+ 
+ const FRAMEWORK_SUBDIRS = [
+   "commands",
+@@ -102,9 +103,6 @@ Exit codes: 0 ok, 1 refused, 2 cli, 3 no-source, 4 copy-fail, 5 manifest-fail, 6
+ 
+ function detectMode(root) {
+   const hasWarpos = fs.existsSync(path.join(root, "_warpos"));
+-  const hasWarposManifest = fs.existsSync(
+-    path.join(root, "_warpos", "MANIFEST.json"),
+-  );
+   const hasFramework = fs.existsSync(path.join(root, "framework"));
+   const hasScriptsHooks = fs.existsSync(path.join(root, "scripts", "hooks"));
+   const hasClaude = fs.existsSync(path.join(root, ".claude"));
+@@ -112,12 +110,17 @@ function detectMode(root) {
+     path.join(root, ".claude", "framework-installed.json"),
+   );
+ 
+-  // Canonical: has _warpos/MANIFEST.json AND has framework/ (the canonical source).
+-  if (hasWarposManifest && hasFramework) {
++  // Canonical: the shared resolver flags this dir as the WarpOS canonical tree
++  // (ED-009 single source — the env-immune isCanonicalDir, which subsumes the
++  // _warpos/MANIFEST.json marker) AND framework/ is present (the canonical SOURCE
++  // clone, vs an already-migrated product that kept _warpos/ but shed framework/).
++  // Routing canonical detection through the resolver keeps bootstrap off an inline
++  // role-derivation check (the recurring false-green class the ED-009 invariant ends).
++  if (isCanonicalDir(root) && hasFramework) {
+     return {
+       mode: "canonical",
+       reason:
+-        "_warpos/MANIFEST.json + framework/ both present (canonical clone)",
++        "repo-role canonical signal + framework/ both present (canonical clone)",
+     };
+   }
+   // Product (already bootstrapped): has _warpos/ but no framework/ — already migrated.
+diff --git a/scripts/warpos/repo-role.js b/scripts/warpos/repo-role.js
+index d224b6a4..ff087f39 100644
+--- a/scripts/warpos/repo-role.js
++++ b/scripts/warpos/repo-role.js
+@@ -75,6 +75,80 @@ function makeResult(role, source) {
+   };
+ }
+ 
++// ── Canonical signal detection (filesystem only) ─────────────────────────────
++/**
++ * detectCanonicalSignal(root) → string|null
++ *
++ * Returns a source token if `root` carries a positive canonical filesystem
++ * signal, else null. This is the FILESYSTEM-ONLY detector: it deliberately does
++ * NOT consult the override arg or the WARPOS_REPO_ROLE env var. resolveRepoRole()
++ * layers override/env ON TOP of this; safety guards that must be env-IMMUNE call
++ * it through isCanonicalDir() so a hostile or misconfigured env can never spoof a
++ * canonical tree into looking non-canonical (xprovider review HIGH #5 — the very
++ * reason the admin:* guards previously hand-rolled their own detection).
++ *
++ * Fail-safe: any read/parse error yields null (safer = not canonical).
++ */
++function detectCanonicalSignal(root) {
++  // Signal 1: _warpos/MANIFEST.json — the strongest canonical marker. Only the
++  // canonical source tree ships this; consumer installs receive a product-side
++  // copy with a different shape. Presence alone is sufficient.
++  if (safeExists(path.join(root, "_warpos", "MANIFEST.json"))) {
++    return "marker:_warpos/MANIFEST.json";
++  }
++
++  // Signal 2: .warpos-canonical explicit marker file — written by maintainers in
++  // mid-build trees where _warpos/ isn't yet present.
++  if (safeExists(path.join(root, ".warpos-canonical"))) {
++    return "marker:.warpos-canonical";
++  }
++
++  // Signal 3: .claude/manifest.json — four fields can signal canonical.
++  try {
++    const mfp = path.join(root, ".claude", "manifest.json");
++    if (fs.existsSync(mfp)) {
++      // Strip BOM (this repo ships BOM'd JSON — mirror testsuite/role.js).
++      const m = JSON.parse(fs.readFileSync(mfp, "utf8").replace(/^﻿/, ""));
++      if (m) {
++        // Field 3a: explicit repoRole field.
++        if (typeof m.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.repoRole)) {
++          return "manifest.json#repoRole";
++        }
++        // Field 3b: warpos.repoRole (nested variant).
++        if (m.warpos && typeof m.warpos.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.warpos.repoRole)) {
++          return "manifest.json#warpos.repoRole";
++        }
++        // Field 3c: warpos.source === "self" (the canonical dev repo self-identifies).
++        if (m.warpos && m.warpos.source === "self") {
++          return "manifest.json#warpos.source";
++        }
++        // Field 3d: project.slug === the canonical slug.
++        if (m.project && m.project.slug === "warpos") {
++          return "manifest.json#project.slug";
++        }
++      }
++    }
++  } catch {
++    /* read/parse error — fall through; safer = not canonical */
++  }
++
++  // Signal 4 (structural heuristic): version.json#name === "warpos" — backup for
++  // trees mid-build before the manifest is fully written.
++  try {
++    const vjp = path.join(root, "version.json");
++    if (fs.existsSync(vjp)) {
++      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
++      if (v && v.name === "warpos") {
++        return "version.json#name";
++      }
++    }
++  } catch {
++    /* fall through */
++  }
++
++  return null;
++}
++
+ // ── Resolver ─────────────────────────────────────────────────────────────────
+ 
+ /**
+@@ -120,65 +194,14 @@ function resolveRepoRole(opts) {
+     // Invalid env value — fall through to signals.
+   }
+ 
+-  // ── (c) Manifest / marker signals ────────────────────────────────────────
+-  // Canonical if ANY positive signal is present. Fail-safe: read/parse errors
+-  // fall through so a corrupt file never causes a false-canonical verdict.
+-
+-  // Signal 1: _warpos/MANIFEST.json — the strongest canonical marker.
+-  // Only the canonical source tree ships this; consumer installs receive a
+-  // product-side copy with a different shape. Presence alone is sufficient.
+-  if (safeExists(path.join(root, "_warpos", "MANIFEST.json"))) {
+-    return makeResult("canonical", "marker:_warpos/MANIFEST.json");
+-  }
+-
+-  // Signal 2: .warpos-canonical explicit marker file.
+-  // Written by maintainers in mid-build trees where _warpos/ isn't yet present.
+-  if (safeExists(path.join(root, ".warpos-canonical"))) {
+-    return makeResult("canonical", "marker:.warpos-canonical");
+-  }
+-
+-  // Signal 3: .claude/manifest.json — three fields can signal canonical.
+-  try {
+-    const mfp = path.join(root, ".claude", "manifest.json");
+-    if (fs.existsSync(mfp)) {
+-      // Strip BOM (this repo ships BOM'd JSON — mirror testsuite/role.js).
+-      const m = JSON.parse(fs.readFileSync(mfp, "utf8").replace(/^﻿/, ""));
+-      if (m) {
+-        // Field 3a: explicit repoRole field.
+-        if (typeof m.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.repoRole)) {
+-          return makeResult("canonical", "manifest.json#repoRole");
+-        }
+-        // Field 3b: warpos.repoRole (nested variant).
+-        if (m.warpos && typeof m.warpos.repoRole === "string" && CANONICAL_ROLE_VALUES.has(m.warpos.repoRole)) {
+-          return makeResult("canonical", "manifest.json#warpos.repoRole");
+-        }
+-        // Field 3c: warpos.source === "self" (the canonical dev repo self-identifies).
+-        if (m.warpos && m.warpos.source === "self") {
+-          return makeResult("canonical", "manifest.json#warpos.source");
+-        }
+-        // Field 3d: project.slug === "warpos".
+-        if (m.project && m.project.slug === "warpos") {
+-          return makeResult("canonical", "manifest.json#project.slug");
+-        }
+-      }
+-    }
+-  } catch {
+-    /* read/parse error — fall through; safer = not canonical */
+-  }
+-
+-  // ── (d) Structural heuristic ─────────────────────────────────────────────
+-  // version.json#name === "warpos" — backup for trees mid-build before manifest
+-  // is fully written.
+-  try {
+-    const vjp = path.join(root, "version.json");
+-    if (fs.existsSync(vjp)) {
+-      const v = JSON.parse(fs.readFileSync(vjp, "utf8"));
+-      if (v && v.name === "warpos") {
+-        return makeResult("canonical", "version.json#name");
+-      }
+-    }
+-  } catch {
+-    /* fall through */
++  // ── (c)+(d) Filesystem canonical signals ─────────────────────────────────
++  // Delegated to detectCanonicalSignal() so the SAME detection logic backs both
++  // resolveRepoRole() (override/env on top) and the env-immune isCanonicalDir()
++  // (signals only). Canonical if ANY positive signal is present; read/parse
++  // errors yield null so a corrupt file never causes a false-canonical verdict.
++  const sig = detectCanonicalSignal(root);
++  if (sig) {
++    return makeResult("canonical", sig);
+   }
+ 
+   // ── (e) Consumer heuristic ───────────────────────────────────────────────
+@@ -192,6 +215,25 @@ function resolveRepoRole(opts) {
+   return makeResult("unknown", "none");
+ }
+ 
++/**
++ * isCanonicalDir(dir) → boolean
++ *
++ * TRUE iff `dir` carries a positive canonical filesystem signal. Unlike
++ * resolveRepoRole(), this NEVER consults the override arg or the
++ * WARPOS_REPO_ROLE env var — it is the env-IMMUNE detector for safety floors
++ * that must not be spoofable (the admin:* "never run/seed against WarpOS itself"
++ * guards; xprovider review HIGH #5). It answers "is THIS directory the WarpOS
++ * canonical tree?", so it probes `dir` directly rather than the module root.
++ *
++ * Acceptable false-positive (fail-CLOSED): a product whose
++ * .claude/manifest.json#project.slug is literally the canonical slug reads as
++ * canonical. For a safety floor that is the SAFE direction (refuse), never the
++ * dangerous one (a false negative that lets a guard run against real WarpOS).
++ */
++function isCanonicalDir(dir) {
++  return detectCanonicalSignal(path.resolve(dir)) !== null;
++}
++
+ // ── CLI entry ─────────────────────────────────────────────────────────────────
+ 
+ if (require.main === module) {
+@@ -205,4 +247,4 @@ if (require.main === module) {
+   process.exit(0); // always 0 — resolution is informational
+ }
+ 
+-module.exports = { resolveRepoRole, ROLES };
++module.exports = { resolveRepoRole, isCanonicalDir, ROLES };
+diff --git a/scripts/warpos/test-repo-role.js b/scripts/warpos/test-repo-role.js
+index 69559776..595a1fa6 100644
+--- a/scripts/warpos/test-repo-role.js
++++ b/scripts/warpos/test-repo-role.js
+@@ -19,7 +19,7 @@ const fs = require("fs");
+ const os = require("os");
+ const path = require("path");
+ 
+-const { resolveRepoRole, ROLES } = require("./repo-role");
++const { resolveRepoRole, isCanonicalDir, ROLES } = require("./repo-role");
+ 
+ // ── Tiny test harness ───────────────────────────────────────────────────────
+ 
+@@ -501,6 +501,107 @@ section("FIX3 — enforcer pattern self-test (new regex patterns match role-deri
+     !versionNamePattern.test("if (v.name === 'other-project') {"));
+   ok("versionNamePattern does NOT match bare 'warpos' string without .name",
+     !versionNamePattern.test('const n = "warpos";'));
++
++  // Optional-chaining accessor shapes (xprovider review 2026-06-15 BLOCKER-1b
++  // hardening): the (?:\?\.|[.\[]) group catches `warpos?.source` / `project?.slug`
++  // in addition to dot/bracket access. (Split-var + variable-indirection shapes
++  // remain line-local misses — the documented ramp-to-blocking precondition.)
++  const sourceSelfPattern =
++    /warpos(?:\?\.|[.\[]).*source.*===.*['"]self['"]|['"]self['"].*===.*warpos(?:\?\.|[.\[]).*source/;
++  const slugWarposPattern =
++    /project(?:\?\.|[.\[]).*slug.*===.*['"]warpos['"]|['"]warpos['"].*===.*project(?:\?\.|[.\[]).*slug/;
++  ok("sourceSelfPattern matches warpos.source === 'self' (dot access)",
++    sourceSelfPattern.test('if (m.warpos.source === "self") return true;'));
++  ok("sourceSelfPattern matches warpos?.source === 'self' (optional chaining)",
++    sourceSelfPattern.test('if (manifest.warpos?.source === "self") return true;'));
++  ok("sourceSelfPattern does NOT match a bare content read of warpos.source",
++    !sourceSelfPattern.test('const v = m.warpos.source;'));
++  ok("slugWarposPattern matches project?.slug === 'warpos' (optional chaining)",
++    slugWarposPattern.test('if (m.project?.slug === "warpos") refuse();'));
++}
++
++// 21. ED-009 adoption — isCanonicalDir() env-immune signals-only detector
++//     The shared resolver's env-IMMUNE arm: the single source the admin:* safety
++//     guards (preview.js / seed.js refuseIfTargetIsWarpOS) now call instead of
++//     re-deriving canonical signals inline. Locks BOTH the detection-by-signal
++//     behavior AND the env-immunity property (the xprovider HIGH #5 concern that
++//     previously justified hand-rolled detection).
++section("ED-009 — isCanonicalDir() env-immune canonical-tree detector (admin:* safety floor)");
++{
++  // 21a: canonical via _warpos/MANIFEST.json
++  {
++    const dir = makeTmpRepo({ warposManifest: true });
++    try {
++      ok("isCanonicalDir true for _warpos/MANIFEST.json tree", isCanonicalDir(dir) === true);
++    } finally { cleanup(dir); }
++  }
++
++  // 21b: canonical via .warpos-canonical marker
++  {
++    const dir = makeTmpRepo({ warposCanonicalMarker: true });
++    try {
++      ok("isCanonicalDir true for .warpos-canonical marker tree", isCanonicalDir(dir) === true);
++    } finally { cleanup(dir); }
++  }
++
++  // 21c: canonical via manifest project.slug
++  {
++    const dir = makeTmpRepo({ manifestJson: { project: { slug: "warpos" } } });
++    try {
++      ok("isCanonicalDir true for manifest project.slug canonical tree", isCanonicalDir(dir) === true);
++    } finally { cleanup(dir); }
++  }
++
++  // 21d: consumer repo (framework-installed only) → NOT canonical
++  {
++    const dir = makeTmpRepo({ frameworkInstalled: true });
++    try {
++      ok("isCanonicalDir false for a consumer install", isCanonicalDir(dir) === false);
++    } finally { cleanup(dir); }
++  }
++
++  // 21e: unknown/empty repo → NOT canonical
++  {
++    const dir = makeTmpRepo({});
++    try {
++      ok("isCanonicalDir false for an unsignaled (unknown) tree", isCanonicalDir(dir) === false);
++    } finally { cleanup(dir); }
++  }
++
++  // 21f: ENV-IMMUNITY (the whole point) — WARPOS_REPO_ROLE=consumer must NOT flip
++  //      a real canonical tree to non-canonical for the safety floor, even though
++  //      resolveRepoRole() (which honors env) DOES return 'consumer'.
++  {
++    const dir = makeTmpRepo({ warposManifest: true });
++    const origEnv = process.env.WARPOS_REPO_ROLE;
++    process.env.WARPOS_REPO_ROLE = "consumer";
++    try {
++      ok("isCanonicalDir IGNORES WARPOS_REPO_ROLE=consumer (stays true on canonical tree)",
++        isCanonicalDir(dir) === true);
++      ok("resolveRepoRole HONORS WARPOS_REPO_ROLE=consumer (the divergence isCanonicalDir defeats)",
++        resolveRepoRole({ root: dir }).role === "consumer");
++    } finally {
++      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
++      else process.env.WARPOS_REPO_ROLE = origEnv;
++      cleanup(dir);
++    }
++  }
++
++  // 21g: env-immunity the OTHER direction — WARPOS_REPO_ROLE=canonical must NOT
++  //      make an unsignaled tree read as canonical (no env spoof INTO canonical).
++  {
++    const dir = makeTmpRepo({});
++    const origEnv = process.env.WARPOS_REPO_ROLE;
++    process.env.WARPOS_REPO_ROLE = "canonical";
++    try {
++      ok("isCanonicalDir IGNORES WARPOS_REPO_ROLE=canonical (stays false on unsignaled tree)",
++        isCanonicalDir(dir) === false);
++    } finally {
++      if (origEnv === undefined) delete process.env.WARPOS_REPO_ROLE;
++      else process.env.WARPOS_REPO_ROLE = origEnv;
++      cleanup(dir);
++    }
++  }
+ }
+ 
+ // ── Summary ─────────────────────────────────────────────────────────────────
+diff --git a/tests/regression/SP-20260614-002/preview-failclear.test.js b/tests/regression/SP-20260614-002/preview-failclear.test.js
+index dcfd36ca..955df9ef 100644
+--- a/tests/regression/SP-20260614-002/preview-failclear.test.js
++++ b/tests/regression/SP-20260614-002/preview-failclear.test.js
+@@ -4,9 +4,13 @@
+ //
+ // Two bindings:
+ //   1. ::resolved-target-warpos-root-refused-precondition — if the resolved
+-//      target is the WarpOS canonical root (path match OR manifest `warpos:`
+-//      block OR project.slug==="warpos"), refuseIfTargetIsWarpOS refuses BEFORE
+-//      any scaffold/boot, and run() returns non-ok with no side effects.
++//      target is the WarpOS canonical tree (path match, OR a canonical signal via
++//      the shared resolver's isCanonicalDir: _warpos/MANIFEST.json /
++//      warpos.source==="self" / project.slug==="warpos" / version.json#name —
++//      NOTE a consumer's own warpos install-record block, source != "self", is
++//      NOT a signal), refuseIfTargetIsWarpOS refuses BEFORE any scaffold/boot,
++//      and run() returns non-ok with no side effects. (ED-009: detection routed
++//      through scripts/warpos/repo-role.js; β DECIDE 0.88, session/2026-06-15.)
+ //   2. ::missing-precondition-exact-message-nonzero — preconditions fail CLEAR
+ //      with the exact missing step + remediation, exiting non-zero (no silent
+ //      hang, no open against a dead server, no orphaned child).
+@@ -52,17 +56,37 @@ async function main() {
+     assert.ok(/canonical root/i.test(g.reason), "reason names the canonical root");
+   });
+ 
+-  // ── refusal: manifest top-level `warpos:` block ────────────────────────────
+-  await ok("manifest warpos: self-block refuses", () => {
+-    const dir = tmpDir("warpos-block");
++  // ── NOT refused: a consumer's own warpos install-record block ──────────────
++  // EVERY scaffolded consumer carries a top-level `warpos:{...,source:<provenance>}`
++  // block (scaffold-core.js:542) — refusing on its mere PRESENCE would refuse the
++  // very products admin:preview targets (the latent over-refusal bug ED-053's
++  // deferred live run never hit). Detection now flows through the shared resolver's
++  // signals-only isCanonicalDir (ED-009): a consumer block (source != "self") is
++  // NOT a canonical signal, so it is NOT refused. (β DECIDE 0.88.)
++  await ok("consumer warpos: block (source != self, slug != warpos) is NOT refused", () => {
++    const dir = tmpDir("warpos-consumer-block");
+     fs.mkdirSync(path.join(dir, ".claude"), { recursive: true });
+     fs.writeFileSync(
+       path.join(dir, ".claude", "manifest.json"),
+-      JSON.stringify({ project: { slug: "someproduct" }, warpos: { version: "x" } }),
++      JSON.stringify({ project: { slug: "someproduct" }, warpos: { version: "x", installed: true, source: "github:acme/someproduct" } }),
+     );
+     const g = preview.refuseIfTargetIsWarpOS(dir);
+-    assert.strictEqual(g.refuse, true, "a `warpos:` self-block must be refused");
+-    assert.ok(/warpos.*self-block/i.test(g.reason), "reason names the self-block");
++    assert.strictEqual(g.refuse, false, "a consumer's own warpos install-record must NOT be refused");
++  });
++
++  // ── refusal: manifest warpos.source === "self" (the canonical self-identity) ─
++  // Signal 3c — the field that distinguishes the canonical dev repo from a
++  // consumer (consumers carry source:<provenance>, the dev repo carries "self").
++  await ok("manifest warpos.source==='self' refuses (canonical self-identity)", () => {
++    const dir = tmpDir("warpos-self");
++    fs.mkdirSync(path.join(dir, ".claude"), { recursive: true });
++    fs.writeFileSync(
++      path.join(dir, ".claude", "manifest.json"),
++      JSON.stringify({ project: { slug: "someproduct" }, warpos: { source: "self" } }),
++    );
++    const g = preview.refuseIfTargetIsWarpOS(dir);
++    assert.strictEqual(g.refuse, true, "warpos.source==='self' is the canonical self-identity → refuse");
++    assert.ok(/canonical (tree|signal|root)/i.test(g.reason), "reason names the canonical detection");
+   });
+ 
+   // ── refusal: project.slug === "warpos" ─────────────────────────────────────
+@@ -75,7 +99,7 @@ async function main() {
+     );
+     const g = preview.refuseIfTargetIsWarpOS(dir);
+     assert.strictEqual(g.refuse, true, "project.slug==='warpos' must be refused");
+-    assert.ok(/slug.*warpos/i.test(g.reason), "reason names the slug match");
++    assert.ok(/canonical (tree|signal|root)/i.test(g.reason), "reason names the canonical detection");
+   });
+ 
+   // ── NOT refused: ordinary product, no warpos markers ───────────────────────

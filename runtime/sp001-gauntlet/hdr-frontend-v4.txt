@@ -1,0 +1,11 @@
+You are the FRONTEND REVIEWER, FINAL re-review. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit e41de736). Binding — orchestrator cannot override a FAIL.
+
+Two findings were open last round. Re-judge EACH against CURRENT code (FIXED or STILL-PRESENT, current file:line), then add NEW findings.
+  S1 [major] Done-path orphan toggle: done sprint-work/waiver items rendered a toggle (Mark-as-not-done) the server rejects, because done items are grouped by status alone and DoneItemRow renders the toggle unconditionally with no owner_class check. The in-sprint path was already fixed (InSprintItemRow, display-only). VERIFY whether DoneItemRow now gates its toggle on owner_class==="owner-action" (or the done group is split like in-sprint). If a completed non-owner-action item still shows a toggle → STILL-PRESENT.
+  S2 [HIGH] Error-surfacing: a new client component ToggleControl.tsx.tmpl ("use client" + useActionState) was added to render the action's {ok:false,error} inline. VERIFY: does it actually surface a failed/denied toggle (role=alert/aria-live, not swallowed)? Is the pending/disabled affordance correct? Is aria-pressed correct? NOTE the component explicitly DEFERS the full useOptimistic-flip + Sonner toast (scaffold has no Sonner dep) — judge whether inline-error-only is acceptable for AC-A6c ("surfaces an error") even though the FULL UX spec (line 23) also wanted optimistic+toast.
+
+SCOPE (frontend code-quality 7A-7G): RSC + the new client-component boundary correctness, accessibility, the toggle-vs-display-only split across ALL three groups (do-first/in-sprint/done), design-system. CONTEXT: .tmpl = scaffold templates, no tsc, {{...}} intentional.
+
+Output ReviewResult: VERDICT (PASS or FAIL), per-prior-finding disposition (FIXED/STILL-PRESENT), NEW findings (severity, file:line, what+why). Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit e41de736) =====

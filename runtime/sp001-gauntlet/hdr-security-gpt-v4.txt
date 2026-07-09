@@ -1,0 +1,19 @@
+You are the SECURITY REVIEWER — the MANDATORY GPT SECOND PASS on CURRENT code (commit e41de736). Sprint SP-20260614-001 (R-2 founders readiness panel). A Gemini pass returned PASS on this surface; re-derive independently — do NOT assume it caught everything. BINDING verdict. Orchestrator CANNOT override a FAIL. Be adversarial.
+
+The security-relevant surfaces changed across recent fixes — verify each holds:
+
+1. PATH TRAVERSAL — guides/[ref]/page.tsx.tmpl. The guard rejects any ref containing "/", "\", or ".." OUTRIGHT, before stripping/allowlist, so both ../../etc/passwd AND ../../DEV_SETUP_GUIDE.md 404. VERIFY: (a) reject-outright before any disk read; (b) no bypass (encoded %2e%2e/%2f, null byte, backslash, mixed, .md double-ext, absolute, "."/".."); (c) fail-closed when registry unreadable.
+
+2. SERVER-DERIVED AUTHZ — actions.ts.tmpl resolveOwnerClass. owner_class derived SERVER-SIDE from the producer (process.cwd() fixed path), NOT client FormData, fail-closed on producer error / unknown id. VERIFY not client-spoofable + fail-closed. NOTE a NEW "use client" ToggleControl.tsx.tmpl now calls this action via useActionState — VERIFY the client component cannot bypass/weaken the server authz (it only posts id+nextChecked; owner_class is still server-derived; the gate still runs first).
+
+3. WRITE-BACK FILE SAFETY — writeback.ts.tmpl (CHANGED: added duplicate-id fail-closed). VERIFY: patch-on-current, atomic tmp+renameSync, fail-closed unknown-id AND duplicate-id (no write, no tmp), id-injection-safe (ID_TOKEN anchored), no path injection via id, no tmp leak.
+
+4. ERROR-SURFACE INFO LEAK (new surface) — ToggleControl renders state.error inline. VERIFY the surfaced error strings do NOT leak sensitive info (server paths, stack traces, internal ids beyond the item id) to the founder DOM. The action's error messages: "Admin access denied...", "Readiness item not found", "Item is not founder-toggleable (owner_class=...)", writeback errors. Assess whether any leaks machine-layer detail.
+
+5. BRAND/INFO BOUNDARY + GENERAL — no product-facing "WarpOS"/schema id in visible DOM (incl. the new ToggleControl + error strings); markdown as escaped <pre> (no dangerouslySetInnerHTML); no secrets; no server module in client bundle (the new client component imports only the action + lucide).
+
+CONTEXT: .tmpl = scaffold templates (no tsc). config.ts.tmpl included as auth trust root.
+
+Output ReviewResult: VERDICT (PASS or FAIL), findings (severity, file:line, attack + why works/defended). If PASS, state each of the 5 surfaces checked + holds. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit e41de736) =====

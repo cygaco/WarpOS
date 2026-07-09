@@ -1,0 +1,67 @@
+{
+  "agent": "design-quality",
+  "version": 1,
+  "ok": true,
+  "verdict": "PASS",
+  "confidence": 0.93,
+  "unit": "SP-20260615-002",
+  "domain": "app-design",
+  "branch": "session/2026-06-15",
+  "design_brief_ref": ".claude/project/sprint/requirements/SP-20260615-002/design-brief.md",
+  "navigated_url": "http://127.0.0.1:51751/5b1ff5b47ed1008eb54e05aeda49bbd2362c285a9ac29aaa2c94d82527ca0501/",
+  "viewports_tested": [[1280,900],[700,900],[375,812]],
+  "four_areas_present": true,
+  "visual_polish_verdict": "PASS",
+  "epic_bar_colors_state_driven": true,
+  "areas": {
+    "next-action":      { "present": true, "visible": true, "populated": true, "note": "hero dominant: --primary border, h1 28px, mono id + planning pill + source provenance" },
+    "toolbar":          { "present": true, "visible": true, "populated": true, "note": "6 status-group chips + text filter + Expand-all/Collapse-all" },
+    "active-sprints":   { "present": true, "visible": true, "populated": true, "note": "primary card with --primary border + collapsed plus-40-more-in-flight 39-stale-planning tail; default filter hides all-planning sprints so a styled no-active-sprints-match empty state shows. Density spine working." },
+    "roadmap":          { "present": true, "visible": true, "populated": true, "cards": 8, "note": "ranked 1..8 card grid, mono rank badges, completed item green-check" },
+    "epics":            { "present": true, "visible": true, "populated": true, "cards": 17, "note": "default-collapsed; expands to grid of 17 epic cards with STATE-DRIVEN progress bars" },
+    "sprint-breakdown": { "present": true, "visible": true, "populated": true, "cards": 41, "note": "default-collapsed; reached via drill" }
+  },
+  "axes": {
+    "design-tokens":     { "pass": true, "findings": [], "evidence": "computed root vars verbatim gui.js: --bg #0b0303, --surface #141010, --surface-alt #1e1818, --text #f0eded, --text-muted #9a9494, --primary #ff5a17, --border #2a2424, --success #acd229, --warning #eab308, --error #ef4444, --info #d4a054, --radius-lg 8px; body bg rgb(11,3,3), color rgb(240,237,237), font Inter 14px. No off-palette or raw hex in rendered surfaces." },
+    "component-usage":   { "pass": true, "findings": [], "evidence": "row/card idiom, chip filter chips (chip vs chip-on toggle state), modal + modal-foot, fill progress bars, native details/summary with chevron, text input. All gui.js primitives; no raw element standing in for a primitive." },
+    "visual-hierarchy":  { "pass": true, "findings": [], "evidence": "hero h1 28px + --primary border is the largest highest-contrast element on cold load; section heads 18px; ranked cards 14px. Eye lands on NEXT-ACTION. Cold load = hero + handful of cards + collapsed deeper sections, NOT a 41-row wall — clarity-first per the brief visual_hierarchy." },
+    "mobile-responsive": { "pass": true, "findings": [], "evidence": "700px: scrollWidth equals clientWidth (overflowBy 0), grid collapses to 1 col. 375px: overflowBy 0. No horizontal overflow or overlap at either narrow viewport." },
+    "accessibility":     { "pass": true, "findings": [], "evidence": "16 interactive elements (buttons/summary/input), ZERO without an accessible name. Status conveyed by pill TEXT (raw status verbatim) plus color, not color-alone. Only console error is the benign favicon.ico 404, not an app resource." },
+    "design-handoff":    { "pass": true, "findings": [], "evidence": "Rendered matches brief: four data-area regions + hero all present/populated; epic bars state-driven (g-active=#ff5a17 x9, g-done=#acd229 x2 on the two Completed epics, g-blocked=#eab308 x1, empty-track x5 Planned 0pct); status pills semantic; calm-empty vs section-unavailable both honored; READ-ONLY (no edit affordances, zero write network calls)." }
+  },
+  "interactions": {
+    "filter":  { "ok": true, "action": "clicked Planning chip", "domDelta": true, "detail": "chip class chip became chip-on; active-sprints visible cards 0 became 1 (primary surfaced)" },
+    "expand":  { "ok": true, "action": "Expand-all plus epics details toggle", "domDelta": true, "detail": "epics default-collapsed became expanded grid of 17 cards; chevron rotates" },
+    "drill":   { "ok": true, "action": "clicked epic card E-BOUNDARY-001", "domDelta": true, "detail": "modal count 0 became visible; shows that epic title + 0pct Planned + child sprints SP-20260525-001/002 + read-only source trackers/epics footer; identity threads correctly per AC-R4b" },
+    "console_errors": 0,
+    "console_errors_note": "Zero APP console errors or unhandled rejections during interactions. The single Log entry is a favicon.ico 404 (standard browser auto-request for a page with no favicon), not an application error and not a failed app-resource fetch.",
+    "network_writes": 0
+  },
+  "epic_bar_state_audit": {
+    "g_active_orange_ff5a17": 9,
+    "g_done_green_acd229": 2,
+    "g_done_epics": ["E-SPINUP-STEPS-001 100pct", "E-TRACKER-001 100pct"],
+    "g_blocked_warning_eab308": 1,
+    "g_blocked_epics": ["E-MC-READINESS-EXECUTION-001 Planned-blocked"],
+    "empty_track_planned_0pct": 5,
+    "conclusion": "Progress-bar fills are state-driven, NOT all-orange. Completed epics render SUCCESS/green fill g-done #acd229. Fix confirmed at the rendered-pixel and computed-style level."
+  },
+  "responsive_ok": true,
+  "screenshots": [
+    { "viewport": "1280x900", "url": "/", "path": "runtime/sp002-roadmap-gui/desktop-full.png", "note": "cold load, default filter" },
+    { "viewport": "1280x900", "url": "/", "path": "runtime/sp002-roadmap-gui/final-desktop-epics-expanded.png", "note": "epics expanded" },
+    { "viewport": "1280x900", "url": "/", "path": "runtime/sp002-roadmap-gui/final-desktop-filter-planning-on.png", "note": "after Planning chip toggle" },
+    { "viewport": "1280x900", "url": "/", "path": "runtime/sp002-roadmap-gui/final-desktop-drill-modal.png", "note": "epic drill modal with child sprints and read-only footer" },
+    { "viewport": "1280x1400", "url": "/", "path": "runtime/sp002-roadmap-gui/final-epics-all-states.png", "note": "all filters on; primary card plus 40-more-39-stale tail; all 17 epic bars" },
+    { "viewport": "700x900", "url": "/", "path": "runtime/sp002-roadmap-gui/narrow-700-full.png", "note": "1-col reflow, no overflow" },
+    { "viewport": "375x812", "url": "/", "path": "runtime/sp002-roadmap-gui/mobile-375-full.png", "note": "mobile, no overflow" }
+  ],
+  "console_errors": 0,
+  "console_errors_raw": ["LOG: Failed to load resource 404 favicon.ico — benign browser auto-request, not an app error"],
+  "requiresHuman": false,
+  "recommendation": "PROCEED",
+  "findings": [
+    { "axis": "design-handoff", "severity": "low", "location": "1280x900 epics drill E-MC-READINESS-EXECUTION-001", "observed": "epic state string retains a parenthetical Planned-blocked-on-E-MC-READINESS-ANALYSIS-001 (stateLen 48) where most states are 6-9 chars", "expected": "leading-token cap to Planned for display tidiness", "evidence": "color mapping STILL resolves correctly: leading token Planned maps the bar to g-blocked warning, the right semantic for a blocked epic; purely cosmetic label verbosity, does not break hierarchy or color. Not a gate failure." }
+  ],
+  "rationale": "Real headless-Chrome render of the live panel: all four data-area regions + the NEXT-ACTION hero present and populated, gui.js dark tokens verbatim, density spine working (primary card + 40-more tail, not a 41-row wall), epic progress bars confirmed STATE-DRIVEN (green g-done on the two Completed epics), filter/expand/drill each produce a visible DOM delta, zero app console errors, and zero horizontal overflow at 700px and 375px. Genuinely looks nice and is interactive."
+}

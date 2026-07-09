@@ -1,0 +1,140 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260628-0082
+created_at: "2026-06-28T03:20:45.414Z"
+updated_at: "2026-06-28T03:20:45.414Z"
+sprint: SP-20260627-001
+source_request: "E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy (keystone, unblocks E-DISPATCH-PERFECT W3)."
+source_request_verbatim: "(A) Fix the dispatch-contract enforce implementation so it can default to ENFORCE without false-refusing legitimate dispatches, then flip it on: honor worktree-pending semantics for `-w` build-chain dispatches (cwd=canonical is legitimate because the wrapper creates the worktree AFTER contract validation), add `fixer` to GENERIC_BUILD_IDS, normalize roles into validateDispatch, default contractEnforceMode to enforce (keep WARPOS_DISPATCH_CONTRACT_ENFORCE override + kill-switch). (B) W3 per-failure-class review-lane policy: each risk class declares minimum review lanes (execution-access for enforcer/gate changes; cross-family diff for distribution-sensitive logic), wired into sprint-hook-points conditions + coverage-gate cross_provider_required lane-shape requirement + a planted fixture per class. Blast-sensitive — cross-provider gauntlet GPT-5.5 + Claude required on the dispatch-contract + coverage-gate diffs. Land on main when gauntlet-GREEN."
+request_type: bug_fix
+interpreted_intent: "Repair the ADR-0013 dispatch-contract enforce path so its default-enforce mode stops false-refusing legitimate `-w` build-chain dispatches (cwd=canonical at validation time because the wrapper creates the worktree afterward), generic `fixer` dispatches, and normalized legacy role names; then flip contractEnforceMode to enforce-by-default while preserving the env override and kill-switch. Separately, formalize the W3 per-failure-class minimum-review-lane policy so each risk class declares the review lanes it requires, wired into the sprint hook-points + coverage-gate with a planted fixture per class."
+user_or_business_outcome: "WarpOS's dispatch shape is enforced (not merely advisory) for the high-severity contract violations — api-when-CLI, build-chain-in-process, cwd/worktree, forbidden shapes — without breaking any legitimate builder/fixer dispatch, and every risk class provably gets the minimum review lanes it needs. This closes the last dispatch-shape reliability gap and unblocks moving doers to codex (E-DISPATCH-PERFECT W3)."
+affected_surfaces:
+  - surface: scripts/dispatch/dispatch-contract.js
+    evidence_level: verified_from_repo
+    notes: "validateDispatch + contractEnforceMode helper; the false-refuse on -w/fixer/normalized-roles lives here. The enforce default flip is the headline change."
+  - surface: ".claude/agents/_org/dispatch-contract.json"
+    evidence_level: verified_from_repo
+    notes: "GENERIC_BUILD_IDS + forbidden_shapes + the class definitions; add `fixer`, ensure role normalization, worktree-pending semantics for -w."
+  - surface: "scripts/dispatch/dispatch-shape.js + dispatch-claude.js + dispatch-agent.js"
+    evidence_level: verified_from_repo
+    notes: "The 3 agent wrappers create the worktree AFTER contract validation; the contract cwd check must honor worktree-pending so cwd=canonical is legitimate for -w."
+  - surface: scripts/dispatch/coverage-gate.js
+    evidence_level: verified_from_repo
+    notes: "cross_provider_required lane-shape requirement (coverage-gate.js:204 region) — W3 adds the per-class minimum-lane assertion."
+  - surface: ".claude/agents/_org/sprint-hook-points.json"
+    evidence_level: verified_from_repo
+    notes: "risk_min conditions — W3 wires per-failure-class minimum review lanes (execution-access for enforcer/gate changes; cross-family diff for distribution-sensitive logic)."
+  - surface: "scripts/dispatch/*.test.js + planted-violation fixtures"
+    evidence_level: verified_from_repo
+    notes: "Both-modes (report + enforce) planted assertions; a planted fixture per W3 risk class; regression-lock the -w/fixer false-refuse so it can't recur."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "ADR-0013 decided the dispatch-contract enforce flip (β DECIDE 0.87 FLIP-not-supersede) but the first default-enforce impl was REVERTED to report-only/opt-in after the cross-family gauntlet (GPT-5.5 0.94) caught it false-refusing a legit `-w` build-chain dispatch (cwd=canonical because claude creates the worktree AFTER validation) + generic `fixer` + raw legacy names. contractEnforceMode currently defaults report-only (enforce opt-in via WARPOS_DISPATCH_CONTRACT_ENFORCE=enforce). The W3 per-failure-class review-lane minimums are not yet formalized (coverage-gate has cross_provider_required; sprint-hook-points has risk_min; the per-class lane minimum is not wired)."
+desired_behavior: "contractEnforceMode defaults to ENFORCE. validateDispatch honors worktree-pending semantics for `-w` build-chain dispatches (cwd=canonical is legitimate; the wrapper commits the worktree after validation), recognizes `fixer` as a generic build id, and normalizes legacy/raw role names before evaluating — so NO legitimate builder/fixer dispatch is false-refused, while api-when-CLI / build-chain-in-process / cwd-worktree-violation / forbidden_shapes are still refused (exit 1). WARPOS_DISPATCH_CONTRACT_ENFORCE override + WARPOS_DISABLE_SHAPE_DOOR kill-switch remain. W3: each risk class declares its minimum review lanes; coverage-gate asserts the lane-shape per class; sprint-hook-points conditions carry the per-class minimums; a planted fixture per class proves the minimum is enforced and fails closed on its own error (BC-16)."
+scope:
+  size: m
+  risk_level: high
+  complexity_drivers:
+    - "dispatch-contract.js is load-bearing — every agent dispatch passes through it; a wrong enforce rule breaks the whole build chain."
+    - "The -w worktree-pending semantics are subtle: cwd=canonical is legitimate at validation time because the worktree is created afterward."
+    - "The enforce flip must be safe-by-construction and reversible (env override + kill-switch)."
+    - "W3 review-lane policy edits coverage-gate + sprint-hook-points (shared keystones)."
+    - "Cross-provider gauntlet (GPT-5.5 + Claude) is mandatory on the blast-sensitive diffs — alpha's solo routing drafts have shipped real bugs."
+scope_variants:
+  minimal_safe:
+    summary: "Fix the false-refuse cases (-w worktree-pending, fixer, normalized roles) and flip contractEnforceMode to enforce-by-default, regression-locked; W3 lands as a report-only per-class lane assertion."
+    tradeoffs:
+      - "W3 per-class lane minimums ship report-only (not blocking) this sprint; the blocking ramp is a follow-on once each class's fixture is green."
+  recommended:
+    summary: "minimal_safe plus W3 wired into sprint-hook-points + coverage-gate with a planted fixture per risk class and a fail-closed self-check."
+    tradeoffs:
+      - "Slightly larger blast on the shared keystones; mitigated by both-modes fixtures and the cross-provider gauntlet."
+  expanded:
+    summary: "recommended plus retiring the WARPOS_DISPATCH_CONTRACT_ENFORCE back-compat alias and collapsing the shape-door + contract gates into one resolver pass."
+    tradeoffs:
+      - "Rejected for this sprint — gate consolidation is its own design; keep the two gates separate and reversible."
+assumptions:
+  safe:
+    - "The `-w` wrapper isolation gate already commits/creates the worktree AFTER contract validation, so honoring cwd=canonical for -w at validation time is correct, not a hole."
+    - "GENERIC_BUILD_IDS is the right home for `fixer` (alongside builder), matching how the wrappers route generic build roles."
+    - "The cross-provider gauntlet (GPT-5.5 + Claude) is live and binding; gemini is hard-deprecated (ED-063) and not required."
+  unsafe: []
+  needs_user_or_beta_review:
+    - "Flipping contractEnforceMode to enforce-by-default is a SECURITY-class invariant change — β must verify the enforce path cannot WIDEN what's allowed, only narrow false-refusals."
+    - "If a W3 risk class cannot get a testable fixture this sprint, record enforcement debt rather than shipping an aspirational blocking rule."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Whether `skeleton-builder` also needs adding to GENERIC_BUILD_IDS or is already covered."
+    - "Exact per-class lane minimum table — derive from the existing risk_min conditions + the dispatch-contract class concept during design."
+non_goals:
+  - "No collapse/consolidation of the shape-door and dispatch-contract gates (separate design)."
+  - No removal of the WARPOS_DISPATCH_CONTRACT_ENFORCE override or the kill-switch.
+  - "No change to the MEDIUM wrong-wrapper advisory behavior (stays advisory even under enforce)."
+  - "No W3 codex-doer build-shape work (that is E-DISPATCH-PERFECT W3, gated on this sprint landing)."
+  - "No flip of any OTHER report-only enforcer to blocking beyond the dispatch-contract gate + the W3 per-class minimums."
+requirement_areas:
+  - "R-1 worktree-pending validation: validateDispatch honors cwd=canonical for `-w` build-chain dispatches (the wrapper creates the worktree after validation), regression-locked against the false-refuse the gauntlet caught"
+  - "R-2 generic build id + role normalization: add `fixer` to GENERIC_BUILD_IDS and normalize legacy/raw role names before contract evaluation so generic build/fix dispatches are not false-refused"
+  - "R-3 enforce-by-default flip: contractEnforceMode defaults to enforce; WARPOS_DISPATCH_CONTRACT_ENFORCE override + kill-switch preserved; the refused set stays exactly api-when-CLI / build-chain-in-process / cwd-worktree / forbidden_shapes; fail-closed on the gate's own error (BC-16)"
+  - "R-4 W3 per-failure-class minimum review lanes: each risk class declares minimum lanes (execution-access for enforcer/gate changes; cross-family diff for distribution-sensitive logic), wired into sprint-hook-points conditions + coverage-gate lane-shape requirement"
+  - "R-5 fixtures + regression integrity: planted-violation fixtures in both report and enforce modes, a planted fixture per W3 risk class, the -w/fixer false-refuse locked as a standing regression class, and the cross-provider gauntlet green on the dispatch-contract + coverage-gate diffs"
+high_level_story_candidates:
+  - "As the WarpOS dispatch layer, I refuse only genuinely-wrong dispatch shapes and never block a legitimate -w builder or fixer"
+  - "As a sprint conductor, each risk class provably gets the minimum review lanes it requires before a change can land"
+  - "As a maintainer, the enforce flip is reversible (env override + kill-switch) and fails closed on its own error"
+granular_story_candidates:
+  - "Honor worktree-pending semantics for -w in validateDispatch + regression-lock the false-refuse"
+  - Add fixer to GENERIC_BUILD_IDS and normalize legacy role names before evaluation
+  - "Flip contractEnforceMode default to enforce, preserving override + kill-switch, fail-closed on error"
+  - "Declare per-risk-class minimum review lanes and wire them into sprint-hook-points + coverage-gate"
+  - "Add planted-violation fixtures (both modes) + one fixture per W3 risk class"
+workstream_candidates:
+  - "WS-1 enforce-correctness: -w worktree-pending + fixer + role normalization + enforce-default flip in dispatch-contract.js/json"
+  - "WS-2 W3 review-lane policy: per-class minimum lanes in sprint-hook-points + coverage-gate lane-shape assertion"
+  - "WS-3 fixtures + gauntlet: both-modes planted fixtures, per-class fixtures, regression-lock, cross-provider gauntlet on the diffs"
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted after the requirement bundle is populated; expected tickets map to WS-1 (enforce-correctness), WS-2 (W3 lane policy), WS-3 (fixtures + gauntlet)."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "No external service. The cross-provider gauntlet uses the existing GPT (codex auth.json, prepaid credits) + Claude reviewers — already live (probed PIPELINE_OK gpt-5.5)."
+approval_boundaries:
+  - "Do not WIDEN what dispatch allows — the enforce flip may only narrow false-refusals, never relax a real refusal (β-verify)."
+  - Do not remove the WARPOS_DISPATCH_CONTRACT_ENFORCE override or the kill-switch.
+  - "Do not flip the W3 per-class minimums to blocking without a green per-class fixture (record enforcement debt otherwise)."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: adhoc
+mode_invocation_required_by_user: true
+lane:
+  type: branch
+  value: sprint/SP-20260627-001
+  isolation_notes: "Local sprint branch from main (after Phase A drift-reconcile @3b981751); ff-merge to main when gauntlet-GREEN per operator's in-session push/merge grant."
+beta_review:
+  required: true
+  likely_founder_rejection_risks: []
+  overbuild_risks:
+    - "Collapsing the shape-door + contract gates would be premature; keep them separate and reversible."
+    - "Flipping every report-only enforcer at once would over-reach; scope to the dispatch-contract gate + W3 per-class minimums."
+  missing_context_risks:
+    - The exact -w worktree-pending validation point and the per-class lane minimum table must be grounded in code during design.
+plan_quality:
+  status: pass
+  confidence: high
+  evidence_gaps:
+    - Exact per-class lane minimum table to be grounded from the existing risk_min conditions during design.
+  fail_reasons: []
+next_recommended_command: "/sprint:design --sprint SP-20260627-001 --documentation-scale s"
+resume_instructions: "Read trackers/epics/E-DISPATCH-SHAPE-001-dispatch-shape-decision-spine.md (Current next action) + the ADR-0013 file. Then run /sprint:design for SP-20260627-001, mint WS-1/WS-2/WS-3 tickets, and require the cross-provider gauntlet (GPT-5.5 + Claude) on the dispatch-contract.js + coverage-gate.js diffs before landing."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260628-0082.report.md"
+created_by: alpha
+updated_by: alpha

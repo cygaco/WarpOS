@@ -1,0 +1,1032 @@
+===== FILE: src/app/admin/readiness/page.tsx.tmpl (canonical 05e37832) =====
+import type { ReactNode } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Ban,
+  CheckCircle2,
+  Clock,
+  Flag,
+  Rocket,
+  ShieldCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  founderEmailAllowlist,
+  resolveAdminActor,
+} from "@/lib/admin/config";
+import {
+  groupReadinessItems,
+  longestLeadOpenItemId,
+  readinessPhase,
+  toReadinessView,
+} from "@/lib/readiness/group";
+import type {
+  ReadinessReport,
+  ReadinessViewItem,
+} from "@/lib/readiness/types";
+import { toggleReadinessItemAction } from "./actions";
+
+// The readiness producer is a machine-layer Node (CommonJS) module shipped with the
+// scaffold at the product repo root (scripts/scaffold/readiness-report.js). It runs
+// server-side ONLY; its schema id, product_id, and per-item `source` never cross into the
+// rendered DOM (toReadinessView strips them). Resolved from the project root at request
+// time so the bundler does not try to trace the dev-tooling script into the client bundle.
+function loadReport(): ReadinessReport {
+  const path = require("node:path") as typeof import("node:path");
+  const producerPath = path.join(
+    process.cwd(),
+    "scripts",
+    "scaffold",
+    "readiness-report.js",
+  );
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { buildReadinessReport } = require(producerPath);
+  return buildReadinessReport(process.cwd(), {
+    generated_at: new Date().toISOString(),
+  }) as ReadinessReport;
+}
+
+function StatusPill({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex rounded-md border px-2 py-1 text-xs font-medium">
+      {children}
+    </span>
+  );
+}
+
+function DimBadge({ dim }: { dim: string }) {
+  return (
+    <span className="inline-flex rounded-md border px-2 py-0.5 text-xs text-muted-foreground">
+      {dim}
+    </span>
+  );
+}
+
+function LeadTimeChip({
+  days,
+  note,
+  startNow,
+}: {
+  days: number;
+  note: string;
+  startNow: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="inline-flex w-fit items-center gap-1.5 rounded-md border border-accent bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
+        <Clock className="size-3.5" aria-hidden />~{days} days
+      </span>
+      <p className="text-xs text-muted-foreground">
+        {startNow ? (
+          <span className="font-semibold text-foreground">Start now — </span>
+        ) : null}
+        {note}
+      </p>
+    </div>
+  );
+}
+
+function DeepLinkCta({ item }: { item: ReadinessViewItem }) {
+  // No dead links: render the CTA ONLY when the producer resolved a real guide.
+  if (item.deep_link.kind !== "guide") return null;
+  const ref = item.deep_link.ref.replace(/\.md$/i, "");
+  return (
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="w-full sm:w-fit"
+    >
+      <a
+        href={`/admin/guides/${encodeURIComponent(ref)}`}
+        aria-label={`How to do this: ${item.label}`}
+      >
+        How to do this
+        <ArrowRight className="size-4" aria-hidden />
+      </a>
+    </Button>
+  );
+}
+
+function OpenItemRow({
+  item,
+  startNow,
+}: {
+  item: ReadinessViewItem;
+  startNow: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-md border p-4">
+      <div className="flex items-start gap-3">
+        {/* Progressive-enhancement toggle: a server-action form whose toggle control
+            is a submit BUTTON (works for mouse + keyboard with no client JS — a
+            readOnly checkbox does not submit on click). aria-pressed conveys state.
+            Sends id + nextChecked; the action server-derives owner_class for authz. */}
+        <form action={toggleReadinessItemAction}>
+          <input type="hidden" name="id" value={item.id} />
+          <input type="hidden" name="nextChecked" value="true" />
+          <button
+            type="submit"
+            aria-pressed={false}
+            className="flex cursor-pointer items-start gap-3 text-left"
+          >
+            <span
+              aria-hidden
+              className="mt-0.5 size-[18px] shrink-0 rounded-[4px] border border-input"
+            />
+            <span className="text-sm font-medium">{item.label}</span>
+            <span className="sr-only">
+              Mark &ldquo;{item.label}&rdquo; as done
+            </span>
+          </button>
+        </form>
+      </div>
+
+      <div className="flex flex-col gap-3 pl-[30px] sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <DimBadge dim={item.dim} />
+          {item.lead_time ? (
+            <LeadTimeChip
+              days={item.lead_time.days}
+              note={item.lead_time.note}
+              startNow={startNow}
+            />
+          ) : null}
+        </div>
+        <DeepLinkCta item={item} />
+      </div>
+    </div>
+  );
+}
+
+function DoneItemRow({ item }: { item: ReadinessViewItem }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-md border p-4 opacity-90">
+      <form action={toggleReadinessItemAction} className="flex items-center gap-3">
+        <input type="hidden" name="id" value={item.id} />
+        <input type="hidden" name="nextChecked" value="false" />
+        <button
+          type="submit"
+          aria-pressed={true}
+          className="flex cursor-pointer items-center gap-3 text-left"
+        >
+          <span
+            aria-hidden
+            className="flex size-[18px] shrink-0 items-center justify-center rounded-[4px] border border-primary bg-primary text-primary-foreground"
+          >
+            <CheckCircle2 className="size-3" />
+          </span>
+          <span className="text-sm text-muted-foreground">{item.label}</span>
+          <span className="sr-only">
+            Mark &ldquo;{item.label}&rdquo; as not done
+          </span>
+        </button>
+        <span className="inline-flex items-center gap-1 rounded-md border border-primary px-2 py-0.5 text-xs font-medium text-primary">
+          <CheckCircle2 className="size-3.5" aria-hidden />
+          Done
+        </span>
+      </form>
+    </div>
+  );
+}
+
+function BlockedItemRow({ item }: { item: ReadinessViewItem }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-destructive/50 p-4">
+      <div className="flex items-start gap-3">
+        <AlertTriangle
+          className="mt-0.5 size-[18px] shrink-0 text-destructive"
+          aria-hidden
+        />
+        <span className="text-sm font-medium">{item.label}</span>
+      </div>
+      <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <Ban className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <span>Blocked: {item.blocker || "waiting on an external approval"}</span>
+      </div>
+      <DeepLinkCta item={item} />
+    </div>
+  );
+}
+
+export default async function ReadinessPage() {
+  // GATE (default-deny, first action) — copied from admin/page.tsx. Absent / malformed /
+  // non-allowlisted cookie → no content. The prod dev-email fallback fails closed inside
+  // resolveAdminActor (NODE_ENV==="production" → devEmail = "").
+  const actor = await resolveAdminActor();
+  if (!actor.allowed) {
+    const allowedCount = founderEmailAllowlist().length;
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-4 p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="size-5" aria-hidden />
+              Admin access restricted
+            </CardTitle>
+            <CardDescription>
+              This route is locked to the founder email allowlist. Current actor
+              source: {actor.source}. Allowlisted founders: {allowedCount}.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    );
+  }
+
+  const view = toReadinessView(loadReport());
+  const { summary, composite } = view;
+  const groups = groupReadinessItems(view);
+  const phase = readinessPhase(summary);
+  const longestId = longestLeadOpenItemId(view);
+
+  const summaryClauses = [
+    `${summary.completed} of ${summary.total} done`,
+    summary.open > 0 ? `${summary.open} to do` : null,
+    summary.blocked > 0 ? `${summary.blocked} blocked` : null,
+  ].filter(Boolean);
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 p-6">
+      <header className="flex flex-col gap-2 border-b pb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm text-muted-foreground">Launch readiness</p>
+            <h1 className="text-2xl font-semibold">{{SLUG}}</h1>
+          </div>
+          <StatusPill>{actor.email}</StatusPill>
+        </div>
+      </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{composite}% ready</CardTitle>
+          <CardDescription>{summaryClauses.join(" · ")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div
+            role="progressbar"
+            aria-valuenow={composite}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Launch readiness progress"
+            className="h-2 w-full overflow-hidden rounded-full bg-muted"
+          >
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${composite}%` }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {phase === "cold" ? (
+        <Card className="border-accent bg-accent/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="size-5" aria-hidden />
+              Let&rsquo;s get you launch-ready.
+            </CardTitle>
+            <CardDescription className="flex items-start gap-2">
+              <Flag className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <span>
+                Nothing&rsquo;s done yet — that&rsquo;s normal. Start with the
+                items marked &ldquo;Start now&rdquo;: they take real-world time you
+                can&rsquo;t speed up (developer accounts, store reviews). Work top
+                to bottom; check things off as you go.
+              </span>
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {phase === "all-done" ? (
+        <Card className="border-primary bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="size-5" aria-hidden />
+              You&rsquo;re launch-ready.
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      ) : null}
+
+      {groups.map((group) => {
+        if (group.key === "done") {
+          return (
+            <details key={group.key} className="rounded-md border p-2">
+              <summary className="cursor-pointer px-2 py-1 text-sm font-medium text-muted-foreground">
+                {group.heading}
+              </summary>
+              <div className="mt-3 space-y-3">
+                {group.items.map((item) => (
+                  <DoneItemRow key={item.id} item={item} />
+                ))}
+              </div>
+            </details>
+          );
+        }
+
+        return (
+          <section key={group.key} className="space-y-3">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              {group.heading}
+            </h2>
+            <div className="space-y-3">
+              {group.items.map((item) => {
+                if (group.key === "blocked") {
+                  return <BlockedItemRow key={item.id} item={item} />;
+                }
+                return (
+                  <OpenItemRow
+                    key={item.id}
+                    item={item}
+                    startNow={item.id === longestId}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+    </main>
+  );
+}
+
+===== FILE: src/app/admin/guides/[ref]/page.tsx.tmpl =====
+import fs from "node:fs";
+import path from "node:path";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  founderEmailAllowlist,
+  resolveAdminActor,
+} from "@/lib/admin/config";
+
+// In-app guide viewer (design-lead OPEN-2 render target for the readiness deep-link CTA).
+// Read-only. Founder-gated (same gate as the rest of /admin). Path-traversal-hardened:
+// the [ref] is validated against an allowlist derived from the SAME source the producer
+// uses (the guide registry's referenceable basenames) BEFORE any disk read.
+
+type GuidePageProps = {
+  params: { ref: string } | Promise<{ ref: string }>;
+};
+
+// The directory the guides ship into (co-located static content, _content convention).
+function guidesContentDir(): string {
+  return path.join(process.cwd(), "src", "app", "admin", "guides", "_content");
+}
+
+// Allowlist of referenceable guide basenames — derived from _guides/registry.json,
+// the SAME source scripts/scaffold/readiness-report.js#loadGuideFiles reads. We strip
+// path separators exactly as the producer does (.split(/[\\/]/).pop()).
+function allowlistedGuideBasenames(): Set<string> {
+  const abs = path.join(process.cwd(), "_guides", "registry.json");
+  const set = new Set<string>();
+  try {
+    const reg = JSON.parse(fs.readFileSync(abs, "utf8")) as {
+      guides?: Array<{ file?: string; path?: string }>;
+    };
+    for (const g of reg.guides || []) {
+      const f = g.file || g.path;
+      if (f) {
+        const base = String(f).split(/[\\/]/).pop();
+        if (base) set.add(base.replace(/\.md$/i, ""));
+      }
+    }
+  } catch {
+    /* registry missing/unreadable → empty allowlist → every ref 404s (fail-closed) */
+  }
+  return set;
+}
+
+// Resolve a requested ref to a SAFE basename, or null. Strips any path separators in the
+// incoming ref FIRST (defeats ../../etc/passwd, absolute paths, encoded separators), then
+// requires membership in the registry allowlist. Returns null → caller 404s, NO disk read
+// of the target ever happens for a non-allowlisted ref.
+function resolveGuideRef(rawRef: string): string | null {
+  if (!rawRef) return null;
+  // Strip directory components and any .md the caller appended.
+  const base = String(rawRef)
+    .split(/[\\/]/)
+    .pop()!
+    .replace(/\.md$/i, "");
+  // Defense in depth: reject anything that still looks like traversal / hidden / empty.
+  if (!base || base === "." || base === ".." || base.includes("..")) return null;
+  const allow = allowlistedGuideBasenames();
+  return allow.has(base) ? base : null;
+}
+
+export default async function GuideViewerPage({ params }: GuidePageProps) {
+  // GATE (default-deny, first action) — same gate as admin/page.tsx.
+  const actor = await resolveAdminActor();
+  if (!actor.allowed) {
+    const allowedCount = founderEmailAllowlist().length;
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-4 p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="size-5" aria-hidden />
+              Admin access restricted
+            </CardTitle>
+            <CardDescription>
+              This route is locked to the founder email allowlist. Current actor
+              source: {actor.source}. Allowlisted founders: {allowedCount}.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
+    );
+  }
+
+  const resolved = params ? await params : { ref: "" };
+  const safeBase = resolveGuideRef(resolved.ref);
+  // Non-allowlisted / traversal ref → 404 with NO disk read of the target.
+  if (!safeBase) notFound();
+
+  const filePath = path.join(guidesContentDir(), `${safeBase}.md`);
+  let content = "";
+  try {
+    content = fs.readFileSync(filePath, "utf8");
+  } catch {
+    notFound();
+  }
+
+  // Read-only render. Plain-text/preformatted (no markdown dependency, no dangerouslySet
+  // HTML) — the source markdown is escaped by React's text rendering, so no injection.
+  return (
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6">
+      <header className="flex items-center justify-between gap-3 border-b pb-5">
+        <h1 className="text-2xl font-semibold">{safeBase.replace(/_/g, " ")}</h1>
+        <Button asChild variant="outline" size="sm">
+          <a href="/admin/readiness" aria-label="Back to launch readiness">
+            <ArrowLeft className="size-4" aria-hidden />
+            Back
+          </a>
+        </Button>
+      </header>
+      <article>
+        <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-foreground">
+          {content}
+        </pre>
+      </article>
+    </main>
+  );
+}
+
+===== FILE: src/app/admin/readiness/actions.ts.tmpl =====
+"use server";
+
+import path from "node:path";
+import { revalidatePath } from "next/cache";
+import { resolveAdminActor } from "@/lib/admin/config";
+import { patchChecklistItem } from "@/lib/readiness/writeback";
+
+// Result the client can surface — we never throw-and-swallow. A denied gate, an
+// un-toggleable item, or a missing id all come back as { ok: false } with a
+// reason the panel can render.
+export type ToggleReadinessResult =
+  | { ok: true; id: string; checked: boolean }
+  | { ok: false; error: string };
+
+// FOUNDERS_CHECKLIST.md is the source of truth (no server-persisted check state).
+// It lives at the product repo root; resolve it from cwd the same way the
+// producer (scripts/scaffold/readiness-report.js) reads it.
+function checklistPath(): string {
+  return path.join(process.cwd(), "FOUNDERS_CHECKLIST.md");
+}
+
+function formValue(formData: FormData, name: string): string {
+  const value = formData.get(name);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+// Derive an item's owner_class SERVER-SIDE from the readiness producer (the source
+// of truth). The authorization decision must NOT depend on client form input — a
+// client cannot relabel a sprint-work/waiver gate as "owner-action" to force a
+// phantom patch. Mirrors the page's loadReport() require pattern (CJS dev-tooling
+// module at the product repo root; resolved at request time, server-only).
+// Fail-closed: any producer/lookup failure returns null → the toggle is rejected.
+function resolveOwnerClass(id: string): string | null {
+  try {
+    const p = require("node:path") as typeof import("node:path");
+    const producerPath = p.join(
+      process.cwd(),
+      "scripts",
+      "scaffold",
+      "readiness-report.js",
+    );
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { buildReadinessReport } = require(producerPath);
+    const report = buildReadinessReport(process.cwd(), {
+      generated_at: new Date().toISOString(),
+    }) as { items?: Array<{ id: string; owner_class: string }> };
+    const found = (report.items || []).find((it) => it.id === id);
+    return found ? found.owner_class : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function toggleReadinessItemAction(
+  formData: FormData,
+): Promise<ToggleReadinessResult> {
+  // GATE: same founder check as the admin route — allowlist is the first gate,
+  // default-deny. (resolveAdminActor + !actor.allowed; the prod dev-email
+  // fallback fails closed inside resolveAdminActor.)
+  const actor = await resolveAdminActor();
+  if (!actor.allowed) {
+    return { ok: false, error: "Admin access denied: founder not allowlisted" };
+  }
+
+  const id = formValue(formData, "id");
+  if (!id) {
+    return { ok: false, error: "Missing readiness item id" };
+  }
+
+  // Only owner-action items map to a toggleable FOUNDERS_CHECKLIST.md line.
+  // SECURITY: owner_class is derived SERVER-SIDE (resolveOwnerClass) from the
+  // producer, never trusted from client form input. waiver / sprint-work gates are
+  // injected (no .md backing) and are not founder-toggleable — reject rather than
+  // attempt a phantom patch; an unknown id (absent from producer output) is rejected.
+  const ownerClass = resolveOwnerClass(id);
+  if (ownerClass === null) {
+    return { ok: false, error: "Readiness item not found" };
+  }
+  if (ownerClass !== "owner-action") {
+    return {
+      ok: false,
+      error: `Item is not founder-toggleable (owner_class=${ownerClass})`,
+    };
+  }
+
+  const nextChecked = formValue(formData, "nextChecked") === "true";
+
+  const result = patchChecklistItem(checklistPath(), id, nextChecked);
+  if (!result.ok) {
+    // missing-id / read / write failures surface, never silently no-op.
+    return { ok: false, error: result.error };
+  }
+
+  revalidatePath("/admin/readiness");
+  return { ok: true, id: result.id, checked: result.checked };
+}
+
+===== FILE: src/lib/readiness/writeback.ts.tmpl =====
+import { randomBytes } from "node:crypto";
+import { readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+
+// ---------------------------------------------------------------------------
+// Surgical line-patch for the founders checklist (.md is the source of truth).
+//
+// WHY NOT render-from-model: the producer's parse(file) drops every non-item
+// line (human notes, ## headers, schema/declared_stack metadata, both markers)
+// and render() regenerates from constants with checks reset — render(parse(x))
+// is doubly lossy. Mutating through it would silently destroy human annotations
+// and reset every checkbox. So write-back is a NET-NEW byte-preserving patch:
+// it touches exactly one line and leaves every other byte untouched.
+//
+// Contract:
+//   patchChecklistItem(checklistPath, id, nextChecked)
+//   1. re-reads the file from disk immediately before patching (patch-on-current)
+//   2. finds the single line whose `id=<id>` marker matches `id`
+//   3. toggles that line's [ ] <-> [x] in place, preserving every other byte
+//   4. writes atomically (write tmp, renameSync over original)
+//   5. if id not found -> NO write (no tmp left), returns { ok: false }
+// ---------------------------------------------------------------------------
+
+export type PatchResult =
+  | { ok: true; id: string; checked: boolean; changed: boolean }
+  | { ok: false; id: string; error: string };
+
+// A checklist item line, e.g.
+//   - [ ] id=provider.accounts dim=product source=core Create ...
+//   - [x] id=domain.dns dim=deployment source=core Confirm ...
+// We match the checkbox + the `id=` token explicitly so a label that happens to
+// contain the same substring can never be mistaken for the item id.
+const ID_TOKEN = /(^\s*-\s+\[)([ xX])(\]\s+id=)([a-z0-9_.-]+)/;
+
+function lineMatchesId(line: string, id: string): boolean {
+  const m = ID_TOKEN.exec(line);
+  return m !== null && m[4] === id;
+}
+
+/**
+ * Toggle a single checklist item's checkbox in place.
+ *
+ * @param checklistPath absolute path to FOUNDERS_CHECKLIST.md
+ * @param id            the item id (matched against the `id=` marker)
+ * @param nextChecked   desired checked state (true -> [x], false -> [ ])
+ */
+export function patchChecklistItem(
+  checklistPath: string,
+  id: string,
+  nextChecked: boolean,
+): PatchResult {
+  let raw: string;
+  try {
+    // (1) patch-on-current: read the LATEST bytes from disk, not a stale snapshot.
+    raw = readFileSync(checklistPath, "utf8");
+  } catch (e) {
+    return {
+      ok: false,
+      id,
+      error: `could not read checklist: ${(e as Error).message}`,
+    };
+  }
+
+  // Split preserving the exact line content; we rejoin with the same separator
+  // so non-target bytes are reproduced verbatim.
+  const usesCrlf = raw.includes("\r\n");
+  const newline = usesCrlf ? "\r\n" : "\n";
+  const lines = raw.split(/\r?\n/);
+
+  // (2) find the single line carrying this id.
+  let targetIndex = -1;
+  for (let i = 0; i < lines.length; i += 1) {
+    if (lineMatchesId(lines[i], id)) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  // (5) id not found -> NO write, return error. Never append / render-from-model.
+  if (targetIndex === -1) {
+    return { ok: false, id, error: `checklist item not found: id=${id}` };
+  }
+
+  // (3) toggle ONLY the checkbox glyph on that line; every other byte is preserved.
+  const original = lines[targetIndex];
+  const desiredGlyph = nextChecked ? "x" : " ";
+  const patched = original.replace(
+    ID_TOKEN,
+    (_full, pre, _glyph, mid, matchedId) =>
+      `${pre}${desiredGlyph}${mid}${matchedId}`,
+  );
+
+  const changed = patched !== original;
+  if (changed) {
+    lines[targetIndex] = patched;
+  }
+
+  const nextRaw = lines.join(newline);
+
+  // (4) atomic write: write a sibling tmp file, then renameSync over the original.
+  // renameSync is atomic on the same filesystem, so a reader sees either the old
+  // file or the fully-written new file, never a torn write.
+  const tmpPath = `${checklistPath}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+  try {
+    writeFileSync(tmpPath, nextRaw, "utf8");
+    renameSync(tmpPath, checklistPath);
+  } catch (e) {
+    // Best-effort cleanup so a failed patch never leaves a stray tmp behind.
+    try {
+      unlinkSync(tmpPath);
+    } catch {
+      /* tmp may not exist if writeFileSync failed; ignore */
+    }
+    return {
+      ok: false,
+      id,
+      error: `atomic write failed: ${(e as Error).message}`,
+    };
+  }
+
+  return { ok: true, id, checked: nextChecked, changed };
+}
+
+===== FILE: src/lib/readiness/types.ts.tmpl =====
+// Shared readiness types — derived from the readiness producer output
+// (scripts/scaffold/readiness-report.js).
+//
+// The schema id, product_id, and per-item `source`/raw schema fields stay in the
+// machine layer and are NEVER passed to client components or rendered in the DOM
+// (brand boundary). The view consumes only the safe subset declared below.
+
+export type ReadinessStatus = "open" | "done" | "blocked";
+export type ReadinessOwnerClass = "owner-action" | "sprint-work" | "waiver";
+
+export type ReadinessLeadTime = {
+  days: number;
+  note: string;
+};
+
+export type ReadinessDeepLink =
+  | { kind: "guide"; ref: string }
+  | { kind: "none"; ref: null };
+
+// The full per-item shape the producer emits (server-side only).
+export type ReadinessItem = {
+  id: string;
+  label: string;
+  dim: string;
+  status: ReadinessStatus;
+  owner_class: ReadinessOwnerClass;
+  lead_time: ReadinessLeadTime | null;
+  blocker: string | null;
+  deep_link: ReadinessDeepLink;
+  source: string;
+};
+
+export type ReadinessSummary = {
+  total: number;
+  completed: number;
+  open: number;
+  blocked: number;
+  owner_action: number;
+  sprint_work: number;
+  waiver: number;
+};
+
+// The full producer report (server-side only — has schema/product_id).
+export type ReadinessReport = {
+  schema: string;
+  product_id: string;
+  generated_at: string | null;
+  composite: number;
+  source_refs: { checklist: string; handoff: string | null };
+  items: ReadinessItem[];
+  summary: ReadinessSummary;
+  checklist_errors?: string[];
+};
+
+// The brand-clean subset handed to the view. No schema, no product_id, no per-item
+// `source`. This is the only readiness data that may reach a client component / DOM.
+export type ReadinessViewItem = {
+  id: string;
+  label: string;
+  dim: string;
+  status: ReadinessStatus;
+  owner_class: ReadinessOwnerClass;
+  lead_time: ReadinessLeadTime | null;
+  blocker: string | null;
+  deep_link: ReadinessDeepLink;
+};
+
+export type ReadinessView = {
+  composite: number;
+  summary: ReadinessSummary;
+  items: ReadinessViewItem[];
+};
+
+// A UI group of items, after grouping + ordering.
+export type ReadinessGroupKey = "do-first" | "blocked" | "in-sprint" | "done";
+
+export type ReadinessGroup = {
+  key: ReadinessGroupKey;
+  heading: string;
+  items: ReadinessViewItem[];
+  collapsedByDefault: boolean;
+};
+
+// FTUE phase derived from the summary.
+export type ReadinessPhase = "cold" | "warm" | "all-done";
+
+===== FILE: src/lib/readiness/group.ts.tmpl =====
+// Readiness grouping + ordering — the UI groups and orders; it does NOT preserve the
+// raw producer order (UX spec LIST GROUPING).
+//
+//   1. "Do this first" = open + owner-action, lead-time items first (longest lead-time
+//      / longest real-world pole at the top), then the rest.
+//   2. "Blocked"       = status blocked.
+//   3. "In the sprint" = open + (sprint-work | waiver) — "we're handling these".
+//   4. "Done"          = status done, collapsed by default.
+//
+// 0-item groups are omitted by the caller. Pure + deterministic — no clock, no I/O.
+
+import type {
+  ReadinessGroup,
+  ReadinessPhase,
+  ReadinessReport,
+  ReadinessSummary,
+  ReadinessView,
+  ReadinessViewItem,
+} from "./types";
+
+// Strip the report to the brand-clean view subset (drops schema, product_id, source).
+export function toReadinessView(report: ReadinessReport): ReadinessView {
+  return {
+    composite: report.composite,
+    summary: report.summary,
+    items: report.items.map((it) => ({
+      id: it.id,
+      label: it.label,
+      dim: it.dim,
+      status: it.status,
+      owner_class: it.owner_class,
+      lead_time: it.lead_time,
+      blocker: it.blocker,
+      deep_link: it.deep_link,
+    })),
+  };
+}
+
+// Stable sort: lead-time items first (days desc — longest pole on top), then the rest in
+// their original relative order. JS Array.sort is stable on modern runtimes (V8/Node 12+).
+function orderDoFirst(items: ReadinessViewItem[]): ReadinessViewItem[] {
+  return [...items].sort((a, b) => {
+    const aLead = a.lead_time ? a.lead_time.days : -1;
+    const bLead = b.lead_time ? b.lead_time.days : -1;
+    return bLead - aLead;
+  });
+}
+
+// The id of the single longest-lead-time open owner-action item ("Start now"), or null.
+export function longestLeadOpenItemId(view: ReadinessView): string | null {
+  let best: ReadinessViewItem | null = null;
+  for (const it of view.items) {
+    if (it.status !== "open" || it.owner_class !== "owner-action") continue;
+    if (!it.lead_time) continue;
+    if (!best || !best.lead_time || it.lead_time.days > best.lead_time.days) {
+      best = it;
+    }
+  }
+  return best ? best.id : null;
+}
+
+export function readinessPhase(summary: ReadinessSummary): ReadinessPhase {
+  if (summary.completed === 0) return "cold";
+  if (summary.open === 0 && summary.blocked === 0) return "all-done";
+  return "warm";
+}
+
+// Group + order the view items. Returns ONLY non-empty groups, in display order.
+export function groupReadinessItems(view: ReadinessView): ReadinessGroup[] {
+  const doFirst: ReadinessViewItem[] = [];
+  const blocked: ReadinessViewItem[] = [];
+  const inSprint: ReadinessViewItem[] = [];
+  const done: ReadinessViewItem[] = [];
+
+  for (const it of view.items) {
+    if (it.status === "done") {
+      done.push(it);
+    } else if (it.status === "blocked") {
+      blocked.push(it);
+    } else if (it.owner_class === "owner-action") {
+      doFirst.push(it);
+    } else {
+      inSprint.push(it);
+    }
+  }
+
+  const groups: ReadinessGroup[] = [
+    {
+      key: "do-first",
+      heading: "Do this first",
+      items: orderDoFirst(doFirst),
+      collapsedByDefault: false,
+    },
+    { key: "blocked", heading: "Blocked", items: blocked, collapsedByDefault: false },
+    {
+      key: "in-sprint",
+      heading: "In the sprint",
+      items: inSprint,
+      collapsedByDefault: false,
+    },
+    {
+      key: "done",
+      heading: `Done (${done.length})`,
+      items: done,
+      collapsedByDefault: true,
+    },
+  ];
+
+  return groups.filter((g) => g.items.length > 0);
+}
+
+===== CONTEXT (auth-gate trust root): src/lib/admin/config.ts.tmpl =====
+import { createHmac, timingSafeEqual } from "node:crypto";
+import { cookies } from "next/headers";
+
+export type AdminActor = {
+  email: string;
+  allowed: boolean;
+  source: "signed-cookie" | "dev-env" | "missing";
+};
+
+export type AdminFeatureFlag = {
+  key: string;
+  label: string;
+  enabled: boolean;
+};
+
+export const ADMIN_FEATURE_FLAGS: AdminFeatureFlag[] = [
+  {
+    key: "admin.project_sections",
+    label: "Project sections",
+    enabled: true,
+  },
+  {
+    key: "admin.event_feed",
+    label: "Event feed",
+    enabled: true,
+  },
+];
+
+const DEFAULT_ADMIN_SESSION_COOKIE = "warpos_admin_session";
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function splitEmails(value: string | undefined): string[] {
+  return (value || "")
+    .split(/[,\s]+/)
+    .map(normalizeEmail)
+    .filter(Boolean);
+}
+
+export function founderEmailAllowlist(): string[] {
+  return splitEmails(process.env.ADMIN_FOUNDER_EMAILS);
+}
+
+export function adminSessionCookieName(): string {
+  return (
+    process.env.ADMIN_SESSION_COOKIE || DEFAULT_ADMIN_SESSION_COOKIE
+  ).trim();
+}
+
+export function isFounderEmailAllowed(email: string | null | undefined): boolean {
+  const normalized = normalizeEmail(email || "");
+  return Boolean(normalized && founderEmailAllowlist().includes(normalized));
+}
+
+function adminSessionSecret(): string {
+  return (process.env.ADMIN_SESSION_SECRET || "").trim();
+}
+
+function signAdminEmail(email: string, secret: string): string {
+  return createHmac("sha256", secret).update(email).digest("base64url");
+}
+
+function safeEqual(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+export function verifyAdminSessionCookie(value: string | undefined): string | null {
+  const secret = adminSessionSecret();
+  if (!secret || !value) return null;
+
+  const separatorIndex = value.lastIndexOf(".");
+  if (separatorIndex <= 0) return null;
+
+  const encodedEmail = value.slice(0, separatorIndex);
+  const signature = value.slice(separatorIndex + 1);
+  const email = normalizeEmail(Buffer.from(encodedEmail, "base64url").toString("utf8"));
+  if (!email || !signature) return null;
+
+  const expectedSignature = signAdminEmail(email, secret);
+  return safeEqual(signature, expectedSignature) ? email : null;
+}
+
+export function signAdminSessionEmail(email: string): string | null {
+  const secret = adminSessionSecret();
+  const normalizedEmail = normalizeEmail(email);
+  if (!secret || !normalizedEmail) return null;
+
+  const encodedEmail = Buffer.from(normalizedEmail).toString("base64url");
+  return `${encodedEmail}.${signAdminEmail(normalizedEmail, secret)}`;
+}
+
+export async function resolveAdminActor(): Promise<AdminActor> {
+  const requestCookies = await cookies();
+  const sessionEmail = verifyAdminSessionCookie(
+    requestCookies.get(adminSessionCookieName())?.value,
+  );
+  const devEmail =
+    process.env.NODE_ENV !== "production"
+      ? normalizeEmail(process.env.ADMIN_DEV_EMAIL || "")
+      : "";
+  const email = sessionEmail || devEmail;
+  return {
+    email,
+    allowed: isFounderEmailAllowed(email),
+    source: sessionEmail ? "signed-cookie" : devEmail ? "dev-env" : "missing",
+  };
+}
+
+export async function requireFounderAdmin(): Promise<AdminActor> {
+  const actor = await resolveAdminActor();
+  if (!actor.allowed) {
+    throw new Error("Admin access denied: founder email is not allowlisted");
+  }
+  return actor;
+}

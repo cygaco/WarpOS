@@ -1,0 +1,13 @@
+You are the BACKEND REVIEWER, final confirmation. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit 70892a4b). Binding — orchestrator cannot override a FAIL.
+
+This is a TARGETED re-judge of ONE change. In the prior round (3b3e927e) you reviewed this backend surface and returned PASS, judging the B4-tmp residual (a swallowed unlinkSync cleanup-failure, returned error reporting only the write failure) as ACCEPTABLE / non-blocking — "logging cleanup failure would be nice, but not required to pass." Everything else backend (server-derived authz, atomic write, patch-on-current, unknown-id + duplicate-id fail-closed, EOL preservation, FE/BE contract) was FIXED + confirmed.
+
+The ONE change since: writeback.ts.tmpl now SURFACES the cleanup failure — on an unlinkSync failure in the catch it appends "(cleanup also failed — possible orphan tmp at <path>)" to the returned error instead of swallowing it (still never throws out of cleanup). This implements the "nice to have" you flagged.
+
+VERIFY: (a) the change is correct + safe (no new throw path, no behavior change on the success path, orphanNote only appended when cleanup actually fails); (b) no regression to the already-PASSED items; (c) the B4-tmp finding is now FULLY closed (substantive orphan risk handled on both paths AND the failure is now surfaced).
+
+CONTEXT: .ts.tmpl = scaffold templates (no tsc). Only writeback.ts.tmpl changed; actions.ts.tmpl is included unchanged for caller context.
+
+Output ReviewResult: VERDICT (PASS or FAIL), B4-tmp final disposition, any NEW regression. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit 70892a4b) =====

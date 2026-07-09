@@ -1,0 +1,236 @@
+commit 0c8022924771fa5ae761dc2684b69a237ab4ca2a
+Author: Alex Epsilon <noreply@anthropic.com>
+Date:   Thu Jun 18 15:54:29 2026 -0700
+
+    U2 security: reject path-traversal/junction escape in seed-provenance writer
+    
+    Fix MEDIUM path-traversal in populateSeedProvenance() (the exported U2 seed-zone
+    writer). Two guards, applied per zone before any fs write:
+    
+    1. STATIC (zoneRejectReason): reject any zone that is absolute, drive-qualified,
+       rooted, contains a '..' segment, or is not a member of the CANONICAL
+       seed-zone allowlist (scaffold-core.SKELETON_DIRS via defaultZones()) — the
+       trusted constant, never the untrusted opts.zones itself.
+    2. REALPATH: resolve the deepest EXISTING ancestor of the marker's parent dir
+       and require it to stay under fs.realpathSync(targetRoot). Defeats a
+       symlink/junction escape (e.g. an existing _docs junction pointing outside the
+       product tree) WITHOUT creating any dir outside the tree. On escape: push to
+       result.failed ("zone escapes target root") and continue — never clobber.
+    
+    Valid-zone behavior is unchanged (idempotent, skip-if-modified, byte-stable).
+    
+    Tests (test-seed-provenance.js): add a "../pwned" traversal case (mandatory +
+    portable — asserts nothing written outside target + zone in result.failed +
+    ok=false/code=1) and a "_docs" junction case (skip-with-note if env can't make a
+    junction). Original 9 assertions unchanged. 14/14 pass; warpos-ship-coverage exit 0.
+    
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+diff --git a/scripts/warpos/test-seed-provenance.js b/scripts/warpos/test-seed-provenance.js
+index 5f4a8253..a39332cf 100644
+--- a/scripts/warpos/test-seed-provenance.js
++++ b/scripts/warpos/test-seed-provenance.js
+@@ -139,6 +139,88 @@ try {
+   ok(`module has zero "${FORBIDDEN_SOURCE}" references`,
+     !moduleSrc.includes(FORBIDDEN_SOURCE));
+   ok("module references the _warpos/ baseline source", moduleSrc.includes("_warpos/BASELINE"));
++
++  // ── 4. Path-traversal: a "../escape" zone is REFUSED + writes nothing out ──
++  // (mandatory + portable — no symlink/junction needed). The writer must reject
++  // a traversing zone, report it in result.failed, and leave the parent tree
++  // untouched (SP-20260618-001 security fix).
++  {
++    const escRoot = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-seed-esc-"));
++    try {
++      const targetInside = path.join(escRoot, "product");
++      fs.mkdirSync(targetInside, { recursive: true });
++      const escZone = "../pwned";
++      // Where "../pwned" WOULD land if the write were not refused: escRoot/pwned.
++      const leakedDir = path.join(escRoot, "pwned");
++      const leakedMarker = path.join(leakedDir, PROVENANCE_FILE);
++
++      const rEsc = populateSeedProvenance({
++        targetRoot: targetInside,
++        warposVersion: VERSION,
++        zones: [escZone],
++        log: noop,
++      });
++
++      ok("'../pwned' zone reported in result.failed (not silently written)",
++        rEsc.failed.some((f) => f.zone === escZone) && rEsc.written.length === 0,
++        `failed=${JSON.stringify(rEsc.failed)} written=${JSON.stringify(rEsc.written)}`);
++      ok("'../pwned' wrote NOTHING outside the target root",
++        !fs.existsSync(leakedMarker) && !fs.existsSync(leakedDir),
++        `leaked=${leakedMarker}`);
++      ok("'../pwned' marks the run not-ok (ok=false, code=1)",
++        rEsc.ok === false && rEsc.code === 1,
++        `ok=${rEsc.ok} code=${rEsc.code}`);
++    } finally {
++      try { fs.rmSync(escRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
++    }
++  }
++
++  // ── 5. Path-traversal: a "_docs" junction pointing OUTSIDE the tree is ──
++  // refused — the marker is never written through it. "_docs" is a VALID
++  // allowlisted zone NAME, so only the realpath guard can catch this. On an env
++  // that cannot create a junction/symlink the case is skipped-with-note (the
++  // mandatory "../escape" case above still proves traversal is blocked).
++  {
++    const jRoot = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-seed-jct-"));
++    try {
++      const targetJ = path.join(jRoot, "product");
++      const outside = path.join(jRoot, "outside");
++      fs.mkdirSync(targetJ, { recursive: true });
++      fs.mkdirSync(outside, { recursive: true });
++
++      const junctionZone = "_docs";
++      const junctionPath = path.join(targetJ, junctionZone);
++      let junctionMade = false;
++      try {
++        fs.symlinkSync(outside, junctionPath, "junction"); // Windows junction (no admin)
++        junctionMade = true;
++      } catch {
++        try {
++          fs.symlinkSync(outside, junctionPath, "dir"); // POSIX / dev-mode symlink
++          junctionMade = true;
++        } catch { /* env cannot create links — skip below */ }
++      }
++
++      if (!junctionMade) {
++        ok("junction-escape test SKIPPED (env cannot create a junction/symlink) — '../escape' still covers traversal", true);
++      } else {
++        const rJ = populateSeedProvenance({
++          targetRoot: targetJ,
++          warposVersion: VERSION,
++          zones: [junctionZone],
++          log: noop,
++        });
++        const leakedMarker = path.join(outside, PROVENANCE_FILE);
++        ok("junction zone: marker NOT written through the junction",
++          !fs.existsSync(leakedMarker), `leaked=${leakedMarker}`);
++        ok("junction zone reported in result.failed (escape detected), nothing written",
++          rJ.failed.some((f) => f.zone === junctionZone) && rJ.written.length === 0,
++          `failed=${JSON.stringify(rJ.failed)} written=${JSON.stringify(rJ.written)}`);
++      }
++    } finally {
++      try { fs.rmSync(jRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
++    }
++  }
+ } finally {
+   try {
+     fs.rmSync(tmp, { recursive: true, force: true });
+diff --git a/scripts/warpos/views/populate-seed-provenance.js b/scripts/warpos/views/populate-seed-provenance.js
+index 421ce28f..ce8597ee 100644
+--- a/scripts/warpos/views/populate-seed-provenance.js
++++ b/scripts/warpos/views/populate-seed-provenance.js
+@@ -96,6 +96,47 @@ function normalizeZone(zone) {
+   return String(zone).replace(/\\/g, "/").replace(/\/+$/, "");
+ }
+ 
++/**
++ * STATIC path-traversal guard (SP-20260618-001 security fix). The exported
++ * writer must honor the "only within product seed zones" contract even when
++ * `opts.zones` is untrusted. A seed zone is trusted ONLY when it is a relative,
++ * non-traversing member of the CANONICAL allowlist (scaffold-core.SKELETON_DIRS
++ * via defaultZones()) — never validated against the caller-supplied list itself.
++ *
++ * `zoneRel` is already normalized (forward slashes, no trailing slash). Returns
++ * a human-readable reason when the zone must be REJECTED, or null when it is
++ * safe to use.
++ */
++function zoneRejectReason(zoneRel, allowedZones) {
++  if (path.isAbsolute(zoneRel)) return "absolute path not allowed";
++  if (/^[A-Za-z]:/.test(zoneRel)) return "drive-qualified path not allowed";
++  if (zoneRel.startsWith("/") || zoneRel.startsWith("\\")) return "rooted path not allowed";
++  if (zoneRel.split("/").some((seg) => seg === "..")) {
++    return "parent-traversal ('..') segment not allowed";
++  }
++  if (!allowedZones.has(zoneRel)) return "not a member of the canonical seed-zone allowlist";
++  return null;
++}
++
++/**
++ * Walk UP from `p` to the deepest path component that actually exists, so the
++ * caller can realpath it BEFORE creating any new dirs. This is the seam that
++ * defeats a symlink/junction escape (e.g. an existing `_docs` junction pointing
++ * outside the product tree): resolving the deepest existing ancestor reveals the
++ * real location, which the caller asserts stays under the real target root —
++ * refusing the write WITHOUT ever creating a directory outside the tree.
++ */
++function deepestExistingAncestor(p) {
++  let cur = path.resolve(p);
++  let parent = path.dirname(cur);
++  while (cur !== parent) {
++    if (fs.existsSync(cur)) return cur;
++    cur = parent;
++    parent = path.dirname(cur);
++  }
++  return cur; // filesystem root
++}
++
+ /**
+  * The deterministic marker body for a zone. No timestamp by design — the
+  * framework_version is the temporal anchor, so a re-run is byte-stable.
+@@ -171,10 +212,53 @@ function populateSeedProvenance(opts) {
+   });
+   result.version = version;
+ 
++  // ── Path-traversal hardening (SP-20260618-001 security fix) ──
++  // Two guards, applied per zone below, so a write can NEVER land outside the
++  // product seed zones — even with untrusted opts.zones or a junction on disk:
++  //   (1) STATIC  — zoneRejectReason(): reject absolute / drive-qualified /
++  //       '..'-bearing zones, and any zone not in the CANONICAL allowlist
++  //       (scaffold-core.SKELETON_DIRS via defaultZones()), not opts.zones.
++  //   (2) REALPATH — resolve the deepest EXISTING ancestor of the marker's
++  //       parent and require it to stay under the real target root, defeating a
++  //       symlink/junction escape without creating any dir outside the tree.
++  const allowedZones = new Set(defaultZones().map(normalizeZone).filter(Boolean));
++  let realTarget;
++  try {
++    realTarget = fs.realpathSync(targetRoot);
++  } catch {
++    realTarget = targetRoot;
++  }
++  const underRealTarget = (p) => p === realTarget || p.startsWith(realTarget + path.sep);
++
+   for (const rawZone of zones) {
+     const zoneRel = normalizeZone(rawZone);
+     if (!zoneRel) continue;
++
++    // Guard (1): static rejection — refuse before touching the filesystem.
++    const rejectReason = zoneRejectReason(zoneRel, allowedZones);
++    if (rejectReason) {
++      result.failed.push({ zone: zoneRel, reason: rejectReason });
++      continue;
++    }
++
+     const markerAbs = path.join(targetRoot, zoneRel, PROVENANCE_FILE);
++    const markerDir = path.dirname(markerAbs);
++
++    // Guard (2): realpath the deepest existing ancestor of the marker dir and
++    // require it to stay under the real target root. Catches an existing
++    // junction/symlink escape BEFORE any read, mkdir, or write happens.
++    let realAncestor;
++    try {
++      realAncestor = fs.realpathSync(deepestExistingAncestor(markerDir));
++    } catch (err) {
++      result.failed.push({ zone: zoneRel, reason: `realpath check failed: ${err.message}` });
++      continue;
++    }
++    if (!underRealTarget(realAncestor)) {
++      result.failed.push({ zone: zoneRel, reason: "zone escapes target root" });
++      continue;
++    }
++
+     const expected = expectedMarker(zoneRel, version);
+     try {
+       if (fs.existsSync(markerAbs)) {
+@@ -185,7 +269,7 @@ function populateSeedProvenance(opts) {
+         else result.preserved.push(zoneRel);
+         continue;
+       }
+-      fs.mkdirSync(path.dirname(markerAbs), { recursive: true });
++      fs.mkdirSync(markerDir, { recursive: true });
+       fs.writeFileSync(markerAbs, expected);
+       result.written.push(zoneRel);
+     } catch (err) {

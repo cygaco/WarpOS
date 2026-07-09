@@ -1,0 +1,155 @@
+{
+  "summary": "SP-20260611-002 closed the E-LIFECYCLE-001 GPT second-pass debt locally. The sprint started from failed security and backend re-reviews, integrated the five FIX1 lanes, added a FIX2 round for the two remaining gaps, passed affected-lane OpenAI re-review, closed the local release, fast-forwarded local main, and then completed the deferred T-321 wrapper-mode binding follow-on. The release remained local and unpushed.",
+  "outcomes_shipped": [
+    {
+      "outcome": "Security findings 1-4 closed, including destructive node-e fs alias bypasses.",
+      "evidence": [
+        "runtime/sp002-rereview-fix2/security-reviewer-round2.out.json PASS confidence 0.94",
+        "tests/regression/SP-20260611-002/auth-floor-rm-with-write.test.js 17/17",
+        "tests/regression/SP-20260611-002/auth-floor-tracked-delete.test.js 10/10"
+      ],
+      "planned": true
+    },
+    {
+      "outcome": "Backend findings 5-8 closed, including production no-flag coverage expected-role derivation.",
+      "evidence": [
+        "runtime/sp002-rereview-fix2/backend-reviewer.out.json PASS score 100",
+        "coverage-gate-scan-live-cli 7/7",
+        "coverage-gate-scan-source 6/6",
+        "dispatch-contract 19/19"
+      ],
+      "planned": true
+    },
+    {
+      "outcome": "Local release RL-20260611-044 closed and deployed to target local; local main fast-forwarded.",
+      "evidence": [
+        "release.js check --id RL-20260611-044 ready=true",
+        "routing coverage ok:true for planning/design/execution/qa/redteam/release",
+        "commit a681942 chore(SP-20260611-002): close local release"
+      ],
+      "planned": true
+    },
+    {
+      "outcome": "Post-close follow-on T-20260611-321 completed: dispatch wrappers thread live mode into contract validation.",
+      "evidence": [
+        "commit 22a7978 fix(T-20260611-321): thread mode into dispatch wrappers",
+        "wrapper-mode-binding 3/3",
+        "review-fallback-shape 21/21",
+        "build-chain-registry-gate 29/29"
+      ],
+      "planned": false
+    }
+  ],
+  "outcomes_missed": [],
+  "plan_quality_actual": {
+    "predicted_status": "high-risk, fix-sprint after GPT second pass",
+    "actual_status": "held",
+    "predicted_confidence": "medium",
+    "evidence_gaps_predicted": [],
+    "evidence_gaps_actual": [
+      "Required exact pre-work scripts scripts/codex/alex.js and scripts/test/run-suite.js are absent.",
+      "The existing quiet testsuite baseline remains red and does not emit SUITE-VERDICT.",
+      "The first security FIX2 re-review found one additional alias form, requiring a second security round."
+    ],
+    "notes": "The plan held at the workstream level: fix lanes, affected re-review, manifest regen, local release close. The main drift was sequencing: T-321 was correctly deferred out of the release boundary and then completed as a post-close follow-on."
+  },
+  "scope_variant_actual": {
+    "planned_variant": "recommended",
+    "actual_variant": "mixed",
+    "adhered": true,
+    "drift_notes": "The release close adhered to Beta's boundary by excluding T-321. The session then intentionally completed T-321 after local close as follow-on work."
+  },
+  "surprises": [
+    {
+      "surprise": "The security alias detector still missed require('fs').rmSync alias assignment after destructuring/member fixes.",
+      "impact": "Required security re-review round 2 before the affected lane was green.",
+      "evidence": [
+        "runtime/sp002-rereview-fix2/security-reviewer.out.json",
+        "auth-floor-rm-with-write expanded to 17/17"
+      ]
+    },
+    {
+      "surprise": "Retrospective was initially blocked by a protected-path rule because the command emits .claude/project/events/*.jsonl.",
+      "impact": "Retrospective moved after explicit user approval; T-321 was completed before the retro.",
+      "evidence": [
+        ".claude/commands/sprint/retrospective.md documents TR event emission",
+        "user approval after T-321 commit"
+      ]
+    }
+  ],
+  "friction_points": [
+    {
+      "friction": "Some canonical pre-work/test commands named in handoff are missing or not equivalent to the actual testsuite runner.",
+      "category": "tooling",
+      "evidence": [
+        "scripts/codex/alex.js absent",
+        "scripts/test/run-suite.js absent",
+        "scripts/testsuite/run.js quiet red baseline and no SUITE-VERDICT"
+      ],
+      "severity": "medium"
+    },
+    {
+      "friction": "Release-close QA evidence had to rely on affected-lane review and Beta release-boundary disposition because the earlier QA artifact was zero-byte/no-record.",
+      "category": "process",
+      "evidence": [
+        "CODEX-LOG.md SP-002 local release close section",
+        "runtime/sp002-release/beta-release-boundary.out.json"
+      ],
+      "severity": "medium"
+    },
+    {
+      "friction": "The protected-path rule correctly prevented accidental event-log writes but made retrospective execution require an explicit second approval.",
+      "category": "approval",
+      "evidence": [
+        ".claude/project/events/*.jsonl protected by session instruction",
+        "retrospective command emits TR-1/TR-2/TR-3"
+      ],
+      "severity": "low"
+    }
+  ],
+  "action_items": [
+    {
+      "action": "Either restore/document the exact pre-work scripts or update handoffs to name the real available suite commands.",
+      "owner": "alpha",
+      "due_by": "next lifecycle tooling sprint",
+      "linked_friction": "missing pre-work scripts"
+    },
+    {
+      "action": "Make retrospective/event-log writes explicit in closeout checkpoints when protected-path sessions are expected.",
+      "owner": "alpha",
+      "due_by": "next release-close workflow pass",
+      "linked_friction": "protected event path approval"
+    },
+    {
+      "action": "Carry T-321's mode-threading regression forward as a required dispatch-wrapper guard for future dispatch-shape work.",
+      "owner": "alpha",
+      "due_by": "next dispatch-shape sprint",
+      "linked_friction": "dead mode_profiles at wrapper call sites"
+    }
+  ],
+  "learning_candidates": [
+    {
+      "learning": "Affected-lane re-review is useful only when the live invocation path is tested, not just helper APIs or manually supplied flags.",
+      "evidence": [
+        "backend finding 5 remained open until coverage-gate-scan no-flag production-shape fixture landed"
+      ],
+      "promote_via": "learn:integrate"
+    },
+    {
+      "learning": "Wrapper contract helpers need the same mode and enforcement inputs as registered-role validation paths; otherwise generic sentinel paths quietly bypass mode-scoped policy.",
+      "evidence": [
+        "T-20260611-321",
+        "tests/regression/SP-20260611-002/wrapper-mode-binding.test.js"
+      ],
+      "promote_via": "learn:integrate"
+    }
+  ],
+  "synthesis_metadata": {
+    "model_class": "codex",
+    "provider": "openai",
+    "model_id": "gpt-5.5",
+    "duration_ms": 0,
+    "output_chars": 0,
+    "fallback_reason": null
+  }
+}

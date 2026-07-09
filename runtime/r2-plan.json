@@ -1,0 +1,227 @@
+{
+  "composition": {
+    "unit_types": [],
+    "max_risk": "medium",
+    "domains": []
+  },
+  "steps": [
+    {
+      "step": "plan",
+      "agents": [
+        {
+          "role": "director-of-product",
+          "step": "plan",
+          "mode": "advisory",
+          "order": 10,
+          "route": "claude-agent",
+          "provider": "claude",
+          "model": "claude-opus-4-8",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": false
+        },
+        {
+          "role": "product-lead",
+          "step": "plan",
+          "mode": "advisory",
+          "order": 20,
+          "route": "claude-agent",
+          "provider": "claude",
+          "model": "claude-opus-4-8",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": false
+        }
+      ],
+      "block_roles": [],
+      "advisory_roles": [
+        "director-of-product",
+        "product-lead"
+      ],
+      "builder_roles": [],
+      "reviewer_roles": [],
+      "gauntlet_fixed": false,
+      "beta_boundary": "plan->design"
+    },
+    {
+      "step": "design",
+      "agents": [
+        {
+          "role": "product-lead",
+          "step": "design",
+          "mode": "block",
+          "order": 10,
+          "route": "claude-agent",
+          "provider": "claude",
+          "model": "claude-opus-4-8",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": true,
+          "is_builder": false,
+          "is_reviewer": false
+        },
+        {
+          "role": "quality-lead",
+          "step": "design",
+          "mode": "advisory",
+          "order": 40,
+          "route": "claude-agent",
+          "provider": "claude",
+          "model": "claude-opus-4-8",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": true,
+          "is_builder": false,
+          "is_reviewer": false
+        }
+      ],
+      "block_roles": [
+        "product-lead"
+      ],
+      "advisory_roles": [
+        "quality-lead"
+      ],
+      "builder_roles": [],
+      "reviewer_roles": [],
+      "gauntlet_fixed": false,
+      "beta_boundary": "design->build"
+    },
+    {
+      "step": "build",
+      "agents": [],
+      "block_roles": [],
+      "advisory_roles": [],
+      "builder_roles": [],
+      "reviewer_roles": [],
+      "gauntlet_fixed": false,
+      "beta_boundary": null
+    },
+    {
+      "step": "gauntlet",
+      "agents": [
+        {
+          "role": "qa-reviewer",
+          "step": "gauntlet",
+          "mode": "block",
+          "order": 30,
+          "route": "dispatch-agent",
+          "provider": "openai",
+          "model": "gpt-5.5",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": true
+        },
+        {
+          "role": "security-reviewer",
+          "step": "gauntlet",
+          "mode": "block",
+          "order": 40,
+          "route": "dispatch-agent",
+          "provider": "gemini",
+          "model": "gemini-3.1-pro-preview",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": true
+        }
+      ],
+      "block_roles": [
+        "qa-reviewer",
+        "security-reviewer"
+      ],
+      "advisory_roles": [],
+      "builder_roles": [],
+      "reviewer_roles": [
+        "qa-reviewer",
+        "security-reviewer"
+      ],
+      "gauntlet_fixed": true,
+      "beta_boundary": "gauntlet->release"
+    },
+    {
+      "step": "release",
+      "agents": [
+        {
+          "role": "qa-reviewer",
+          "step": "release",
+          "mode": "block",
+          "order": 10,
+          "route": "dispatch-agent",
+          "provider": "openai",
+          "model": "gpt-5.5",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": true
+        }
+      ],
+      "block_roles": [
+        "qa-reviewer"
+      ],
+      "advisory_roles": [],
+      "builder_roles": [],
+      "reviewer_roles": [
+        "qa-reviewer"
+      ],
+      "gauntlet_fixed": false,
+      "beta_boundary": "release->retro"
+    },
+    {
+      "step": "retro",
+      "agents": [
+        {
+          "role": "ops-analyst",
+          "step": "retro",
+          "mode": "advisory",
+          "order": 10,
+          "route": "dispatch-agent",
+          "provider": "openai",
+          "model": "gpt-5.5",
+          "residency": "ephemeral",
+          "resolved": true,
+          "can_dispatch_builders": false,
+          "is_author_consult": false,
+          "is_builder": false,
+          "is_reviewer": false
+        }
+      ],
+      "block_roles": [],
+      "advisory_roles": [
+        "ops-analyst"
+      ],
+      "builder_roles": [],
+      "reviewer_roles": [],
+      "gauntlet_fixed": false,
+      "beta_boundary": null
+    }
+  ],
+  "beta_boundaries": [
+    "plan->design",
+    "design->build",
+    "gauntlet->release",
+    "release->retro"
+  ],
+  "sole_builder_dispatcher": {
+    "ok": true,
+    "violations": []
+  },
+  "consults_cannot_dispatch": {
+    "ok": true,
+    "violations": []
+  }
+}

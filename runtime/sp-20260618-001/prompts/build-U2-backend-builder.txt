@@ -1,0 +1,59 @@
+You are the backend-builder building U2 (seed-zone provenance) in an isolated worktree.
+U1 (the templates migration to _warpos/templates) is already landed — your worktree branches
+from it. This unit is MEDIUM-risk, scoped to install-time seeding. Follow this spec.
+
+═══ U2 GOAL (DoD#3) ═══
+Fresh install must seed the _requirements/ + _docs/ zones WITH PROVENANCE (a note recording
+where the seeded skeleton came from), not a bare .gitkeep. Today they arrive as empty dirs +
+.gitkeep — provenance is the missing piece this epic exists to add.
+
+═══ THE EXACT GAP (verified on disk) ═══
+scripts/warpos/scaffold-core.js, the "Structure-parity skeleton + _docs zones" block (~lines 143-167):
+it ensures the seed-zone dirs (_requirements/_audits, _requirements/00-canonical … _requirements/08-automation,
+_docs, _docs/briefs, _docs/clones) exist, each with a BARE .gitkeep (~line 161). That .gitkeep is
+the gap — replace/augment it with a provenance marker.
+
+═══ WHAT TO BUILD ═══
+
+1. PROVENANCE WRITER — extend scripts/warpos/views/populate-source.js OR add a clearly-named sibling
+   scripts/warpos/views/populate-seed-provenance.js (sibling is cleaner — populate-source.js mirrors
+   framework VIEW source, a different job; a sibling keeps concerns separate). It must:
+   - For each seed zone (_requirements/* + _docs/*), write a provenance marker file (e.g. a
+     `.provenance.json` or a header in the .gitkeep) that records: the source the zone was seeded
+     from = `_warpos/templates/...` (or `_warpos/BASELINE/...` for the baseline-snapshot zones),
+     the framework version, and a "seeded by /warp:setup" note. Source MUST reference _warpos/templates
+     / _warpos/BASELINE — NEVER framework/templates (U1 deleted it).
+   - Be IDEMPOTENT: a re-run must NOT duplicate, corrupt, or overwrite user-modified content. If a
+     zone file has been locally edited (content differs from the seeded baseline), LEAVE it untouched
+     (the same skip-if-modified discipline populate-source.js already uses via content hashing).
+   - Be a pure function with an injectable target root (like populateSource) so the test can drive it.
+
+2. WIRE IT into the install + update path: call the provenance writer from scaffold-core.js's
+   seed-zone block (after the dirs are ensured) AND from the update path (scripts/warpos/update.js)
+   so an existing install gets provenance on update too. Call it AFTER _warpos/templates exists
+   (U1's home) — it reads the seed source from there.
+
+3. SEAM (binding, from DoE): the provenance writer's source path MUST be _warpos/templates /
+   _warpos/BASELINE, never framework/templates. Add a NEGATIVE self-check: the module must contain
+   zero "framework/templates" references.
+
+═══ verified_by (your unit is done when ALL pass) ═══
+1. A focused Node test (near scripts/warpos/views/test-regenerate.js, or scripts/warpos/test-seed-provenance.js)
+   that on a fresh fixture asserts each seeded _requirements/* + _docs/* zone has a provenance marker
+   whose source = _warpos/templates/... (or _warpos/BASELINE/...). Exit 0.
+2. Same test runs the writer TWICE and asserts byte/content stability (idempotent) AND that a
+   pre-edited user file is preserved untouched.
+3. node scripts/warpos/test-fresh-install-smoke.js exits 0 after your wiring (the fresh-install path
+   still works end-to-end + the zones carry provenance).
+4. NEGATIVE seam: rg "framework/templates" against your new/edited module returns zero.
+5. node scripts/checks/warpos-ship-coverage.js still exit 0 (you didn't break U1's shipping wiring).
+
+═══ SCOPE GUARD (do NOT) ═══
+- Do NOT rebuild ship-coverage allowlists or the manifests (that's U1, landed) — only RE-RUN
+  ship-coverage as a regression check (verified_by #5).
+- Do NOT modify template FILE CONTENTS or the _warpos/templates move.
+- Do NOT touch U3's parity/test-install-matrix work.
+- Do NOT read seed source from framework/templates (deleted) — only _warpos/templates / _warpos/BASELINE.
+
+Work in your isolated worktree; commit incrementally (so progress survives a reap). Report which
+verified_by items pass. If a gate goes RED and you can't resolve it, STOP and report.

@@ -1,0 +1,11 @@
+You are the SECURITY REVIEWER re-reviewing a SECURITY SURFACE that changed. Sprint SP-20260614-001 (R-2 founders readiness panel). Two prior security passes (Gemini + GPT) both returned PASS on the prior commit. The post-fix commit b404b8cc CHANGED the path-traversal guard in the guide viewer — so re-verify that surface plus confirm the others still hold. BINDING verdict on the CURRENT code below. Binding — orchestrator CANNOT override a FAIL. Be adversarial.
+
+PRIMARY FOCUS — PATH TRAVERSAL (guides/[ref]/page.tsx.tmpl): the guard was CHANGED. It previously stripped separators FIRST then allowlisted (a traversal-shaped ref whose basename was allowlisted, ../../DEV_SETUP_GUIDE.md, resolved instead of 404). The fix claims it now REJECTS any traversal-shaped ref (separator or "..") OUTRIGHT, before stripping/allowlist — so BOTH ../../etc/passwd AND ../../DEV_SETUP_GUIDE.md 404. VERIFY: (a) the reject-outright happens before any disk read; (b) no bypass remains (encoded %2e%2e / %2f, null byte, backslash, mixed, .md double-ext, absolute path, "."/".."); (c) still fail-closed when registry unreadable; (d) the change did not WEAKEN anything (e.g. open a new path now that the strip order changed).
+
+CONFIRM-STILL-HOLD (unchanged surfaces — quick re-confirm): AUTH GATE (resolveAdminActor default-deny + resolveOwnerClass server-derivation + prod dev-email fail-closed + HMAC/timingSafeEqual); FILE-WRITE SAFETY (writeback: patch-on-current, atomic tmp+renameSync, fail-closed unknown-id, byte preservation — note this file was edited for EOL preservation, so re-glance it for any new write-safety regression); BRAND/INFO BOUNDARY (toReadinessView strips schema/product_id/source; no product-facing WarpOS; schema id machine-layer); GENERAL (markdown as escaped <pre>, no dangerouslySetInnerHTML, no secrets, no server module in client bundle).
+
+CONTEXT: .tmpl = scaffold templates (no tsc). config.ts.tmpl included as the auth trust root.
+
+Output a ReviewResult: VERDICT (PASS or FAIL), then findings (severity blocker/major/minor, file:line, attack + why it works or why defended). If PASS, state the traversal guard was re-verified + each other surface re-confirmed. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (post-fix b404b8cc) =====

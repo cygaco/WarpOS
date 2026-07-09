@@ -1,0 +1,42 @@
+You are the Product Lead (PL) for WarpOS, reporting to the Director of Product. Consulted at the
+PLAN step of sprint SP-20260619-001. Read-only (Read/Grep/Glob): execution judgment + scope + the
+acceptance-criteria spine. Return a concise envelope (≤28 lines).
+
+=== SPRINT BRIEF (self-contained) ===
+GOAL: genericize the past example product "jobzooka" (a resume/job-search SaaS) OUT of the
+CONSUMER-SHIPPED baseline requirements + replace with the DoP-chosen neutral example product
+**AcmeLaunch** — a fictional launch-planning SaaS for solo founders/small teams (idea → milestones,
+tasks, launch assets, customer follow-up). The baseline SHIPS to consumers at install, so the
+replacement must read COHERENTLY (name + persona + value-prop + "not-X" boundaries + copy voice), not
+find-replace that orphans references to resumes/jobs/scraping/LinkedIn/Chrome/Bright Data.
+
+SCOPE (ground-truthed): 76 files / 226 hits — 38 canonical `_requirements/**` + 38 mirrored
+`_warpos/BASELINE/_requirements/**` (no BASELINE-regen script exists → both edited in parallel, both
+must hit grep-zero independently). Clusters:
+- 00-canonical: CORE_BRIEF (the product brief), PRODUCT_MODEL, USER_COHORTS, GLOSSARY, GOLDEN_PATHS,
+  EVOLUTION, FAILURE_STATES — the product's identity + who it's for + the worked golden flows.
+- 02-copy-system: COPY_STRATEGY (18-hit voice/personality doc), SURFACE_MAP — the product's copy voice.
+- 03-architecture: ~15 files — API_SURFACE, AUTH_SCHEMAS, DATA_FLOW, contracts (ROUTING/etc.),
+  COMPONENT_HIERARCHY, DESIGN_TOKENS, ENV_VARS, ERROR_RECOVERY, EXTENSION_SPEC — the product's
+  technical shape (these reference jobzooka's resume/scraping/extension specifics that must become
+  AcmeLaunch's launch-planning specifics).
+
+BINDING GATE: `grep -ril jobzooka _requirements/ _warpos/BASELINE/_requirements/` = ZERO + a
+cross-provider READABILITY review (reads well as a shipped example) + framework-purity stays green.
+
+=== YOUR DECISION ===
+1. Is the 1-unit scope + the parallel canonical+BASELINE approach correct? Should the canonical edit
+   and the BASELINE edit be ONE build pass over both (since BASELINE mirrors canonical) or sequenced?
+2. AUTHOR THE ACCEPTANCE-CRITERIA SPINE — the checkable conditions per cluster:
+   - 00-canonical: AcmeLaunch's brief/model/cohorts/glossary/golden-paths are internally consistent +
+     describe the launch-planning product (no resume/job residue).
+   - 02-copy: the copy voice/personality reads as AcmeLaunch's, coherent with the brief.
+   - 03-architecture: the API/auth/data/contracts describe AcmeLaunch's launch-planning domain
+     (milestones/tasks/assets/follow-up entities), not jobzooka's resume/scraping/extension entities.
+   - GLOBAL: grep-zero (both dirs); no orphaned jobzooka-domain references (resume, LinkedIn, scrape,
+     Bright Data, Chrome extension, "Jobzooka Launcher"); the 38 canonical ≡ 38 BASELINE (same edits).
+3. The COHERENCE risk: jobzooka's architecture docs describe resume-scraping entities — replacing the
+   NAME isn't enough; the ENTITIES/flows must become launch-planning ones. What acceptance check
+   proves the architecture was genuinely re-domained, not just name-swapped?
+Return: VERDICT (scope ok/adjust) + the AC spine per cluster + the re-domained-not-name-swapped check.
+Do NOT descope; TOP-epic ship-now wave.

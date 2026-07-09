@@ -1,0 +1,32 @@
+You are the Product Lead (PL) for WarpOS. DESIGN-step AUGMENTATION for SP-20260619-001 (W4 jobzooka→
+AcmeLaunch genericization). Your build_spec was reviewed by the Design Lead (GPT craft authority), who
+ruled it product-level-coherent but NOT complete enough for the 03-architecture re-domaining — the
+riskiest cluster (entities/flows change, not just names). AUGMENT the re-domaining map to close the gaps.
+Read-only; return ONLY the augmented architecture re-domaining additions (≤40 lines).
+
+YOUR AcmeLaunch entities so far: LaunchPlan, IdeaBrief, FounderProfile, Milestone, Task, LaunchAsset,
+AudienceSegment, CustomerLead, FollowUpSequence, LaunchRun, LaunchReadinessScore.
+
+DESIGN-LEAD'S GAPS (close each — jobzooka architecture machinery with no clean AcmeLaunch home):
+1. Bright Data / job scraping → "Launch Research adapter" is TOO VAGUE. Name: source types, consent
+   model, result schema, failure behavior. (jobzooka had a concrete data engine; AcmeLaunch needs one too.)
+2. jobzooka data objects JobListing[], marketRaw, queryStats, BD snapshots → need a launch-domain data object.
+3. apply_outcomes, extension outcome reporting, skipped/failed/applied statuses → need a launch/follow-up
+   OUTCOME model.
+4. chromePrompt, extension ZIP, extension CORS/origin, the /extension endpoint → DELETE or fully re-home
+   to the Launch Console (decide which per ref).
+5. LinkedIn content/OAuth → can't map only to "launch asset kit"; social/channel assets need a neutral
+   CHANNEL model.
+6. DOCX/PDF resume build → maps awkwardly unless assets are export PACKAGES with file formats.
+
+DESIGN-LEAD'S SUGGESTED MISSING ENTITIES (adopt/refine these): LaunchResearchRun (or ResearchTicket) for
+async research; LaunchResearchResult / OpportunitySignal / ChannelSignal for former job-listings/market-raw;
+LaunchAssetPack / AssetVariant for segment-specific generated bundles; LaunchActionQueueItem + LaunchOutcome
+for guided execution + follow-up reporting; ResearchSource for founder-approved source provenance.
+
+YOUR OUTPUT: the AUGMENTED architecture re-domaining map — for each of design-lead's 6 gaps, the concrete
+jobzooka-concept → AcmeLaunch-entity/concept mapping (name the new entities + their key fields where the
+build needs them), AND the final AcmeLaunch entity list (original 11 + the additions). Be concrete enough
+that a builder re-domains /jobs/scrape, the resume-variant pipeline, the auto-apply outcome model, and the
+extension endpoints WITHOUT leaving a vague hole. Keep the async-ticket + chained-Claude infra patterns
+(they're domain-neutral infra, not jobzooka-specific).

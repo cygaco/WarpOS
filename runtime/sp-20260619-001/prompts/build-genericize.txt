@@ -1,0 +1,78 @@
+You are the backend-builder genericizing the WarpOS SHIPPED baseline requirements in an isolated
+worktree. Replace the PAST example product "jobzooka" (a resume/job-search SaaS) with "AcmeLaunch"
+(a launch-planning SaaS) — a COHERENT RE-DOMAINING, not a find-replace. The baseline SHIPS to every
+consumer at install; a new founder LEARNS the requirement structure from it, so it must read like a
+real, internally-consistent example product. This is DOCS editing (no code) — coherence is everything.
+
+═══ SCOPE (the ONLY files you touch) ═══
+- `_requirements/**` (38 files contain "jobzooka") + `_warpos/BASELINE/_requirements/**` (38 mirrors).
+- The two trees are PAIRED MIRRORS — edit each canonical file AND its BASELINE mirror with the SAME
+  edits (so the two shipped copies stay byte-consistent). EXCEPTION: leave `PATH_KEYS.md` entirely
+  (it's out of scope, a non-jobzooka generated doc that legitimately diverges).
+- Do NOT touch: `.claude/project/sprint/**` (history), `scripts/checks/framework-purity.js` (it NAMES
+  jobzooka as the banned term — that's the SPEC/regression-tripwire, leave it), epic/tracker/history
+  docs, or any non-requirements file.
+
+═══ ACMELAUNCH (the product the docs describe) ═══
+Value prop: turns a rough product idea into a launch-ready operating plan (milestones, tasks, launch
+assets, customer follow-up, controlled launch run). Persona: solo founders/small teams (first launch/
+relaunch/beta/waitlist). Voice: calm, practical, launch-operator, reduces founder anxiety, no hype.
+Not-X: not a PM clone / template library / social scheduler / CRM / black-box auto-launcher.
+
+THE 23 ENTITIES (use these — they're the re-domained data model): LaunchPlan, IdeaBrief, FounderProfile,
+Milestone, Task, LaunchAsset, AudienceSegment, CustomerLead, FollowUpSequence, LaunchRun,
+LaunchReadinessScore, ResearchSource, LaunchResearchRun, LaunchResearchResult, OpportunitySignal,
+ChannelSignal, ResearchSnapshot, LaunchChannel, ChannelConnection, LaunchAssetPack, AssetVariant,
+LaunchActionQueueItem, LaunchOutcome.
+
+═══ THE RE-DOMAINING MAP (jobzooka → AcmeLaunch — apply consistently) ═══
+- job seeker/applicant → founder/operator · recruiter/employer → customer/early-adopter/launch-audience
+- resume → IdeaBrief or LaunchPlan (by context) · resume upload/parse → idea-brief intake
+- profile → FounderProfile · preferences → launch constraints (timeline/budget/channels/geography/audience)
+- job listing / job market / JobListing[] → launch opportunity landscape → LaunchResearchResult/OpportunitySignal
+- Bright Data scraping / BD scrape / `/jobs/scrape` → LaunchResearchRun + ResearchSource (concrete:
+  sources web_search|public_url|directory|social_public|marketplace|uploaded_file|crm_import; consent
+  approvedBy/scope/credentialMode; failure = persist partial, mark failed, bounded retry, never synthesize)
+- LinkedIn content/OAuth → LaunchChannel + ChannelConnection (LinkedIn is ONE provider, not a primitive)
+- targeted resume variant / DOCX/PDF resume build → LaunchAssetPack + AssetVariant (format md|html|pdf|docx|csv)
+- auto-apply / apply_outcomes / skipped|failed|applied → LaunchActionQueueItem + LaunchOutcome
+- Chrome extension / "Jobzooka Launcher" / chromePrompt / `/extension` → DELETE the browser-extension
+  CONCEPT entirely; re-home its behavior to the Launch Console (`/launch-console/queue`, `/outcomes`,
+  `/prompts/:id`); chromePrompt → LaunchConsolePrompt. AcmeLaunch has NO browser extension.
+- competitiveness score → LaunchReadinessScore · READY/AIM/FIRE → PLAN/PREP/LAUNCH
+- KEEP (domain-neutral infra, NOT jobzooka-specific): the async-ticket pattern, chained-Claude.
+
+═══ THE BINDING COMPLETENESS GATE (β-ratified — grep-zero is necessary but NOT sufficient) ═══
+A name-swap that leaves job-app DOMAIN DETAILS is the real failure: "the recruiter reviews the applicant's
+cover letter" passes grep-zero-on-jobzooka yet is an ORPHAN. So the bar is POSITIVE-coverage:
+- EVERY API/endpoint, data field, prompt template, pipeline step, and component must map to one of the 23
+  AcmeLaunch entities — ZERO surviving job-app concepts (recruiter, applicant, job-seeker, cover-letter,
+  ATS, job-board, resume artifact, OAuth-for-LinkedIn, JobListing, apply_outcome, scrape-jobs).
+- PROMPT_TEMPLATES.md (densest) + EXTENSION_SPEC.md: the prompt SEMANTICS embed domain assumptions
+  (e.g. "extract the candidate's work history") — re-domain the MEANING, not just the field names. A
+  prompt that still instructs job-app extraction is an orphan even if every named entity is AcmeLaunch.
+- EXTENSION_SPEC.md: handle as DELETE-THE-CONCEPT (the Chrome extension goes away). After deleting it,
+  ensure NOTHING else (DATA_FLOW/API_SURFACE/PIPELINES) still references the extension as an input/source
+  (a deleted concept with surviving references is a dangling orphan).
+- Do NOT introduce warpos / masterconsole / alex references (the inverse brand leak — the baseline is
+  consumer-facing). AcmeLaunch is a neutral THIRD example.
+
+═══ HOW TO WORK (cluster-by-cluster, commit after each — survives a reap) ═══
+1. 00-canonical (CORE_BRIEF/PRODUCT_MODEL/USER_COHORTS/GLOSSARY/GOLDEN_PATHS/EVOLUTION/FAILURE_STATES) +
+   their BASELINE mirrors → AcmeLaunch identity/cohorts/glossary/golden-flows. COMMIT.
+2. 02-copy-system (COPY_STRATEGY/SURFACE_MAP) + mirrors → AcmeLaunch copy voice/surfaces. COMMIT.
+3. 03-architecture (the riskiest — API_SURFACE/AUTH_SCHEMAS/DATA_FLOW/DATA-CONTRACTS/FLOW_SPEC/PIPELINES/
+   PROMPT_TEMPLATES/COMPONENT_HIERARCHY/DESIGN_TOKENS/ENV_VARS/ERROR_RECOVERY/EXTENSION_SPEC/contracts/*)
+   + mirrors → re-domain ENTITIES + prompt SEMANTICS to the 23-entity model; DELETE the extension concept. COMMIT.
+4. Any other in-scope _requirements files with jobzooka/domain residue → same map. COMMIT.
+After each cluster: `grep -ril jobzooka` that cluster (both trees) → should trend to zero.
+
+═══ verified_by (your unit is done when) ═══
+1. `grep -ril jobzooka _requirements/ _warpos/BASELINE/_requirements/` = ZERO (both trees).
+2. Residue pre-filter: `grep -rilE "recruiter|applicant|job.?seeker|cover.?letter|job.?listing|job.?board|\bATS\b|resume|LinkedIn|Bright Data|Chrome extension|auto-apply|/jobs/scrape|chromePrompt" _requirements/ _warpos/BASELINE/_requirements/` = zero or each remaining hit is a JUSTIFIED non-domain usage (e.g. "resume" the verb) you note.
+3. No file reads like a partial find-replace; the 38 canonical edits are byte-mirrored in the 38 BASELINE files.
+4. The extension concept is DELETED with zero surviving references in 03-architecture.
+5. No newly-introduced warpos/masterconsole/alex.
+Commit your work in the worktree (incrementally per cluster). Report what you did + the verified_by results
+(grep counts per tree). If you hit something you can't re-domain coherently, STOP and report (don't leave
+an orphan or invent incoherent machinery).

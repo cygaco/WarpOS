@@ -1,0 +1,1 @@
+Liveness probe for codex as a build doer. Reply with exactly: CODEX_DOER_OK and nothing else.

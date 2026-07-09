@@ -1,0 +1,437 @@
+diff --git a/.claude/agents/_org/dispatch-contract.json b/.claude/agents/_org/dispatch-contract.json
+index d6db29a6..1b9d345f 100644
+--- a/.claude/agents/_org/dispatch-contract.json
++++ b/.claude/agents/_org/dispatch-contract.json
+@@ -74,6 +74,7 @@
+       { "when": { "kind": "reviewer", "provider": "openai" }, "class": "cross_provider_reviewer" },
+       { "when": { "kind": "reviewer", "provider": "gemini" }, "class": "cross_provider_reviewer" },
+       { "when": { "kind": "reviewer", "provider": "claude" }, "class": "claude_pinned_reviewer" },
++      { "when": { "tier": "director", "provider": "openai" }, "class": "cross_provider_consult_lead" },
+       { "when": { "tier": "director" }, "class": "manager" },
+       { "when": { "tier": "lead", "provider": "openai" }, "class": "cross_provider_consult_lead" },
+       { "when": { "tier": "lead" }, "class": "manager" },
+@@ -137,7 +138,7 @@
+       "coverage": { "binding_verdict": true, "completion_record_required": true, "cross_provider_required": false, "claude_pinned": true, "record_via": "record-inprocess" }
+     },
+     "cross_provider_consult_lead": {
+-      "_doc": "cross-provider lead (design-lead/openai) — routes via subprocess-cross-provider like a reviewer; advises and authors but does not emit a binding verdict. Provider diversity preserved for the lead's authoring work. Mirrors cross_provider_reviewer shape with binding_verdict:false.",
++      "_doc": "cross-provider lead/director — the GPT product-leadership chain (design-lead, product-lead, director-of-product, director-of-growth): routes via subprocess-cross-provider like a reviewer; advises and authors but does not emit a binding verdict. The class encodes dispatch SHAPE, not org seniority (seniority lives in role-registry `tier`) — a GPT director and a GPT lead share this identical shape, so they REUSE this class rather than minting a director variant (β DECIDE 2026-06-17, E-DISPATCH-PERFECT-001 W2; the contract's anti-exception principle). Provider diversity preserved for the lead/director's authoring work. Mirrors cross_provider_reviewer shape with binding_verdict:false.",
+       "allowed_shapes": ["subprocess-cross-provider"],
+       "forbidden_shapes": ["in-process-agent", "api"],
+       "tool_id": ["codex", "gemini"],
+@@ -235,7 +236,7 @@
+       "_doc": "The --review-fallback lane (dispatch-claude.js): a cross-provider REVIEW role is routed through subprocess-claude (a Claude clone) INTENTIONALLY when its normal provider (openai/gemini) is quota-dead. Honest visible debt — the completion record still stamps fallback:true + provider:claude + quota_fallback_from so coverage-gate sees the cross-provider debt; this lane only stops the W2 ENFORCE flip from BRICKING the fallback exactly when it is most needed. READ-ONLY review roles only — build-chain roles are refused this lane upstream (dispatch-claude.js guard, T-305 G2).",
+       "flag": "--review-fallback",
+       "shape": "subprocess-claude",
+-      "applies_to_classes": ["cross_provider_reviewer"],
++      "applies_to_classes": ["cross_provider_reviewer", "cross_provider_consult_lead"],
+       "completion_record": { "fallback": true, "provider": "claude", "requires": ["quota_fallback_from"] }
+     }
+   },
+diff --git a/.claude/agents/_org/role-registry.json b/.claude/agents/_org/role-registry.json
+index e2270ae6..8853562d 100644
+--- a/.claude/agents/_org/role-registry.json
++++ b/.claude/agents/_org/role-registry.json
+@@ -33,8 +33,8 @@
+     "delta": { "call_sign": "δ", "true_name": "Alex", "home": "president", "tier": "face", "kind": "deliver-oneshot", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatches": ["frontend-builder", "backend-builder", "security-builder", "frontend-reviewer", "backend-reviewer", "security-reviewer", "frontend-fixer", "backend-fixer", "security-fixer", "qa-reviewer", "design-quality", "visual-review", "test-runner", "ops-analyst", "skeleton-builder"], "dispatchable_by": [], "spec": ".claude/agents/president/delta.md", "status": "live" },
+     "epsilon": { "call_sign": "ε", "true_name": "Alex", "home": "president", "tier": "face", "kind": "deliver-sprint", "residency": "persistent", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatches": ["director-of-engineering", "quality-lead"], "dispatchable_by": [], "spec": ".claude/agents/president/epsilon.md", "status": "new", "_note": "sprint conductor — reads the hook-point registry {role,step,condition,mode,order} and runs plan→design→build→gauntlet→release→retro; managers self-dispatch their phases. INHERITS δ's heartbeat + 30-min-stale circuit-breaker (ε runs long like δ). DESIGN-LOCKED, build in Phase D." },
+ 
+-    "director-of-product": { "call_sign": "ζ", "home": "product", "tier": "director", "kind": "director", "provider": "claude", "model": "claude-opus-4-8", "effort": "xhigh", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon"], "spec": ".claude/agents/product/director-of-product.md", "status": "live" },
+-    "product-lead": { "call_sign": "κ", "home": "product", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon", "director-of-product"], "spec": ".claude/agents/product/product-lead.md", "status": "live", "_note": "authors PRD/stories/AC; co-authors the mockup with design-lead." },
++    "director-of-product": { "call_sign": "ζ", "home": "product", "tier": "director", "kind": "director", "provider": "openai", "model": "gpt-5.5", "effort": "xhigh", "fallback": "claude", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon"], "spec": ".claude/agents/product/director-of-product.md", "status": "live" },
++    "product-lead": { "call_sign": "κ", "home": "product", "tier": "lead", "kind": "lead", "provider": "openai", "model": "gpt-5.5", "effort": "high", "fallback": "claude", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon", "director-of-product"], "spec": ".claude/agents/product/product-lead.md", "status": "live", "_note": "authors PRD/stories/AC; co-authors the mockup with design-lead." },
+     "design-lead": { "call_sign": "μ", "home": "product", "tier": "lead", "kind": "lead", "provider": "openai", "model": "gpt-5.5", "effort": "xhigh", "fallback": "claude", "multiplicity": "singleton", "mode_agnostic": true, "dispatch_path": "subprocess-consult (dispatch-agent.js / codex exec) — NOT an in-process Claude teammate", "dispatchable_by": ["alpha", "epsilon", "director-of-product"], "spec": ".claude/agents/product/design-lead.md", "status": "rename", "was": "product-designer", "_note": "RULE 4 — the one product role on gpt-5.5 (operator: best at product design/UX/flows). Owns UI/UX authoring + mockups; routine microcopy from _knowledge/copy. AUTHORS — judged by quality-lead's design-quality (no self-judging)." },
+     "quality-lead": { "call_sign": "θ", "home": "product", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "tools": ["Agent"], "dispatches": ["qa-reviewer", "design-quality", "visual-review", "test-runner"], "dispatchable_by": ["alpha", "epsilon", "director-of-product"], "spec": ".claude/agents/product/quality-lead.md", "status": "rename+rehome+broaden", "was": "director-of-qa", "_note": "broadened: functional + UI/UX experience; dispatches QA Reviewers. tools:Agent required to fan out QA-Reviewer personas." },
+ 
+@@ -54,10 +54,10 @@
+     "backend-fixer": { "home": "engineering", "sub_home": "backend", "tier": "worker", "kind": "fixer", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "fan-out", "mode_agnostic": true, "build_chain": true, "dispatchable_by": ["backend-lead"], "spec": ".claude/agents/engineering/backend/fixer.md", "status": "restructure", "was": "fixer" },
+     "security-lead": { "home": "engineering", "sub_home": "security", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatches": ["security-builder", "security-reviewer", "security-fixer"], "dispatchable_by": ["director-of-engineering", "gamma", "delta", "epsilon"], "spec": ".claude/agents/engineering/security/security-lead.md", "status": "new" },
+     "security-builder": { "home": "engineering", "sub_home": "security", "tier": "worker", "kind": "builder", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "fan-out", "mode_agnostic": true, "build_chain": true, "dispatchable_by": ["security-lead"], "spec": ".claude/agents/engineering/security/builder.md", "status": "new", "_note": "builds hardening — authn/z, secrets, validation." },
+-    "security-reviewer": { "home": "engineering", "sub_home": "security", "tier": "worker", "kind": "reviewer", "provider": "gemini", "model": "gemini-3.1-pro-preview", "effort": "high", "thinking": "always-on", "fallback": "claude", "second_pass": { "provider": "openai", "model": "gpt-5.5", "effort": "xhigh" }, "multiplicity": "fan-out", "mode_agnostic": true, "binding_verdict": true, "review_scope": "OWASP · authn/z · injection · secrets · attack-chain-correlator (3 MEDIUM → CRITICAL) · prompt-injection-prober", "scan_mode": "ALL deterministic — NO LLM reasoning (a security guarantee that must not erode)", "dispatchable_by": ["security-lead"], "spec": ".claude/agents/engineering/security/reviewer.md", "status": "restructure", "was": "redteam", "enforcer": "gauntlet-verify + provider-trace", "_note": "REPLACES the redteam agent. TWO providers (gemini corpus-diverse + the 2nd GPT jailbreak pass). ~60 redteam refs to sweep. Port verbatim: deterministic scan-mode, attack-chain-correlator, prompt-injection-prober, the 2nd-GPT pass." },
++    "security-reviewer": { "home": "engineering", "sub_home": "security", "tier": "worker", "kind": "reviewer", "provider": "gemini", "model": "gemini-3.1-pro-preview", "effort": "high", "thinking": "always-on", "fallback": "claude", "second_pass": { "provider": "openai", "model": "gpt-5.5", "effort": "xhigh" }, "third_pass": { "provider": "claude", "model": "claude-opus-4-8", "effort": "xhigh" }, "multiplicity": "fan-out", "mode_agnostic": true, "binding_verdict": true, "review_scope": "OWASP · authn/z · injection · secrets · attack-chain-correlator (3 MEDIUM → CRITICAL) · prompt-injection-prober", "scan_mode": "ALL deterministic — NO LLM reasoning (a security guarantee that must not erode)", "dispatchable_by": ["security-lead"], "spec": ".claude/agents/engineering/security/reviewer.md", "status": "restructure", "was": "redteam", "enforcer": "gauntlet-verify + provider-trace + security-pass-count", "_note": "REPLACES the redteam agent. THREE providers best-of-each, FIRED in order (E-DISPATCH-PERFECT-001 W1): gemini corpus-diverse (primary) → gpt-5.5 jailbreak (second_pass) → claude-opus-4-8 final (third_pass). dispatch-agent.js is the dispatch CONSUMER of second_pass/third_pass — it fires each pass with a provider override and writes one provider-stamped completion record per pass; any-FAIL holds. Port verbatim: deterministic scan-mode, attack-chain-correlator, prompt-injection-prober." },
+     "security-fixer": { "home": "engineering", "sub_home": "security", "tier": "worker", "kind": "fixer", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "fan-out", "mode_agnostic": true, "build_chain": true, "dispatchable_by": ["security-lead"], "spec": ".claude/agents/engineering/security/fixer.md", "status": "new" },
+ 
+-    "director-of-growth": { "call_sign": "ι", "home": "growth", "tier": "director", "kind": "director", "provider": "claude", "model": "claude-opus-4-8", "effort": "xhigh", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon"], "spec": ".claude/agents/growth/director-of-growth.md", "status": "rename", "was": "director-of-marketing", "_note": "dept Marketing → Growth (research + message + conversion + paid); owns message coherence." },
++    "director-of-growth": { "call_sign": "ι", "home": "growth", "tier": "director", "kind": "director", "provider": "openai", "model": "gpt-5.5", "effort": "xhigh", "fallback": "claude", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon"], "spec": ".claude/agents/growth/director-of-growth.md", "status": "rename", "was": "director-of-marketing", "_note": "dept Marketing → Growth (research + message + conversion + paid); owns message coherence." },
+     "research-lead": { "call_sign": "λ", "home": "growth", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon", "director-of-growth"], "spec": ".claude/agents/growth/research-lead.md", "status": "rename+rehome", "was": "research-insight-lead", "_note": "audience research → shared _knowledge/audience (segment-level, source-attributed, confidence-scored, no PII). Moved out of Product into Growth." },
+     "copy-lead": { "call_sign": "ν", "home": "growth", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon", "director-of-growth"], "spec": ".claude/agents/growth/copy-lead.md", "status": "live", "_note": "owns voice + high-leverage copy; seeds _knowledge/copy; authors COPY.md contract for builders." },
+     "conversion-lead": { "call_sign": "ο", "home": "growth", "tier": "lead", "kind": "lead", "provider": "claude", "model": "claude-opus-4-8", "effort": "high", "multiplicity": "singleton", "mode_agnostic": true, "dispatchable_by": ["alpha", "epsilon", "director-of-growth"], "spec": ".claude/agents/growth/conversion-lead.md", "status": "rename", "was": "web-conversion-designer", "_note": "owns conversion copy + page (conversion-hierarchy)." },
+diff --git a/scripts/checks/security-pass-count.js b/scripts/checks/security-pass-count.js
+new file mode 100644
+index 00000000..0917ca0f
+--- /dev/null
++++ b/scripts/checks/security-pass-count.js
+@@ -0,0 +1,155 @@
++#!/usr/bin/env node
++"use strict";
++// security-pass-count (E-DISPATCH-PERFECT-001 W1) — the NAMED pass-count enforcer for the
++// 3-provider security review (β DECIDE 0.88 condition d: "name a pass-count enforcer that asserts
++// the stamps, OR /enforcement:log the gap"). It guarantees the multi-provider security review is
++// REAL and complete, two ways:
++//
++//   (A) CONFIG coherence (HARD — exit 1 if broken): the `security-reviewer` registry row declares a
++//       full pass chain (primary + second_pass + third_pass) with DISTINCT providers; the firing
++//       CONSUMER scripts/dispatch-review.js exists; and the sprint-gauntlet dispatch path
++//       (scripts/sprint/epsilon-runtime.js) routes multi-pass roles through it. A break here means
++//       the firing wiring regressed — second_pass/third_pass would be a declarative lie again.
++//
++//   (B) RUNTIME stamps (REPORT-ONLY ramp; --strict to block): every security review on the
++//       dispatch-completions ledger (grouped by run_id|sprint_id, post-cutoff) carries one ok:true
++//       record per declared pass, with DISTINCT providers — i.e. all N passes actually FIRED. Fewer
++//       distinct providers = the review did not fully run. Report-only until the gauntlet path is
++//       proven across a watch window (ramp tail = run with --strict in scan:full).
++//
++// Exit: 0 clean (or report-only runtime gaps) · 1 config-coherence break (or --strict runtime gaps)
++//       · 2 fail-closed (registry unreadable).
++const fs = require("fs");
++const path = require("path");
++
++const NAME = "security-pass-count";
++const ROOT = path.resolve(__dirname, "..", "..");
++const ROLE = "security-reviewer";
++// Records before W1 landed were single-pass (legacy) — exempt from the runtime stamp check.
++const RECORD_BACKED_CUTOFF = "2026-06-17";
++
++function readJSON(p) {
++  return JSON.parse(fs.readFileSync(p, "utf8"));
++}
++function fileHas(rel, ...needles) {
++  try {
++    const t = fs.readFileSync(path.join(ROOT, rel), "utf8");
++    return needles.every((n) => t.includes(n));
++  } catch {
++    return false;
++  }
++}
++
++// (A) config coherence — returns { hard:[], soft:[] } findings.
++function evaluateConfig(passes) {
++  const hard = [];
++  // registry: ≥2 passes (the cross-provider review), DISTINCT providers, claude present + LAST.
++  const providers = passes.map((p) => p.provider);
++  if (passes.length < 2) {
++    hard.push(`registry "${ROLE}" declares ${passes.length} pass(es) — the cross-provider security review needs the primary + at least second_pass`);
++  }
++  if (new Set(providers).size !== providers.length) {
++    hard.push(`registry "${ROLE}" pass providers are not distinct (${providers.join(", ")}) — best-of-each requires different providers per pass`);
++  }
++  if (passes.length >= 3 && providers[providers.length - 1] !== "claude") {
++    hard.push(`registry "${ROLE}" last pass provider is "${providers[providers.length - 1]}" — the Claude pass must be LAST (additive, never displaces cross-family coverage)`);
++  }
++  // firing consumer exists.
++  if (!fs.existsSync(path.join(ROOT, "scripts", "dispatch-review.js"))) {
++    hard.push(`scripts/dispatch-review.js (the firing consumer of second_pass/third_pass) is MISSING — the passes would not fire`);
++  }
++  // sprint-gauntlet path routes multi-pass roles through the firing consumer.
++  if (!fileHas("scripts/sprint/epsilon-runtime.js", "dispatch-review.js", "passesForRole")) {
++    hard.push(`scripts/sprint/epsilon-runtime.js does not route multi-pass roles through dispatch-review.js — the sprint gauntlet would fire only the primary pass`);
++  }
++  return { hard };
++}
++
++// (B) runtime stamps — group post-cutoff ok:true security-reviewer records by run/sprint, assert
++//     distinct-provider count == expected. Returns WARN strings (report-only by default).
++function evaluateRuntime(records, expectedCount) {
++  const warns = [];
++  const sec = records.filter(
++    (r) =>
++      r &&
++      r.role === ROLE &&
++      r.ok === true &&
++      typeof r.completed_at === "string" &&
++      r.completed_at.slice(0, 10) >= RECORD_BACKED_CUTOFF,
++  );
++  if (!sec.length) return warns; // no post-cutoff security reviews yet → nothing to assert
++  // Group the passes of ONE review: they share a run_id|sprint_id (sprint path) OR — when neither is
++  // set (adhoc path) — the SAME prompt_digest (dispatch-review.js feeds all passes the same prompt).
++  // A record with none of those is an un-attributable standalone/manual dispatch — not a review.
++  const groups = new Map();
++  for (const r of sec) {
++    const key = r.run_id || r.sprint_id || r.prompt_digest;
++    if (!key) continue;
++    if (!groups.has(key)) groups.set(key, new Set());
++    if (r.provider) groups.get(key).add(r.provider);
++  }
++  for (const [key, provs] of groups) {
++    // Flag only an INCOMPLETE multi-pass review (≥2 providers fired but fewer than expected) — a lone
++    // single-provider group is a standalone dispatch, not an aborted 3-pass review (no false-positive).
++    if (provs.size >= 2 && provs.size < expectedCount) {
++      warns.push(
++        `security review "${key}" fired ${provs.size}/${expectedCount} distinct providers (${[...provs].join(", ")}) — the ${expectedCount}-pass review did not fully run`,
++      );
++    }
++  }
++  return warns;
++}
++
++function main(argv) {
++  const strict = (argv || []).includes("--strict");
++  const json = (argv || []).includes("--json");
++  let passes;
++  try {
++    const registryRoles = require(path.join(ROOT, "scripts", "dispatch", "registry-roles"));
++    passes = registryRoles.passesOf(ROLE);
++  } catch (e) {
++    process.stderr.write(`${NAME}: cannot resolve registry passes for ${ROLE}: ${e.message}\n`);
++    return 2; // fail-closed
++  }
++  const { hard } = evaluateConfig(passes);
++
++  let records = [];
++  const ledger = path.join(ROOT, ".claude", "runtime", "dispatch-completions.jsonl");
++  try {
++    if (fs.existsSync(ledger)) {
++      records = fs
++        .readFileSync(ledger, "utf8")
++        .split("\n")
++        .filter(Boolean)
++        .map((l) => {
++          try {
++            return JSON.parse(l);
++          } catch {
++            return null;
++          }
++        })
++        .filter(Boolean);
++    }
++  } catch {
++    /* ledger unreadable → no runtime evidence; config coherence still applies */
++  }
++  const warns = evaluateRuntime(records, passes.length);
++
++  if (json) {
++    process.stdout.write(JSON.stringify({ ok: hard.length === 0, check: NAME, expected_passes: passes.length, config_breaks: hard, runtime_gaps: warns, strict }, null, 2) + "\n");
++  } else if (hard.length === 0 && warns.length === 0) {
++    process.stdout.write(`OK   [${NAME}] ${ROLE} declares ${passes.length} distinct-provider passes, dispatch-review.js fires them, no runtime under-fire\n`);
++  } else {
++    if (hard.length)
++      process.stderr.write(`FAIL [${NAME}] config-coherence break (${hard.length}):\n${hard.map((e) => `  - ${e}`).join("\n")}\n`);
++    if (warns.length)
++      process.stderr.write(`${strict ? "FAIL" : "WARN"} [${NAME}] runtime under-fire (${warns.length}, report-only ramp${strict ? " — BLOCKING via --strict" : ""}):\n${warns.map((e) => `  - ${e}`).join("\n")}\n`);
++  }
++  // config breaks ALWAYS fail; runtime gaps fail only under --strict (the report-only→blocking ramp).
++  if (hard.length) return 1;
++  if (warns.length && strict) return 1;
++  return 0;
++}
++
++if (require.main === module) process.exit(main(process.argv.slice(2)));
++module.exports = { evaluateConfig, evaluateRuntime, main, NAME, ROLE, RECORD_BACKED_CUTOFF };
+diff --git a/scripts/dispatch-review.js b/scripts/dispatch-review.js
+new file mode 100644
+index 00000000..e13bc8ce
+--- /dev/null
++++ b/scripts/dispatch-review.js
+@@ -0,0 +1,137 @@
++#!/usr/bin/env node
++"use strict";
++/**
++ * dispatch-review.js — multi-provider review FIRING (E-DISPATCH-PERFECT-001 W1).
++ *
++ * The dispatch CONSUMER of a role's second_pass/third_pass. Given <role> <prompt-file>, it reads
++ * registry-roles.passesOf(role) and spawns ONE reap-safe single-pass
++ *   `node scripts/dispatch-agent.js <role> <prompt> --provider <p> [--model <m>]`
++ * child PER PASS, IN PARALLEL. Each child runs the full normal flow (its own concurrency slot,
++ * timeout, provider-stamped completion record, and reap-safety) — so N provider-stamped records
++ * land on the canonical ledger that gauntlet-verify + security-pass-count read. The merged verdict
++ * is ANY-FAIL-HOLDS: a security review is clean only if EVERY pass is both alive and clean.
++ *
++ * This is what makes second_pass/third_pass a REAL dispatch consumer, not prose (the β DECIDE 0.88
++ * condition (c) for the 3-provider security review). Parallel (not serial) so each child keeps its
++ * own dispatch budget — a 3-provider review's wall-clock is max(pass), never sum (no serial reap).
++ *
++ * A single-pass role (passesOf length 1) still works — one child, behaviour-equivalent to a direct
++ * dispatch-agent call — so callers can route ALL reviewer dispatches here uniformly.
++ *
++ * Usage:  node scripts/dispatch-review.js <role> <prompt-file> [--domain <d>]
++ * Output: a merged JSON envelope on the final stdout line:
++ *   { ok, role, multipass, passes_run, lanes:[{pass,provider,model,ok,verdict}], allLanesOk, mergedVerdict }
++ *   - ok          = primary-lane liveness (per-lane records are read separately by gauntlet-verify)
++ *   - mergedVerdict = the security verdict the orchestrator consumes to gate/fix (any fail → "fail")
++ * Exit: 0 iff EVERY lane is alive (a dead lane = the review did not fully run → exit 1).
++ */
++const path = require("path");
++const { spawn } = require("child_process");
++const registryRoles = require("./dispatch/registry-roles");
++
++const AGENT = path.join(__dirname, "dispatch-agent.js");
++const CLAUDE = path.join(__dirname, "dispatch-claude.js");
++
++function parseFlag(argv, name) {
++  const i = argv.indexOf(name);
++  return i >= 0 && argv[i + 1] ? argv[i + 1] : null;
++}
++
++// Spawn ONE single-pass dispatch-agent child for a given provider pass. Never rejects — a spawn
++// failure or unparseable output resolves to a dead lane (ok:false), so one bad pass can't crash
++// the whole review (it just holds the merged verdict, which is the correct security behaviour).
++function spawnPass(role, promptFile, pass, domain) {
++  return new Promise((resolve) => {
++    // claude is the LOCAL model — dispatch-agent.js (the CROSS-PROVIDER wrapper) hard-refuses it.
++    // The claude pass runs through dispatch-claude.js (the recording `claude -p --agent` wrapper);
++    // gemini/openai run through dispatch-agent.js with a --provider override. (dispatch-claude.js
++    // takes [--model] but NOT --domain.)
++    let args;
++    if (pass.provider === "claude") {
++      args = [CLAUDE, role, promptFile];
++      if (pass.model) args.push("--model", pass.model);
++    } else {
++      args = [AGENT, role, promptFile, "--provider", pass.provider];
++      if (pass.model) args.push("--model", pass.model);
++      if (domain) args.push("--domain", domain);
++    }
++    const child = spawn(process.execPath, args, { stdio: ["ignore", "pipe", "pipe"] });
++    let out = "";
++    let err = "";
++    child.stdout.on("data", (d) => (out += d));
++    child.stderr.on("data", (d) => (err += d));
++    child.on("error", (e) => resolve({ pass, result: null, spawnError: e.message }));
++    child.on("close", () => {
++      // dispatch-agent's final stdout line is JSON.stringify(result).
++      let result = null;
++      const last = out.trim().split("\n").filter(Boolean).pop();
++      try {
++        result = last ? JSON.parse(last) : null;
++      } catch {
++        /* leave null — counts as a dead lane */
++      }
++      resolve({ pass, result, stderrBytes: Buffer.byteLength(err, "utf8") });
++    });
++  });
++}
++
++function verdictOf(result) {
++  if (!result) return "error";
++  // dispatch-agent sets result.parsed; dispatch-claude returns the raw agent output in result.output
++  // (no parsed) — extract the verdict from either so a claude-pass FAIL is never missed.
++  if (result.parsed && typeof result.parsed.verdict === "string") return result.parsed.verdict.toLowerCase();
++  const text = typeof result.output === "string" ? result.output : "";
++  const m = /"verdict"\s*:\s*"(pass|warn|fail)"/i.exec(text);
++  if (m) return m[1].toLowerCase();
++  return result.ok ? "pass" : "error";
++}
++
++async function main() {
++  const argv = process.argv.slice(2);
++  const role = argv[0];
++  const promptFile = argv[1];
++  const domain = parseFlag(argv, "--domain");
++  if (!role || !promptFile) {
++    console.error(
++      JSON.stringify({ ok: false, error: "Usage: node scripts/dispatch-review.js <role> <prompt-file> [--domain <d>]" }),
++    );
++    process.exit(2);
++  }
++  let passes;
++  try {
++    passes = registryRoles.passesOf(role);
++  } catch (e) {
++    console.error(JSON.stringify({ ok: false, error: `cannot resolve passes for ${role}: ${e.message}` }));
++    process.exit(2);
++  }
++  if (!passes.length) {
++    console.error(JSON.stringify({ ok: false, role, error: `unknown role (no passes in registry)` }));
++    process.exit(2);
++  }
++
++  // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
++  const settled = await Promise.all(passes.map((p) => spawnPass(role, promptFile, p, domain)));
++  const lanes = settled.map((s) => ({
++    pass: s.pass.key,
++    provider: s.pass.provider,
++    model: s.pass.model,
++    ok: !s.spawnError && !!(s.result && s.result.ok),
++    verdict: verdictOf(s.result),
++  }));
++  const anyFail = lanes.some((l) => l.verdict === "fail");
++  const anyDead = lanes.some((l) => !l.ok);
++  const merged = {
++    ok: lanes[0] ? lanes[0].ok : false,
++    role,
++    multipass: lanes.length > 1,
++    passes_run: lanes.length,
++    lanes,
++    allLanesOk: lanes.every((l) => l.ok),
++    // any-FAIL holds; a dead lane → "error" (the review did not fully run); else warn/pass.
++    mergedVerdict: anyFail ? "fail" : anyDead ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass",
++  };
++  console.log(JSON.stringify(merged));
++  process.exit(merged.allLanesOk ? 0 : 1);
++}
++
++main();
+diff --git a/scripts/dispatch/registry-roles.js b/scripts/dispatch/registry-roles.js
+index 4615800e..0b6d7fde 100644
+--- a/scripts/dispatch/registry-roles.js
++++ b/scripts/dispatch/registry-roles.js
+@@ -84,6 +84,24 @@ const providerOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].pro
+ const effortOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].effort : undefined);
+ const modelOf = (role, roles = loadRoles()) => (roles[role] ? roles[role].model : undefined);
+ 
++/**
++ * The ORDERED list of provider passes for a role: the primary, then second_pass, then third_pass
++ * (each = { provider, model, effort, key }). A role with no extra passes returns just the primary
++ * (length 1). This is the single source the multi-provider review FIRING reads — dispatch-review.js
++ * fires one reap-safe single-pass dispatch per entry, and security-pass-count asserts the stamp
++ * count matches (E-DISPATCH-PERFECT-001 W1). Returns [] for an unknown role.
++ */
++function passesOf(role, roles = loadRoles()) {
++  const r = roles[role];
++  if (!r) return [];
++  const out = [{ provider: r.provider, model: r.model || null, effort: r.effort || null, key: "primary" }];
++  for (const key of ["second_pass", "third_pass"]) {
++    const p = r[key];
++    if (p && p.provider) out.push({ provider: p.provider, model: p.model || null, effort: p.effort || null, key });
++  }
++  return out;
++}
++
+ /** Build-chain roles (dispatch-route-guard.BUILD_CHAIN_ROLES) — build_chain:true. */
+ function buildChainRoles(roles = loadRoles()) {
+   return roleIds(roles).filter((r) => roles[r].build_chain === true);
+@@ -180,6 +198,7 @@ module.exports = {
+   providerOf,
+   effortOf,
+   modelOf,
++  passesOf,
+   buildChainRoles,
+   geminiRoles,
+   flagshipOpenaiRoles,
+diff --git a/scripts/sprint/epsilon-runtime.js b/scripts/sprint/epsilon-runtime.js
+index 47398712..f0d1bf43 100644
+--- a/scripts/sprint/epsilon-runtime.js
++++ b/scripts/sprint/epsilon-runtime.js
+@@ -442,6 +442,17 @@ function agentRoot() {
+   return (t.ok && t.AGENT_ROOT) || path.resolve(__dirname, "..", "..");
+ }
+ 
++/** The ordered provider passes for a role (primary + second_pass + third_pass), or [] if it can't
++ *  be resolved. Multi-pass roles (length > 1, e.g. security-reviewer) route through dispatch-review.js
++ *  so every declared pass FIRES as a reap-safe single-pass child (E-DISPATCH-PERFECT-001 W1). */
++function passesForRole(role) {
++  try {
++    return require(path.join(agentRoot(), "scripts", "dispatch", "registry-roles")).passesOf(role);
++  } catch {
++    return [];
++  }
++}
++
+ /** Write a real per-agent prompt for the step; returns the file path. */
+ function writeStepPrompt(agentPlan, sprintId) {
+   const dir = path.join(agentRoot(), ".claude", "runtime", "epsilon-prompts");
+@@ -528,7 +539,14 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
+     // child re-clamp of the propagated value can never lift it above childBaseMs.
+     const childBaseMs = foregroundAwareTimeout(opts.timeoutMs || WRAPPER_DEFAULTS["epsilon-agent"], opts);
+     env.DISPATCH_BUILDER_TIMEOUT_MS = String(childBaseMs);
+-    const r = run(process.execPath, [path.join(root, "scripts/dispatch-agent.js"), agentPlan.role, promptFile], {
++    // W1 (E-DISPATCH-PERFECT-001): a role with declared extra passes (second_pass/third_pass) routes
++    // through dispatch-review.js — it FIRES one reap-safe single-pass dispatch-agent child PER PASS
++    // in parallel, each self-recording a provider-stamped completion record (so gauntlet-verify +
++    // security-pass-count see N lanes). Single-pass roles go direct. Both self-record
++    // (recordedByCli=true) — ε never double-records.
++    const reviewScript =
++      passesForRole(agentPlan.role).length > 1 ? "scripts/dispatch-review.js" : "scripts/dispatch-agent.js";
++    const r = run(process.execPath, [path.join(root, reviewScript), agentPlan.role, promptFile], {
+       ...common,
+       timeout: childBaseMs + PARENT_GRACE_MS,
+     });

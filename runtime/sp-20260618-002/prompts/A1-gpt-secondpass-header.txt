@@ -1,0 +1,28 @@
+You are running the GPT cross-provider SECOND PASS over a Track-1 hardening-simulation findings
+doc for E-MC-READINESS-ANALYSIS-001 (masterconsole release-readiness ANALYSIS, findings-only).
+A Claude analyst produced the findings below (the PRIMARY pass, with direct file access + a sealed
+BOM-injected lifecycle probe). Your job is the DIVERGENCE CROSS-CHECK — the 2-source signal
+(gemini is tier-dead, so GPT + Claude are the two sources; divergence = signal, not a vote).
+
+READ-ONLY / ANALYSIS-ONLY: you assess the findings doc; you modify nothing. Return a concise
+cross-check envelope (≤30 lines).
+
+=== YOUR CROSS-CHECK ===
+For the findings doc below, assess:
+1. COMPLETENESS: did the primary pass miss any launch-relevant command-flow fragility in the
+   consumer-reachable surface (install/update spine + /sprint:full, /portfolio:new+spinup,
+   /warp:update apply+rollback, mutating /admin+/panel)? Name specific gaps.
+2. CORRECTNESS of the C1-C5 relations: for each finding tagged CONFIRMS-Cx / NEW-at-flow / REFUTES,
+   do you AGREE with that classification? Flag any you'd reclassify + why (this is the divergence signal).
+3. SEVERITY calibration: any finding under- or over-rated for an EXTERNAL consumer launch?
+4. The BOM-injected warm/update+parallel-resume probe result: do you agree with the primary's read of
+   whether C1×C2×C5 fired end-to-end vs were caught by the sealed/foundation gate? This is the
+   load-bearing finding — scrutinize it hardest.
+5. ANALYSIS-ONLY: confirm the doc proposes NO in-sprint fixes (every remediation is an execution-route
+   pointer); flag any that reads like a fix-to-apply-now.
+
+Return: AGREEMENTS (the findings you confirm) + DIVERGENCES (where you differ, with reasoning — these
+feed the register as the 2-source signal) + any MISSED finding the primary didn't catch. Do NOT
+re-derive the whole analysis; CROSS-CHECK the primary's.
+
+=== THE CLAUDE PRIMARY-PASS FINDINGS DOC (cross-check this) ===

@@ -1,0 +1,1 @@
+Liveness probe for the GPT/codex executor path (session/2026-06-16). Reply with EXACTLY one line: CODEX-READY followed by the model id you are running as. Nothing else.

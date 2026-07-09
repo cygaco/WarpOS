@@ -1,0 +1,61 @@
+You are running Track-1 HARDENING-SIMULATION analysis for E-MC-READINESS-ANALYSIS-001, the
+masterconsole release-readiness ANALYSIS epic. READ-ONLY / ANALYSIS-ONLY: you produce a FINDINGS
+doc, you MODIFY NOTHING in product/framework/scripts. You may run read-only/dry-run/sealed-isolated
+simulations. Return the findings doc content (markdown) as your output.
+
+=== GOAL ===
+Extend the Completed sealed-capsule gate to the CONSUMER-REACHABLE command FLOW and report which
+failure modes actually FIRE end-to-end in a real (sealed, isolated) lifecycle — command-flow
+COMPOSITION signal that a static read cannot see. This is NOT a re-derivation of the existing
+track-3 edge-case doc; it CONFIRMS / EXTENDS / REFUTES it at the flow level.
+
+=== THE ENVELOPE (director-of-engineering ruling — follow it) ===
+IN SCOPE (exercise these): the install/update spine (setup → scan:install → sprint → telemetry →
+update, both roles × cold+warm) + the headless-Console entry verbs: /sprint:full (no --sprint),
+/portfolio:new + in-place spinup/scaffold, /warp:update apply+rollback, /admin:* + /panel:* ONLY
+where they mutate shared state.
+OUT OF SCOPE (archaeology — cite-and-skip): /research:*, /scan:* internals, dev-tooling skills,
+non-shipped scripts, redteam/qa lanes.
+ANTI-SPRAWL LINE: "would the Master Console invoke this verb programmatically against a FRESH consumer
+repo? Yes → in; No → archaeology." Stop at launch-relevant fragility — no fixes, no redesign, no
+exhaustive non-shipped-system archaeology.
+
+THE 5 STRUCTURAL CLASSES from track-3 (CONFIRM/REFUTE at flow level, do NOT re-derive):
+  C1 — raw JSON.parse of a BOM/CRLF file on install/update hot paths (update.js/transaction.js).
+  C2 — non-atomic shared-file writes with no per-entity lock (sprint state fs.js#writeYaml; cwd-anchored locks).
+  C3 — input validation that only guards the new-repo path, not the in-place path the Console drives.
+  C4 — guardrail fields WRITTEN but never READ (minUpgradeableFrom, RI-007 closed-sprint status).
+  C5 — no path-traversal containment on the applied-asset dest in the production updater.
+
+HIGHEST-LEVERAGE PROBE (do this one for sure): drive the warm/update + parallel-resume cell in a
+SEALED isolated repo with a BOM-injected framework-installed.json — this composes C1 (BOM read) ×
+C2 (non-atomic write) × C5 (dest traversal) in ONE flow, and tells the execution epic whether the
+foundation gate already catches them or they slip the sealed contract.
+
+=== METHOD (no-modify) ===
+- Foundation: scripts/warpos/test-sealed-capsule-gate.js (reuse its seal → os.tmpdir-isolate
+  [canonical-unreachable] → lifecycle mechanism; injectable runStep/runCell ~lines 408-598). Also
+  read runtime/sealed-gate-full.log for the certified baseline.
+- Discover the command surface by read/grep/glob (e.g. .claude/commands/**). Run real verbs ONLY in
+  a disposable sealed tmpdir you create + rmSync; NEVER against the canonical repo.
+- Pre-fetch / read the install+update hot-path code: scripts/warpos/update.js,
+  scripts/warpos/transaction.js (or wherever the apply/rollback + framework-installed.json read live),
+  scripts/sprint/fs.js (writeYaml), and the warp-setup/scaffold-core paths.
+- If you cannot run a cell in this sandbox (e.g. nested spawnSync EPERM), READ the code path and reason
+  about whether C1-C5 fire — cite the file:line evidence; mark reproducibility "static" vs "sealed-run".
+
+=== OUTPUT: the Track-1 findings doc (markdown) ===
+# E-MC-READINESS-ANALYSIS-001 · Track 1 — Hardening Simulation (command-flow composition)
+- tl;dr (counts by severity; how many C1-C5 confirmed-fire vs masked vs refuted at flow level).
+- COVERAGE MATRIX: verb × (cold/warm) × (fired / masked-by-earlier-step / not-reached), with the
+  sealed-run or static evidence per cell.
+- FINDINGS TABLE — each row: id, command-flow, severity, reproducibility (sealed-run | static),
+  evidence (file:line or sealed-run output), readiness-risk, execution-route (which fix, to the
+  EXECUTION epic), and its TRACK-3 RELATION (CONFIRMS-C{n} | NEW-at-flow-level | REFUTES-C{n}).
+- The BOM-injected warm/update+parallel-resume probe result (the load-bearing one): did C1×C2×C5
+  fire end-to-end, or did the sealed/foundation gate catch them?
+- LIMITATIONS: what you could not exercise + why; what's static-only.
+- The assertion: "this analysis made 0 writes outside _reports/ + runtime/sp-20260618-002/ + tmp."
+
+ANALYSIS-ONLY: propose NO in-sprint fix; every remediation is an execution-route pointer. Do not edit
+any product/framework/scripts file. Return the doc content as your output.

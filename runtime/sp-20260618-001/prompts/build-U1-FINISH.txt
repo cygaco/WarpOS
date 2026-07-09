@@ -1,0 +1,56 @@
+U1 FINISH — SP-20260618-001 templates-migration (RESUME from committed state; do STEP6–12 ONLY).
+
+You are a backend-builder finishing U1. The worktree is at commit 260fd1b9. DO NOT re-investigate or re-do the done parts — that wasted the last two windows and caused reaps.
+
+ALREADY DONE (verified by α — do NOT redo):
+- _warpos/templates/ : 9 dirs, 108 files (the copy). framework/templates/ still present (you delete it in STEP10, only after a GREEN gate).
+- _warpos/BASELINE/ : 215 files (pristine snapshot of canonical _requirements/ + _docs/). Inline, no separate generator (correct — validate.js:30 seed-drift is deferred, out of scope).
+- scripts/checks/warpos-ship-coverage.js : the carve (blanket _warpos/ → narrow _warpos/MANIFEST.json + _warpos/settings/).
+- scripts/generate-framework-manifest.js:279 : ASSET_DIRS template asset repointed to _warpos/templates.
+- framework/paths.registry.json : the 3 LIVE keys repointed (370 app-scaffold, 859 sprint, 994 portfolio).
+
+FULL STEP DETAIL: READ runtime/sp-20260618-001/prompts/build-U1-RESUME.txt (STEP2–12) + runtime/sp-20260618-001/design/BUILD-SPEC-ADDENDUM.md. The 7 binding refinements there are authoritative.
+
+═══ CRITICAL DISCIPLINE (this is why the prior attempts reaped) ═══
+COMMIT AFTER EACH STEP: `git add -A && git commit -m "U1 stepN: <what>"`. Incremental commits make your progress reap-proof — if you time out, the next run resumes from your last commit. Do NOT batch all steps into one final commit.
+
+═══ STEP6 — live-ref sweep: TRIAGE RULES (α-derived from recon; apply per file) ═══
+`framework/templates` appears in ~90 files / 2862 occurrences. MOST must be LEFT. Repoint a ref ONLY IF deleting framework/templates would BREAK it (a runtime path-read, or a test assertion that the path exists/contains-X).
+
+LEAVE (do NOT edit — these do not break, are frozen, or are regenerated):
+- framework/releases/0.*/framework-manifest.json — FROZEN historical release records; editing them is a release-integrity VIOLATION.
+- _warpos/BASELINE/** — snapshot payload.
+- _warpos/templates/** and framework/templates/** file CONTENTS (.tmpl, README, etc.) — template payload.
+- GENERATED files (regen updates these in STEP8 — do NOT hand-edit): .claude/framework-manifest.json, _warpos/MANIFEST.json, .claude/framework-installed.json, .claude/paths.json, scripts/hooks/lib/paths.generated.js, schemas/paths.schema.json.
+- Docs/history/planning (excluded by the AC): _docs/**, _planning/**, _reports/**, trackers/**, TRACKER.md, runtime/**.
+- scripts/warpos/manifest/walk-skip.js — the deliberate KNOWN_DANGLING reason-string. LEAVE.
+- framework/paths.registry.json _note prose (~lines 539/1000). LEAVE (the 3 real keys are already done).
+
+REPOINT to _warpos/templates (LIVE refs only — READ each and judge):
+- scripts/** that READ framework/templates as a runtime path: candidates = scaffold-coverage-scan.js, release-gates.js, check/install.js, manifest/cli.js, bootstrap/lastmile/lib/render.js, canon/generate.js, canon-type-coverage.js, doc-ref-integrity.allowlist.json, test-sprint.js, manifest/test-build.js, generate-framework-manifest.js (any occurrence beyond line 279). Repoint the LIVE path-reads; leave pure comments/examples.
+- tests/regression/{S-PF-01,SP-20260614-001,SP-20260616-004,SP-20260518-007}/* — assertions referencing framework/templates → update to _warpos/templates (these BREAK on delete).
+- .claude/commands/** skills that instruct using framework/templates as a LIVE path (portfolio/new.md, sprint/{retrospective,release,plan,design}.md, scan/scaffold-coverage.md, report.md) — repoint only genuine live-path instructions, not prose/examples.
+POST-CUTOVER GATE: `rg "framework/templates" -g"*.js" -g"*.json" -g"*.md"` returns zero LIVE refs (only the LEAVE-category refs may remain). COMMIT.
+
+═══ STEP7 — seeded_from: LEAVE (α-verified) ═══
+_warpos/templates has NO policy/decision-policy.md and NO _requirements/ subtree (only the 9 categories). So in scripts/warpos/manifest/build.js (~lines 201, 217) LEAVE both seeded_from as-is (flipping = a dangle = zero-tolerance RED). Just fix the stale "Future: flip to _warpos/templates" COMMENT to note the flip is N/A (those targets are not template categories). COMMIT.
+
+═══ STEP8 — regen ALL THREE ═══
+`node scripts/paths/build.js && node scripts/generate-framework-manifest.js && node scripts/warpos/manifest/build.js` — verify-survival: the generated views (.claude/paths.json, paths.generated.js) must now hold _warpos/templates, not the old value. COMMIT.
+
+═══ STEP9 — ship-coverage GREEN (PRE-DELETE) + assertions ═══
+`node scripts/checks/warpos-ship-coverage.js` exit 0. PLUS the anti-value-inversion proof (quality-lead NO-SHIP flip if you skip it):
+- POSITIVE: assert ALL 9 _warpos/templates subtrees AND 108 files are in the shipped set (framework-manifest assets) — count/membership, NOT just that the string appears once.
+- NEGATIVE: assert _warpos/MANIFEST.json + _warpos/settings/defaults.json are STILL NOT in the shipped set.
+COMMIT. Do NOT proceed to STEP10 unless GREEN.
+
+═══ STEP10 — DELETE (point of no return, only after STEP9 GREEN) ═══
+`git rm -r framework/templates`. COMMIT.
+
+═══ STEP11 — ship-coverage GREEN (POST-DELETE) + repeat assertions ═══
+`node scripts/checks/warpos-ship-coverage.js` exit 0 + repeat the positive+negative assertions + assert _warpos/templates is NOT in WALK_SKIP_DIRS (scripts/warpos/manifest/walk-skip.js). COMMIT.
+
+═══ STEP12 — FIX1 planted-violation regression test ═══
+Near scripts/checks/test-warpos-ship-coverage.js: add a BC-16-shape test that seeds an UNSHIPPED _warpos/templates path and asserts it lands in infoGaps (NOT hard_gaps — β-verified: HARD_SIGNAL_ROOTS lacks _warpos/) AND ok===false. This pins the gate so a future loosening breaks loudly. COMMIT.
+
+RETURN: a concise result — which steps completed, each step's commit sha, both ship-coverage GREEN exit codes, and the rg-zero-live-refs result. If you time out mid-way, your incremental commits preserve progress; say which step you reached.

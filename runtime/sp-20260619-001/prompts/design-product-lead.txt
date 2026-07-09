@@ -1,0 +1,52 @@
+You are the Product Lead (PL) for WarpOS, reporting to the Director of Product. DESIGN step of
+sprint SP-20260619-001 (E-DISPATCH-PERFECT-001 W4 — genericize jobzooka → AcmeLaunch in the shipped
+baseline requirements). Read-only (Read/Grep/Glob): you AUTHOR the build_spec the genericization
+follows. Return a structured build_spec (≤75 lines). Your plan-step AC spine is LOCKED (below).
+
+=== LOCKED CONTEXT ===
+GOAL: replace the past example product "jobzooka" (a resume/job-search SaaS) with **AcmeLaunch** (a
+fictional launch-planning SaaS for solo founders/small teams: idea → milestones → tasks → launch
+assets → launch → customer follow-up) across the CONSUMER-SHIPPED baseline requirements, COHERENTLY
+(a re-domaining, not a name-swap). The baseline SHIPS at install — it must read like a real example.
+
+SCOPE (ground-truthed): the literal "jobzooka" is in 38 canonical _requirements/ files; the jobzooka
+DOMAIN VOCAB (resume / LinkedIn / Bright Data / Chrome extension / "Jobzooka Launcher" / auto-apply /
+job-scraping / targeted-resumes) is in 53 MORE canonical files — ALL must be re-domained. Approach:
+**(b) PARALLEL paired edits** — edit each canonical _requirements/ file AND its _warpos/BASELINE/
+_requirements/ mirror in the SAME work packet (no copy step; canonical↔BASELINE are a clean mirror
+except PATH_KEYS.md which is OUT of scope — leave it). Both roots → grep-zero independently.
+
+CLUSTERS (the jobzooka surface, by dir):
+- 00-canonical: CORE_BRIEF (the product brief), PRODUCT_MODEL, USER_COHORTS, GLOSSARY, GOLDEN_PATHS,
+  EVOLUTION, FAILURE_STATES — AcmeLaunch's identity + audience + worked golden flows.
+- 02-copy-system: COPY_STRATEGY (the 18-hit voice/personality doc), SURFACE_MAP — AcmeLaunch's copy voice.
+- 03-architecture: API_SURFACE, AUTH_SCHEMAS, DATA_FLOW, DATA-CONTRACTS, FLOW_SPEC, PIPELINES,
+  PROMPT_TEMPLATES, COMPONENT_HIERARCHY, DESIGN_TOKENS, ENV_VARS, ERROR_RECOVERY, EXTENSION_SPEC,
+  contracts/* (ROUTING/etc.) — the ENTITIES + flows (jobzooka's resume-scraping entities → AcmeLaunch's
+  launch-planning entities).
+
+BINDING GATE (β-ratified): grep-zero "jobzooka" (both roots) + RESIDUE-grep zero (resume|LinkedIn|scrap|
+Bright Data|Chrome extension|Jobzooka Launcher|auto-apply, or justified-only) + framework-purity stays
+green + cross-provider readability review. The domain-entity TRACE MATRIX is the coherence proof.
+
+=== YOUR OUTPUT: the build_spec ===
+1. ACMELAUNCH IDENTITY (the canonical product the docs describe — author it concisely so the build is
+   coherent): one-line value prop; the user/persona (who); the core entities (launch plans, milestones,
+   tasks, assets, audiences/customers, follow-ups — name them); the "not-X" boundaries (what AcmeLaunch
+   is NOT, paralleling jobzooka's "not a job board / not a template tool"); the copy voice (1-2 lines).
+2. THE RE-DOMAINING MAP (jobzooka concept → AcmeLaunch concept) — the substitution table the build
+   applies, e.g.:
+   - resume → (the user's product/launch plan?) · job listing/market → (?) · LinkedIn content → (?)
+   - Bright Data scraping → (AcmeLaunch's data source / integration?) · Chrome extension "Launcher" → (?)
+   - "targeted resume variants" → (?) · auto-apply workflow → (?) · recruiter/job-seeker persona → (founder)
+   Fill in the AcmeLaunch side so a builder applies it consistently (this is what prevents orphaned refs).
+3. PER-CLUSTER EDIT PLAN: for 00-canonical / 02-copy / 03-architecture — what each cluster's edit does +
+   its verified_by (the AC). Note the architecture cluster is the RE-DOMAINING (entities/flows change),
+   not just name-swap.
+4. verified_by (GLOBAL): grep-zero both roots; residue-grep zero; the 38 canonical ≡ 38 BASELINE edits
+   (paired); framework-purity green; the trace matrix (every API/field/prompt/step→AcmeLaunch, zero→jobzooka);
+   no doc reads like a partial find-replace.
+5. SCOPE GUARD: ONLY _requirements/ + _warpos/BASELINE/_requirements/ (NOT .claude/project/sprint/**
+   history, NOT framework-purity.js, NOT PATH_KEYS.md, NOT epic/tracker docs).
+Author the AcmeLaunch identity + re-domaining map concretely — that's what makes the genericization
+coherent rather than mechanical.

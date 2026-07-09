@@ -1,0 +1,2 @@
+[dispatch-claude] dispatch-contract advisory: shape 'subprocess-claude' is not allowed for role 'security-reviewer' (class cross_provider_reviewer). Allowed: subprocess-cross-provider.
+[dispatch-claude] shape-resolver advisory: role 'security-reviewer' dispatched as 'subprocess-claude' but the resolver picks 'subprocess-cross-provider' (role 'security-reviewer' is contract class with allowed_shapes=[subprocess-cross-provider]; severity=medium).

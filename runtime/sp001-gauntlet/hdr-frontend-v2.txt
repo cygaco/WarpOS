@@ -1,0 +1,13 @@
+You are the FRONTEND REVIEWER re-reviewing after a fix. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on the CURRENT code below (post-fix commit 05e37832). Binding — orchestrator cannot override a FAIL.
+
+A PRIOR review of the previous commit raised these frontend findings. Re-judge EACH against the CURRENT code: state FIXED or STILL-PRESENT (with current file:line), then add any NEW findings.
+  1. [blocker] forms submitted hidden field "checked" but the server action expected "nextChecked" -> toggle rejected before any patch.
+  2. [blocker] the visible checkbox did not submit the form (only an sr-only submit button existed) -> broken for pointer/touch users + invisible keyboard target.
+  3. [major] DoneItemRow rendered a toggle form for every done item regardless of owner_class -> non-owner-action items appear founder-toggleable.
+  4. [major] readinessPhase supports "warm" but the page renders only "cold" and "all-done" -> FTUE incomplete.
+
+SCOPE (frontend code-quality 7A-7G): React Server Component correctness, accessibility (the NEW submit-button + aria-pressed pattern — is it correct? does aria-pressed reflect the real current state, or is it hardcoded?), component structure, responsive layout, design-system adherence, no dead links, no client/server boundary mistakes. CONTEXT: .tmpl = scaffold templates, no tsc expected, the {{...}} tokens are intentional scaffold placeholders not bugs.
+
+Output a ReviewResult: VERDICT (PASS or FAIL), then a per-prior-finding disposition (each: FIXED or STILL-PRESENT with current file:line), then any NEW findings (severity blocker/major/minor, file:line, what + why). Ground everything in the code below.
+
+===== CURRENT CODE UNDER REVIEW (post-fix 05e37832) =====

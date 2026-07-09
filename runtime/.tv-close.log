@@ -1,0 +1,45 @@
+PASS [trackers/validate] all 20 checks pass
+  · sections-present: PASS
+  · no-blank-section: PASS
+  · broken-links: PASS
+  · active-tracker-files: PASS
+  · active-next-action: PASS
+  · completed-evidence: PASS
+  · completed-100: PASS
+  · hundred-completed: PASS
+  · sprint-parent-epic: PASS
+  · ambiguous-language: PASS
+  · undefined-terms: PASS
+  · required-paths: PASS
+  · roadmap-epic-based: PASS
+  · epics-in-roadmap: PASS
+  · modes-consult-tracker: PASS
+  · work-log-session-id: PASS
+  · expected-nonexistence: PASS
+  · cross-file-reconciliation: PASS
+  · hooks-enforce-or-tracked: PASS
+  · definition-drift: PASS
+  (3 link(s) · 16 §33 path(s) · 18 epic(s) · root C:\Users\Vlad\Desktop\Claude\Projects\WarpOS)
+
+ADVISORY [trackers/validate] session-relative-language (anti-deixis, REPORT-ONLY · not part of the 20 binding checks): 21 warning(s)
+      ⚠ L34 «this session» — open, lingering dir cleaned this session, automated guard still pending).
+      ⚠ L38 «next session» — The NEXT session must EXECUTE the ship-now waves: **W0** (model-catalog freshness: `check.js` 30→14d + honest age + test
+      ⚠ L48 «this session» — Broader lesson this session: multiple "open / Missing But Required" items were actually DONE since early June and never 
+      ⚠ L54 «session <N> (ordinal)» — **EXECUTION session 1
+      ⚠ L58 «this session» — This session also shipped (committed local, pending land): mode-init-≠-authorization (all 4 `/mode:*` skills + α/CLAUDE.
+      ⚠ L334 «currently» — work has started and is currently expected to continue.
+      ⚠ L577 «this session» — not executed this session).
+      ⚠ L679 «this session» — - Evidence: `git tag --list` → `warpos@0.14.0` (Verified Exists this session)
+      ⚠ L692 «this session» — - Session ID: this session (to be backfilled).
+      ⚠ L716 «currently» — work has started and is currently expected to continue.
+      ⚠ L773 «currently» — currently procedural (Verification Use Procedure).
+      ⚠ L895 «this session» — Seed evidence log (this session): (1) `ls -la TRACKER.md ROADMAP.md` → TRACKER.md and ROADMAP.md exist
+      ⚠ L903 «this session» — DONE (overwritten this session
+      ⚠ L907 «this session» — DONE this session.
+      ⚠ L914 «this session» — DONE this session.
+      ⚠ L1051 «this session» — - Evidence: `node` require of `release-build.js` → KNOWN_DANGLING_REFS length 32 (A:4, B:11, C:17), verified this sessio
+      ⚠ L1070 «this session» — This session itself launched in a nested stale worktree (`.claude/worktrees/e6-orgmap-collapse/.claude/worktrees/e6-reco
+      ⚠ L1077 «this session» — - Discovered by: this session (the systems builder, operating under the stale-worktree contract).
+      ⚠ L1079 «this session» — Until built, the operational mitigation (used this session) is to prefix every command with the absolute canonical root 
+      ⚠ L1080 «this session» — mitigation applied this session
+      ⚠ L1082 «this session» — - Evidence: this session's cwd was `...\.claude\worktrees\e6-orgmap-collapse\.claude\worktrees\e6-recover` (a pruned nes

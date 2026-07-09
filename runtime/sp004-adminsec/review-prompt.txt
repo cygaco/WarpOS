@@ -1,0 +1,182 @@
+SECURITY CODE REVIEW — admin session hardening (E-MC-READINESS Track-2, 2 HIGH findings)
+
+You are a SECURITY reviewer giving a BINDING verdict (PASS|FAIL) on an authentication change to a scaffolded product's founder-admin session. Be adversarial — try to forge, replay, or bypass it. A FAIL blocks the merge.
+
+CONTEXT: the admin session cookie WAS `base64url(email).hmac(email)` — signed but with NO expiry and NO revocation, so a leaked cookie was a permanent skeleton key; and no secure cookie-set path shipped (a founder hand-rolling a login could omit HttpOnly/Secure/SameSite). This change hardens it.
+
+THE NEW DESIGN (in framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl):
+- Token format: base64url(email).iat.version.signature, signature = HMAC-SHA256(secret, `email|iat|version`).
+- verify: split into exactly 4 parts; reject if version != current ADMIN_SESSION_VERSION (revocation lever); reject if (now - iat) > 7 days (expiry); reject if (iat - now) > 300s (future-date / skew); then timingSafeEqual the recomputed signature.
+- issue: stamps iat = now, version = ADMIN_SESSION_VERSION.
+- setAdminSessionCookie(): sets the cookie with httpOnly:true, secure:(NODE_ENV===production), sameSite:lax, path:/, maxAge:7d.
+
+VERIFY ADVERSARIALLY:
+1. Forgery/replay: can an attacker mint or extend a valid token without the secret? (signature binds email|iat|version — confirm tampering any field breaks it.)
+2. Expiry bypass: any way to dodge the 7-day window? (forged iat must break the sig — confirm.) Off-by-one on the boundary?
+3. Revocation: does bumping ADMIN_SESSION_VERSION actually invalidate all prior tokens? Any way around it?
+4. Downgrade: is the OLD 2-part format still accepted anywhere? (it must NOT be — 4-part required.)
+5. Cookie flags: are HttpOnly/Secure/SameSite/Max-Age correct + sufficient? Is `secure` correctly prod-gated (dev over http still works, prod pins https)? Is SameSite=lax right for an admin panel, or should it be strict?
+6. Parsing: base64url decode + Number.parseInt(iat) — any injection/NaN/edge issue? (Number.isFinite guard present.)
+7. timingSafeEqual: used correctly (length-checked first)?
+8. Anything else: secret strength expectations, email normalization, the dev-email fallback still fail-closed in prod.
+
+Note what is SUFFICIENT (a clean bill matters) and what (if anything) is a real residual risk.
+
+Return STRICT JSON only: {"verdict":"PASS"|"FAIL","confidence":0.0-1.0,"blocking_findings":[{"severity":"crit|high|med","issue":"...","fix":"..."}],"non_blocking_notes":["..."],"summary":"one line"}
+
+== DIFF FOLLOWS (config.ts.tmpl + the scaffold-coverage enforcer + the .env example) ==
+diff --git a/framework/templates/app-scaffold/.env.local.example.tmpl b/framework/templates/app-scaffold/.env.local.example.tmpl
+index eed5de4f..e52b7bac 100644
+--- a/framework/templates/app-scaffold/.env.local.example.tmpl
++++ b/framework/templates/app-scaffold/.env.local.example.tmpl
+@@ -10,7 +10,10 @@ NEXT_PUBLIC_POSTHOG_HOST=
+ 
+ # Pre-PMF admin gate. Production requires a signed admin session cookie.
+ # ADMIN_DEV_EMAIL is ignored in production.
++# The session cookie EXPIRES after 7 days; bump ADMIN_SESSION_VERSION to revoke every
++# issued session at once (e.g. after a suspected leak). Defaults to "1" if unset.
+ ADMIN_FOUNDER_EMAILS=
+ ADMIN_SESSION_SECRET=
+ ADMIN_SESSION_COOKIE=
++ADMIN_SESSION_VERSION=1
+ ADMIN_DEV_EMAIL=
+diff --git a/framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl b/framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl
+index b7eba544..fd3a0293 100644
+--- a/framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl
++++ b/framework/templates/app-scaffold/src/lib/admin/config.ts.tmpl
+@@ -58,8 +58,21 @@ function adminSessionSecret(): string {
+   return (process.env.ADMIN_SESSION_SECRET || "").trim();
+ }
+ 
+-function signAdminEmail(email: string, secret: string): string {
+-  return createHmac("sha256", secret).update(email).digest("base64url");
++// Session lifetime + revocation. A signed admin cookie is bound to (email, iat, version):
++//   - iat + ADMIN_SESSION_MAX_AGE_SECONDS gives expiry, so a LEAKED cookie is NOT a
++//     permanent skeleton key — it stops working after the window.
++//   - ADMIN_SESSION_VERSION is a revocation lever: bump it (env) to invalidate EVERY
++//     issued session at once (e.g. after a suspected leak), with no per-user state.
++export const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
++const ADMIN_SESSION_CLOCK_SKEW_SECONDS = 300; // tolerate 5m of forward clock skew
++
++function adminSessionVersion(): string {
++  return (process.env.ADMIN_SESSION_VERSION || "1").trim();
++}
++
++// The signature binds email|iat|version — tampering with ANY field breaks it.
++function signAdminPayload(email: string, iat: number, version: string, secret: string): string {
++  return createHmac("sha256", secret).update(`${email}|${iat}|${version}`).digest("base64url");
+ }
+ 
+ function safeEqual(a: string, b: string): boolean {
+@@ -72,15 +85,24 @@ export function verifyAdminSessionCookie(value: string | undefined): string | nu
+   const secret = adminSessionSecret();
+   if (!secret || !value) return null;
+ 
+-  const separatorIndex = value.lastIndexOf(".");
+-  if (separatorIndex <= 0) return null;
+-
+-  const encodedEmail = value.slice(0, separatorIndex);
+-  const signature = value.slice(separatorIndex + 1);
++  // Format: base64url(email).iat.version.signature
++  const parts = value.split(".");
++  if (parts.length !== 4) return null;
++  const [encodedEmail, iatRaw, version, signature] = parts;
+   const email = normalizeEmail(Buffer.from(encodedEmail, "base64url").toString("utf8"));
+-  if (!email || !signature) return null;
++  const iat = Number.parseInt(iatRaw, 10);
++  if (!email || !signature || !Number.isFinite(iat)) return null;
++
++  // Revocation: a token signed under a retired version is rejected.
++  if (version !== adminSessionVersion()) return null;
++
++  // Expiry: reject an aged-out token (the leaked-cookie-is-forever fix) and a future-dated
++  // one (beyond a small skew) so a forged iat cannot extend the validity window.
++  const now = Math.floor(Date.now() / 1000);
++  if (now - iat > ADMIN_SESSION_MAX_AGE_SECONDS) return null;
++  if (iat - now > ADMIN_SESSION_CLOCK_SKEW_SECONDS) return null;
+ 
+-  const expectedSignature = signAdminEmail(email, secret);
++  const expectedSignature = signAdminPayload(email, iat, version, secret);
+   return safeEqual(signature, expectedSignature) ? email : null;
+ }
+ 
+@@ -89,8 +111,33 @@ export function signAdminSessionEmail(email: string): string | null {
+   const normalizedEmail = normalizeEmail(email);
+   if (!secret || !normalizedEmail) return null;
+ 
++  const iat = Math.floor(Date.now() / 1000);
++  const version = adminSessionVersion();
+   const encodedEmail = Buffer.from(normalizedEmail).toString("base64url");
+-  return `${encodedEmail}.${signAdminEmail(normalizedEmail, secret)}`;
++  return `${encodedEmail}.${iat}.${version}.${signAdminPayload(normalizedEmail, iat, version, secret)}`;
++}
++
++// Reference session issuance — sets the signed cookie with the security flags a founder
++// hand-rolling a login route would otherwise miss: HttpOnly (blocks JS/XSS theft), Secure
++// (HTTPS-only in prod), SameSite=lax (blunts CSRF), Max-Age (matches the token expiry).
++// Call from your founder-login handler AFTER verifying the email is allowlisted.
++export async function setAdminSessionCookie(email: string): Promise<boolean> {
++  const value = signAdminSessionEmail(email);
++  if (!value) return false;
++  const jar = await cookies();
++  jar.set(adminSessionCookieName(), value, {
++    httpOnly: true,
++    secure: process.env.NODE_ENV === "production",
++    sameSite: "lax",
++    path: "/",
++    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
++  });
++  return true;
++}
++
++export async function clearAdminSessionCookie(): Promise<void> {
++  const jar = await cookies();
++  jar.delete(adminSessionCookieName());
+ }
+ 
+ export async function resolveAdminActor(): Promise<AdminActor> {
+diff --git a/scripts/checks/scaffold-coverage-scan.js b/scripts/checks/scaffold-coverage-scan.js
+index 7c44609b..8c53c116 100644
+--- a/scripts/checks/scaffold-coverage-scan.js
++++ b/scripts/checks/scaffold-coverage-scan.js
+@@ -605,6 +605,8 @@ function addAdminSurfaceChecks(dir, errors) {
+       "isFounderEmailAllowed",
+       "verifyAdminSessionCookie",
+       "signAdminSessionEmail",
++      "setAdminSessionCookie",
++      "clearAdminSessionCookie",
+       "resolveAdminActor",
+       "requireFounderAdmin",
+     ]) {
+@@ -626,9 +628,30 @@ function addAdminSurfaceChecks(dir, errors) {
+     ) {
+       errors.push("admin config must verify a signed request-bound admin session cookie");
+     }
+-    if (!/base64url/.test(configScan) || !/lastIndexOf\("\."\)/.test(configScan)) {
++    if (!/base64url/.test(configScan) || !/\.split\("\."\)/.test(configScan)) {
+       errors.push("admin signed session cookie must encode the email segment safely");
+     }
++    // Session lifetime + revocation (E-MC-READINESS Track-2 HIGH): a signed admin cookie
++    // must EXPIRE (a leaked cookie must not be a permanent skeleton key) and carry a version
++    // revocation lever, with the signature binding email|iat|version.
++    if (
++      !/ADMIN_SESSION_MAX_AGE_SECONDS/.test(configScan) ||
++      !/adminSessionVersion\(|ADMIN_SESSION_VERSION/.test(configScan) ||
++      !/now - iat > ADMIN_SESSION_MAX_AGE_SECONDS/.test(configScan)
++    ) {
++      errors.push("admin session token must carry an expiry (iat + ADMIN_SESSION_MAX_AGE_SECONDS) and a version revocation lever");
++    }
++    // Reference secure cookie issuance (E-MC-READINESS Track-2 HIGH): the set path must ship
++    // with HttpOnly + Secure(prod) + SameSite + Max-Age so a hand-rolled login can't drop them.
++    if (
++      !/setAdminSessionCookie/.test(configScan) ||
++      !/httpOnly:\s*true/.test(configScan) ||
++      !/sameSite:/.test(configScan) ||
++      !/maxAge:/.test(configScan) ||
++      !/secure:\s*process\.env\.NODE_ENV/.test(configScan)
++    ) {
++      errors.push("admin config must ship setAdminSessionCookie with HttpOnly + Secure(prod) + SameSite + Max-Age flags");
++    }
+     if (!/NODE_ENV\s*!==\s*"production"/.test(configScan)) {
+       errors.push("admin dev email fallback must fail closed in production");
+     }

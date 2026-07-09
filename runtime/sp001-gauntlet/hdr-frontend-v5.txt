@@ -1,0 +1,12 @@
+You are the FRONTEND REVIEWER, confirmation re-review. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit 3b3e927e). Binding — orchestrator cannot override a FAIL.
+
+Exactly ONE frontend finding was open last round; everything else is FIXED + confirmed. Re-judge it against CURRENT code:
+  S1 [major] Done-path orphan toggle: completed sprint-work/waiver items rendered a toggle (Mark-as-not-done) the server rejects, because DoneItemRow rendered <ToggleControl checked={true}/> UNCONDITIONALLY with no owner_class check (done items grouped by status alone). The claimed fix: DoneItemRow now gates the toggle on owner_class==="owner-action" — checkable items keep ToggleControl, non-owner-action done items render STATUS-DISPLAY-ONLY (mirroring InSprintItemRow on the open path). VERIFY: does a completed sprint-work/waiver item now render WITHOUT a toggle? Is the display-only variant correct (still shows done state, no submit affordance)?
+
+Already-FIXED (do NOT re-flag unless you find a REGRESSION): form↔action contract, submit-button toggle, server-derived authz, in-sprint display-only, warm FTUE, and S2 error-surfacing (ToggleControl useActionState + inline aria-live error — satisfies AC-A6c; deferred optimistic+Sonner is non-blocking by design-quality authority).
+
+SCOPE (frontend code-quality 7A-7G): the owner_class gating on the done path, RSC + client-component boundary, accessibility, design-system. CONTEXT: .tmpl = scaffold templates, no tsc, {{...}} intentional.
+
+Output ReviewResult: VERDICT (PASS or FAIL), S1 disposition (FIXED/STILL-PRESENT, current file:line), any NEW regression. Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit 3b3e927e) =====

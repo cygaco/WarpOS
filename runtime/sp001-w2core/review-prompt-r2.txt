@@ -1,0 +1,377 @@
+# CROSS-PROVIDER CODE REVIEW — ROUND 2 (re-review after fix)
+
+You FAILed this change in round 1 with ONE high-severity blocking finding: the report-mode advisory string on dispatch-claude/dispatch-agent added a `(${door.mode})` label, changing stderr from `shape-resolver advisory:` to `shape-resolver advisory (report):` — a β#4 byte-identical regression.
+
+FIX APPLIED: both wrappers now emit the EXACT legacy `advisory:` string in report mode (no mode label); only the new refuse path (exit 2) carries `VIOLATION (mode)`. A regression test now asserts the byte-identical form AND guards against the `(report)` label returning. All tests green (shape-door 9, wrapper-door 9, epsilon-door 6, skill-door 9; regression: review-fallback-shape/FIX-A3 21, dispatch-claude 14, dispatch-shape 31).
+
+Confirm the fix resolves your finding, and re-scan for anything else. Same JSON verdict format: {"verdict":"PASS"|"FAIL","confidence":..,"blocking_findings":[..],"non_blocking_notes":[..],"summary":".."}
+
+== UPDATED DIFF (full) + the regression test follow ==
+diff --git a/scripts/dispatch-agent.js b/scripts/dispatch-agent.js
+index 1c8df2b0..12ca1703 100644
+--- a/scripts/dispatch-agent.js
++++ b/scripts/dispatch-agent.js
+@@ -553,20 +553,24 @@ try {
+ // This wrapper OWNS the subprocess-cross-provider shape. Consult the LIVE resolver as
+ // the independent authority: if resolveShape picks a DIFFERENT shape for this role, the
+ // role is routed through the wrong wrapper (e.g. a build-chain builder pushed through the
+-// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Report-only by
+-// default; WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a high-severity mismatch fatal.
++// cross-provider path) — the wrong shape self-detects on a REAL dispatch. Gated by the
++// shared shapeDoor() (WARPOS_SHAPE_DOOR=report|enforce, default report; kill-switch +
++// legacy block flag honored as a deprecated alias inside the door); exit 2 on an enforce
++// refusal; fail-OPEN on any resolver error.
+ try {
+-  const { shapeMismatch } = require("./dispatch/dispatch-shape");
+-  const mm = shapeMismatch("subprocess-cross-provider", { kind: "agent", id: role });
+-  if (mm && mm.mismatch) {
+-    const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
++  const { shapeDoor } = require("./dispatch/dispatch-shape");
++  const door = shapeDoor("subprocess-cross-provider", { kind: "agent", id: role }, process.env, {});
++  if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
++    // β#4: report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy (no `(mode)`
++    // label); only the new refuse path (exit 2) carries the mode in its VIOLATION wording.
+     process.stderr.write(
+-      `[dispatch-agent] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: role '${role}' dispatched as 'subprocess-cross-provider' but the resolver picks '${mm.expected}' (${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
++      `[dispatch-agent] shape-resolver ${door.action === "refuse" ? `VIOLATION (${door.mode})` : "advisory"}: role '${role}' dispatched as 'subprocess-cross-provider' but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}; severity=${door.mismatch.severity || "medium"}).\n`,
+     );
+-    if (blocking) {
+-      console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-cross-provider", severity: mm.severity }));
+-      process.exit(1);
+-    }
++  }
++  if (door.action === "refuse") {
++    // exit 2 = the shape-DOOR refusal (β#3 — distinct from the contract-consult block's exit 1).
++    console.log(JSON.stringify({ ok: false, provider, role, error: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-cross-provider", severity: door.mismatch.severity }));
++    process.exit(2);
+   }
+ } catch {
+   /* fail-open — the resolver consult never crashes a working dispatch */
+diff --git a/scripts/dispatch-claude.js b/scripts/dispatch-claude.js
+index 4250ad77..74bd2459 100644
+--- a/scripts/dispatch-claude.js
++++ b/scripts/dispatch-claude.js
+@@ -449,47 +449,46 @@ try {
+ // (dispatch-shape.js) as the independent authority: if resolveShape would pick a
+ // DIFFERENT shape for this role, the role is being routed through the WRONG wrapper
+ // (e.g. a cross-provider reviewer pushed through dispatch-claude) — the wrong shape
+-// self-detects on a REAL dispatch (the north star's 2nd clause). Report-only by default
+-// (same ramp as the contract consult); WARPOS_DISPATCH_CONTRACT_ENFORCE=block makes a
+-// high-severity mismatch fatal. Fail-OPEN on any resolver error.
++// self-detects on a REAL dispatch (the north star's 2nd clause). Gated by the shared
++// shapeDoor() (WARPOS_SHAPE_DOOR=report|enforce, default report; WARPOS_DISABLE_SHAPE_DOOR
++// kill-switch; the legacy block flag honored as a deprecated alias INSIDE the door — β#2
++// one-switch). exit 2 on an enforce refusal (distinct from the contract block's exit 1);
++// fail-OPEN on any resolver error.
+ try {
+-  const { shapeMismatch } = require("./dispatch/dispatch-shape");
++  const { shapeDoor } = require("./dispatch/dispatch-shape");
+   const { sanctionedLane } = require("./dispatch/dispatch-contract");
+-  const mm = shapeMismatch("subprocess-claude", { kind: "agent", id: role });
+-  // FIX-A3: suppression is keyed on the SANCTIONED VERDICT, not the bare flag. A
+-  // --review-fallback dispatch only earns the suppression when the contract layer actually
+-  // sanctions this role/shape on the review_fallback lane (the same sanctionedLane the
+-  // contract-consult block above consults). A --review-fallback on a NON-sanctioned role
+-  // (e.g. a build-chain role, or a reviewer whose shape isn't lane-registered) must STILL
+-  // emit the advisory (and refuse under ENFORCE) — the flag alone never silences a real
+-  // mismatch.
++  // FIX-A3 (β#1): the suppression is keyed on the SANCTIONED-LANE VERDICT, not the bare
++  // --review-fallback flag. A --review-fallback only earns suppression when the contract
++  // layer actually sanctions this role/shape on the review_fallback lane (the same
++  // sanctionedLane the contract-consult block above consults). A --review-fallback on a
++  // NON-sanctioned role (a build-chain role, or a reviewer whose shape isn't lane-registered)
++  // must STILL emit the advisory AND refuse under enforce — the flag alone never silences a
++  // real mismatch. We pass that verdict to the door as opts.sanctioned; the door's sanctioned
++  // branch proceeds in BOTH modes (suppressed) so it never bricks the lane.
+   const fallbackSanctioned =
+     reviewFallback && sanctionedLane({ role, shape: "subprocess-claude", lane: "review_fallback" }).sanctioned === true;
+-  if (mm && mm.mismatch) {
+-    if (GENERIC_BUILD_IDS.has(role.toLowerCase())) {
+-      // G1: the resolver falls back to adhoc/inline for 'builder' because it isn't
+-      // in role-registry — but we KNOW it's a build-chain sentinel (class-resolved
+-      // above). Suppress the misleading "resolver picks 'inline'" advisory; the
+-      // contract consult block above already emitted the truthful note.
+-    } else if (fallbackSanctioned) {
+-      // --review-fallback on a SANCTIONED lane: shape mismatch (subprocess-claude for a
+-      // cross-provider reviewer) is intentional and REGISTERED as a sanctioned lane (T-311).
+-      // Suppress the advisory — the contract-consult block above already emitted the
+-      // sanctioned-lane note. This branch suppresses in BOTH modes (no `!blocking`), so it
+-      // never bricks the lane. A NON-sanctioned --review-fallback falls through to the else.
+-    } else {
+-      const blocking = process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE === "block" && mm.severity === "high";
++  // GENERIC_BUILD_IDS (bare 'builder'/'fixer') are class-resolved sentinels the contract
++  // consult already noted; the resolver's name-heuristic resolves them to subprocess-claude
++  // (a MATCH — no mismatch) — but keep the guard so they never surface a stray advisory.
++  if (!GENERIC_BUILD_IDS.has(role.toLowerCase())) {
++    const door = shapeDoor("subprocess-claude", { kind: "agent", id: role }, process.env, { sanctioned: fallbackSanctioned });
++    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
++      // β#4: the report-mode advisory string stays BYTE-IDENTICAL to the pre-door legacy
++      // (no `(mode)` label) — a consumer comparing dispatch stderr must see no change. The
++      // refuse path is new behavior (exit 2) so its VIOLATION wording may carry the mode.
+       process.stderr.write(
+-        `[dispatch-claude] shape-resolver ${blocking ? "VIOLATION" : "advisory"}: ` +
+-          `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${mm.expected}' ` +
+-          `(${mm.expectedReason || mm.reason}; severity=${mm.severity || "medium"}).\n`,
++        `[dispatch-claude] shape-resolver ${door.action === "refuse" ? `VIOLATION (${door.mode})` : "advisory"}: ` +
++          `role '${role}' dispatched as 'subprocess-claude' but the resolver picks '${door.mismatch.expected}' ` +
++          `(${door.mismatch.expectedReason || door.mismatch.reason}; severity=${door.mismatch.severity || "medium"}).\n`,
+       );
+-      if (blocking) {
+-        console.log(
+-          JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: mm.expected, actual: "subprocess-claude", severity: mm.severity }),
+-        );
+-        process.exit(1);
+-      }
++    }
++    if (door.action === "refuse") {
++      // exit 2 = the shape-DOOR refusal (β#3 — distinct from the contract-consult block's exit 1
++      // so a post-mortem names WHICH gate fired). The JSON ok:false signal is preserved.
++      console.log(
++        JSON.stringify({ ok: false, provider: PROVIDER, role, reaped: false, reason: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-claude", severity: door.mismatch.severity }),
++      );
++      process.exit(2);
+     }
+   }
+ } catch {
+diff --git a/scripts/dispatch-skill.js b/scripts/dispatch-skill.js
+index f487ac3e..c7e1e046 100644
+--- a/scripts/dispatch-skill.js
++++ b/scripts/dispatch-skill.js
+@@ -404,6 +404,25 @@ function dispatchSkill(opts) {
+   // mirroring dispatch-claude.js which also passes its prompt only on stdin.
+   const claudeArgs = [...prefixArgs, "-p", "--agent", "general-purpose"];
+ 
++  // ── Shape-resolver self-detection (W2-core, report-only-PINNED) ──────────────
++  // dispatch-skill spawns `claude -p --agent general-purpose` (real transport =
++  // subprocess-claude) to run a skill. The resolver routes {kind:skill} to `inline`
++  // (skills are not earned-subprocess — §13.6/§13.7), so an ENFORCE gate here would
++  // false-refuse EVERY skill dispatch. Until the resolver gains a `subprocess-skill`
++  // shape (logged enforcement-debt ED-057), this wrapper is PINNED report-only: it
++  // surfaces the advisory but NEVER refuses (reportOnlyPin beats WARPOS_SHAPE_DOOR).
++  try {
++    const { shapeDoor } = require("./dispatch/dispatch-shape");
++    const door = shapeDoor("subprocess-claude", { kind: "skill", id: skill }, process.env, { reportOnlyPin: true });
++    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
++      process.stderr.write(
++        `[dispatch-skill] shape-resolver advisory (report-only-pinned): skill '${skill}' dispatched as subprocess but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}). Enforce-for-skills is blocked on a resolver 'subprocess-skill' shape — see ED-057.\n`,
++      );
++    }
++  } catch {
++    /* fail-open — the resolver consult never crashes a working dispatch */
++  }
++
+   // T-20260610-304: clamp requested bound to foreground ceiling (540s). An env override
+   // sets the *requested* bound but the foreground ceiling is the hard cap. Background
+   // signal (WARPOS_DISPATCH_BACKGROUND=1) passes through the full requested bound.
+diff --git a/scripts/dispatch/dispatch-shape.js b/scripts/dispatch/dispatch-shape.js
+index 6b74de0a..63e4ba9f 100644
+--- a/scripts/dispatch/dispatch-shape.js
++++ b/scripts/dispatch/dispatch-shape.js
+@@ -254,6 +254,72 @@ function shapeMismatch(actualShape, unit) {
+   };
+ }
+ 
++// ── Public: the SHAPE DOOR — the per-wrapper enforce gate (W2-core, SP-20260616-001) ──
++// The ONE shared gate every dispatch entry point consults at spawn, so the
++// report→enforce ramp + kill-switch + fail-open live in ONE place instead of being
++// copy-pasted into 4 callers. Ships REPORT-ONLY by default; no wrapper enforces by
++// default (the operator-gated per-wrapper ramp is the whole point of W2).
++//
++// This is THE shape-enforce authority for self-detection (β#2): the wrappers'
++// historical inline `WARPOS_DISPATCH_CONTRACT_ENFORCE === "block"` shape check is
++// folded in here as a DEPRECATED back-compat alias (so a CI/fixture/harness that set
++// the old var keeps getting shape-refusal — the anthropic→claude rename bug class).
++// The separate contract-CONSULT block keeps its OWN toggle; this gate governs only the
++// shape-resolver self-detection.
++//
++// Toggles (read from `env`, injected for testability):
++//   WARPOS_SHAPE_DOOR        = report | enforce   (per-process; default report)
++//   WARPOS_DISABLE_SHAPE_DOOR = 1|true|yes        (KILL-SWITCH; forces report, beats enforce)
++//   WARPOS_DISPATCH_CONTRACT_ENFORCE = block      (DEPRECATED alias → enforce, back-compat)
++//
++// Branch order is EXPLICIT (β#3 — never an implicit catch-all; the W1 breaker-TTL lesson):
++//   (1) kill-switch / report-only-pin  → force report+proceed
++//   (2) resolver throws                → fail-OPEN proceed (reason "resolver-threw-fail-open")
++//   (3) no mismatch OR opts.sanctioned → proceed (sanctioned suppresses the advisory; β#1)
++//   (4) enforce AND severity==="high"  → REFUSE (the caller exits 2 with a named reason)
++//   (5) otherwise (report, or non-high)→ advisory proceed
++//
++// opts:
++//   sanctioned   {boolean} — the SANCTIONED-LANE VERDICT (dispatch-claude fallbackSanctioned;
++//                            NEVER the bare --review-fallback flag — β#1 preserves FIX-A3).
++//   reportOnlyPin {boolean} — pin this wrapper to report regardless of the door mode. Used by
++//                            dispatch-skill: the resolver routes {kind:skill} to `inline` (skills
++//                            are not earned-subprocess), so an enforce gate would false-refuse
++//                            EVERY skill dispatch until the resolver gains a `subprocess-skill`
++//                            shape (logged enforcement-debt). Pin keeps the advisory, never refuses.
++//
++// Returns { action:"proceed"|"refuse", mode, severity, suppressed, reason, mismatch }.
++function shapeDoor(actualShape, unit, env, opts) {
++  const e = env || process.env;
++  const o = opts || {};
++  const killed = /^(1|true|yes)$/i.test(String(e.WARPOS_DISABLE_SHAPE_DOOR || ""));
++  const pinned = o.reportOnlyPin === true;
++  const legacyBlock = String(e.WARPOS_DISPATCH_CONTRACT_ENFORCE || "") === "block";
++  const enforceRequested =
++    String(e.WARPOS_SHAPE_DOOR || "report").toLowerCase() === "enforce" || legacyBlock;
++  // (1) kill-switch / pin checked FIRST — they beat enforce unconditionally (safe side).
++  const mode = (killed || pinned) ? "report" : (enforceRequested ? "enforce" : "report");
++  // (2) resolver fault → fail-OPEN. A self-detection gate must never break a working dispatch.
++  let mm;
++  try {
++    mm = shapeMismatch(actualShape, unit);
++  } catch (err) {
++    return { action: "proceed", mode, severity: null, suppressed: false, reason: `resolver-threw-fail-open (${err && err.message})`, mismatch: null };
++  }
++  // (3) right shape → proceed; sanctioned lane → proceed + suppress the advisory (β#1).
++  if (!mm || !mm.mismatch) {
++    return { action: "proceed", mode, severity: null, suppressed: false, reason: "shape matches resolver", mismatch: null };
++  }
++  if (o.sanctioned === true) {
++    return { action: "proceed", mode, severity: mm.severity || null, suppressed: true, reason: "sanctioned lane — shape mismatch is intentional + registered (advisory suppressed)", mismatch: mm };
++  }
++  // (4) enforce + high-severity → REFUSE (caller exits 2). (5) else → advisory proceed.
++  if (mode === "enforce" && mm.severity === "high") {
++    return { action: "refuse", mode, severity: "high", suppressed: false, reason: `shape-door REFUSE: ${mm.reason} (${mm.expectedReason || "wrong wrapper"})`, mismatch: mm };
++  }
++  return { action: "proceed", mode, severity: mm.severity || null, suppressed: false, reason: `advisory (${mode}): ${mm.reason}`, mismatch: mm };
++}
++
+ // ── Public: the PARALLELISM AXIS (S-LC-06 / PLAN §8.7) ───────────────────────
+ // The self-detection family extends from "is THIS unit's shape right?" (shapeMismatch)
+ // to "is this BATCH dispatched with the right PARALLELISM?". Two advisory findings,
+@@ -356,7 +422,7 @@ function parallelismFindings(plan) {
+   }
+ }
+ 
+-module.exports = { resolveShape, shapeMismatch, resolveAgent, resolveSkill, resolveAdhoc, parallelismFindings, SHAPES };
++module.exports = { resolveShape, shapeMismatch, shapeDoor, resolveAgent, resolveSkill, resolveAdhoc, parallelismFindings, SHAPES };
+ 
+ // ── CLI: `node dispatch-shape.js --agent backend-builder` etc. ────────────────
+ if (require.main === module) {
+diff --git a/scripts/sprint/epsilon-runtime.js b/scripts/sprint/epsilon-runtime.js
+index 1b612a61..72f6426c 100644
+--- a/scripts/sprint/epsilon-runtime.js
++++ b/scripts/sprint/epsilon-runtime.js
+@@ -556,6 +556,27 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
+   // No child wrapper here (raw claude), so nothing reads DISPATCH_BUILDER_TIMEOUT_MS — but the parent
+   // must still be BOUNDED (the `timeout` no longer lives in `common`). Use the epsilon-claude base +
+   // grace so the raw route keeps the same bound it had before FIX-A1.
++  // ── Shape-resolver self-detection (W2-core) ──────────────────────────────────
++  // CLAUDE_RAW is the ONE epsilon spawn that does NOT delegate to an already-doored
++  // wrapper (the DISPATCH_AGENT/DISPATCH_CLAUDE routes above shell to dispatch-agent.js/
++  // dispatch-claude.js, which own the door — consulting here too would double-consult and
++  // risk a divergent verdict). It spawns `claude -p --agent <role>` raw → transport =
++  // subprocess-claude. Door-gated (NOT pinned — it rides the enforce ramp); on REFUSE,
++  // abort THIS spawn (a failed dispatch), never process.exit (ε is a long-running conductor).
++  try {
++    const { shapeDoor } = require(path.join(root, "scripts/dispatch/dispatch-shape.js"));
++    const door = shapeDoor("subprocess-claude", { kind: "agent", id: agentPlan.role }, env, {});
++    if (door.mismatch && door.mismatch.mismatch && !door.suppressed) {
++      process.stderr.write(
++        `[epsilon-runtime] CLAUDE_RAW shape-resolver ${door.action === "refuse" ? "VIOLATION" : "advisory"} (${door.mode}): role '${agentPlan.role}' spawned raw as 'subprocess-claude' but the resolver picks '${door.mismatch.expected}' (${door.mismatch.expectedReason || door.mismatch.reason}).\n`,
++      );
++    }
++    if (door.action === "refuse") {
++      return { spawned: false, ok: false, recorded: false, reason: "dispatch_shape_mismatch", expected: door.mismatch.expected, actual: "subprocess-claude", severity: door.mismatch.severity, role: agentPlan.role };
++    }
++  } catch {
++    /* fail-open — the resolver consult never crashes a conduct */
++  }
+   const bin = env.DISPATCH_CLAUDE_BIN || "claude";
+   const binArgs = env.DISPATCH_CLAUDE_BIN_ARGS ? JSON.parse(env.DISPATCH_CLAUDE_BIN_ARGS) : [];
+   const prompt = fs.readFileSync(promptFile, "utf8");
+
+===== wrapper-door.test.js (the byte-identical regression guard) =====
+#!/usr/bin/env node
+"use strict";
+
+/**
+ * wrapper-door.test.js — E-DISPATCH-SHAPE-001 W2-core (SP-20260616-001), AC-2.1/2.2/4.1.
+ *
+ * dispatch-claude BEHAVIORAL via the DISPATCH_CLAUDE_BIN seam (a fake claude emitting ok JSON):
+ *   - report mode (default) → a shape mismatch is advisory, the dispatch proceeds (exit 0).
+ *   - sanctioned --review-fallback reviewer under the NEW WARPOS_SHAPE_DOOR=enforce → not bricked (exit 0).
+ * dispatch-agent has no clean provider seam (it calls runProvider), so its door wiring + the
+ * exit-2 distinction + the "shape gate reads through the door, contract block keeps its own toggle"
+ * (β#2) split are asserted STRUCTURALLY. The door's refuse/back-compat LOGIC is fully unit-tested
+ * in shape-door.test.js.
+ *
+ *   node tests/regression/SP-20260616-001/wrapper-door.test.js
+ */
+
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const ROOT = path.resolve(__dirname, "../../..");
+const DC = path.join(ROOT, "scripts", "dispatch-claude.js");
+
+let passed = 0, failed = 0;
+const fails = [];
+function ok(name, cond, detail) {
+  if (cond) { passed++; console.log(`  ok  ${name}`); }
+  else { failed++; fails.push(name); console.log(`  FAIL ${name}${detail ? ` — ${detail}` : ""}`); }
+}
+
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "wd-"));
+process.on("exit", () => { try { fs.rmSync(scratch, { recursive: true, force: true }); } catch {} });
+const fake = path.join(scratch, "fake.js");
+fs.writeFileSync(fake, 'process.stdout.write(JSON.stringify({ agent: "x", ok: true, findings: [] }));\n');
+const pf = path.join(scratch, "p.txt");
+fs.writeFileSync(pf, "review the diff\n");
+
+let n = 0;
+function runClaude({ role, extra = [], env = {} }) {
+  const ld = path.join(scratch, "l" + (n++));
+  fs.mkdirSync(ld, { recursive: true });
+  const e = { ...process.env, DISPATCH_LEDGER_DIR: ld, DISPATCH_CLAUDE_BIN: process.execPath, DISPATCH_CLAUDE_BIN_ARGS: JSON.stringify([fake]) };
+  delete e.WARPOS_DISPATCH_CONTRACT_ENFORCE; delete e.WARPOS_SHAPE_DOOR; delete e.WARPOS_DISABLE_SHAPE_DOOR;
+  Object.assign(e, env);
+  return spawnSync(process.execPath, [DC, role, pf, "--model", "sonnet", ...extra], { env: e, encoding: "utf8", timeout: 60000 });
+}
+
+console.log("(1) report-mode-no-regression-both-wrappers:");
+{
+  // backend-reviewer through dispatch-claude = a (medium) shape mismatch. Report mode (no toggles)
+  // → advisory only, the dispatch proceeds and the fake exits 0.
+  const r = runClaude({ role: "backend-reviewer" });
+  ok("dispatch-claude report mode → exit 0 (advisory, no refuse)", r.status === 0, `status=${r.status} stderr=${(r.stderr || "").slice(0, 220)}`);
+  // β#4: the report-mode advisory must be BYTE-IDENTICAL to the pre-door legacy — `advisory:`
+  // with NO `(mode)` label (the gauntlet finding GPT-5.5 caught). Guard against the regression.
+  ok("report-mode advisory is byte-identical legacy form (no mode label — β#4)",
+    /shape-resolver advisory: role/.test(r.stderr || "") && !/shape-resolver advisory \(/.test(r.stderr || ""),
+    (r.stderr || "").slice(0, 220));
+}
+
+console.log("\n(2) dispatch-claude-sanctioned-lane-preserved (new WARPOS_SHAPE_DOOR toggle):");
+{
+  // The sanctioned --review-fallback reviewer must proceed even under the NEW enforce toggle (β#1).
+  const r = runClaude({ role: "backend-reviewer", extra: ["--review-fallback"], env: { WARPOS_SHAPE_DOOR: "enforce" } });
+  ok("sanctioned --review-fallback + WARPOS_SHAPE_DOOR=enforce → exit 0 (lane not bricked)", r.status === 0, `status=${r.status} stderr=${(r.stderr || "").slice(0, 220)}`);
+}
+
+console.log("\n(3) two-toggle-coherence-backcompat (β#2, DoE-C2 — STRUCTURAL):");
+{
+  const dcSrc = fs.readFileSync(DC, "utf8");
+  const daSrc = fs.readFileSync(path.join(ROOT, "scripts", "dispatch-agent.js"), "utf8");
+  // Slice each shape block from its header to the block's natural end-marker (robust to comment length).
+  const dcStart = dcSrc.indexOf("Shape-resolver self-detection");
+  const dcShape = dcSrc.slice(dcStart, dcSrc.indexOf("── Spawn", dcStart));
+  const daStart = daSrc.indexOf("Shape-resolver self-detection");
+  const daShape = daSrc.slice(daStart, daSrc.indexOf("Phase 5T F8", daStart));
+  // The SHAPE block reads through shapeDoor() (not an inline env check).
+  ok("dispatch-claude shape block calls shapeDoor(subprocess-claude)", /shapeDoor\("subprocess-claude",\s*\{\s*kind:\s*"agent",\s*id:\s*role\s*\}/.test(dcShape));
+  ok("dispatch-agent shape block calls shapeDoor(subprocess-cross-provider)", /shapeDoor\("subprocess-cross-provider",\s*\{\s*kind:\s*"agent",\s*id:\s*role\s*\}/.test(daShape));
+  // The door refusal exits 2 (distinct from the contract-consult exit 1).
+  ok("dispatch-claude door refusal uses exit 2", /door\.action === "refuse"/.test(dcShape) && /process\.exit\(2\)/.test(dcShape));
+  ok("dispatch-agent door refusal uses exit 2", /door\.action === "refuse"/.test(daShape) && /process\.exit\(2\)/.test(daShape));
+  // The contract-consult block keeps its OWN process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE toggle (one switch per concern).
+  ok("WARPOS_DISPATCH_CONTRACT_ENFORCE still drives the contract-consult block (kept, not removed)", /process\.env\.WARPOS_DISPATCH_CONTRACT_ENFORCE/.test(dcSrc));
+  // The shape block no longer inlines a process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE shape check (folded into the door — β#2 one-switch).
+  ok("dispatch-claude shape block no longer inlines process.env.WARPOS_DISPATCH_CONTRACT_ENFORCE", !/process\.env\.WARPOS_DISPATCH_CONTRACT_ENFORCE/.test(dcShape));
+}
+
+console.log(`\n${failed === 0 ? "PASS" : "FAIL"} — wrapper-door: ${passed} passed, ${failed} failed`);
+process.exit(failed === 0 ? 0 : 1);

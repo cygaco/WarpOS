@@ -1,0 +1,15 @@
+You are the BACKEND REVIEWER re-reviewing after a SECOND fix. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on the CURRENT code below (post-fix commit b404b8cc). Binding — orchestrator cannot override a FAIL.
+
+The contract + client-authz HIGHs were fixed two rounds ago. These were STILL-OPEN last round — re-judge EACH against CURRENT code: FIXED or STILL-PRESENT (current file:line), then NEW findings.
+  B1 [HIGH] brand-leak-scan.js NOT fail-closed: missing/unreadable scan dir -> ok:true scanned:0; vacuous pass. Commit claims "fail-closed brand-leak" — VERIFY the scan now hard-FAILs on a missing/unreadable dir AND on scanned:0 (zero surfaces found).
+  B2 [MEDIUM] scaffold-coverage-scan under-enforced readiness lib (needed only "≥1 .ts.tmpl"). Commit touched scaffold-coverage — VERIFY whether writeback.ts + group.ts + types.ts are now individually required.
+  B3 [MEDIUM] writeback.ts CRLF normalization broke exact byte-preservation on mixed-EOL files (split + single newline choice on rejoin). Commit claims "EOL preservation" — VERIFY per-line terminators are now preserved (or mixed-EOL is rejected).
+  B4 [MEDIUM] writeback tmp cleanup best-effort (swallowed unlink failure); duplicate-id not fail-closed (patched first match). VERIFY whether cleanup failure is surfaced and duplicate ids are rejected.
+
+The two enforcer scripts (brand-leak-scan.js, scaffold-coverage-scan.js) are NOT pasted below (Node modules, not templates). I (the conductor) confirmed empirically on the CURRENT tree: brand-leak-scan now returns ok:false on a missing --scaffold-dir AND on scanned:0; both enforcers run GREEN on the real scaffold. Judge B1/B2 against that confirmation + your prior analysis. writeback.ts.tmpl IS in the bundle below — judge B3/B4 directly from it.
+
+SCOPE (backend code-quality 7A-7G): file-write safety, EOL preservation correctness, enforcer fail-closed behavior, the FE/BE producer->view contract, server-action correctness. CONTEXT: .ts.tmpl = scaffold templates (no tsc).
+
+Output a ReviewResult: VERDICT (PASS or FAIL), per-prior-finding disposition (FIXED/STILL-PRESENT), NEW findings (severity, file:line, what+why). Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (post-fix b404b8cc) =====

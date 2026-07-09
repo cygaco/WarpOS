@@ -1,0 +1,151 @@
+diff --git a/.claude/agents/_org/dispatch-contract.json b/.claude/agents/_org/dispatch-contract.json
+index 1b9d345f..ac0ec2fb 100644
+--- a/.claude/agents/_org/dispatch-contract.json
++++ b/.claude/agents/_org/dispatch-contract.json
+@@ -193,7 +193,7 @@
+ 
+   "role_overrides": {
+     "_doc": "Per-role exceptions merged LAST (defaults <- class <- override). Empty by design — exceptions are a smell; prefer fixing the class derivation. Documented carve-outs only.",
+-    "epsilon": { "allowed_shapes": ["inline"], "_note": "ε is the sprint conductor: runs inline as the session; its own shape is inline. The in-process roster (`in-process-agent`: managers/leads/design-quality/visual-review) is spawned via the harness Agent tool BY THE TOP-LEVEL ORCHESTRATOR (α) — a teammate-spawned ε CANNOT call the Agent tool (Agent unavailable inside subagents, ED-041). A teammate-ε dispatches the CLI-routable roster only (subprocess-claude builders via dispatch-claude.js, subprocess-cross-provider reviewers via dispatch-agent.js) + drives the ε runtime." }
++    "epsilon": { "allowed_shapes": ["inline"], "_note": "ε is the sprint conductor: runs inline as the session; its own shape is inline. The in-process roster (`in-process-agent`: managers/leads/design-quality/visual-review) is summonable directly by the ε CONDUCTOR in ANY spawn context — top-level (α wearing the ε face) OR a teammate-spawned ε — via the harness Agent tool, each spawn supplying a `scopeContract` (the scope-contract-guard is the real gate). ED-041 ('Agent unavailable inside subagents') is RETIRED as a per-spec misstatement: a Claude subagent HAS the Agent tool iff its spec lists it, and ε's does (ADR-0014; re-verified 2026-06-18 + live-confirmed by the E-TEAMS-MIGRATION-001 teammate-ε). The spawn-hand stays with the conductor — a summoned roster member must NOT dispatch the build chain or cascade further, guaranteed STRUCTURALLY by scripts/checks/consult-roster-no-dispatch.js (a consult role's spec carries no Bash/Agent, so it can't dispatch by construction; the dispatch-route-guard in-process build-chain block is a narrow backstop). A node SCRIPT still cannot call Agent (the ε runtime returns `requires-orchestrator` to hand that spawn to the ε-agent); ε also drives the CLI-routable roster (subprocess-claude builders via dispatch-claude.js, subprocess-cross-provider reviewers via dispatch-agent.js)." }
+   },
+ 
+   "mode_profiles": {
+@@ -215,8 +215,8 @@
+         "claude_pinned_reviewer": ["in-process-agent"],
+         "manager": ["in-process-agent"]
+       },
+-      "alpha_only_shapes": ["in-process-agent"],
+-      "_alpha_only_note": "ED-041: in sprint mode the `in-process-agent` shape (managers/leads/design-quality/visual-review) is α-ONLY — only the TOP-LEVEL orchestrator (α, wearing the ε conductor face) can spawn it via the harness Agent tool. A teammate-spawned ε CANNOT call the Agent tool ('Agent is not available inside subagents'), so a teammate-ε dispatches ONLY the CLI-routable roster: subprocess-claude builders (dispatch-claude.js) + subprocess-cross-provider reviewers (dispatch-agent.js). This annotation does NOT narrow class_shapes; it records WHO may use the listed shape."
++      "alpha_only_shapes": [],
++      "_alpha_only_note": "ADR-0014: NO shape is α-only. The `in-process-agent` shape (managers/leads/design-quality/visual-review) is summonable by the ε CONDUCTOR in ANY spawn context — top-level (α wearing the ε face) OR a teammate-spawned ε — via the harness Agent tool, each spawn supplying a `scopeContract`. The prior α-only overlay (added in 975ed5c) encoded ED-041 as a doctrine; ED-041 is RETIRED as a per-spec misstatement (a Claude subagent has the Agent tool iff its spec lists it; ε's does — re-verified 2026-06-18 + live-confirmed by the E-TEAMS-MIGRATION-001 teammate-ε). The array is kept (empty) rather than removed so a reversal is a one-line re-add (ADR-0014 reversal plan). The real gate on a roster spawn is the scope-contract-guard (scopeContract required, fail-closed); the spawn-hand stays with the conductor — a summoned roster consult MUST NOT dispatch the build chain or cascade (guaranteed STRUCTURALLY by scripts/checks/consult-roster-no-dispatch.js — a consult role's spec carries no Bash/Agent; the dispatch-route-guard in-process build-chain block is a narrow backstop; ε remains the sole builder-dispatcher). CARVE-OUT: a non-Claude orchestrator (Codex) has NO harness Agent tool at all — not because of ED-041, but because it is not a Claude-harness agent — so it uses CLI routes only. This annotation does NOT narrow class_shapes."
+     },
+     "oneshot": {
+       "_doc": "δ standalone skeleton build. Build-chain via subprocess-claude (isolated worktree); no cross-provider reviewers required for a skeleton run.",
+diff --git a/.claude/agents/president/epsilon.md b/.claude/agents/president/epsilon.md
+index ee8a94b2..acdb7205 100644
+--- a/.claude/agents/president/epsilon.md
++++ b/.claude/agents/president/epsilon.md
+@@ -128,28 +128,37 @@ Checkpoints give resume. The heartbeat answers liveness. Together they make ε s
+ 
+ ## Dispatch Method
+ 
+-### Conduct routes by spawn context (ED-041)
++### Conduct routes by spawn context (ADR-0014 — ED-041 retired)
+ 
+-ε operates in two contexts — the conduct route is determined by which one is active:
++ε operates in two contexts. The in-process roster is available in **both** — ED-041 ("Agent is not
++available inside subagents") was a **per-spec misstatement**: a Claude subagent has the Agent tool
++**iff its spec lists it**, and ε's does (ADR-0014). So a teammate-spawned ε CAN call the Agent tool
++and summon the roster — the conduct route differs only in subprocess-vs-mixed, not in roster access:
+ 
+ | Context | Spawned via | Agent tool? | Sanctioned routes |
+ |---|---|---|---|
+ | **Top-level session** | α wearing the ε face | YES | Subprocess wrappers (below) + in-process roster via Agent tool |
+-| **Teammate** | `Agent(subagent_type:"epsilon")` into a team | NO — *"Agent is not available inside subagents"* | Subprocess-only: `dispatch-claude.js` (build-chain) · `dispatch-agent.js` (cross-provider) · `claude -p --agent` (non-build Claude roles) |
++| **Teammate** | `Agent(subagent_type:"epsilon")` into a team | **YES** — ε's spec lists `Agent` | Subprocess wrappers (`dispatch-claude.js` / `dispatch-agent.js` / `claude -p --agent`) **+ in-process roster via Agent tool** (supply a `scopeContract`) |
+ 
+-The `in-process-agent` shape (managers/leads/design-quality/visual-review) is **α-only**. A
+-teammate-ε that receives `spawned:false, reason:requires-orchestrator` entries from the runtime
+-CANNOT dispatch them — report to the team lead so α can dispatch via the Agent tool.
+-Operator-ratified 2026-06-09.
++The `in-process-agent` shape (managers/leads/design-quality/visual-review) is **NOT α-only** (ADR-0014
++emptied `mode_profiles.sprint.alpha_only_shapes`). The ε conductor summons it directly **in either
++context**, each spawn supplying a `scopeContract` (the `scope-contract-guard` is the real gate,
++fail-closed without one). The **spawn-hand stays with the conductor**: a summoned roster member must
++NOT dispatch the build chain or cascade further (the STRUCTURAL `scripts/checks/consult-roster-no-dispatch.js` enforcer — a consult role's spec carries no Bash/Agent — is the guarantee; the `dispatch-route-guard` in-process build-chain block is a narrow backstop; ε
++remains the sole builder-dispatcher). A node SCRIPT still cannot call Agent — the ε runtime returns
++`spawned:false, reason:requires-orchestrator`, which is the hand-off to **the ε-agent** (you), not to
++α. (ADR-0014, operator-authorized 2026-06-19; supersedes the 2026-06-09 α-only ratification.)
+ 
+ ### STARTUP ROUTE SELF-CHECK
+ 
+-At spawn, ε MUST determine its context and include it in the `SendMessage(to:"team-lead")`
+-readiness report:
+-- Agent tool available → `"TOP-LEVEL context: in-process roster available."`
+-- Agent tool unavailable → `"TEAMMATE context: subprocess-only routes active; in-process roster deferred to α."`
++At spawn, ε MUST verify the Agent tool is actually callable and report context in the
++`SendMessage(to:"team-lead")` readiness report — self-healing if a future harness/spec change ever
++removes it:
++- Agent tool available (the expected state, top-level OR teammate) → `"<TOP-LEVEL|TEAMMATE> context: in-process roster available (Agent tool present)."`
++- Agent tool genuinely unavailable (unexpected — a spec/harness regression) → `"<context>: Agent tool ABSENT — subprocess-only routes active; in-process roster deferred to α. FLAG: ε spec may have lost the Agent tool (ADR-0014 self-check)."`
+ 
+-This makes the doc's promise verifiable at spawn, not assumed.
++This makes the doc's promise verifiable at spawn, not assumed — and surfaces a regression loudly
++rather than silently falling back.
+ 
+ ### TEAMMATE STALL RULES (WG-6)
+ 
+@@ -165,13 +174,13 @@ Observed as a 25-minute stall ×3 (WG-6). Enforcer: `scripts/checks/epsilon-live
+ 
+ ---
+ 
+-**When ε is the top-level session face**, follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked:
++**As the conductor (top-level OR teammate — ADR-0014)**, follow the canonical dispatch pattern inherited from γ/δ verbatim — the machinery is shared, not forked. The in-process roster route below is available in **both** contexts (ε's spec lists the Agent tool):
+ 
+ - Build-chain roles (builders, fixers): `node scripts/dispatch-claude.js <role> <prompt-file> --model sonnet -w` — the reap-guard wrapper is MANDATORY. Never raw `claude -p --agent` for build-chain.
+ - Cross-provider (reviewers, security): `node scripts/dispatch-agent.js <role> <prompt-file>` with inline pre-fetch of all files the agent's prompt references (codex/gemini CLIs pipe stdin; they cannot follow relative file paths).
+ - Visual judgment roles (design-quality, visual-review): Agent tool dispatch (multimodal; Claude-pinned; exempt from canonical-Bash rule).
+ - Non-build Claude roles (test-runner): raw `claude -p --agent <role> < "$PROMPT_FILE"` is allowed.
+-- **In-process roster (managers/leads/directors `claude-agent`; `design-quality`/`visual-review` `agent-tool`):** the node runtime CANNOT spawn these — it returns `requires-orchestrator`. YOU dispatch each via `Agent(subagent_type:<role>)`, capture the returned envelope to a file, then write the completion record: `node scripts/sprint/epsilon-runtime.js record-inprocess --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]`. The record's `ok` is DERIVED FROM the real Agent-return bytes (0-byte → `ok:false`; no evidence file → REFUSED) — the SAME `ok:true` liveness `gauntlet-verify` reads, so an in-process reviewer lane is gated exactly like a CLI lane. **NEVER write the record without the Agent's real return** — there is no `ok:true` without a real spawn behind it (the operator-caught fake-green; ADR-0009 Increment B).
++- **In-process roster (managers/leads/directors `claude-agent`; `design-quality`/`visual-review` `agent-tool`):** the node runtime CANNOT spawn these — it returns `requires-orchestrator` (a node SCRIPT can't call Agent). YOU (the ε-agent, top-level OR teammate — ADR-0014) dispatch each via `Agent(subagent_type:<role>, …)` **supplying a `scopeContract`** (an `allowedFiles`/`forbiddenFiles` block on the prompt — the `scope-contract-guard` fails closed without one; for a READ-ONLY consult, a non-empty `forbiddenFiles` signals writes-nothing). The spawn-hand stays with you: a summoned roster consult must NOT dispatch the build chain — guaranteed STRUCTURALLY by `scripts/checks/consult-roster-no-dispatch.js` (a consult role's spec carries no Bash/Agent, so it can't dispatch by construction), with the `dispatch-route-guard` in-process build-chain block as a narrow backstop; ε is the sole builder-dispatcher. Capture the returned envelope to a file, then write the completion record: `node scripts/sprint/epsilon-runtime.js record-inprocess --sprint <id> --role <role> --step <step> --evidence <file> [--elapsed-ms <n>]`. The record's `ok` is DERIVED FROM the real Agent-return bytes (0-byte → `ok:false`; no evidence file → REFUSED) — the SAME `ok:true` liveness `gauntlet-verify` reads, so an in-process reviewer lane is gated exactly like a CLI lane. **NEVER write the record without the Agent's real return** — there is no `ok:true` without a real spawn behind it (the operator-caught fake-green; ADR-0009 Increment B).
+ 
+ Parse every result via `scripts/hooks/lib/providers.js#parseProviderJson`. Verify output is non-zero bytes and exit was 0 before advancing.
+ 
+diff --git a/.claude/agents/product/quality-lead.md b/.claude/agents/product/quality-lead.md
+index 81287d58..08e2405f 100644
+--- a/.claude/agents/product/quality-lead.md
++++ b/.claude/agents/product/quality-lead.md
+@@ -9,7 +9,7 @@ description: >-
+   Carries a PROGRAMMABLE principles field (must-follow rules); seed principle =
+   Product Priority over Severity. Sibling of product-lead and design-lead,
+   scoped to quality judgment.
+-tools: [Read, Grep, Glob, Bash, Agent]
++tools: [Read, Grep, Glob, Agent]
+ model: claude-opus-4-8
+ provider: claude
+ effort: high
+diff --git a/CODEX.md b/CODEX.md
+index dc9f1ee2..f9c558ea 100644
+--- a/CODEX.md
++++ b/CODEX.md
+@@ -18,7 +18,7 @@
+ - **tracker-completion-gate** — nothing blocks a Stop on a red tracker; run `validate.js` yourself before claiming done.
+ - **smart-context / additionalContext** — no auto memory injection; read `TRACKER.md` + `DUMP.md` + the relevant `runtime/notes/*` explicitly.
+ 
+-**2. NO HARNESS AGENT TOOL → NO IN-PROCESS TEAMMATES.** You cannot spawn α/β/ε/directors/leads as in-process agents (that path is Claude-harness-only, ED-041). You dispatch via the **CLI routes only**:
++**2. NO HARNESS AGENT TOOL → NO IN-PROCESS TEAMMATES.** You cannot spawn α/β/ε/directors/leads as in-process agents — **not because of ED-041** (that was a per-spec misstatement about Claude *subagents*, now retired per ADR-0014), but because **you are not a Claude-harness agent at all**: a non-Claude orchestrator (Codex/GPT) has no harness `Agent` tool, full stop. So you dispatch via the **CLI routes only**:
+ - Build-chain Claude roles (builder/fixer/security-builder/backend-builder): `node scripts/dispatch-claude.js <role> <prompt-file> -w`
+ - Cross-provider reviewers (qa-reviewer/backend-reviewer/security-reviewer): `node scripts/dispatch-agent.js <role> <prompt-file>` (pin the family with `--provider openai` / `--provider gemini` when a re-review must match the prior FAIL family).
+ - You ARE a GPT/Codex executor, so a "Claude builder" dispatched via `dispatch-claude.js` is a cross-family worker for you — fine; the wrapper handles auth.
+diff --git a/scripts/dispatch/dispatch-contract.js b/scripts/dispatch/dispatch-contract.js
+index a49d9bc5..0ef2819c 100644
+--- a/scripts/dispatch/dispatch-contract.js
++++ b/scripts/dispatch/dispatch-contract.js
+@@ -507,14 +507,18 @@ function validateContractFile() {
+         }
+       }
+     }
+-    // ── alpha_only_shapes (ED-041): a RECOGNIZED annotation naming which of a
+-    // mode's listed shapes are α-ONLY — only the TOP-LEVEL orchestrator (α, the ε
+-    // conductor face) may spawn them (a teammate-spawned ε cannot call the Agent
+-    // tool: "Agent is not available inside subagents"). It does NOT narrow class_shapes;
+-    // it records WHO may use the shape. It must be an ARRAY whose entries are all
+-    // KNOWN shapes (the same shape vocabulary as allowed_shapes); an unknown shape
+-    // is a typo'd annotation and is REJECTED. Recognizing the key here keeps it from
+-    // being silently ignored and lets the validator FAIL a malformed annotation.
++    // ── alpha_only_shapes (ADR-0014): a RECOGNIZED annotation naming which of a
++    // mode's listed shapes are α-ONLY. As of ADR-0014 NO shape is α-only — the array
++    // is RETAINED-BUT-EMPTY (`[]`): the in-process-agent roster is summonable by the ε
++    // conductor in ANY spawn context (top-level OR teammate-ε) supplying a
++    // scopeContract, because ED-041 ("Agent unavailable inside subagents") was a
++    // per-spec misstatement (a Claude subagent has Agent iff its spec lists it; ε's
++    // does). The key is kept (not removed) so a reversal is a one-line re-add. It does
++    // NOT narrow class_shapes; it records WHO may use the shape. It must be an ARRAY
++    // whose entries are all KNOWN shapes (the allowed_shapes vocabulary); an unknown
++    // shape is a typo'd annotation and is REJECTED — recognizing the key here keeps it
++    // from being silently ignored and lets the validator FAIL a malformed annotation
++    // (an EMPTY array is valid + the post-ADR-0014 expected state).
+     if ("alpha_only_shapes" in profile) {
+       const aos = profile.alpha_only_shapes;
+       if (!Array.isArray(aos)) {

@@ -1,0 +1,15 @@
+You are the BACKEND REVIEWER re-reviewing after a fix. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on the CURRENT code below (post-fix commit 05e37832). Binding — orchestrator cannot override a FAIL.
+
+A PRIOR review of the previous commit raised these backend findings. Re-judge EACH against the CURRENT code: state FIXED or STILL-PRESENT (with current file:line), then add NEW findings.
+  1. [HIGH] form-to-action contract mismatch (forms sent id+checked; action required ownerClass+nextChecked) -> every toggle rejected.
+  2. [HIGH] owner-action restriction enforced from CLIENT-controlled FormData (ownerClass) — a client could relabel a sprint-work/waiver gate as owner-action to force a phantom patch. Server must derive owner_class itself.
+  3. [HIGH] brand-leak-scan.js NOT fail-closed: missing/unreadable scan dir -> empty surfaces list -> ok:true scanned:0; unreadable files skipped. A missing --scaffold-dir returns ok:true. This script is UNCHANGED by the fix — judge from your prior analysis; this is an enforcer-lies-green gap.
+  4. [MEDIUM] scaffold-coverage-scan under-enforces readiness lib: panel list requires only page+actions, lib needs "at least one" .ts.tmpl — missing writeback/group/types could slip through. UNCHANGED — judge from prior analysis.
+  5. [MEDIUM] writeback.ts CRLF normalization: split on newline + single newline choice normalizes mixed line endings on rejoin -> breaks the exact byte-preservation contract.
+  6. [MEDIUM] writeback tmp cleanup best-effort only (swallows unlink failure) despite the "no tmp left behind" contract.
+
+SCOPE (backend code-quality 7A-7G): server-action correctness, the NEW resolveOwnerClass server-side derivation (is it truly fail-closed? does it correctly reject unknown ids? any new attack surface in requiring the producer at request time?), file-write safety, the FE/BE producer-to-view contract, enforcer correctness + fail-closed behavior. CONTEXT: .ts.tmpl = scaffold templates (no tsc). The two scripts/checks/*.js enforcers are NOT re-pasted below (unchanged) — judge findings 3+4 from your prior analysis and state they remain unchanged.
+
+Output a ReviewResult: VERDICT (PASS or FAIL), then per-prior-finding disposition (FIXED or STILL-PRESENT), then new findings (severity, file:line, what + why). Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (post-fix 05e37832) =====

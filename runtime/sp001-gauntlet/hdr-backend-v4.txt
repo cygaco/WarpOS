@@ -1,0 +1,12 @@
+You are the BACKEND REVIEWER, FINAL re-review. Sprint SP-20260614-001 (R-2 founders readiness panel). BINDING verdict on CURRENT code (commit e41de736). Binding — orchestrator cannot override a FAIL.
+
+The contract, client-authz, brand-leak-fail-closed, scaffold-coverage, and EOL-preservation findings were FIXED in prior rounds (confirmed). ONE backend finding was open last round — re-judge it (FIXED or STILL-PRESENT, current file:line), then NEW findings.
+  B4 [MEDIUM] writeback.ts: (a) duplicate-id was NOT fail-closed (patched first match + break); (b) tmp-cleanup swallowed unlink failure. VERIFY against CURRENT writeback.ts.tmpl below: (a) does it now scan ALL lines, count matches, and FAIL-CLOSED (no write, no tmp) when matchCount>1? (b) is tmp cleanup handled on both write- and rename-error paths?
+
+Also re-confirm (should still hold): server-derived authz (resolveOwnerClass fail-closed), atomic write + patch-on-current + unknown-id-no-write, byte/EOL preservation, the FE/BE producer->view contract (toReadinessView strips schema/product_id/source). A new "use client" ToggleControl.tsx.tmpl was added — it calls the UNCHANGED server action via useActionState; confirm the action contract/signature is unaffected and no server-only code leaks into the client component.
+
+CONTEXT: .ts.tmpl = scaffold templates (no tsc). The brand-leak-scan.js + scaffold-coverage-scan.js enforcers are NOT re-pasted (already FIXED + confirmed GREEN). writeback.ts.tmpl IS in the bundle — judge B4 directly from it.
+
+Output ReviewResult: VERDICT (PASS or FAIL), B4 disposition (FIXED/STILL-PRESENT), NEW findings (severity, file:line, what+why). Ground in the code below.
+
+===== CURRENT CODE UNDER REVIEW (commit e41de736) =====
