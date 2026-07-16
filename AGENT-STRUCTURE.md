@@ -19,12 +19,12 @@ It's a **company you run.** **You're the Founder & CEO** — direction + the big
                           faces:  α run · β check · γδε deliver
                                        │
         ┌──────────────────────────────┼──────────────────────────────┐
-   ζ DIRECTOR OF             η DIRECTOR OF                   ι DIRECTOR OF
+     DIRECTOR OF               DIRECTOR OF                     DIRECTOR OF
       PRODUCT                  ENGINEERING                     GROWTH
-   ├ κ Product Lead         ├ Frontend Lead                 ├ λ Research Lead
-   ├ μ Design Lead          ├ Backend Lead                  ├ ν Copy Lead
-   └ θ Quality Lead         └ Security Lead                 ├ ο Conversion Lead
-      dispatches QA           each pod Lead dispatches:     └ ξ Marketing Lead
+   ├ Product Lead           ├ Frontend Lead                 ├ Research Lead
+   ├ Design Lead            ├ Backend Lead                  ├ Copy Lead
+   └ Quality Lead           └ Security Lead                 ├ Conversion Lead
+      dispatches QA           each pod Lead dispatches:     └ Marketing Lead
       Reviewers ·             Builder · Reviewer · Fixer
       design-quality ·        (Reviewer verdict BINDING —
       visual-review           the Lead can't override a FAIL)
@@ -51,24 +51,24 @@ It's a **company you run.** **You're the Founder & CEO** — direction + the big
 
 ## The departments (the colleagues — *not* Alex)
 
-### 🟦 Product — *what to build, for whom, is it good* (ζ Director of Product)
-- **κ Product Lead** — the spec: requirements, stories, acceptance criteria, backlog.
-- **μ Design Lead** — the experience: UI/UX, flows, the mockup the build follows.
-- **θ Quality Lead** — the verdict on *quality* — does it work **and** is it good to use. **Dispatches QA Reviewers** (traceability · integrity · functional) + owns **design-quality** + **visual-review**. *(Design Lead authors; Quality Lead judges — verdict binding.)*
+### 🟦 Product — *what to build, for whom, is it good* (Director of Product)
+- **Product Lead** — the spec: requirements, stories, acceptance criteria, backlog.
+- **Design Lead** — the experience: UI/UX, flows, the mockup the build follows.
+- **Quality Lead** — the verdict on *quality* — does it work **and** is it good to use. **Dispatches QA Reviewers** (traceability · integrity · functional) + owns **design-quality** + **visual-review**. *(Design Lead authors; Quality Lead judges — verdict binding.)*
 
-### 🟩 Engineering — *how it's built well* (η Director of Engineering)
+### 🟩 Engineering — *how it's built well* (Director of Engineering)
 Three self-contained pods. Each **Lead dispatches a Builder + Reviewer + Fixer**:
 - **Frontend Lead** → FE Builder (screens) · FE Reviewer (code quality) · FE Fixer
 - **Backend Lead** → BE Builder (the engine) · BE Reviewer (code quality) · BE Fixer
 - **Security Lead** → Security Builder (hardening) · Security Reviewer(s) (attacks it) · Security Fixer
 
-**The guard that keeps pods honest:** the Reviewer's verdict is **binding** — the Lead (and η) **cannot override a FAIL**, and can't hand-pick a friendly reviewer (roster is registry-fixed). The Fixer authors fixes, so the Reviewer **re-runs after every fix** (a fix can open a new hole). Independence comes from the *binding verdict*, not from separating the org.
+**The guard that keeps pods honest:** the Reviewer's verdict is **binding** — the Lead (and the Director of Engineering) **cannot override a FAIL**, and can't hand-pick a friendly reviewer (roster is registry-fixed). The Fixer authors fixes, so the Reviewer **re-runs after every fix** (a fix can open a new hole). Independence comes from the *binding verdict*, not from separating the org.
 
-### 🟧 Growth — *the message, the audience & how it grows* (ι Director of Growth)
-- **λ Research Lead** — who the customers really are (audience dossiers → `_knowledge/audience`).
-- **ν Copy Lead** — the words: the argument, the hooks, the voice (→ `_knowledge/copy`).
-- **ο Conversion Lead** — converting pages (copy + design): one job, one CTA, hook→proof→CTA.
-- **ξ Marketing Lead** — paid traffic / campaigns; scores SCALE/TEST/SKIP; LTV:CAC.
+### 🟧 Growth — *the message, the audience & how it grows* (Director of Growth)
+- **Research Lead** — who the customers really are (audience dossiers → `_knowledge/audience`).
+- **Copy Lead** — the words: the argument, the hooks, the voice (→ `_knowledge/copy`).
+- **Conversion Lead** — converting pages (copy + design): one job, one CTA, hook→proof→CTA.
+- **Marketing Lead** — paid traffic / campaigns; scores SCALE/TEST/SKIP; LTV:CAC.
 - The Director owns **message coherence** (does it cohere with avatar / proof / beliefs / objections).
 
 ---

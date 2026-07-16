@@ -200,7 +200,7 @@ LAST fenced block — the orchestrator extracts it with `parseProviderJson`.
 
 ## Dispatched by the Quality Lead (cross-domain design authority)
 This spec lives at `.claude/agents/product/quality/design-quality.md` and is dispatched by
-the **Quality Lead** (`quality-lead`, call_sign θ) — the cross-domain design authority
+the **Quality Lead** (`quality-lead`) — the cross-domain design authority
 spanning Product and Growth. The Quality Lead dispatches this agent for both app-design
 (Product) and web-design (Growth/Marketing) review gates, in addition to γ/δ/ε direct
 dispatch. Independence = binding verdict, NOT provider diversity (documented carve-out in
