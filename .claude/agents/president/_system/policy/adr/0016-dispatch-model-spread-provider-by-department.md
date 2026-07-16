@@ -49,6 +49,31 @@ The harness Agent tool is **Claude-only** — a role pinned to a GPT model canno
 - **AUTH (Sprint B):** products use **Supabase passwordless** auth (operator-settled; Epsilon-Auth owns the content). Recorded here so the dispatch/security topology and the auth security-review lane share one decision surface.
 - **Doogle-verified dispatch repairs folded into this sprint:** WG-10 (hollow dispatch prompts), WG-11 (gemini-gated quota fallback + quota-blind records), WG-13 (no write-ahead started-row), WG-26 (`manifest.agentProviders` overrides the role-registry keystone + carries stale pre-ADR-0007 names). WG-15 (build-chain hardcodes Claude; no `subprocess-codex` shape) is **E-DISPATCH-PERFECT-001 W3** feature scope, not this sprint's repair set.
 
+## Naming — Greek letters = the President's office ONLY (operator directive 2026-07-16)
+
+DISPATCH.md §8 ("Greek call-signs live ONLY in the President's office") is ratified as a hard naming
+rule and applied to canonical (which had never had the strip pass — the whole department leadership
+still carried Greek). **Audit (verify-don't-inherit, against disk):**
+
+- **Correct (keep):** the five faces — `alpha` α · `beta` β · `gamma` γ · `delta` δ · `epsilon` ε.
+- **STRIP (10 non-office roles carrying Greek call_signs — a naming violation):**
+  Product — `director-of-product` ζ · `product-lead` κ · `design-lead` μ · `quality-lead` θ;
+  Engineering — `director-of-engineering` η;
+  Growth — `director-of-growth` ι · `research-lead` λ · `copy-lead` ν · `conversion-lead` ο · `marketing-lead` ξ.
+  Remove the `call_sign` from the registry entry, the spec frontmatter/body, and the org docs for each.
+- **ASSIGN (president-office residents that lacked a letter — operator: "the ENTIRE office gets Greek"):**
+  `cabinet` → **ζ** and `ops-analyst` → **η** (the next letters after the faces, reclaimed from the
+  freed department set). Both are the President's own tools (outside-counsel + cross-cycle auditor),
+  so they are office members and take letters (lead ruling 2026-07-16 — no separate escalation).
+
+**Blast-radius caveat:** a Greek glyph in a `president/_system` ADR or the lexicon is often an
+incidental prose/precedent reference to a face, NOT an identity — each hit is verified surgically,
+never blind-replaced.
+
+**Enforcer:** a bijection `greek-symbol ⟺ president-office membership` (folded into role-parity / the
+§9 parity set) with planted violations BOTH ways — an office role missing its letter FAILS, and a
+non-office role carrying one FAILS. The keeper that makes the rule self-detecting.
+
 ## Consequences
 
 - The catalog, effort kernel, health layer, and model-chain enforcer already carry the superset (Bucket A, reversible, green). The risky provider-by-department flip is isolated behind the β+GREEN+kill-switch gate (Bucket D) and the fail-closed security panel (Bucket E).
