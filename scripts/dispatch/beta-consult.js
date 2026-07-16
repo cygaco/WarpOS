@@ -117,7 +117,10 @@ function resolveClaims(val) {
  */
 function parseVerdict(output) {
   if (!output) return null;
-  const matches = [...String(output).matchAll(/^[ \t>*-]*VERDICT:\s*(DECIDE|DIRECTIVE|ESCALATE)\b/gim)].map((m) => m[1].toUpperCase());
+  // R2 SEC-001: the verdict token must be the ONLY content on its line — an END-OF-LINE anchor after
+  // optional trailing whitespace. Without it, "VERDICT: DECIDE or ESCALATE" and "VERDICT: DECIDE /
+  // VERDICT: ESCALATE" both matched DECIDE (ambiguous trailing text became a binding verdict).
+  const matches = [...String(output).matchAll(/^[ \t>*-]*VERDICT:[ \t]*(DECIDE|DIRECTIVE|ESCALATE)[ \t]*\r?$/gim)].map((m) => m[1].toUpperCase());
   const distinct = [...new Set(matches)];
   return distinct.length === 1 ? distinct[0] : null; // exactly one; reject none / conflicting
 }
@@ -193,7 +196,13 @@ function main(argv) {
   // dispatch ran on provider "openai" and did NOT fall back (the load-bearing WG-26 proof — β reached
   // the GPT lab, not the Claude lane), and (b) the observed model. We DO NOT fall back to result.model
   // (the requested value) — an absent observed model reads as null, never as a false attestation.
+  // R2 COR-002: `observedModel` is the model the CLI REPORTED (providers.js now leaves it null for
+  // codex/OpenAI, which exposes no served-model header — so it is NEVER the requested value echoed). The
+  // load-bearing WG-26 attestation is `ran_on_gpt` (the dispatch ran on provider "openai" and did NOT
+  // fall back to the Claude lane) PLUS `requested_model`; strict-mode modelsMatch rejects a family
+  // downgrade before ok:true. effective_model stays null when the provider reports none — honest, never faked.
   const observedModel = (result && result.actualModel) || null;
+  const requestedModel = (result && result.model) || null;
   const fellBack = !!(result && (result.fallback === true || result.quotaFallbackFrom));
   const ranOnGpt = !!(result && result.provider === "openai" && !fellBack);
   const ok = !!(result && result.ok && verdict && ranOnGpt);
@@ -207,6 +216,7 @@ function main(argv) {
     ok,
     verdict,
     ran_on_gpt: ranOnGpt, // the load-bearing WG-26 attestation: β reached the GPT lab (not the claude fallback)
+    requested_model: requestedModel, // the model REQUESTED of the GPT lab (gpt-5.6-sol); codex reports no served header
     fell_back: fellBack,
     effective_model: effectiveModel, // OBSERVED model (null if not observed / fell back) — never the requested value
     provider: (result && result.provider) || null,

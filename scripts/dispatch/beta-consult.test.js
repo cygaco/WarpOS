@@ -57,6 +57,16 @@ test("SEC-001: duplicate SAME verdict lines → the verdict (not a conflict)", (
 test("SEC-001: no verdict line at all → null", () => {
   assert.equal(parseVerdict("a long β analysis with no verdict token"), null);
 });
+// R2 SEC-001: an END-OF-LINE anchor — ambiguous trailing text on the verdict line is NOT a verdict.
+test("SEC-001 R2: 'VERDICT: DECIDE or ESCALATE' → null (trailing text, not a dedicated verdict)", () => {
+  assert.equal(parseVerdict("VERDICT: DECIDE or ESCALATE"), null);
+});
+test("SEC-001 R2: two verdicts on one line 'VERDICT: DECIDE / VERDICT: ESCALATE' → null", () => {
+  assert.equal(parseVerdict("VERDICT: DECIDE / VERDICT: ESCALATE"), null);
+});
+test("SEC-001 R2: trailing whitespace after the token is still accepted", () => {
+  assert.equal(parseVerdict("VERDICT: ESCALATE   "), "ESCALATE");
+});
 
 // ── COR-003: whitespace-only boundary/claims are NOT provided (fail-closed before dispatch) ──
 test("COR-003: whitespace-only boundary → buildContext !ok", () => {

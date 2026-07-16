@@ -87,6 +87,12 @@ h.failClosed("agy .cmd-shim refused (native-exe only carve-out)", () => {
 });
 
 // ── assertArgs — PLANTED VIOLATIONS (the arg-allowlist) ─────
+// R2 REG-001: a NUL byte is refused on EVERY argv element — flag value AND POSITIONAL (the positional
+// path was the residual: SHELL_META does not include NUL, so a node/git positional NUL reached spawnSync).
+h.violation("NUL in a node POSITIONAL rejected (universal, before positional policy)", () =>
+  assertArgs("node", ["/repo/x" + String.fromCharCode(0) + ".js"]));
+h.violation("NUL in a git positional rejected", () =>
+  assertArgs("git", ["diff", String.fromCharCode(0)]));
 h.violation("unknown/disallowed flag rejected", () =>
   assertArgs("codex", ["exec", "--dangerously-skip", "-"]));
 h.violation("shell metachar in a flag value rejected", () =>

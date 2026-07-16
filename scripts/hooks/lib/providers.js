@@ -902,9 +902,13 @@ function runProvider(role, prompt, opts = {}) {
     }
     const rawOutput = (spawned.stdout || "").trim();
 
-    // Gemini JSON envelope unwrap + actual-model audit
+    // Gemini JSON envelope unwrap + actual-model audit.
+    // R2 COR-002: actualModel is the OBSERVED served model — it stays NULL unless the provider REPORTS
+    // it. Gemini reports it via stats.models (below). codex/OpenAI exposes no served-model header, so it
+    // stays null rather than echoing the REQUESTED `model` (an echoed request is not an attestation).
+    // The requested value is retained only in the returned `model` field.
     let output = rawOutput;
-    let actualModel = model;
+    let actualModel = null;
     if (providerName === "gemini") {
       try {
         const env = JSON.parse(rawOutput);

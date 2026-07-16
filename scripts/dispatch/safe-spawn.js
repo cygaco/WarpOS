@@ -240,6 +240,11 @@ function assertArgs(toolId, args) {
       i++;
       continue;
     }
+    // R2 REG-001: reject NUL on EVERY argv element (flag token, subcommand, POSITIONAL) — SHELL_META
+    // does not include it, so a positional/flag NUL would otherwise reach spawnSync and throw
+    // ERR_INVALID_ARG_VALUE past the fail-closed result contract. (Consumed flag VALUES are covered by
+    // consumedValueViolations' INJECT_META; this closes the positional/token path universally.)
+    if (a.indexOf("\x00") !== -1) violations.push(`arg ${i} contains a NUL byte — refused universally (never legitimate; crashes child_process)`);
     if (SHELL_META.test(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) contains a shell metacharacter/space`);
     if (looksLikeUNC(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) looks like a UNC/absolute-executable path (model must never choose the executable)`);
 
