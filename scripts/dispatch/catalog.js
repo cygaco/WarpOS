@@ -238,30 +238,37 @@ const GEMINI = {
 };
 
 // ── Antigravity (Gemini via `agy`) ─────────────────────────────
-// DISPATCH.md 2026-07-12: the individual-tier `gemini` CLI is SUNSET — route ALL Gemini
-// through Antigravity's `agy` CLI. `gemini-3.1-pro-preview` is the ONLY Gemini (Flash
-// REMOVED). Thinking is always-on (no effort flag). PROBE-OK via `agy` v1.1.x. Self-auth
-// at ~/.gemini/antigravity-cli. Added as a NEW provider id `antigravity` alongside the
-// legacy `gemini` provider (which is removed LAST, after the §6 sweep + parity green).
-// GOTCHA: `agy` probabilistically declines "security review" framing (~2/3 on toy prompts)
-// — the provider runner keeps a refusal-retry loop (re-sample ≤4×).
+// DISPATCH.md 2026-07-12: the individual-tier `gemini` CLI is SUNSET — route ALL Gemini through
+// Antigravity's `agy` CLI. Self-auth at ~/.gemini/antigravity-cli. Added as a NEW provider id
+// `antigravity` alongside the legacy `gemini` provider (removed LAST, after the §6 sweep + parity).
+//
+// EMPIRICAL INVOCATION CONTRACT (live probe fired top-level 2026-07-16 — overrides DISPATCH.md's
+// simplified form, which was WRONG on both the id and the prompt delivery):
+//   WORKING: `agy --model gemini-3.1-pro-high --print-timeout 90s -p '<prompt>'` → exit 0, stdout text.
+//   1. Model id is `gemini-3.1-pro-high` (kebab display name, thinking-level baked in) — NOT
+//      `gemini-3.1-pro-preview` (INVALID on agy, exit 1) and NOT bare `gemini-3.1-pro`.
+//   2. The prompt is the ARGUMENT to `-p` (`-p '<prompt>'`); bare `-p` with stdin errors "flag needs
+//      an argument". NO stdin delivery (unlike codex/claude).
+//   3. `--print-timeout` needs an EXPLICIT bound (default 5m > a teammate's ~2-min Bash cap → long
+//      agy runs belong to the top-level orchestrator).
+//   4. NEVER call `agy models` from a script/probe — it HANGS headless (>10min, zero output). To
+//      enumerate, use the fail-fast path: an invalid --model exits 1 immediately + lists ids on stderr.
+//   5. `agy` also exposes NON-Google models (Claude Sonnet/Opus, GPT-OSS) — potentially useful for
+//      Bucket-E lab-diversity math, but verify their kebab ids before relying on them.
+// GOTCHA: `agy` probabilistically declines "security review" framing (~2/3 on toy prompts) — the
+// provider runner keeps a refusal-retry loop (re-sample ≤4×).
 const ANTIGRAVITY = {
   id: "antigravity",
   label: "Antigravity (Gemini)",
   cli: "agy",
   cliEffortFlagTemplate: "",
-  // EMPIRICAL (agy --help, 2026-07-16): the real HEADLESS flag is `-p`/`--print` ("run a single
-  // prompt non-interactively and print the response") — DISPATCH.md's bare `agy --model X` would
-  // hang INTERACTIVELY. `--print-timeout` defaults to 5m (exceeds a teammate's ~2-min Bash cap →
-  // long agy runs belong to the top-level orchestrator). Prompt delivery (stdin vs positional to
-  // `-p`) must be confirmed by a live headless dispatch before the runProvider wiring is trusted.
-  syntaxTemplate: "agy --model {model} -p",
+  syntaxTemplate: "agy --model {model} --print-timeout 90s -p '{prompt}'",
   requiresFallback: true,
-  defaultModel: "gemini-3.1-pro-preview",
+  defaultModel: "gemini-3.1-pro-high",
   models: [
     {
-      id: "gemini-3.1-pro-preview",
-      label: "Gemini 3.1 Pro (preview, thinking always-on) — via agy",
+      id: "gemini-3.1-pro-high",
+      label: "Gemini 3.1 Pro (high thinking) — via agy",
       effortLevels: [],
       contextTokens: 1_000_000,
       maxOutputTokens: 65_536,
