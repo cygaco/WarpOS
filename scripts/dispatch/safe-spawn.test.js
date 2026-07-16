@@ -42,6 +42,40 @@ h.pass("codex clean invocation passes", () =>
 h.pass("claude clean invocation passes", () =>
   assertArgs("claude", ["-p", "--agent", "frontend-reviewer", "--model", "claude-opus-4-8", "--effort", "high"]));
 
+// ── #27 agy INJECT_META carve-out — multi-line `-p` value slot ONLY (both ways) ──
+const AGY_MULTILINE = "line one\nline two\nline three";
+// (a) accepted: a MULTI-LINE prompt in agy's native-exe `-p` value slot rides the carve-out.
+h.pass("agy multi-line -p accepted (the ONE carve-out slot)", () =>
+  assertArgs("agy", ["--model", "gemini-3.1-pro-high", "--print-timeout", "90s", "-p", AGY_MULTILINE]));
+// (b) refused: the SAME multi-line content in ANY OTHER agy arg (--model) hits full INJECT_META.
+h.violation("agy multi-line in --model rejected (carve-out is -p only)", () =>
+  assertArgs("agy", ["--model", AGY_MULTILINE, "-p", "hi"]));
+// (c) refused: a newline to a DIFFERENT tool (codex -m) is not carved out — agy-only.
+h.violation("codex -m multi-line rejected (carve-out is agy-only)", () =>
+  assertArgs("codex", ["exec", "-m", AGY_MULTILINE, "-"]));
+// (d) refused: agy `-p` still rejects every OTHER injection metachar (backtick / pipe).
+h.violation("agy -p with a backtick still rejected (only newline is carved out)", () =>
+  assertArgs("agy", ["-p", "hi `whoami`"]));
+h.violation("agy -p with a pipe still rejected", () =>
+  assertArgs("agy", ["-p", "a | b"]));
+// (e) refused: a .cmd/.bat SHIM agy is refused in safeSpawnSync (native-exe only — cmd.exe /c would
+// reparse the newline). The native-exe half of the allowlist-of-shape.
+h.failClosed("agy .cmd-shim refused (native-exe only carve-out)", () => {
+  const dir = path.join(PROJECT_ROOT, "runtime", ".agy-shim-test");
+  fs.mkdirSync(dir, { recursive: true });
+  const shim = path.join(dir, "agy.cmd");
+  fs.writeFileSync(shim, "@echo off\r\necho hi\r\n");
+  try {
+    const r = safeSpawnSync("agy", ["--model", "gemini-3.1-pro-high", "-p", AGY_MULTILINE], {
+      resolve: { path: shim, allowRepoLocal: true },
+      timeoutMs: 3000,
+    });
+    return { ok: r.ok === true || r.reason !== "agy_requires_native_exe" };
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
+  }
+});
+
 // ── assertArgs — PLANTED VIOLATIONS (the arg-allowlist) ─────
 h.violation("unknown/disallowed flag rejected", () =>
   assertArgs("codex", ["exec", "--dangerously-skip", "-"]));

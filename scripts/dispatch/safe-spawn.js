@@ -55,7 +55,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 // kind drives invocation. `.cmd` shims on Windows still carry CVE-2024-27980
 // residual risk — mitigated by the arg-allowlist (no metachars reach the shell)
 // + arg-array invocation. `node` runs OUR absolute JS entrypoints only.
-const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill"]);
+const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill", "agy"]);
 
 // ── Per-tool argument policy (allowlist, not just metachar refusal) ──
 // flags: allowed flag tokens. valueFlags: flags that consume the next arg, with a
@@ -82,6 +82,13 @@ const SHELL_META = /[`$;&|<>()\s]/;
 // `%` and `!` (GPT-5.5 review R2 HIGH: cmd.exe %VAR% expansion + delayed-expansion
 // !VAR! reach the shell through cmd.exe /c).
 const INJECT_META = /[`$;&|<>^"%!\r\n]/;
+// The agy (Antigravity) carve-out (#27): agy's native-exe `-p` value slot carries a MULTI-LINE
+// prompt — the ONLY multi-line delivery agy supports (no stdin, no prompt-file flag). CreateProcess
+// (shell:false) passes a native-exe argv value verbatim, so a newline in THIS one slot is safe; every
+// OTHER injection metachar is STILL refused. Allowlist-of-shape: applies ONLY to tool `agy`, flag `-p`,
+// and a NATIVE exe (a .cmd/.bat shim is refused in safeSpawnSync — cmd.exe /c would reparse the
+// newline). The same multi-line content in ANY other arg hits full INJECT_META → refused.
+const INJECT_META_ALLOW_NL = /[`$;&|<>^"%!]/; // INJECT_META minus \r\n
 const isInRepo = (p) => {
   try {
     const r = path.resolve(p);
@@ -130,6 +137,26 @@ const ARG_POLICY = {
     },
     positionals: (v) => v === "-",
   },
+  agy: {
+    // Antigravity CLI: `agy --model <id> --print-timeout <dur> -p '<multi-line prompt>'` (no stdin,
+    // no prompt-file flag — the prompt is the `-p` argv VALUE). #27 carve-out.
+    subcommands: new Set([]),
+    boolFlags: new Set([]),
+    valueFlags: {
+      "-m": (v) => TOKEN.test(v),
+      "--model": (v) => TOKEN.test(v),
+      // duration like 90s / 5m / 500ms — digits + optional unit, no metachars.
+      "--print-timeout": (v) => /^[0-9]+(ms|s|m|h)?$/.test(v),
+      // -p is the PROMPT — the ONE multi-line value slot. Its injection check is newline-tolerant
+      // (multilineValueFlags below), but the validator STILL caps length + re-asserts the
+      // newline-tolerant metachar refusal (defense in depth): every metachar except \r\n is refused.
+      "-p": (v) => typeof v === "string" && v.length <= 200000 && !INJECT_META_ALLOW_NL.test(v),
+    },
+    // Flags whose consumed VALUE may contain a newline — consulted by assertArgs to pick the
+    // newline-tolerant injection check for that slot ONLY. Native-exe enforced in safeSpawnSync.
+    multilineValueFlags: new Set(["-p"]),
+    positionals: () => false,
+  },
   claude: {
     subcommands: new Set([]),
     boolFlags: new Set(["-p", "-w"]),
@@ -176,10 +203,14 @@ const looksLikeUNC = (v) =>
 // GPT-5.5 review CRITICAL fix: a CONSUMED flag value must pass the universal
 // injection + UNC checks too (the validator alone — e.g. codex -o's path check —
 // does not reject `&`/`|`, which weaponize a .cmd shim via `cmd.exe /c`).
-function consumedValueViolations(flag, v) {
+function consumedValueViolations(flag, v, opts = {}) {
   const out = [];
   if (typeof v !== "string") return out; // undefined handled by the caller
-  if (INJECT_META.test(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) contains a command-injection metacharacter`);
+  // #27: a flag in the tool's multilineValueFlags (agy -p) uses the newline-tolerant injection set —
+  // a newline in that ONE native-exe value slot is safe (CreateProcess passes it verbatim); every
+  // OTHER metachar is still refused, and every OTHER flag uses the full INJECT_META (incl. \r\n).
+  const injectRe = opts.allowNewline ? INJECT_META_ALLOW_NL : INJECT_META;
+  if (injectRe.test(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) contains a command-injection metacharacter`);
   if (looksLikeUNC(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) is a UNC/absolute-executable path`);
   return out;
 }
@@ -214,7 +245,7 @@ function assertArgs(toolId, args) {
         const v = args[i + 1];
         if (v === undefined) violations.push(`flag ${a} expects a value`);
         else {
-          for (const vio of consumedValueViolations(a, v)) violations.push(vio);
+          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)) })) violations.push(vio);
           if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
         }
         i += 2;
@@ -234,7 +265,7 @@ function assertArgs(toolId, args) {
         const v = args[i + 1];
         if (v === undefined) violations.push(`flag ${a} expects a value`);
         else {
-          for (const vio of consumedValueViolations(a, v)) violations.push(vio);
+          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)) })) violations.push(vio);
           if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
         }
         i += 2;
@@ -400,6 +431,13 @@ function safeSpawnSync(toolId, args, opts = {}) {
   const tool = resolveTool(toolId, opts.resolve || {});
   if (!tool.ok) return { ok: false, reaped: false, reason: "tool_resolution_refused", detail: tool.reason, stdout: "", stderr: "", exitCode: null };
 
+  // #27: the agy multi-line `-p` carve-out is NATIVE-exe ONLY. A .cmd/.bat shim runs via `cmd.exe /c`
+  // (below), where a newline in an arg would be reparsed by cmd.exe — so refuse a shim agy outright.
+  // assertArgs permitted the newline for agy `-p`; this is the native-exe half of the allowlist-of-shape.
+  if (toolId === "agy" && tool.kind !== "native") {
+    return { ok: false, reaped: false, reason: "agy_requires_native_exe", detail: `agy resolved to a ${tool.kind} (${tool.path}) — the multi-line -p carve-out is native-exe only; a .cmd/.bat shim is refused`, stdout: "", stderr: "", exitCode: null };
+  }
+
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
   const childEnv = opts.env || process.env;
@@ -527,6 +565,13 @@ function safeSpawnFile(toolId, args, opts = {}) {
 
   const tool = resolveTool(toolId, opts.resolve || {});
   if (!tool.ok) return { ok: false, reaped: false, reason: "tool_resolution_refused", detail: tool.reason, stdout: "", stderr: "", exitCode: null };
+
+  // #27: the agy multi-line `-p` carve-out is NATIVE-exe ONLY. A .cmd/.bat shim runs via `cmd.exe /c`
+  // (below), where a newline in an arg would be reparsed by cmd.exe — so refuse a shim agy outright.
+  // assertArgs permitted the newline for agy `-p`; this is the native-exe half of the allowlist-of-shape.
+  if (toolId === "agy" && tool.kind !== "native") {
+    return { ok: false, reaped: false, reason: "agy_requires_native_exe", detail: `agy resolved to a ${tool.kind} (${tool.path}) — the multi-line -p carve-out is native-exe only; a .cmd/.bat shim is refused`, stdout: "", stderr: "", exitCode: null };
+  }
 
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
