@@ -159,10 +159,18 @@ Sudhodanan & Paverd pre-account-takeover class) — **plus a fail-closed predepl
 - STATIC mode (no DB) asserts the trigger *definition* is correct (the function nulls
   `NEW.encrypted_password` AND the `CREATE TRIGGER … ON auth.users … FOR EACH ROW EXECUTE FUNCTION`
   binding). A static-only pass is reported **`PROVEN=STATIC-ONLY`, not "installed"**, and exits
-  **non-zero by default** — static is NOT proof of installation.
-- LIVE mode (`SUPABASE_DB_URL` set) queries `pg_trigger` to prove the trigger is installed AND runs a
-  negative test (attempt a password insert → assert nulled). Only this exits 0 as installed-proof. A
-  missing `pg` dependency fails closed (never skips to green).
+  **non-zero by default** — static is NOT proof of installation. (Static validates the shipped
+  single-trigger migration; a hand-edited multi-trigger migration should rely on LIVE-mode
+  installed-proof below, which inspects every trigger actually on `auth.users`.)
+- LIVE mode (`SUPABASE_DB_URL` set) proves the EXACT shipped hard-block is installed AND effective —
+  an *allowlist of the one valid shape*, not a "looks-close-enough" check: the exact shipped trigger
+  name + **schema-qualified** function (`public.hardblock_password`), the trigger **enabled**
+  (`tgenabled ∈ {O,A}` — a disabled/replica-only trigger is rejected), the `pg_get_triggerdef` binding
+  (BEFORE, INSERT **and** UPDATE, FOR EACH ROW, on `auth.users`), the function body nulling
+  `NEW.encrypted_password` before RETURN (comments stripped, order enforced), AND behavioral negative
+  tests on **both** the INSERT and UPDATE paths (rollback txn). Anything short of the exact shape →
+  `ok:false`. Only this exits 0 as installed-proof; a missing `pg` dependency fails closed (never
+  skips to green).
 
 > **⛔ MANDATORY ADOPTION GATE:** never ship an auth-enabled build without
 > `SUPABASE_DB_URL=… npm run verify:auth` GREEN against your live project. The framework-time tests

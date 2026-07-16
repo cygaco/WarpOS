@@ -113,33 +113,74 @@ for (const [label, sql] of Object.entries(nearMisses)) {
   });
 }
 
-// ── LIVE-path installed-proof teeth (selectInstalledTarget) ──────────────────────
-// The live verifier once fell back to "any trigger whose body nulls encrypted_password"
-// when the shipped trigger was absent — a residual false-green (security review). These
-// prove the fallback is gone: installed-proof requires the EXACT shipped identity.
-const SHIPPED = { name: "hardblock_password_trigger", fn: "hardblock_password", bodyOk: true };
-const SUBSTITUTE = { name: "some_other_audit_trigger", fn: "audit_wipe_password", bodyOk: true };
+// ── LIVE-path installed-proof teeth (assertShippedHardblock — the "endgame") ─────
+// The live verifier peeled through several residual false-greens (security review, 3
+// rounds): a substitute body-nulling trigger, a same-name function in another schema, a
+// DISABLED trigger, and a comment-only/early-return body. The endgame closes the whole
+// CLASS by allowlisting the exact shipped shape. These prove each false-green goes RED
+// without a live DB. A valid candidate carries the exact shipped identity + enabled +
+// binding + a real body; each spoof flips exactly one facet.
+const VALID_TRIGDEF =
+  "CREATE TRIGGER hardblock_password_trigger BEFORE INSERT OR UPDATE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.hardblock_password()";
+const VALID_FNDEF =
+  "CREATE OR REPLACE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $function$ BEGIN NEW.encrypted_password := NULL; RETURN NEW; END; $function$";
+const GOOD_BINDING = { before: true, insert: true, update: true, authUsers: true, forEachRow: true };
 
-test("live target-selection: shipped identity present => selected", async () => {
-  const { selectInstalledTarget } = await loadVerifier(dir);
-  assert.ok(selectInstalledTarget([SHIPPED]), "the exact shipped trigger must be selected");
+function candidate(overrides = {}) {
+  return {
+    name: "hardblock_password_trigger",
+    enabled: "O",
+    fn: "hardblock_password",
+    fnSchema: "public",
+    trigdef: VALID_TRIGDEF,
+    fndef: VALID_FNDEF,
+    binding: { ...GOOD_BINDING },
+    ...overrides,
+  };
+}
+
+test("endgame: the exact shipped hard-block => ok:true", async () => {
+  const { assertShippedHardblock } = await loadVerifier(dir);
+  assert.equal(assertShippedHardblock([candidate()]).ok, true);
 });
 
-test("live target-selection: ONLY a substitute body-nulling trigger, shipped ABSENT => null (the removed false-green)", async () => {
-  const { selectInstalledTarget } = await loadVerifier(dir);
-  assert.equal(
-    selectInstalledTarget([SUBSTITUTE]),
-    null,
-    "a substitute trigger that nulls the password is NOT proof the shipped hard-block is installed",
-  );
+const spoofs = {
+  "substitute trigger (wrong name), shipped ABSENT": [candidate({ name: "some_audit_trigger" })],
+  "schema-spoofed function (other_schema.hardblock_password)": [candidate({ fnSchema: "evil" })],
+  "DISABLED trigger (tgenabled=D)": [candidate({ enabled: "D" })],
+  "replica-only trigger (tgenabled=R)": [candidate({ enabled: "R" })],
+  "INSERT-only binding (UPDATE path unblocked)": [candidate({ binding: { ...GOOD_BINDING, update: false } })],
+  "comment-only body (nulling line commented out)": [
+    candidate({
+      fndef:
+        "CREATE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN -- NEW.encrypted_password := NULL;\n RETURN NEW; END; $$",
+    }),
+  ],
+  "early-return body (RETURN before the null-out)": [
+    candidate({
+      fndef:
+        "CREATE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; NEW.encrypted_password := NULL; END; $$",
+    }),
+  ],
+  "no triggers at all": [],
+};
+
+for (const [label, candidates] of Object.entries(spoofs)) {
+  test(`endgame REJECTED: ${label}`, async () => {
+    const { assertShippedHardblock } = await loadVerifier(dir);
+    assert.equal(assertShippedHardblock(candidates).ok, false, `"${label}" must be rejected (false-green)`);
+  });
+}
+
+test("endgame: shipped present alongside a decoy => still ok:true (the real one is found)", async () => {
+  const { assertShippedHardblock } = await loadVerifier(dir);
+  assert.equal(assertShippedHardblock([candidate({ name: "decoy" }), candidate()]).ok, true);
 });
 
-test("live target-selection: shipped + substitute both present => the SHIPPED one is selected", async () => {
-  const { selectInstalledTarget } = await loadVerifier(dir);
-  assert.equal(selectInstalledTarget([SUBSTITUTE, SHIPPED]).name, SHIPPED.name);
-});
-
-test("live target-selection: no triggers => null", async () => {
-  const { selectInstalledTarget } = await loadVerifier(dir);
-  assert.equal(selectInstalledTarget([]), null);
+test("functionBodyHardBlocks: comment-stripped + order-enforced", async () => {
+  const { functionBodyHardBlocks } = await loadVerifier(dir);
+  assert.equal(functionBodyHardBlocks("BEGIN NEW.encrypted_password := NULL; RETURN NEW; END"), true);
+  assert.equal(functionBodyHardBlocks("BEGIN -- NEW.encrypted_password := NULL;\n RETURN NEW; END"), false);
+  assert.equal(functionBodyHardBlocks("BEGIN RETURN NEW; NEW.encrypted_password := NULL; END"), false);
+  assert.equal(functionBodyHardBlocks("BEGIN NEW.encrypted_password := NULL; RETURN OLD; END"), false);
 });
