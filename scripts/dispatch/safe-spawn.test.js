@@ -58,6 +58,16 @@ h.violation("agy -p with a backtick still rejected (only newline is carved out)"
   assertArgs("agy", ["-p", "hi `whoami`"]));
 h.violation("agy -p with a pipe still rejected", () =>
   assertArgs("agy", ["-p", "a | b"]));
+// (d2) β item-2 property 4: the newline carve-out is CROSS-TOOL scoped — the same multi-line value
+// refuses in EVERY other tool/slot: gemini -p, codex -c, agy -m (short form), and an agy positional.
+h.violation("gemini -p multi-line rejected (carve-out is agy-only, not gemini)", () =>
+  assertArgs("gemini", ["-m", "gemini-3.1-pro-preview", "-p", AGY_MULTILINE, "-o", "json"]));
+h.violation("codex -c multi-line rejected (carve-out does not leak to codex -c)", () =>
+  assertArgs("codex", ["exec", "-c", "model_reasoning_effort=" + AGY_MULTILINE, "-"]));
+h.violation("agy -m (short form) multi-line rejected (only -p is carved out)", () =>
+  assertArgs("agy", ["-m", AGY_MULTILINE, "-p", "hi"]));
+h.violation("agy positional multi-line rejected (agy takes no positionals; not the -p slot)", () =>
+  assertArgs("agy", ["-p", "hi", AGY_MULTILINE]));
 // (e) refused: a .cmd/.bat SHIM agy is refused in safeSpawnSync (native-exe only — cmd.exe /c would
 // reparse the newline). The native-exe half of the allowlist-of-shape.
 h.failClosed("agy .cmd-shim refused (native-exe only carve-out)", () => {
