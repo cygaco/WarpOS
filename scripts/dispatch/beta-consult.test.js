@@ -9,7 +9,7 @@
  *   node scripts/dispatch/beta-consult.test.js
  */
 const assert = require("assert");
-const { parseVerdict, buildContext } = require("./beta-consult");
+const { parseVerdict, buildContext, attestRanOnGpt } = require("./beta-consult");
 const { suggestFallbackProvider, PROVIDER_FAMILY } = require("../hooks/lib/providers");
 
 let passed = 0;
@@ -77,6 +77,27 @@ test("COR-003: whitespace-only claims → buildContext !ok", () => {
 });
 test("COR-003: missing boundary → buildContext !ok", () => {
   assert.equal(buildContext({ boundary: null, claims: "c", precedentLines: 5 }).ok, false);
+});
+
+// ── β RIDER (DECIDE 0.90): ran_on_gpt rests on the OBSERVED codex-exec + executed command, not config ──
+const CODEX_CMD = "codex exec --sandbox workspace-write -c model_reasoning_effort=high -m gpt-5.6-sol -";
+test("β-rider: real codex return (ok + openai + codex cmd + no fallback) → ran_on_gpt true", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD }).ranOnGpt, true);
+});
+test("β-rider: provider openai but NO codex cmd (config-inferred) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "" }).ranOnGpt, false);
+});
+test("β-rider: result.ok false (a reap/stub, not a real return) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: false, provider: "openai", cmd: CODEX_CMD }).ranOnGpt, false);
+});
+test("β-rider: a claude fallback (fallback:true) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD, fallback: true }).ranOnGpt, false);
+});
+test("β-rider: a quotaFallbackFrom retry → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD, quotaFallbackFrom: { provider: "gemini" } }).ranOnGpt, false);
+});
+test("β-rider: provider claude → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "claude", cmd: "claude -p" }).ranOnGpt, false);
 });
 
 if (failures.length) {

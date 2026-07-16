@@ -125,6 +125,21 @@ function parseVerdict(output) {
   return distinct.length === 1 ? distinct[0] : null; // exactly one; reject none / conflicting
 }
 
+/**
+ * β RIDER (DECIDE 0.90): derive the OBSERVED-backed GPT attestation from a dispatch result. `ran_on_gpt`
+ * is true ONLY when the REAL codex-exec returned (result.ok — runProvider sets it only after exit-0 +
+ * NON-EMPTY stdout, so a stub/reap is !ok), on provider "openai", with the codex CLI ACTUALLY fired
+ * (result.cmd = the executed command line = the provider-trace), and NO fallback (the claude lane did not
+ * fire). Config inference alone (an echoed provider) cannot satisfy result.ok + codexFired. Pure + exported.
+ */
+function attestRanOnGpt(result) {
+  const fellBack = !!(result && (result.fallback === true || result.quotaFallbackFrom));
+  const observedCmd = (result && result.cmd) || "";
+  const codexFired = /^\s*codex\b/.test(observedCmd); // the OBSERVED command that executed
+  const ranOnGpt = !!(result && result.ok === true && result.provider === "openai" && codexFired && !fellBack);
+  return { ranOnGpt, fellBack, codexFired, observedCmd };
+}
+
 function main(argv) {
   // COR-003 (backend-reviewer): a flag whose "value" is actually the NEXT option (e.g. `--claims --json`)
   // must read as MISSING, not swallow the following flag — otherwise a malformed invocation dispatches an
@@ -203,8 +218,9 @@ function main(argv) {
   // downgrade before ok:true. effective_model stays null when the provider reports none — honest, never faked.
   const observedModel = (result && result.actualModel) || null;
   const requestedModel = (result && result.model) || null;
-  const fellBack = !!(result && (result.fallback === true || result.quotaFallbackFrom));
-  const ranOnGpt = !!(result && result.provider === "openai" && !fellBack);
+  // β RIDER (DECIDE 0.90): ran_on_gpt rests on the OBSERVED codex-exec return + the executed command
+  // (the provider-trace), not "we called the openai code path" — derived by the pure attestRanOnGpt().
+  const { ranOnGpt, fellBack, observedCmd } = attestRanOnGpt(result);
   const ok = !!(result && result.ok && verdict && ranOnGpt);
   const effectiveModel = ranOnGpt ? observedModel : null;
 
@@ -215,7 +231,8 @@ function main(argv) {
     dispatched: !!result,
     ok,
     verdict,
-    ran_on_gpt: ranOnGpt, // the load-bearing WG-26 attestation: β reached the GPT lab (not the claude fallback)
+    ran_on_gpt: ranOnGpt, // OBSERVED-backed (β rider): result.ok (real codex return) + codex cmd fired + no fallback
+    observed_cmd: observedCmd || null, // the ACTUAL executed command line (provider-trace) backing ran_on_gpt
     requested_model: requestedModel, // the model REQUESTED of the GPT lab (gpt-5.6-sol); codex reports no served header
     fell_back: fellBack,
     effective_model: effectiveModel, // OBSERVED model (null if not observed / fell back) — never the requested value
@@ -239,4 +256,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv));
-module.exports = { buildContext, parseVerdict, judgmentStack, resolveClaims, VERDICTS };
+module.exports = { buildContext, parseVerdict, attestRanOnGpt, judgmentStack, resolveClaims, VERDICTS };
