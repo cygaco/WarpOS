@@ -1,0 +1,52 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+
+const DEFAULT_NEXT = "/account";
+
+// Sanitize the `next` param to a safe SAME-ORIGIN relative path to defend against
+// open-redirect. Must be a single leading slash (not "//host" protocol-relative,
+// not "/\host", not an absolute URL). Anything else falls back to /account.
+function safeNextPath(raw: string | null): string {
+  if (!raw) return DEFAULT_NEXT;
+  if (raw[0] !== "/") return DEFAULT_NEXT;
+  if (raw[1] === "/" || raw[1] === "\\") return DEFAULT_NEXT;
+  return raw;
+}
+
+// PKCE code-exchange callback. Supabase redirects here after the user clicks the
+// magic link / completes OAuth; we exchange the one-time `code` for a session
+// (cookies persisted via the middleware/server cookie adapter), then redirect to
+// the sanitized `next`. no-store so the exchange response is never cached.
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const next = safeNextPath(url.searchParams.get("next"));
+
+  const withNoStore = (response: NextResponse): NextResponse => {
+    response.headers.set("Cache-Control", "no-store");
+    return response;
+  };
+
+  if (!isSupabaseConfigured() || !code) {
+    return withNoStore(
+      NextResponse.redirect(new URL("/auth?error=auth_unavailable", url.origin)),
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) {
+    return withNoStore(
+      NextResponse.redirect(new URL("/auth?error=auth_unavailable", url.origin)),
+    );
+  }
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) {
+    return withNoStore(
+      NextResponse.redirect(new URL("/auth?error=exchange_failed", url.origin)),
+    );
+  }
+
+  return withNoStore(NextResponse.redirect(new URL(next, url.origin)));
+}
