@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/design-guides/v0.1",
   "version": "v0.1",
-  "note": "Machine-readable index of the design-principles guide library. anchor:none for all — these are AGENT-GROUNDING training references, not bootstrap launch guides. Built from each guide's frontmatter. Regenerate by re-reading _knowledge/design/*.md frontmatter; keep in sync with the 19 guides. design_quality_axes / visual_review_categories below are the canonical target vocabularies the maps_to fields reference.",
+  "note": "Machine-readable index of the design-knowledge library: 19 design-PRINCIPLE guides + 1 component-PATTERN doc (INPUT_COMPOSER_PATTERN, shape:pattern). anchor:none for all — these are AGENT-GROUNDING training references, not bootstrap launch guides. Built from each guide's frontmatter. Regenerate by re-reading _knowledge/design/*.md frontmatter; keep in sync with the 20 docs. design_quality_axes / visual_review_categories below are the canonical target vocabularies the maps_to fields reference.",
   "design_quality_axes": ["design-tokens", "component-usage", "visual-hierarchy", "mobile-responsive", "accessibility", "design-handoff"],
   "visual_review_categories": ["color", "layout", "typography", "copy", "a11y", "console-error", "regression"],
   "guides": [
@@ -175,23 +175,33 @@
       "anchor": "none",
       "trains": ["design-lead", "conversion-lead", "design-quality", "visual-review"],
       "maps_to": ["visual-hierarchy", "layout"]
+    },
+    {
+      "guide": "INPUT_COMPOSER_PATTERN",
+      "path": "_knowledge/design/INPUT_COMPOSER_PATTERN.md",
+      "tier": "standard",
+      "cluster": "C",
+      "anchor": "none",
+      "shape": "pattern",
+      "trains": ["design-lead", "design-quality", "visual-review", "frontend-builder"],
+      "maps_to": ["component-usage", "visual-hierarchy", "mobile-responsive", "layout", "a11y"]
     }
   ],
   "coverage": {
     "design_quality_axes": {
       "design-tokens": ["CONSISTENCY_DESIGN_SYSTEMS_TOKENS", "TYPOGRAPHY", "COLOR_AND_CONTRAST", "LAYOUT_GRID_SPACING", "DEPTH_ELEVATION_IMAGERY"],
-      "component-usage": ["CONSISTENCY_DESIGN_SYSTEMS_TOKENS", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "INTERACTION_FEEDBACK_STATES", "NAVIGATION_IA", "FRICTION_TRUST_FORMS", "COGNITIVE_LOAD_SIMPLICITY", "DEPTH_ELEVATION_IMAGERY", "GESTALT_GROUPING", "PERFORMANCE_PERCEIVED_UX"],
-      "visual-hierarchy": ["VISUAL_HIERARCHY", "GESTALT_GROUPING", "COGNITIVE_LOAD_SIMPLICITY", "TYPOGRAPHY", "LAYOUT_GRID_SPACING", "CONVERSION_HIERARCHY", "INTERACTION_FEEDBACK_STATES", "NAVIGATION_IA"],
-      "mobile-responsive": ["MOBILE_RESPONSIVE", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "MOTION_ANIMATION", "PERFORMANCE_PERCEIVED_UX"],
+      "component-usage": ["CONSISTENCY_DESIGN_SYSTEMS_TOKENS", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "INTERACTION_FEEDBACK_STATES", "NAVIGATION_IA", "FRICTION_TRUST_FORMS", "COGNITIVE_LOAD_SIMPLICITY", "DEPTH_ELEVATION_IMAGERY", "GESTALT_GROUPING", "PERFORMANCE_PERCEIVED_UX", "INPUT_COMPOSER_PATTERN"],
+      "visual-hierarchy": ["VISUAL_HIERARCHY", "GESTALT_GROUPING", "COGNITIVE_LOAD_SIMPLICITY", "TYPOGRAPHY", "LAYOUT_GRID_SPACING", "CONVERSION_HIERARCHY", "INTERACTION_FEEDBACK_STATES", "NAVIGATION_IA", "INPUT_COMPOSER_PATTERN"],
+      "mobile-responsive": ["MOBILE_RESPONSIVE", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "MOTION_ANIMATION", "PERFORMANCE_PERCEIVED_UX", "INPUT_COMPOSER_PATTERN"],
       "accessibility": ["ACCESSIBILITY_WCAG", "COLOR_AND_CONTRAST", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "MOTION_ANIMATION", "FRICTION_TRUST_FORMS"],
       "design-handoff": ["CONSISTENCY_DESIGN_SYSTEMS_TOKENS", "CONTENT_MICROCOPY", "ETHICS_NO_DARK_PATTERNS"]
     },
     "visual_review_categories": {
       "color": ["COLOR_AND_CONTRAST", "ACCESSIBILITY_WCAG", "DEPTH_ELEVATION_IMAGERY", "INTERACTION_FEEDBACK_STATES", "CONSISTENCY_DESIGN_SYSTEMS_TOKENS"],
-      "layout": ["VISUAL_HIERARCHY", "GESTALT_GROUPING", "COGNITIVE_LOAD_SIMPLICITY", "LAYOUT_GRID_SPACING", "DEPTH_ELEVATION_IMAGERY", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "NAVIGATION_IA", "CONVERSION_HIERARCHY", "FRICTION_TRUST_FORMS", "MOBILE_RESPONSIVE"],
+      "layout": ["VISUAL_HIERARCHY", "GESTALT_GROUPING", "COGNITIVE_LOAD_SIMPLICITY", "LAYOUT_GRID_SPACING", "DEPTH_ELEVATION_IMAGERY", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "NAVIGATION_IA", "CONVERSION_HIERARCHY", "FRICTION_TRUST_FORMS", "MOBILE_RESPONSIVE", "INPUT_COMPOSER_PATTERN"],
       "typography": ["TYPOGRAPHY", "CONSISTENCY_DESIGN_SYSTEMS_TOKENS"],
       "copy": ["CONTENT_MICROCOPY", "COGNITIVE_LOAD_SIMPLICITY", "NAVIGATION_IA", "CONVERSION_HIERARCHY", "FRICTION_TRUST_FORMS", "ETHICS_NO_DARK_PATTERNS"],
-      "a11y": ["ACCESSIBILITY_WCAG", "COLOR_AND_CONTRAST", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "MOTION_ANIMATION", "FRICTION_TRUST_FORMS", "MOBILE_RESPONSIVE"],
+      "a11y": ["ACCESSIBILITY_WCAG", "COLOR_AND_CONTRAST", "AFFORDANCE_CONTROLS_ICONOGRAPHY", "MOTION_ANIMATION", "FRICTION_TRUST_FORMS", "MOBILE_RESPONSIVE", "INPUT_COMPOSER_PATTERN"],
       "console-error": ["INTERACTION_FEEDBACK_STATES", "PERFORMANCE_PERCEIVED_UX"],
       "regression": ["INTERACTION_FEEDBACK_STATES", "MOTION_ANIMATION", "CONSISTENCY_DESIGN_SYSTEMS_TOKENS", "PERFORMANCE_PERCEIVED_UX"]
     },
