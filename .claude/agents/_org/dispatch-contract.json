@@ -74,6 +74,7 @@
       { "when": { "kind": "reviewer", "claude_pinned": true }, "class": "claude_pinned_reviewer" },
       { "when": { "kind": "reviewer", "provider": "openai" }, "class": "cross_provider_reviewer" },
       { "when": { "kind": "reviewer", "provider": "gemini" }, "class": "cross_provider_reviewer" },
+      { "when": { "kind": "reviewer", "provider": "antigravity" }, "class": "cross_provider_reviewer" },
       { "when": { "kind": "reviewer", "provider": "claude" }, "class": "claude_pinned_reviewer" },
       { "when": { "tier": "director", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "director" }, "class": "manager" },
@@ -114,10 +115,10 @@
       "coverage": { "binding_verdict": false, "completion_record_required": true, "cross_provider_required": false }
     },
     "cross_provider_reviewer": {
-      "_doc": "frontend/backend reviewers, qa-reviewer (openai), security-reviewer (gemini) — independent verdict on a different model family.",
+      "_doc": "frontend/backend reviewers, qa-reviewer (openai), security-reviewer (antigravity/agy — the Gemini lab; the individual gemini CLI is sunset) — independent verdict on a different model family. The security panel's Claude HUNTER lane is the sanctioned in-process-agent exception (sanctioned_lanes.security_claude_hunter; ADR-0016).",
       "allowed_shapes": ["subprocess-cross-provider"],
       "forbidden_shapes": ["in-process-agent", "api"],
-      "tool_id": ["codex", "gemini"],
+      "tool_id": ["codex", "gemini", "agy"],
       "cwd_policy": "canonical",
       "file_scope": "read-only",
       "env_allowlist": ["PATH", "HOME", "USERPROFILE", "GEMINI_API_KEY", "GEMINI_CLI_TRUST_WORKSPACE", "GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0", "ComSpec", "PATHEXT", "SystemRoot"],
@@ -239,6 +240,13 @@
       "shape": "subprocess-claude",
       "applies_to_classes": ["cross_provider_reviewer", "cross_provider_consult_lead"],
       "completion_record": { "fallback": true, "provider": "claude", "requires": ["quota_fallback_from"] }
+    },
+    "security_claude_hunter": {
+      "_doc": "ADR-0016: the security 3-lab panel's Claude HUNTER lane (security-reviewer.third_pass, claude-opus-4-8@max) + its fable-5 planner/judge are the ONE legal Claude shape for a cross_provider_reviewer — in-process-agent, summoned by ε via the harness Agent tool with a scopeContract, evidenced by a record-inprocess completion (the same ok:true record gauntlet-verify reads). NOT a fallback (that is review_fallback) — a DELIBERATE cross-lab hunter. A node script cannot summon it (requires-orchestrator); dispatch-review.js fires the agy + gpt CLI passes and hands the Claude lane to ε. Registered here so the informational note prints and the lane never exits 1; the class default still forbids in-process-agent for every non-sanctioned reviewer dispatch.",
+      "flag": "--security-claude-hunter",
+      "shape": "in-process-agent",
+      "applies_to_classes": ["cross_provider_reviewer"],
+      "completion_record": { "provider": "claude", "requires": ["record_via_inprocess"] }
     }
   },
 

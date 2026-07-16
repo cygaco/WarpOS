@@ -134,7 +134,7 @@ agree — keep them in sync.
 | frontend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude FE builder |
 | backend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude BE builder |
 | qa-reviewer | openai | gpt-5.5 xhigh — traceability + integrity + functional |
-| security-reviewer | gemini | gemini-3.1-pro thinking-on — replaces redteam; + 2nd GPT jailbreak pass |
+| security-reviewer | antigravity | gemini-3.1-pro-high via agy (Gemini lab; individual gemini CLI sunset) — 3-lab panel: + gpt-5.6-sol hunter + claude-opus-4-8@max in-process hunter + fable-5 planner/judge (ADR-0016; DISPATCH.md §8) |
 | cabinet | openai | freeform cross-provider consult / second opinion — NO strict output schema (formerly `advisor`/`consult`) |
 
 > **The GPT product-leadership chain (`design-lead`, `product-lead`, `director-of-product`, `director-of-growth`) is dispatched like a reviewer, NOT like a manager (the door to use).** These are the product/growth judgment + requirement-authoring roles on a non-Claude provider — RULE 4 (operator: GPT is best at product design/UX/flows + product requirements), the deliberate `cross_provider_consult_lead` class (E-DISPATCH-PERFECT-001 W2). So reach each via a subprocess (example shown for design-lead; identical for the other three):

@@ -4,10 +4,9 @@ description: Security Reviewer — dispatched by the Security Lead; replaces the
 tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: claude-opus-4-8
-provider: gemini
-provider_model: gemini-3.1-pro-preview
+provider: antigravity
+provider_model: gemini-3.1-pro-high
 provider_fallback: claude
-provider_reasoning_effort: high
 maxTurns: 60
 color: red
 ---
