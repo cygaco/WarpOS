@@ -53,8 +53,9 @@ test("hasGreek / isOffice", () => {
   assert.equal(isOffice({ home: "growth" }), false);
 });
 
-// ── Integration — the live registry surfaces the current pre-strip state (10 dept + 2 office). ──
-test("live registry: surfaces the current Greek/office violations (report-only)", () => {
+// ── Integration — post-flip (SP-20260716-001) the bijection HOLDS: the 10 department call-signs are
+// stripped and cabinet=ζ / ops-analyst=η are assigned, so the live check is clean. ──
+test("live registry: post-strip clean — Greek ⟺ President's office bijection holds", () => {
   let out = "", code = 0;
   try {
     out = execFileSync("node", [path.join(__dirname, "greek-office-parity.js")], { encoding: "utf8" });
@@ -62,8 +63,7 @@ test("live registry: surfaces the current Greek/office violations (report-only)"
     out = (e.stdout || "") + (e.stderr || "");
     code = e.status || 1;
   }
-  assert.ok(code === 1 && /director-of-product/.test(out) && /ops-analyst/.test(out),
-    `expected the live check to surface both directions; got code=${code}: ${out}`);
+  assert.ok(code === 0, `expected the live check to be clean post-strip; got code=${code}: ${out}`);
 });
 
 if (failures.length) {

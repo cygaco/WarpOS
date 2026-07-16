@@ -62,8 +62,9 @@ test("gpt role with Agent in SPEC frontmatter only → CRITICAL (spec source)", 
   assert.ok(has(errs, "design-lead") && has(errs, "spec frontmatter tools"), errs.join(" | "));
 });
 
-// ── Integration — the live registry surfaces the KNOWN qa-reviewer contradiction (report-only). ──
-test("live registry: qa-reviewer (openai+tools:Agent) is surfaced (report-only, resolved at Bucket D)", () => {
+// ── Integration — post-flip (SP-20260716-001 Bucket D/E) the live registry is CLEAN: qa-reviewer,
+// β, and security-reviewer all dropped tools:[Agent] when they flipped to a non-claude provider. ──
+test("live registry: post-flip clean — no provider!=claude role carries Agent-tool", () => {
   let out = "";
   let code = 0;
   try {
@@ -72,8 +73,8 @@ test("live registry: qa-reviewer (openai+tools:Agent) is surfaced (report-only, 
     out = (e.stdout || "") + (e.stderr || "");
     code = e.status || 1;
   }
-  // The current roster has qa-reviewer=openai+tools:Agent → the check reports it (exit 1 until Bucket D).
-  assert.ok(code === 1 && /qa-reviewer/.test(out), `expected the live check to surface qa-reviewer; got code=${code}: ${out}`);
+  // Bucket D/E dropped the Agent tool from every flipped GPT/antigravity role → the live check is clean.
+  assert.ok(code === 0, `expected the live check to be clean post-flip; got code=${code}: ${out}`);
 });
 
 if (failures.length) {
