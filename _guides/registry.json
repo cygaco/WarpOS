@@ -56,6 +56,15 @@
       "title": "AUTH_GUIDE.md — Letting users sign in (Google SSO, email signup, magic links)"
     },
     {
+      "guide": "AUTH_RUNBOOK",
+      "file": "_guides/AUTH_RUNBOOK.md",
+      "anchor": "lastmile:module/auth",
+      "shape": "walkthrough",
+      "timing": "at-module",
+      "lead_time": "Custom Domain add-on purchase (operator, ~$10/mo) gates §7; Resend account (operator) gates live email",
+      "title": "AUTH_RUNBOOK.md — Passwordless auth on Supabase (product-agnostic, agent-drivable)"
+    },
+    {
       "guide": "COMPLIANCE_TRIGGERS",
       "file": "_guides/COMPLIANCE_TRIGGERS_GUIDE.md",
       "anchor": "spinup:preflight",

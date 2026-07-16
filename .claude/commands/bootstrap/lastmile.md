@@ -130,6 +130,8 @@ Each module: **detect → recommend (default) → plan (shortest safe path)**.
 > - **Database** → [`_guides/DATABASE_GUIDE.md`](../../../_guides/DATABASE_GUIDE.md)
 > <!-- guide-anchor:AUTH anchor:lastmile:module/auth shape:walkthrough -->
 > - **Auth / Accounts** → [`_guides/AUTH_GUIDE.md`](../../../_guides/AUTH_GUIDE.md) — day-zero note: Google sensitive-scope OAuth verification can take days–weeks.
+> <!-- guide-anchor:AUTH_RUNBOOK anchor:lastmile:module/auth shape:walkthrough -->
+> - **Passwordless Supabase auth (agent-drivable runbook)** → [`_guides/AUTH_RUNBOOK.md`](../../../_guides/AUTH_RUNBOOK.md) — the opinionated execution runbook if you've chosen passwordless Supabase (6-digit email code + Google). The app-scaffold ships its code (clients, sign-in UI, PKCE callback, password hard-block migration + verifier); ⛔ run `SUPABASE_DB_URL=… npm run verify:auth` GREEN before any auth-enabled deploy.
 > <!-- guide-anchor:ONBOARDING anchor:lastmile:module/auth shape:walkthrough -->
 > - **Onboarding** (when to ask for signup, what to collect) → [`_guides/ONBOARDING_GUIDE.md`](../../../_guides/ONBOARDING_GUIDE.md) - signup-wall placement, progressive profiling, guest/anonymous mode + account linking, minors escalation (COPPA).
 > <!-- guide-anchor:DATA_REQUESTS anchor:lastmile:module/auth shape:walkthrough -->
