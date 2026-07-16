@@ -112,3 +112,34 @@ for (const [label, sql] of Object.entries(nearMisses)) {
     assert.equal(res.valid, false, `near-miss "${label}" must be rejected`);
   });
 }
+
+// ── LIVE-path installed-proof teeth (selectInstalledTarget) ──────────────────────
+// The live verifier once fell back to "any trigger whose body nulls encrypted_password"
+// when the shipped trigger was absent — a residual false-green (security review). These
+// prove the fallback is gone: installed-proof requires the EXACT shipped identity.
+const SHIPPED = { name: "hardblock_password_trigger", fn: "hardblock_password", bodyOk: true };
+const SUBSTITUTE = { name: "some_other_audit_trigger", fn: "audit_wipe_password", bodyOk: true };
+
+test("live target-selection: shipped identity present => selected", async () => {
+  const { selectInstalledTarget } = await loadVerifier(dir);
+  assert.ok(selectInstalledTarget([SHIPPED]), "the exact shipped trigger must be selected");
+});
+
+test("live target-selection: ONLY a substitute body-nulling trigger, shipped ABSENT => null (the removed false-green)", async () => {
+  const { selectInstalledTarget } = await loadVerifier(dir);
+  assert.equal(
+    selectInstalledTarget([SUBSTITUTE]),
+    null,
+    "a substitute trigger that nulls the password is NOT proof the shipped hard-block is installed",
+  );
+});
+
+test("live target-selection: shipped + substitute both present => the SHIPPED one is selected", async () => {
+  const { selectInstalledTarget } = await loadVerifier(dir);
+  assert.equal(selectInstalledTarget([SUBSTITUTE, SHIPPED]).name, SHIPPED.name);
+});
+
+test("live target-selection: no triggers => null", async () => {
+  const { selectInstalledTarget } = await loadVerifier(dir);
+  assert.equal(selectInstalledTarget([]), null);
+});

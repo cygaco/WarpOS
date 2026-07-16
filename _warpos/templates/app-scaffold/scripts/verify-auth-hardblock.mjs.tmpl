@@ -229,6 +229,24 @@ function functionBodyHardBlocks(fndef) {
   return nulls && returnsNew && !returnsOld;
 }
 
+/**
+ * Select the installed trigger that PROVES the shipped hard-block is present, from the
+ * candidate triggers on auth.users. Installed-proof requires the EXACT shipped identity
+ * (trigger name + executed function name) — there is deliberately NO fallback to "any
+ * body-nulling trigger": a substitute trigger is NOT proof the SHIPPED hard-block is
+ * installed (a deployment missing `hardblock_password_trigger` but carrying some other
+ * body-nulling trigger would otherwise false-green — the residual false-green the
+ * security review caught). Pure + exported so the teeth are unit-tested without a live
+ * DB. Returns the matching candidate, or null when the exact shipped identity is absent.
+ */
+export function selectInstalledTarget(candidates) {
+  return (
+    (Array.isArray(candidates) ? candidates : []).find(
+      (c) => c && c.name === SHIPPED_TRIGGER && String(c.fn).toLowerCase() === SHIPPED_FN,
+    ) || null
+  );
+}
+
 async function liveVerify(dbUrl) {
   let pgMod;
   try {
@@ -275,15 +293,10 @@ async function liveVerify(dbUrl) {
       bodyOk: functionBodyHardBlocks(r.fndef),
     }));
 
-    // Installed-proof requires the EXACT shipped trigger + function identity — NO
-    // fallback. A substitute trigger whose body happens to null encrypted_password is
-    // NOT proof the shipped hard-block is installed: a deployment missing
-    // `hardblock_password_trigger` but carrying some other body-nulling trigger would
-    // otherwise false-green (the residual false-green the security review caught). The
-    // binding + body checks below still run on this exact target as defense-in-depth.
-    const target = candidates.find(
-      (c) => c.name === SHIPPED_TRIGGER && c.fn.toLowerCase() === SHIPPED_FN
-    );
+    // Installed-proof requires the EXACT shipped identity (see selectInstalledTarget —
+    // no substitute-trigger fallback). The binding + body checks below still run on this
+    // exact target as defense-in-depth.
+    const target = selectInstalledTarget(candidates);
 
     if (!target) {
       return {
