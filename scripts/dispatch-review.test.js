@@ -69,6 +69,27 @@ test("fail beats error (anyFail precedence)", () => {
   assert.equal(m.mergedVerdict, "fail");
 });
 
+// ── Lone-survivor merge honesty (verdict not buried; below-bar surfaced) ──
+test("lone survivor: 2 lanes dead + 1 GPT alive PASS → below_bar, surviving_verdict surfaced, still fail-closed", () => {
+  const m = mergeLanes("security-reviewer", [L("gemini", false, "error"), L("claude", false, "error"), L("openai", true, "pass")]);
+  assert.equal(m.ok, false, "diversity loss holds — a 1-family security verdict is invalid (fail-closed)");
+  assert.equal(m.below_bar, true, "a multi-lab review collapsed to <2 families is below-bar");
+  assert.equal(m.live_families, 1);
+  assert.equal(m.surviving_verdict, "pass", "the GPT survivor's real verdict is SURFACED, not buried under 'error'");
+  assert.ok(m.surviving_lanes.length === 1 && m.surviving_lanes[0].provider === "openai");
+});
+test("full diversity (3 live families) → not below_bar", () => {
+  const m = mergeLanes("security-reviewer", [L("gemini", true, "pass"), L("openai", true, "pass"), L("claude", true, "pass")]);
+  assert.equal(m.below_bar, false);
+  assert.equal(m.live_families, 3);
+  assert.equal(m.ok, true);
+});
+test("single-pass role (1 lane) → not below_bar (1-family by design, not a collapse)", () => {
+  const m = mergeLanes("qa-reviewer", [L("openai", true, "pass")]);
+  assert.equal(m.below_bar, false, "a single-pass review is not a diversity COLLAPSE");
+  assert.equal(m.multipass, false);
+});
+
 // ── Lane-persistence (the recoverable-per-lane-evidence gap) ──
 test("persistLane writes the raw stdout to <dir>/<pass>.txt and returns the path", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lane-"));

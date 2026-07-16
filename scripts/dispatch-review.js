@@ -174,15 +174,37 @@ function mergeLanes(role, lanes) {
   const anyError = lanes.some((l) => !l.ok || l.verdict === "error");
   const mergedVerdict = anyFail ? "fail" : anyError ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass";
   const clean = !anyFail && !anyError; // clean iff EVERY lane is alive AND its verdict is pass/warn
+
+  // Lane-diversity honesty (the lone-survivor bug). A binding security verdict needs ≥2 INDEPENDENT
+  // labs (provider families). When lanes die and only ONE family survives, the review is fail-closed
+  // (clean stays false — diversity loss HOLDS, §7), BUT the survivor's REAL verdict must be SURFACED,
+  // not buried under an opaque "error" (BC-16-adjacent: a gate that lies about what it knows). These
+  // additive fields let the orchestrator build a fix brief from the survivor's findings AND see the
+  // below-bar flag, instead of manually re-running a clean single-provider dispatch to recover it.
+  const multipass = lanes.length > 1;
+  const live = lanes.filter((l) => l.ok);
+  const liveFamilies = [...new Set(live.map((l) => l.provider))];
+  const belowBar = multipass && liveFamilies.length < 2; // a multi-lab review that COLLAPSED to <2 families
+  const survivingLanes = live.map((l) => ({ pass: l.pass, provider: l.provider, verdict: l.verdict, lane_out: l.lane_out || null }));
+  // The lone survivor's verdict (exactly one family live) — preserved even when mergedVerdict="error".
+  const survivingVerdict = liveFamilies.length === 1 && live.length >= 1 ? live[0].verdict : null;
+
   return {
     ok: clean,
     role,
-    multipass: lanes.length > 1,
+    multipass,
     passes_run: lanes.length,
     lanes,
     allLanesOk: lanes.every((l) => l.ok),
     mergedVerdict,
     verdict: mergedVerdict,
+    // Diversity-honesty (lone-survivor): surfaced, not buried. below_bar ⇒ a binding verdict is invalid
+    // (fail-closed), but surviving_verdict carries what the lone live lane actually found.
+    live_lanes: live.length,
+    live_families: liveFamilies.length,
+    below_bar: belowBar,
+    surviving_lanes: survivingLanes,
+    surviving_verdict: survivingVerdict,
     parsed: { agent: role, verdict: mergedVerdict, lanes },
   };
 }
