@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "playwright test",
     "test:auth-hardblock": "node --test scripts/verify-auth-hardblock.test.mjs",
+    "test:auth-redirect": "node --test src/lib/supabase/safe-next.test.mjs",
     "verify:auth": "node scripts/verify-auth-hardblock.mjs",
     "check:auth-seam": "node scripts/check-auth-seam.mjs"
   },

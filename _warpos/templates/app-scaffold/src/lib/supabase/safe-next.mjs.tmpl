@@ -1,0 +1,40 @@
+// safe-next.mjs - open-redirect defense for the `?next=` param on the auth callback.
+//
+// SECURITY (RT-201 / CWE-601): a naive "does the string start with a single '/'?" guard
+// is defeated because the WHATWG URL parser (new URL()) STRIPS tab/newline/carriage-return
+// DURING parsing - AFTER the guard has run. So `?next=/%0D/evil.com` decodes to `/\r/evil.com`
+// (passes a leading-slash check), and new URL() then strips the `\r` -> `//evil.com` -> an
+// off-origin redirect to https://evil.com/ on successful login (a post-auth phishing vector).
+//
+// The only robust defense is PARSE-THEN-VERIFY-SAME-ORIGIN: resolve `raw` against the app
+// origin with the SAME parser the redirect will use, then accept it ONLY if the resolved
+// origin equals the app origin - returning a same-origin relative path. Control characters
+// are rejected up front as belt-and-suspenders. Pure + isolated (no Next/Supabase imports)
+// so it is unit-testable.
+
+/** @type {string} */
+export const DEFAULT_NEXT = "/account";
+
+// Any C0 control char (U+0000..U+001F) - the URL parser strips TAB/LF/CR mid-parse, which is
+// how "/\r/evil.com" becomes "//evil.com". Built from char codes so no literal control byte
+// is ever written into the source.
+const CONTROL_CHARS = new RegExp("[" + "\\u0000-\\u001F" + "]");
+
+/**
+ * Resolve the `next` redirect target to a SAFE same-origin relative path, or DEFAULT_NEXT.
+ * @param {string | null | undefined} raw  the raw `next` query param (already URL-decoded by searchParams.get)
+ * @param {string} origin  the app origin (e.g. url.origin)
+ * @returns {string} a same-origin `pathname+search+hash`, or DEFAULT_NEXT
+ */
+export function safeNextPath(raw, origin) {
+  if (!raw) return DEFAULT_NEXT;
+  // Reject control chars BEFORE parsing - kills the strip-mid-parse vector.
+  if (CONTROL_CHARS.test(raw)) return DEFAULT_NEXT;
+  try {
+    const u = new URL(raw, origin);
+    if (u.origin !== origin) return DEFAULT_NEXT; // off-origin (//host, https://evil, /\host) -> reject
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return DEFAULT_NEXT;
+  }
+}

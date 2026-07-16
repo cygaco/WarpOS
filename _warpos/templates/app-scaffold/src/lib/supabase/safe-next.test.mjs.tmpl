@@ -1,0 +1,59 @@
+// safe-next.test.mjs - regression tests for the RT-201 open-redirect fix (CWE-601).
+// Run: node --test src/lib/supabase/safe-next.test.mjs
+//
+// The vector: searchParams.get() URL-DECODES the value, so `?next=/%0D/evil.com` arrives as
+// `/\r/evil.com`. A naive leading-slash guard passes it, then new URL() strips the `\r` ->
+// `//evil.com` -> off-origin. These tests assert the three control-char payloads (CR/LF/TAB)
+// AND the classic protocol-relative / absolute / backslash forms all resolve same-origin or
+// to DEFAULT_NEXT, while legitimate same-origin paths pass through.
+
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { safeNextPath, DEFAULT_NEXT } from "./safe-next.mjs";
+
+const ORIGIN = "https://app.example.com";
+const CR = String.fromCharCode(13);
+const LF = String.fromCharCode(10);
+const TAB = String.fromCharCode(9);
+
+// The RT-201 control-char payloads (as searchParams.get would hand them over, decoded).
+const controlCharVectors = {
+  "CR (/%0D/evil.com)": "/" + CR + "/evil.com",
+  "LF (/%0A/evil.com)": "/" + LF + "/evil.com",
+  "TAB (/%09/evil.com)": "/" + TAB + "/evil.com",
+};
+
+for (const [label, raw] of Object.entries(controlCharVectors)) {
+  test(`RT-201: control-char open-redirect blocked - ${label}`, () => {
+    const out = safeNextPath(raw, ORIGIN);
+    // Must NOT resolve off-origin. Either DEFAULT_NEXT, or a same-origin relative path.
+    const resolved = new URL(out, ORIGIN);
+    assert.equal(resolved.origin, ORIGIN, `"${label}" must stay same-origin, got ${out}`);
+    assert.equal(out, DEFAULT_NEXT, `"${label}" should fall back to DEFAULT_NEXT`);
+  });
+}
+
+const offOriginVectors = {
+  "protocol-relative //evil.com": "//evil.com",
+  "absolute https://evil.com": "https://evil.com/x",
+  "backslash /\\evil.com": "/\\evil.com",
+  "backslash-backslash \\\\evil.com": "\\\\evil.com",
+};
+
+for (const [label, raw] of Object.entries(offOriginVectors)) {
+  test(`open-redirect blocked - ${label}`, () => {
+    const out = safeNextPath(raw, ORIGIN);
+    assert.equal(new URL(out, ORIGIN).origin, ORIGIN, `"${label}" must stay same-origin, got ${out}`);
+  });
+}
+
+test("legitimate same-origin paths pass through", () => {
+  assert.equal(safeNextPath("/account", ORIGIN), "/account");
+  assert.equal(safeNextPath("/dashboard?tab=billing#top", ORIGIN), "/dashboard?tab=billing#top");
+});
+
+test("empty / null / undefined => DEFAULT_NEXT", () => {
+  assert.equal(safeNextPath(null, ORIGIN), DEFAULT_NEXT);
+  assert.equal(safeNextPath(undefined, ORIGIN), DEFAULT_NEXT);
+  assert.equal(safeNextPath("", ORIGIN), DEFAULT_NEXT);
+});
