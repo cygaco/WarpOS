@@ -266,10 +266,19 @@ function classifyQuotaFailure(text) {
 const PROVIDER_FAMILY = { claude: "anthropic", openai: "openai", gemini: "google", antigravity: "google" };
 function suggestFallbackProvider(failedProvider, cfg) {
   const family = PROVIDER_FAMILY[failedProvider] || failedProvider;
-  if (family === "google") return "openai"; // gemini/antigravity → GPT (different family, non-claude)
-  if (family === "openai") return (cfg && cfg.fallback) || "claude"; // GPT → claude (different family)
-  if (family === "anthropic") return "openai"; // claude → GPT (different family)
-  return (cfg && cfg.fallback) || "claude";
+  // COR-001 (backend-reviewer HIGH): NEVER trust cfg.fallback to be cross-family — a config with
+  // {fallback:"openai"} on an openai role would otherwise re-target the SAME family. Only accept a
+  // configured fallback when it is a DIFFERENT, KNOWN family; else fall to a guaranteed cross-family
+  // default. Preference: a Google-lab failure retries on the GPT lab (non-claude, security lab-diversity).
+  const differentFamily = (p) => p && PROVIDER_FAMILY[p] && PROVIDER_FAMILY[p] !== family;
+  let target;
+  if (family === "google") target = "openai"; // gemini/antigravity → GPT
+  else if (family === "openai") target = differentFamily(cfg && cfg.fallback) ? cfg.fallback : "claude";
+  else if (family === "anthropic") target = "openai"; // claude → GPT
+  else target = differentFamily(cfg && cfg.fallback) ? cfg.fallback : "claude";
+  // Final guard — GUARANTEE a different, known family by construction (never same-family or unknown).
+  if (!differentFamily(target)) target = family === "anthropic" ? "openai" : "claude";
+  return target;
 }
 
 /**

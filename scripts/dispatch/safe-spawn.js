@@ -81,14 +81,18 @@ const SHELL_META = /[`$;&|<>()\s]/;
 // substitution that weaponize a .cmd shim: & | < > ^ " backtick $ ; CR LF — PLUS
 // `%` and `!` (GPT-5.5 review R2 HIGH: cmd.exe %VAR% expansion + delayed-expansion
 // !VAR! reach the shell through cmd.exe /c).
-const INJECT_META = /[`$;&|<>^"%!\r\n]/;
+// NUL (\x00) is refused in EVERY value (both regexes below): it is never legitimate in an argv value,
+// and Node's child_process THROWS ERR_INVALID_ARG_VALUE on a NUL in argv — so accepting it would crash
+// the dispatcher past the fail-closed result contract instead of returning a clean refusal (REG-001,
+// backend-reviewer). assertArgs runs before spawn in BOTH safeSpawnSync/safeSpawnFile, so this rejects it.
+const INJECT_META = /[`$;&|<>^"%!\r\n\x00]/;
 // The agy (Antigravity) carve-out (#27): agy's native-exe `-p` value slot carries a MULTI-LINE
 // prompt — the ONLY multi-line delivery agy supports (no stdin, no prompt-file flag). CreateProcess
 // (shell:false) passes a native-exe argv value verbatim, so a newline in THIS one slot is safe; every
 // OTHER injection metachar is STILL refused. Allowlist-of-shape: applies ONLY to tool `agy`, flag `-p`,
 // and a NATIVE exe (a .cmd/.bat shim is refused in safeSpawnSync — cmd.exe /c would reparse the
 // newline). The same multi-line content in ANY other arg hits full INJECT_META → refused.
-const INJECT_META_ALLOW_NL = /[`$;&|<>^"%!]/; // INJECT_META minus \r\n
+const INJECT_META_ALLOW_NL = /[`$;&|<>^"%!\x00]/; // INJECT_META minus \r\n — but NUL is STILL refused (REG-001)
 const isInRepo = (p) => {
   try {
     const r = path.resolve(p);

@@ -67,8 +67,10 @@ function precedentSlice(n) {
  * The boundary + claims are REQUIRED (the contract): refuse to assemble without them.
  */
 function buildContext({ boundary, claims, precedentLines }) {
-  if (!boundary || !claims) {
-    return { ok: false, reason: "the β-consult contract requires BOTH --boundary and --claims (an under-specified consult yields a canned verdict)" };
+  // COR-003: whitespace-only is NOT provided — an all-blank boundary/claims must not dispatch an
+  // under-fed β. Require non-empty AFTER trim.
+  if (!boundary || !boundary.trim() || !claims || !claims.trim()) {
+    return { ok: false, reason: "the β-consult contract requires BOTH --boundary and --claims non-empty (an under-specified consult yields a canned verdict)" };
   }
   const parts = [];
   parts.push(
@@ -106,19 +108,29 @@ function resolveClaims(val) {
   return val || "";
 }
 
-/** Extract the verdict token from β's output (the "VERDICT: X" line, or the first bare token). */
+/**
+ * Extract β's verdict — STRICTLY (SEC-001, backend-reviewer HIGH). Only a dedicated `VERDICT: X` line
+ * counts; a bare DECIDE/DIRECTIVE/ESCALATE mentioned anywhere in prose (a refusal, a quotation, a
+ * prompt echo, "whether to DECIDE later") is NOT a verdict — the old bare-token fallback was fail-OPEN.
+ * Requires EXACTLY ONE distinct verdict across all VERDICT: lines; 0 lines or conflicting/duplicate
+ * distinct verdicts → null (no verdict → the consult is not `ok`).
+ */
 function parseVerdict(output) {
   if (!output) return null;
-  const m = /^\s*VERDICT:\s*(DECIDE|DIRECTIVE|ESCALATE)\b/im.exec(output);
-  if (m) return m[1].toUpperCase();
-  for (const v of VERDICTS) if (new RegExp(`\\b${v}\\b`).test(output)) return v;
-  return null;
+  const matches = [...String(output).matchAll(/^[ \t>*-]*VERDICT:\s*(DECIDE|DIRECTIVE|ESCALATE)\b/gim)].map((m) => m[1].toUpperCase());
+  const distinct = [...new Set(matches)];
+  return distinct.length === 1 ? distinct[0] : null; // exactly one; reject none / conflicting
 }
 
 function main(argv) {
+  // COR-003 (backend-reviewer): a flag whose "value" is actually the NEXT option (e.g. `--claims --json`)
+  // must read as MISSING, not swallow the following flag — otherwise a malformed invocation dispatches an
+  // under-fed β. Return null when the next token is absent or is itself an option (`--…`).
   const get = (flag) => {
     const i = argv.indexOf(flag);
-    return i !== -1 ? argv[i + 1] : null;
+    if (i === -1) return null;
+    const v = argv[i + 1];
+    return v === undefined || /^--/.test(v) ? null : v; // next token missing or is another option → MISSING
   };
   const boundary = get("--boundary");
   const claimsArg = get("--claims");
@@ -174,9 +186,18 @@ function main(argv) {
   }
   const agentOutput = (result && (result.output || (result.parsed && JSON.stringify(result.parsed)))) || stdout;
   const verdict = parseVerdict(agentOutput);
-  // Effective-model attestation from the dispatch result (WG-26): what the CLI ACTUALLY served.
-  const effectiveModel = (result && (result.actualModel || result.model)) || null;
-  const ok = !!(result && result.ok && verdict);
+  // COR-002 (backend-reviewer HIGH): the ATTESTATION must be OBSERVED, not the requested model echoed.
+  // runProvider sets result.actualModel from the CLI (codex reports coarsely; its strict-mode
+  // modelsMatch REJECTS a silent downgrade before returning ok:true — so an ok openai result proves the
+  // GPT lab served, not a claude fallback). We therefore attest on TWO independent facts: (a) the
+  // dispatch ran on provider "openai" and did NOT fall back (the load-bearing WG-26 proof — β reached
+  // the GPT lab, not the Claude lane), and (b) the observed model. We DO NOT fall back to result.model
+  // (the requested value) — an absent observed model reads as null, never as a false attestation.
+  const observedModel = (result && result.actualModel) || null;
+  const fellBack = !!(result && (result.fallback === true || result.quotaFallbackFrom));
+  const ranOnGpt = !!(result && result.provider === "openai" && !fellBack);
+  const ok = !!(result && result.ok && verdict && ranOnGpt);
+  const effectiveModel = ranOnGpt ? observedModel : null;
 
   const out = {
     command: "beta-consult",
@@ -185,10 +206,22 @@ function main(argv) {
     dispatched: !!result,
     ok,
     verdict,
-    effective_model: effectiveModel, // the attestation — prove the flip is live, not a config diff
+    ran_on_gpt: ranOnGpt, // the load-bearing WG-26 attestation: β reached the GPT lab (not the claude fallback)
+    fell_back: fellBack,
+    effective_model: effectiveModel, // OBSERVED model (null if not observed / fell back) — never the requested value
     provider: (result && result.provider) || null,
     dispatch_exit: typeof r.status === "number" ? r.status : null,
-    error: ok ? undefined : (result && result.error) || "no parseable verdict from β",
+    error: ok
+      ? undefined
+      : !result
+        ? "β dispatch produced no parseable result"
+        : fellBack
+          ? `β FELL BACK off the GPT lab (provider=${result.provider}) — not a valid gpt-5.6-sol attestation`
+          : result.provider !== "openai"
+            ? `β did not run on the GPT lab (provider=${result.provider})`
+            : !verdict
+              ? "no single 'VERDICT: DECIDE|DIRECTIVE|ESCALATE' line in β output"
+              : (result && result.error) || "β consult not ok",
   };
   if (outFile) fs.writeFileSync(path.join(ROOT, outFile), JSON.stringify(out, null, 2));
   process.stdout.write(JSON.stringify(out, null, json ? 2 : 0) + "\n");
