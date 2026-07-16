@@ -1,15 +1,17 @@
 ---
-description: The named enforcer (ED-058) for the role-registry model/effort CHAIN — opus-4.8 is the shipped top, max is alpha-only, no `fable` as a model, every role carries a scaled model+effort, and the live dispatch consumers (catalog.js/providers.js) resolve to the SAME provider+effort the registry declares. Report-only in /scan:full.
+description: The named enforcer (ED-058) for the role-registry model/effort CHAIN. Since DISPATCH.md (2026-07-12, ADR-0016) it enforces the old∪new SUPERSET (Bucket-A widen): alpha ∈ {opus-4-8@max, fable-5@high}, doers ∈ {opus, sonnet-5}, max ∈ {alpha, security-reviewer}, ultra ∈ {gpt-5.6 sol/terra}, every role a scaled model+effort, live consumers resolve to the registry's provider+effort. Report-only in /scan:full.
 ---
 
 # /scan:model-chain — Role-registry model/effort chain integrity (ED-058)
 
-The model-chain HOME. Encodes the operator policy (2026-06-16, memory
-`feedback_model_opus48max_not_fable`): **Claude Opus 4.8 is the shipped top model; `max` effort is
-alpha-ONLY; `fable`/`claude-fable-5` is explicitly NOT the top default (rejected); every role
-carries a model + an effort scaled to its job; and the live dispatch consumers must RESOLVE to the
-provider+effort the registry declares** — a silent registry↔consumer drift would run a role on the
-wrong model.
+The model-chain HOME. Since **DISPATCH.md 2026-07-12 (ADR-0016)** superseded the 2026-06-16
+no-fable/opus-top/max-alpha-only directive, this enforcer is in its **Bucket-A WIDEN** stage: it
+accepts the **old∪new SUPERSET** so both the current opus roster AND a future fable-top roster pass,
+while keeping every tooth. The restrictive positive-pins (President=fable-5, builders=sonnet-5) land
+ATOMIC with the Bucket-D flip (the enforcer then NARROWS to the new policy). The supersession +
+reversal is recorded in ADR-0016; the stale memory `feedback_model_opus48max_not_fable` is flagged
+for update. A silent registry↔consumer drift would still run a role on the wrong model — the drift
+detector is unchanged.
 
 This is **not** a duplicate of `/scan:role-parity` (which owns registry-INTERNAL consistency:
 model-in-catalog, dispatch-graph, reporting-line, spec model-pin). model-chain adds what role-parity
