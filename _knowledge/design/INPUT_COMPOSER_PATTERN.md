@@ -134,7 +134,12 @@ DOM-dependent one.
   `.env.local.example`); each product wires its own `/api/transcribe` and provider key. Do NOT hand-roll a
   transcription route into the shared scaffold.
 - **Guest lane:** non-signed-in users must reach transcription too (no auth wall on the core loop), gated
-  by abuse controls not a 401.
+  by abuse controls not a 401. Because the POST is unauthenticated, the **route is the abuse boundary** —
+  it MUST enforce, server-side: rate limiting (per-IP/session), a quota/provider-spend cap (transcription
+  bills per second of audio), a body-size + audio-duration cap, and **fail-closed** behavior when a limit
+  is hit or config is missing. Do not ship the seam as an open unauth POST — every product copying the
+  scaffold would inherit the abuse/cost hole. (The `.env.local.example` seam repeats this as a REQUIRED
+  pre-enable checklist.)
 - **Permissions-Policy gotcha (flag-ON):** the app scaffold ships a strict `Permissions-Policy` header with
   `microphone=()` (fully disabled) in `next.config`. `getUserMedia` for the MediaRecorder path is BLOCKED
   until the product relaxes it to `microphone=(self)`. Flip it WITH the voice feature, or the mic silently
