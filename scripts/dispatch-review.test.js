@@ -5,7 +5,10 @@
 //   HIGH-1: a FAIL (or dead) lane can NEVER read as an ok dispatch (the binding-verdict false-green).
 //   HIGH-2: a lane that is alive but emits no parseable verdict is fail-closed ("error"), never PASS.
 const assert = require("assert");
-const { verdictOf, mergeLanes } = require("./dispatch-review");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { verdictOf, mergeLanes, persistLane, laneFileName } = require("./dispatch-review");
 
 let passed = 0;
 const failures = [];
@@ -64,6 +67,29 @@ test("fail beats error (anyFail precedence)", () => {
   const m = mergeLanes("security-reviewer", [L("gemini", true, "error"), L("openai", true, "fail"), L("claude", true, "pass")]);
   assert.equal(m.ok, false);
   assert.equal(m.mergedVerdict, "fail");
+});
+
+// ── Lane-persistence (the recoverable-per-lane-evidence gap) ──
+test("persistLane writes the raw stdout to <dir>/<pass>.txt and returns the path", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lane-"));
+  const p = persistLane(dir, "second_pass", "FULL GPT SECURITY FINDINGS\n- issue 1\n- issue 2", "");
+  assert.ok(p && fs.existsSync(p), "lane file must exist");
+  assert.ok(/second_pass\.txt$/.test(p), "filename derives from the pass key");
+  assert.equal(fs.readFileSync(p, "utf8"), "FULL GPT SECURITY FINDINGS\n- issue 1\n- issue 2");
+});
+test("persistLane writes stderr sidecar when non-empty", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lane-"));
+  const p = persistLane(dir, "primary", "", "reap: 0-byte");
+  assert.ok(fs.existsSync(p) && fs.readFileSync(p, "utf8") === "", "empty stdout still persisted (dead-lane diagnostic)");
+  assert.ok(fs.existsSync(p.replace(/\.txt$/, ".stderr.txt")), "stderr sidecar written");
+});
+test("persistLane: no dir → null (best-effort, never throws)", () => {
+  assert.equal(persistLane(null, "x", "out", ""), null);
+});
+test("laneFileName sanitizes the pass key", () => {
+  assert.equal(laneFileName("second_pass"), "second_pass.txt");
+  assert.equal(laneFileName("a/b c"), "a_b_c.txt");
+  assert.equal(laneFileName(""), "pass.txt");
 });
 
 if (failures.length) {
