@@ -453,17 +453,50 @@ function passesForRole(role) {
   }
 }
 
+// WG-10 (doogle-verified, REPRODUCES): the dispatched prompt must carry the sprint's REAL
+// requirement artifacts, not a ~215-byte stub — otherwise a builder returns trivially and the
+// phase advances on ok:true with zero product work (a hollow build). The artifacts live at
+// `.claude/project/sprint/requirements/<sprintId>/{prd,granular-stories,acceptance-criteria,...}.md`
+// (the same location full.js's script path writes/consumes). Load the step-relevant set.
+const REQ_FILES_BY_STEP = Object.freeze({
+  design: ["prd.md", "high-level-stories.md", "inputs.md"],
+  build: ["prd.md", "granular-stories.md", "acceptance-criteria.md", "inputs.md", "copy.md"],
+  gauntlet: ["acceptance-criteria.md", "granular-stories.md", "qa-plan.md", "redteam-plan.md"],
+  release: ["acceptance-criteria.md"],
+});
+
+/** Load the step-relevant sprint requirement artifacts (those that exist + are non-empty). */
+function loadRequirementArtifacts(sprintId, step) {
+  const reqDir = path.join(agentRoot(), ".claude", "project", "sprint", "requirements", sprintId);
+  const wanted = REQ_FILES_BY_STEP[step] || ["prd.md", "acceptance-criteria.md"];
+  const chunks = [];
+  for (const f of wanted) {
+    try {
+      const txt = fs.readFileSync(path.join(reqDir, f), "utf8").trim();
+      if (txt) chunks.push(`===== ${f} =====\n${txt}`);
+    } catch {
+      /* artifact absent for this sprint/step — skip (a partial set is still real content) */
+    }
+  }
+  return { reqDir, chunks };
+}
+
 /** Write a real per-agent prompt for the step; returns the file path. */
 function writeStepPrompt(agentPlan, sprintId) {
   const dir = path.join(agentRoot(), ".claude", "runtime", "epsilon-prompts");
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${sprintId}-${agentPlan.step}-${agentPlan.role}.txt`);
-  fs.writeFileSync(
-    file,
+  const header =
     `Sprint ${sprintId} — lifecycle step "${agentPlan.step}". You are dispatched as role ` +
-      `"${agentPlan.role}" (route ${agentPlan.route}). Carry out your ${agentPlan.step}-step ` +
-      `responsibility per your role spec and return your result envelope.\n`,
-  );
+    `"${agentPlan.role}" (route ${agentPlan.route}). Carry out your ${agentPlan.step}-step ` +
+    `responsibility per your role spec and return your result envelope.`;
+  const { reqDir, chunks } = loadRequirementArtifacts(sprintId, agentPlan.step);
+  const body = chunks.length
+    ? `\n\n--- SPRINT REQUIREMENT ARTIFACTS (${chunks.length} loaded from ${path.relative(agentRoot(), reqDir)}/) ---\n\n${chunks.join("\n\n")}\n`
+    : // LOUD, not hollow: no artifacts → the dispatch is honest about carrying only the directive,
+      // and names the precondition (the design phase must author the requirements first).
+      `\n\n[WG-10: no requirement artifacts at ${path.relative(agentRoot(), reqDir)}/ — dispatching with the step directive ONLY. A real build needs prd.md / granular-stories.md / acceptance-criteria.md authored by the design phase first.]\n`;
+  fs.writeFileSync(file, header + body);
   return file;
 }
 
@@ -857,6 +890,7 @@ module.exports = {
   spawnAgent,
   interpretSpawn,
   writeStepPrompt,
+  loadRequirementArtifacts,
   conductStep,
   assertNoFailOverride,
 };

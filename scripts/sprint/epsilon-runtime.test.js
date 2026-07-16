@@ -305,6 +305,21 @@ console.log("\n(8) β is consulted at the four phase boundaries (epsilon.md):");
   ok("BETA_BOUNDARIES has exactly the four transitions", rt.BETA_BOUNDARIES.length === 4);
 }
 
+// ── WG-10 (doogle-verified): the dispatched prompt carries REAL requirement artifacts, not a
+//    ~215-byte stub (the hollow-build bug). Integration-style, against on-disk sprint requirements. ──
+{
+  const fs = require("fs");
+  // S-LC-01 has real requirement artifacts on disk (prd.md / acceptance-criteria.md / ...).
+  const withReq = rt.writeStepPrompt({ step: "build", role: "backend-builder", route: "dispatch-claude" }, "S-LC-01");
+  const body = fs.readFileSync(withReq, "utf8");
+  ok("WG-10: build prompt carries prd.md content (not the ~215-byte stub)", body.includes("prd.md") && body.length > 1000);
+  ok("WG-10: build prompt carries acceptance-criteria.md", body.includes("acceptance-criteria.md"));
+  ok("WG-10: loadRequirementArtifacts returns step-scoped chunks", rt.loadRequirementArtifacts("S-LC-01", "build").chunks.length > 0);
+  // A sprint with NO artifacts → a LOUD note, never a silent hollow prompt.
+  const noReq = rt.writeStepPrompt({ step: "build", role: "backend-builder", route: "dispatch-claude" }, "SP-NO-SUCH-SPRINT-000");
+  ok("WG-10: missing artifacts → loud note, not hollow", fs.readFileSync(noReq, "utf8").includes("WG-10: no requirement artifacts"));
+}
+
 // ── Results ─────────────────────────────────────────────────────────────────────
 
 console.log(`\nResults: ${passed} passed, ${failed} failed.`);
