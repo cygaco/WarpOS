@@ -250,7 +250,12 @@ const ANTIGRAVITY = {
   label: "Antigravity (Gemini)",
   cli: "agy",
   cliEffortFlagTemplate: "",
-  syntaxTemplate: "agy --model {model}",
+  // EMPIRICAL (agy --help, 2026-07-16): the real HEADLESS flag is `-p`/`--print` ("run a single
+  // prompt non-interactively and print the response") — DISPATCH.md's bare `agy --model X` would
+  // hang INTERACTIVELY. `--print-timeout` defaults to 5m (exceeds a teammate's ~2-min Bash cap →
+  // long agy runs belong to the top-level orchestrator). Prompt delivery (stdin vs positional to
+  // `-p`) must be confirmed by a live headless dispatch before the runProvider wiring is trusted.
+  syntaxTemplate: "agy --model {model} -p",
   requiresFallback: true,
   defaultModel: "gemini-3.1-pro-preview",
   models: [
