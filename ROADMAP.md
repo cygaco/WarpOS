@@ -839,7 +839,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
 | [SP-20260716-003](.claude/project/sprint/sprints/SP-20260716-003/) | Reusable input-composer UI/UX pattern (COMPOSER) | done | 2026-07-16T16:08:30.160Z | 2026-07-16 | RI-001 ff-merge (6b9ec0d9); retro deferred to epic/milestone close |
-| [SP-20260716-002](.claude/project/sprint/sprints/SP-20260716-002/) | Product auth-system pattern — passwordless Supabase (agent-drivable) | planning | 2026-07-16T15:37:56.389Z |  |  |
+| [SP-20260716-002](.claude/project/sprint/sprints/SP-20260716-002/) | Product auth-system pattern — passwordless Supabase (agent-drivable) | done | 2026-07-16T15:37:56.389Z | 2026-07-16T17:52:00.000Z | RI-001 ff-merge (58909278); passwordless Supabase auth pattern + hardened verifier + open-redirect-safe callback |
 | [SP-20260627-001](.claude/project/sprint/sprints/SP-20260627-001/) | E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy | planning | 2026-06-28T02:47:21.101Z |  |  |
 | [SP-20260618-002](.claude/project/sprint/sprints/SP-20260618-002/) | E-MC-READINESS-ANALYSIS-001: Track-1 hardening-sim + consolidate findings register + reconcile (analysis-only) | planning | 2026-06-18T23:46:32.450Z |  |  |
 | [SP-20260618-001](.claude/project/sprint/sprints/SP-20260618-001/) | E-CONTENT-DELIVERY-001: templates-migration to _warpos/ end-state + provenance-seed + update-parity confirm | done | 2026-06-18T19:19:43.785Z | 2026-06-18 | gauntlet GREEN (backend+qa+security, 1 security fix-cycle); ff-merge to main @5238dc44; engine-sprint RI-001 |

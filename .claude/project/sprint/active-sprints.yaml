@@ -1092,7 +1092,7 @@ sprints:
     updated_at: "2026-06-28T02:47:21.101Z"
   - id: SP-20260716-002
     title: "Product auth-system pattern — passwordless Supabase (agent-drivable)"
-    status: planning
+    status: done
     lane:
       type: default
       value: null

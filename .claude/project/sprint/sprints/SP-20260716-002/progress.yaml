@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: "SP-20260716-002"
+updated_at: "2026-07-16T17:52:00.000Z"
+current_phase: retro
+current_command: none
+current_ticket: null
+current_task: null
+current_loop: null
+status: done
+last_completed_step: "RI-001 ff-merge close (58909278); binding 2-family gauntlet PASS all surfaces"
+next_action: "Sprint complete (RI-001 ff-merge). Retro learnings defer to milestone close per RI-001 — capture the structural-fix-seam-class discipline."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "/sprint:plan"
+resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+safe_to_continue: true
+stop_reason: null
