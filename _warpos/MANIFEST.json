@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-16T16:42:04.603Z",
+  "generatedAt": "2026-07-16T17:50:10.313Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -125,8 +125,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a2467aa975a80ba09b02f3603fff8311afe273d9d3300ceac07e66697f34f1f7",
-      "installedSha": "a2467aa975a80ba09b02f3603fff8311afe273d9d3300ceac07e66697f34f1f7"
+      "sha256": "1ce537001462776b045a2ababb8159541f53724a7b901207b29cf81fd69e46ea",
+      "installedSha": "1ce537001462776b045a2ababb8159541f53724a7b901207b29cf81fd69e46ea"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -675,8 +675,8 @@
       "managed": true,
       "source": "_warpos/templates/app-scaffold/.env.local.example.tmpl",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "685ed641db927e8a3d3c238ebb5b4417f4b3c6574a5aea2476946530b0f53f89",
-      "installedSha": "685ed641db927e8a3d3c238ebb5b4417f4b3c6574a5aea2476946530b0f53f89"
+      "sha256": "6150c10b3457dbfc58e2ff852fb5a1bb9e1393816ec86015b3539ddcd62de3a0",
+      "installedSha": "6150c10b3457dbfc58e2ff852fb5a1bb9e1393816ec86015b3539ddcd62de3a0"
     },
     "_warpos/templates/app-scaffold/components.json.tmpl": {
       "owner": "framework",
@@ -715,8 +715,8 @@
       "managed": true,
       "source": "_warpos/templates/app-scaffold/package.json.tmpl",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "443ccaf71abe1d8cf1da9701012421ab75e50b35d2fe2451415e40597bb31ab6",
-      "installedSha": "443ccaf71abe1d8cf1da9701012421ab75e50b35d2fe2451415e40597bb31ab6"
+      "sha256": "054ea64b84a81fe4eab80a3c6811bfff1cd68798e2547e7185bcb73e0f9b3c0c",
+      "installedSha": "054ea64b84a81fe4eab80a3c6811bfff1cd68798e2547e7185bcb73e0f9b3c0c"
     },
     "_warpos/templates/app-scaffold/playwright.config.ts.tmpl": {
       "owner": "framework",
@@ -798,6 +798,22 @@
       "sha256": "92b4c949f2004ed44b3277b6c846469a9862fa450f6a8dd8bb62b3f7ab3eadf7",
       "installedSha": "92b4c949f2004ed44b3277b6c846469a9862fa450f6a8dd8bb62b3f7ab3eadf7"
     },
+    "_warpos/templates/app-scaffold/supabase/migrations/0001_password_hardblock.sql.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/supabase/migrations/0001_password_hardblock.sql.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "52ba9f3b947d77866f73d247c1cad4742364818514957e85a5f72b8e1b3cfecc",
+      "installedSha": "52ba9f3b947d77866f73d247c1cad4742364818514957e85a5f72b8e1b3cfecc"
+    },
+    "_warpos/templates/app-scaffold/src/middleware.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/middleware.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "ff07a711be6aa4ef9a3576fe29f2ec770bc4e91aff44facf7f8f329fd7554173",
+      "installedSha": "ff07a711be6aa4ef9a3576fe29f2ec770bc4e91aff44facf7f8f329fd7554173"
+    },
     "_warpos/templates/app-scaffold/src/lib/utils.ts.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -837,6 +853,54 @@
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
       "sha256": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161",
       "installedSha": "889341ee3ccd4679398aafd6d1281bb6cc849be41711215035f82c93f152d161"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/client.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/client.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "c669401e9b818810ca54e3c54db14ad725f124e1dfbbcfff0c1107c8003612e9",
+      "installedSha": "c669401e9b818810ca54e3c54db14ad725f124e1dfbbcfff0c1107c8003612e9"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/config.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/config.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "0d77075c8ae13d9eb0325eb220def0e2fb1fa1c43a11222ef4ae8099d40352d2",
+      "installedSha": "0d77075c8ae13d9eb0325eb220def0e2fb1fa1c43a11222ef4ae8099d40352d2"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/middleware.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/middleware.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "00ce2502e0f6560a563aa2f9b7f0f976d61252a00c7dcc12345c83b8b3e739d5",
+      "installedSha": "00ce2502e0f6560a563aa2f9b7f0f976d61252a00c7dcc12345c83b8b3e739d5"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/safe-next.mjs.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/safe-next.mjs.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "5d82d68615576f009d86500d631d6ffe560f609b1df2027b99d9bf04ef26ac3b",
+      "installedSha": "5d82d68615576f009d86500d631d6ffe560f609b1df2027b99d9bf04ef26ac3b"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/safe-next.test.mjs.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/safe-next.test.mjs.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "2bedf96efeb86a227036d825546474b5bb4ac9ddece8fafa70cd203fc481f2d7",
+      "installedSha": "2bedf96efeb86a227036d825546474b5bb4ac9ddece8fafa70cd203fc481f2d7"
+    },
+    "_warpos/templates/app-scaffold/src/lib/supabase/server.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/supabase/server.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "e6376f8b383a9055ac8b1ad7235be48a0d8bf0eecf6ea85554c40140c292ac4b",
+      "installedSha": "e6376f8b383a9055ac8b1ad7235be48a0d8bf0eecf6ea85554c40140c292ac4b"
     },
     "_warpos/templates/app-scaffold/src/lib/readiness/group.ts.tmpl": {
       "owner": "framework",
@@ -1030,6 +1094,22 @@
       "sha256": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b",
       "installedSha": "faa4e39a0758cd2ced931b71a324bb4b73e23cfa0e6b5b96183026530619265b"
     },
+    "_warpos/templates/app-scaffold/src/app/auth/page.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/app/auth/page.tsx.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "90689547b1e5dc946ec159c369a4615269b71261324a15643530b6a85fb2d98a",
+      "installedSha": "90689547b1e5dc946ec159c369a4615269b71261324a15643530b6a85fb2d98a"
+    },
+    "_warpos/templates/app-scaffold/src/app/auth/callback/route.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/app/auth/callback/route.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "67665bdcae96fc8b5deada9044e4e7759d67580a904ea29ca36c076e59f34d60",
+      "installedSha": "67665bdcae96fc8b5deada9044e4e7759d67580a904ea29ca36c076e59f34d60"
+    },
     "_warpos/templates/app-scaffold/src/app/admin/actions.ts.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -1141,6 +1221,54 @@
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
       "sha256": "83adfbe1348590b54f8b69b97258123b10b2a41112211a82cb4ac2bfe21ec1c8",
       "installedSha": "83adfbe1348590b54f8b69b97258123b10b2a41112211a82cb4ac2bfe21ec1c8"
+    },
+    "_warpos/templates/app-scaffold/src/app/account/page.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/app/account/page.tsx.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "1ef92a2e5546a82d2dc9fe6a6141d086c7bf1293f14979a59da4110c5218ffee",
+      "installedSha": "1ef92a2e5546a82d2dc9fe6a6141d086c7bf1293f14979a59da4110c5218ffee"
+    },
+    "_warpos/templates/app-scaffold/scripts/check-auth-seam.mjs.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/scripts/check-auth-seam.mjs.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "57820fda0fa28582897e3c93579788a1103642fdbfa507850a7682fd294dafd8",
+      "installedSha": "57820fda0fa28582897e3c93579788a1103642fdbfa507850a7682fd294dafd8"
+    },
+    "_warpos/templates/app-scaffold/scripts/verify-auth-hardblock.mjs.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/scripts/verify-auth-hardblock.mjs.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "b9b400730c93e56593243c66d38d25d7d835877e655545e3c776ceb8d9c9d9e7",
+      "installedSha": "b9b400730c93e56593243c66d38d25d7d835877e655545e3c776ceb8d9c9d9e7"
+    },
+    "_warpos/templates/app-scaffold/scripts/verify-auth-hardblock.test.mjs.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/scripts/verify-auth-hardblock.test.mjs.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "5fc8a6f46fcf2c2040a08d3c331b86c221133f1307c705f39ebb4139b10fedda",
+      "installedSha": "5fc8a6f46fcf2c2040a08d3c331b86c221133f1307c705f39ebb4139b10fedda"
+    },
+    "_warpos/templates/app-scaffold/scripts/__fixtures__/auth-hardblock/present/0001_password_hardblock.sql": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/scripts/__fixtures__/auth-hardblock/present/0001_password_hardblock.sql",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "340eaac456df8a34e5d1477cd7eb13136df0d83fb1c95d1e2385736794be1929",
+      "installedSha": "340eaac456df8a34e5d1477cd7eb13136df0d83fb1c95d1e2385736794be1929"
+    },
+    "_warpos/templates/app-scaffold/scripts/__fixtures__/auth-hardblock/absent/0001_password_hardblock.sql": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/scripts/__fixtures__/auth-hardblock/absent/0001_password_hardblock.sql",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "bce5c0ae2acd5ab55c426e4be1bd06c6162a2016b62d304f8ff8a37eb1d13243",
+      "installedSha": "bce5c0ae2acd5ab55c426e4be1bd06c6162a2016b62d304f8ff8a37eb1d13243"
     },
     "_warpos/settings/defaults.json": {
       "owner": "framework",
@@ -3583,8 +3711,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/security/AUTHENTICATION_AND_SESSION.md",
-      "sha256": "b81ec47aaf93de4acfbc0f80d022238d1cb8217a3d60eab87a5c750c7a42d25b",
-      "installedSha": "b81ec47aaf93de4acfbc0f80d022238d1cb8217a3d60eab87a5c750c7a42d25b"
+      "sha256": "af17248d034b8acbca9e50b72a39cb2ff63807ef42d6ec79fc43a75bf696bb1c",
+      "installedSha": "af17248d034b8acbca9e50b72a39cb2ff63807ef42d6ec79fc43a75bf696bb1c"
     },
     "_knowledge/security/AUTHZ_AND_TENANT_ISOLATION.md": {
       "owner": "framework",
@@ -4080,8 +4208,15 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/AUTH_GUIDE.md",
-      "sha256": "a2d3e7e19b34970a702a3f495482ffdfdcb884cb231db76f0c4298d71de42e23",
-      "installedSha": "a2d3e7e19b34970a702a3f495482ffdfdcb884cb231db76f0c4298d71de42e23"
+      "sha256": "8e4da94a593d9ab5aaf77d63801137bbc852f027a112bfab160e24cd7c2885c9",
+      "installedSha": "8e4da94a593d9ab5aaf77d63801137bbc852f027a112bfab160e24cd7c2885c9"
+    },
+    "_guides/AUTH_RUNBOOK.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_guides/AUTH_RUNBOOK.md",
+      "sha256": "a75126d0c0adcbc30ee7a5d3f70e238b3b0e7abddcacc88915402a5f4f800532",
+      "installedSha": "a75126d0c0adcbc30ee7a5d3f70e238b3b0e7abddcacc88915402a5f4f800532"
     },
     "_guides/COMPLIANCE_TRIGGERS_GUIDE.md": {
       "owner": "framework",
@@ -4192,8 +4327,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_guides/registry.json",
-      "sha256": "60dbd94ddc0a9348949cafe40a358f1a19b031691eed26fea154ee2c0b035b0d",
-      "installedSha": "60dbd94ddc0a9348949cafe40a358f1a19b031691eed26fea154ee2c0b035b0d"
+      "sha256": "4b0dec0b7a0da95b865198558ec72f5b13533513baff87ec449a8806be76a570",
+      "installedSha": "4b0dec0b7a0da95b865198558ec72f5b13533513baff87ec449a8806be76a570"
     },
     "_guides/SECURITY_GUIDE.md": {
       "owner": "framework",
@@ -6336,15 +6471,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-review.js",
-      "sha256": "d4420c42d67354675b8e7615ef0bcbc869e14914867077836c6f80da6f1e5dd4",
-      "installedSha": "d4420c42d67354675b8e7615ef0bcbc869e14914867077836c6f80da6f1e5dd4"
+      "sha256": "be7cbaaa2b863bb522bee06af236fe2133cc6208ddea82dc025de279b014d76d",
+      "installedSha": "be7cbaaa2b863bb522bee06af236fe2133cc6208ddea82dc025de279b014d76d"
     },
     "scripts/dispatch-review.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-review.test.js",
-      "sha256": "0ce344a613f44278a4724d84b5e825ca72c271b85fc756f23daf6f176ae2909d",
-      "installedSha": "0ce344a613f44278a4724d84b5e825ca72c271b85fc756f23daf6f176ae2909d"
+      "sha256": "5af250511b83d0207819f4b56ababf42ed19a158db2cf28b748dc0c4baaf8f95",
+      "installedSha": "5af250511b83d0207819f4b56ababf42ed19a158db2cf28b748dc0c4baaf8f95"
     },
     "scripts/dispatch-skill.js": {
       "owner": "framework",
@@ -12919,10 +13054,6 @@
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
     },
-    ".claude/.last-checkpoint": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/framework-installed.json": {
       "owner": "generated",
       "managed": false,
@@ -14427,6 +14558,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260716-003/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260716-003/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -22606,6 +22745,10 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
+    ".claude/project/memory/enforcement-debt.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -22703,14 +22846,6 @@
       "managed": false
     },
     ".claude/project/maps/tools.md": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/tools.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -24545,8 +24680,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/lastmile.md",
       "kind": "md",
-      "sha256": "c9fee104162f0d0bccd6e79589684940ce247772019344e4841122f95fdb37e3",
-      "installedSha": "c9fee104162f0d0bccd6e79589684940ce247772019344e4841122f95fdb37e3"
+      "sha256": "77ebdfd2f98c6e55ebf46ffb0657306acb784b0c2fb586bdf02d3f1346a2df1e",
+      "installedSha": "77ebdfd2f98c6e55ebf46ffb0657306acb784b0c2fb586bdf02d3f1346a2df1e"
     },
     ".claude/commands/bootstrap/ponder.md": {
       "owner": "framework",
