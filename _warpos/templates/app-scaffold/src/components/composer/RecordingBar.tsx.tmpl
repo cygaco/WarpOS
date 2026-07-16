@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 
 /**
  * RecordingBar — the recording/transcribing/failed control cluster (§3 in
- * _knowledge/design/INPUT_COMPOSER_PATTERN.md). Replaces the idle composer
- * row entirely while voice input is in flight (this is a state swap, not the
- * P-1 focus-morph — no persistent-textarea rule applies here since there is
- * no text field mounted in these states).
+ * _knowledge/design/INPUT_COMPOSER_PATTERN.md). Shown IN PLACE OF the idle
+ * controls while voice input is in flight — the parent keeps the idle row
+ * (and its one persistent textarea) mounted-but-hidden, so this is a visible
+ * swap of the control cluster, not an unmount of the field (P-1/G-8).
  */
 
 const CIRCLE = "size-11 shrink-0 rounded-full p-0";
@@ -18,6 +18,9 @@ const CIRCLE = "size-11 shrink-0 rounded-full p-0";
 export interface RecordingBarProps {
   status: "recording" | "transcribing" | "failed";
   errorMessage?: string;
+  /** Only the flag-ON (MediaRecorder) backend can pause; hide the control for
+   *  Web Speech, where pause() is a no-op, rather than ship a dead button. */
+  canPause?: boolean;
   onDiscard: () => void;
   onPause: () => void;
   onStop: () => void;
@@ -51,6 +54,7 @@ function Waveform() {
 export function RecordingBar({
   status,
   errorMessage,
+  canPause = false,
   onDiscard,
   onPause,
   onStop,
@@ -103,18 +107,20 @@ export function RecordingBar({
           <Waveform />
         )}
 
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          aria-label="Pause recording"
-          data-testid="recording-pause"
-          disabled={isTranscribing}
-          onClick={onPause}
-          className={CIRCLE}
-        >
-          <Pause className="size-5" aria-hidden="true" />
-        </Button>
+        {canPause && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Pause recording"
+            data-testid="recording-pause"
+            disabled={isTranscribing}
+            onClick={onPause}
+            className={CIRCLE}
+          >
+            <Pause className="size-5" aria-hidden="true" />
+          </Button>
+        )}
 
         <Button
           type="button"
