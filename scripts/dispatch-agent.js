@@ -767,21 +767,22 @@ try {
   }
   result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
 
-  // WI-18: quota-aware fallback. When a gemini-routed role (e.g. redteam) 429s /
-  // exhausts quota, runProvider surfaces it loudly via result.quota and still
-  // sets fallback:true. Rather than silently degrading the SECURITY pass to
-  // claude (same family as the code under review — weak diff-model coverage), do
-  // ONE bounded retry on openai (the documented 2nd-GPT security-pass path), but
-  // only when the operator hasn't already forced a provider/model. Recoverable
-  // (rate-limit) AND unrecoverable (free-tier=0) both warrant the cross-family
-  // retry — the gemini path won't serve either way. Single attempt, no loop.
+  // WI-18 + WG-11(b): family-aware quota fallback. When ANY non-claude provider 429s / exhausts
+  // quota, runProvider surfaces it via result.quota (which now carries a FAMILY-AWARE
+  // suggestFallbackProvider — a target in a DIFFERENT model family). Rather than silently degrading
+  // to claude (same family as the code under review — weak diff-model coverage), do ONE bounded retry
+  // on the suggested cross-family provider, but only when the operator hasn't forced a provider/model.
+  // Broadened from gemini-only to any non-claude provider (post-flip the Google hunter routes via
+  // `antigravity`, and a GPT role that quota-fails also needs the cross-family retry). Recoverable
+  // (rate-limit) AND unrecoverable (free-tier=0) both warrant it. Single attempt, no loop.
   if (
     result &&
     !result.ok &&
     result.quota &&
     !providerOverride &&
     !modelOverride &&
-    (result.provider === "gemini" || provider === "gemini")
+    result.provider &&
+    result.provider !== "claude"
   ) {
     const fbProvider = result.quota.suggestFallbackProvider || "openai";
     if (fbProvider !== "claude") {

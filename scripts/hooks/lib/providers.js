@@ -256,6 +256,22 @@ function classifyQuotaFailure(text) {
   return null;
 }
 
+// ── WG-11(b): family-aware fallback ─────────────────────────
+// A quota/outage fallback MUST land in a DIFFERENT model FAMILY. Same-family fallback re-hits the
+// exact condition that failed the primary — a Google quota window takes out gemini AND antigravity
+// (both `google`), a GPT outage takes out every gpt-5.6 tier. This is a routing rule, not a flag:
+// map the failed provider to its family and return a target in ANOTHER family, preferring a
+// NON-claude cross-family target for a Google-lab failure so a security hunter retries on the GPT lab
+// rather than collapsing toward the Claude lane (cross-lab diversity preserved).
+const PROVIDER_FAMILY = { claude: "anthropic", openai: "openai", gemini: "google", antigravity: "google" };
+function suggestFallbackProvider(failedProvider, cfg) {
+  const family = PROVIDER_FAMILY[failedProvider] || failedProvider;
+  if (family === "google") return "openai"; // gemini/antigravity → GPT (different family, non-claude)
+  if (family === "openai") return (cfg && cfg.fallback) || "claude"; // GPT → claude (different family)
+  if (family === "anthropic") return "openai"; // claude → GPT (different family)
+  return (cfg && cfg.fallback) || "claude";
+}
+
 /**
  * Provider defaults if manifest.providers is missing.
  * Keys match the CLI tool name.
@@ -975,8 +991,7 @@ function runProvider(role, prompt, opts = {}) {
               // Hint the caller toward the cross-family fallback. We never
               // auto-switch provider inside runProvider (that would mask the
               // failure); the caller decides, with this flag making it loud.
-              suggestFallbackProvider:
-                providerName === "gemini" ? "openai" : cfg.fallback || "claude",
+              suggestFallbackProvider: suggestFallbackProvider(providerName, cfg),
               // Auth mode label — VALUE-FREE (mode label only, never key value).
               // Surfaces "key (metered)" vs "oauth (plan)" so a quota error
               // envelope is self-diagnosing: one read and the posture is clear.
@@ -1063,6 +1078,9 @@ module.exports = {
   hasValidGeminiOAuth,
   // WI-18: exported for unit testing the quota classifier.
   classifyQuotaFailure,
+  // WG-11(b): family-aware fallback — exported for unit testing the routing rule.
+  suggestFallbackProvider,
+  PROVIDER_FAMILY,
   DEFAULT_PROVIDERS,
   DEFAULT_AGENT_PROVIDERS,
   DEFAULT_REASONING_EFFORT,
