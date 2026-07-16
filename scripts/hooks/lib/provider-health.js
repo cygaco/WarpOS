@@ -222,7 +222,9 @@ function probeProvider(providerName, opts = {}) {
       ? "codex"
       : providerName === "gemini"
         ? "gemini"
-        : providerName;
+        : providerName === "antigravity"
+          ? "agy"
+          : providerName;
 
   if (!cliPresent(cli)) {
     return {
@@ -234,7 +236,9 @@ function probeProvider(providerName, opts = {}) {
           ? "Install: npm i -g @openai/codex && codex login"
           : providerName === "gemini"
             ? "Install: npm i -g @google/gemini-cli && gemini auth login"
-            : `Install the ${cli} CLI.`,
+            : providerName === "antigravity"
+              ? "Install the Antigravity `agy` CLI (standalone, not npm) and self-auth at ~/.gemini/antigravity-cli."
+              : `Install the ${cli} CLI.`,
     };
   }
 
@@ -263,6 +267,7 @@ function probeProvider(providerName, opts = {}) {
     let probeCmd;
     if (providerName === "gemini") probeCmd = "gemini models list";
     else if (providerName === "openai") probeCmd = "codex --help";
+    else if (providerName === "antigravity") probeCmd = "agy --help";
     if (probeCmd) {
       const probe = safeExec(probeCmd, { timeout: opts.timeout || 8_000 });
       if (!probe.ok) {
@@ -278,7 +283,9 @@ function probeProvider(providerName, opts = {}) {
         const classified =
           providerName === "gemini"
             ? classifyGeminiError(probe.stderr)
-            : classifyCodexError(probe.stderr);
+            : providerName === "openai"
+              ? classifyCodexError(probe.stderr)
+              : null; // antigravity/agy → generic unknown_error (no codex misclassification)
         if (classified)
           return Object.assign({ provider: providerName }, classified);
         return {

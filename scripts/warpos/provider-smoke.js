@@ -88,7 +88,7 @@ const SCHEMA = "warpos/provider-smoke/v1";
 // Hard-coded for T-019. When T-021 mints provider-failure-modes.json with a
 // `known_providers` field, this list will be loaded from the catalog and this
 // constant will be replaced.
-const KNOWN_PROVIDERS = ["claude", "openai", "gemini"];
+const KNOWN_PROVIDERS = ["claude", "openai", "gemini", "antigravity"];
 
 const PROBE_MODES = ["", "list"];
 

@@ -62,7 +62,12 @@ const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill"
 // validator for that value. positionals: validator for bare args. Unknown flag or
 // a failing value => REJECT.
 const TOKEN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/; // model/role/effort/level tokens
-const EFFORT = /^(low|medium|high|xhigh|max)$/i;
+// Effort-token allowlist (structural — a valid effort LEVEL exists). `ultra` added
+// DISPATCH.md 2026-07-12 (GPT-5.6 sol/terra fan-out level). Model-SPECIFIC gating (ultra
+// only on sol/terra, not luna/claude) is the catalog.validateTuple layer's job — this is
+// just "is it a valid token". codex reasoning-effort rides the `-c key=value` validator,
+// which already accepts ultra structurally.
+const EFFORT = /^(low|medium|high|xhigh|max|ultra)$/i;
 const SANDBOX = /^(workspace-write|read-only|danger-full-access)$/;
 const APPROVAL = /^(never|on-failure|on-request|untrusted)$/;
 // SHELL_META — the BROAD set (incl. parens + ANY whitespace) used for flag TOKENS
