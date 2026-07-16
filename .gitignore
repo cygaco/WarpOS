@@ -143,3 +143,64 @@ credentials.json
 *.backup
 *.orig
 *~
+
+# ── Crud-sweep 2026-07-16 (GITIGNORE-ONLY lever, β 4×DECIDE) ──
+# Close the `git add -A` public-push exposure for runtime scratch, .codex config,
+# CODEX-LOG.md (cited Evidence — never delete), and the WarpOS-v1/ v1-rebuild
+# charter corpus (also walk-skipped in scripts/warpos/manifest/walk-skip.js so it
+# clears the --strict FAIL). Patterns are SCOPED to avoid shadowing the tracked
+# runtime fixtures (agent-system-plan/, diagnostic/, models-research/, notes/,
+# warpos-v1-discovery/, sp002-dispatch/WSG*, sp-dp-*/*-out.md|*-prompt.md, etc.).
+.codex/
+CODEX-LOG.md
+WarpOS-v1/
+# runtime root-level scratch dotfiles + one-shot append scripts + session dirs
+runtime/.??*
+runtime/_*.js
+runtime/log-learnings-session.js
+runtime/gpt-probe.txt
+runtime/*-spinup.log
+runtime/sealed-gate-full.log
+runtime/epic-payload-dispatch-perfect.json
+runtime/r2-plan.json
+runtime/s-pf-*
+runtime/w[0-9]*
+runtime/session-*/
+runtime/health/
+runtime/guides-consult/
+runtime/roadmap-audit/
+runtime/reviews/
+# fully-untracked sprint scratch dirs (no tracked files inside)
+runtime/sp-ed009/
+runtime/sp-panels/
+runtime/sp-teams-migration/
+runtime/sp-w4-restructure/
+runtime/sp-w5/
+runtime/sp001-gauntlet/
+runtime/sp001-w2core/
+runtime/sp002-admin/
+runtime/sp002-release/
+runtime/sp002-rereview/
+runtime/sp002-rereview-fix2/
+runtime/sp002-roadmap-gui/
+runtime/sp004-adminsec/
+runtime/sp-20260618-001/
+runtime/sp-20260618-002/
+runtime/sp-20260619-001/
+# mixed dirs — only the untracked leaves (tracked siblings stay tracked)
+runtime/sp002-dispatch/FIX1-*
+runtime/sp-20260627-*
+runtime/sp-resume-raw.err
+runtime/sp-resume-raw.out
+runtime/sp-resume3.out
+runtime/sp002-retro-synthesis.json
+runtime/sp-dp-review/w1w2-keystone.diff
+runtime/sp-dp-review/w1w2-rereview-dispatch.log
+runtime/sp-dp-review/w1w2-review-dispatch.log
+runtime/sp-dp-w0/review-dispatch.log
+runtime/sp-dp-w0/w0-enforcer.diff
+runtime/sp-dp-w0/w0.diffstat
+runtime/sp-dp-w1/dc-test.err.log
+runtime/sp-dp-w1/probe.err.log
+runtime/sp-dp-w1/probe2.err.log
+runtime/sp-dp-w2/dop-probe.err.log
