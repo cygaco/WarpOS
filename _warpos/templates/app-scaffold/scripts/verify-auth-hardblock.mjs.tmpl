@@ -196,6 +196,39 @@ export function resolveMigrationPath(scriptDir, explicit) {
 // LIVE verification (only when SUPABASE_DB_URL is set)
 // ----------------------------------------------------------------------------
 
+// The SHIPPED identity (supabase/migrations/0001_password_hardblock.sql):
+//   trigger  hardblock_password_trigger
+//   function public.hardblock_password
+//   binding  BEFORE INSERT OR UPDATE ON auth.users FOR EACH ROW
+const SHIPPED_TRIGGER = "hardblock_password_trigger";
+const SHIPPED_FN = "hardblock_password";
+
+/** Parse a pg_get_triggerdef() string into the binding facts we require.
+ *  We assert IDENTITY, not "any before-row trigger": BEFORE + BOTH INSERT and
+ *  UPDATE + FOR EACH ROW on auth.users. An INSERT-only (or AFTER, or
+ *  statement-level, or wrong-table) trigger fails here. */
+function parseTriggerBinding(def) {
+  const d = String(def).replace(/\s+/g, " ").toUpperCase();
+  return {
+    before: /\bBEFORE\b/.test(d),
+    insert: /\bINSERT\b/.test(d),
+    update: /\bUPDATE\b/.test(d),
+    authUsers: /\bON\s+(?:"?AUTH"?\.)"?USERS"?\b/.test(d),
+    forEachRow: /\bFOR\s+EACH\s+ROW\b/.test(d),
+  };
+}
+
+/** Assert the executed function's body nulls NEW.encrypted_password and
+ *  RETURN NEW (RETURN OLD would discard the null-out). Works against
+ *  pg_get_functiondef() output. */
+function functionBodyHardBlocks(fndef) {
+  const b = String(fndef);
+  const nulls = /NEW\.\s*ENCRYPTED_PASSWORD\s*(?::=|=)\s*NULL/i.test(b);
+  const returnsNew = /\bRETURN\s+NEW\b/i.test(b);
+  const returnsOld = /\bRETURN\s+OLD\b/i.test(b);
+  return nulls && returnsNew && !returnsOld;
+}
+
 async function liveVerify(dbUrl) {
   let pgMod;
   try {
@@ -213,51 +246,127 @@ async function liveVerify(dbUrl) {
   try {
     await client.connect();
 
-    // (1) Is a BEFORE ROW trigger actually INSTALLED on auth.users?
-    // pg_trigger.tgtype: bit 0x01 = ROW-level, bit 0x02 = BEFORE.
+    // (1) IDENTITY — fetch every non-internal trigger on auth.users together
+    // with its FULL definition (pg_get_triggerdef) and the executed function's
+    // definition (pg_get_functiondef). We accept a trigger by identity, not by
+    // "any before-row trigger" (an unrelated before-row trigger would otherwise
+    // false-green this installed-proof).
     const q = await client.query(
-      `SELECT t.tgname, t.tgtype, p.proname AS fn
+      `SELECT t.tgname,
+              p.proname                 AS fn,
+              n.nspname                 AS fn_schema,
+              pg_get_triggerdef(t.oid)  AS trigdef,
+              pg_get_functiondef(t.tgfoid) AS fndef
          FROM pg_trigger t
          JOIN pg_class c      ON c.oid = t.tgrelid
          JOIN pg_namespace ns ON ns.oid = c.relnamespace
          JOIN pg_proc p       ON p.oid = t.tgfoid
+         JOIN pg_namespace n  ON n.oid = p.pronamespace
         WHERE ns.nspname = 'auth' AND c.relname = 'users' AND NOT t.tgisinternal`
     );
-    const before = q.rows.find(
-      (r) => (r.tgtype & 1) === 1 && (r.tgtype & 2) === 2
-    );
-    if (!before) {
+
+    const candidates = q.rows.map((r) => ({
+      name: r.tgname,
+      fn: String(r.fn || ""),
+      fnSchema: String(r.fn_schema || ""),
+      trigdef: r.trigdef,
+      fndef: r.fndef,
+      binding: parseTriggerBinding(r.trigdef),
+      bodyOk: functionBodyHardBlocks(r.fndef),
+    }));
+
+    // Prefer the exact shipped identity (trigger name + executed function).
+    // Resilience to a rename: accept any trigger whose executed function body
+    // actually nulls encrypted_password — but the binding is still asserted
+    // below (BOTH INSERT and UPDATE required regardless of name).
+    const target =
+      candidates.find(
+        (c) => c.name === SHIPPED_TRIGGER && c.fn.toLowerCase() === SHIPPED_FN
+      ) || candidates.find((c) => c.bodyOk);
+
+    if (!target) {
       return {
         ok: false,
         reason:
-          "no BEFORE ROW-level trigger installed on auth.users (definition may be valid but it is NOT installed)",
+          "no trigger on auth.users executes a function that nulls NEW.encrypted_password (definition may be valid but the hard-block is NOT installed)",
       };
     }
 
-    // (2) NEGATIVE TEST — attempt to persist a non-null password; assert it comes
-    // back NULL. Always ROLLBACK so we never leave a test row behind.
+    const b = target.binding;
+    if (!b.before || !b.forEachRow || !b.authUsers) {
+      return {
+        ok: false,
+        reason: `installed trigger '${target.name}' binding is wrong (must be BEFORE ... FOR EACH ROW ON auth.users) — pg_get_triggerdef: ${target.trigdef}`,
+      };
+    }
+    if (!b.insert || !b.update) {
+      return {
+        ok: false,
+        reason: `installed trigger '${target.name}' does not cover BOTH INSERT and UPDATE (an INSERT-only hard-block leaves password UPDATEs unblocked) — pg_get_triggerdef: ${target.trigdef}`,
+      };
+    }
+    if (!target.bodyOk) {
+      return {
+        ok: false,
+        reason: `function '${target.fnSchema}.${target.fn}' executed by trigger '${target.name}' does not null NEW.encrypted_password and RETURN NEW`,
+      };
+    }
+
+    // (2) NEGATIVE TESTS — exercise BOTH the INSERT and the UPDATE path. All in a
+    // single transaction that ALWAYS ROLLBACKs, so we never leave a test row.
     await client.query("BEGIN");
-    let survived = null;
+    let probe = null;
     try {
+      // (a) INSERT with a non-null password → must come back NULL.
       const ins = await client.query(
-        "INSERT INTO auth.users (id, encrypted_password) VALUES (gen_random_uuid(), $1) RETURNING encrypted_password",
-        ["PLAINTEXT-SHOULD-BE-NULLED"]
+        "INSERT INTO auth.users (id, encrypted_password) VALUES (gen_random_uuid(), $1) RETURNING id, encrypted_password",
+        ["PLAINTEXT-SHOULD-BE-NULLED-ON-INSERT"]
       );
-      survived = ins.rows[0]?.encrypted_password ?? null;
+      const testId = ins.rows[0]?.id ?? null;
+      const insertSurvived = ins.rows[0]?.encrypted_password ?? null;
+
+      // (b) UPDATE the same row SET a non-null password → must come back NULL.
+      let updateRan = false;
+      let updateSurvived = null;
+      if (testId) {
+        const upd = await client.query(
+          "UPDATE auth.users SET encrypted_password = $1 WHERE id = $2 RETURNING encrypted_password",
+          ["PLAINTEXT-SHOULD-BE-NULLED-ON-UPDATE", testId]
+        );
+        updateRan = upd.rowCount === 1;
+        updateSurvived = upd.rows[0]?.encrypted_password ?? null;
+      }
+      probe = { testId, insertSurvived, updateRan, updateSurvived };
     } finally {
       await client.query("ROLLBACK");
     }
-    if (survived !== null) {
+
+    // Fail-closed: if the probe could not be run to completion, it is NOT proof.
+    if (!probe || !probe.testId || !probe.updateRan) {
       return {
         ok: false,
         reason:
-          "NEGATIVE TEST FAILED: an inserted encrypted_password survived non-null — the hard-block is not effective",
+          "NEGATIVE TEST could not run to completion (insert/update probe did not execute) — refusing to report green without a live installed-proof",
+      };
+    }
+    if (probe.insertSurvived !== null) {
+      return {
+        ok: false,
+        reason:
+          "NEGATIVE TEST (INSERT) FAILED: an inserted encrypted_password survived non-null — the hard-block is not effective on INSERT",
+      };
+    }
+    if (probe.updateSurvived !== null) {
+      return {
+        ok: false,
+        reason:
+          "NEGATIVE TEST (UPDATE) FAILED: an updated encrypted_password survived non-null — the hard-block is not effective on UPDATE",
       };
     }
 
     return {
       ok: true,
-      reason: `trigger '${before.tgname}' installed + negative test passed (encrypted_password nulled on insert)`,
+      reason: `trigger '${target.name}' → ${target.fnSchema}.${target.fn}() installed with BEFORE INSERT OR UPDATE ... FOR EACH ROW binding + INSERT and UPDATE negative tests both passed (encrypted_password nulled on both paths)`,
     };
   } catch (e) {
     return { ok: false, reason: `live check error: ${e.message}` };
