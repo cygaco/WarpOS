@@ -233,9 +233,27 @@ Content-Type: application/json
 }
 ```
 
-**Step 3 — Magic Link template** (Auth → Emails → Magic Link, or via the templates config): body renders
-`{{ .Token }}` (large, monospace), subject `{{ .Token }} is your {{PRODUCT}} sign-in code`. This is the
-§5.1 fix — WITHOUT it a new user gets a link, not a code.
+**Step 3 — Magic Link template + SMTP (same `PATCH /config/auth` endpoint):**
+```
+PATCH /v1/projects/{{REF}}/config/auth
+Content-Type: application/json
+{
+  "mailer_subjects_magic_link": "{{ .Token }} is your {{PRODUCT}} sign-in code",
+  "mailer_templates_magic_link_content": "<p>Your {{PRODUCT}} sign-in code:</p><p style=\"font-size:28px;font-family:monospace;letter-spacing:4px\">{{ .Token }}</p>",
+  "smtp_host": "smtp.resend.com",
+  "smtp_port": 465,
+  "smtp_user": "resend",
+  "smtp_pass": "<RESEND_API_KEY>",
+  "smtp_sender_name": "{{PRODUCT}}",
+  "smtp_admin_email": "{{SENDER}}"
+}
+```
+The template body MUST render **`{{ .Token }}`**, NOT `{{ .ConfirmationURL }}` (§5.1 — else a NEW user
+gets a link, not a code). **FALLBACK (dashboard/manual):** if a field name differs in your Supabase
+Management-API version, these exact settings also live in the dashboard — **Auth → Emails → Magic Link**
+(template + subject) and **Auth → Emails → SMTP** (host/port/user/pass/sender). Both write the same
+config; the dashboard is the authoritative manual path when the API field shape is uncertain. (The
+Resend *account* + sending-domain DNS remain per §5.2–5.3; this step only wires Supabase → Resend.)
 
 **Step 4 — re-GET and re-assert** the Step-1 invariants now hold. Polling any custom-hostname state
 (§7): a healthy response contains the literal `"errors":[]` — match that exact token, never grep bare
