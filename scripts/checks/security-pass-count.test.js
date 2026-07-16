@@ -118,6 +118,34 @@ test("HIGH-4b runtime: two reviews sharing run_id but distinct prompt_digests ar
   assert.equal(evaluateRuntime(recs, 3).length, 2, evaluateRuntime(recs, 3).join(" | "));
 });
 
+// ── β item-3 (BINDING, SP-20260716-001): the 3-lab panel must BLOCK when the Claude in-process hunter
+//    lane produces NO evidence record — SYMMETRIC fail-closed, not a silent 2-lab (antigravity+GPT) green.
+//    The Claude in-process lane is the MOST reap-prone (RI-004 class), so this is the likely collapse. ──
+test("β item-3: Claude-lane-ABSENT 3-lab panel → flagged (and BLOCKS the gauntlet under --strict)", () => {
+  // The panel fired the antigravity (Gemini lab) + openai (GPT lab) hunters; the Claude in-process
+  // hunter produced NO evidence-bound record. distinct ok providers = 2 < 3 → under-fire.
+  const recs = [
+    { role: "security-reviewer", ok: true, provider: "antigravity", completed_at: "2026-07-16T00:00:00Z", prompt_digest: "panelA" },
+    { role: "security-reviewer", ok: true, provider: "openai", completed_at: "2026-07-16T00:01:00Z", prompt_digest: "panelA" },
+    // (no claude record — the in-process hunter lane is absent/reaped)
+  ];
+  const warns = evaluateRuntime(recs, 3);
+  assert.ok(has(warns, "2/3 distinct providers"), "a Claude-absent panel MUST be flagged (not silent 2-lab green): " + warns.join(" | "));
+  // BLOCK semantics: the security gauntlet runs `security-pass-count --strict`, where a runtime gap
+  // returns exit 1 (main: `if (warns.length && strict) return 1`) — so a diversity-collapsed panel HALTS.
+  assert.ok(warns.length > 0, "under --strict a Claude-absent panel BLOCKS the gauntlet");
+});
+// A GPT hunter FALLING BACK to Claude also collapses lab-diversity (two claude records dedupe to one
+// distinct provider) — caught by the same distinct-provider count (β item-3 D: 3 labs != 3 claude records).
+test("β item-3 D: a GPT-hunter fallback-to-claude collapse → flagged (distinct providers < 3)", () => {
+  const recs = [
+    { role: "security-reviewer", ok: true, provider: "antigravity", completed_at: "2026-07-16T00:00:00Z", prompt_digest: "panelB" },
+    { role: "security-reviewer", ok: true, provider: "claude", completed_at: "2026-07-16T00:01:00Z", prompt_digest: "panelB" }, // GPT lane fell back to claude
+    { role: "security-reviewer", ok: true, provider: "claude", completed_at: "2026-07-16T00:02:00Z", prompt_digest: "panelB" }, // the real claude hunter
+  ];
+  assert.ok(has(evaluateRuntime(recs, 3), "2/3 distinct providers"), "a fallback-to-claude diversity collapse must be flagged: " + evaluateRuntime(recs, 3).join(" | "));
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [security-pass-count.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
