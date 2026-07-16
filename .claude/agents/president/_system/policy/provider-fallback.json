@@ -1,7 +1,7 @@
 {
   "$schema": "warpos/provider-fallback/v1",
   "version": 1,
-  "comment": "Phase 0 workstream E scaffold. Documented but not yet enforced — runProvider's existing fallback signals (fallback:true on quota/timeout/cli-missing) drive routing today. Once /warp:promote-flags drains the dispatch backlog, lift this into runProvider so the chain is honoured automatically.",
+  "comment": "UNENFORCED legacy scaffold (Phase 0 workstream E). The LIVE fallback authority is now WG-11(b) family-aware routing in scripts/hooks/lib/providers.js (suggestFallbackProvider + PROVIDER_FAMILY) — a quota/outage fallback lands in a DIFFERENT model family, never same-family. This file's per-role policies below still carry PRE-ADR-0007 role keys (redteam/reviewer/compliance/qa) and PRE-DISPATCH.md-§8 model ids (gpt-5.5, claude-sonnet-4-6, gemini-3.1-pro-preview); they are documentation only and no consumer routes off them. A full rewrite to the new roster (security-reviewer/frontend-reviewer/qa-reviewer + gpt-5.6/sonnet-5/antigravity) is deferred with the ADR-0007 scaffold-cleanup, out of the SP-20260716-001 flip scope. Do not treat the ids below as authoritative.",
   "policies": {
     "redteam": {
       "primary": "gemini:gemini-3.1-pro-preview",
