@@ -275,20 +275,20 @@ async function liveVerify(dbUrl) {
       bodyOk: functionBodyHardBlocks(r.fndef),
     }));
 
-    // Prefer the exact shipped identity (trigger name + executed function).
-    // Resilience to a rename: accept any trigger whose executed function body
-    // actually nulls encrypted_password — but the binding is still asserted
-    // below (BOTH INSERT and UPDATE required regardless of name).
-    const target =
-      candidates.find(
-        (c) => c.name === SHIPPED_TRIGGER && c.fn.toLowerCase() === SHIPPED_FN
-      ) || candidates.find((c) => c.bodyOk);
+    // Installed-proof requires the EXACT shipped trigger + function identity — NO
+    // fallback. A substitute trigger whose body happens to null encrypted_password is
+    // NOT proof the shipped hard-block is installed: a deployment missing
+    // `hardblock_password_trigger` but carrying some other body-nulling trigger would
+    // otherwise false-green (the residual false-green the security review caught). The
+    // binding + body checks below still run on this exact target as defense-in-depth.
+    const target = candidates.find(
+      (c) => c.name === SHIPPED_TRIGGER && c.fn.toLowerCase() === SHIPPED_FN
+    );
 
     if (!target) {
       return {
         ok: false,
-        reason:
-          "no trigger on auth.users executes a function that nulls NEW.encrypted_password (definition may be valid but the hard-block is NOT installed)",
+        reason: `the shipped hard-block trigger '${SHIPPED_TRIGGER}' executing '${SHIPPED_FN}' is NOT installed on auth.users — installed-proof requires the exact shipped identity; a different trigger (even one that nulls encrypted_password) is not proof the shipped hard-block is present`,
       };
     }
 
