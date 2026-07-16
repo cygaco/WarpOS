@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-06-28T05:22:59.942Z",
+  "generatedAt": "2026-07-16T16:42:04.603Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -675,8 +675,8 @@
       "managed": true,
       "source": "_warpos/templates/app-scaffold/.env.local.example.tmpl",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "fd8e39aebb2eccd3c4563d22aa7c137454f82aa8dab9258a8001507d974c9be9",
-      "installedSha": "fd8e39aebb2eccd3c4563d22aa7c137454f82aa8dab9258a8001507d974c9be9"
+      "sha256": "685ed641db927e8a3d3c238ebb5b4417f4b3c6574a5aea2476946530b0f53f89",
+      "installedSha": "685ed641db927e8a3d3c238ebb5b4417f4b3c6574a5aea2476946530b0f53f89"
     },
     "_warpos/templates/app-scaffold/components.json.tmpl": {
       "owner": "framework",
@@ -715,8 +715,8 @@
       "managed": true,
       "source": "_warpos/templates/app-scaffold/package.json.tmpl",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "826965cee1b28b575a40513c365eb4facbd64f7818e96e21fa2512b5942b073f",
-      "installedSha": "826965cee1b28b575a40513c365eb4facbd64f7818e96e21fa2512b5942b073f"
+      "sha256": "443ccaf71abe1d8cf1da9701012421ab75e50b35d2fe2451415e40597bb31ab6",
+      "installedSha": "443ccaf71abe1d8cf1da9701012421ab75e50b35d2fe2451415e40597bb31ab6"
     },
     "_warpos/templates/app-scaffold/playwright.config.ts.tmpl": {
       "owner": "framework",
@@ -750,6 +750,14 @@
       "sha256": "1b12f56ab16430b64622ff8512cb05b06cf633060dbec6ebad6f9e792a6dc2a0",
       "installedSha": "1b12f56ab16430b64622ff8512cb05b06cf633060dbec6ebad6f9e792a6dc2a0"
     },
+    "_warpos/templates/app-scaffold/tests/composer.spec.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/tests/composer.spec.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "ce5a1227072df7cba88d2e9d40dfd9e93ed89dd718c3ca09646e7a84304db644",
+      "installedSha": "ce5a1227072df7cba88d2e9d40dfd9e93ed89dd718c3ca09646e7a84304db644"
+    },
     "_warpos/templates/app-scaffold/tests/smoke.spec.ts.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -757,6 +765,38 @@
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
       "sha256": "7d3f18f3eeeee5aef4d03eff75d147a0bd5ff1572dde6fcc0c89539f19eee2d7",
       "installedSha": "7d3f18f3eeeee5aef4d03eff75d147a0bd5ff1572dde6fcc0c89539f19eee2d7"
+    },
+    "_warpos/templates/app-scaffold/tests/unit/autosize.test.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/tests/unit/autosize.test.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "3898ed8314d3751bf8971cc62c1d63abe98030c39c93aca186050fdb17564a44",
+      "installedSha": "3898ed8314d3751bf8971cc62c1d63abe98030c39c93aca186050fdb17564a44"
+    },
+    "_warpos/templates/app-scaffold/tests/unit/dedup.test.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/tests/unit/dedup.test.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "68b426c40d84726a0ebf1c21115f666276de610616f2c30aaf98452731ed9970",
+      "installedSha": "68b426c40d84726a0ebf1c21115f666276de610616f2c30aaf98452731ed9970"
+    },
+    "_warpos/templates/app-scaffold/tests/unit/terminus.test.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/tests/unit/terminus.test.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "bdcbb364c47c5cdfd3324a45129c152e31217f47540f087a7c1e809d0c578ee5",
+      "installedSha": "bdcbb364c47c5cdfd3324a45129c152e31217f47540f087a7c1e809d0c578ee5"
+    },
+    "_warpos/templates/app-scaffold/tests/unit/voice-errors.test.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/tests/unit/voice-errors.test.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "92b4c949f2004ed44b3277b6c846469a9862fa450f6a8dd8bb62b3f7ab3eadf7",
+      "installedSha": "92b4c949f2004ed44b3277b6c846469a9862fa450f6a8dd8bb62b3f7ab3eadf7"
     },
     "_warpos/templates/app-scaffold/src/lib/utils.ts.tmpl": {
       "owner": "framework",
@@ -822,6 +862,38 @@
       "sha256": "7f05027d7d0f09f8afa70f89746b3d0c9f79ca9c3a4821cc23b9fb4ab22eb4e3",
       "installedSha": "7f05027d7d0f09f8afa70f89746b3d0c9f79ca9c3a4821cc23b9fb4ab22eb4e3"
     },
+    "_warpos/templates/app-scaffold/src/lib/composer/autosize.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/composer/autosize.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "1a81769644691c44499a3c4ee639e722e2b7c9e63365d19fbc1308d7b75ff226",
+      "installedSha": "1a81769644691c44499a3c4ee639e722e2b7c9e63365d19fbc1308d7b75ff226"
+    },
+    "_warpos/templates/app-scaffold/src/lib/composer/dedup.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/composer/dedup.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "0082e3660f43178c3c54fd3a0ea04c793f31ebfdbcb18dd944f5c6b63bcf15de",
+      "installedSha": "0082e3660f43178c3c54fd3a0ea04c793f31ebfdbcb18dd944f5c6b63bcf15de"
+    },
+    "_warpos/templates/app-scaffold/src/lib/composer/terminus.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/composer/terminus.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "9c371d8b9c495df35d8d316876ae52f0e2d8c076d47ef064cb5ae9b28557cfd5",
+      "installedSha": "9c371d8b9c495df35d8d316876ae52f0e2d8c076d47ef064cb5ae9b28557cfd5"
+    },
+    "_warpos/templates/app-scaffold/src/lib/composer/voice-errors.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/lib/composer/voice-errors.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "f33ee0fb16c3f079dec204f2a170d0d81e31e3833c04292f4a92a16221ea83b1",
+      "installedSha": "f33ee0fb16c3f079dec204f2a170d0d81e31e3833c04292f4a92a16221ea83b1"
+    },
     "_warpos/templates/app-scaffold/src/lib/admin/config.ts.tmpl": {
       "owner": "framework",
       "managed": true,
@@ -845,6 +917,22 @@
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
       "sha256": "5b1ea4b02fe2272a010926ea5d8d2a065468d9b78a5d30b5e81f655907d73936",
       "installedSha": "5b1ea4b02fe2272a010926ea5d8d2a065468d9b78a5d30b5e81f655907d73936"
+    },
+    "_warpos/templates/app-scaffold/src/hooks/useAutosize.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/hooks/useAutosize.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "1ab5734e308e4342df162e51812e264ba00ac32cbdea0e3e86d0fe7d0d8b7975",
+      "installedSha": "1ab5734e308e4342df162e51812e264ba00ac32cbdea0e3e86d0fe7d0d8b7975"
+    },
+    "_warpos/templates/app-scaffold/src/hooks/useVoiceInput.ts.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/hooks/useVoiceInput.ts.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "133ecd9879ad845d1d9145aed4b096ea15dc9dc8dd19b67c49b7406964ee6240",
+      "installedSha": "133ecd9879ad845d1d9145aed4b096ea15dc9dc8dd19b67c49b7406964ee6240"
     },
     "_warpos/templates/app-scaffold/src/components/ui/button.tsx.tmpl": {
       "owner": "framework",
@@ -885,6 +973,30 @@
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
       "sha256": "6db25c4599ffe83be108f96b0b531dd491a0acc24f12a0a7c925f50843b54dea",
       "installedSha": "6db25c4599ffe83be108f96b0b531dd491a0acc24f12a0a7c925f50843b54dea"
+    },
+    "_warpos/templates/app-scaffold/src/components/ui/textarea.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/components/ui/textarea.tsx.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "4372d2319bd109ec4a08acdfc5bc50ca9ff8b064efe7f95dd91cce68f8f38f91",
+      "installedSha": "4372d2319bd109ec4a08acdfc5bc50ca9ff8b064efe7f95dd91cce68f8f38f91"
+    },
+    "_warpos/templates/app-scaffold/src/components/composer/Composer.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/components/composer/Composer.tsx.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "eb03ff4dc39d5c7704ac4fa9ad3f77497c54218f0456a90091bce804e2d43c19",
+      "installedSha": "eb03ff4dc39d5c7704ac4fa9ad3f77497c54218f0456a90091bce804e2d43c19"
+    },
+    "_warpos/templates/app-scaffold/src/components/composer/RecordingBar.tsx.tmpl": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_warpos/templates/app-scaffold/src/components/composer/RecordingBar.tsx.tmpl",
+      "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
+      "sha256": "6d776085d1117e16d34404b524061fac64b308498e1fc3da15b89d0da8b76c55",
+      "installedSha": "6d776085d1117e16d34404b524061fac64b308498e1fc3da15b89d0da8b76c55"
     },
     "_warpos/templates/app-scaffold/src/app/globals.css.tmpl": {
       "owner": "framework",
@@ -1035,8 +1147,8 @@
       "managed": true,
       "source": "_warpos/settings/defaults.json",
       "_note": "_warpos/ is the framework source-of-truth zone in installed products (post-SP-20260522-001).",
-      "sha256": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e",
-      "installedSha": "b19e916702aca54c7e99af11c673d4607285fe6eb6ce8fcda2bbc15e769c4b2e"
+      "sha256": "77691d86dca8af1a13fc190bf31cdda9f5ef6d5690968bef4c6d83bddcb7e2db",
+      "installedSha": "77691d86dca8af1a13fc190bf31cdda9f5ef6d5690968bef4c6d83bddcb7e2db"
     },
     "_warpos/EXAMPLES/Jobzooka/_requirements/_audits/01-requirements-audit.md": {
       "owner": "framework",
@@ -3422,8 +3534,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/registry.json",
-      "sha256": "99f715451c6eefa87b35e2a8638f4a207c23ee90dc23f98fb15c7bb400075b33",
-      "installedSha": "99f715451c6eefa87b35e2a8638f4a207c23ee90dc23f98fb15c7bb400075b33"
+      "sha256": "a3cdb2f8f9d4e77c4ce18481771eccb3f99a85185cbd0d7b7a10f8fdb91d99dc",
+      "installedSha": "a3cdb2f8f9d4e77c4ce18481771eccb3f99a85185cbd0d7b7a10f8fdb91d99dc"
     },
     "_knowledge/tech-stack-selection/BAAS_DECISION_MATRIX.md": {
       "owner": "framework",
@@ -3705,6 +3817,13 @@
       "sha256": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1",
       "installedSha": "44f66740cae504c421fe4efae27dc9e1dd0a9d1a145ad0383871d95bfb084ab1"
     },
+    "_knowledge/design/INPUT_COMPOSER_PATTERN.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "_knowledge/design/INPUT_COMPOSER_PATTERN.md",
+      "sha256": "7f5b5fa34f36586c9758c8408123c619949a378e8d9588057c87e632e034d266",
+      "installedSha": "7f5b5fa34f36586c9758c8408123c619949a378e8d9588057c87e632e034d266"
+    },
     "_knowledge/design/INTERACTION_FEEDBACK_STATES.md": {
       "owner": "framework",
       "managed": true,
@@ -3758,8 +3877,8 @@
       "owner": "framework",
       "managed": true,
       "source": "_knowledge/design/registry.json",
-      "sha256": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6",
-      "installedSha": "b11b76aefb0fc16763bd342ad59c69125100b270d4b4d1eb9d6507a71351a7d6"
+      "sha256": "73eb49a57f533fe0e5ccca981646389a93fbdec8cfdf8755011535571f89d040",
+      "installedSha": "73eb49a57f533fe0e5ccca981646389a93fbdec8cfdf8755011535571f89d040"
     },
     "_knowledge/design/TYPOGRAPHY.md": {
       "owner": "framework",
@@ -8786,8 +8905,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/hook-manifest.json",
-      "sha256": "500406606efbfe10ffc0e969ed640e6ff16ddf208c4022065fe9ffebfe0c3a48",
-      "installedSha": "500406606efbfe10ffc0e969ed640e6ff16ddf208c4022065fe9ffebfe0c3a48"
+      "sha256": "df2b20d0a43b49f2bc59d317f39a7992ce723e553680eae2515d4254f8cb8da0",
+      "installedSha": "df2b20d0a43b49f2bc59d317f39a7992ce723e553680eae2515d4254f8cb8da0"
     },
     "scripts/hooks/learning-validator.js": {
       "owner": "framework",
@@ -9801,8 +9920,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/assert-warpos-templates-shipped.js",
-      "sha256": "54c7c4ba50a2baf69204b8b50aa32693fcb4364372ce4cff475759b73d4fdde2",
-      "installedSha": "54c7c4ba50a2baf69204b8b50aa32693fcb4364372ce4cff475759b73d4fdde2"
+      "sha256": "9f2aee6aea23f3c3903bf561d5b37316208c8945fdc7e6c74d230455dc491eb9",
+      "installedSha": "9f2aee6aea23f3c3903bf561d5b37316208c8945fdc7e6c74d230455dc491eb9"
     },
     "scripts/checks/beta-honesty-triage.js": {
       "owner": "framework",
@@ -9976,8 +10095,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/doc-ref-integrity.allowlist.json",
-      "sha256": "c0174f47fb53e28cbbb1aef294c67c6b2eb772b6cd156c7b494a1c8f21c4f4cc",
-      "installedSha": "c0174f47fb53e28cbbb1aef294c67c6b2eb772b6cd156c7b494a1c8f21c4f4cc"
+      "sha256": "82f20cf3cd971453f3eeafdb0af7a25dc3816bb352490e6a4865bb3dcc238dc9",
+      "installedSha": "82f20cf3cd971453f3eeafdb0af7a25dc3816bb352490e6a4865bb3dcc238dc9"
     },
     "scripts/checks/doc-ref-integrity.js": {
       "owner": "framework",
@@ -11327,8 +11446,8 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/hooks.registry.json",
-      "sha256": "6e5fd54a4966789079f8b69b51ec64bcd572fd5dc1fa1718b8c9ca53c3e163fe",
-      "installedSha": "6e5fd54a4966789079f8b69b51ec64bcd572fd5dc1fa1718b8c9ca53c3e163fe"
+      "sha256": "c06515ebd0971601dd120145d4dbc12381aab087c30d449c1f191e0df653f045",
+      "installedSha": "c06515ebd0971601dd120145d4dbc12381aab087c30d449c1f191e0df653f045"
     },
     "framework/panel-registry.json": {
       "owner": "framework",
@@ -12799,10 +12918,6 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
-    },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
     },
     ".claude/.last-checkpoint": {
       "owner": "runtime",
@@ -14283,50 +14398,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/sprint/tickets/T-20260615-342.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-343.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-344.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-345.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-346.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-347.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-348.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-349.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-350.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-351.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/tickets/T-20260615-352.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/sprint/tickets/T-20260616-353.yaml": {
       "owner": "runtime",
       "managed": false
@@ -14364,30 +14435,6 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/SP-20260627-001/progress.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260619-001/current.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260619-001/progress.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260618-002/current.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260618-002/progress.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260618-001/current.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/sprints/SP-20260618-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -19063,14 +19110,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/sprint/plan-contracts/PC-20260628-0082.report.md": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -19388,14 +19427,6 @@
       "managed": false
     },
     ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-07-22-800Z.md": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-20-00-885Z.md": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/full-reports/SP-20260627-001/halt-2026-06-28T05-21-27-605Z.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -22243,26 +22274,6 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/sprint/checkpoints/SP-20260627-001-0006.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/checkpoints/SP-20260627-001-0007.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/checkpoints/SP-20260627-001-0008.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/checkpoints/SP-20260627-001-0009.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/sprint/checkpoints/SP-20260627-001-0010.yaml": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/sprint/approvals/AP-20260512-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -22595,30 +22606,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/beta-honesty-waivers.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/traces.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -22715,23 +22702,11 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/maps/tools.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/tools.md": {
       "owner": "runtime",
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/manager-consult.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/requirements.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -22748,14 +22723,6 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -24594,8 +24561,8 @@
       "managed": true,
       "source": ".claude/commands/bootstrap/spinup.md",
       "kind": "md",
-      "sha256": "a1744be71a5839daa198fbd334c7bb904b92447abc9d1142685fc533bb6c6677",
-      "installedSha": "a1744be71a5839daa198fbd334c7bb904b92447abc9d1142685fc533bb6c6677"
+      "sha256": "25f6653a21df0d9d8b3972b9c2d4fef6186c50174d31d3ce9e5c279800555787",
+      "installedSha": "25f6653a21df0d9d8b3972b9c2d4fef6186c50174d31d3ce9e5c279800555787"
     },
     ".claude/commands/beta/integrate.md": {
       "owner": "framework",
@@ -25171,11 +25138,6 @@
       "sha256": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012",
       "installedSha": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012"
     },
-    ".claude/agents/president/_system/gamma/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -25183,11 +25145,6 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
-    },
-    ".claude/agents/president/_system/beta/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -25212,11 +25169,6 @@
       "kind": "md",
       "sha256": "c35c9c44d350af58f1167eaafa92683ce0c8f99bb0300c05e3a5735712b58266",
       "installedSha": "c35c9c44d350af58f1167eaafa92683ce0c8f99bb0300c05e3a5735712b58266"
-    },
-    ".claude/agents/president/_system/alpha/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",

@@ -22,7 +22,7 @@ const EXPECTED_SUBTREES = [
   "app-scaffold", "canonical", "lastmile", "portfolio", "product-bootstrap",
   "product-clone", "product-import", "report", "sprint",
 ];
-const EXPECTED_FILE_COUNT = 108;
+const EXPECTED_FILE_COUNT = 122; // 108 + 14 input-composer reference files (SP-20260716-003)
 
 function toRel(p) {
   return p.split(path.sep).join("/");
