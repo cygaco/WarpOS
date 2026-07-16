@@ -54,6 +54,9 @@
     "scripts/hooks/lib/lifecycle-events.js",
     "scripts/hooks/mode-lifecycle-guard.js",
     "scripts/teams/lifecycle.js",
-    "scripts/warpos/provider-tier-check.js"
+    "scripts/warpos/provider-tier-check.js",
+    "framework/templates/canonical/DATA_AND_ACCOUNTS.md.tmpl",
+    "framework/templates/app-scaffold/.env.local.example.tmpl",
+    "framework/templates/app-scaffold/FOUNDERS_CHECKLIST.md.tmpl"
   ]
 }

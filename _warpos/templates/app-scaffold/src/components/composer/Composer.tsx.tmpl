@@ -1,0 +1,216 @@
+"use client";
+
+import * as React from "react";
+import { Calendar, ChevronDown, Mic, Paperclip, Send } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useAutosize } from "@/hooks/useAutosize";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { RecordingBar } from "@/components/composer/RecordingBar";
+
+/**
+ * Composer — the morphing input composer
+ * (_knowledge/design/INPUT_COMPOSER_PATTERN.md). A CONTROLLED, emit-only
+ * component: the parent owns `value` and the single save terminus (see
+ * `src/lib/composer/terminus.ts`) — this component never writes on its own,
+ * it only calls `onTextChange` / `onSend` / `onTranscript`.
+ */
+export interface ComposerProps {
+  value: string;
+  onTextChange: (value: string) => void;
+  onSend: () => void;
+  onTranscript?: (text: string, opts: { final: boolean }) => void;
+  /** Flag-OFF (default) = Web Speech API; flag-ON = MediaRecorder + transcribeUrl (§4). */
+  voiceEnabled?: boolean;
+  transcribeUrl?: string;
+  placeholder?: string;
+  /** Optional emit-only hooks for the two other idle-row controls (parent decides behavior). */
+  onAttachClick?: () => void;
+  onTimestampClick?: () => void;
+  /** Height (px) of the app's fixed bottom nav — offsets the floating card above it (P-3/G-6/G-7). */
+  navHeightPx?: number;
+  className?: string;
+}
+
+const CIRCLE = "size-11 shrink-0 rounded-full p-0";
+const DEFAULT_NAV_HEIGHT_PX = 64;
+const GAP_PX = 12;
+
+export function Composer({
+  value,
+  onTextChange,
+  onSend,
+  onTranscript,
+  voiceEnabled = false,
+  transcribeUrl,
+  placeholder = "Write a note…",
+  onAttachClick,
+  onTimestampClick,
+  navHeightPx = DEFAULT_NAV_HEIGHT_PX,
+  className,
+}: ComposerProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [voiceError, setVoiceError] = React.useState<string | undefined>(undefined);
+  // Set when the user clicks Send WHILE recording (voice-then-send, §3): the
+  // next FINAL transcript skips the field entirely and goes straight to
+  // onSend (never calls onTextChange) — "send -> save (skip transcript display)".
+  const pendingSendRef = React.useRef(false);
+  const autosize = useAutosize<HTMLTextAreaElement>(value);
+
+  const handleHookTranscript = React.useCallback(
+    (text: string, opts: { final: boolean }) => {
+      if (opts.final && pendingSendRef.current) {
+        pendingSendRef.current = false;
+        onTranscript?.(text, opts);
+        onSend();
+        return;
+      }
+      if (opts.final) {
+        onTextChange(text);
+      }
+      onTranscript?.(text, opts);
+    },
+    [onTextChange, onSend, onTranscript],
+  );
+
+  const voice = useVoiceInput({
+    voiceEnabled,
+    transcribeUrl,
+    onTranscript: handleHookTranscript,
+    onError: setVoiceError,
+  });
+
+  const hasText = value.trim().length > 0;
+  const isRecordingUI = voice.status !== "idle";
+
+  const handleBlur = React.useCallback(() => {
+    if (!value.trim()) setIsExpanded(false);
+  }, [value]);
+
+  const handleSend = React.useCallback(() => {
+    if (!hasText) return;
+    onSend();
+  }, [hasText, onSend]);
+
+  const handleRecordingSend = React.useCallback(() => {
+    pendingSendRef.current = true;
+    voice.stop();
+  }, [voice]);
+
+  const handleDiscardOrTypeInstead = React.useCallback(() => {
+    pendingSendRef.current = false;
+    setVoiceError(undefined);
+    voice.discard();
+  }, [voice]);
+
+  return (
+    <div
+      className={cn("fixed inset-x-0 z-40 flex justify-center px-4", className)}
+      style={{
+        bottom: `calc(${navHeightPx}px + env(safe-area-inset-bottom) + ${GAP_PX}px)`,
+      }}
+    >
+      {/* Floating card (P-3): gutters on all sides via the wrapper's px-4 +
+          the bottom offset above; content scrolls UNDER it. */}
+      <div className="w-full max-w-2xl rounded-2xl border bg-card shadow-lg">
+        {isRecordingUI ? (
+          <RecordingBar
+            status={voice.status as "recording" | "transcribing" | "failed"}
+            errorMessage={voiceError}
+            onDiscard={handleDiscardOrTypeInstead}
+            onPause={voice.pause}
+            onStop={voice.stop}
+            onSend={handleRecordingSend}
+            onRetry={voice.retry}
+            onTypeInstead={handleDiscardOrTypeInstead}
+          />
+        ) : (
+          <div className="flex flex-wrap items-center gap-2 p-2">
+            {/* [Now v] — collapses to icon-only below sm (G-3). */}
+            <Button
+              type="button"
+              variant="outline"
+              aria-label="Set date and time"
+              data-testid="capture-timestamp-toggle"
+              onClick={onTimestampClick}
+              className={cn(
+                "h-11 w-11 shrink-0 justify-center gap-1 rounded-full px-0 sm:w-auto sm:px-3",
+                isExpanded ? "order-2" : "order-1",
+              )}
+            >
+              <Calendar className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Now</span>
+              <ChevronDown className="hidden size-3.5 sm:inline" aria-hidden="true" />
+            </Button>
+
+            {/* ONE persistent textarea — morph via order/basis only, NEVER
+                conditional mount/unmount (P-1, G-8). */}
+            <Textarea
+              ref={autosize.ref}
+              data-testid="note-textarea"
+              aria-label="Message"
+              rows={1}
+              value={value}
+              placeholder={placeholder}
+              onFocus={() => setIsExpanded(true)}
+              onBlur={handleBlur}
+              onChange={(e) => onTextChange(e.target.value)}
+              className={cn(
+                // G-2: override the shared base's min-h-[96px] at the call site.
+                // P-4: borderless field — the CARD carries the shape.
+                "min-h-[40px] min-w-0 resize-none border-0 bg-transparent px-2 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                isExpanded
+                  ? "order-1 basis-full py-2 leading-normal"
+                  : // G-1: vertically center the single collapsed line.
+                    // G-3: never wrap the collapsed field.
+                    "order-2 flex-1 basis-0 overflow-hidden whitespace-nowrap py-[9px] leading-[22px]",
+              )}
+            />
+
+            {/* Mic / attach / send: uniform circles, prominence via FILL not
+                size (P-5) — mic is primary (filled) while the draft is
+                empty; send becomes primary once there's text. */}
+            <Button
+              type="button"
+              variant={hasText ? "outline" : "default"}
+              size="icon"
+              aria-label="Record voice message"
+              data-testid="record-btn"
+              disabled={!voice.isSupported}
+              onClick={() => voice.start()}
+              className={cn(CIRCLE, "order-3")}
+            >
+              <Mic className="size-5" aria-hidden="true" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Attach a file"
+              data-testid="capture-attach-toggle"
+              onClick={onAttachClick}
+              className={cn(CIRCLE, "order-4")}
+            >
+              <Paperclip className="size-5" aria-hidden="true" />
+            </Button>
+
+            <Button
+              type="button"
+              variant={hasText ? "default" : "outline"}
+              size="icon"
+              aria-label="Send"
+              data-testid="send-btn"
+              disabled={!hasText}
+              onClick={handleSend}
+              className={cn(CIRCLE, "order-5")}
+            >
+              <Send className="size-5" aria-hidden="true" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
