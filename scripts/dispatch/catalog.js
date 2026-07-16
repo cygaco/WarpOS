@@ -19,6 +19,33 @@ const ANTHROPIC = {
   requiresFallback: false,
   defaultModel: "claude-opus-4-8",
   models: [
+    // ── Claude-5 family (DISPATCH.md 2026-07-12, verified via `claude` CLI) ──
+    // fable-5 = top brain (President, Dir-Eng, security planner+judge); sonnet-5 =
+    // builders/fixers/legwork/tools. Added ADDITIVELY — opus-4-8 stays THE fallback
+    // target; the legacy claude-sonnet-4-6 stays until the §6 sweep + parity are green
+    // (remove-last, DISPATCH.md §9).
+    {
+      id: "claude-fable-5",
+      label: "Claude Fable 5 (top brain; Claude-5 family, adaptive thinking)",
+      effortLevels: ["low", "medium", "high", "xhigh", "max"],
+      contextTokens: 1_000_000,
+      maxOutputTokens: 128_000,
+      // Pricing NOT specified in DISPATCH.md §4; placeholder at opus-4-8 parity pending
+      // operator confirmation (flagged as enforcement debt — do not treat as authoritative).
+      pricing: { inPerMTok: 5, outPerMTok: 25 },
+      pricingEstimate: true,
+      aliases: ["fable", "claude-fable-5"],
+    },
+    {
+      id: "claude-sonnet-5",
+      label: "Claude Sonnet 5 (builders/fixers/legwork; ~30% more tokens, new tokenizer)",
+      effortLevels: ["low", "medium", "high", "xhigh", "max"],
+      contextTokens: 1_000_000,
+      maxOutputTokens: 64_000,
+      // §4: $3/$15 (intro $2/$10 → 2026-08-31). Steady-state rate recorded.
+      pricing: { inPerMTok: 3, outPerMTok: 15 },
+      aliases: ["sonnet-5", "claude-sonnet-5"],
+    },
     {
       id: "claude-opus-4-8",
       label: "Claude Opus 4.8",
@@ -63,11 +90,44 @@ const OPENAI = {
   // Ref: developers.openai.com/codex/cli/reference
   syntaxTemplate: "codex exec --sandbox workspace-write {reasoning} -m {model} -",
   requiresFallback: true,
+  // defaultModel stays gpt-5.5 through Bucket A (additive). The flip to gpt-5.6-sol is
+  // a live-default change → Bucket D, gated behind the certification gate + gauntlet GREEN
+  // + kill-switch (DISPATCH.md §10; ADR-0013 lesson).
   defaultModel: "gpt-5.5",
   models: [
+    // ── GPT-5.6 family (DISPATCH.md 2026-07-12, PROBE-OK via `codex exec`) ──
+    // NEVER the bare `gpt-5.6` alias (400s "Model metadata not found" → silently degrades
+    // to fallback metadata; a prior session lost a sprint to this). Always the canonical
+    // -sol/-terra/-luna. Effort: sol/terra add `max` + `ultra`; luna caps at `high`+`max`
+    // (no xhigh/ultra). `ultra` fans out parallel subagents (heavy/agentic — budget 10-15min;
+    // for a bounded verdict use sol@xhigh instead or it times out before emitting).
+    {
+      id: "gpt-5.6-sol",
+      label: "GPT-5.6 Sol (flagship)",
+      effortLevels: ["low", "medium", "high", "xhigh", "max", "ultra"],
+      contextTokens: 1_050_000,
+      maxOutputTokens: 128_000,
+      pricing: { inPerMTok: 5, outPerMTok: 30 },
+    },
+    {
+      id: "gpt-5.6-terra",
+      label: "GPT-5.6 Terra (mid)",
+      effortLevels: ["low", "medium", "high", "xhigh", "max", "ultra"],
+      contextTokens: 1_050_000,
+      maxOutputTokens: 128_000,
+      pricing: { inPerMTok: 2.5, outPerMTok: 15 },
+    },
+    {
+      id: "gpt-5.6-luna",
+      label: "GPT-5.6 Luna (cheap)",
+      effortLevels: ["low", "medium", "high", "max"],
+      contextTokens: 1_050_000,
+      maxOutputTokens: 128_000,
+      pricing: { inPerMTok: 1, outPerMTok: 6 },
+    },
     {
       id: "gpt-5.5",
-      label: "GPT-5.5 (flagship)",
+      label: "GPT-5.5 (flagship — legacy, retiring after §6 sweep + parity green)",
       effortLevels: ["low", "medium", "high", "xhigh"],
       contextTokens: 1_000_000,
       maxOutputTokens: 128_000,
@@ -177,8 +237,37 @@ const GEMINI = {
   ],
 };
 
-const PROVIDERS = { claude: ANTHROPIC, openai: OPENAI, gemini: GEMINI };
-const PROVIDER_LIST = [ANTHROPIC, OPENAI, GEMINI];
+// ── Antigravity (Gemini via `agy`) ─────────────────────────────
+// DISPATCH.md 2026-07-12: the individual-tier `gemini` CLI is SUNSET — route ALL Gemini
+// through Antigravity's `agy` CLI. `gemini-3.1-pro-preview` is the ONLY Gemini (Flash
+// REMOVED). Thinking is always-on (no effort flag). PROBE-OK via `agy` v1.1.x. Self-auth
+// at ~/.gemini/antigravity-cli. Added as a NEW provider id `antigravity` alongside the
+// legacy `gemini` provider (which is removed LAST, after the §6 sweep + parity green).
+// GOTCHA: `agy` probabilistically declines "security review" framing (~2/3 on toy prompts)
+// — the provider runner keeps a refusal-retry loop (re-sample ≤4×).
+const ANTIGRAVITY = {
+  id: "antigravity",
+  label: "Antigravity (Gemini)",
+  cli: "agy",
+  cliEffortFlagTemplate: "",
+  syntaxTemplate: "agy --model {model}",
+  requiresFallback: true,
+  defaultModel: "gemini-3.1-pro-preview",
+  models: [
+    {
+      id: "gemini-3.1-pro-preview",
+      label: "Gemini 3.1 Pro (preview, thinking always-on) — via agy",
+      effortLevels: [],
+      contextTokens: 1_000_000,
+      maxOutputTokens: 65_536,
+      thinkingAlwaysOn: true,
+      pricing: { inPerMTok: 2, outPerMTok: 12 },
+    },
+  ],
+};
+
+const PROVIDERS = { claude: ANTHROPIC, openai: OPENAI, gemini: GEMINI, antigravity: ANTIGRAVITY };
+const PROVIDER_LIST = [ANTHROPIC, OPENAI, GEMINI, ANTIGRAVITY];
 
 // Accepted aliases the user might type — normalize to canonical id.
 const PROVIDER_ALIASES = {
@@ -188,6 +277,8 @@ const PROVIDER_ALIASES = {
   gpt: "openai",
   gemini: "gemini",
   google: "gemini",
+  antigravity: "antigravity",
+  agy: "antigravity",
 };
 
 function normalizeProviderId(id) {
