@@ -44,6 +44,31 @@ The enforcer rewrite is staged like migrate-first(widen)/remove-last(narrow), ap
 
 The harness Agent tool is **Claude-only** — a role pinned to a GPT model cannot be summoned in-process (empirically: product-lead/design-lead gpt-pins failed to spawn; the opus-pinned DoE spawned fine). So §8 (GPT = Product) collides with §9 (light in-process judgment) for every advisory role consulted in-process. Per-role resolution at Bucket D, two coherent options: **(a)** keep in-process advisory-judgment roles Claude-pinned and read §8 "GPT = Product" as Product's **CLI-dispatched** builder/reviewer roles (β's lean, preserves the in-process topology); or **(b)** GPT-pin them and reach them **only via CLI subprocess**, never the Agent tool. **Either way** the §9 parity enforcer MUST fire on "a `provider != claude` role carries Agent-tool / in-process reachability" (planted-violation test), so the contradiction cannot ship silently. The pre-existing gpt-5.5 advisory pins already trip this.
 
+## The ONE legal Claude shape for a cross-provider reviewer's Claude lane
+
+A `cross_provider_reviewer` (e.g. `security-reviewer`) has NO legal **subprocess** path for its Claude
+lane — a contract hole exposed by the ADR-0013 enforce-flip and confirmed live running Auth's fallback:
+
+- `dispatch-claude.js` → shape `subprocess-claude` → the contract **REFUSES** it for the class (ADR-0013,
+  working as designed — a reviewer's allowed shape is `subprocess-cross-provider`);
+- `dispatch-agent.js` → **refuses `provider=claude` outright** ("this bridge handles OpenAI and Gemini
+  only — dispatch natively via the Agent tool / `claude -p`").
+
+So the systematic claude-3rd-pass failure on both sprints was the honest contract catching a
+mis-shaped chain, not a contract bug. **Resolution (lead + ε agreed 2026-07-16):** the Claude lane of
+a multi-lab review is **declared `in-process-agent` shape** — ε summons it via the harness Agent tool
+with a `scopeContract` (ADR-0014), evidenced by a `record-inprocess` completion (ADR-0009, the same
+`ok:true` record `gauntlet-verify` reads). This is the **one legal Claude shape for the class**; it
+needs no new transport and matches the W5 doctrine. Chosen over growing a new Claude subprocess route
+in the bridge.
+
+**Reconciliation (lands with Bucket E):** the 3-lab panel runs its GPT + Gemini(agy) hunter lanes as
+`dispatch-agent` subprocesses, and its Claude hunter/`fable-5` judge lanes **in-process** via the
+Agent tool + `record-inprocess`. `dispatch-review.js`'s multi-pass fireer is updated so the Claude
+pass is NOT dispatched as a refused `subprocess-claude` — the registry/contract name `in-process-agent`
+as the Claude lane's shape for the class, so the chain and `gauntlet-verify` agree. Fail-closed on
+lab-diversity loss is unchanged (the lone-survivor `below_bar` surfacing already ships).
+
 ## Related settled calls recorded here
 
 - **AUTH (Sprint B):** products use **Supabase passwordless** auth (operator-settled; Epsilon-Auth owns the content). Recorded here so the dispatch/security topology and the auth security-review lane share one decision surface.
