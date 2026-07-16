@@ -25,9 +25,28 @@ const NAME = "model-chain";
 const ROOT = path.resolve(__dirname, "..", "..");
 const REGISTRY = ".claude/agents/_org/role-registry.json";
 
-const TOP_MODEL = "claude-opus-4-8";
-const FABLE_RE = /fable/i;
-const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", null]);
+// ── SUPERSET policy (Bucket A WIDEN — DISPATCH.md 2026-07-12 supersedes the 2026-06-16 directive) ──
+// TWO-STAGE (β-ruled): Bucket A widens to the old∪new SUPERSET so the CURRENT opus roster AND a
+// future fable-top roster BOTH pass; Bucket D NARROWS to the new positive-pins ATOMIC with the
+// provider-by-department flip (behind β-gate + gauntlet GREEN + kill-switch). This is
+// migrate-first(widen)/remove-last(narrow) applied to the enforcer itself. Every non-superseded
+// tooth is KEPT (drift-detector G, scrapped-role I, completeness D/E, spec-effort H, fail-closed);
+// the superset boundary is proven by NEGATIVE fixtures per refused class in model-chain.test.js.
+// The supersession + its reversal of the emphatic 2026-06-16 directive is recorded in the sprint ADR.
+const TOP_MODEL = "claude-opus-4-8"; // THE fallback target; retained for block C + back-compat export
+// alpha (President): (opus-4-8 @ max) [old 2026-06-16] OR (fable-5 @ high) [new DISPATCH.md §8].
+const ALPHA_ALLOWED = [
+  { model: "claude-opus-4-8", effort: "max" },
+  { model: "claude-fable-5", effort: "high" },
+];
+// doer model: opus-4-8 [old] OR sonnet-5 [new §8 — builders/fixers].
+const DOER_MODELS = new Set(["claude-opus-4-8", "claude-sonnet-5"]);
+// max effort: alpha [old] OR the security-hunter Claude lane [new §8 — opus@max]. (President drops
+// to fable@high in the new policy, so max's home moves to the security panel — the superset allows both.)
+const MAX_ALLOWED_ROLES = new Set(["alpha", "security-reviewer"]);
+// ultra effort: only the GPT-5.6 sol/terra flagship+mid tiers (§4 — luna/claude have no ultra).
+const ULTRA_MODELS = new Set(["gpt-5.6-sol", "gpt-5.6-terra"]);
+const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", "ultra", null]);
 // effort:null is legitimate ONLY here (documented): skeleton-builder (matches the live catalog
 // DEFAULT_EFFORT_PER_ROLE default for that role) and any gemini-provider role (gemini has no
 // effort flag — thinking is always-on for the pro-preview tier).
@@ -69,34 +88,33 @@ function evaluateModelChain({ reg, consumers, specs }) {
   const roles = (reg && reg.roles) || {};
   const policy = (reg && reg.model_policy) || {};
 
-  // ── A. No `fable` in any MODEL field (operator 2026-06-16 — fable is NOT the top default) ──
-  for (const ref of collectModelRefs(reg)) {
-    if (FABLE_RE.test(String(ref.model)))
-      errors.push(
-        `[CRITICAL] ${ref.where}="${ref.model}" references a fable model — fable is explicitly NOT the top default (operator 2026-06-16); use ${TOP_MODEL}`,
-      );
-  }
+  // ── A. (RETIRED by DISPATCH.md §8 supersession) The old no-fable rejection is GONE — fable-5 is
+  //       now the sanctioned top brain (President/DoE/security planner+judge). fable is a normal
+  //       valid model; the positive pins below constrain WHERE the sanctioned models may sit. ──
 
-  // ── B. Alpha POSITIVE pin: the top face must BE opus-4.8 at max (role-parity only checks the
-  //       negative "max only on alpha"; a downgraded alpha would otherwise pass silently) ──
+  // ── B. Alpha POSITIVE pin (SUPERSET): the top face must BE one of the sanctioned (model,effort)
+  //       tuples — (opus-4-8 @ max) [old] OR (fable-5 @ high) [new §8]. role-parity only checks the
+  //       negative "max only on alpha"; a downgraded/mis-paired alpha would otherwise pass silently.
+  //       Bucket D narrows this to the single new tuple (fable-5 @ high) atomic with the flip. ──
   const alpha = roles.alpha;
   if (!alpha) {
-    errors.push(`[CRITICAL] no "alpha" role — the top face must exist, pinned to ${TOP_MODEL}/max`);
+    const allowed = ALPHA_ALLOWED.map((t) => `${t.model}@${t.effort}`).join(" OR ");
+    errors.push(`[CRITICAL] no "alpha" role — the top face must exist, pinned to one of: ${allowed}`);
   } else {
-    if (alpha.model !== TOP_MODEL)
+    const match = ALPHA_ALLOWED.some((t) => t.model === alpha.model && t.effort === alpha.effort);
+    if (!match) {
+      const allowed = ALPHA_ALLOWED.map((t) => `${t.model}@${t.effort}`).join(" OR ");
       errors.push(
-        `[CRITICAL] alpha.model="${alpha.model}" — alpha MUST be the shipped top model ${TOP_MODEL} (operator 2026-06-16)`,
+        `[CRITICAL] alpha.model="${alpha.model}"/effort="${alpha.effort}" — the top face must be one of the sanctioned top tuples: ${allowed} (Bucket-A superset; Bucket-D narrows to claude-fable-5@high)`,
       );
-    if (alpha.effort !== "max")
-      errors.push(
-        `[CRITICAL] alpha.effort="${alpha.effort}" — alpha is the SOLE role that runs at max effort (operator 2026-06-16)`,
-      );
+    }
   }
 
-  // ── C. Top-model policy: the doer model must be the shipped top ──
-  if (policy.doers && policy.doers.model && policy.doers.model !== TOP_MODEL)
+  // ── C. Doer-model policy (SUPERSET): the doer model must be a sanctioned doer — opus-4-8 [old] OR
+  //       sonnet-5 [new §8]. Bucket D narrows to sonnet-5 atomic with the builder flip. ──
+  if (policy.doers && policy.doers.model && !DOER_MODELS.has(policy.doers.model))
     errors.push(
-      `model_policy.doers.model="${policy.doers.model}" — the doer model must be the shipped top ${TOP_MODEL}`,
+      `model_policy.doers.model="${policy.doers.model}" — the doer model must be a sanctioned doer (${[...DOER_MODELS].join(" OR ")})`,
     );
 
   // ── D/E. Completeness + effort validity for every role ──
@@ -107,22 +125,36 @@ function evaluateModelChain({ reg, consumers, specs }) {
       );
     if (!("effort" in r)) {
       errors.push(
-        `role "${name}" has no effort key — every role must declare effort (null only for skeleton-builder / gemini)`,
+        `role "${name}" has no effort key — every role must declare effort (null only for skeleton-builder / gemini / antigravity)`,
       );
     } else if (!VALID_EFFORTS.has(r.effort)) {
-      errors.push(`role "${name}" effort="${r.effort}" is not a valid level (low|medium|high|xhigh|max|null)`);
-    } else if (r.effort === null && !NULL_EFFORT_ALLOW.has(name) && r.provider !== "gemini") {
+      errors.push(`role "${name}" effort="${r.effort}" is not a valid level (low|medium|high|xhigh|max|ultra|null)`);
+    } else if (
+      r.effort === null &&
+      !NULL_EFFORT_ALLOW.has(name) &&
+      r.provider !== "gemini" &&
+      r.provider !== "antigravity"
+    ) {
+      // gemini AND antigravity (agy) have no effort flag — thinking is always-on for the pro-preview tier.
       errors.push(
-        `role "${name}" effort=null but is not skeleton-builder or a gemini role — null effort needs documented justification`,
+        `role "${name}" effort=null but is not skeleton-builder or a gemini/antigravity role — null effort needs documented justification`,
       );
     }
   }
 
-  // ── F. max is alpha-only (the positive policy home; deliberately mirrors role-parity for a
-  //       CRITICAL invariant — belt + suspenders) ──
+  // ── F. Effort CEILINGS (SUPERSET). max: alpha [old] OR the security-hunter Claude lane [new §8].
+  //       ultra: only the GPT-5.6 sol/terra tiers (§4). Bucket D narrows max's home to the security
+  //       panel once President→fable@high. Belt+suspenders with role-parity + the catalog per-model
+  //       effortLevels (catalog.validateTuple). ──
   for (const [name, r] of Object.entries(roles)) {
-    if (r.effort === "max" && name !== "alpha")
-      errors.push(`role "${name}" effort=max — max is alpha-only (operator 2026-06-16; ${name} caps at xhigh)`);
+    if (r.effort === "max" && !MAX_ALLOWED_ROLES.has(name))
+      errors.push(
+        `role "${name}" effort=max — max is reserved for ${[...MAX_ALLOWED_ROLES].join(" / ")} (${name} caps at xhigh)`,
+      );
+    if (r.effort === "ultra" && !ULTRA_MODELS.has(r.model))
+      errors.push(
+        `role "${name}" effort=ultra on model "${r.model}" — ultra is only valid on ${[...ULTRA_MODELS].join(" / ")} (§4; luna/claude have no ultra)`,
+      );
   }
 
   // ── G. Live consumer parity — the drift detector. The registry is the SoT; if catalog.js or
@@ -300,7 +332,7 @@ function main(argv) {
   }
   if (errors.length === 0) {
     process.stdout.write(
-      `OK   [${NAME}] model/effort chain intentional — opus-4.8 top, alpha sole max, no fable, registry↔catalog↔providers agree\n`,
+      `OK   [${NAME}] model/effort chain intentional (Bucket-A superset) — alpha ∈ {opus@max, fable@high}, doers ∈ {opus, sonnet-5}, max ∈ {alpha, security}, ultra ∈ {sol, terra}, registry↔catalog↔providers agree\n`,
     );
     return 0;
   }
@@ -322,4 +354,8 @@ module.exports = {
   TOP_MODEL,
   VALID_EFFORTS,
   SCRAPPED_ROLES,
+  ALPHA_ALLOWED,
+  DOER_MODELS,
+  MAX_ALLOWED_ROLES,
+  ULTRA_MODELS,
 };

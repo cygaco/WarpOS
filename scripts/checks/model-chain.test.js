@@ -64,6 +64,35 @@ function cleanConsumers(reg) {
 }
 const clone = (r) => JSON.parse(JSON.stringify(r));
 
+// ── The NEW (DISPATCH.md §8) roster — proves the Bucket-A SUPERSET accepts fable-top / sonnet-5
+// doers / opus@max security-hunter / sol@ultra. Bucket D will NARROW the enforcer so ONLY this side
+// passes; here (widen) BOTH cleanReg (opus) and fableReg (fable) must be clean. ──
+function fableReg() {
+  return {
+    model_policy: {
+      _doc: "DISPATCH.md §8: fable-5 top brain; sonnet-5 doers; gpt-5.6 Product/Growth.",
+      doers: { provider: "claude", model: "claude-sonnet-5", effort: "high" },
+      review_flagship: { provider: "openai", model: "gpt-5.6-sol", effort: "high" },
+    },
+    roles: {
+      alpha: { provider: "claude", model: "claude-fable-5", effort: "high" },
+      beta: { provider: "openai", model: "gpt-5.6-sol", effort: "high" },
+      "director-of-engineering": { provider: "claude", model: "claude-fable-5", effort: "high" },
+      "backend-builder": { provider: "claude", model: "claude-sonnet-5", effort: "high" },
+      "qa-reviewer": { provider: "openai", model: "gpt-5.6-terra", effort: "xhigh" },
+      cabinet: { provider: "openai", model: "gpt-5.6-sol", effort: "ultra" }, // ultra on sol → allowed
+      "security-reviewer": {
+        provider: "antigravity",
+        model: "gemini-3.1-pro-preview",
+        effort: null, // agy has no effort flag — thinking always-on
+        second_pass: { provider: "openai", model: "gpt-5.6-sol", effort: "xhigh" },
+        third_pass: { provider: "claude", model: "claude-opus-4-8", effort: "max" }, // opus@max hunter
+      },
+      "skeleton-builder": { provider: "claude", model: "claude-sonnet-5", effort: null },
+    },
+  };
+}
+
 // ── 0. POSITIVE — clean registry → 0 findings. ──
 test("clean registry → 0 findings", () => {
   const reg = cleanReg();
@@ -71,56 +100,65 @@ test("clean registry → 0 findings", () => {
   assert.deepStrictEqual(errs, [], `expected clean, got: ${errs.join(" | ")}`);
 });
 
-// ── 1. FALSE-POSITIVE GUARD — a _doc mentioning fable (to reject it) must NOT flag. ──
-test("no-fable does NOT false-positive on a policy note mentioning fable", () => {
+// ── 1. SUPERSESSION (DISPATCH.md §8) — fable is now a SANCTIONED model, NOT rejected. ──
+test("fable in a role model → NO fable-rejection (2026-06-16 no-fable rule superseded)", () => {
   const reg = cleanReg();
-  reg.roles.alpha._note = "fable was rejected as the top default; do not use claude-fable-5";
+  reg.roles["director-of-product"].model = "claude-fable-5"; // an advisory role, not a doer
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(!has(errs, "fable"), `prose 'fable' must not flag; got: ${errs.join(" | ")}`);
-  // and collectModelRefs must ignore the _note field entirely
+  assert.ok(!has(errs, "fable"), `fable must be allowed post-supersession; got: ${errs.join(" | ")}`);
+});
+test("collectModelRefs still ignores prose (_note/_doc) fields", () => {
+  const reg = cleanReg();
+  reg.roles.alpha._note = "fable notes here";
   assert.ok(!collectModelRefs(reg).some((r) => /note/i.test(r.where)), "collectModelRefs must not scan _note");
 });
 
-// ── A. no-fable in actual model fields. ──
-test("fable in a role model → CRITICAL", () => {
-  const reg = cleanReg();
-  reg.roles["backend-builder"].model = "claude-fable-5";
-  const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "roles.backend-builder.model") && has(errs, "fable"), errs.join(" | "));
+// ── A(new). POSITIVE — the WIDEN accepts BOTH rosters: the new fable-top roster passes clean. ──
+test("SUPERSET: new fable-top roster (fable alpha, sonnet-5 doers, sol@ultra, opus@max hunter) → 0 findings", () => {
+  const errs = evaluateModelChain({ reg: fableReg() });
+  assert.deepStrictEqual(errs, [], `new roster must pass the superset; got: ${errs.join(" | ")}`);
 });
-test("fable in second_pass.model → CRITICAL", () => {
+// A doer model OUTSIDE the sanctioned set is still rejected (superset is bounded, not "anything goes").
+test("doers.model = a non-sanctioned model → still flagged (superset is bounded)", () => {
   const reg = cleanReg();
-  reg.roles["security-reviewer"].second_pass.model = "claude-fable-5";
+  reg.model_policy.doers.model = "claude-fable-5"; // fable is a valid MODEL but not a sanctioned DOER
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "second_pass.model") && has(errs, "fable"), errs.join(" | "));
-});
-test("fable in model_policy.doers.model → CRITICAL", () => {
-  const reg = cleanReg();
-  reg.model_policy.doers.model = "claude-fable-5";
-  const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "model_policy.doers.model") && has(errs, "fable"), errs.join(" | "));
+  assert.ok(has(errs, "model_policy.doers.model") && has(errs, "sanctioned doer"), errs.join(" | "));
 });
 
-// ── B. alpha positive pin. ──
-test("alpha.model not opus-4.8 → CRITICAL", () => {
+// ── B. alpha positive pin (SUPERSET: opus-4-8@max OR fable-5@high). ──
+test("alpha = gpt-5.5 (neither sanctioned top) → CRITICAL", () => {
   const reg = cleanReg();
   reg.roles.alpha.model = "gpt-5.5";
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "alpha.model") && has(errs, "shipped top model"), errs.join(" | "));
+  assert.ok(has(errs, "alpha.model") && has(errs, "sanctioned top tuples"), errs.join(" | "));
 });
-test("alpha.effort not max → CRITICAL", () => {
+test("alpha = opus@xhigh (wrong effort pairing) → CRITICAL", () => {
   const reg = cleanReg();
-  reg.roles.alpha.effort = "xhigh";
+  reg.roles.alpha.effort = "xhigh"; // opus pairs with max, not xhigh
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "alpha.effort") && has(errs, "max effort"), errs.join(" | "));
+  assert.ok(has(errs, "sanctioned top tuples"), errs.join(" | "));
+});
+test("alpha = fable@max (fable pairs with high, not max) → CRITICAL", () => {
+  const reg = cleanReg();
+  reg.roles.alpha.model = "claude-fable-5";
+  reg.roles.alpha.effort = "max";
+  const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
+  assert.ok(has(errs, "sanctioned top tuples"), errs.join(" | "));
 });
 
-// ── C. top-model policy. ──
-test("doers.model not opus-4.8 → flagged", () => {
+// ── C. doer-model policy (SUPERSET: opus-4-8 OR sonnet-5). ──
+test("doers.model = legacy sonnet-4-6 (not a sanctioned doer) → flagged", () => {
   const reg = cleanReg();
   reg.model_policy.doers.model = "claude-sonnet-4-6";
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "model_policy.doers.model") && has(errs, "shipped top"), errs.join(" | "));
+  assert.ok(has(errs, "model_policy.doers.model") && has(errs, "sanctioned doer"), errs.join(" | "));
+});
+test("doers.model = sonnet-5 (new sanctioned doer) → NOT flagged", () => {
+  const reg = cleanReg();
+  reg.model_policy.doers.model = "claude-sonnet-5";
+  const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
+  assert.ok(!has(errs, "sanctioned doer"), errs.join(" | "));
 });
 
 // ── D/E. completeness + effort validity. ──
@@ -136,11 +174,25 @@ test("role missing effort key → flagged", () => {
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
   assert.ok(has(errs, "backend-builder") && has(errs, "no effort key"), errs.join(" | "));
 });
-test("invalid effort level → flagged", () => {
+test("invalid effort level (turbo) → flagged", () => {
   const reg = cleanReg();
-  reg.roles["backend-builder"].effort = "ultra";
+  reg.roles["backend-builder"].effort = "turbo"; // ultra is now VALID; use a truly bogus level
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
   assert.ok(has(errs, "backend-builder") && has(errs, "not a valid level"), errs.join(" | "));
+});
+// ── F(new). ultra CEILING — valid ONLY on gpt-5.6 sol/terra (§4). ──
+test("ultra on a claude role → CEILING flagged", () => {
+  const reg = cleanReg();
+  reg.roles["backend-builder"].effort = "ultra"; // backend-builder is claude/opus — no ultra
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "backend-builder") && has(errs, "ultra is only valid on"), errs.join(" | "));
+});
+test("ultra on gpt-5.6-sol → allowed (no ceiling finding)", () => {
+  const reg = cleanReg();
+  reg.roles["qa-reviewer"].model = "gpt-5.6-sol";
+  reg.roles["qa-reviewer"].effort = "ultra";
+  const errs = evaluateModelChain({ reg });
+  assert.ok(!has(errs, "ultra is only valid on"), errs.join(" | "));
 });
 test("claude role effort null (non-skeleton) → flagged", () => {
   const reg = cleanReg();
@@ -155,12 +207,18 @@ test("gemini role effort null → NOT flagged (always-on thinking)", () => {
   assert.ok(!has(errs, "security-reviewer"), `gemini null effort must be allowed; got: ${errs.join(" | ")}`);
 });
 
-// ── F. max only alpha. ──
-test("non-alpha effort=max → flagged", () => {
+// ── F. max ceiling (SUPERSET: alpha OR security-reviewer). ──
+test("max on a non-sanctioned role (director-of-product) → flagged", () => {
   const reg = cleanReg();
   reg.roles["director-of-product"].effort = "max";
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
-  assert.ok(has(errs, "director-of-product") && has(errs, "alpha-only"), errs.join(" | "));
+  assert.ok(has(errs, "director-of-product") && has(errs, "reserved for"), errs.join(" | "));
+});
+test("max on security-reviewer (the §8 opus@max hunter home) → allowed", () => {
+  const reg = cleanReg();
+  reg.roles["security-reviewer"].effort = "max";
+  const errs = evaluateModelChain({ reg });
+  assert.ok(!has(errs, "reserved for"), errs.join(" | "));
 });
 
 // ── G. registry ↔ consumer DRIFT. ──
