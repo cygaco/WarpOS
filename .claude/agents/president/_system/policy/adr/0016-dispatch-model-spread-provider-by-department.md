@@ -1,0 +1,60 @@
+# ADR 0016 — Dispatch model-spread: GPT-5.6 / Claude-5 / Antigravity, provider-by-department, and the fable-top supersession
+
+**Date:** 2026-07-16
+**Status:** accepted (operator-authoritative spec `DISPATCH.md` 2026-07-12, handed to α this session as the goal of Sprint A "update our agent dispatch & routing system"). Migration in progress — **two-stage**, canary per DISPATCH.md §10.
+**Class:** B (architectural — the model catalog, provider topology, effort ladder, and the machine-enforced model-policy invariant)
+**Sprint:** SP-20260716-001 (fresh; E-DISPATCH-MODELSPREAD-001 — distinct from E-DISPATCH-PERFECT-001 W3, which is the codex-doer build *shape*)
+
+---
+
+## Decision
+
+Adopt the `DISPATCH.md` (2026-07-12, doogle plan-hardening, β rows 113–114) agent-dispatch architecture in WarpOS canonical:
+
+1. **Model families.** OpenAI `gpt-5.5` → the **`gpt-5.6` family** (`-sol` flagship, `-terra` mid, `-luna` cheap, 1.05M ctx; never the bare `gpt-5.6` alias — it 400s and silently degrades). Anthropic **add `claude-fable-5`** (top brain) **+ `claude-sonnet-5`** (builders/legwork); **retire `claude-sonnet-4-6`** and any Opus < 4.8; keep `claude-opus-4-8` as **the** fallback target. Gemini: the individual `gemini` CLI is **sunset** → route all Gemini through the **Antigravity `agy`** CLI (new provider id `antigravity`), model `gemini-3.1-pro-preview` only (Flash removed).
+2. **Effort ladder.** Add `max` + `ultra`, for `sol`/`terra` only (`luna` caps at `max`; no xhigh/ultra). `ultra` fans out parallel subagents (heavy/agentic — budget 10–15 min; for a bounded verdict use `sol@xhigh`).
+3. **Provider-by-department routing (§8).** GPT = Product + Growth · Claude = Engineering · Security = a 3-lab panel. Authors (design/product/copy/conversion leads, qa-reviewer) run `xhigh`; overseers/judges (Directors, β, security judge, marketing-lead) run `high`.
+4. **Fallback with teeth (§7).** Required iff `provider !== "claude"`; must differ from primary (claude→claude rejected); every OpenAI/Antigravity role → `fallback: "claude"` = explicit `claude-opus-4-8`. Outage-only, logged, alert on chronic fire. **Security fails CLOSED on lab-diversity loss** — a hunter falling back to Claude collapses the cross-lab guarantee → re-run or BLOCK.
+5. **Topology doctrine (§9).** Orchestrator holds envelopes not content; heavy work → CLI subprocess (≤8-line envelope); light small-return judgment → in-process Agent tool (Claude-only — see §"GPT-pin ↔ Agent-tool collision").
+
+## The supersession (the operator-review surface — read this)
+
+`DISPATCH.md` **REVERSES** the emphatic **2026-06-16** operator directive that was machine-encoded in `scripts/checks/model-chain.js` (and mirrored in the user auto-memory `feedback_model_opus48max_not_fable`):
+
+| Question | 2026-06-16 directive (old) | DISPATCH.md 2026-07-12 (new, this ADR) |
+|---|---|---|
+| Top model | `claude-opus-4-8` is the shipped top; **`fable` is NOT the top default (rejected)** | **`claude-fable-5` is the top brain** (President, Dir-Eng, security planner+judge) |
+| President (α) | opus-4-8 @ **max** | fable-5 @ **high** |
+| Doers (builders/fixers) | opus-4-8 | **sonnet-5** |
+| `max` effort | **alpha-only** | the Claude **security-hunter** lane (opus@max); President drops to high |
+| `ultra` effort | did not exist | added, gated to `gpt-5.6` sol/terra |
+
+**Ratification chain:** the 2026-06-16 directive predates the Claude-5 family; `DISPATCH.md` (2026-07-12) is the operator's later explicit directive, handed to α **this session** as the authoritative spec. Corroboration: this very session runs on `claude-fable-5` at the operator's choice, and fable-5 is a real Mythos-class model above Opus. β verdict `EVT-session-20260716-sprintA-designbuild-beta-004` (DECIDE B/0.88): this is a **sanctioned policy-update, not guard-evasion** — the policy itself changed (newer authoritative spec on the same question) and the enforcer is **replaced by an equally-strict enforcer of the new policy** (structure + fail-closed preserved, target constants swapped), not disabled.
+
+**Action taken:** the stale auto-memory `feedback_model_opus48max_not_fable` is flagged for update (lead updated the user-side copy; ε updates the agent-memory at retro).
+
+## Two-stage enforcer migration (β-ruled — the load-bearing HOW)
+
+The enforcer rewrite is staged like migrate-first(widen)/remove-last(narrow), applied to the enforcer itself, to avoid self-RED-ing the current roster and to preserve the ADR-0013 kill-switch+GREEN separation:
+
+- **Bucket A (landed) — WIDEN `model-chain.js` to the old∪new SUPERSET.** Both the current opus roster AND a future fable-top roster pass. Retire the no-fable rejection; `alpha ∈ {opus-4-8@max, fable-5@high}`; `doers ∈ {opus-4-8, sonnet-5}`; `max ∈ {alpha, security-reviewer}`; add `ultra` gated to sol/terra; null-effort allowance extended to `antigravity`. **Every non-superseded tooth kept** (drift-detector, scrapped-role guard, completeness, spec-effort parity, fail-closed). The superset boundary is proven by **negative fixtures per refused class** (model-chain.test 34/34).
+- **Bucket D (GATED) — NARROW to the new positive-pins ATOMIC with the provider flip.** President MUST be fable-5@high, builders MUST be sonnet-5, ultra gated sol/terra. Behind β's binding gate + gauntlet GREEN + **kill-switch**. **GREEN = an effective-model attestation captured from the CLI header, not a config diff** (the `opts.model || provider.default_model` trap — a registry-only migration can look green while dispatch stays stale; WG-26 below is the canonical instance).
+
+## GPT-pin ↔ Agent-tool collision (design item for Bucket D)
+
+The harness Agent tool is **Claude-only** — a role pinned to a GPT model cannot be summoned in-process (empirically: product-lead/design-lead gpt-pins failed to spawn; the opus-pinned DoE spawned fine). So §8 (GPT = Product) collides with §9 (light in-process judgment) for every advisory role consulted in-process. Per-role resolution at Bucket D, two coherent options: **(a)** keep in-process advisory-judgment roles Claude-pinned and read §8 "GPT = Product" as Product's **CLI-dispatched** builder/reviewer roles (β's lean, preserves the in-process topology); or **(b)** GPT-pin them and reach them **only via CLI subprocess**, never the Agent tool. **Either way** the §9 parity enforcer MUST fire on "a `provider != claude` role carries Agent-tool / in-process reachability" (planted-violation test), so the contradiction cannot ship silently. The pre-existing gpt-5.5 advisory pins already trip this.
+
+## Related settled calls recorded here
+
+- **AUTH (Sprint B):** products use **Supabase passwordless** auth (operator-settled; Epsilon-Auth owns the content). Recorded here so the dispatch/security topology and the auth security-review lane share one decision surface.
+- **Doogle-verified dispatch repairs folded into this sprint:** WG-10 (hollow dispatch prompts), WG-11 (gemini-gated quota fallback + quota-blind records), WG-13 (no write-ahead started-row), WG-26 (`manifest.agentProviders` overrides the role-registry keystone + carries stale pre-ADR-0007 names). WG-15 (build-chain hardcodes Claude; no `subprocess-codex` shape) is **E-DISPATCH-PERFECT-001 W3** feature scope, not this sprint's repair set.
+
+## Consequences
+
+- The catalog, effort kernel, health layer, and model-chain enforcer already carry the superset (Bucket A, reversible, green). The risky provider-by-department flip is isolated behind the β+GREEN+kill-switch gate (Bucket D) and the fail-closed security panel (Bucket E).
+- Legacy ids (`gpt-5.5`, `gemini-3.5-flash`, `claude-sonnet-4-6`) are removed **last**, only on all parity/readiness enforcers green + a CLI-header attestation (self-detecting gate; no operator consult).
+- The 2026-06-16 machine-encoded invariant is auditably reversed here; any future reintroduction of a no-fable/opus-top rule must supersede this ADR.
+
+## Precedent
+
+ADR-0013 (a live-default flip needs GREEN + kill-switch; the enforce-flip reverted once for false-refusing a legit `-w` builder); SP-20260627-001 (enforcer-flip: no-widen proof = negative fixtures per refused class); ADR-0014 (teammate-ε has the Agent tool — the collision analysis above depends on the Agent-tool reachability model). β records `EVT-session-20260716-sprintA-plandesign-beta-002`, `...-designbuild-beta-004`, `...-pipeline-amend-beta-005`.
