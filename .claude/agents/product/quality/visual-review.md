@@ -93,6 +93,20 @@ guides inform what counts as a finding against the spec — your verdict logic, 
 thresholds, and output schema are unchanged.
 <!-- /knowledge:design role:visual-review -->
 
+## The taste gate (run it LAST, on the resting/IDLE state — vibe verdict, no checklist)
+
+Your seven categories are a conformance lane; they can all pass while the resting state
+still looks cheap or unbalanced (see `_knowledge/design/INPUT_COMPOSER_PATTERN.md` §6–§7).
+After the per-category review, take an IDLE-state screenshot at the desktop AND mobile
+viewport and **squint at it against the reference the spec names** (e.g. a ChatGPT-style
+composer): does it look designed or assembled? You are **empowered to FAIL on vibe alone** —
+no checklist, no sub-scores; a REJECT just names *where* it looks off ("the send circle reads
+oversized"; "the placeholder sits high"). Run it on the IDLE state specifically (the hard
+states soak up budget; idle fit-and-finish coasts). If there is no resting state to render,
+record `taste_gate.pass: null` with a `note` — never a silent PASS. A `taste_gate.pass:false`
+is a binding `verdict:"FAIL"`, exactly like a `critical`/`high` finding. Add
+`"taste_gate": { "pass": true, "note": "" }` to the output schema.
+
 ## The flow
 
 For each `viewport` × `entry_path` combination:

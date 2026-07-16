@@ -4,7 +4,7 @@ description: Builds ONE BACKEND unit from spec in an isolated worktree — API r
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 provider: claude
-model: claude-opus-4-8
+model: claude-sonnet-5
 isolation: worktree
 permissionMode: acceptEdits
 maxTurns: 120

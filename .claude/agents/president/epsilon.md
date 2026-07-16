@@ -8,7 +8,7 @@ model: claude-opus-4-8
 maxTurns: 200
 memory: project
 color: purple
-effort: high
+effort: xhigh
 ---
 
 <!-- ═══════════════════════════════════════════════════════════════════

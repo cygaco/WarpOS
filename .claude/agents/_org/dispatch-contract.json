@@ -68,6 +68,7 @@
   "class_derivation": {
     "_doc": "Ordered rules over role-registry attributes. The reader takes the FIRST match. `when` keys are ANDed; a missing key is a wildcard. This keeps the role list single-sourced in role-registry.json — adding a role there auto-classifies it here.",
     "rules": [
+      { "when": { "tier": "face", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "face" }, "class": "face" },
       { "when": { "build_chain": true }, "class": "build_chain_worker" },
       { "when": { "kind": "reviewer", "claude_pinned": true }, "class": "claude_pinned_reviewer" },

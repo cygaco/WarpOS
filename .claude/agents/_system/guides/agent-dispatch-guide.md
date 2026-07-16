@@ -126,7 +126,11 @@ agree — keep them in sync.
 | design-lead | openai | gpt-5.5 xhigh — product design/UX/flows (ADR-0007) |
 | director-of-product | openai | gpt-5.5 xhigh — product strategy/sequencing/JTBD (E-DISPATCH-PERFECT-001 W2) |
 | product-lead | openai | gpt-5.5 high — requirement authoring PRD/stories/AC (operator: GPT writes product requirements) |
-| director-of-growth | openai | gpt-5.5 xhigh — go-to-market/message judgment (E-DISPATCH-PERFECT-001 W2) |
+| director-of-growth | openai | gpt-5.6-sol high — go-to-market/message judgment (E-DISPATCH-PERFECT-001 W2; DISPATCH.md §8) |
+| copy-lead | openai | gpt-5.6-terra xhigh — direct-response copy (DISPATCH.md §8 flip claude→GPT) |
+| conversion-lead | openai | gpt-5.6-terra xhigh — conversion copy + landing page (DISPATCH.md §8 flip claude→GPT) |
+| marketing-lead | openai | gpt-5.6-terra high — paid media / campaigns / EQ scoring (DISPATCH.md §8 flip claude→GPT) |
+| research-lead | antigravity | gemini-3.1-pro-high (agy) — audience research, thinking-on (DISPATCH.md §8 flip claude→antigravity) |
 | frontend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude FE builder |
 | backend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude BE builder |
 | qa-reviewer | openai | gpt-5.5 xhigh — traceability + integrity + functional |

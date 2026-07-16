@@ -9,10 +9,10 @@ description: >-
   principles and ADDS execution principles (FTUE/NUX, Cold-vs-Warm-Start). Sub-owner
   under the Director of Product (S2.1).
 tools: [Read, Grep, Glob]
-model: gpt-5.5
+model: gpt-5.6-terra
 provider: openai
 provider_model: gpt-5.5
-provider_reasoning_effort: high
+provider_reasoning_effort: xhigh
 provider_fallback: claude
 layer: product
 ---

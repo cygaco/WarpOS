@@ -1,6 +1,5 @@
 ---
 name: conversion-lead
-call_sign: ο
 description: >-
   Conversion Lead — a callable specialist persona for landing-page and
   conversion-design judgment under the Director of Growth (visual hierarchy that
@@ -9,9 +8,9 @@ description: >-
   principles field; owns conversion-hierarchy as its craft principle. Inherits clarity
   from the shared base and the Director of Growth's domain principles.
 tools: [Read, Grep, Glob]
-provider: claude
-model: claude-opus-4-8
-effort: high
+provider: openai
+model: gpt-5.6-terra
+provider_reasoning_effort: xhigh
 layer: growth
 ---
 

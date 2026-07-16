@@ -30,34 +30,38 @@ function test(name, fn) {
 const has = (errs, sub) => errs.some((e) => e.includes(sub));
 
 // ── A clean, policy-correct registry + a consistent consumer snapshot. ──
+// Bucket D NARROW (DISPATCH.md §8): the clean roster is now the fable-top roster — alpha=fable@high,
+// doers=sonnet-5, Product/Growth=GPT, security primary=antigravity, opus@max lives in the security
+// Claude hunter lane. The old opus@max/opus-doer roster is now REJECTED (see the negative fixture below).
 function cleanReg() {
   return {
     model_policy: {
-      _doc: "Opus-4.8 is the shipped top; `fable`/`claude-fable-5` is NOT the top default (rejected).",
-      doers: { provider: "claude", model: "claude-opus-4-8", effort: "high" },
-      review_flagship: { provider: "openai", model: "gpt-5.5", effort: "xhigh" },
+      _doc: "DISPATCH.md §8: fable-5 top brain; sonnet-5 doers; gpt-5.6 Product/Growth.",
+      doers: { provider: "claude", model: "claude-sonnet-5", effort: "high" },
+      review_flagship: { provider: "openai", model: "gpt-5.6-sol", effort: "high" },
     },
     roles: {
-      alpha: { provider: "claude", model: "claude-opus-4-8", effort: "max" },
-      beta: { provider: "claude", model: "claude-opus-4-8", effort: "xhigh" },
-      "director-of-product": { provider: "claude", model: "claude-opus-4-8", effort: "xhigh" },
-      "backend-builder": { provider: "claude", model: "claude-opus-4-8", effort: "high" },
-      "qa-reviewer": { provider: "openai", model: "gpt-5.5", effort: "xhigh" },
+      alpha: { provider: "claude", model: "claude-fable-5", effort: "high" },
+      beta: { provider: "openai", model: "gpt-5.6-sol", effort: "high" },
+      "director-of-product": { provider: "openai", model: "gpt-5.6-sol", effort: "high" },
+      "backend-builder": { provider: "claude", model: "claude-sonnet-5", effort: "high" },
+      "qa-reviewer": { provider: "openai", model: "gpt-5.6-terra", effort: "xhigh" },
       "security-reviewer": {
-        provider: "gemini",
-        model: "gemini-3.1-pro-preview",
-        effort: "high",
-        second_pass: { provider: "openai", model: "gpt-5.5", effort: "xhigh" },
+        provider: "antigravity",
+        model: "gemini-3.1-pro-high",
+        effort: null, // agy/antigravity has no effort flag — thinking always-on
+        second_pass: { provider: "openai", model: "gpt-5.6-sol", effort: "xhigh" },
+        third_pass: { provider: "claude", model: "claude-opus-4-8", effort: "max" }, // Claude hunter lane
       },
-      "skeleton-builder": { provider: "claude", model: "claude-sonnet-4-6", effort: null },
-      "test-runner": { provider: "claude", model: "claude-sonnet-4-6", effort: "medium" },
+      "skeleton-builder": { provider: "claude", model: "claude-sonnet-5", effort: null },
+      "test-runner": { provider: "claude", model: "claude-sonnet-5", effort: "medium" },
     },
   };
 }
 function cleanConsumers(reg) {
   return {
-    catalogProvider: { alpha: "claude", "qa-reviewer": "openai", "director-of-product": "claude" },
-    catalogEffort: { alpha: "max", "qa-reviewer": "xhigh", "director-of-product": "xhigh" },
+    catalogProvider: { alpha: "claude", "qa-reviewer": "openai", "director-of-product": "openai" },
+    catalogEffort: { alpha: "high", "qa-reviewer": "xhigh", "director-of-product": "high" },
     providerAgent: { "qa-reviewer": "openai" },
     providerEffortFn: (role) => (reg.roles[role] ? reg.roles[role].effort : undefined),
   };
@@ -98,6 +102,19 @@ test("clean registry → 0 findings", () => {
   const reg = cleanReg();
   const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
   assert.deepStrictEqual(errs, [], `expected clean, got: ${errs.join(" | ")}`);
+});
+
+// ── 0b. NARROW (Bucket D) negative fixture — the RETIRED opus-top roster is now REJECTED. Proves the
+// narrow refuses the superseded roster per refused class (ADR-0016). ──
+test("NARROW: old roster (alpha opus@max, doers opus) → REJECTED", () => {
+  const reg = cleanReg();
+  reg.roles.alpha.model = "claude-opus-4-8";
+  reg.roles.alpha.effort = "max";
+  reg.model_policy.doers.model = "claude-opus-4-8";
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "alpha.model") && has(errs, "sanctioned top tuples"), "old alpha must be rejected: " + errs.join(" | "));
+  assert.ok(has(errs, "model_policy.doers.model") && has(errs, "sanctioned doer"), "old doer must be rejected: " + errs.join(" | "));
+  assert.ok(has(errs, 'role "alpha" effort=max'), "alpha@max must be rejected post-narrow: " + errs.join(" | "));
 });
 
 // ── 1. SUPERSESSION (DISPATCH.md §8) — fable is now a SANCTIONED model, NOT rejected. ──
@@ -252,15 +269,15 @@ test("providers reasoning-effort drift → DRIFT", () => {
 });
 
 // ── H. Spec-frontmatter EFFORT parity (ED-058 blind-spot — the gap that let beta/gamma/delta drift). ──
-test("spec effort drift (spec high vs registry max) → DRIFT", () => {
+test("spec effort drift (spec max vs registry high) → DRIFT", () => {
   const reg = cleanReg();
-  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "high", path: "x/alpha.md" } };
+  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "max", path: "x/alpha.md" } };
   const errs = evaluateModelChain({ reg, specs });
   assert.ok(has(errs, "[DRIFT]") && has(errs, "frontmatter effort"), errs.join(" | "));
 });
 test("spec effort matches registry → no spec-drift finding", () => {
   const reg = cleanReg();
-  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "max", path: "x/alpha.md" } };
+  const specs = { alpha: { exists: true, hasEffortKey: true, effort: "high", path: "x/alpha.md" } };
   const errs = evaluateModelChain({ reg, specs });
   assert.ok(!has(errs, "frontmatter effort"), errs.join(" | "));
 });
@@ -278,14 +295,14 @@ test("spec missing on disk → not a spec-drift finding (role-parity's scope)", 
 });
 
 test("H/HIGH-1: provider_reasoning_effort drift (the cross-provider key) → DRIFT", () => {
-  const reg = cleanReg(); // alpha effort = max
-  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "high", path: "x/alpha.md" } };
+  const reg = cleanReg(); // alpha effort = high
+  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "max", path: "x/alpha.md" } };
   const errs = evaluateModelChain({ reg, specs });
   assert.ok(has(errs, "[DRIFT]") && has(errs, "provider_reasoning_effort"), errs.join(" | "));
 });
 test("H: provider_reasoning_effort matching registry → no finding", () => {
   const reg = cleanReg();
-  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "max", path: "x/alpha.md" } };
+  const specs = { alpha: { exists: true, hasProviderEffortKey: true, providerEffort: "high", path: "x/alpha.md" } };
   const errs = evaluateModelChain({ reg, specs });
   assert.ok(!has(errs, "frontmatter"), errs.join(" | "));
 });

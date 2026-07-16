@@ -1,6 +1,5 @@
 ---
 name: marketing-lead
-call_sign: ξ
 description: >-
   Marketing Lead — paid media · campaigns · EQ scoring (SCALE/TEST/SKIP)
   · LTV:CAC · growth-economics judgment under the Director of Growth.
@@ -8,9 +7,9 @@ description: >-
   PROGRAMMABLE principles field; owns eq-scoring · money-loves-speed · ltv-cac.
   Inherits the shared manager base + the Director of Growth's domain principles.
 tools: [Read, Grep, Glob]
-provider: claude
-model: claude-opus-4-8
-effort: high
+provider: openai
+model: gpt-5.6-terra
+provider_reasoning_effort: high
 layer: growth
 ---
 

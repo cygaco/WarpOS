@@ -4,7 +4,7 @@ description: Builds ONE SECURITY HARDENING unit from spec in an isolated worktre
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 provider: claude
-model: claude-opus-4-8
+model: claude-sonnet-5
 effort: high
 isolation: worktree
 permissionMode: acceptEdits

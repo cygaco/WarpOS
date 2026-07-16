@@ -9,7 +9,7 @@ description: >-
   ADDS craft principles (build-for-audience incl. limitations, KISS, clear iconography).
   Specialist (doer/craft tier) under the Product Lead (S2.1).
 tools: [Read, Grep, Glob]
-model: gpt-5.5
+model: gpt-5.6-sol
 provider: openai
 provider_model: gpt-5.5
 provider_reasoning_effort: xhigh

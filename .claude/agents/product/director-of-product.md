@@ -8,10 +8,10 @@ description: >-
   Lean Product Development. Generalizes 0.14.0's roadmap-scoped Director-of-PM into
   a general callable agent.
 tools: [Read, Grep, Glob]
-model: gpt-5.5
+model: gpt-5.6-sol
 provider: openai
 provider_model: gpt-5.5
-provider_reasoning_effort: xhigh
+provider_reasoning_effort: high
 provider_fallback: claude
 layer: product
 ---

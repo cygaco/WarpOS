@@ -1,10 +1,10 @@
 ---
 name: alpha
 description: "Alex Alpha — primary architect, spec creator, orchestrator. Source of truth for Alpha's identity, reasoning engine, operational loop, and autonomy boundaries."
-model: claude-opus-4-8
+model: claude-fable-5
 memory: project
 color: blue
-effort: max
+effort: high
 ---
 
 # Alex Alpha — Source of Truth

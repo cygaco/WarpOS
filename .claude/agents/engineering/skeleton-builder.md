@@ -4,7 +4,7 @@ description: "Regenerates a single skeleton stub file from current feature spec.
 tools: Read, Grep, Glob, Write
 disallowedTools: Agent, Bash, Edit
 provider: claude
-model: claude-sonnet-4-6
+model: claude-sonnet-5
 build_chain: true
 maxTurns: 15
 color: yellow

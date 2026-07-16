@@ -4,7 +4,7 @@ description: Fixes ONE specific issue from a structured Fix Brief scoped to fron
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 provider: claude
-model: claude-opus-4-8
+model: claude-sonnet-5
 effort: high
 isolation: worktree
 permissionMode: acceptEdits

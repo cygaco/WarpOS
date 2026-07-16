@@ -34,16 +34,16 @@ const REGISTRY = ".claude/agents/_org/role-registry.json";
 // the superset boundary is proven by NEGATIVE fixtures per refused class in model-chain.test.js.
 // The supersession + its reversal of the emphatic 2026-06-16 directive is recorded in the sprint ADR.
 const TOP_MODEL = "claude-opus-4-8"; // THE fallback target; retained for block C + back-compat export
-// alpha (President): (opus-4-8 @ max) [old 2026-06-16] OR (fable-5 @ high) [new DISPATCH.md §8].
+// alpha (President): NARROWED to the single new tuple (fable-5 @ high) — Bucket D, atomic with the
+// provider flip (DISPATCH.md §8). The old opus-4-8@max President tuple is retired.
 const ALPHA_ALLOWED = [
-  { model: "claude-opus-4-8", effort: "max" },
   { model: "claude-fable-5", effort: "high" },
 ];
-// doer model: opus-4-8 [old] OR sonnet-5 [new §8 — builders/fixers].
-const DOER_MODELS = new Set(["claude-opus-4-8", "claude-sonnet-5"]);
-// max effort: alpha [old] OR the security-hunter Claude lane [new §8 — opus@max]. (President drops
-// to fable@high in the new policy, so max's home moves to the security panel — the superset allows both.)
-const MAX_ALLOWED_ROLES = new Set(["alpha", "security-reviewer"]);
+// doer model: NARROWED to sonnet-5 [§8 — builders/fixers]. opus-4-8 retired as THE doer model.
+const DOER_MODELS = new Set(["claude-sonnet-5"]);
+// max effort: NARROWED to the security-hunter Claude lane [§8 — opus@max]. President dropped to
+// fable@high, so max's home is the security panel; alpha may no longer carry max.
+const MAX_ALLOWED_ROLES = new Set(["security-reviewer"]);
 // ultra effort: only the GPT-5.6 sol/terra flagship+mid tiers (§4 — luna/claude have no ultra).
 const ULTRA_MODELS = new Set(["gpt-5.6-sol", "gpt-5.6-terra"]);
 const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", "ultra", null]);
@@ -332,7 +332,7 @@ function main(argv) {
   }
   if (errors.length === 0) {
     process.stdout.write(
-      `OK   [${NAME}] model/effort chain intentional (Bucket-A superset) — alpha ∈ {opus@max, fable@high}, doers ∈ {opus, sonnet-5}, max ∈ {alpha, security}, ultra ∈ {sol, terra}, registry↔catalog↔providers agree\n`,
+      `OK   [${NAME}] model/effort chain intentional (Bucket-D narrow) — alpha = fable@high, doers = sonnet-5, max = security-reviewer, ultra ∈ {sol, terra}, registry↔catalog↔providers agree\n`,
     );
     return 0;
   }

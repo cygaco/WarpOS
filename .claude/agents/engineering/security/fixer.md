@@ -4,7 +4,7 @@ description: Fixes ONE specific security issue from a structured Fix Brief. Must
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 provider: claude
-model: claude-opus-4-8
+model: claude-sonnet-5
 isolation: worktree
 permissionMode: acceptEdits
 maxTurns: 40

@@ -7,7 +7,7 @@ model: claude-opus-4-8
 provider: openai
 provider_model: gpt-5.5
 provider_fallback: claude
-provider_reasoning_effort: xhigh
+provider_reasoning_effort: ultra
 maxTurns: 20
 color: cyan
 ---

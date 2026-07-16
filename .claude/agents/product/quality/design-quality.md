@@ -116,6 +116,45 @@ guides inform the PASS/FAIL call against the `design_brief` + design-system docs
 verdict logic, severity thresholds, and output schema are unchanged.
 <!-- /knowledge:design role:design-quality -->
 
+## The taste gate — a SEVENTH judgment (no-checklist, vibe verdict on the resting state)
+
+The six axes above are a **conformance** lane — they measure box geometry, tokens, and
+spec-match. That lane is **structurally blind to resting-state taste**: a composer's
+placeholder can ride the top of the field, a control can be sized bigger "for prominence,"
+an avatar-clearance gap can sit awkward — and every one of those PASSES the six axes (it
+"meets the tokens," the geometry checks out) while looking cheap or unbalanced to any human
+eye in two seconds. (See `_knowledge/design/INPUT_COMPOSER_PATTERN.md` §6–§7, the pattern
+this gate was institutionalized from — G-1/G-4/G-5 all passed automated + screenshot review;
+G-5 was actively *rewarded* as "mic prominence.")
+
+So run ONE more judgment that the six axes cannot express — the **taste gate**:
+
+> Squint at the **resting / IDLE state** of the surface, next to the reference the
+> `design_brief` names (e.g. a ChatGPT-style composer). Does it look **designed, or
+> assembled** — anything off, cheap, unbalanced, mismatched, or top-heavy? Judge
+> **holistically**, and **you are empowered to FAIL on vibe alone.**
+
+Rules that make it a taste gate and not a seventh checklist:
+- **No checklist.** The moment you enumerate criteria you are back in the conformance lane
+  that already passes the misses above. Do not decompose it into sub-scores.
+- **A REJECT needs no itemized justification** beyond naming *where* it looks off ("the send
+  circle reads oversized vs the others"; "the placeholder sits high, not centered"). One
+  screenshot of the idle state + one sentence is a complete taste-FAIL.
+- **Run it LAST, on the IDLE/resting state specifically** — the hard states (occlusion,
+  morph, recording) soak up review budget and idle fit-and-finish coasts through. Take an
+  idle-state screenshot at the desktop AND mobile viewport and look.
+- **It needs the reference as the bar.** If the `design_brief` provides reference
+  screenshots, judge against them; if none is provided, judge against the house design
+  sensibility (clarity, balance, restraint). If you genuinely cannot form a resting-state
+  view (no idle state to render), record `taste_gate.pass: null` with a `note` — never a
+  silent PASS.
+
+A taste-gate REJECT is a **binding gate failure** exactly like a `critical`/`high` axis
+finding — it flips the overall `verdict` to `FAIL`. This is the one lane allowed to fail
+something that "meets every token" but looks wrong. Add to the output schema, alongside
+`axes`, a `"taste_gate": { "pass": true, "note": "" }` field, and treat `pass:false` as a
+`verdict:"FAIL"` trigger.
+
 ## Per-finding format
 ```
 finding:

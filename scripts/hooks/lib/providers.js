@@ -264,7 +264,7 @@ function classifyQuotaFailure(text) {
 // without code changes. Defaults updated 2026-04-26 to gpt-5.5 (1M ctx, $5/$30) for
 // flagship reasoning roles; gpt-5.4-mini retained for high-volume roles
 // (qa, learner) where cost matters more than peak reasoning.
-const OPENAI_FLAGSHIP = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.5"; // reviewer, compliance
+const OPENAI_FLAGSHIP = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.6-sol"; // reviewer, compliance (DISPATCH.md §8 flip; gotcha-8 plumbing default)
 const OPENAI_MINI = process.env.OPENAI_MINI_MODEL || "gpt-5.4-mini"; // qa, learner (no gpt-5.5-mini exists yet)
 // Default = gemini-3.1-pro-preview (operator directive 2026-06-01; confirmed
 // real at ai.google.dev/gemini-api/docs/models/gemini-3.1-pro-preview — 1M in /
@@ -325,7 +325,7 @@ const DEFAULT_REASONING_EFFORT = {
   // S-7: learner → ops-analyst. New env var REASONING_OPS_ANALYST wins; the legacy
   // REASONING_LEARNER is honored via the same legacy-name pattern (mirrors how the
   // old `learner` key honored REASONING_AUDITOR). 1-hop legacy fallback.
-  "ops-analyst": readReasoningEnv("ops-analyst", "learner", "xhigh"),
+  "ops-analyst": readReasoningEnv("ops-analyst", "learner", "ultra"),
   qa: readReasoningEnv("qa", null, "medium"), // 13 personas × volume; medium balances cost
   redteam: readReasoningEnv("redteam", null, "high"), // gemini implicit; flag is no-op
   // Build-side roles (claude) — `high` per ADR-0007 effort policy (2026-06-04):

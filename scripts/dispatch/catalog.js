@@ -93,7 +93,7 @@ const OPENAI = {
   // defaultModel stays gpt-5.5 through Bucket A (additive). The flip to gpt-5.6-sol is
   // a live-default change → Bucket D, gated behind the certification gate + gauntlet GREEN
   // + kill-switch (DISPATCH.md §10; ADR-0013 lesson).
-  defaultModel: "gpt-5.5",
+  defaultModel: "gpt-5.6-sol",
   models: [
     // ── GPT-5.6 family (DISPATCH.md 2026-07-12, PROBE-OK via `codex exec`) ──
     // NEVER the bare `gpt-5.6` alias (400s "Model metadata not found" → silently degrades

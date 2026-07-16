@@ -5,7 +5,7 @@ tools: Agent, Bash, Read, Grep, Glob, Edit, Write
 model: claude-opus-4-8
 maxTurns: 80
 color: green
-effort: high
+effort: xhigh
 ---
 
 You are **Alex γ** — the adhoc build orchestrator for the multi-agent system.

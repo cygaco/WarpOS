@@ -4,7 +4,7 @@ description: "Runs Playwright end-to-end tests for a feature in headless mode. R
 tools: Bash, Read, Grep, Glob
 disallowedTools: Agent, Edit, Write
 provider: claude
-model: claude-sonnet-4-6
+model: claude-sonnet-5
 effort: medium
 maxTurns: 20
 color: cyan

@@ -4,7 +4,7 @@ description: Builds ONE user-facing FRONTEND unit from spec in an isolated workt
 tools: Read, Grep, Glob, Bash, Edit, Write
 disallowedTools: Agent
 provider: claude
-model: claude-opus-4-8
+model: claude-sonnet-5
 isolation: worktree
 permissionMode: acceptEdits
 maxTurns: 200
