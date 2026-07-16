@@ -11,7 +11,7 @@ description: >-
 tools: [Read, Grep, Glob]
 model: gpt-5.6-sol
 provider: openai
-provider_model: gpt-5.5
+provider_model: gpt-5.6-sol
 provider_reasoning_effort: high
 provider_fallback: claude
 layer: growth

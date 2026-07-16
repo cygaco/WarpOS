@@ -92,19 +92,13 @@
       "syntax": "gemini {reasoning} -m {model} -p"
     }
   },
+  "_agentProviders_note": "WG-26: this per-project override WINS over the role-registry keystone (getProviderForRole reads manifest.agentProviders first). DISPATCH.md §8 flip: reduced to the President faces only (β flipped claude→openai per L166) — every other role now derives from the registry single-source (DEFAULT_AGENT_PROVIDERS). The pre-ADR-0007 scrapped-name entries (builder/fixer/reviewer/compliance/learner/qa/redteam/stub-scaffold) were removed: they resolved legacy names to STALE providers that shadowed the flip (e.g. redteam→gemini vs the registry's security-reviewer→antigravity). Legacy names now normalize + derive correctly via the registry.",
   "agentProviders": {
     "alpha": "claude",
-    "beta": "claude",
+    "beta": "openai",
     "gamma": "claude",
     "delta": "claude",
-    "builder": "claude",
-    "fixer": "claude",
-    "stub-scaffold": "claude",
-    "reviewer": "openai",
-    "compliance": "openai",
-    "learner": "openai",
-    "qa": "openai",
-    "redteam": "gemini"
+    "epsilon": "claude"
   },
   "buildCommands": {},
   "fileOwnership": {

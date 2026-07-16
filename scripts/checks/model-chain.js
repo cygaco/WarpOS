@@ -213,6 +213,30 @@ function evaluateModelChain({ reg, consumers, specs }) {
     }
   }
 
+  // ── H2. Cross-provider spec provider_model parity (WG-26 — the gap that let SP-20260716-001's flip
+  //        run COSMETIC). dispatch-agent.js serves a non-claude role's model from the spec's
+  //        `provider_model:` key — NOT `model:`. A stale or ABSENT provider_model means dispatch keeps
+  //        serving the old provider DEFAULT while the registry (and check H) look green — a registry-only
+  //        flip that never reaches the wire (caught LIVE by the β round-trip CLI-header attestation, not
+  //        a config diff). So for every provider!=claude role: the spec MUST declare provider_model AND
+  //        it MUST equal the registry model. (claude roles carry no provider_model — skipped.) ──
+  if (specs) {
+    for (const [name, r] of Object.entries(roles)) {
+      if (!r.provider || r.provider === "claude") continue;
+      const s = specs[name];
+      if (!s || !s.exists) continue; // missing spec = role-parity's scope
+      if (!s.hasProviderModelKey) {
+        errors.push(
+          `[DRIFT] spec "${name}" (${s.path}) is a ${r.provider} role but declares NO provider_model — dispatch-agent serves the provider DEFAULT, not the role model "${r.model}" (WG-26 cosmetic-flip); add provider_model: ${r.model}`,
+        );
+      } else if (s.providerModel !== r.model) {
+        errors.push(
+          `[DRIFT] spec "${name}" (${s.path}) provider_model="${s.providerModel}" ≠ registry model="${r.model}" — the cross-provider dispatch serves the spec provider_model; it must match the registry (WG-26)`,
+        );
+      }
+    }
+  }
+
   // ── I. Scrapped-role REINTRODUCTION guard (ADR-0007). The collapsed names (builder/reviewer/
   //       compliance/qa/redteam/fixer) must never reappear as a REAL registry role — the registry is
   //       the 34-role SoT, so a scrapped key in roles{} is genuine drift. They DO legitimately appear
@@ -251,15 +275,20 @@ function fmScalar(fmBlock, key) {
 // provider_reasoning_effort was the blind spot — cross-provider specs don't carry `effort:`.)
 function parseFrontmatterEffort(text) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(String(text || ""));
-  if (!m) return { hasFrontmatter: false, hasEffortKey: false, hasProviderEffortKey: false };
+  if (!m) return { hasFrontmatter: false, hasEffortKey: false, hasProviderEffortKey: false, hasProviderModelKey: false };
   const eff = fmScalar(m[1], "effort");
   const pre = fmScalar(m[1], "provider_reasoning_effort");
+  // provider_model: the CROSS-PROVIDER dispatch MODEL key (WG-26 check H2). dispatch-agent.js serves a
+  // non-claude role's model from THIS, not `model:` — so it is the field that must match the registry.
+  const pm = fmScalar(m[1], "provider_model");
   return {
     hasFrontmatter: true,
     hasEffortKey: eff.has,
     effort: eff.has ? eff.value : undefined,
     hasProviderEffortKey: pre.has,
     providerEffort: pre.has ? pre.value : undefined,
+    hasProviderModelKey: pm.has,
+    providerModel: pm.has ? pm.value : undefined,
   };
 }
 

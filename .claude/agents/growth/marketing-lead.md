@@ -8,6 +8,7 @@ description: >-
   Inherits the shared manager base + the Director of Growth's domain principles.
 tools: [Read, Grep, Glob]
 provider: openai
+provider_model: gpt-5.6-terra
 model: gpt-5.6-terra
 provider_reasoning_effort: high
 layer: growth

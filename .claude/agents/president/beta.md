@@ -5,6 +5,8 @@ tools: Read, Grep, Glob
 disallowedTools: Agent, Edit, Write, Bash
 model: gpt-5.6-sol
 provider: openai
+provider_model: gpt-5.6-sol
+provider_fallback: claude
 maxTurns: 10
 memory: project
 color: purple

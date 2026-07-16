@@ -11,6 +11,7 @@ description: >-
   Growth (S2.1).
 tools: [Read, Grep, Glob]
 provider: antigravity
+provider_model: gemini-3.1-pro-high
 model: gemini-3.1-pro-high
 layer: growth
 ---

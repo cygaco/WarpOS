@@ -11,7 +11,7 @@ description: >-
 tools: [Read, Grep, Glob]
 model: gpt-5.6-terra
 provider: openai
-provider_model: gpt-5.5
+provider_model: gpt-5.6-terra
 provider_reasoning_effort: xhigh
 provider_fallback: claude
 layer: product

@@ -313,6 +313,32 @@ test("H/HIGH-2: empty (YAML null) spec effort vs non-null registry → DRIFT", (
   assert.ok(has(errs, "[DRIFT]") && has(errs, "frontmatter effort"), errs.join(" | "));
 });
 
+// ── H2. Cross-provider spec provider_model parity (WG-26 — dispatch-agent serves provider_model, not model). ──
+test("H2: cross-provider spec provider_model drift (stale gpt-5.5) → DRIFT (WG-26)", () => {
+  const reg = cleanReg(); // qa-reviewer = openai / gpt-5.6-terra
+  const specs = { "qa-reviewer": { exists: true, hasProviderModelKey: true, providerModel: "gpt-5.5", path: "x/qa.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(has(errs, "[DRIFT]") && has(errs, "provider_model"), errs.join(" | "));
+});
+test("H2: cross-provider spec MISSING provider_model → DRIFT (cosmetic-flip)", () => {
+  const reg = cleanReg();
+  const specs = { "qa-reviewer": { exists: true, hasProviderModelKey: false, path: "x/qa.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(has(errs, "[DRIFT]") && has(errs, "NO provider_model"), errs.join(" | "));
+});
+test("H2: cross-provider spec provider_model matching registry → no finding", () => {
+  const reg = cleanReg();
+  const specs = { "qa-reviewer": { exists: true, hasProviderModelKey: true, providerModel: "gpt-5.6-terra", path: "x/qa.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "provider_model"), errs.join(" | "));
+});
+test("H2: a claude role with no provider_model → NOT flagged (claude carries none)", () => {
+  const reg = cleanReg();
+  const specs = { "backend-builder": { exists: true, hasProviderModelKey: false, path: "x/bb.md" } };
+  const errs = evaluateModelChain({ reg, specs });
+  assert.ok(!has(errs, "provider_model"), errs.join(" | "));
+});
+
 // ── I. Scrapped-role reintroduction guard (ADR-0007): registry-only, the back-compat shim is exempt. ──
 test("scrapped name as a REAL registry role → SCRAPPED", () => {
   const reg = cleanReg();

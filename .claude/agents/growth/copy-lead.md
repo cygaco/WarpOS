@@ -8,6 +8,7 @@ description: >-
   a PROGRAMMABLE principles field; owns argument-not-copy · hooks-are-90 · chief-coherence.
 tools: [Read, Grep, Glob]
 provider: openai
+provider_model: gpt-5.6-terra
 model: gpt-5.6-terra
 provider_reasoning_effort: xhigh
 layer: growth

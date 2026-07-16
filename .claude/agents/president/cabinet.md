@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 disallowedTools: Agent, Edit, Write
 model: claude-opus-4-8
 provider: openai
-provider_model: gpt-5.5
+provider_model: gpt-5.6-sol
 provider_fallback: claude
 provider_reasoning_effort: ultra
 maxTurns: 20
