@@ -113,30 +113,21 @@ for (const [label, sql] of Object.entries(nearMisses)) {
   });
 }
 
-// ── LIVE-path installed-proof teeth (assertShippedHardblock — the "endgame") ─────
-// The live verifier peeled through several residual false-greens (security review, 3
-// rounds): a substitute body-nulling trigger, a same-name function in another schema, a
-// DISABLED trigger, and a comment-only/early-return body. The endgame closes the whole
-// CLASS by allowlisting the exact shipped shape. These prove each false-green goes RED
-// without a live DB. A valid candidate carries the exact shipped identity + enabled +
-// binding + a real body; each spoof flips exactly one facet.
+// ── LIVE-path installed-proof teeth (assertShippedHardblock — the TERMINAL endgame) ──
+// Security review peeled 4 rounds of residual false-greens. The terminal fix (round-4
+// ruling) is whole-definition EQUALITY (normalizeDef == the shipped definition), NOT token
+// parsing — token/keyword checks are a denylist against a grammar, and a WHEN-clause spoof
+// beat the binding regex + a probe-aware conditional body beat the token checks. These prove
+// every spoof (incl. round-4's WHEN-clause + conditional body) goes RED without a live DB,
+// AND that benign RENDERING variance of the real definition still passes (equality is
+// normalized, not brittle). A valid candidate carries the exact shipped trigdef + fndef.
 const VALID_TRIGDEF =
   "CREATE TRIGGER hardblock_password_trigger BEFORE INSERT OR UPDATE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.hardblock_password()";
 const VALID_FNDEF =
-  "CREATE OR REPLACE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $function$ BEGIN NEW.encrypted_password := NULL; RETURN NEW; END; $function$";
-const GOOD_BINDING = { before: true, insert: true, update: true, authUsers: true, forEachRow: true };
+  "CREATE OR REPLACE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$ BEGIN NEW.encrypted_password := NULL; RETURN NEW; END; $function$";
 
 function candidate(overrides = {}) {
-  return {
-    name: "hardblock_password_trigger",
-    enabled: "O",
-    fn: "hardblock_password",
-    fnSchema: "public",
-    trigdef: VALID_TRIGDEF,
-    fndef: VALID_FNDEF,
-    binding: { ...GOOD_BINDING },
-    ...overrides,
-  };
+  return { name: "hardblock_password_trigger", enabled: "O", trigdef: VALID_TRIGDEF, fndef: VALID_FNDEF, ...overrides };
 }
 
 test("endgame: the exact shipped hard-block => ok:true", async () => {
@@ -144,22 +135,49 @@ test("endgame: the exact shipped hard-block => ok:true", async () => {
   assert.equal(assertShippedHardblock([candidate()]).ok, true);
 });
 
+test("endgame: benign rendering variance still passes (not brittle)", async () => {
+  const { assertShippedHardblock } = await loadVerifier(dir);
+  // whitespace/newlines, mixed case, EXECUTE PROCEDURE (old spelling), $$ vs $function$,
+  // search_path = vs TO, and an inline comment — all canonicalize to the shipped shape.
+  const variant = candidate({
+    trigdef:
+      "create   TRIGGER hardblock_password_trigger\n BEFORE insert OR update ON auth.users\n FOR EACH ROW EXECUTE PROCEDURE public.hardblock_password()",
+    fndef:
+      "CREATE OR REPLACE FUNCTION public.hardblock_password()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path = ''\nAS $$\n  BEGIN\n    NEW.encrypted_password := NULL;  -- strip it on the way in\n    RETURN NEW;\n  END;\n$$",
+  });
+  assert.equal(assertShippedHardblock([variant]).ok, true, "normalized equality must accept benign rendering variance");
+});
+
 const spoofs = {
   "substitute trigger (wrong name), shipped ABSENT": [candidate({ name: "some_audit_trigger" })],
-  "schema-spoofed function (other_schema.hardblock_password)": [candidate({ fnSchema: "evil" })],
   "DISABLED trigger (tgenabled=D)": [candidate({ enabled: "D" })],
   "replica-only trigger (tgenabled=R)": [candidate({ enabled: "R" })],
-  "INSERT-only binding (UPDATE path unblocked)": [candidate({ binding: { ...GOOD_BINDING, update: false } })],
-  "comment-only body (nulling line commented out)": [
+  "schema-spoofed executed function (evil.hardblock_password)": [
+    candidate({ trigdef: VALID_TRIGDEF.replace("public.hardblock_password", "evil.hardblock_password") }),
+  ],
+  "INSERT-only binding (UPDATE path unblocked)": [
     candidate({
-      fndef:
-        "CREATE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN -- NEW.encrypted_password := NULL;\n RETURN NEW; END; $$",
+      trigdef:
+        "CREATE TRIGGER hardblock_password_trigger BEFORE INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.hardblock_password()",
     }),
   ],
-  "early-return body (RETURN before the null-out)": [
+  "WHEN-clause spoof (round-4 MEDIUM — binding-regex bypass)": [
+    candidate({
+      trigdef:
+        "CREATE TRIGGER hardblock_password_trigger BEFORE INSERT OR UPDATE ON auth.users FOR EACH ROW WHEN (new.encrypted_password IS NOT NULL) EXECUTE FUNCTION public.hardblock_password()",
+    }),
+  ],
+  "conditional/probe-aware body (round-4 HIGH — token-check bypass)": [
     candidate({
       fndef:
-        "CREATE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; NEW.encrypted_password := NULL; END; $$",
+        "CREATE OR REPLACE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$ BEGIN IF NEW.encrypted_password IS NOT NULL THEN NEW.encrypted_password := NULL; END IF; RETURN NEW; END; $function$",
+    }),
+  ],
+  "attribute drift (SECURITY DEFINER dropped)": [candidate({ fndef: VALID_FNDEF.replace(" SECURITY DEFINER", "") })],
+  "comment-only body (nulling line only in a comment)": [
+    candidate({
+      fndef:
+        "CREATE OR REPLACE FUNCTION public.hardblock_password() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$ BEGIN -- NEW.encrypted_password := NULL;\n RETURN NEW; END; $function$",
     }),
   ],
   "no triggers at all": [],
@@ -172,15 +190,7 @@ for (const [label, candidates] of Object.entries(spoofs)) {
   });
 }
 
-test("endgame: shipped present alongside a decoy => still ok:true (the real one is found)", async () => {
+test("endgame: shipped present alongside a decoy => still ok:true (found by name)", async () => {
   const { assertShippedHardblock } = await loadVerifier(dir);
   assert.equal(assertShippedHardblock([candidate({ name: "decoy" }), candidate()]).ok, true);
-});
-
-test("functionBodyHardBlocks: comment-stripped + order-enforced", async () => {
-  const { functionBodyHardBlocks } = await loadVerifier(dir);
-  assert.equal(functionBodyHardBlocks("BEGIN NEW.encrypted_password := NULL; RETURN NEW; END"), true);
-  assert.equal(functionBodyHardBlocks("BEGIN -- NEW.encrypted_password := NULL;\n RETURN NEW; END"), false);
-  assert.equal(functionBodyHardBlocks("BEGIN RETURN NEW; NEW.encrypted_password := NULL; END"), false);
-  assert.equal(functionBodyHardBlocks("BEGIN NEW.encrypted_password := NULL; RETURN OLD; END"), false);
 });

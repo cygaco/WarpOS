@@ -26,6 +26,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { randomBytes } from "node:crypto";
 
 // ----------------------------------------------------------------------------
 // SQL parsing helpers (pure)
@@ -208,80 +209,83 @@ const SHIPPED_FN_SCHEMA = "public";
 // hard-block does not protect writes — fail closed on anything but O/A.
 const TRIGGER_ENABLED_OK = new Set(["O", "A"]);
 
-/** Parse a pg_get_triggerdef() string into the binding facts we require.
- *  We assert IDENTITY, not "any before-row trigger": BEFORE + BOTH INSERT and
- *  UPDATE + FOR EACH ROW on auth.users. An INSERT-only (or AFTER, or
- *  statement-level, or wrong-table) trigger fails here. */
-function parseTriggerBinding(def) {
-  const d = String(def).replace(/\s+/g, " ").toUpperCase();
-  return {
-    before: /\bBEFORE\b/.test(d),
-    insert: /\bINSERT\b/.test(d),
-    update: /\bUPDATE\b/.test(d),
-    authUsers: /\bON\s+(?:"?AUTH"?\.)"?USERS"?\b/.test(d),
-    forEachRow: /\bFOR\s+EACH\s+ROW\b/.test(d),
-  };
+/**
+ * Canonicalize a Postgres definition string for EQUALITY — NOT parsing. Strips comments,
+ * lowercases, unifies dollar-quote tags + `search_path TO/=` + `EXECUTE PROCEDURE/FUNCTION`,
+ * and collapses whitespace. Two definitions are "the same shipped shape" iff their canonical
+ * forms are equal. (Security review ruled the terminal shape: token/keyword checks are a
+ * denylist against a grammar — a probe-aware conditional body or a WHEN-clause spoof defeats
+ * tokens but CHANGES the definition string, so whole-definition equality rejects it by
+ * construction. This is an allowlist of the exact shipped shape.) Exported for unit tests.
+ */
+export function normalizeDef(s) {
+  return stripSqlComments(String(s))
+    .toLowerCase()
+    .replace(/\$[a-z0-9_]*\$/g, "$q$") // $function$ / $$ / $body$ -> uniform tag
+    .replace(/set\s+search_path\s*(?:to|=)\s*''/g, "set search_path to ''")
+    .replace(/execute\s+procedure/g, "execute function")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-/** Assert the executed function's body nulls NEW.encrypted_password and RETURN NEW.
- *  Hardened per security review (INFO/GPT-MEDIUM): COMMENTS ARE STRIPPED FIRST so a
- *  nulling line that only appears in a comment cannot false-green, and EXECUTABLE ORDER
- *  is enforced — the null-out must not sit after an earlier unconditional RETURN (which
- *  would skip it). RETURN OLD (discards the null-out) fails. Exported so the teeth are
- *  unit-testable without a live DB. Works against pg_get_functiondef() output. */
-export function functionBodyHardBlocks(fndef) {
-  const b = stripSqlComments(String(fndef)); // strip comments FIRST — no comment-only bypass
-  const nullRe = /NEW\.\s*ENCRYPTED_PASSWORD\s*(?::=|=)\s*NULL/i;
-  const nulls = nullRe.test(b);
-  const returnsNew = /\bRETURN\s+NEW\b/i.test(b);
-  const returnsOld = /\bRETURN\s+OLD\b/i.test(b);
-  if (!nulls || !returnsNew || returnsOld) return false;
-  // Executable order: the null assignment must appear BEFORE the first RETURN — an early
-  // RETURN NEW before the null-out would skip the hard-block entirely.
-  const nullIdx = b.search(nullRe);
-  const returnIdx = b.search(/\bRETURN\b/i);
-  return returnIdx === -1 || nullIdx < returnIdx;
-}
+// The EXACT shipped definitions as Postgres renders them (pg_get_functiondef /
+// pg_get_triggerdef), canonicalized. LIVE installed-proof is whole-definition EQUALITY
+// against these — no token/keyword parsing survives.
+const NORMALIZED_SHIPPED_FNDEF = normalizeDef(
+  `CREATE OR REPLACE FUNCTION public.hardblock_password()
+   RETURNS trigger
+   LANGUAGE plpgsql
+   SECURITY DEFINER
+   SET search_path TO ''
+  AS $function$
+  BEGIN
+    NEW.encrypted_password := NULL;
+    RETURN NEW;
+  END;
+  $function$`,
+);
+const NORMALIZED_SHIPPED_TRIGDEF = normalizeDef(
+  `CREATE TRIGGER hardblock_password_trigger BEFORE INSERT OR UPDATE ON auth.users FOR EACH ROW EXECUTE FUNCTION public.hardblock_password()`,
+);
+
+// NOTE: parseTriggerBinding() + functionBodyHardBlocks() were REMOVED (security review,
+// round-4 ruling). Token/keyword parsing of pg_get_triggerdef/functiondef was still a
+// denylist against a grammar — a WHEN-clause spoof beat the binding regex and a probe-aware
+// conditional body beat the token checks. LIVE installed-proof is now whole-definition
+// EQUALITY (normalizeDef == NORMALIZED_SHIPPED_*), the terminal allowlist-of-shape.
 
 /**
- * Select the installed trigger that PROVES the shipped hard-block is present, from the
- * candidate triggers on auth.users. Installed-proof requires the EXACT shipped identity
- * (trigger name + executed function name) — there is deliberately NO fallback to "any
- * body-nulling trigger": a substitute trigger is NOT proof the SHIPPED hard-block is
- * installed (a deployment missing `hardblock_password_trigger` but carrying some other
- * body-nulling trigger would otherwise false-green — the residual false-green the
- * security review caught). Pure + exported so the teeth are unit-tested without a live
- * DB. Returns the matching candidate, or null when the exact shipped identity is absent.
+ * Locate the installed trigger by the shipped NAME (unique per table). This only FINDS the
+ * candidate + gives a clear "not installed" message; the actual installed-PROOF is
+ * whole-definition equality in assertShippedHardblock. Pure + exported for unit tests.
  */
 export function selectInstalledTarget(candidates) {
   return (
-    (Array.isArray(candidates) ? candidates : []).find(
-      (c) =>
-        c &&
-        c.name === SHIPPED_TRIGGER &&
-        String(c.fn).toLowerCase() === SHIPPED_FN &&
-        String(c.fnSchema).toLowerCase() === SHIPPED_FN_SCHEMA, // SCHEMA-qualified — other_schema.hardblock_password is NOT a match
-    ) || null
+    (Array.isArray(candidates) ? candidates : []).find((c) => c && c.name === SHIPPED_TRIGGER) ||
+    null
   );
 }
 
 /**
- * The EXACT-shape installed-proof (the "endgame" — closes the false-green CLASS by
- * allowlisting the one valid shape rather than enumerating badness). Given the candidate
- * triggers on auth.users, prove the SHIPPED hard-block is genuinely installed AND effective:
- *   - IDENTITY: exact shipped trigger name + SCHEMA-QUALIFIED function (public.hardblock_password);
- *   - ENABLED:  tgenabled ∈ {O,A} (a disabled / replica-only trigger does not fire);
- *   - BINDING:  BEFORE, INSERT AND UPDATE, FOR EACH ROW, ON auth.users;
- *   - BODY:     nulls NEW.encrypted_password before RETURN NEW (comments stripped, order enforced).
- * Pure + exported → schema-spoof / disabled / comment-only / wrong-binding all provably RED
- * without a live DB. Returns { ok:true, target } or { ok:false, reason }.
+ * The EXACT-shape installed-proof (the terminal "endgame" — security review round-4 ruling).
+ * Closes the false-green CLASS by whole-definition EQUALITY, not parsing: any deviation from
+ * the shipped shape (schema-spoofed function, WHEN-clause, conditional/probe-aware body,
+ * altered binding, extra attributes) changes the normalized pg_get_triggerdef/functiondef and
+ * is rejected by construction. Checks, in order:
+ *   - PRESENT: a trigger named `hardblock_password_trigger` exists on auth.users;
+ *   - ENABLED: tgenabled ∈ {O,A} (tgenabled is NOT in the trigger def — a disabled trigger
+ *              renders an identical def, so it must be asserted separately);
+ *   - TRIGGER: normalizeDef(pg_get_triggerdef) EQUALS the shipped trigger definition;
+ *   - FUNCTION: normalizeDef(pg_get_functiondef) EQUALS the shipped function definition.
+ * Pure + exported → every spoof is provably RED without a live DB. Returns { ok:true, target }
+ * or { ok:false, reason }. (Behavioral INSERT/UPDATE probes in liveVerify are defense-in-depth.)
  */
 export function assertShippedHardblock(candidates) {
   const target = selectInstalledTarget(candidates);
   if (!target) {
     return {
       ok: false,
-      reason: `the shipped hard-block trigger '${SHIPPED_TRIGGER}' executing '${SHIPPED_FN_SCHEMA}.${SHIPPED_FN}' is NOT installed on auth.users — installed-proof requires the exact shipped identity (schema-qualified); a different trigger (even one that nulls encrypted_password, or the same function name in another schema) is not proof the shipped hard-block is present`,
+      reason: `the shipped hard-block trigger '${SHIPPED_TRIGGER}' is NOT installed on auth.users — no trigger with that name is present`,
     };
   }
   if (!TRIGGER_ENABLED_OK.has(String(target.enabled))) {
@@ -290,23 +294,16 @@ export function assertShippedHardblock(candidates) {
       reason: `the shipped trigger '${target.name}' is not enabled (tgenabled='${target.enabled}'; must be 'O' or 'A') — a disabled or replica-only trigger does not fire, so the hard-block is NOT effective`,
     };
   }
-  const b = target.binding || {};
-  if (!b.before || !b.forEachRow || !b.authUsers) {
+  if (normalizeDef(target.trigdef) !== NORMALIZED_SHIPPED_TRIGDEF) {
     return {
       ok: false,
-      reason: `installed trigger '${target.name}' binding is wrong (must be BEFORE ... FOR EACH ROW ON auth.users) — pg_get_triggerdef: ${target.trigdef}`,
+      reason: `installed trigger definition does not EQUAL the shipped hard-block trigger (a WHEN-clause, altered binding, or different executed function all fail here) — pg_get_triggerdef: ${target.trigdef}`,
     };
   }
-  if (!b.insert || !b.update) {
+  if (normalizeDef(target.fndef) !== NORMALIZED_SHIPPED_FNDEF) {
     return {
       ok: false,
-      reason: `installed trigger '${target.name}' does not cover BOTH INSERT and UPDATE (an INSERT-only hard-block leaves password UPDATEs unblocked) — pg_get_triggerdef: ${target.trigdef}`,
-    };
-  }
-  if (!functionBodyHardBlocks(target.fndef)) {
-    return {
-      ok: false,
-      reason: `function '${target.fnSchema}.${target.fn}' executed by trigger '${target.name}' does not null NEW.encrypted_password before RETURN NEW (checked with comments stripped + executable order)`,
+      reason: `executed function definition does not EQUAL the shipped public.hardblock_password() (a conditional/probe-aware body, extra logic, or wrong attributes all fail here) — pg_get_functiondef mismatch`,
     };
   }
   return { ok: true, target };
@@ -356,14 +353,13 @@ async function liveVerify(dbUrl) {
       fnSchema: String(r.fn_schema || ""),
       trigdef: r.trigdef,
       fndef: r.fndef,
-      binding: parseTriggerBinding(r.trigdef),
-      bodyOk: functionBodyHardBlocks(r.fndef),
     }));
 
-    // Installed-proof = the EXACT shipped shape (assertShippedHardblock: identity +
-    // schema-qualified function + tgenabled + BEFORE INSERT/UPDATE FOR EACH ROW binding +
-    // comment-stripped body). Allowlist-of-shape, not denylist-of-badness — closes the
-    // whole residual-false-green class (schema-spoof / disabled / comment-only / substitute).
+    // Installed-proof = the EXACT shipped shape via whole-definition EQUALITY
+    // (assertShippedHardblock: present + enabled + normalizeDef(trigdef/fndef) EQUALS the
+    // shipped definitions). Allowlist-of-shape, not denylist-of-badness — a WHEN-clause,
+    // schema-spoofed function, or probe-aware/conditional body all change the definition
+    // and are rejected by construction.
     const proof = assertShippedHardblock(candidates);
     if (!proof.ok) {
       return { ok: false, reason: proof.reason };
@@ -372,13 +368,19 @@ async function liveVerify(dbUrl) {
 
     // (2) NEGATIVE TESTS — exercise BOTH the INSERT and the UPDATE path. All in a
     // single transaction that ALWAYS ROLLBACKs, so we never leave a test row.
+    // RANDOMIZED sentinels per run (defense-in-depth): a probe-aware function that special-
+    // cases a fixed known value cannot pre-empt an unpredictable one. (The definition-equality
+    // check above already rejects a conditional body; the randomized probe is the belt to that
+    // braces.)
+    const insSentinel = "hb-probe-ins-" + randomBytes(9).toString("hex");
+    const updSentinel = "hb-probe-upd-" + randomBytes(9).toString("hex");
     await client.query("BEGIN");
     let probe = null;
     try {
       // (a) INSERT with a non-null password → must come back NULL.
       const ins = await client.query(
         "INSERT INTO auth.users (id, encrypted_password) VALUES (gen_random_uuid(), $1) RETURNING id, encrypted_password",
-        ["PLAINTEXT-SHOULD-BE-NULLED-ON-INSERT"]
+        [insSentinel]
       );
       const testId = ins.rows[0]?.id ?? null;
       const insertSurvived = ins.rows[0]?.encrypted_password ?? null;
@@ -389,7 +391,7 @@ async function liveVerify(dbUrl) {
       if (testId) {
         const upd = await client.query(
           "UPDATE auth.users SET encrypted_password = $1 WHERE id = $2 RETURNING encrypted_password",
-          ["PLAINTEXT-SHOULD-BE-NULLED-ON-UPDATE", testId]
+          [updSentinel, testId]
         );
         updateRan = upd.rowCount === 1;
         updateSurvived = upd.rows[0]?.encrypted_password ?? null;

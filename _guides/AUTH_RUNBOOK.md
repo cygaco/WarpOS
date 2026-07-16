@@ -163,14 +163,16 @@ Sudhodanan & Paverd pre-account-takeover class) — **plus a fail-closed predepl
   single-trigger migration; a hand-edited multi-trigger migration should rely on LIVE-mode
   installed-proof below, which inspects every trigger actually on `auth.users`.)
 - LIVE mode (`SUPABASE_DB_URL` set) proves the EXACT shipped hard-block is installed AND effective —
-  an *allowlist of the one valid shape*, not a "looks-close-enough" check: the exact shipped trigger
-  name + **schema-qualified** function (`public.hardblock_password`), the trigger **enabled**
-  (`tgenabled ∈ {O,A}` — a disabled/replica-only trigger is rejected), the `pg_get_triggerdef` binding
-  (BEFORE, INSERT **and** UPDATE, FOR EACH ROW, on `auth.users`), the function body nulling
-  `NEW.encrypted_password` before RETURN (comments stripped, order enforced), AND behavioral negative
-  tests on **both** the INSERT and UPDATE paths (rollback txn). Anything short of the exact shape →
-  `ok:false`. Only this exits 0 as installed-proof; a missing `pg` dependency fails closed (never
-  skips to green).
+  an *allowlist of the one valid shape via whole-definition EQUALITY*, not token/keyword parsing (which
+  is a denylist against a grammar — a `WHEN`-clause or a probe-aware conditional body defeats token
+  checks). Installed-proof requires: a trigger named `hardblock_password_trigger` present + **enabled**
+  (`tgenabled ∈ {O,A}` — disabled/replica-only rejected), its normalized `pg_get_triggerdef` **equal to**
+  the shipped trigger definition, and its function's normalized `pg_get_functiondef` **equal to** the
+  shipped `public.hardblock_password` definition (normalization canonicalizes whitespace/case/comments/
+  dollar-quote tags — robust to benign rendering, exact on substance). Behavioral negative tests on
+  **both** INSERT and UPDATE (randomized sentinels, rollback txn) are defense-in-depth. Anything short
+  of the exact shape → `ok:false`. Only this exits 0 as installed-proof; a missing `pg` dependency fails
+  closed (never skips to green).
 
 > **⛔ MANDATORY ADOPTION GATE:** never ship an auth-enabled build without
 > `SUPABASE_DB_URL=… npm run verify:auth` GREEN against your live project. The framework-time tests
