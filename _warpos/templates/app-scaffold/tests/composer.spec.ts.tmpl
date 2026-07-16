@@ -7,6 +7,16 @@ import { test, expect } from "@playwright/test";
  * PRODUCT integrating `src/components/composer/Composer.tsx` runs against
  * its own live pages. Every test below is `.skip` on purpose; un-skip once
  * the composer is mounted in a real page.
+ *
+ * ⚠️ OWED DEBT — NOT a clean "skipped". These are MANDATORY adoption gates
+ * (§7.1): the taste gate, the by-eye IDLE check (G-1), and the elementFromPoint
+ * control check (G-7) MUST run against the running app before a product ships
+ * the composer. In particular the reference component's OWN idle taste pass is
+ * OWED (§7.2) and must be discharged (throwaway mount → screenshot → eye-check
+ * vs the ChatGPT-composer reference) BEFORE any product adopts it — shipping
+ * the taste gate as prose while the copied reference never cleared it is the
+ * value-inversion this pattern exists to prevent. Leaving these `.skip` without
+ * discharging that debt is a KNOWN GAP, not a pass.
  */
 
 test.describe("composer — deferred visual/browser lane", () => {

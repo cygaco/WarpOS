@@ -149,6 +149,14 @@ bare-scaffold "serve" is a degraded first paint, §2).
 > `_knowledge/design/registry.json`). These are agent-grounding training references
 > (`anchor: none`), not staged launch guides; the README is the one design-overview
 > entry the bootstrap pipeline surfaces.
+>
+> ⌨️ **Reusable component patterns:** for a "type or speak, then send" input surface
+> (chat, notes, capture), use the **input-composer pattern** —
+> [`_knowledge/design/INPUT_COMPOSER_PATTERN.md`](../../../_knowledge/design/INPUT_COMPOSER_PATTERN.md).
+> The scaffold already ships the reference component (`src/components/composer/`,
+> `src/hooks/`, `src/lib/composer/`) into every product, so paint the composer from the
+> pattern rather than rebuilding it; the doc's §7 taste gate + §8 checklist are the
+> adoption bar.
 
 ## The consumer dispatch contract (expose, do not implement)
 

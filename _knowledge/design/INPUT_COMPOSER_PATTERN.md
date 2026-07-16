@@ -213,6 +213,31 @@ resting-state taste. The fix is a **process** one: a review pass whose only job 
 This is distinct from the design-system-conformance lane, which will keep passing things that "meet the
 tokens" but look wrong.
 
+### 7.1 MANDATORY adoption gates (not optional polish)
+
+Because this composer is a **reusable reference many products copy**, a taste miss multiplies across every
+adopter. So the following are **REQUIRED gates any adopting product MUST run against its own running app
+before it ships the composer** — not a suggested nicety:
+
+1. **Taste gate** — the no-checklist squint-at-IDLE-against-reference-screenshots verdict above. REQUIRED.
+2. **By-eye IDLE check** — placeholder vertical-centering and overall resting-state fit judged **by eye,
+   not by box geometry** (G-1). REQUIRED. Box-geometry assertions are the exact false-green this doc exists
+   to close — they do not discharge this gate.
+3. **`elementFromPoint` control check** — each interactive control (mic/attach/send/timestamp) verified to
+   return the control itself, not an occluding nav link (G-7). REQUIRED.
+
+A product that ships the composer without running all three has not met this pattern's bar.
+
+### 7.2 OWED DEBT — the reference component's own IDLE taste pass
+
+⚠️ The **house reference component** (`_warpos/templates/app-scaffold/src/components/composer/`) has **not
+itself cleared the taste gate** this sprint — there is no running app in the framework repo to squint at,
+so the by-eye IDLE pass could not run against a live render. This is recorded as **OWED debt**, NOT a clean
+pass: **the reference component's IDLE taste pass MUST be discharged (throwaway mount → screenshot →
+eye-check against the ChatGPT-composer reference) before ANY product adopts it.** Shipping the taste-gate
+as prose while the canonical artifact everyone copies never cleared it is the exact value-inversion this
+pattern was written to prevent. Discharge condition: a recorded IDLE eye-check pass on the reference render.
+
 ---
 
 ## 8. Replication checklist (framework → new product)
@@ -225,10 +250,10 @@ tokens" but look wrong.
 6. Voice pipeline behind a flag with a typing fallback; guest lane gated by abuse controls not auth; the
    transcription server route is yours to wire (documented `transcribeUrl` seam) (§4).
 7. Point-of-use disclosure only in recording/transcribing (P-6).
-8. Verify each control with `elementFromPoint`; assert placeholder vertical-center by EYE, not box
-   geometry (G-1, G-7).
-9. Run the no-checklist **taste gate** on the idle state against reference screenshots before shipping
-   (§7).
+8. **REQUIRED (§7.1):** verify each control with `elementFromPoint`; assert placeholder vertical-center by
+   EYE, not box geometry (G-1, G-7).
+9. **REQUIRED (§7.1):** run the no-checklist **taste gate** on the idle state against reference screenshots
+   before shipping (§7) — and discharge the reference component's OWED IDLE taste pass (§7.2) before adopting.
 
 ---
 

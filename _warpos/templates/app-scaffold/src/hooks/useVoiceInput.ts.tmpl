@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { reduceDedup, initialDedupState, type DedupState } from "@/lib/composer/dedup";
+import { describeMicError } from "@/lib/composer/voice-errors";
 
 /**
  * useVoiceInput — the voice -> transcript pipeline behind a `voiceEnabled`
@@ -240,9 +241,13 @@ export function useVoiceInput(opts: UseVoiceInputOptions): UseVoiceInputResult {
       mediaRecorderRef.current = recorder;
       setStatus("recording");
       recorder.start();
-    } catch {
+    } catch (err) {
+      // Fail LOUDLY with an actionable message. The common product failure is a
+      // Permissions-Policy `microphone=()` block (the scaffold's secure default)
+      // — describeMicError names the `microphone=(self)` fix (§4), never a silent
+      // no-op that reads as "voice is just broken".
       setStatus("failed");
-      onError?.("Microphone access was denied or unavailable.");
+      onError?.(describeMicError(err));
     }
   }, [transcribeUrl, onError, transcribeBlob]);
 
