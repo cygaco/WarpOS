@@ -1,40 +1,46 @@
 // safe-next.mjs - open-redirect defense for the `?next=` param on the auth callback.
 //
-// SECURITY (RT-201 / CWE-601): a naive "does the string start with a single '/'?" guard
-// is defeated because the WHATWG URL parser (new URL()) STRIPS tab/newline/carriage-return
-// DURING parsing - AFTER the guard has run. So `?next=/%0D/evil.com` decodes to `/\r/evil.com`
-// (passes a leading-slash check), and new URL() then strips the `\r` -> `//evil.com` -> an
-// off-origin redirect to https://evil.com/ on successful login (a post-auth phishing vector).
+// SECURITY (RT-201 + RT-202 / CWE-601). Two distinct vectors on one function, both from the
+// same fragile SEAM: "validate one value, return a DIFFERENT value the caller re-derives."
+//   RT-201: a leading-slash guard ran BEFORE new URL() stripped CR/LF/TAB, so `/%0D/evil.com`
+//           (decoded `/\r/evil.com`) passed the guard then parsed to `//evil.com`.
+//   RT-202: returning the RELATIVE pathname of a validated-same-origin absolute URL - for
+//           `https://app.example.com//evil.com` the origin check PASSES (host is the app) but
+//           the pathname is `//evil.com`, and the caller's `new URL(pathname, origin)` RE-PARSES
+//           that protocol-relative string back to https://evil.com/.
 //
-// The only robust defense is PARSE-THEN-VERIFY-SAME-ORIGIN: resolve `raw` against the app
-// origin with the SAME parser the redirect will use, then accept it ONLY if the resolved
-// origin equals the app origin - returning a same-origin relative path. Control characters
-// are rejected up front as belt-and-suspenders. Pure + isolated (no Next/Supabase imports)
-// so it is unit-testable.
+// STRUCTURAL FIX (kill the seam, don't patch a third predicate): return the VALIDATED ABSOLUTE
+// URL OBJECT, and have the caller redirect to it DIRECTLY (no re-parse anywhere). The value we
+// validate IS the value the caller consumes - so there is no re-parse seam for a redirect to
+// live in. Closes RT-201, RT-202, and any future re-parse variant by construction. Pure +
+// isolated (no Next/Supabase imports) so it is unit-testable.
 
 /** @type {string} */
 export const DEFAULT_NEXT = "/account";
 
-// Any C0 control char (U+0000..U+001F) - the URL parser strips TAB/LF/CR mid-parse, which is
-// how "/\r/evil.com" becomes "//evil.com". Built from char codes so no literal control byte
-// is ever written into the source.
+// Any C0 control char (U+0000..U+001F) - the URL parser strips TAB/LF/CR mid-parse. Built from
+// char codes so no literal control byte is ever written into the source.
 const CONTROL_CHARS = new RegExp("[" + "\\u0000-\\u001F" + "]");
 
 /**
- * Resolve the `next` redirect target to a SAFE same-origin relative path, or DEFAULT_NEXT.
+ * Resolve the `next` redirect target to a VALIDATED same-origin absolute URL OBJECT (or the
+ * DEFAULT_NEXT URL). The caller MUST redirect to the returned object directly - never re-parse
+ * a string derived from it (that re-parse is the RT-201/RT-202 open-redirect seam).
  * @param {string | null | undefined} raw  the raw `next` query param (already URL-decoded by searchParams.get)
  * @param {string} origin  the app origin (e.g. url.origin)
- * @returns {string} a same-origin `pathname+search+hash`, or DEFAULT_NEXT
+ * @returns {URL} a same-origin absolute URL to redirect to
  */
-export function safeNextPath(raw, origin) {
-  if (!raw) return DEFAULT_NEXT;
-  // Reject control chars BEFORE parsing - kills the strip-mid-parse vector.
-  if (CONTROL_CHARS.test(raw)) return DEFAULT_NEXT;
+export function safeNextUrl(raw, origin) {
+  const fallback = new URL(DEFAULT_NEXT, origin);
+  if (!raw) return fallback;
+  // Reject control chars BEFORE parsing - kills the strip-mid-parse vector (RT-201).
+  if (CONTROL_CHARS.test(raw)) return fallback;
   try {
     const u = new URL(raw, origin);
-    if (u.origin !== origin) return DEFAULT_NEXT; // off-origin (//host, https://evil, /\host) -> reject
-    return u.pathname + u.search + u.hash;
+    // Same-origin ONLY. Return the OBJECT (not u.pathname) so the caller redirects to exactly
+    // what we validated - no protocol-relative re-parse (RT-202).
+    return u.origin === origin ? u : fallback;
   } catch {
-    return DEFAULT_NEXT;
+    return fallback;
   }
 }

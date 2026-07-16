@@ -1,59 +1,61 @@
-// safe-next.test.mjs - regression tests for the RT-201 open-redirect fix (CWE-601).
+// safe-next.test.mjs - regression tests for the open-redirect fix (CWE-601), RT-201 + RT-202.
 // Run: node --test src/lib/supabase/safe-next.test.mjs
 //
-// The vector: searchParams.get() URL-DECODES the value, so `?next=/%0D/evil.com` arrives as
-// `/\r/evil.com`. A naive leading-slash guard passes it, then new URL() strips the `\r` ->
-// `//evil.com` -> off-origin. These tests assert the three control-char payloads (CR/LF/TAB)
-// AND the classic protocol-relative / absolute / backslash forms all resolve same-origin or
-// to DEFAULT_NEXT, while legitimate same-origin paths pass through.
+// safeNextUrl returns the VALIDATED URL OBJECT the caller redirects to directly. The single
+// invariant that matters: the FINAL redirect target's origin is ALWAYS the app origin. We
+// assert `.origin` of the returned object (== what NextResponse.redirect consumes), NOT an
+// intermediate string — that string-vs-object gap was RT-202.
+//   RT-201: control chars stripped mid-parse (/%0D/evil.com -> //evil.com).
+//   RT-202: a same-origin absolute whose pathname is //evil.com, re-parsed protocol-relative.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { safeNextPath, DEFAULT_NEXT } from "./safe-next.mjs";
+import { safeNextUrl, DEFAULT_NEXT } from "./safe-next.mjs";
 
 const ORIGIN = "https://app.example.com";
 const CR = String.fromCharCode(13);
 const LF = String.fromCharCode(10);
 const TAB = String.fromCharCode(9);
 
-// The RT-201 control-char payloads (as searchParams.get would hand them over, decoded).
-const controlCharVectors = {
-  "CR (/%0D/evil.com)": "/" + CR + "/evil.com",
-  "LF (/%0A/evil.com)": "/" + LF + "/evil.com",
-  "TAB (/%09/evil.com)": "/" + TAB + "/evil.com",
-};
-
-for (const [label, raw] of Object.entries(controlCharVectors)) {
-  test(`RT-201: control-char open-redirect blocked - ${label}`, () => {
-    const out = safeNextPath(raw, ORIGIN);
-    // Must NOT resolve off-origin. Either DEFAULT_NEXT, or a same-origin relative path.
-    const resolved = new URL(out, ORIGIN);
-    assert.equal(resolved.origin, ORIGIN, `"${label}" must stay same-origin, got ${out}`);
-    assert.equal(out, DEFAULT_NEXT, `"${label}" should fall back to DEFAULT_NEXT`);
-  });
-}
-
-const offOriginVectors = {
+// Every attack vector: the returned URL's origin MUST be the app origin (never off-origin).
+const attackVectors = {
+  // RT-201 control-char payloads (as searchParams.get hands them over, decoded).
+  "RT-201 CR (/%0D/evil.com)": "/" + CR + "/evil.com",
+  "RT-201 LF (/%0A/evil.com)": "/" + LF + "/evil.com",
+  "RT-201 TAB (/%09/evil.com)": "/" + TAB + "/evil.com",
+  // Classic protocol-relative / absolute / backslash.
   "protocol-relative //evil.com": "//evil.com",
+  "triple-slash ///evil.com": "///evil.com",
   "absolute https://evil.com": "https://evil.com/x",
   "backslash /\\evil.com": "/\\evil.com",
-  "backslash-backslash \\\\evil.com": "\\\\evil.com",
+  "double-backslash \\\\evil.com": "\\\\evil.com",
+  // RT-202: same-origin ABSOLUTE whose pathname is protocol-relative-looking.
+  "RT-202 https://app//evil.com": ORIGIN + "//evil.com",
+  "RT-202 https://app///evil.com": ORIGIN + "///evil.com",
+  "RT-202 //app//evil.com": "//app.example.com//evil.com",
 };
 
-for (const [label, raw] of Object.entries(offOriginVectors)) {
-  test(`open-redirect blocked - ${label}`, () => {
-    const out = safeNextPath(raw, ORIGIN);
-    assert.equal(new URL(out, ORIGIN).origin, ORIGIN, `"${label}" must stay same-origin, got ${out}`);
+for (const [label, raw] of Object.entries(attackVectors)) {
+  test(`open-redirect blocked (final origin stays app): ${label}`, () => {
+    const out = safeNextUrl(raw, ORIGIN);
+    // The object the caller redirects to. Its origin is the ONLY thing that decides safety.
+    assert.ok(out instanceof URL, "safeNextUrl must return a URL object");
+    assert.equal(out.origin, ORIGIN, `"${label}" redirected off-origin to ${out.href}`);
   });
 }
 
-test("legitimate same-origin paths pass through", () => {
-  assert.equal(safeNextPath("/account", ORIGIN), "/account");
-  assert.equal(safeNextPath("/dashboard?tab=billing#top", ORIGIN), "/dashboard?tab=billing#top");
+test("legitimate same-origin path round-trips (path/query/hash preserved)", () => {
+  const out = safeNextUrl("/dashboard?x=1#h", ORIGIN);
+  assert.equal(out.origin, ORIGIN);
+  assert.equal(out.pathname, "/dashboard");
+  assert.equal(out.search, "?x=1");
+  assert.equal(out.hash, "#h");
 });
 
-test("empty / null / undefined => DEFAULT_NEXT", () => {
-  assert.equal(safeNextPath(null, ORIGIN), DEFAULT_NEXT);
-  assert.equal(safeNextPath(undefined, ORIGIN), DEFAULT_NEXT);
-  assert.equal(safeNextPath("", ORIGIN), DEFAULT_NEXT);
+test("empty / null / undefined => DEFAULT_NEXT on the app origin", () => {
+  for (const raw of [null, undefined, ""]) {
+    const out = safeNextUrl(raw, ORIGIN);
+    assert.equal(out.origin, ORIGIN);
+    assert.equal(out.pathname, DEFAULT_NEXT);
+  }
 });
