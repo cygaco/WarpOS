@@ -1,0 +1,56 @@
+# WarpOS 1.0 — Ratified Kernel Plan (2026-07-17)
+
+**Status: RATIFIED by the operator 2026-07-17 (5 explicit confirmations, this session). Execution begins NEXT session. This document is the source the next session executes from — read it with `verify-don't-inherit` (re-verify live claims against disk/git before building).**
+
+## Provenance
+- Input: the operator's 18-doc "warpos_1_0_finish_packet" (generated 2026-06-28, ~3 weeks stale vs HEAD `c3dab137`).
+- Analysis: 3 audits (this session, agents) — `evidence/packet-analysis.md`, `evidence/enforcement-audit.md`, `evidence/runtime-hygiene.md`.
+- Second opinion: cabinet consult, **gpt-5.6-sol @ ultra** (real CLI dispatch, `dispatch_id d-mroak7ue` predecessor + successful re-run; advisory-only) — `evidence/cabinet-consult-gpt56sol-ultra.md`. Its core amendment ("false-green portability / undefined trust boundary is the #1 risk; contract first, adapter last") was ACCEPTED.
+- Operator kernel lens (the yardstick for all scope decisions): (a) interoperability — any provider at the helm, (b) enforcements that work with every provider, (c) model routing, (d) the sprint development cycle. Release ceremony and product-layer guardrails are OUT of kernel scope (route to bootstrap:lastmile).
+
+## The 5 ratified decisions
+1. **Sequencing = the consultant's phase order** (contract → routing truth → identity → WorkOrder/Envelope → enforcement adapter). Confirmed explicitly after ELI5.
+2. **Security panel: KEEP Fable-5 as judge; REFRAME the prompts defensively.** Do NOT exclude WarpOS from security review; do NOT swap the judge yet. First determine whether panel prompts unnecessarily ask the judge to reproduce operational exploit material, and reframe (structured bounded findings from hunters; judge adjudicates evidence, not raw exploit text). Fail-closed conditions apply regardless: judge refusal / malformed verdict / missing evidence → BLOCKED-INCONCLUSIVE, never PASS; no silent judge fallback. If reframing fails to stop the trips, revisit the judge-seat swap as a follow-up decision WITH the operator.
+3. **Operator voice: ELI5-default, depth-when-it-matters.** Rule text: "Lead every operator-facing answer with a short plain-language outcome; include technical detail when consequential, safety-relevant, or requested." Scoped by AUDIENCE (`operator` / `agent` / `artifact`), NOT by "top-level session". Lives in the portable runtime contract, projected only into helm bindings — NEVER in ambient provider-neutral files (AGENTS.md auto-loads into codex runs; CLAUDE.md auto-loads into worktree builders).
+4. **SP-20260717-001 (runtime retention): HOLD unmerged.** Branch parked at gauntlet-complete. Next session folds the consult amendments, re-gauntlets the delta, merges. Amendments to fold: ≥2 rotation generations (one `.1` is too destructive); per-sink retention CLASSES instead of a uniform 20k-line cap (diagnostics vs operational evidence vs security records vs semantic memory); a non-racy pruning host (NOT bare SessionStart — many sessions start concurrently; use a lock or single-writer); keep items that are recent OR among the newest N, PLUS anything referenced by an active/resumable sprint; rotation must not silently break readers (reader tests).
+5. **Packet disposition** (doc-by-doc detail in `evidence/packet-analysis.md`): extract MECHANISMS after reconciliation — never ratify stale packet docs verbatim. ADOPT-as-amended: 04+16 (merged into ONE runtime contract), 05 (scoped-down compiler), 06 (adapted onto existing ledger), 13/15 (as the executable conformance matrix), 17 (as a sunset-dated scope rule), 01's bootstrap function only (for hosts that can't auto-discover repo instructions). REJECT: 01-as-driver, 08 greenfield dispatch rewrite, 09 packs-as-second-manifest, 10/11 in-kernel.
+
+## Execution phases (next session onward)
+
+### Phase 0 — Kernel contract + trust boundary (small, define-before-build)
+One merged 04/16 **Top-Level Runtime Contract** doc: any provider may propose/orchestrate work, but a provider-independent TRUSTED layer owns capability grants, protected mutation, verification, and integration into main. Includes: role-binding precedence graph (validated WorkOrder/CLI binding → explicit top-level runtime binding → UNBOUND fail-closed; repo prose can never manufacture a binding); provider × capability × helm-level support matrix; minimal WorkOrder field set; conformance fixtures harvested from packet 13/15; log/evidence retention classes (feeds SP-001 amendments). Every policy in it names its enforcer or logs enforcement debt at write-time.
+
+### Phase 1 — Routing + security truth (the live bugs)
+- **Harness-spawn model rule**: harness Agent-tool spawns must ALWAYS resolve to a Claude model regardless of the logical role's registry pin. Hit TWICE live this session: β spawn failed on `gpt-5.6-sol` pin; product-lead spawn failed on `gpt-5.6-terra` pin (Epsilon's SP-001 design phase). Separate logical role routing from invocation-channel capability.
+- **Verify `gpt-5.6-terra` is a live model id** (sol + agy were attested 2026-07-16; terra never was — possible phantom id from the flip).
+- **ED-205**: `--provider` override serves provider-DEFAULT model instead of spec `provider_model`.
+- **agy lane reconciliation**: enforcement-audit says "dispatch not migrated to agy / Google lane DOWN (ED-060)"; DUMP + tracker say the 3-lab panel ran agy `gemini-3.1-pro-high` attested 2026-07-16. One source is stale — live-probe and reconcile FIRST (2-min check), then fix whichever is real.
+- **Security-prompt reframe** (ratified decision #2) + fail-closed judge conditions + a small canary corpus (legitimate dual-use finding / malicious repo instruction / unsupported claim / hunter disagreement / missing evidence).
+- Record ACTUAL effective provider/model in dispatch evidence (extends the WG-26 discipline).
+- Exit: the full 3-lab panel runs end-to-end; a missing lane or judge failure BLOCKS correctly.
+
+### Phase 2 — Identity + host portability
+- Explicit role bindings (Phase 0's precedence graph implemented): unbound dispatched worker = UNBOUND fail-closed, never defaults to President. The conditional "you are Alpha unless bound" CLAUDE.md phrasing is acceptable only as a TRANSITION.
+- Provider-neutral canonical instruction source + per-provider projections (scoped-down packet 05); deterministic generation + drift check (same regen-both-manifests discipline).
+- **Authority-pollution scan**, not just identity words: unconditional permissions/approval/merge/deploy authority or operator-audience in any ambient neutral surface; scan the EFFECTIVE instruction graph (imports, agent specs, shims, generated files, stale worktrees, handoff prompts).
+- Generic bootstrap harvested from packet 01 (for chat/API hosts).
+- cwd/sandbox behavior per provider gets TESTS before any "neutral cwd" change (changing cwd moves codex's sandbox root — don't adopt blind). Reviewers get read-only evidence; builders get exactly one isolated worktree as write root.
+- Operator-voice directive lands here (ratified decision #3) as a small item.
+- Evidence for current leak: builders inherit "You are Alex — the President" via worktree CLAUDE.md; codex reviewers slurp the 14KB AGENTS.md router from cwd. Root AGENTS.md does NOT declare "you are Alpha" (catastrophic form already avoided).
+
+### Phase 3 — WorkOrder / ResultEnvelope
+Adapt packet 06 onto the EXISTING dispatch ledger (dispatch-completions + dispatch-record-fields + gauntlet-verify) — no greenfield. Minimum schema: schema version, correlation id, effective role/provider/model, immutable base commit + result tree hash (NOT "worktree base = live_head"; enforce freshness separately), allowed capabilities+paths, retry lineage, evidence refs, terminal states {success, partial, blocked, failed, cancelled}. Replace the packet's prompt-size floor with required-semantics validation (objective, authority, base, scope, acceptance checks, evidence, outputs). Wire ED-069 (started-row) + ED-070 (quota field) into ALL dispatch writers as one coherent change; fold teammate-stall-rules.md back into epsilon.md + agent-dispatch-guide.md (ED-071).
+
+### Phase 4 — Trusted enforcement adapter (LAST — depends on Phase 3's contract)
+Architecture: `untrusted provider/worktree → exact proposed tree + ResultEnvelope → PINNED trusted checker → integration of that exact checked tree`. The authoritative gate validates exact base+tree hashes, executes checks from a pinned copy OUTSIDE the candidate tree (candidate edits to enforcers/CLAUDE.md/AGENTS.md/shims are untrusted changes), fails closed on missing/crashed/timed-out checks, merges precisely the validated object (no check/merge TOCTOU), and is the only route into main. Shared check library consumed three ways: Claude hooks (early prevention), git pre-commit (fast feedback — explicitly NOT the authority boundary; bypassable), trusted controller (authoritative). Portable runtime invariants (started/completed/died/timed-out/quota/approval/resume) move from Claude lifecycle hooks into the provider-neutral dispatch control plane. Do NOT mirror the 44 session-lifecycle hooks. Test bypasses + checker self-modification explicitly. Honest promise: provider-independent ARTIFACT ACCEPTANCE + INTEGRATION (full arbitrary-helm containment additionally needs OS sandboxing/credential minimization — out of 1.0 scope, say so).
+
+## Ratification baseline (what ALREADY changed, this session — 2026-07-17)
+- Merged worktrees `WarpOS-wt/SP-20260716-001-dispatch` + `WarpOS-wt-auth-SP20260716-002` REMOVED, branches deleted (merged-only `-d`); their uncommitted runtime scratch salvaged to `runtime/worktree-salvage-20260717/` (6.9MB — do not delete; possible cited evidence).
+- Stray-log/handoff bulk sweep NOT performed (classifier-blocked; deliberately not tunneled) — lands via SP-001's tested retention script post-merge.
+- SP-20260717-001 built + committed on `sprint/SP-20260717-001-runtime-retention` (+ builder branch `sprint/SP-20260717-001-builder` @ `00040620`, worktree `../WarpOS-wt/SP-20260717-001-builder`), gauntlet run, HELD unmerged per ratified decision #4.
+- Nothing merged to main this session. Turbo granted 4h (expires ~05:32Z).
+
+## Known discrepancies to reconcile before building on them
+1. agy lane: audit-B "down/unmigrated" vs DUMP/tracker "attested live 2026-07-16" — probe live.
+2. `gpt-5.6-terra` existence — probe.
+3. The 3 pre-existing flip-independent test failures (cutover-completeness, duplicate-doc-drift README dup, assert-warpos-templates-shipped 138vs122) — unrelated to this plan, still open.
