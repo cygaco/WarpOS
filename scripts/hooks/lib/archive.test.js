@@ -38,6 +38,7 @@ h.test("archive moves the file into the tier and writes an index entry", () => {
     fs.writeFileSync(src, "a\nb\nc\n", "utf8");
     const res = archive.archive(src, { root: fx.dir, reason: "rotation:over-cap", shape: "operational" });
     assert.strictEqual(res.ok, true);
+    assert.strictEqual(res.indexed, true, "a successful archive reports indexed:true");
     assert.ok(!fs.existsSync(src), "source moved off its origin");
     assert.ok(fs.existsSync(res.archived), "archived file exists in the tier");
     assert.strictEqual(fs.readFileSync(res.archived, "utf8"), "a\nb\nc\n", "content preserved byte-for-byte");
@@ -261,6 +262,34 @@ h.violation("archive move fault surfaces as ok:false, source kept, never throws"
     assert.strictEqual(res.ok, false, "a move fault surfaces as ok:false");
     assert.ok(fs.existsSync(src), "the source is KEPT on a move fault (no data loss)");
     return { ok: false }; // mark this h.violation as correctly-caught
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── index-failure is SURFACED, not swallowed (gauntlet R1 new-defect) ───────
+h.test("archive surfaces an index-write failure as indexed:false (file still archived)", () => {
+  const fx = sealedDir({}, "archive-index-fail");
+  try {
+    seedRuntime(fx);
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "a\nb\n", "utf8");
+    const origAppend = fs.appendFileSync;
+    // Fail ONLY the index append (the path ends with index.jsonl).
+    fs.appendFileSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index write failure");
+      return origAppend(p, ...rest);
+    };
+    let res;
+    try {
+      res = archive.archive(src, { root: fx.dir, reason: "rotation" });
+    } finally {
+      fs.appendFileSync = origAppend;
+    }
+    assert.strictEqual(res.ok, true, "the file IS archived (data safe) even when the index write fails");
+    assert.strictEqual(res.indexed, false, "the index-write failure must be SURFACED, not swallowed");
+    assert.ok(fs.existsSync(res.archived), "the archived generation is on disk (recoverable by dir scan)");
+    assert.ok(!fs.existsSync(src), "source moved");
   } finally {
     fx.cleanup();
   }

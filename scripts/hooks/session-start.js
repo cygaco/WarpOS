@@ -11,6 +11,10 @@ const fs = require("fs");
 const path = require("path");
 const { logEvent, query, RUNTIME_DIR } = require("./lib/logger");
 const { PATHS } = require("./lib/paths");
+// F-RET-3: single source for the handoff-live basename allowlist — the same
+// tightened regex retention.js uses, so the live-state scan and the retention
+// sweep can never disagree on what a valid handoff-live name is.
+const { HANDOFF_LIVE_RE } = require("./lib/retention");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -319,7 +323,7 @@ process.stdin.on("end", () => {
         .slice(0, 48);
       const liveFiles = fs
         .readdirSync(runtimeDir)
-        .filter((f) => /^handoff-live-.+\.md$/.test(f))
+        .filter((f) => HANDOFF_LIVE_RE.test(f)) // F-RET-3: tightened basename allowlist (no `..`)
         .map((f) => ({
           name: f,
           sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),

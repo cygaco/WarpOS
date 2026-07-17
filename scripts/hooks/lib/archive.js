@@ -160,9 +160,14 @@ function archive(srcPath, opts) {
       lines,
       pid: process.pid,
     };
-    appendIndex(rootAbs, entry);
+    // The index is the query + restore-drill seam. Surface a write FAILURE
+    // (`indexed:false`) instead of swallowing it — an archived generation that
+    // is not indexed is still on disk (recoverable by an archive-dir scan) but
+    // the caller MUST be able to see the seam gap. One retry before giving up.
+    let indexed = appendIndex(rootAbs, entry);
+    if (!indexed) indexed = appendIndex(rootAbs, entry);
 
-    return { ok: true, archived: destAbs, origin: srcAbs, entry };
+    return { ok: true, archived: destAbs, origin: srcAbs, entry, indexed };
   } catch {
     return { ok: false, reason: "error" };
   }

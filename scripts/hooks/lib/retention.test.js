@@ -415,6 +415,48 @@ test("per-class round-robin: a handoff-live flood does not starve handoffs/* + n
   }
 });
 
+// ── F-RET-6: the audit event redacts the root (basename only, no absolute path) ─
+test("F-RET-6: the retention-applied audit event logs a REDACTED root, never the absolute path", () => {
+  const logger = require("./logger");
+  const origLogEvent = logger.logEvent;
+  const captured = [];
+  logger.logEvent = (...args) => captured.push(args); // retention lazy-requires this cached module
+  const root = mkTrustedRoot("audit-redact");
+  try {
+    const namedLogDir = path.join(root, "runtime");
+    ensureDir(namedLogDir);
+    touch(path.join(namedLogDir, "s-pf-03-security-review.err.log"), FIXED_NOW - 1 * DAY_MS);
+
+    applyRetention(root, { apply: true, now: FIXED_NOW });
+
+    const evt = captured.find((a) => a[2] === "retention-applied");
+    assert.ok(evt, "a retention-applied audit event must be emitted on apply");
+    const entity = evt[3]; // the 4th logEvent arg (entity)
+    assert.strictEqual(entity, path.basename(root), "entity is the basename, not the absolute root");
+    const rootAbs = path.resolve(root);
+    // The absolute root path must NOT appear anywhere in the audit args/message.
+    const flat = JSON.stringify(evt);
+    assert.ok(!flat.includes(rootAbs), "the absolute root path must not leak into the audit event");
+  } finally {
+    logger.logEvent = origLogEvent;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── F-RET-3 (session-start integration): the loose regex is GONE + single-sourced ─
+test("F-RET-3: session-start.js uses the shared HANDOFF_LIVE_RE, not the loose `.+` pattern", () => {
+  const ssPath = path.join(__dirname, "..", "session-start.js");
+  const src = fs.readFileSync(ssPath, "utf8");
+  assert.ok(
+    !/\/\^handoff-live-\.\+\\\.md\$\//.test(src),
+    "the loose /^handoff-live-.+\\.md$/ must no longer appear in session-start.js",
+  );
+  assert.ok(
+    /require\(["']\.\/lib\/retention["']\)/.test(src) && /HANDOFF_LIVE_RE/.test(src),
+    "session-start.js imports + uses the canonical HANDOFF_LIVE_RE (single source)",
+  );
+});
+
 // ── Bonus: the load/prune invariant this module encodes at require-time ─────
 test("RETENTION_HANDOFF_DAYS stays a strict superset of the session-start load window", () => {
   assert.ok(RETENTION_HANDOFF_DAYS > 7, "must exceed the 7-day session-start load window");

@@ -113,22 +113,28 @@ function run() {
     const kind = capEntry && capEntry.kind;
     const cap = capEntry && capEntry.cap;
 
-    // Distinguish "doesn't exist" (legit skip of the size check) from
-    // "existsSync THREW" (fail-closed — the sink is an unreadable offender).
-    let exists = false;
-    let existsFaulted = false;
+    // Existence probe via statSync, which THROWS (unlike fs.existsSync, which
+    // NEVER throws — it returns false on ANY error, so a permission/descriptor
+    // fault on an EXISTING sink would masquerade as "absent" and slip the size
+    // check; that dead fail-closed catch was the F-ENF-2 hole). Distinguish
+    // ENOENT (legit absent — descriptor still validated) from any OTHER error
+    // (fail-closed — the sink is an unreadable offender, never silently skipped).
+    let st = null;
+    let statErr = null;
     try {
-      exists = fs.existsSync(absPath);
-    } catch {
-      existsFaulted = true;
+      st = fs.statSync(absPath);
+    } catch (e) {
+      statErr = e;
     }
-    if (existsFaulted) {
-      sinks.push({ path: rel, kind, cap, unreadable: true });
-      continue;
-    }
-    if (!exists) {
-      // Inventory descriptor STILL validated (F-ENF-3); no file to measure.
-      sinks.push({ path: rel, kind, cap });
+    if (statErr) {
+      if (statErr.code === "ENOENT") {
+        // Not yet written (fresh install). Inventory descriptor STILL validated
+        // (F-ENF-3); no file to measure.
+        sinks.push({ path: rel, kind, cap });
+      } else {
+        // Permission/descriptor fault on a present-or-indeterminate sink → offender.
+        sinks.push({ path: rel, kind, cap, unreadable: true });
+      }
       continue;
     }
 
@@ -137,7 +143,7 @@ function run() {
     let unreadable = false;
     try {
       if (kind === "bytes") {
-        actual = fs.statSync(absPath).size;
+        actual = st.size;
       } else {
         const content = fs.readFileSync(absPath, "utf8");
         actual = content.length === 0 ? 0 : content.split("\n").filter(Boolean).length;

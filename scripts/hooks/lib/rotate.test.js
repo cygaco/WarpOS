@@ -83,7 +83,7 @@ h.test("below-cap: file untouched, nothing archived", () => {
     const file = fx.file("events.jsonl");
     const content = mkLines(5);
     fs.writeFileSync(file, content, "utf8");
-    const res = rotateIfNeeded(file, 20000, { root: fx.dir });
+    const res = rotateIfNeeded(file, 20000, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "should not rotate below cap");
     assert.strictEqual(fs.readFileSync(file, "utf8"), content, "content must be byte-identical");
     assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing should be archived");
@@ -102,7 +102,7 @@ h.test("over-cap: archives (active gone, archive carries ALL lines), zero lines 
     const originalLineCount = countLines(originalContent);
     fs.writeFileSync(file, originalContent, "utf8");
 
-    const res = rotateIfNeeded(file, cap, { root: fx.dir });
+    const res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true, "should rotate when over cap");
     assert.strictEqual(res.reason, "archived");
     assert.ok(!fs.existsSync(file), "active file path should be gone after the archive move");
@@ -139,12 +139,12 @@ h.test("F-ROT-1: a second rotation creates a SECOND archive generation (no clobb
     const file = fx.file("events.jsonl");
     const cap = 5;
     fs.writeFileSync(file, mkLines(cap + 3, 120), "utf8");
-    let res = rotateIfNeeded(file, cap, { root: fx.dir });
+    let res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true);
     const firstGen = fs.readFileSync(res.archived, "utf8");
 
     fs.writeFileSync(file, mkLines(cap + 10, 120), "utf8");
-    res = rotateIfNeeded(file, cap, { root: fx.dir });
+    res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true);
 
     const arch = archivedFiles(fx.dir);
@@ -170,7 +170,7 @@ h.test("F-ROT-2: tiny 3-byte-per-line file over cap DOES rotate (sound floor)", 
     // over-cap file never rotated (F-ROT-2). The sound floor (threshold = cap = 10
     // bytes) lets the real line count run: 20 lines >= cap ⇒ rotate.
     fs.writeFileSync(file, Array.from({ length: 20 }, () => "{}").join("\n") + "\n", "utf8");
-    const res = rotateIfNeeded(file, cap, { root: fx.dir });
+    const res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true, "an over-cap tiny-line file MUST rotate under the sound floor");
     assert.strictEqual(archivedFiles(fx.dir).length, 1);
   } finally {
@@ -186,14 +186,14 @@ h.test("pre-gate: large bytes but few lines does not rotate; tiny file spared", 
     // few lines, big bytes — clears the pre-gate, real count is under cap.
     const content = mkLines(3, 300);
     fs.writeFileSync(file, content, "utf8");
-    let res = rotateIfNeeded(file, 10, { root: fx.dir });
+    let res = rotateIfNeeded(file, 10, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "few real lines under cap must not rotate");
     assert.strictEqual(fs.readFileSync(file, "utf8"), content, "content must be untouched");
 
     // tiny file under a big cap → below-pregate (no read).
     const file2 = fx.file("events2.jsonl");
     fs.writeFileSync(file2, mkLines(3), "utf8");
-    res = rotateIfNeeded(file2, 20000, { root: fx.dir });
+    res = rotateIfNeeded(file2, 20000, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false);
     assert.strictEqual(res.reason, "below-pregate");
   } finally {
@@ -208,12 +208,12 @@ h.test("F-ROT-3: exactly cap lines rotates (at/over); cap-1 does not", () => {
     const cap = 12;
     const atCap = fx.file("at.jsonl");
     fs.writeFileSync(atCap, mkLines(cap, 40), "utf8"); // EXACTLY cap lines
-    let res = rotateIfNeeded(atCap, cap, { root: fx.dir });
+    let res = rotateIfNeeded(atCap, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true, "exactly cap lines must rotate (>= cap)");
 
     const underCap = fx.file("under.jsonl");
     fs.writeFileSync(underCap, mkLines(cap - 1, 40), "utf8"); // cap-1 lines
-    res = rotateIfNeeded(underCap, cap, { root: fx.dir });
+    res = rotateIfNeeded(underCap, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "cap-1 lines must NOT rotate");
     assert.strictEqual(res.reason, "under-cap");
   } finally {
@@ -227,11 +227,64 @@ h.test("F-ROT-4: rotateSink no-ops on an unknown (unregistered) path", () => {
   try {
     const file = fx.file("not-a-known-sink.jsonl");
     fs.writeFileSync(file, mkLines(50, 200), "utf8"); // way over any default cap
-    const res = rotateSink(file, { root: fx.dir });
+    const res = rotateSink(file, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "an unknown sink must never rotate");
     assert.strictEqual(res.reason, "unknown-sink");
     assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing archived for an unknown sink");
     assert.ok(fs.existsSync(file), "the unknown file is left untouched");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 6b. F-ROT-4 SEAM: the raw primitive refuses an unregistered path ────────
+// The gauntlet holdout that reopened F-ROT-4: rotateIfNeeded/rotateBytesIfNeeded
+// are public, and previously archive-moved ANY over-cap in-root path. The seam
+// gate (archiveFile) now refuses an unregistered path unless allowUnregistered.
+h.test("F-ROT-4 seam: rotateIfNeeded on an unregistered over-cap file is REFUSED without allowUnregistered", () => {
+  const fx = sealedDir({}, "rotate-seam");
+  try {
+    const file = fx.file("arbitrary.jsonl");
+    fs.writeFileSync(file, mkLines(30, 120), "utf8"); // over cap 5, clears the pre-gate
+    const res = rotateIfNeeded(file, 5, { root: fx.dir }); // NO allowUnregistered
+    assert.strictEqual(res.rotated, false, "an unregistered path must not be archive-moved at the seam");
+    assert.strictEqual(res.reason, "unregistered-sink");
+    assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing archived for an unregistered path");
+    assert.ok(fs.existsSync(file), "the arbitrary file is left untouched");
+
+    // The byte sibling is gated the same way.
+    const bfile = fx.file("arbitrary.log");
+    fs.writeFileSync(bfile, "x".repeat(5000), "utf8");
+    const bres = rotateBytesIfNeeded(bfile, 1000, { root: fx.dir }); // NO allowUnregistered
+    assert.strictEqual(bres.reason, "unregistered-sink");
+    assert.ok(fs.existsSync(bfile));
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 6c. stale-decision guard: verify UNDER the lock catches a resolved decision ─
+h.test("stale-decision: a file that drops under cap between the pre-lock count and the lock is NOT archived", () => {
+  const fx = sealedDir({}, "rotate-stale");
+  try {
+    const file = fx.file("events.jsonl");
+    fs.writeFileSync(file, mkLines(30, 120), "utf8"); // real bytes clear the pre-gate + statSync
+    const origRead = fs.readFileSync;
+    let reads = 0;
+    fs.readFileSync = () => {
+      reads++;
+      // 1st read = outer over-cap decision; 2nd read = verify under the lock (now under cap).
+      return reads === 1 ? mkLines(30, 120) : mkLines(1);
+    };
+    let res;
+    try {
+      res = rotateIfNeeded(file, 5, { root: fx.dir, allowUnregistered: true });
+    } finally {
+      fs.readFileSync = origRead;
+    }
+    assert.strictEqual(res.rotated, false, "a decision resolved before the move must not archive");
+    assert.strictEqual(res.reason, "resolved-under-lock");
+    assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing archived when the re-check fails");
   } finally {
     fx.cleanup();
   }
@@ -251,7 +304,7 @@ h.violation("archive move throwing surfaces as a falsy result, never a throw; so
     let res;
     let threw = false;
     try {
-      res = rotateIfNeeded(file, cap, { root: fx.dir });
+      res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
     } catch {
       threw = true;
     } finally {
@@ -270,7 +323,7 @@ h.violation("archive move throwing surfaces as a falsy result, never a throw; so
 h.test("missing file is a no-op (falsy, no throw)", () => {
   const fx = sealedDir({}, "rotate-missing");
   try {
-    const res = rotateIfNeeded(fx.file("does-not-exist.jsonl"), 10, { root: fx.dir });
+    const res = rotateIfNeeded(fx.file("does-not-exist.jsonl"), 10, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false);
   } finally {
     fx.cleanup();
@@ -282,7 +335,7 @@ h.test("0-byte file is a no-op", () => {
   try {
     const file = fx.file("empty.jsonl");
     fs.writeFileSync(file, "", "utf8");
-    const res = rotateIfNeeded(file, 1, { root: fx.dir });
+    const res = rotateIfNeeded(file, 1, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false);
   } finally {
     fx.cleanup();
@@ -295,11 +348,11 @@ h.test("rotateBytesIfNeeded: under cap no-op, over cap archives", () => {
   try {
     const file = fx.file("team-guard-debug.log");
     fs.writeFileSync(file, "x".repeat(1000), "utf8");
-    let res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
+    let res = rotateBytesIfNeeded(file, 2000, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "under cap must not rotate");
 
     fs.writeFileSync(file, "x".repeat(3000), "utf8");
-    res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
+    res = rotateBytesIfNeeded(file, 2000, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true, "over cap must archive");
     assert.ok(!fs.existsSync(file), "active file moved to archive");
     const arch = archivedFiles(fx.dir);
@@ -322,7 +375,7 @@ h.violation("rotateBytesIfNeeded fault-injection never throws", () => {
     let res;
     let threw = false;
     try {
-      res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
+      res = rotateBytesIfNeeded(file, 2000, { root: fx.dir, allowUnregistered: true });
     } catch {
       threw = true;
     } finally {

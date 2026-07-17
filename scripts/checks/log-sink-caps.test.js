@@ -9,9 +9,11 @@
  *   node scripts/checks/log-sink-caps.test.js
  */
 
+const fs = require("fs");
 const path = require("path");
+const assert = require("assert");
 const { harness } = require("./lib/fixture-harness");
-const { evaluate } = require("./log-sink-caps");
+const { evaluate, run } = require("./log-sink-caps");
 
 const h = harness("log-sink-caps");
 
@@ -92,6 +94,50 @@ h.test("every logger CATEGORY_FILES fan-out target is a registered SINK_CAPS sin
     0,
     `unregistered fan-out targets (would never rotate — F-BETA-1 class): ${missing.join(", ")}`,
   );
+});
+
+// ── F-ENF-2 (fs-backed run()): a non-ENOENT statSync fault FAILS CLOSED ──────
+// The old code used fs.existsSync (which NEVER throws — returns false on error),
+// so a permission fault on an EXISTING sink masqueraded as "absent" and slipped
+// the size check. run() now uses statSync + distinguishes ENOENT from a fault.
+h.test("F-ENF-2 run(): a non-ENOENT statSync fault marks the sink unreadable (fail-closed, not skipped)", () => {
+  const origStat = fs.statSync;
+  fs.statSync = () => {
+    const e = new Error("EACCES: permission denied");
+    e.code = "EACCES";
+    throw e;
+  };
+  let res;
+  try {
+    res = run();
+  } finally {
+    fs.statSync = origStat;
+  }
+  assert.strictEqual(res.ok, false, "a stat fault on sinks must fail closed, never read green");
+  assert.ok(
+    res.offenders.some((o) => o.reason === "unreadable"),
+    "a faulted (non-ENOENT) sink is an unreadable offender, not silently skipped",
+  );
+});
+
+// ── F-ENF-3 (fs-backed run()): the INVENTORY is validated even when files absent ─
+h.test("F-ENF-3 run(): reports the full SINK_CAPS inventory even when every sink file is absent", () => {
+  const origStat = fs.statSync;
+  fs.statSync = () => {
+    const e = new Error("ENOENT: no such file");
+    e.code = "ENOENT";
+    throw e;
+  };
+  let res;
+  try {
+    res = run();
+  } finally {
+    fs.statSync = origStat;
+  }
+  assert.ok(res.inventory > 0, "inventory reflects the SINK_CAPS descriptors, not just existing files");
+  assert.strictEqual(res.scanned, 0, "no files existed to size-check (all ENOENT)");
+  assert.strictEqual(res.ok, true, "all descriptors well-formed → ok:true even with zero files present");
+  assert.ok(res.inventory !== res.scanned, "inventory count is decoupled from the existing-file count");
 });
 
 h.done();

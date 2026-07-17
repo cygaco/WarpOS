@@ -202,7 +202,18 @@ function rotateIfNeeded(file, capLines, opts) {
     const lineCount = content.length === 0 ? 0 : content.split("\n").filter(Boolean).length;
     if (lineCount < cap) return { rotated: false, reason: "under-cap" }; // rotate at/over cap
 
-    return archiveFile(file, opts, "rotation:over-cap-lines");
+    // verify re-runs the line-count check UNDER the archive lock (stale-decision guard).
+    return archiveFile(file, opts, "rotation:over-cap-lines", () => {
+      try {
+        const st2 = fs.statSync(file);
+        if (!st2 || st2.size === 0) return false;
+        const c2 = fs.readFileSync(file, "utf8");
+        const lc2 = c2.length === 0 ? 0 : c2.split("\n").filter(Boolean).length;
+        return lc2 >= cap;
+      } catch {
+        return false;
+      }
+    });
   } catch {
     // Belt-and-suspenders — this function must NEVER throw.
     return { rotated: false, reason: "error" };
@@ -233,18 +244,30 @@ function rotateBytesIfNeeded(file, capBytes, opts) {
     if (!st || st.size === 0) return { rotated: false, reason: "empty" };
     if (st.size < cap) return { rotated: false, reason: "under-cap" }; // rotate at/over cap
 
-    return archiveFile(file, opts, "rotation:over-cap-bytes");
+    // verify re-runs the byte-size check UNDER the archive lock (stale-decision guard).
+    return archiveFile(file, opts, "rotation:over-cap-bytes", () => {
+      try {
+        const st2 = fs.statSync(file);
+        return !!st2 && st2.size >= cap;
+      } catch {
+        return false;
+      }
+    });
   } catch {
     return { rotated: false, reason: "error" };
   }
 }
 
 /**
- * Shared archive-move: acquire the per-sink single-writer lock (best-effort),
- * move `file` into the archive tier, release. NEVER throws. Returns
- * `{rotated:true, archived}` on success, or a falsy `{rotated:false, reason}`.
+ * Shared archive-move: gate on the SINK_CAPS allowlist, acquire the per-sink
+ * single-writer lock (best-effort), RE-VERIFY under the lock, move `file` into
+ * the archive tier, release. NEVER throws.
+ *
+ * @param {function} [verify] re-checks the over-cap decision UNDER the lock
+ *   (the decision was taken before locking); returns truthy if still over cap.
+ * @returns {{rotated:boolean, reason?:string, archived?:string}}
  */
-function archiveFile(file, opts, reason) {
+function archiveFile(file, opts, reason, verify) {
   const root = opts.root || defaultRoot();
   if (!root || !_archive) {
     // No trusted root or no archive tier — REFUSE to rotate rather than fall
@@ -258,6 +281,18 @@ function archiveFile(file, opts, reason) {
     return { rotated: false, reason: "bad-root" };
   }
 
+  // F-ROT-4 SEAM gate — rotation is CLOSED over the SINK_CAPS allowlist at the
+  // MOVE site, not just at the callers (rotateSink / appendRecord). The old fix
+  // closed the caller; the raw exports rotateIfNeeded/rotateBytesIfNeeded could
+  // still archive-move ANY in-root path. Refuse the destructive move for a path
+  // that is not a registered sink (kill-the-seam-not-the-predicate).
+  // `opts.allowUnregistered` is the explicit escape for tests + a deliberate
+  // one-off rotation of a known-safe path.
+  const sink = SINK_CAPS[path.resolve(file)];
+  if (!sink && !opts.allowUnregistered) {
+    return { rotated: false, reason: "unregistered-sink" };
+  }
+
   // Single-writer lock — if another process is already rotating this sink, skip
   // (unique archive naming means no data is lost either way).
   let release = null;
@@ -269,7 +304,18 @@ function archiveFile(file, opts, reason) {
   if (release === null) return { rotated: false, reason: "locked" };
 
   try {
-    const sink = SINK_CAPS[path.resolve(file)];
+    // Stale-decision guard: the over-cap decision was taken BEFORE the lock. A
+    // concurrent rotator, or a file recreated smaller, may have resolved it.
+    // Re-verify UNDER the lock before the destructive move.
+    if (typeof verify === "function") {
+      let stillOver;
+      try {
+        stillOver = verify();
+      } catch {
+        stillOver = false;
+      }
+      if (!stillOver) return { rotated: false, reason: "resolved-under-lock" };
+    }
     const res = _archive.archive(file, {
       root: rootAbs,
       reason,
