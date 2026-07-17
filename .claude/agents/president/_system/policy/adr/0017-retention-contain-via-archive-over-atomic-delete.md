@@ -29,9 +29,21 @@ Two truths from the cross-provider gauntlet, both preserved (β ruling):
 
 **Companion (closed):** `archive.js#restore` no-clobber is atomic via `COPYFILE_EXCL` (was a check-then-rename race); its origin + archived paths are now realpath-contained via the same `containResolved`, and the archived source is `lstat`-confirmed a regular file before the copy. Recovery-only, off the auto-apply path.
 
+## Scope boundary — F-ROT-4 "SINK_CAPS is a mutable exported map" (β DECIDE 0.90)
+
+A gauntlet lane raised: `rotate.js` exports the mutable `SINK_CAPS` object, so a caller could register an arbitrary victim path and then rotate it, bypassing the allowlist. **Disposition: OUT-OF-SCOPE + TRACKED, no code change** (β ruling; Object.freeze REJECTED — it would force a test-architecture redesign of `regSink` in the closing round for zero in-model benefit).
+
+Reasoning: the ONLY attacker precondition is **in-process module mutation** — i.e. arbitrary JS execution inside the Node process. Such an attacker already calls `fs.unlinkSync` (or anything) directly; the SINK_CAPS gate is not the boundary against them. It sits *above* the operator's dropped adversarial-helm threat model. And terra's own PoC victim is in-root, so even the "bypass" yields a **contained** move, not destruction. The non-malicious **mistake** case (a buggy caller passing a bad path argument) is backstopped by the use-site predicate: `archiveFile` refuses any path not in SINK_CAPS, and `containResolved` bounds the outcome to in-root.
+
+### Standing discriminator (delegated for SP-20260717-001)
+
+- A finding whose ONLY precondition is **in-process code-exec / module-object mutation** → auto-disposition to this residuals ADR, **no β round**.
+- A finding where a non-malicious **MISTAKE** (a bug, a wrong path, a race under normal operation) could reach a **DESTRUCTIVE / irreversible** outcome → **in-scope** at the F-RET-1 bar (contain-by-construction + an adversarial test).
+- The discriminator is **"does a mistake reach an irreversible outcome"**, NOT the severity label. Straddlers → back to β.
+
 ## Consequences
 
 - Raw history is never destroyed (D-1); the archive tier keeps it accessible + indexed + restorable.
-- The residual has a durable home here rather than only a code-header comment.
-- A future runtime with a native no-follow directory-handle primitive (or a vetted npm binding) can retire the residual; until then this contain-via-archive model is the strongest closure the platform permits.
-- Enforcer: the adversarial containment + no-delete grep tests (`archive.test.js`) fail loudly if a delete primitive re-enters the retention/rotation paths or if a containment vector regresses.
+- The residual (single realpath→rename window) + the F-ROT-4 scope boundary have a durable home here rather than only code-header comments or a lane transcript.
+- A future runtime with a native no-follow directory-handle primitive (or a vetted npm binding) can retire the realpath→rename residual; until then this contain-via-archive model is the strongest closure the platform permits.
+- Enforcer: the adversarial containment + no-delete grep tests (`archive.test.js`) fail loudly if a delete primitive re-enters the retention/rotation paths or if a containment vector regresses. F-ROT-4 disposition tracked at ED-211.
