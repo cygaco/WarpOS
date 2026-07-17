@@ -4545,7 +4545,7 @@
         "src": ".claude/project/maps/system-coherence.graph.json",
         "dest": ".claude/project/maps/system-coherence.graph.json",
         "kind": "maps_baseline",
-        "sha256": "8c9189ca1564ff1a3b97dac84023882e1d09e83921e11253f496beee0bbdb924",
+        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",

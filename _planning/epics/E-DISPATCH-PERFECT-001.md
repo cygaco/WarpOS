@@ -107,5 +107,16 @@ real proof; a bare `proof: TODO` stub is "named but unproven" and is FLAGGED
 - The model-router panel (dispatch.js gui) + the research cache (runtime/models-research).
 - scripts/checks/model-chain.js + role-parity-scan.js (enforcers extended for third_pass + frontmatter effort).
 
+## Enforcer
+
+Per planning principle #7 (every plan names its enforcer). The epic's named enforcers (on disk, all already referenced in §8/§10/§11 above):
+- **`scripts/checks/model-chain.js`** (ED-058) — the roster model/provider/effort/passes routing gate; extended for `third_pass` + frontmatter effort.
+- **`scripts/checks/role-parity-scan.js`** — the role↔spec bijection + frontmatter-pin parity gate.
+- **`scripts/dispatch/dispatch-contract.js validate`** — the class↔shape permission matrix (wired into `/scan:full`).
+- **`scripts/checks/framework-purity.js`** — the widened product-agnostic / canon-parameterization purity gate (W4).
+- **the security pass-count enforcer** (`security-pass-count`) — proves the 3-provider security review FIRED (declared + fired + enforced), or logs the debt visible at `/scan:full`.
+- **`gauntlet-verify`** — the cross-provider gauntlet completion-record liveness gate over every blast-sensitive change (dispatch-contract / role-registry / enforcers / security path).
+- **Per-workstream planted-violation fixture + mutation check**, each registered as a standing regression class (the no-hollow-ladders rule, CLAUDE.md policy-hygiene) — one per new enforcer.
+
 ---
 _End of plan artifact for E-DISPATCH-PERFECT-001. State lives in the epic tracker; this is the durable plan._
