@@ -396,7 +396,10 @@ function applyRetention(root, opts) {
         shape: c.shape || null,
       });
       if (res && res.ok) {
-        archived.push({ ...c, archived: res.entry && res.entry.archived });
+        // Propagate the index status per item so an index-write failure is
+        // VISIBLE at the caller (not swallowed) — the archived file is safe on
+        // disk, but a false `indexed` means it is off the query/restore seam.
+        archived.push({ ...c, archived: res.entry && res.entry.archived, indexed: res.indexed });
         moved++;
       } else {
         skipped.push({ ...c, reason: (res && res.reason) || "archive-failed" });
@@ -405,6 +408,9 @@ function applyRetention(root, opts) {
   } finally {
     if (typeof release === "function") release();
   }
+
+  // How many archived items FAILED to index (surfaced, not swallowed).
+  const indexFailures = archived.filter((a) => a.indexed === false).length;
 
   // Audit event — best-effort, lazy require to avoid a load-order cycle. F-RET-6:
   // log the archive-relative origins (already relative) and a REDACTED root
@@ -416,10 +422,11 @@ function applyRetention(root, opts) {
       "system",
       "retention-applied",
       path.basename(plan.root), // redacted — no absolute path leakage
-      `archived=${archived.length} skipped=${skipped.length} totalCandidates=${plan.totalCandidates}`,
+      `archived=${archived.length} skipped=${skipped.length} indexFailures=${indexFailures} totalCandidates=${plan.totalCandidates}`,
       {
         archived: archived.length,
         skipped: skipped.length,
+        indexFailures,
         totalCandidates: plan.totalCandidates,
         capped: plan.capped,
         protectedCount: plan.protectedCount,
@@ -429,7 +436,7 @@ function applyRetention(root, opts) {
     /* audit is best-effort — never block on a logger fault */
   }
 
-  return { ...plan, applied: true, archived, skipped };
+  return { ...plan, applied: true, archived, skipped, indexFailures };
 }
 
 module.exports = {
@@ -452,12 +459,30 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   const apply = args.includes("--apply");
   const rootIdx = args.indexOf("--root");
-  // F-RET-2: default to the TRUSTED env root (CLAUDE_PROJECT_DIR), never
-  // process.cwd(), for the destructive path. An explicit --root overrides.
-  const root =
-    rootIdx !== -1 && args[rootIdx + 1]
-      ? args[rootIdx + 1]
-      : process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  // F-RET-2: an EXPLICIT trusted-root SOURCE is required for the destructive
+  // (--apply) path — an explicit `--root` or CLAUDE_PROJECT_DIR. We must NEVER
+  // silently default to process.cwd() for a move: cwd could coincidentally hold
+  // a `.claude/` (passing isTrustedRoot) and get swept though it is not the
+  // intended project. process.cwd() remains the fallback ONLY for a read-only
+  // dry-run (no apply), where it deletes/moves nothing.
+  const rootArg = rootIdx !== -1 && args[rootIdx + 1] ? args[rootIdx + 1] : null;
+  const explicitRoot = rootArg || process.env.CLAUDE_PROJECT_DIR || null;
+  if (apply && !explicitRoot) {
+    const dry = applyRetention(process.cwd(), { apply: false });
+    process.stdout.write(
+      JSON.stringify(
+        { ...dry, applied: false, refused: true, reason: "apply-needs-explicit-root" },
+        null,
+        2,
+      ) + "\n",
+    );
+    process.stderr.write(
+      "retention: refusing --apply without an explicit --root or CLAUDE_PROJECT_DIR " +
+        "(a destructive move must not default to process.cwd()). Showing a dry-run instead.\n",
+    );
+    process.exit(0);
+  }
+  const root = explicitRoot || process.cwd();
   const result = applyRetention(root, { apply });
   process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   process.exit(0);

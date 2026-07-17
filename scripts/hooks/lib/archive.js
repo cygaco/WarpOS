@@ -119,6 +119,22 @@ function archive(srcPath, opts) {
     }
     if (!st.isFile()) return { ok: false, reason: "not-a-regular-file" };
 
+    // Realpath containment (F-RET-1 hardening): the LEXICAL resolveInsideRoot
+    // above misses a symlink/JUNCTION ANCESTOR — a parent dir that is itself a
+    // link pointing OUTSIDE root — which would let the rename pull an external
+    // file INTO the archive. Resolve the REAL path of the source's parent and
+    // refuse if it escapes root. This closes the ancestor-junction vector
+    // present at check time. The irreducible residual (a swap in the narrow
+    // realpath→rename window) is the Node-openat limitation tracked in ADR 0017.
+    try {
+      const realParent = fs.realpathSync(path.dirname(srcAbs));
+      if (!resolveInsideRoot(rootAbs, realParent)) {
+        return { ok: false, reason: "escapes-root-real" };
+      }
+    } catch {
+      return { ok: false, reason: "unresolvable-parent" }; // fail-closed
+    }
+
     const dir = archiveDir(rootAbs);
     try {
       fs.mkdirSync(dir, { recursive: true });
@@ -230,22 +246,32 @@ function restore(entry, opts) {
     const archivedAbs = resolveInsideRoot(rootAbs, path.join(rootAbs, entry.archived || ""));
     const originAbs = resolveInsideRoot(rootAbs, path.join(rootAbs, entry.origin || ""));
     if (!archivedAbs || !originAbs) return { ok: false, reason: "escapes-root" };
-    if (!fs.existsSync(archivedAbs)) return { ok: false, reason: "archived-missing" };
-    if (fs.existsSync(originAbs)) return { ok: false, reason: "origin-exists" };
+    let archivedPresent = true;
+    try {
+      fs.lstatSync(archivedAbs);
+    } catch (e) {
+      if (e && e.code === "ENOENT") archivedPresent = false;
+    }
+    if (!archivedPresent) return { ok: false, reason: "archived-missing" };
+    // ATOMIC no-clobber restore. A manual "does the origin exist?" check
+    // followed by renameSync is TOCTOU-racy (a file created between the check
+    // and the rename gets overwritten — renameSync replaces on POSIX). Instead,
+    // COPYFILE_EXCL makes the OS enforce the no-clobber: the dest open uses
+    // O_CREAT|O_EXCL, so it fails EEXIST if ANYTHING already occupies the origin
+    // (regular file, dir, or even a dangling symlink) — no window, no follow.
+    // Then unlink the archived source to complete the MOVE. copyFileSync also
+    // works across devices, so no EXDEV special-case is needed here.
     try {
       fs.mkdirSync(path.dirname(originAbs), { recursive: true });
-      fs.renameSync(archivedAbs, originAbs);
+      fs.copyFileSync(archivedAbs, originAbs, fs.constants.COPYFILE_EXCL);
     } catch (e) {
-      if (e && e.code === "EXDEV") {
-        try {
-          fs.copyFileSync(archivedAbs, originAbs);
-          fs.unlinkSync(archivedAbs);
-        } catch {
-          return { ok: false, reason: "restore-failed" };
-        }
-      } else {
-        return { ok: false, reason: "restore-failed" };
-      }
+      if (e && e.code === "EEXIST") return { ok: false, reason: "origin-exists" };
+      return { ok: false, reason: "restore-failed" };
+    }
+    try {
+      fs.unlinkSync(archivedAbs);
+    } catch {
+      /* the copy is the durable outcome; a leftover archived copy is harmless */
     }
     return { ok: true, restored: originAbs };
   } catch {

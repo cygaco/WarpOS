@@ -324,11 +324,25 @@ process.stdin.on("end", () => {
       const liveFiles = fs
         .readdirSync(runtimeDir)
         .filter((f) => HANDOFF_LIVE_RE.test(f)) // F-RET-3: tightened basename allowlist (no `..`)
-        .map((f) => ({
-          name: f,
-          sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
-          mtime: fs.statSync(path.join(runtimeDir, f)).mtimeMs,
-        }))
+        .map((f) => {
+          // lstat (NO symlink-follow) + regular-file-only. A symlink/junction
+          // named handoff-live-<sid>.md would otherwise have its TARGET's content
+          // read into the session additionalContext — an external content-injection
+          // vector (gauntlet R2 NEWDEF). Drop anything non-regular.
+          let st;
+          try {
+            st = fs.lstatSync(path.join(runtimeDir, f));
+          } catch {
+            return null;
+          }
+          if (!st.isFile()) return null;
+          return {
+            name: f,
+            sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
+            mtime: st.mtimeMs,
+          };
+        })
+        .filter(Boolean)
         .sort((a, b) => b.mtime - a.mtime);
       // Prefer the file matching the CURRENT sid; else the most recent + label it.
       const chosen = liveFiles.find((f) => curSid && f.sid === curSid) || liveFiles[0];

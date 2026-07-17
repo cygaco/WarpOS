@@ -295,6 +295,118 @@ h.test("archive surfaces an index-write failure as indexed:false (file still arc
   }
 });
 
+// ── β F-RET-1 CONDITION: ADVERSARIAL containment — one negative fixture per vector ─
+// Each vector asserts REFUSE-or-ARCHIVE-WITHIN-ROOT (never an arbitrary delete,
+// never an out-of-root write, never exfiltration). The residual (a same-uid
+// ancestor-swap can pull an out-of-root file INTO our own archive — contained,
+// recoverable) is the β-ruled MED-LOW tracked residual (ADR 0017).
+h.test("β-adversarial containment: vector (b) non-regular file (directory source) is REFUSED", () => {
+  const fx = sealedDir({}, "contain-dir");
+  try {
+    seedRuntime(fx);
+    const dirSrc = path.join(fx.dir, ".claude", "runtime", "a-directory");
+    fs.mkdirSync(dirSrc, { recursive: true });
+    const r = archive.archive(dirSrc, { root: fx.dir, reason: "x" });
+    assert.strictEqual(r.ok, false, "a directory source must be refused (lstat isFile())");
+    assert.strictEqual(r.reason, "not-a-regular-file");
+    assert.ok(fs.existsSync(dirSrc), "the directory is untouched (not deleted)");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+h.test("β-adversarial containment: vector (d) out-of-root source is REFUSED", () => {
+  const fx = sealedDir({}, "contain-out");
+  const outside = sealedDir({}, "contain-out-src");
+  try {
+    seedRuntime(fx);
+    const evil = path.join(outside.dir, "secret.md");
+    fs.writeFileSync(evil, "secret\n", "utf8");
+    const r = archive.archive(evil, { root: fx.dir, reason: "x" });
+    assert.strictEqual(r.ok, false, "an out-of-root source must be refused");
+    assert.strictEqual(r.reason, "escapes-root");
+    assert.ok(fs.existsSync(evil), "the out-of-root file survives (not deleted, not moved outside)");
+  } finally {
+    fx.cleanup();
+    outside.cleanup();
+  }
+});
+
+h.test("β-adversarial containment: vector (a) symlink-source/ancestor → refuse OR archive-WITHIN-root, never delete/exfil", () => {
+  const fx = sealedDir({}, "contain-symlink");
+  const target = sealedDir({}, "contain-symlink-target");
+  try {
+    seedRuntime(fx);
+    const outsideFile = path.join(target.dir, "secret.md");
+    fs.writeFileSync(outsideFile, "secret\n", "utf8");
+    const link = path.join(fx.dir, ".claude", "runtime", "evil.jsonl");
+    let symlinkOk = true;
+    try {
+      fs.symlinkSync(outsideFile, link, "file");
+    } catch {
+      symlinkOk = false;
+    }
+    if (!symlinkOk) return; // platform without symlink perms — vector not exercisable, skip
+    const r = archive.archive(link, { root: fx.dir, reason: "x" });
+    // A final-component symlink is refused (lstat.isFile() is false for a symlink).
+    assert.strictEqual(r.ok, false, "a symlink source must be refused (not a regular file)");
+    assert.ok(fs.existsSync(outsideFile), "the symlink target (out-of-root) survives — no delete, no exfil");
+    // Invariant even if a future change let SOME archive through: the DEST is inside root.
+    if (r.ok && r.archived) {
+      assert.ok(archive.resolveInsideRoot(path.resolve(fx.dir), r.archived), "any archive dest stays inside root");
+    }
+  } finally {
+    fx.cleanup();
+    target.cleanup();
+  }
+});
+
+// ── β F-RET-1 CONDITION: NO-DELETE proof — deletion left the former-deleter paths ─
+h.test("β no-delete proof: retention.js + rotate.js contain NO fs.unlink/fs.rm/fs.rmdir (archive-move only)", () => {
+  const stripComments = (s) =>
+    s.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const rel of ["retention.js", "rotate.js"]) {
+    const code = stripComments(fs.readFileSync(path.join(__dirname, rel), "utf8"));
+    for (const pat of [/fs\.unlink/, /fs\.rmSync/, /fs\.rm\b/, /fs\.rmdir/]) {
+      assert.ok(
+        !pat.test(code),
+        `${rel} must contain no ${pat} — the destructive path is MOVE-TO-ARCHIVE only (D-1)`,
+      );
+    }
+  }
+  // archive.js's unlinks are ONLY the EXDEV copy-THEN-unlink move + lock release —
+  // never a user-data delete. Assert each data-move unlink is paired with a copy.
+  const arch = stripComments(fs.readFileSync(path.join(__dirname, "archive.js"), "utf8"));
+  const copyCount = (arch.match(/fs\.copyFileSync/g) || []).length;
+  assert.ok(copyCount >= 2, "archive.js keeps its EXDEV copy-before-unlink move semantics (archive + restore)");
+});
+
+// ── lstat restore no-clobber (LOW hardening, both security passes flagged) ──
+h.test("restore no-clobber uses lstat (no symlink-follow): a dangling-symlink origin is NOT clobbered", () => {
+  const fx = sealedDir({}, "restore-lstat");
+  try {
+    seedRuntime(fx);
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "data\n", "utf8");
+    const a = archive.archive(src, { root: fx.dir, reason: "rotation" });
+    assert.strictEqual(a.ok, true);
+    // Plant a DANGLING symlink at the origin (existsSync would report false → old bug clobbers).
+    let symlinkOk = true;
+    try {
+      fs.symlinkSync(path.join(fx.dir, ".claude", "runtime", "nonexistent-target"), src, "file");
+    } catch {
+      symlinkOk = false;
+    }
+    if (!symlinkOk) return; // platform without symlink perms — skip
+    const r = archive.restore(a.entry, { root: fx.dir });
+    assert.strictEqual(r.ok, false, "restore must refuse when a (dangling) symlink already occupies the origin");
+    assert.strictEqual(r.reason, "origin-exists");
+    assert.ok(fs.lstatSync(src).isSymbolicLink(), "the dangling symlink at the origin is untouched");
+  } finally {
+    fx.cleanup();
+  }
+});
+
 h.violation("archive refuses a missing source (ok:false, no throw)", () => {
   const fx = sealedDir({}, "archive-missing");
   try {

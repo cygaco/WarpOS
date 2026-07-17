@@ -282,14 +282,18 @@ function archiveFile(file, opts, reason, verify) {
   }
 
   // F-ROT-4 SEAM gate — rotation is CLOSED over the SINK_CAPS allowlist at the
-  // MOVE site, not just at the callers (rotateSink / appendRecord). The old fix
-  // closed the caller; the raw exports rotateIfNeeded/rotateBytesIfNeeded could
-  // still archive-move ANY in-root path. Refuse the destructive move for a path
-  // that is not a registered sink (kill-the-seam-not-the-predicate).
-  // `opts.allowUnregistered` is the explicit escape for tests + a deliberate
-  // one-off rotation of a known-safe path.
+  // MOVE site, not just at the callers (rotateSink / appendRecord). The raw
+  // exports rotateIfNeeded/rotateBytesIfNeeded could still archive-move ANY
+  // in-root path. Refuse the destructive move for a path that is not a
+  // REGISTERED sink — ABSOLUTELY (kill-the-seam-not-the-predicate). There is NO
+  // caller-settable escape: an earlier `allowUnregistered` flag was itself a
+  // leak (any caller could set it, so the "tests-only" claim was unenforced —
+  // gauntlet R2 finding). Tests register their temp sink in SINK_CAPS instead.
+  // Every production caller already rotates a registered sink (logger's
+  // rotateSink, dispatch-record-fields' rotateSink, team-guard's registered
+  // team-guard-debug.log), so nothing legitimate needs an escape.
   const sink = SINK_CAPS[path.resolve(file)];
-  if (!sink && !opts.allowUnregistered) {
+  if (!sink) {
     return { rotated: false, reason: "unregistered-sink" };
   }
 
@@ -321,7 +325,11 @@ function archiveFile(file, opts, reason, verify) {
       reason,
       shape: (sink && sink.class) || opts.shape || null,
     });
-    if (res && res.ok) return { rotated: true, reason: "archived", archived: res.archived };
+    // Propagate `indexed` so a caller/telemetry can SEE an index-write failure
+    // (an archived generation missing from the index is off the query seam) —
+    // the archive() surfacing was invisible while archiveFile swallowed it here.
+    if (res && res.ok)
+      return { rotated: true, reason: "archived", archived: res.archived, indexed: res.indexed };
     return { rotated: false, reason: (res && res.reason) || "archive-failed" };
   } finally {
     if (typeof release === "function") release();

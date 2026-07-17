@@ -457,6 +457,66 @@ test("F-RET-3: session-start.js uses the shared HANDOFF_LIVE_RE, not the loose `
   );
 });
 
+// ── R2-ARCHIVE-INDEX: applyRetention SURFACES index-write failures (indexFailures) ─
+test("R2-ARCHIVE-INDEX: applyRetention surfaces indexFailures when the archive index write fails", () => {
+  const root = mkTrustedRoot("ret-index-fail");
+  try {
+    const namedLogDir = path.join(root, "runtime");
+    ensureDir(namedLogDir);
+    touch(path.join(namedLogDir, "s-pf-03-security-review.err.log"), FIXED_NOW - 1 * DAY_MS);
+    const origAppend = fs.appendFileSync;
+    fs.appendFileSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index failure");
+      return origAppend(p, ...rest);
+    };
+    let result;
+    try {
+      result = applyRetention(root, { apply: true, now: FIXED_NOW });
+    } finally {
+      fs.appendFileSync = origAppend;
+    }
+    assert.strictEqual(result.archived.length, 1, "the file IS archived (data safe)");
+    assert.strictEqual(result.indexFailures, 1, "the index failure is surfaced in the result, not swallowed");
+    assert.strictEqual(result.archived[0].indexed, false, "per-item index status is exposed");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── F-RET-2: the CLI REFUSES --apply without an explicit trusted-root source ─
+test("F-RET-2: retention CLI refuses --apply without --root or CLAUDE_PROJECT_DIR (no cwd default)", () => {
+  const { execFileSync } = require("node:child_process");
+  const cliPath = path.join(__dirname, "retention.js");
+  // Run in a cwd that HAS a .claude (so a cwd-default WOULD pass isTrustedRoot) —
+  // proving the refusal is about requiring an EXPLICIT source, not about trust.
+  const cwdRoot = mkTrustedRoot("ret-cli-cwd");
+  try {
+    const env = { ...process.env };
+    delete env.CLAUDE_PROJECT_DIR;
+    const out = execFileSync(process.execPath, [cliPath, "--apply"], {
+      cwd: cwdRoot,
+      env,
+      encoding: "utf8",
+    });
+    const res = JSON.parse(out);
+    assert.strictEqual(res.applied, false, "apply must be refused without an explicit root source");
+    assert.strictEqual(res.refused, true);
+    assert.strictEqual(res.reason, "apply-needs-explicit-root");
+  } finally {
+    fs.rmSync(cwdRoot, { recursive: true, force: true });
+  }
+});
+
+// ── session-start NEWDEF: the live-state scan uses lstat (no symlink-follow) ─
+test("session-start.js live-state scan uses lstat (no-follow) + isFile (symlink content-injection guard)", () => {
+  const ssPath = path.join(__dirname, "..", "session-start.js");
+  const src = fs.readFileSync(ssPath, "utf8");
+  const anchor = src.indexOf("HANDOFF_LIVE_RE.test(f)");
+  const mapRegion = src.slice(anchor, anchor + 900);
+  assert.ok(/lstatSync/.test(mapRegion), "the live-state scan must lstat the handoff-live entries (no-follow)");
+  assert.ok(/isFile\(\)/.test(mapRegion), "the live-state scan must drop non-regular files (isFile)");
+});
+
 // ── Bonus: the load/prune invariant this module encodes at require-time ─────
 test("RETENTION_HANDOFF_DAYS stays a strict superset of the session-start load window", () => {
   assert.ok(RETENTION_HANDOFF_DAYS > 7, "must exceed the 7-day session-start load window");

@@ -76,11 +76,24 @@ function readIndex(root) {
   }
 }
 
+// Rotation is CLOSED over SINK_CAPS with NO caller-settable escape (the removed
+// allowUnregistered flag was itself a leak — gauntlet R2). A test that exercises
+// the archive-move on a temp file REGISTERS it as a sink first (the real gate the
+// production path uses), then unregisters. Unique temp paths ⇒ no cross-test leak.
+function regSink(file, kind) {
+  SINK_CAPS[path.resolve(file)] = {
+    kind: kind || "lines",
+    cap: 1,
+    class: kind === "bytes" ? "diagnostics" : "operational",
+  };
+  return file;
+}
+
 // ── 1. below-cap no-op — untouched, nothing archived ────────────────────────
 h.test("below-cap: file untouched, nothing archived", () => {
   const fx = sealedDir({}, "rotate-below-cap");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     const content = mkLines(5);
     fs.writeFileSync(file, content, "utf8");
     const res = rotateIfNeeded(file, 20000, { root: fx.dir, allowUnregistered: true });
@@ -96,7 +109,7 @@ h.test("below-cap: file untouched, nothing archived", () => {
 h.test("over-cap: archives (active gone, archive carries ALL lines), zero lines lost", () => {
   const fx = sealedDir({}, "rotate-over-cap");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     const cap = 20;
     const originalContent = mkLines(cap + 5, 120);
     const originalLineCount = countLines(originalContent);
@@ -136,7 +149,7 @@ h.test("over-cap: archives (active gone, archive carries ALL lines), zero lines 
 h.test("F-ROT-1: a second rotation creates a SECOND archive generation (no clobber)", () => {
   const fx = sealedDir({}, "rotate-two-gen");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     const cap = 5;
     fs.writeFileSync(file, mkLines(cap + 3, 120), "utf8");
     let res = rotateIfNeeded(file, cap, { root: fx.dir, allowUnregistered: true });
@@ -163,7 +176,7 @@ h.test("F-ROT-2: tiny 3-byte-per-line file over cap DOES rotate (sound floor)", 
   const fx = sealedDir({}, "rotate-sound-pregate");
   try {
     assert.strictEqual(MIN_BYTES_PER_LINE, 1, "the pre-gate floor must be the sound value 1");
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     const cap = 10;
     // 20 lines of `{}` (~3 bytes each ⇒ ~60 bytes). The OLD 50-byte/line floor
     // (threshold 10*50 = 500 bytes) would have skipped this file, so a genuinely
@@ -182,7 +195,7 @@ h.test("F-ROT-2: tiny 3-byte-per-line file over cap DOES rotate (sound floor)", 
 h.test("pre-gate: large bytes but few lines does not rotate; tiny file spared", () => {
   const fx = sealedDir({}, "rotate-pregate");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     // few lines, big bytes — clears the pre-gate, real count is under cap.
     const content = mkLines(3, 300);
     fs.writeFileSync(file, content, "utf8");
@@ -206,7 +219,7 @@ h.test("F-ROT-3: exactly cap lines rotates (at/over); cap-1 does not", () => {
   const fx = sealedDir({}, "rotate-exact-cap");
   try {
     const cap = 12;
-    const atCap = fx.file("at.jsonl");
+    const atCap = regSink(fx.file("at.jsonl"));
     fs.writeFileSync(atCap, mkLines(cap, 40), "utf8"); // EXACTLY cap lines
     let res = rotateIfNeeded(atCap, cap, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, true, "exactly cap lines must rotate (>= cap)");
@@ -267,7 +280,7 @@ h.test("F-ROT-4 seam: rotateIfNeeded on an unregistered over-cap file is REFUSED
 h.test("stale-decision: a file that drops under cap between the pre-lock count and the lock is NOT archived", () => {
   const fx = sealedDir({}, "rotate-stale");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     fs.writeFileSync(file, mkLines(30, 120), "utf8"); // real bytes clear the pre-gate + statSync
     const origRead = fs.readFileSync;
     let reads = 0;
@@ -294,7 +307,7 @@ h.test("stale-decision: a file that drops under cap between the pre-lock count a
 h.violation("archive move throwing surfaces as a falsy result, never a throw; source kept", () => {
   const fx = sealedDir({}, "rotate-fault-move");
   try {
-    const file = fx.file("events.jsonl");
+    const file = regSink(fx.file("events.jsonl"));
     const cap = 5;
     fs.writeFileSync(file, mkLines(cap + 5, 120), "utf8");
     const origRename = fs.renameSync;
@@ -346,7 +359,7 @@ h.test("0-byte file is a no-op", () => {
 h.test("rotateBytesIfNeeded: under cap no-op, over cap archives", () => {
   const fx = sealedDir({}, "rotate-bytes");
   try {
-    const file = fx.file("team-guard-debug.log");
+    const file = regSink(fx.file("team-guard-debug.log"), "bytes");
     fs.writeFileSync(file, "x".repeat(1000), "utf8");
     let res = rotateBytesIfNeeded(file, 2000, { root: fx.dir, allowUnregistered: true });
     assert.strictEqual(res.rotated, false, "under cap must not rotate");
@@ -366,7 +379,7 @@ h.test("rotateBytesIfNeeded: under cap no-op, over cap archives", () => {
 h.violation("rotateBytesIfNeeded fault-injection never throws", () => {
   const fx = sealedDir({}, "rotate-bytes-fault");
   try {
-    const file = fx.file("team-guard-debug.log");
+    const file = regSink(fx.file("team-guard-debug.log"), "bytes");
     fs.writeFileSync(file, "x".repeat(3000), "utf8");
     const origRename = fs.renameSync;
     fs.renameSync = () => {
@@ -384,6 +397,35 @@ h.violation("rotateBytesIfNeeded fault-injection never throws", () => {
     assert.strictEqual(threw, false);
     assert.strictEqual(res.rotated, false);
     return { ok: false };
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── R2-ARCHIVE-INDEX: rotate PROPAGATES indexed:false (not swallowed at the caller) ─
+h.test("R2-ARCHIVE-INDEX: rotate returns indexed:false when the index write fails", () => {
+  const fx = sealedDir({}, "rotate-index-fail");
+  try {
+    const file = regSink(fx.file("events.jsonl"));
+    fs.writeFileSync(file, mkLines(30, 120), "utf8");
+    const origAppend = fs.appendFileSync;
+    fs.appendFileSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index failure");
+      return origAppend(p, ...rest);
+    };
+    let res;
+    try {
+      res = rotateIfNeeded(file, 5, { root: fx.dir });
+    } finally {
+      fs.appendFileSync = origAppend;
+    }
+    assert.strictEqual(res.rotated, true, "the file IS archived (data safe)");
+    assert.strictEqual(res.indexed, false, "the index failure is PROPAGATED to the caller, not swallowed");
+    // A normal rotation reports indexed:true.
+    const file2 = regSink(fx.file("events.jsonl"));
+    fs.writeFileSync(file2, mkLines(30, 120), "utf8");
+    const ok = rotateIfNeeded(file2, 5, { root: fx.dir });
+    assert.strictEqual(ok.indexed, true, "a normal rotation reports indexed:true");
   } finally {
     fx.cleanup();
   }
