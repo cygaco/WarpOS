@@ -76,3 +76,38 @@ Real elapsed + real prompt/output bytes + `fallback:false` + `exit:0` = a genuin
 - **agy lane:** correct the plan/tracker to say the Google/agy lane is **DOWN/unwired (ED-060)** — the "attested live 2026-07-16" phrasing is stale. Gauntlet is 2-family (GPT+Claude) today. agy id-mismatch is the unblock work if 3-family is wanted.
 - **gpt-5.6-terra:** **real & live-verified** (record d-mrob0i1p). Safe to reference.
 - **3 test failures:** all still open, all flip-independent; 2 are stale-fixture false-REDs (enforcers pass), 1 is a genuine baseline-count drift. None block the 1.0 plan.
+
+---
+
+## Discrepancy 4 — ED-205 (`--provider` override drops spec's `provider_model`): CONDITIONAL — behavior reproduces, but it is CORRECT-BY-DESIGN, not a defect
+
+**VERDICT: CONDITIONAL. The observable behavior REPRODUCES — an explicit `--provider` given WITHOUT `--model` does drop the role spec's `provider_model` and lets `runProvider` pick the override provider's default model. But this is intentional, documented, and correct: the spec's `provider_model` is native-provider-bound, so carrying it onto an overridden provider would be a cross-provider model mismatch. ED-205 is a mischaracterized citation, not a fixable defect. Code-level trace, no live dispatch needed.**
+
+Determining code — `scripts/dispatch-agent.js:759-768` (mutually-exclusive branch chain):
+```js
+const roleModel = getRoleModel(role);            // spec frontmatter provider_model (:389-401)
+const runOpts = {};
+if (providerOverride) {                          // --provider passed (:760)
+  runOpts.provider = providerOverride;
+  if (modelOverride) runOpts.model = modelOverride;   // ONLY --model is honored here
+} else if (modelOverride) {
+  runOpts.model = modelOverride;
+} else if (roleModel) {
+  runOpts.model = roleModel;                     // reached ONLY when NO --provider (:765)
+}
+result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
+```
+
+Trace:
+- `--provider X` **without** `--model` → the `providerOverride` branch runs, `runOpts.model` is left UNSET (the `else if (roleModel)` branch is unreachable) → `runProvider(role, prompt, {provider:X})` receives no model → it falls to provider X's `default_model` (providers.js: `openai.default_model=gpt-5.5`, `gemini.default_model`, etc.). **So yes, `provider_model` is dropped.** REPRODUCES.
+- `--provider X` **with** `--model Y` → `runOpts.model = Y` (:762), Y is honored. The explicit-override path already exists.
+- No `--provider` → `roleModel` (spec `provider_model`) is honored (:765-766). Native path unaffected.
+
+Why it is CORRECT, not a bug (`dispatch-agent.js:742-746`, verbatim intent):
+> "Honor the agent's frontmatter-declared provider_model … instead of the provider default. **BUT when --provider overrides the native provider, the spec's model belongs to the WRONG provider — ignore it and use --model (or let runProvider pick the override provider's default).**"
+
+A role's `provider_model` is tied to its native provider (e.g. `qa-reviewer`→a GPT id; `security-reviewer` post-flip→`gemini-3.1-pro-high` on antigravity). If you override `--provider openai` on the security-reviewer, applying `gemini-3.1-pro-high` to the codex CLI is nonsensical and would fail. Dropping the native model and using the override provider's default is the ONLY safe behavior; the built-in remedy for a specific model is to pass `--provider X --model Y` together (:762).
+
+**Residual (mild, not a defect):** a *same-provider redundant* override (`--provider openai` on a role whose native provider is already openai with a finer `provider_model` like `gpt-5.6-terra`) also drops the finer model to the openai default — a small surprise, fully mitigated by adding `--model`. This is an expectation/doc nuance, not a code fault; no fix required for the 1.0 plan.
+
+**Net:** ED-205 should be reclassified from "verified defect" to "verified citation of intended behavior" (or closed). Nothing to build; the cross-provider override correctly refuses to carry a native-provider model.
