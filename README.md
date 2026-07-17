@@ -55,24 +55,26 @@ That's it. The installer:
 
 ### Optional: provider CLIs (recommended)
 
-WarpOS runs review agents on a *different* AI provider than the one generating code — same-model review is blind to shared failure modes. By default:
+WarpOS runs a **provider-by-department** model spread — reviewers run on a *different* AI lab than the one that generated the code, because same-model review is blind to shared failure modes. By default:
 
-- **Evaluator / Compliance / QA / Auditor** use **OpenAI (Codex CLI)** — deeper review with a different lens
-- **Redteam (security)** uses **Gemini** — different adversarial training corpus catches different attack chains
-- Everything else stays on Claude
+- **Engineering** builds on **Claude** (`claude-sonnet-5`); its code-quality reviewers run on **OpenAI** (`gpt-5.6-sol`, via the Codex CLI) — cross-lab by construction
+- **Product + Growth** judgment and authoring run on **OpenAI** (the `gpt-5.6` family)
+- **Security** is a **3-lab panel** — a Claude planner+judge over Gemini + GPT + Claude hunter lanes; it **fails closed** if it loses a lab to fallback
+- The President's own tools (β judgment, Cabinet, Ops-Analyst) consult **OpenAI** on-demand via the CLI; everything else stays on Claude
 
-The installer auto-detects these CLIs. **Missing CLIs → graceful fallback to Claude** (still works, just loses diversity).
+The installer auto-detects these CLIs. **Missing CLIs → graceful fallback to Claude** (still works, just loses cross-lab diversity; the security panel blocks rather than review blind). Full per-role chart: [AGENTS.md § Dispatch Topology & Model Spread](AGENTS.md).
 
 To get full diversity:
 
 ```powershell
-# OpenAI — for review agents
+# OpenAI — Product/Growth judgment + Engineering code-quality reviewers
 npm i -g @openai/codex
 codex login                         # or: $env:OPENAI_API_KEY = "sk-..."
 
-# Gemini — for security agent
-npm i -g @google/gemini-cli
-gemini auth login                   # or: $env:GEMINI_API_KEY = "..."
+# Gemini — via the Antigravity `agy` CLI (the individual `gemini` CLI is sunset).
+# Used by the security Gemini hunter lane + Growth research-lead; self-auth per the
+# Antigravity CLI setup (~/.gemini/antigravity-cli). agy is a standalone binary — pin
+# the version you verify.
 ```
 
 Verify with `/scan:environment` after install.
@@ -123,6 +125,8 @@ WarpOS/
 ```
 
 > **Note:** The `.claude/` directory in this repo IS the framework. When installed into your project, its contents are copied to your project's `.claude/` directory. The file paths inside agent specs reference `.claude/agents/...` — those paths are correct for the installed location in your project.
+>
+> Canonical-repo-local scratch — per-run artifacts under `runtime/`, the `WarpOS-v1/` rebuild-charter corpus, and `CODEX-LOG.md` — is gitignored and manifest-walk-skipped, so it stays on the maintainer's disk and never ships in an install or the public image.
 
 ## All Skills
 
@@ -274,7 +278,7 @@ WarpOS/
 | Alex Delta (δ) | Runner | Oneshot full skeleton builds |
 | Alex Epsilon (ε) | Conductor | Sprint mode — drives the full plan→build→gauntlet→release→retro lifecycle |
 
-Plus build agents, organized into departments (`engineering`, `product`, `growth`): Builder, Reviewer (7-check spec+code review), Req-Reviewer (requirements traceability), Compliance, Fixer, QA (13 failure-mode personas), Red Team (11 security personas). Oneshot adds Learner (cross-cycle pattern analysis), Stub-Scaffold, Test-Runner, Visual-Review. ~60 agent spec files under `.claude/agents/`.
+Plus build agents, organized into departments (`engineering`, `product`, `growth`): Builder + Fixer (Claude, isolated worktrees), a cross-lab **Code-quality Reviewer** (GPT, Check-7 + holdout-fixture), the **QA-Reviewer** (one role carrying traceability + integrity + 13 failure-mode personas — absorbs the former Req-Reviewer, Compliance, and QA agents), and the **Security-Reviewer 3-lab panel** (replaces Red Team; Gemini + GPT + Claude hunters under a Claude judge, fails closed on lab-diversity loss). Plus Ops-Analyst (cross-cycle pattern analysis, was Learner), Skeleton-Builder (was Stub-Scaffold), Test-Runner, and the Claude-pinned Design-Quality + Visual-Review. ~60 agent spec files under `.claude/agents/`; the keystone role → spec → model map is `.claude/agents/_org/role-registry.json`. See [AGENTS.md](AGENTS.md) for the full dispatch topology.
 
 ## Requirements System
 

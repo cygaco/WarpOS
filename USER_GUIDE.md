@@ -12,7 +12,7 @@ If you've just installed, start at §1. If you want the mode summary, skip to §
 2. Open Claude Code in your project
 3. Type `/warp:tour` — guided introduction
 4. Type `/warp:health` — verifies every system; reports green/yellow/red
-5. Type `/scan:environment` — flags missing provider CLIs (codex, gemini)
+5. Type `/scan:environment` — flags missing provider CLIs (codex for OpenAI, `agy` for Gemini/Antigravity)
 6. Type `/mode:solo` — stay solo for your first hour
 7. Fix anything red before doing real work
 
@@ -32,7 +32,7 @@ Pick ONE at a time. Modes are **project-wide and persistent** — whatever you s
 | Mode | Who's in the room | When to use |
 |---|---|---|
 | **solo** | You + Alex α | System tweaking, quick edits, exploratory reading, skill management. Default most of the day. |
-| **adhoc** | α + β (judgment) + γ (builder orchestrator) | Building **one feature** with oversight. Gamma dispatches builder → reviewer → req-reviewer → compliance → qa → redteam gauntlet. |
+| **adhoc** | α + β (judgment) + γ (builder orchestrator) | Building **one feature** with oversight. Gamma dispatches the builder → gauntlet: cross-lab code-quality reviewer → QA-Reviewer (traceability + integrity + 13 personas) → the 3-lab security panel. |
 | **oneshot** | δ (standalone) | **End-to-end rebuild of an entire codebase from requirements.** Run when the existing code has drifted badly from its specs or a feature came out muddled. Delta runs a state machine with cycles, fix loops, points, rebuilds feature-by-feature in dependency order. No α/β involved. |
 
 **Starting solo:** just type. You're Alex's pair.
@@ -326,7 +326,7 @@ Never edit these by hand — `memory-guard` will block. Read them with the skill
 | Agent hanging | Check `paths.logs/s-*` for last entries, restart the terminal |
 | Maps out of date | `/maps:all --refresh` |
 | Event log is massive | `/sleep:deep` compresses old entries |
-| Review agent failed (codex/gemini) | `/scan:environment` — did you install the provider CLI? |
+| Review agent failed (codex / `agy`) | `/scan:environment` — did you install the provider CLI? |
 
 ---
 

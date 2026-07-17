@@ -45,6 +45,69 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 
 **Adhoc team** (α + β + γ) is the default for development. **Oneshot** is a standalone Delta session (no team — Delta IS the session). **Sprint** is Epsilon conducting the full lifecycle via the registry-driven runtime. **Solo** (Alpha alone) is rare.
 
+## Dispatch Topology & Model Spread
+
+The roster runs a **provider-by-department** model spread (ADR-0016 / DISPATCH.md §8, 2026-07-16). The single source of truth for every role's provider·model·effort·fallback is the keystone [_org/role-registry.json](.claude/agents/_org/role-registry.json); routers and enforcers read from there.
+
+**Golden rule — CLI is mandatory for all agent dispatch.** API is allowed ONLY for capabilities with no CLI equivalent (e.g. deep-research). API availability never implies API dispatch.
+
+**Provider → CLI wiring**
+
+| Provider id | CLI | Invocation | Auth |
+|---|---|---|---|
+| `openai` | `codex` | `codex exec --sandbox workspace-write -c model_reasoning_effort=<lvl> -m <model> -` (prompt on stdin) | metered API key |
+| `antigravity` | `agy` | `agy [--model <model>]` (prompt on stdin) | self-auth (`~/.gemini/antigravity-cli`) |
+| `claude` | `claude` | `claude -p [--agent <role>] [--model <model>]` | harness session |
+
+The individual-tier `gemini` CLI is **sunset** — all Gemini routes through Antigravity `agy`.
+
+**Model catalog**
+
+| Family | Models | Use |
+|---|---|---|
+| OpenAI (`codex`) | `gpt-5.6-sol` (flagship) · `gpt-5.6-terra` (mid) · `gpt-5.6-luna` (cheap) | Product + Growth judgment/authoring; cross-lab reviewers. Never the bare `gpt-5.6` alias (400s + silently degrades). |
+| Anthropic (`claude`) | `claude-fable-5` (top brain) · `claude-opus-4-8` (conductors/leads/hunters + THE fallback target) · `claude-sonnet-5` (builders/fixers/legwork) | Engineering; in-process judgment. Retired: `claude-sonnet-4-6`, any Opus < 4.8. |
+| Gemini via Antigravity (`agy`) | `gemini-3.1-pro-high` (thinking always-on, no effort flag; verified live 2026-07-16 — supersedes the DISPATCH.md spec's `-preview` id) | Security Gemini hunter lane · Growth research-lead. |
+
+**Effort ladder:** `low · medium · high · xhigh · max · ultra`. `max` + `ultra` are for `sol`/`terra` only (`luna` caps at `max`). **Authors** (design/product/copy/conversion leads, qa-reviewer) run `xhigh`; **overseers/judges** (Directors, β, security judge, marketing-lead) run `high`. `ultra` = fans out parallel subagents (Cabinet, Ops-Analyst); `max` = maximum time on the single hardest indivisible problem (the Claude security-hunter lane).
+
+**Per-department spread** (GPT = Product + Growth · Claude = Engineering · Security = 3-lab panel):
+
+| Department | Role | Model @ effort | Route | Fallback |
+|---|---|---|---|---|
+| President | α President (run) | `claude-fable-5` @ high | the harness session (`/model`) | — |
+| President | β Check (judgment) | `gpt-5.6-sol` @ high | **on-demand CLI consult per phase boundary** (NOT an in-process teammate) | `claude-opus-4-8` |
+| President | γ / δ / ε conductors | `claude-opus-4-8` @ xhigh | in-process / standalone | — |
+| President | ζ Cabinet · η Ops-Analyst | `gpt-5.6-sol` @ ultra | CLI | `claude-opus-4-8` |
+| Product | Director-of-Product | `gpt-5.6-sol` @ high | CLI consult | `claude-opus-4-8` |
+| Product | Product-Lead | `gpt-5.6-terra` @ xhigh | CLI consult | `claude-opus-4-8` |
+| Product | Design-Lead | `gpt-5.6-sol` @ xhigh | CLI consult | `claude-opus-4-8` |
+| Product | **Quality-Lead** | `claude-opus-4-8` @ high | **in-process — Claude-pinned carve-out** (Agent-tool fan-out) | — |
+| Product | qa-reviewer | `gpt-5.6-terra` @ xhigh | CLI (13 personas inline) | `claude-opus-4-8` |
+| Product | design-quality · visual-review | `claude-opus-4-8` @ high | Agent tool (Claude-pinned: visual judgment / Playwright-MCP) | — |
+| Product | test-runner | `claude-sonnet-5` @ medium | CLI | — |
+| Engineering | Director-of-Engineering | `claude-fable-5` @ high | in-process orchestrator | — |
+| Engineering | frontend / backend / security leads | `claude-opus-4-8` @ high | in-process | — |
+| Engineering | all builders + fixers | `claude-sonnet-5` @ high | CLI, isolated worktree | — |
+| Engineering | frontend / backend reviewers | `gpt-5.6-sol` @ high | CLI (cross-lab vs the Claude builder) | `claude-opus-4-8` |
+| Security | security-lead | `claude-opus-4-8` @ high | in-process (coordination) | — |
+| Security | planner + final judge | `claude-fable-5` @ high | in-process | — |
+| Security | hunter · Gemini lane | `gemini-3.1-pro-high` | CLI `agy` | **diversity-loss → fails CLOSED** |
+| Security | hunter · GPT lane | `gpt-5.6-sol` @ xhigh | CLI | **diversity-loss → fails CLOSED** |
+| Security | hunter · Claude lane | `claude-opus-4-8` @ max | in-process (Agent tool + `record-inprocess`) | — |
+| Growth | Director-of-Growth | `gpt-5.6-sol` @ high | CLI consult | `claude-opus-4-8` |
+| Growth | copy-lead · conversion-lead | `gpt-5.6-terra` @ xhigh | CLI consult | `claude-opus-4-8` |
+| Growth | marketing-lead | `gpt-5.6-terra` @ high | CLI consult | `claude-opus-4-8` |
+| Growth | research-lead | `gemini-3.1-pro-high` | CLI `agy` consult | `claude-opus-4-8` |
+
+**Fallback policy (with teeth):** required **iff** `provider !== "claude"`; must differ from primary (claude→claude rejected); every OpenAI/Antigravity role → `fallback: claude` resolving to an explicit `claude-opus-4-8`. Outage-only, logged to the provider trace, alert on chronic fire. **Security fails CLOSED on lab-diversity loss** — a hunter falling back to Claude collapses the cross-lab guarantee → re-run or BLOCK.
+
+**Topology doctrine (context economy):** the orchestrator holds **envelopes, not content**. Heavy/verbose work → CLI subprocess (isolated context; writes full output to a file; returns a ≤8-line envelope). Light small-return judgment → in-process Agent tool (**Claude-only** — the harness Agent tool cannot summon a GPT/Gemini role; **top-orchestrator-only** — subagents cannot call the Agent tool). **Carve-out rule:** Claude-pin any role whose function requires Agent-tool fan-out (Quality-Lead, design-quality, visual-review, the security Claude judge/hunter); provider-spread only leaf/synthesis roles.
+
+**Greek call-signs = the President's office ONLY** (operator directive 2026-07-16). The five faces keep their letters (α β γ δ ε); `cabinet` = **ζ** and `ops-analyst` = **η** (office residents). Every department role had its Greek letter **stripped** — leads and directors are named by role, not glyph.
+
+**Enforcers:** `scan:model-chain` (provider/model/effort policy), `scan:greek-office-parity` (glyph ⟺ office-membership bijection), `scan:dispatch-routing-parity`, `scan:provider-agent-tool-parity` (no `provider != claude` role carries Agent-tool reachability), `security-pass-count` (the 3-lab panel fired all lanes).
+
 ## Key Documents
 
 | Document | Purpose |
@@ -54,6 +117,8 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 | [agent-system.md](.claude/agents/_system/agent-system.md) | Full operational specification |
 | [manifest.json](.claude/manifest.json) | WarpOS identity card — project metadata, features, phases, providers |
 | [paths.json](.claude/paths.json) | Centralized path registry — all hooks/scripts read paths from here |
+| [_guides/AUTH_RUNBOOK.md](_guides/AUTH_RUNBOOK.md) | Passwordless-Supabase auth execution runbook — agent-drivable, with 🔴 operator vs 🤖 agent steps fenced |
+| [_knowledge/design/INPUT_COMPOSER_PATTERN.md](_knowledge/design/INPUT_COMPOSER_PATTERN.md) | Reusable ChatGPT-style bottom-composer pattern + glossary (design-lead / design-quality / frontend-builder) |
 
 ## Dispatch Templates (by department)
 
@@ -72,16 +137,15 @@ Specs are mode-agnostic and organized by department/pod; role → spec routing c
 3. **Do not communicate with the user.** Report to your orchestrator (Gamma or Alpha) only.
 4. **Do not fix forward.** If your change breaks the build and you cannot fix it within scope, revert and report.
 5. **Three attempts maximum.** If you fail 3 times on the same issue, stop and report.
-6. **Cross-provider diversity required.** At least one gauntlet agent must run on a different provider.
+6. **Cross-provider diversity required.** Reviewers run on a different lab than the builder they review (Engineering builds on Claude → code-quality reviews on GPT; the security panel spans Gemini + GPT + Claude). The security panel **fails CLOSED** if it loses a lab to fallback — see Dispatch Topology & Model Spread.
 7. **Decision authority.** Class A/B/C taxonomy, escalation red lines, and scoring rubric live at `paths.decisionPolicy`. Current product stage at `paths.currentStage`. Apply both before requesting a user decision.
 
 ## Review Protocol
 
-Every builder output is reviewed by a 4-agent parallel gauntlet:
-1. **Evaluator** — 5-check protocol (structural, grounding, coverage, negative, open-loop). Score 0-100.
-2. **Compliance** — Process integrity (branch theft, phantom completion, spec adherence, hygiene, hallucinated deps).
-3. **Security** — OWASP Top 10 + project-specific vulnerabilities.
-4. **QA** — 13 failure-mode personas across scan + analyze modes.
+Every builder output runs a parallel gauntlet whose binding verdicts come from three review scopes (the old Evaluator/Compliance/Security/QA split collapsed here):
+1. **Code-quality reviewer** — the pod's `frontend`/`backend-reviewer` on a **cross-lab** GPT model (`gpt-5.6-sol`) vs the Claude builder: Check-7 (7A–7G) + holdout-fixture + CWD/branch pre-check. Code-quality ONLY.
+2. **QA-Reviewer** — one role (`gpt-5.6-terra`) carrying three scopes: **traceability** (the 6 req-reviewer checks), **integrity** (compliance — COPY exact-match, hallucinated-dep, 5 violation types), and **functional** (13 failure-mode personas). Absorbs the former Req-Reviewer + Compliance + QA agents.
+3. **Security-Reviewer** — the **3-lab panel** (replaces Red Team): `claude-fable-5` planner+judge over three hunter lanes (Gemini via `agy` → GPT → Claude@max), OWASP + injection + attack-chain-correlator + prompt-injection-prober, all-deterministic scan mode. **Fails CLOSED on lab-diversity loss.**
 
 ## Reading Order
 
