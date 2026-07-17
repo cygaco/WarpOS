@@ -1,6 +1,6 @@
 # WarpOS — Your Agent Company
 
-> Plain-language map of who's who. Snapshot: 2026-06-05. (Source files at the bottom; the keystone is `.claude/agents/_org/role-registry.json`, with the org & runtime decisions recorded in ADR-0007 / ADR-0009 under `president/_system/policy/adr/`.)
+> Plain-language map of who's who. Snapshot: 2026-07-16. (Source files at the bottom; the keystone is `.claude/agents/_org/role-registry.json`, with the org & runtime & model-spread decisions recorded in ADR-0007 / ADR-0009 / ADR-0016 under `president/_system/policy/adr/`.)
 
 ---
 
@@ -73,6 +73,20 @@ Three self-contained pods. Each **Lead dispatches a Builder + Reviewer + Fixer**
 
 ---
 
+## Which AI runs each seat (provider-by-department)
+
+The company runs a **model spread** — different seats run on different AI labs, so a reviewer is never the same mind as the builder it checks (ADR-0016 / DISPATCH.md §8). In plain terms:
+
+- **Engineering builds on Claude.** Builders + fixers run `claude-sonnet-5`; the pod Leads run `claude-opus-4-8` and the Director runs `claude-fable-5` (the top brain). Their **code-quality reviewers run on OpenAI GPT** — a different lab, so the review isn't blind to Claude's own blind spots.
+- **Product & Growth think on GPT.** The Directors and most leads (Product, Design, Copy, Conversion, Marketing) run the `gpt-5.6` family for judgment and authoring; the Research Lead runs Gemini (via the Antigravity `agy` CLI).
+- **Quality stays Claude.** The Quality Lead + design-quality + visual-review are **Claude-pinned** — they fan out helpers in-process, which only Claude can do.
+- **Security is a 3-lab panel.** A Claude planner + judge (`claude-fable-5`) runs three hunter labs — Gemini, GPT, and Claude — and **fails closed** (blocks) if it ever loses a lab, so a security pass is never single-lab.
+- **Alex's own tools consult GPT.** β (the second opinion) runs on GPT as an on-demand consult, and the President keeps two GPT-run tools of his own: the **Cabinet (ζ)** — freeform outside counsel — and the **Ops-Analyst (η)** — the between-cycles auditor. (These two, plus the five faces, are the only seats that carry a Greek letter — call-signs live in the President's office only.)
+
+If a non-Claude seat's AI is down it **falls back to Claude** — except security, which blocks rather than lose its cross-lab guarantee. Full per-role chart: `AGENTS.md § Dispatch Topology & Model Spread`; the source of truth is the role registry.
+
+---
+
 ## The shared knowledge (`_knowledge/`) — DATA, fed by the leads, drawn by all
 
 Not an org box — the company's **brain**, contributed-to by the leads and read by everyone:
@@ -111,5 +125,6 @@ Master plan + recovery anchor: `DUMP.md`.
 | Machine-readable org | `.claude/agents/_org/org-map.json` |
 | Department rulebooks | `.claude/agents/_principles/registry.json` |
 | Decision policy + ADRs | `.claude/agents/president/_system/policy/` (ADRs under `…/adr/`) |
+| Model spread (provider-by-department) | ADR-0016 · `AGENTS.md` § Dispatch Topology & Model Spread · source of truth = the role registry |
 | ε sprint runtime | `scripts/sprint/epsilon-runtime.js` (ADR-0009) |
 | Master plan + recovery anchor | `DUMP.md` |
