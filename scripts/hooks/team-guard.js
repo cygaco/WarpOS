@@ -386,21 +386,33 @@ process.stdin.on("end", () => {
     // targeted .claude/logs/ (which doesn't exist in most projects), threw
     // ENOENT, hit the outer catch, and exited 0 — silently permitting every
     // build-chain dispatch throughout any adhoc session. Never again.
+    // S: runtime-retention — this debug log is OFF by default (opt in via
+    // WARPOS_TEAM_GUARD_DEBUG=1) AND byte-capped when on, so its ongoing
+    // footprint is bounded even during an extended debug session. Was
+    // unbounded + always-on; grew unbounded with no rotation.
     try {
-      const logDir = path.resolve(__dirname, "..", "..", ".claude", "runtime");
-      fs.mkdirSync(logDir, { recursive: true });
-      const logPath = path.join(logDir, "team-guard-debug.log");
-      fs.appendFileSync(
-        logPath,
-        JSON.stringify({
-          ts: new Date().toISOString(),
-          toolName,
-          keys: Object.keys(event.tool_input || {}),
-          team_name: (event.tool_input || {}).team_name,
-          name: (event.tool_input || {}).name,
-          subagent_type: (event.tool_input || {}).subagent_type,
-        }) + "\n",
-      );
+      if (process.env.WARPOS_TEAM_GUARD_DEBUG === "1") {
+        const logDir = path.resolve(__dirname, "..", "..", ".claude", "runtime");
+        fs.mkdirSync(logDir, { recursive: true });
+        const logPath = path.join(logDir, "team-guard-debug.log");
+        try {
+          const { rotateBytesIfNeeded } = require("./lib/rotate");
+          rotateBytesIfNeeded(logPath, 2 * 1024 * 1024);
+        } catch {
+          /* rotation is best-effort — never disables the guard */
+        }
+        fs.appendFileSync(
+          logPath,
+          JSON.stringify({
+            ts: new Date().toISOString(),
+            toolName,
+            keys: Object.keys(event.tool_input || {}),
+            team_name: (event.tool_input || {}).team_name,
+            name: (event.tool_input || {}).name,
+            subagent_type: (event.tool_input || {}).subagent_type,
+          }) + "\n",
+        );
+      }
     } catch {
       // Debug failures must never disable the guard.
     }

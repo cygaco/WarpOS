@@ -356,6 +356,26 @@ process.stdin.on("end", () => {
       /* live-state surfacing is optional + fail-open */
     }
 
+    // ── Retention sweep (S: runtime-retention) ─────────────────────────
+    // Conservative-by-construction deletion of transient runtime cruft
+    // (handoff-live-*.md beyond the newest 10, handoffs/* older than 14d,
+    // the one named stray error log). MUST run AFTER the handoff-load
+    // blocks above (load first, prune second) so a file this session just
+    // loaded is never pruned out from under it. Best-effort/fail-open — a
+    // retention fault must never disturb session start.
+    if (source === "startup" || source === "clear") {
+      try {
+        const { applyRetention } = require("./lib/retention");
+        const r = applyRetention(cwd, { apply: true });
+        const n = (r && r.deleted && r.deleted.length) || 0;
+        if (n > 0) {
+          checks.push(`Retention: pruned ${n} transient(s)`);
+        }
+      } catch {
+        /* retention is best-effort — never block session start */
+      }
+    }
+
     // ── Systems Health Nudge ────────────────────────────────
     let systemsNudge = "";
     if (source === "startup" || source === "clear") {

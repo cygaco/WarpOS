@@ -39,6 +39,18 @@
 const fs = require("fs");
 const path = require("path");
 
+// rotate.js is deliberately dependency-light (fs/path only, no side effects
+// on require) — see its header. Requiring it here keeps this file's
+// "zero wiring / pure builders" contract intact while adding write-time
+// rotation to appendRecord(). Best-effort: an unavailable rotate lib must
+// never break appendRecord's existing fail-open contract.
+let _rotate = null;
+try {
+  _rotate = require("../hooks/lib/rotate");
+} catch {
+  _rotate = null;
+}
+
 const STARTED_PHASE = "started";
 
 /**
@@ -152,6 +164,19 @@ function quotaField(provider, known = {}) {
 function appendRecord(file, record) {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
+    // Write-time rotation before the append (SINK_CAPS-driven when `file`
+    // matches a known sink — e.g. dispatch-completions.jsonl — else a no-op).
+    // rotate.js functions never throw, but guard the call itself too so a
+    // future rotate.js change can't regress this file's fail-open contract.
+    if (_rotate) {
+      try {
+        const entry = _rotate.sinkCapFor(file);
+        if (entry) _rotate.rotateSink(file);
+        else _rotate.rotateIfNeeded(file); // unknown sink — default line cap
+      } catch {
+        /* rotation is best-effort */
+      }
+    }
     fs.appendFileSync(file, JSON.stringify(record) + "\n");
     return true;
   } catch {
