@@ -220,6 +220,9 @@ process.stdin.on("end", () => {
 
     // ── Load Handoff / Checkpoint ─────────────────────────────
     let handoffContext = "";
+    // F-RET-4: paths this session LOADED — retention must never archive a
+    // handoff the current session is actively using (passed as `protected`).
+    const protectedHandoffPaths = [];
 
     // Priority 1: handoff.md (most recent, written by session-stop)
     const handoffPath = path.join(runtimeDir, "handoff.md");
@@ -279,6 +282,7 @@ process.stdin.on("end", () => {
               handoffContext = fs
                 .readFileSync(path.join(handoffsDir, latest), "utf-8")
                 .trim();
+              protectedHandoffPaths.push(path.join(handoffsDir, latest));
               checks.push(
                 `Handoff: loaded from archive (${latest}, ${Math.round(ageHours)}h ago)`,
               );
@@ -335,6 +339,9 @@ process.stdin.on("end", () => {
           const content = fs
             .readFileSync(path.join(runtimeDir, chosen.name), "utf8")
             .trim();
+          // F-RET-4: the live handoff this session just surfaced must never be
+          // archived out from under it (even if it is beyond the newest-N rank).
+          protectedHandoffPaths.push(path.join(runtimeDir, chosen.name));
           let label;
           if (source === "clear") {
             label =
@@ -357,19 +364,28 @@ process.stdin.on("end", () => {
     }
 
     // ── Retention sweep (S: runtime-retention) ─────────────────────────
-    // Conservative-by-construction deletion of transient runtime cruft
-    // (handoff-live-*.md beyond the newest 10, handoffs/* older than 14d,
-    // the one named stray error log). MUST run AFTER the handoff-load
-    // blocks above (load first, prune second) so a file this session just
-    // loaded is never pruned out from under it. Best-effort/fail-open — a
-    // retention fault must never disturb session start.
+    // Conservative-by-construction ARCHIVING of transient runtime cruft
+    // (handoff-live-*.md beyond the newest 10 / not recent, handoffs/* older
+    // than 14d, the one named stray error log) — MOVED to the archive tier, not
+    // deleted (D-1). MUST run AFTER the handoff-load blocks above (load first,
+    // prune second) so a file this session just loaded is never archived out
+    // from under it (F-RET-4: `protectedHandoffPaths`). F-RET-2: the apply root
+    // is the TRUSTED PATHS-anchored root (CLAUDE_PROJECT_DIR-derived), NOT
+    // event.cwd. Best-effort/fail-open — a retention fault must never disturb
+    // session start.
     if (source === "startup" || source === "clear") {
       try {
         const { applyRetention } = require("./lib/retention");
-        const r = applyRetention(cwd, { apply: true });
-        const n = (r && r.deleted && r.deleted.length) || 0;
+        // Trusted root: anchor to PATHS (derived from CLAUDE_PROJECT_DIR), never
+        // the possibly-attacker-influenced event.cwd.
+        const trustedRoot = path.resolve(PATHS.runtime, "..", "..");
+        const r = applyRetention(trustedRoot, {
+          apply: true,
+          protected: protectedHandoffPaths,
+        });
+        const n = (r && r.archived && r.archived.length) || 0;
         if (n > 0) {
-          checks.push(`Retention: pruned ${n} transient(s)`);
+          checks.push(`Retention: archived ${n} transient(s)`);
         }
       } catch {
         /* retention is best-effort — never block session start */

@@ -2,25 +2,38 @@
 "use strict";
 
 /**
- * retention.js — conservative-by-construction DELETION of transient runtime
- * cruft (56 loose `handoff-live-*.md`, 101 stale `handoffs/*`, one stray
- * error log). DRY-RUN is the DEFAULT: `planRetention()` never deletes
- * anything, and `applyRetention()` only deletes under `{apply:true}`.
+ * retention.js — conservative-by-construction ARCHIVING of transient runtime
+ * cruft (loose `handoff-live-*.md`, stale `handoffs/*`, one stray error log).
+ *
+ * D-1 (operator directive 2026-07-17): raw history is NEVER destroyed. The
+ * "destructive" path is a MOVE-TO-ARCHIVE (scripts/hooks/lib/archive.js), not a
+ * delete — every eligible transient moves into the accessible, indexed archive
+ * tier. This shrinks the two deletion CRITs to recoverable moves:
+ *   • F-RET-1 (TOCTOU delete): the terminal op is a rename INTO our own archive
+ *     under the trusted root — a swapped ancestor can at worst archive an
+ *     in-root file (recoverable, contained), never unlink an arbitrary path.
+ *   • F-RET-2 (untrusted deletion root): apply REQUIRES a trusted root (an
+ *     existing project dir with `.claude/`), passed explicitly — NEVER derived
+ *     from hook `event.cwd`.
+ *
+ * DRY-RUN is the DEFAULT: `planRetention()` never moves anything, and
+ * `applyRetention()` only archives under `{apply:true}` AND a trusted root AND a
+ * single-writer lock (F-RET-1 non-racy host — many sessions start concurrently).
  *
  * ALLOWLIST OF EXACT SHAPES ONLY — nothing else is ever eligible:
- *   (a) `.claude/runtime/handoff-live-*.md` — keep newest HANDOFF_LIVE_KEEP
- *       by mtime; match the EXACT regex `^handoff-live-.+\.md$` (no `.bak`,
- *       no traversal, no symlink).
- *   (b) `.claude/runtime/handoffs/*` — files with mtime older than
- *       RETENTION_HANDOFF_DAYS.
- *   (c) the ONE named file `runtime/s-pf-03-security-review.err.log`, if
- *       present (exact path only).
+ *   (a) `.claude/runtime/handoff-live-*.md` — keep newest HANDOFF_LIVE_KEEP by
+ *       mtime, keep anything modified within HANDOFF_LIVE_RECENT_DAYS, and keep
+ *       anything PROTECTED (loaded this session / referenced by an active
+ *       sprint). Basename allowlist regex (no `..`, no traversal, no symlink).
+ *   (b) `.claude/runtime/handoffs/*` — files older than RETENTION_HANDOFF_DAYS,
+ *       unless PROTECTED.
+ *   (c) the ONE named file `runtime/s-pf-03-security-review.err.log` (exact path).
  *
  * Every resolved target MUST path.resolve() to inside `root`; anything that
- * escapes (`..`, absolute-outside, symlink target outside root) is refused
- * (skipped, never deleted). A per-run cap (MAX_DELETIONS_PER_RUN) bounds the
- * blast radius of any future shape-match bug. Fail-closed throughout: a
- * shape that cannot be safely resolved is SKIPPED, never deleted.
+ * escapes (`..`, absolute-outside, symlink target outside root) is refused.
+ * A per-run cap (MAX_DELETIONS_PER_RUN), allocated ACROSS shape classes so no
+ * single class starves the others, bounds the blast radius. Fail-closed
+ * throughout: a shape that cannot be safely resolved is SKIPPED, never moved.
  *
  *   node scripts/hooks/lib/retention.js [--apply] [--root <dir>]
  */
@@ -31,6 +44,10 @@ const path = require("path");
 // ── Named constants (the retention contract) ───────────────────────────────
 const RETENTION_HANDOFF_DAYS = 14;
 const HANDOFF_LIVE_KEEP = 10;
+// Keep any live handoff touched within this window even if it is beyond the
+// newest-N by rank — "recent OR newest-N" (amendment #4). Must stay < the
+// handoffs/* cutoff and > the session-start load window.
+const HANDOFF_LIVE_RECENT_DAYS = 3;
 const MAX_DELETIONS_PER_RUN = 25;
 // The session-start.js "load a recent handoff" window (see PRIORITY 3 there:
 // `ageHours < 168` i.e. 7 days). Retention's keep-window must always be a
@@ -50,8 +67,21 @@ if (!(RETENTION_HANDOFF_DAYS > HANDOFF_LOAD_DAYS)) {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const HANDOFF_LIVE_RE = /^handoff-live-.+\.md$/;
+// F-RET-3: basename allowlist — the sid is [A-Za-z0-9_-] (session-start strips
+// everything else), so `.` can never appear inside the sid. This CANNOT match
+// `handoff-live-..md` (the loose `.+` did). Defense-in-depth: safeResolve +
+// lstat already block a live escape; this refuses the malformed shape outright.
+const HANDOFF_LIVE_RE = /^handoff-live-[A-Za-z0-9_-]+\.md$/;
 const NAMED_ERR_LOG_REL = path.join("runtime", "s-pf-03-security-review.err.log");
+
+// archive.js is dependency-light (fs/path only). Lazy-require so a missing
+// archive tier degrades to "archive nothing" (never a raw delete — D-1).
+let _archive = null;
+try {
+  _archive = require("./archive");
+} catch {
+  _archive = null;
+}
 
 // ── Path-containment guard ──────────────────────────────────────────────────
 
@@ -83,6 +113,82 @@ function safeResolve(root, absPathCandidate) {
   }
 }
 
+/**
+ * F-RET-2: a trusted root is an ABSOLUTE path to an EXISTING directory that
+ * contains a `.claude/` dir (structural proof it is a real project checkout,
+ * not an arbitrary attacker-supplied path). apply REFUSES without this.
+ */
+function isTrustedRoot(rootAbs) {
+  try {
+    if (!rootAbs || !path.isAbsolute(rootAbs)) return false;
+    const st = fs.statSync(rootAbs);
+    if (!st.isDirectory()) return false;
+    return fs.existsSync(path.join(rootAbs, ".claude"));
+  } catch {
+    return false;
+  }
+}
+
+// ── Protected set (F-RET-4 + amendment #4) ──────────────────────────────────
+
+/**
+ * Build the set of absolute paths that must NEVER be archived: the caller's
+ * explicit `protected` list (e.g. the handoff-live file session-start just
+ * loaded) PLUS anything referenced by an active/resumable sprint (best-effort).
+ */
+function buildProtectedSet(rootAbs, opts) {
+  const set = new Set();
+  const add = (p) => {
+    const safe = safeResolve(rootAbs, path.isAbsolute(p) ? p : path.join(rootAbs, p));
+    if (safe) set.add(safe);
+  };
+  const explicit = (opts && opts.protected) || [];
+  if (Array.isArray(explicit)) {
+    for (const p of explicit) {
+      if (typeof p === "string" && p) add(p);
+    }
+  }
+  // Sprint-referenced handoffs (best-effort, fail-open). An active/resumable
+  // sprint may name a handoff it intends to resume from; never prune it.
+  try {
+    for (const ref of referencedByActiveSprint(rootAbs)) add(ref);
+  } catch {
+    /* best-effort — a sprint-state read fault must never widen the delete set,
+       and must never THROW (fail-open = keep MORE, which is the safe direction) */
+  }
+  return set;
+}
+
+/**
+ * Best-effort: absolute paths of handoff files referenced by an active sprint's
+ * on-disk state. Returns [] on any error (fail-open toward keeping files).
+ */
+function referencedByActiveSprint(rootAbs) {
+  const out = [];
+  const stateDir = path.join(rootAbs, ".claude", "runtime", "sprint");
+  let entries = [];
+  try {
+    entries = fs.readdirSync(stateDir);
+  } catch {
+    return out;
+  }
+  for (const name of entries) {
+    if (!name.endsWith(".json")) continue;
+    let txt;
+    try {
+      txt = fs.readFileSync(path.join(stateDir, name), "utf8");
+    } catch {
+      continue;
+    }
+    // Pull any `handoff-live-<sid>.md` basenames the sprint state mentions.
+    const m = txt.match(/handoff-live-[A-Za-z0-9_-]+\.md/g);
+    if (m) {
+      for (const b of m) out.push(path.join(rootAbs, ".claude", "runtime", b));
+    }
+  }
+  return out;
+}
+
 // ── Shape (a): handoff-live-*.md ────────────────────────────────────────────
 
 function listHandoffLive(rootAbs) {
@@ -95,7 +201,7 @@ function listHandoffLive(rootAbs) {
   }
   const matches = [];
   for (const name of entries) {
-    // EXACT shape only — no `.bak`, no path segments in the name.
+    // EXACT shape only — basename allowlist (no `.bak`, no `..`, no path segments).
     if (!HANDOFF_LIVE_RE.test(name)) continue;
     const full = path.join(dir, name);
     const safe = safeResolve(rootAbs, full);
@@ -113,9 +219,23 @@ function listHandoffLive(rootAbs) {
   return matches;
 }
 
+/** handoff-live eligibility: NOT (newest-N OR recent OR protected). */
+function eligibleHandoffLive(rootAbs, now, protectedSet) {
+  const all = listHandoffLive(rootAbs);
+  const recentCutoff = now - HANDOFF_LIVE_RECENT_DAYS * DAY_MS;
+  const out = [];
+  all.forEach((f, rank) => {
+    if (rank < HANDOFF_LIVE_KEEP) return; // newest-N kept
+    if (f.mtime >= recentCutoff) return; // recent kept (amendment #4)
+    if (protectedSet.has(f.path)) return; // loaded/sprint-referenced kept (F-RET-4)
+    out.push(f);
+  });
+  return out;
+}
+
 // ── Shape (b): handoffs/* older than RETENTION_HANDOFF_DAYS ───────────────
 
-function listHandoffsDirOld(rootAbs, now) {
+function listHandoffsDirOld(rootAbs, now, protectedSet) {
   const dir = path.join(rootAbs, ".claude", "runtime", "handoffs");
   let entries = [];
   try {
@@ -129,6 +249,7 @@ function listHandoffsDirOld(rootAbs, now) {
     const full = path.join(dir, name);
     const safe = safeResolve(rootAbs, full);
     if (!safe) continue;
+    if (protectedSet.has(safe)) continue; // referenced kept
     let st;
     try {
       st = fs.lstatSync(safe);
@@ -143,10 +264,11 @@ function listHandoffsDirOld(rootAbs, now) {
 
 // ── Shape (c): the ONE named stray error log ────────────────────────────────
 
-function namedErrLog(rootAbs) {
+function namedErrLog(rootAbs, protectedSet) {
   const full = path.join(rootAbs, NAMED_ERR_LOG_REL);
   const safe = safeResolve(rootAbs, full);
   if (!safe) return [];
+  if (protectedSet.has(safe)) return [];
   let st;
   try {
     st = fs.lstatSync(safe);
@@ -157,16 +279,35 @@ function namedErrLog(rootAbs) {
   return [{ path: safe, mtime: st.mtimeMs, shape: "named-err-log" }];
 }
 
+// ── Per-class round-robin cap (design point) ────────────────────────────────
+// A flat cap over a concatenated list lets one flooded class (143 handoff-live)
+// fill the whole per-run cap so handoffs/* + the err log are NEVER reached.
+// Interleave the classes round-robin BEFORE applying the total cap so every
+// class makes progress each run.
+function roundRobinMerge(classLists) {
+  const out = [];
+  const lists = classLists.filter((l) => l && l.length);
+  let i = 0;
+  while (lists.some((l) => i < l.length)) {
+    for (const l of lists) {
+      if (i < l.length) out.push(l[i]);
+    }
+    i++;
+  }
+  return out;
+}
+
 // ── planRetention / applyRetention ──────────────────────────────────────────
 
 /**
- * Compute the intended delete-set. NEVER deletes anything. Per-run cap
- * (MAX_DELETIONS_PER_RUN) truncates the candidate list; `capped:true` signals
- * more matched than the cap allowed (a shape-match bug must not sweep a dir).
+ * Compute the intended archive-set. NEVER moves anything. Per-run cap
+ * (MAX_DELETIONS_PER_RUN), allocated round-robin across shape classes, truncates
+ * the candidate list; `capped:true` signals more matched than the cap allowed.
  *
  * @param {string} root - project root
  * @param {object} [opts]
  * @param {number} [opts.now] - epoch ms, defaults to Date.now()
+ * @param {string[]} [opts.protected] - absolute/relative paths to never archive
  */
 function planRetention(root, opts) {
   opts = opts || {};
@@ -178,85 +319,131 @@ function planRetention(root, opts) {
     return { root: String(root), now, candidates: [], totalCandidates: 0, capped: false };
   }
 
-  const liveFiles = listHandoffLive(rootAbs);
-  const liveEligible = liveFiles.slice(HANDOFF_LIVE_KEEP); // keep newest N, rest eligible
-  const oldHandoffs = listHandoffsDirOld(rootAbs, now);
-  const namedLog = namedErrLog(rootAbs);
+  const protectedSet = buildProtectedSet(rootAbs, opts);
+  const liveEligible = eligibleHandoffLive(rootAbs, now, protectedSet);
+  const oldHandoffs = listHandoffsDirOld(rootAbs, now, protectedSet);
+  const namedLog = namedErrLog(rootAbs, protectedSet);
 
-  const candidates = [...liveEligible, ...oldHandoffs, ...namedLog];
-  const capped = candidates.length > MAX_DELETIONS_PER_RUN;
-  const bounded = candidates.slice(0, MAX_DELETIONS_PER_RUN);
+  const merged = roundRobinMerge([liveEligible, oldHandoffs, namedLog]);
+  const capped = merged.length > MAX_DELETIONS_PER_RUN;
+  const bounded = merged.slice(0, MAX_DELETIONS_PER_RUN);
 
   return {
     root: rootAbs,
     now,
     candidates: bounded,
-    totalCandidates: candidates.length,
+    totalCandidates: merged.length,
     capped,
+    protectedCount: protectedSet.size,
   };
 }
 
 /**
- * Apply the plan. DRY-RUN unless `opts.apply === true` — a missing/false
- * `apply` deletes NOTHING (same shape as planRetention, just echoing the
- * plan). On apply, deletes at most MAX_DELETIONS_PER_RUN files, re-verifying
- * containment immediately before each unlink (defense in depth), and emits a
- * `retention-applied` audit event with counts.
+ * Apply the plan by ARCHIVING (moving to the archive tier), NOT deleting. DRY-RUN
+ * unless `opts.apply === true`. Apply additionally REQUIRES a trusted root
+ * (F-RET-2) and a single-writer lock (F-RET-1 non-racy host); without either it
+ * REFUSES (archives nothing). Re-verifies containment immediately before each
+ * move (defense in depth), self-caps the move loop (F-RET-5), and emits a
+ * `retention-applied` audit event with a REDACTED root (F-RET-6).
  */
 function applyRetention(root, opts) {
   opts = opts || {};
   const plan = planRetention(root, opts);
   if (opts.apply !== true) {
-    return { ...plan, applied: false, deleted: [], skipped: [] };
+    return { ...plan, applied: false, archived: [], skipped: [] };
   }
 
-  const deleted = [];
+  // F-RET-2: apply only under a trusted root.
+  if (!isTrustedRoot(plan.root)) {
+    return { ...plan, applied: false, refused: true, reason: "untrusted-root", archived: [], skipped: [] };
+  }
+  // D-1: without an archive tier we must NOT fall back to deletion.
+  if (!_archive) {
+    return { ...plan, applied: false, refused: true, reason: "no-archive-tier", archived: [], skipped: [] };
+  }
+
+  // F-RET-1: single-writer lock — concurrent sessions must not all prune.
+  const lockPath = path.join(plan.root, ".claude", "runtime", "retention.lock");
+  let release = null;
+  try {
+    release = _archive.tryLock(lockPath, { staleMs: 5 * 60 * 1000 });
+  } catch {
+    release = null;
+  }
+  if (release === null) {
+    return { ...plan, applied: false, reason: "locked", archived: [], skipped: [] };
+  }
+
+  const archived = [];
   const skipped = [];
-  for (const c of plan.candidates) {
-    try {
+  try {
+    let moved = 0;
+    for (const c of plan.candidates) {
+      // F-RET-5: self-cap the move loop independently of the plan cap.
+      if (moved >= MAX_DELETIONS_PER_RUN) {
+        skipped.push({ ...c, reason: "per-run-cap" });
+        continue;
+      }
+      // Re-verify containment immediately before the move (TOCTOU defense).
       const safe = safeResolve(plan.root, c.path);
       if (!safe) {
         skipped.push({ ...c, reason: "escapes-root" });
         continue;
       }
-      fs.unlinkSync(safe);
-      deleted.push(c);
-    } catch (e) {
-      skipped.push({ ...c, reason: String((e && e.message) || e) });
+      const res = _archive.archive(safe, {
+        root: plan.root,
+        reason: "retention:" + (c.shape || "unknown"),
+        shape: c.shape || null,
+      });
+      if (res && res.ok) {
+        archived.push({ ...c, archived: res.entry && res.entry.archived });
+        moved++;
+      } else {
+        skipped.push({ ...c, reason: (res && res.reason) || "archive-failed" });
+      }
     }
+  } finally {
+    if (typeof release === "function") release();
   }
 
-  // Audit event — best-effort, lazy require to avoid a load-order cycle.
+  // Audit event — best-effort, lazy require to avoid a load-order cycle. F-RET-6:
+  // log the archive-relative origins (already relative) and a REDACTED root
+  // (basename only), never the absolute project path.
   try {
     const { logEvent } = require("./logger");
     logEvent(
       "retention",
       "system",
       "retention-applied",
-      plan.root,
-      `deleted=${deleted.length} skipped=${skipped.length} totalCandidates=${plan.totalCandidates}`,
+      path.basename(plan.root), // redacted — no absolute path leakage
+      `archived=${archived.length} skipped=${skipped.length} totalCandidates=${plan.totalCandidates}`,
       {
-        deleted: deleted.length,
+        archived: archived.length,
         skipped: skipped.length,
         totalCandidates: plan.totalCandidates,
         capped: plan.capped,
+        protectedCount: plan.protectedCount,
       },
     );
   } catch {
     /* audit is best-effort — never block on a logger fault */
   }
 
-  return { ...plan, applied: true, deleted, skipped };
+  return { ...plan, applied: true, archived, skipped };
 }
 
 module.exports = {
   RETENTION_HANDOFF_DAYS,
   HANDOFF_LIVE_KEEP,
+  HANDOFF_LIVE_RECENT_DAYS,
   MAX_DELETIONS_PER_RUN,
   HANDOFF_LOAD_DAYS,
   HANDOFF_LIVE_RE,
   NAMED_ERR_LOG_REL,
   safeResolve,
+  isTrustedRoot,
+  buildProtectedSet,
+  referencedByActiveSprint,
   planRetention,
   applyRetention,
 };
@@ -265,6 +452,8 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   const apply = args.includes("--apply");
   const rootIdx = args.indexOf("--root");
+  // F-RET-2: default to the TRUSTED env root (CLAUDE_PROJECT_DIR), never
+  // process.cwd(), for the destructive path. An explicit --root overrides.
   const root =
     rootIdx !== -1 && args[rootIdx + 1]
       ? args[rootIdx + 1]

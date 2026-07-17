@@ -2,20 +2,23 @@
 "use strict";
 
 /**
- * Adversarial ship-gate test for retention.js — a conservative-by-construction
- * DELETION sweep of transient runtime cruft. Uses node's built-in test runner
- * (zero deps) against a throwaway fake root under os.tmpdir(), with a FIXED
- * `{now}` for determinism.
+ * Adversarial ship-gate test for retention.js — conservative-by-construction
+ * ARCHIVING (D-1: move-to-archive, never delete) of transient runtime cruft.
+ * Uses node's built-in test runner (zero deps) against a throwaway trusted root
+ * under os.tmpdir(), with a FIXED `{now}` for determinism.
  *
  * Proves:
- *   1. PLANTED ADVERSARIAL FIXTURE (the ship gate) — every decoy shape
- *      survives; ONLY exact allowlist shapes are deleted.
- *   2. path-containment — `..`, absolute-outside, and (where the platform
- *      supports it) an escaping symlink are all refused.
- *   3. dry-run is the DEFAULT — no `apply:true` deletes nothing.
- *   4. per-run cap bounds the blast radius of a shape-match bug.
- *   5. keep-newest-N is honored for handoff-live-*.md.
- *   6. an audit trail is produced on apply (counts on the returned shape).
+ *   1. PLANTED ADVERSARIAL FIXTURE (the ship gate) — every decoy survives; ONLY
+ *      exact allowlist shapes are ARCHIVED (moved to the archive tier), and the
+ *      moved files are RECOVERABLE there (D-1), not deleted.
+ *   2. path-containment — `..`, absolute-outside, escaping symlink are refused.
+ *   3. dry-run is the DEFAULT — no `apply:true` archives nothing.
+ *   4. per-run cap + self-cap (F-RET-5) bound the blast radius.
+ *   5. keep-newest-N AND keep-recent (amendment #4) for handoff-live-*.md.
+ *   6. F-RET-2: apply REFUSES an untrusted root (no `.claude/`).
+ *   7. F-RET-4: a PROTECTED path (loaded/sprint-referenced) is never archived.
+ *   8. F-RET-3: the tightened basename allowlist refuses `handoff-live-..md`.
+ *   9. per-class round-robin — a flood of one class does not starve the others.
  *
  *   node --test scripts/hooks/lib/retention.test.js
  */
@@ -30,16 +33,23 @@ const {
   planRetention,
   applyRetention,
   safeResolve,
+  isTrustedRoot,
   HANDOFF_LIVE_KEEP,
+  HANDOFF_LIVE_RECENT_DAYS,
   MAX_DELETIONS_PER_RUN,
   RETENTION_HANDOFF_DAYS,
+  HANDOFF_LIVE_RE,
 } = require("./retention");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_MS = 60 * 1000;
 const FIXED_NOW = Date.parse("2026-07-16T12:00:00.000Z");
 
-function mkRoot(label) {
-  return fs.mkdtempSync(path.join(os.tmpdir(), `warpos-retention-${label}-`));
+/** A TRUSTED root: temp dir with a `.claude/runtime` (so isTrustedRoot passes). */
+function mkTrustedRoot(label) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), `warpos-retention-${label}-`));
+  fs.mkdirSync(path.join(root, ".claude", "runtime"), { recursive: true });
+  return root;
 }
 
 function ensureDir(p) {
@@ -52,44 +62,54 @@ function touch(file, mtimeMs) {
   fs.utimesSync(file, t, t);
 }
 
+function archivedCount(root) {
+  const dir = path.join(root, ".claude", "runtime", "archive");
+  try {
+    return fs.readdirSync(dir).filter((n) => n !== "index.jsonl").length;
+  } catch {
+    return 0;
+  }
+}
+
 // ── 1. PLANTED ADVERSARIAL FIXTURE — the ship gate ──────────────────────────
-test("adversarial fixture: only exact allowlist shapes are deleted, every decoy survives", () => {
-  const root = mkRoot("adversarial");
+test("adversarial fixture: only exact allowlist shapes are ARCHIVED (moved, recoverable); every decoy survives", () => {
+  const root = mkTrustedRoot("adversarial");
   try {
     const runtimeDir = path.join(root, ".claude", "runtime");
     const handoffsDir = path.join(runtimeDir, "handoffs");
     const namedLogDir = path.join(root, "runtime");
-    ensureDir(runtimeDir);
     ensureDir(handoffsDir);
     ensureDir(namedLogDir);
 
-    // Decoy: wrong shape — `.md.bak`, must NOT match `^handoff-live-.+\.md$`
+    // Decoy: wrong shape — `.md.bak`, must NOT match the allowlist regex.
     const evilBak = path.join(runtimeDir, "handoff-live-EVIL.md.bak");
     touch(evilBak, FIXED_NOW - 1 * DAY_MS);
 
-    // 20 handoff-live-*.md with staggered mtimes — 01 oldest .. 20 newest.
-    // Keep-newest-10 means files 11..20 survive, files 01..10 are eligible.
+    // 10 RECENT newest (minutes old): kept by rank AND recency.
+    // 10 OLD (5..14 days): beyond rank-10 AND older than the recency window ⇒ eligible.
     const liveFiles = [];
-    for (let i = 1; i <= 20; i++) {
-      const name = `handoff-live-real-${String(i).padStart(2, "0")}.md`;
+    for (let i = 1; i <= 10; i++) {
+      const name = `handoff-live-new-${String(i).padStart(2, "0")}.md`;
       const full = path.join(runtimeDir, name);
-      // stagger: earlier index = older mtime
-      touch(full, FIXED_NOW - (21 - i) * 60 * 60 * 1000);
-      liveFiles.push({ name, full, index: i });
+      touch(full, FIXED_NOW - i * MIN_MS); // all < 1h — recent + newest
+      liveFiles.push({ name, full, eligible: false });
     }
-    const expectedDeletedLive = liveFiles.filter((f) => f.index <= 10); // oldest 10
-    const expectedSurvivingLive = liveFiles.filter((f) => f.index > 10); // newest 10
+    for (let i = 1; i <= 10; i++) {
+      const name = `handoff-live-old-${String(i).padStart(2, "0")}.md`;
+      const full = path.join(runtimeDir, name);
+      touch(full, FIXED_NOW - (4 + i) * DAY_MS); // 5..14 days — beyond recency + rank
+      liveFiles.push({ name, full, eligible: true });
+    }
+    const expectedArchivedLive = liveFiles.filter((f) => f.eligible);
+    const expectedSurvivingLive = liveFiles.filter((f) => !f.eligible);
 
-    // Decoy: unrelated file in the same dir
+    // Decoys that must survive untouched.
     const notesFile = path.join(runtimeDir, "notes.md");
     touch(notesFile, FIXED_NOW - 1 * DAY_MS);
-
-    // Decoy: a literal filename containing encoded traversal chars (NOT a real
-    // path separator — just a weird single filename). Must survive untouched.
     const traversalNamed = path.join(runtimeDir, "..%2f..%2fpasswd");
     touch(traversalNamed, FIXED_NOW - 1 * DAY_MS);
 
-    // handoffs/ dir: one aged 20d (eligible), one aged 2d (must survive)
+    // handoffs/ dir: one aged 20d (eligible), one aged 2d (must survive).
     const old20d = path.join(handoffsDir, "old-handoff-20d.md");
     touch(old20d, FIXED_NOW - 20 * DAY_MS);
     const recent2d = path.join(handoffsDir, "recent-handoff-2d.md");
@@ -110,32 +130,36 @@ test("adversarial fixture: only exact allowlist shapes are deleted, every decoy 
     assert.ok(fs.existsSync(traversalNamed), "the literal traversal-named file must survive");
     assert.ok(fs.existsSync(recent2d), "the 2-day-old handoffs file must survive (under the 14d cutoff)");
     for (const f of expectedSurvivingLive) {
-      assert.ok(fs.existsSync(f.full), `${f.name} (newest 10) must survive`);
+      assert.ok(fs.existsSync(f.full), `${f.name} (recent/newest) must survive`);
     }
 
-    // ── ONLY exact allowlist shapes were deleted ──
-    assert.ok(!fs.existsSync(old20d), "the 20-day-old handoffs file must be deleted");
-    assert.ok(!fs.existsSync(namedLog), "the named err log must be deleted");
-    for (const f of expectedDeletedLive) {
-      assert.ok(!fs.existsSync(f.full), `${f.name} (beyond newest 10) must be deleted`);
+    // ── ONLY exact allowlist shapes were archived (moved off their origin) ──
+    assert.ok(!fs.existsSync(old20d), "the 20-day-old handoffs file must be moved to archive");
+    assert.ok(!fs.existsSync(namedLog), "the named err log must be moved to archive");
+    for (const f of expectedArchivedLive) {
+      assert.ok(!fs.existsSync(f.full), `${f.name} (old, beyond keep) must be moved to archive`);
     }
 
-    // ── deleted set is EXACTLY the allowlist matches, nothing more/less ──
-    assert.strictEqual(result.deleted.length, 12, "err log + 20d handoffs file + 10 handoff-live");
-    const deletedPaths = new Set(result.deleted.map((d) => d.path));
-    assert.ok(deletedPaths.has(path.resolve(namedLog)));
-    assert.ok(deletedPaths.has(path.resolve(old20d)));
-    for (const f of expectedDeletedLive) {
-      assert.ok(deletedPaths.has(path.resolve(f.full)), `${f.name} must be in deleted[]`);
+    // ── D-1: the moved files are RECOVERABLE in the archive tier ──
+    assert.strictEqual(result.archived.length, 12, "err log + 20d handoffs file + 10 old handoff-live");
+    assert.strictEqual(archivedCount(root), 12, "all 12 must physically exist in the archive tier (never deleted)");
+    for (const a of result.archived) {
+      assert.ok(a.archived, "each archived record carries its archive-relative path");
+      assert.ok(fs.existsSync(path.join(root, a.archived)), "the archived file exists on disk");
     }
-    // None of the survivors ever appear in deleted[]
-    assert.ok(!deletedPaths.has(path.resolve(evilBak)));
-    assert.ok(!deletedPaths.has(path.resolve(notesFile)));
-    assert.ok(!deletedPaths.has(path.resolve(traversalNamed)));
-    assert.ok(!deletedPaths.has(path.resolve(recent2d)));
+
+    const archivedPaths = new Set(result.archived.map((d) => d.path));
+    assert.ok(archivedPaths.has(path.resolve(namedLog)));
+    assert.ok(archivedPaths.has(path.resolve(old20d)));
+    for (const f of expectedArchivedLive) {
+      assert.ok(archivedPaths.has(path.resolve(f.full)), `${f.name} must be in archived[]`);
+    }
+    // No survivor ever appears in archived[]
     for (const f of expectedSurvivingLive) {
-      assert.ok(!deletedPaths.has(path.resolve(f.full)));
+      assert.ok(!archivedPaths.has(path.resolve(f.full)));
     }
+    assert.ok(!archivedPaths.has(path.resolve(evilBak)));
+    assert.ok(!archivedPaths.has(path.resolve(recent2d)));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -143,16 +167,12 @@ test("adversarial fixture: only exact allowlist shapes are deleted, every decoy 
 
 // ── 2. path-containment ─────────────────────────────────────────────────────
 test("safeResolve refuses `..` traversal and absolute-outside paths", () => {
-  const root = mkRoot("containment");
+  const root = mkTrustedRoot("containment");
   try {
-    ensureDir(root);
     const escapeViaDotDot = path.join(root, "..", "escape");
     assert.strictEqual(safeResolve(root, escapeViaDotDot), null);
-
     const absoluteOutside = path.resolve(os.tmpdir(), "definitely-outside-root-xyz");
     assert.strictEqual(safeResolve(root, absoluteOutside), null);
-
-    // Sanity: a legitimate inside-root path DOES resolve.
     const inside = path.join(root, ".claude", "runtime", "handoff-live-x.md");
     assert.strictEqual(safeResolve(root, inside), path.resolve(inside));
   } finally {
@@ -160,13 +180,10 @@ test("safeResolve refuses `..` traversal and absolute-outside paths", () => {
   }
 });
 
-test("a symlink under runtime whose target escapes root is never deleted", (t) => {
-  const root = mkRoot("symlink");
+test("a symlink under runtime whose target escapes root is never archived", (t) => {
+  const root = mkTrustedRoot("symlink");
   try {
     const runtimeDir = path.join(root, ".claude", "runtime");
-    ensureDir(runtimeDir);
-
-    // A real file OUTSIDE root that the symlink will point to.
     const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-retention-outside-"));
     const outsideTarget = path.join(outsideDir, "secret.md");
     fs.writeFileSync(outsideTarget, "should never be touched\n", "utf8");
@@ -178,26 +195,18 @@ test("a symlink under runtime whose target escapes root is never deleted", (t) =
     } catch {
       symlinkSupported = false;
     }
-
     if (!symlinkSupported) {
-      // Windows without dev-mode/admin can EPERM on symlink creation — skip
-      // gracefully rather than failing the whole suite on an environment gap.
       t.skip("symlink creation not permitted on this platform/user");
       fs.rmSync(outsideDir, { recursive: true, force: true });
       return;
     }
-
     try {
-      // Direct containment check: the resolved REAL path escapes root.
       assert.strictEqual(safeResolve(root, symlinkPath), null);
-
-      // Full apply must never delete it (or its outside target).
       const result = applyRetention(root, { apply: true, now: FIXED_NOW });
-      assert.ok(fs.existsSync(symlinkPath) || fs.lstatSync(symlinkPath), "symlink itself untouched");
       assert.ok(fs.existsSync(outsideTarget), "the outside target must survive");
-      const deletedPaths = new Set(result.deleted.map((d) => d.path));
-      assert.ok(!deletedPaths.has(path.resolve(symlinkPath)));
-      assert.ok(!deletedPaths.has(path.resolve(outsideTarget)));
+      const archivedPaths = new Set(result.archived.map((d) => d.path));
+      assert.ok(!archivedPaths.has(path.resolve(symlinkPath)));
+      assert.ok(!archivedPaths.has(path.resolve(outsideTarget)));
     } finally {
       fs.rmSync(outsideDir, { recursive: true, force: true });
     }
@@ -207,96 +216,59 @@ test("a symlink under runtime whose target escapes root is never deleted", (t) =
 });
 
 // ── 3. dry-run is the DEFAULT ───────────────────────────────────────────────
-test("dry-run (no apply) deletes nothing", () => {
-  const root = mkRoot("dryrun");
+test("dry-run (no apply) archives nothing", () => {
+  const root = mkTrustedRoot("dryrun");
   try {
     const runtimeDir = path.join(root, ".claude", "runtime");
     const handoffsDir = path.join(runtimeDir, "handoffs");
-    const namedLogDir = path.join(root, "runtime");
-    ensureDir(runtimeDir);
     ensureDir(handoffsDir);
-    ensureDir(namedLogDir);
-
     for (let i = 1; i <= 15; i++) {
-      touch(
-        path.join(runtimeDir, `handoff-live-real-${String(i).padStart(2, "0")}.md`),
-        FIXED_NOW - (16 - i) * 60 * 60 * 1000,
-      );
+      touch(path.join(handoffsDir, `old-${String(i).padStart(2, "0")}.md`), FIXED_NOW - (20 + i) * DAY_MS);
     }
-    const old20d = path.join(handoffsDir, "old-handoff-20d.md");
-    touch(old20d, FIXED_NOW - 20 * DAY_MS);
-    const namedLog = path.join(namedLogDir, "s-pf-03-security-review.err.log");
-    touch(namedLog, FIXED_NOW - 1 * DAY_MS);
-
-    const result = applyRetention(root, { now: FIXED_NOW }); // no `apply`
+    const result = applyRetention(root, { now: FIXED_NOW }); // no apply
     assert.strictEqual(result.applied, false);
-    assert.strictEqual(result.deleted.length, 0);
+    assert.strictEqual((result.archived || []).length, 0);
     assert.ok(result.totalCandidates > 0, "sanity: there WERE eligible candidates");
-
-    // Every seeded file is still on disk.
-    for (let i = 1; i <= 15; i++) {
-      assert.ok(
-        fs.existsSync(path.join(runtimeDir, `handoff-live-real-${String(i).padStart(2, "0")}.md`)),
-      );
-    }
-    assert.ok(fs.existsSync(old20d));
-    assert.ok(fs.existsSync(namedLog));
+    assert.strictEqual(archivedCount(root), 0, "the archive tier stays empty on a dry-run");
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test("applyRetention with apply:false explicitly also deletes nothing", () => {
-  const root = mkRoot("dryrun-explicit-false");
-  try {
-    const namedLogDir = path.join(root, "runtime");
-    ensureDir(namedLogDir);
-    const namedLog = path.join(namedLogDir, "s-pf-03-security-review.err.log");
-    touch(namedLog, FIXED_NOW - 1 * DAY_MS);
-
-    const result = applyRetention(root, { apply: false, now: FIXED_NOW });
-    assert.strictEqual(result.applied, false);
-    assert.deepStrictEqual(result.deleted, []);
-    assert.ok(fs.existsSync(namedLog));
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
-  }
-});
-
-// ── 4. per-run cap ───────────────────────────────────────────────────────────
-test("per-run cap bounds candidates even when far more are eligible", () => {
-  const root = mkRoot("cap");
+// ── 4. per-run cap + self-cap (F-RET-5) ─────────────────────────────────────
+test("per-run cap + self-cap bound the archive count even when far more are eligible", () => {
+  const root = mkTrustedRoot("cap");
   try {
     const handoffsDir = path.join(root, ".claude", "runtime", "handoffs");
     ensureDir(handoffsDir);
     const total = 40;
     for (let i = 1; i <= total; i++) {
-      touch(
-        path.join(handoffsDir, `old-handoff-${String(i).padStart(2, "0")}.md`),
-        FIXED_NOW - (20 + i) * DAY_MS, // all well past the 14-day cutoff
-      );
+      touch(path.join(handoffsDir, `old-${String(i).padStart(2, "0")}.md`), FIXED_NOW - (20 + i) * DAY_MS);
     }
     const plan = planRetention(root, { now: FIXED_NOW });
     assert.strictEqual(plan.totalCandidates, total);
     assert.strictEqual(plan.capped, true);
     assert.strictEqual(plan.candidates.length, MAX_DELETIONS_PER_RUN);
-    assert.strictEqual(plan.candidates.length, 25);
+
+    const result = applyRetention(root, { apply: true, now: FIXED_NOW });
+    assert.ok(result.archived.length <= MAX_DELETIONS_PER_RUN, "self-cap: never archive more than the per-run cap");
+    assert.strictEqual(result.archived.length, MAX_DELETIONS_PER_RUN);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-// ── 5. keep-newest-N ─────────────────────────────────────────────────────────
-test("keep-newest-HANDOFF_LIVE_KEEP: the newest N handoff-live files are never candidates", () => {
-  const root = mkRoot("keep-newest");
+// ── 5. keep-newest-N AND keep-recent (amendment #4) ─────────────────────────
+test("keep-newest-N: the newest N handoff-live are never candidates", () => {
+  const root = mkTrustedRoot("keep-newest");
   try {
     const runtimeDir = path.join(root, ".claude", "runtime");
-    ensureDir(runtimeDir);
     const files = [];
+    // Stagger OLD (days) so they are beyond the recency window; rank decides keep.
     for (let i = 1; i <= 20; i++) {
-      const name = `handoff-live-real-${String(i).padStart(2, "0")}.md`;
+      const name = `handoff-live-${String(i).padStart(2, "0")}.md`;
       const full = path.join(runtimeDir, name);
-      touch(full, FIXED_NOW - (21 - i) * 60 * 60 * 1000); // i=20 newest
+      touch(full, FIXED_NOW - (21 - i) * DAY_MS - 4 * DAY_MS); // 5..24 days, i=20 newest
       files.push({ name, full, index: i });
     }
     const plan = planRetention(root, { now: FIXED_NOW });
@@ -305,32 +277,139 @@ test("keep-newest-HANDOFF_LIVE_KEEP: the newest N handoff-live files are never c
     const oldest10 = files.filter((f) => f.index <= 10);
     assert.strictEqual(newest10.length, HANDOFF_LIVE_KEEP);
     for (const f of newest10) {
-      assert.ok(!candidatePaths.has(path.resolve(f.full)), `${f.name} (newest) must not be a candidate`);
+      assert.ok(!candidatePaths.has(path.resolve(f.full)), `${f.name} (newest N) must not be a candidate`);
     }
     for (const f of oldest10) {
-      assert.ok(candidatePaths.has(path.resolve(f.full)), `${f.name} (oldest, beyond keep) must be a candidate`);
+      assert.ok(candidatePaths.has(path.resolve(f.full)), `${f.name} (old, beyond keep) must be a candidate`);
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-// ── 6. audit trail on apply ──────────────────────────────────────────────────
-test("apply produces a counted audit result (deleted/skipped/totalCandidates)", () => {
-  const root = mkRoot("audit");
+test("keep-recent (amendment #4): a RECENT handoff-live beyond newest-N is still KEPT", () => {
+  const root = mkTrustedRoot("keep-recent");
   try {
+    const runtimeDir = path.join(root, ".claude", "runtime");
+    // 15 files ALL within the last hour (beyond newest-10 by rank, but recent).
+    for (let i = 1; i <= 15; i++) {
+      touch(path.join(runtimeDir, `handoff-live-r${String(i).padStart(2, "0")}.md`), FIXED_NOW - i * MIN_MS);
+    }
+    const plan = planRetention(root, { now: FIXED_NOW });
+    const liveCandidates = plan.candidates.filter((c) => c.shape === "handoff-live");
+    assert.strictEqual(
+      liveCandidates.length,
+      0,
+      "no recent (< HANDOFF_LIVE_RECENT_DAYS) handoff-live may be a candidate even beyond the newest-N rank",
+    );
+    assert.ok(HANDOFF_LIVE_RECENT_DAYS >= 1);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── 6. F-RET-2: untrusted root is REFUSED ───────────────────────────────────
+test("F-RET-2: apply REFUSES a root without a .claude/ (untrusted)", () => {
+  const untrusted = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-untrusted-"));
+  try {
+    ensureDir(path.join(untrusted, "runtime"));
+    touch(path.join(untrusted, "runtime", "s-pf-03-security-review.err.log"), FIXED_NOW - 1 * DAY_MS);
+    assert.strictEqual(isTrustedRoot(path.resolve(untrusted)), false);
+    const result = applyRetention(untrusted, { apply: true, now: FIXED_NOW });
+    assert.strictEqual(result.applied, false, "an untrusted root must not apply");
+    assert.strictEqual(result.refused, true);
+    assert.strictEqual(result.reason, "untrusted-root");
+    assert.ok(fs.existsSync(path.join(untrusted, "runtime", "s-pf-03-security-review.err.log")), "nothing moved");
+  } finally {
+    fs.rmSync(untrusted, { recursive: true, force: true });
+  }
+});
+
+// ── 7. F-RET-4: a PROTECTED path is never archived ──────────────────────────
+test("F-RET-4: a protected handoff-live (loaded/referenced) is never archived even if old + beyond keep", () => {
+  const root = mkTrustedRoot("protected");
+  try {
+    const runtimeDir = path.join(root, ".claude", "runtime");
+    // 20 old files (all eligible by rank+age); protect ONE of the oldest.
+    const files = [];
+    for (let i = 1; i <= 20; i++) {
+      const full = path.join(runtimeDir, `handoff-live-${String(i).padStart(2, "0")}.md`);
+      touch(full, FIXED_NOW - (21 - i) * DAY_MS - 4 * DAY_MS);
+      files.push(full);
+    }
+    const protectedOne = files[0]; // oldest ⇒ normally eligible
+    const planNoProtect = planRetention(root, { now: FIXED_NOW });
+    assert.ok(
+      new Set(planNoProtect.candidates.map((c) => c.path)).has(path.resolve(protectedOne)),
+      "sanity: without protection the file IS a candidate",
+    );
+
+    const plan = planRetention(root, { now: FIXED_NOW, protected: [protectedOne] });
+    const candidatePaths = new Set(plan.candidates.map((c) => c.path));
+    assert.ok(!candidatePaths.has(path.resolve(protectedOne)), "the protected path must be excluded (F-RET-4)");
+    assert.ok(plan.protectedCount >= 1);
+
+    // And apply never moves it.
+    const result = applyRetention(root, { apply: true, now: FIXED_NOW, protected: [protectedOne] });
+    assert.ok(fs.existsSync(protectedOne), "the protected file must remain on its origin");
+    const archivedPaths = new Set(result.archived.map((d) => d.path));
+    assert.ok(!archivedPaths.has(path.resolve(protectedOne)));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── 8. F-RET-3: the tightened basename allowlist ────────────────────────────
+test("F-RET-3: the regex refuses `handoff-live-..md` and other malformed shapes", () => {
+  assert.ok(HANDOFF_LIVE_RE.test("handoff-live-abc123.md"), "a well-formed sid must match");
+  assert.ok(HANDOFF_LIVE_RE.test("handoff-live-2026-07-16T12_00.md"), "sid with - and _ matches");
+  assert.ok(!HANDOFF_LIVE_RE.test("handoff-live-..md"), "the `..md` traversal-ish shape must NOT match");
+  assert.ok(!HANDOFF_LIVE_RE.test("handoff-live-.md"), "a bare dot sid must NOT match");
+  assert.ok(!HANDOFF_LIVE_RE.test("handoff-live-a/b.md"), "a path separator must NOT match");
+  assert.ok(!HANDOFF_LIVE_RE.test("handoff-live-x.md.bak"), "a .bak suffix must NOT match");
+
+  // End-to-end: a `handoff-live-..md` on disk is never a candidate.
+  const root = mkTrustedRoot("regex");
+  try {
+    const runtimeDir = path.join(root, ".claude", "runtime");
+    const evil = path.join(runtimeDir, "handoff-live-..md");
+    touch(evil, FIXED_NOW - 30 * DAY_MS); // old enough to be eligible IF it matched
+    const plan = planRetention(root, { now: FIXED_NOW });
+    const candidatePaths = new Set(plan.candidates.map((c) => c.path));
+    assert.ok(!candidatePaths.has(path.resolve(evil)), "`handoff-live-..md` must never be a candidate");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── 9. per-class round-robin — a flood of one class does not starve others ───
+test("per-class round-robin: a handoff-live flood does not starve handoffs/* + named-log", () => {
+  const root = mkTrustedRoot("round-robin");
+  try {
+    const runtimeDir = path.join(root, ".claude", "runtime");
+    const handoffsDir = path.join(runtimeDir, "handoffs");
     const namedLogDir = path.join(root, "runtime");
+    ensureDir(handoffsDir);
     ensureDir(namedLogDir);
+
+    // Flood: 100 OLD eligible handoff-live (beyond keep + recency).
+    for (let i = 1; i <= 100; i++) {
+      touch(path.join(runtimeDir, `handoff-live-f${String(i).padStart(3, "0")}.md`), FIXED_NOW - (30 + i) * DAY_MS);
+    }
+    // A few of the other classes.
+    const old20d = path.join(handoffsDir, "old-handoff.md");
+    touch(old20d, FIXED_NOW - 20 * DAY_MS);
     const namedLog = path.join(namedLogDir, "s-pf-03-security-review.err.log");
     touch(namedLog, FIXED_NOW - 1 * DAY_MS);
 
-    const result = applyRetention(root, { apply: true, now: FIXED_NOW });
-    assert.strictEqual(result.applied, true);
-    assert.strictEqual(result.deleted.length, 1, "the named err log alone must be deleted");
-    assert.strictEqual(result.skipped.length, 0);
-    assert.strictEqual(result.totalCandidates, 1);
-    assert.strictEqual(typeof result.capped, "boolean");
-    assert.ok(!fs.existsSync(namedLog));
+    const plan = planRetention(root, { now: FIXED_NOW });
+    const shapes = new Set(plan.candidates.map((c) => c.shape));
+    assert.ok(plan.capped, "the flood must trip the cap");
+    assert.strictEqual(plan.candidates.length, MAX_DELETIONS_PER_RUN);
+    // The starved classes MUST appear within the capped slice (the whole point).
+    assert.ok(shapes.has("handoffs-dir"), "handoffs/* must not be starved by the handoff-live flood");
+    assert.ok(shapes.has("named-err-log"), "the named err log must not be starved");
+    assert.ok(shapes.has("handoff-live"), "handoff-live is still represented");
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

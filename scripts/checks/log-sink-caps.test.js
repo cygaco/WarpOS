@@ -9,6 +9,7 @@
  *   node scripts/checks/log-sink-caps.test.js
  */
 
+const path = require("path");
 const { harness } = require("./lib/fixture-harness");
 const { evaluate } = require("./log-sink-caps");
 
@@ -54,5 +55,43 @@ h.violation("one breaching sink among several clean ones is still caught", () =>
       { path: "over.jsonl", kind: "lines", cap: 20000, actual: 99999 },
     ],
   }));
+
+// ── F-ENF-2: a NON-FINITE actual fails CLOSED (never slides under the `>` test) ──
+h.violation("a NaN actual fails closed (not a silent pass)", () =>
+  evaluate({ sinks: [{ path: "nan.jsonl", kind: "lines", cap: 20000, actual: NaN }] }));
+
+h.violation("an Infinity actual fails closed", () =>
+  evaluate({ sinks: [{ path: "inf.jsonl", kind: "lines", cap: 20000, actual: Infinity }] }));
+
+// ── F-ENF-3: the INVENTORY descriptor is validated even when the file is absent ──
+// A well-formed descriptor with NO actual (file didn't exist) is GREEN — the
+// inventory entry is valid; there is just nothing to measure.
+h.pass("a well-formed sink with an absent actual (file not written yet) passes", () =>
+  evaluate({ sinks: [{ path: "fresh.jsonl", kind: "lines", cap: 20000 }] }));
+
+// A MALFORMED descriptor is flagged EVEN when the file is absent (inventory check).
+h.violation("a malformed inventory descriptor is flagged even with no actual (F-ENF-3)", () =>
+  evaluate({ sinks: [{ path: "bad.jsonl", kind: "elephants", cap: 20000 }] }));
+
+// ── F-BETA-1 coverage: every logger CATEGORY_FILES fan-out target is a registered sink ──
+// An unregistered fan-out target makes rotateSink() a silent no-op (rotation is
+// closed over SINK_CAPS), so the sink grows unbounded — the F-BETA-1 class.
+h.test("every logger CATEGORY_FILES fan-out target is a registered SINK_CAPS sink", () => {
+  const assert = require("assert");
+  const { SINK_CAPS } = require("../hooks/lib/rotate");
+  const logger = require("../hooks/lib/logger");
+  const reg = new Set(Object.keys(SINK_CAPS));
+  const missing = [];
+  for (const [cat, files] of Object.entries(logger.CATEGORY_FILES || {})) {
+    for (const f of files || []) {
+      if (!reg.has(path.resolve(f))) missing.push(`${cat} -> ${f}`);
+    }
+  }
+  assert.strictEqual(
+    missing.length,
+    0,
+    `unregistered fan-out targets (would never rotate — F-BETA-1 class): ${missing.join(", ")}`,
+  );
+});
 
 h.done();

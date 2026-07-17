@@ -4,18 +4,24 @@
 /**
  * log-sink-caps.js — the retention gate. Flags any known log sink that has
  * grown past 2× its SINK_CAPS cap (rotate.js should have rotated it well
- * before then — a breach here means rotation is not firing on that sink).
+ * before then — a breach here means rotation is not firing on that sink) AND
+ * validates the SINK_CAPS INVENTORY itself (every declared descriptor is
+ * well-formed) whether or not the sink file exists yet.
  *
  * Imports SINK_CAPS from scripts/hooks/lib/rotate.js — the SAME map the
  * write-time rotation trigger uses, so the enforcer and the mechanism can
  * never disagree about what "too big" means (single source of truth).
  *
- * For each known sink that EXISTS, counts lines (JSONL sinks) or bytes (the
- * `.log` sink) and flags any sink exceeding 2× its cap. A sink present in
- * SINK_CAPS but never yet written (fresh install) is legitimately absent —
- * skipped, not flagged. A sink that EXISTS but errors on stat/read (a race,
- * a permission fault, a malformed descriptor) fails CLOSED — counted as an
- * offender, never silently skipped.
+ * FAIL-CLOSED throughout (F-ENF-2) — a check must never read green on ambiguity:
+ *   • an unrecognized `kind` in the inventory is a malformed descriptor
+ *     (offender), NOT silently coerced to "lines";
+ *   • an `fs.existsSync` FAULT (permission/descriptor error) is an offender
+ *     (unreadable), NOT treated as "absent" and skipped;
+ *   • a non-finite `actual` (NaN/Infinity) is an offender, NOT a silent pass;
+ *   • a sink that EXISTS but errors on stat/read is an offender (unreadable).
+ * A sink declared in SINK_CAPS but never yet written (fresh install) is
+ * legitimately absent — its DESCRIPTOR is still validated (F-ENF-3), but the
+ * size check is skipped (no file to measure).
  *
  * Exit contract:
  *   (no flag)   REPORT-ONLY — prints findings, exits 0 even on a breach.
@@ -35,8 +41,11 @@ const NAME = "log-sink-caps";
  * Pure core: given `{sinks: [{path, kind, cap, actual, unreadable}]}`, return
  * the offenders. A malformed descriptor (missing path/kind/cap, or an
  * unrecognized `kind`) or an `unreadable:true` sink is ALWAYS an offender —
- * never silently skipped (fail-closed). A well-formed sink is an offender
- * only when `actual > 2 * cap`.
+ * never silently skipped (fail-closed). When `actual` is present it must be a
+ * FINITE number; a non-finite `actual` is an offender. A well-formed sink with
+ * a finite actual is an offender only when `actual > 2 * cap`. `actual`
+ * absent/undefined means the sink file did not exist — the descriptor is still
+ * validated, the size check is skipped.
  */
 function evaluate(input) {
   const sinks = (input && input.sinks) || [];
@@ -61,16 +70,31 @@ function evaluate(input) {
       offenders.push({ path: s.path, kind: s.kind, cap: s.cap, reason: "unreadable" });
       continue;
     }
-    const threshold = 2 * s.cap;
-    if (typeof s.actual === "number" && s.actual > threshold) {
-      offenders.push({
-        path: s.path,
-        kind: s.kind,
-        cap: s.cap,
-        actual: s.actual,
-        threshold,
-        reason: "over-2x-cap",
-      });
+    // `actual` is optional (absent ⇒ file didn't exist; descriptor already
+    // validated above). But if PRESENT it must be a FINITE number — a
+    // non-finite actual fails closed rather than sliding under the `>` test.
+    if (s.actual !== undefined && s.actual !== null) {
+      if (!Number.isFinite(s.actual)) {
+        offenders.push({
+          path: s.path,
+          kind: s.kind,
+          cap: s.cap,
+          actual: s.actual,
+          reason: "non-finite-actual",
+        });
+        continue;
+      }
+      const threshold = 2 * s.cap;
+      if (s.actual > threshold) {
+        offenders.push({
+          path: s.path,
+          kind: s.kind,
+          cap: s.cap,
+          actual: s.actual,
+          threshold,
+          reason: "over-2x-cap",
+        });
+      }
     }
   }
   return { ok: offenders.length === 0, offenders };
@@ -81,18 +105,34 @@ function run() {
   // eslint-disable-next-line global-require
   const { SINK_CAPS } = require("../hooks/lib/rotate");
   const sinks = [];
+  let existing = 0;
   for (const [absPath, capEntry] of Object.entries(SINK_CAPS || {})) {
+    const rel = path.relative(ROOT, absPath).replace(/\\/g, "/");
+    // RAW kind — NO coercion. An unrecognized kind must reach evaluate() and be
+    // flagged malformed, not laundered into "lines" (F-ENF-2).
+    const kind = capEntry && capEntry.kind;
+    const cap = capEntry && capEntry.cap;
+
+    // Distinguish "doesn't exist" (legit skip of the size check) from
+    // "existsSync THREW" (fail-closed — the sink is an unreadable offender).
     let exists = false;
+    let existsFaulted = false;
     try {
       exists = fs.existsSync(absPath);
     } catch {
-      exists = false;
+      existsFaulted = true;
     }
-    if (!exists) continue; // fresh install / not yet written — legitimately skipped
+    if (existsFaulted) {
+      sinks.push({ path: rel, kind, cap, unreadable: true });
+      continue;
+    }
+    if (!exists) {
+      // Inventory descriptor STILL validated (F-ENF-3); no file to measure.
+      sinks.push({ path: rel, kind, cap });
+      continue;
+    }
 
-    const rel = path.relative(ROOT, absPath).replace(/\\/g, "/");
-    const kind = capEntry && (capEntry.kind === "bytes" ? "bytes" : "lines");
-    const cap = capEntry && capEntry.cap;
+    existing++;
     let actual;
     let unreadable = false;
     try {
@@ -107,7 +147,10 @@ function run() {
     }
     sinks.push({ path: rel, kind, cap, actual, unreadable });
   }
-  return { ...evaluate({ sinks }), scanned: sinks.length };
+  // `inventory` = every declared sink (validated); `scanned` = those that exist
+  // and were size-checked. (F-ENF-3: the count reflects the inventory, not just
+  // existing files.)
+  return { ...evaluate({ sinks }), scanned: existing, inventory: sinks.length };
 }
 
 module.exports = { evaluate, run };
@@ -128,7 +171,9 @@ if (require.main === module) {
   if (JSON_OUT) {
     console.log(JSON.stringify({ check: NAME, enforce: ENFORCE, ...res }));
   } else if (res.ok) {
-    console.log(`OK   [${NAME}] all ${res.scanned} known sink(s) within 2x cap`);
+    console.log(
+      `OK   [${NAME}] inventory ${res.inventory} sink(s) well-formed; ${res.scanned} existing within 2x cap`,
+    );
   } else {
     const verb = ENFORCE ? "FAIL" : "REPORT";
     console.error(

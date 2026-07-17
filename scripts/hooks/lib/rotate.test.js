@@ -2,21 +2,25 @@
 "use strict";
 
 /**
- * Isolated P5 test for rotate.js. Proves:
- *   1. below-cap no-op — file untouched
- *   2. at/over-cap rotates to `.1`; ZERO lines lost across the rename +
- *      the next append (pre-count == .1 lines + new lines)
- *   3. cheap-stat pre-gate does NOT rotate a large-bytes/low-lines file
- *      prematurely (proceeds to the real line count, which is under cap)
- *   4. fault-injection (rename / read throws) → returns falsy, NEVER throws
- *   5. missing / 0-byte file → no-op
- *   6. rotateBytesIfNeeded — the byte-cap sibling, same shape
+ * Isolated test for rotate.js — ARCHIVE-MOVE rotation (D-1: raw history is
+ * never destroyed; the over-cap sink MOVES into the archive tier, not `.1`).
+ * Proves:
+ *   1. below-cap no-op — file untouched, nothing archived
+ *   2. at/over-cap ARCHIVES (active file gone, archive carries ALL lines, index
+ *      entry written); the next append recreates fresh, ZERO lines lost
+ *   3. F-ROT-1: ≥2 generations — a second rotation creates a SECOND archive
+ *      generation; the first is NEVER clobbered (unique names)
+ *   4. F-ROT-2: the SOUND pre-gate rotates a tiny-byte/high-line file that the
+ *      old 50-byte/line floor would have skipped
+ *   5. F-ROT-3: at/over-cap boundary — exactly `cap` lines rotates; `cap-1` does not
+ *   6. F-ROT-4: rotateSink is CLOSED over SINK_CAPS — an unknown path is a no-op
+ *   7. fault-injection (archive move throws) → falsy, NEVER throws, source kept
+ *   8. missing / 0-byte file → no-op
+ *   9. rotateBytesIfNeeded — the byte-cap sibling, archive semantics
  *
- * Real filesystem, sealed temp dirs (via fixture-harness's sealedDir) — this
- * module operates on actual files, not an in-memory pure-evaluate shape, so
- * the harness's `test`/`violation`/`failClosed` runners (not `pass`, whose
- * isPass() interpreter expects an enforcer-style {ok/violations/...} shape)
- * drive assert-based assertions directly.
+ * Real filesystem, sealed temp dirs (via fixture-harness's sealedDir) — the
+ * temp dir IS the trusted root; the archive tier lands at
+ * <root>/.claude/runtime/archive/.
  *
  *   node scripts/hooks/lib/rotate.test.js
  */
@@ -28,9 +32,11 @@ const { harness, sealedDir } = require("../../checks/lib/fixture-harness");
 const {
   rotateIfNeeded,
   rotateBytesIfNeeded,
+  rotateSink,
   MIN_BYTES_PER_LINE,
   DEFAULT_JSONL_CAP_LINES,
   SINK_CAPS,
+  CAP_CLASSES,
 } = require("./rotate");
 
 const h = harness("rotate");
@@ -49,110 +55,145 @@ function mkLines(n, padTo) {
   return lines.join("\n") + "\n";
 }
 
-// ── 1. below-cap no-op — untouched ──────────────────────────────────────────
-h.test("below-cap: file untouched, content identical", () => {
+/** List archived files (everything under <root>/.claude/runtime/archive except index.jsonl). */
+function archivedFiles(root) {
+  const dir = path.join(root, ".claude", "runtime", "archive");
+  let names = [];
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return [];
+  }
+  return names.filter((n) => n !== "index.jsonl").map((n) => path.join(dir, n));
+}
+
+function readIndex(root) {
+  try {
+    const raw = fs.readFileSync(path.join(root, ".claude", "runtime", "archive", "index.jsonl"), "utf8");
+    return raw.split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  } catch {
+    return [];
+  }
+}
+
+// ── 1. below-cap no-op — untouched, nothing archived ────────────────────────
+h.test("below-cap: file untouched, nothing archived", () => {
   const fx = sealedDir({}, "rotate-below-cap");
   try {
     const file = fx.file("events.jsonl");
     const content = mkLines(5);
     fs.writeFileSync(file, content, "utf8");
-    const res = rotateIfNeeded(file, 20000);
+    const res = rotateIfNeeded(file, 20000, { root: fx.dir });
     assert.strictEqual(res.rotated, false, "should not rotate below cap");
     assert.strictEqual(fs.readFileSync(file, "utf8"), content, "content must be byte-identical");
-    assert.ok(!fs.existsSync(file + ".1"), "no .1 generation should be created");
+    assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing should be archived");
   } finally {
     fx.cleanup();
   }
 });
 
-// ── 2. at/over-cap rotates; ZERO lines lost across rename + next append ────
-h.test("over-cap: rotates to .1, next append recreates fresh, zero lines lost", () => {
+// ── 2. at/over-cap ARCHIVES; ZERO lines lost across move + next append ──────
+h.test("over-cap: archives (active gone, archive carries ALL lines), zero lines lost", () => {
   const fx = sealedDir({}, "rotate-over-cap");
   try {
     const file = fx.file("events.jsonl");
     const cap = 20;
-    // Pad each line so total size clears the cheap pre-gate threshold
-    // (cap * MIN_BYTES_PER_LINE) comfortably, mirroring real event lines.
     const originalContent = mkLines(cap + 5, 120);
     const originalLineCount = countLines(originalContent);
     fs.writeFileSync(file, originalContent, "utf8");
 
-    const res = rotateIfNeeded(file, cap);
+    const res = rotateIfNeeded(file, cap, { root: fx.dir });
     assert.strictEqual(res.rotated, true, "should rotate when over cap");
-    assert.ok(!fs.existsSync(file), "active file path should be gone immediately after rename");
-    assert.ok(fs.existsSync(file + ".1"), ".1 generation should exist");
-    const rotatedLineCount = countLines(fs.readFileSync(file + ".1", "utf8"));
-    assert.strictEqual(rotatedLineCount, originalLineCount, ".1 must carry ALL original lines");
+    assert.strictEqual(res.reason, "archived");
+    assert.ok(!fs.existsSync(file), "active file path should be gone after the archive move");
 
-    // The next append recreates `file` fresh (caller's responsibility, per
-    // contract) — simulate it and prove zero lines lost overall.
+    const arch = archivedFiles(fx.dir);
+    assert.strictEqual(arch.length, 1, "exactly one archive generation should exist");
+    const archivedLineCount = countLines(fs.readFileSync(arch[0], "utf8"));
+    assert.strictEqual(archivedLineCount, originalLineCount, "archive must carry ALL original lines");
+
+    const idx = readIndex(fx.dir);
+    assert.strictEqual(idx.length, 1, "an index entry must be written");
+    assert.strictEqual(idx[0].origin, "events.jsonl", "index records the origin (relative)");
+    assert.ok(idx[0].reason && idx[0].reason.startsWith("rotation:"), "index records the reason");
+
+    // The next append recreates `file` fresh (caller's contract) — zero lines lost overall.
     const newLine = JSON.stringify({ i: "new-after-rotation" }) + "\n";
     fs.appendFileSync(file, newLine, "utf8");
     const newLineCount = countLines(fs.readFileSync(file, "utf8"));
     assert.strictEqual(newLineCount, 1, "fresh active file should carry only the new line");
     assert.strictEqual(
-      rotatedLineCount + newLineCount,
+      archivedLineCount + newLineCount,
       originalLineCount + 1,
-      "total lines across .1 + fresh active == original + the one new append (zero lost)",
+      "total lines across archive + fresh active == original + the one new append (zero lost)",
     );
   } finally {
     fx.cleanup();
   }
 });
 
-// ── 2b. overwrite semantics: exactly ONE generation kept ────────────────────
-h.test("a second rotation overwrites the prior .1 (exactly one generation)", () => {
-  const fx = sealedDir({}, "rotate-one-gen");
+// ── 3. F-ROT-1: ≥2 generations — a second rotation NEVER clobbers the first ──
+h.test("F-ROT-1: a second rotation creates a SECOND archive generation (no clobber)", () => {
+  const fx = sealedDir({}, "rotate-two-gen");
   try {
     const file = fx.file("events.jsonl");
     const cap = 5;
     fs.writeFileSync(file, mkLines(cap + 3, 120), "utf8");
-    let res = rotateIfNeeded(file, cap);
+    let res = rotateIfNeeded(file, cap, { root: fx.dir });
     assert.strictEqual(res.rotated, true);
-    const firstGen = fs.readFileSync(file + ".1", "utf8");
+    const firstGen = fs.readFileSync(res.archived, "utf8");
 
     fs.writeFileSync(file, mkLines(cap + 10, 120), "utf8");
-    res = rotateIfNeeded(file, cap);
+    res = rotateIfNeeded(file, cap, { root: fx.dir });
     assert.strictEqual(res.rotated, true);
-    const secondGen = fs.readFileSync(file + ".1", "utf8");
-    assert.notStrictEqual(secondGen, firstGen, "the .1 generation should have been overwritten");
-    assert.strictEqual(countLines(secondGen), cap + 10);
+
+    const arch = archivedFiles(fx.dir);
+    assert.strictEqual(arch.length, 2, "BOTH generations must survive — no clobber (F-ROT-1)");
+    // The first generation's content is still present verbatim in one of the two.
+    const contents = arch.map((f) => fs.readFileSync(f, "utf8"));
+    assert.ok(contents.includes(firstGen), "the first generation must NOT have been overwritten");
+    assert.strictEqual(readIndex(fx.dir).length, 2, "two index entries — one per generation");
   } finally {
     fx.cleanup();
   }
 });
 
-// ── 3. cheap-stat pre-gate does NOT rotate a large-bytes/low-lines file ─────
-h.test("pre-gate: large bytes but few lines does not rotate prematurely", () => {
+// ── 4. F-ROT-2: SOUND pre-gate rotates a tiny-byte / high-line file ─────────
+h.test("F-ROT-2: tiny 3-byte-per-line file over cap DOES rotate (sound floor)", () => {
+  const fx = sealedDir({}, "rotate-sound-pregate");
+  try {
+    assert.strictEqual(MIN_BYTES_PER_LINE, 1, "the pre-gate floor must be the sound value 1");
+    const file = fx.file("events.jsonl");
+    const cap = 10;
+    // 20 lines of `{}` (~3 bytes each ⇒ ~60 bytes). The OLD 50-byte/line floor
+    // (threshold 10*50 = 500 bytes) would have skipped this file, so a genuinely
+    // over-cap file never rotated (F-ROT-2). The sound floor (threshold = cap = 10
+    // bytes) lets the real line count run: 20 lines >= cap ⇒ rotate.
+    fs.writeFileSync(file, Array.from({ length: 20 }, () => "{}").join("\n") + "\n", "utf8");
+    const res = rotateIfNeeded(file, cap, { root: fx.dir });
+    assert.strictEqual(res.rotated, true, "an over-cap tiny-line file MUST rotate under the sound floor");
+    assert.strictEqual(archivedFiles(fx.dir).length, 1);
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 4b. pre-gate still spares a genuinely-small file (no premature read/rotate) ─
+h.test("pre-gate: large bytes but few lines does not rotate; tiny file spared", () => {
   const fx = sealedDir({}, "rotate-pregate");
   try {
     const file = fx.file("events.jsonl");
-    const cap = 10;
-    // 3 lines, each padded to 300 bytes ⇒ ~900 bytes total, clears the
-    // cheap pre-gate threshold (cap * MIN_BYTES_PER_LINE = 10*50 = 500), so
-    // the real line count runs — and 3 lines is well under cap=10, so it
-    // must NOT rotate.
+    // few lines, big bytes — clears the pre-gate, real count is under cap.
     const content = mkLines(3, 300);
-    assert.ok(
-      Buffer.byteLength(content, "utf8") >= cap * MIN_BYTES_PER_LINE,
-      "fixture must clear the pre-gate threshold to exercise the real line count",
-    );
     fs.writeFileSync(file, content, "utf8");
-    const res = rotateIfNeeded(file, cap);
+    let res = rotateIfNeeded(file, 10, { root: fx.dir });
     assert.strictEqual(res.rotated, false, "few real lines under cap must not rotate");
     assert.strictEqual(fs.readFileSync(file, "utf8"), content, "content must be untouched");
-  } finally {
-    fx.cleanup();
-  }
-});
 
-h.test("pre-gate: tiny file below the byte floor never reads/rotates", () => {
-  const fx = sealedDir({}, "rotate-pregate-tiny");
-  try {
-    const file = fx.file("events.jsonl");
-    const cap = 20000; // threshold = 20000*50 = 1,000,000 bytes
-    fs.writeFileSync(file, mkLines(3), "utf8"); // a few hundred bytes only
-    const res = rotateIfNeeded(file, cap);
+    // tiny file under a big cap → below-pregate (no read).
+    const file2 = fx.file("events2.jsonl");
+    fs.writeFileSync(file2, mkLines(3), "utf8");
+    res = rotateIfNeeded(file2, 20000, { root: fx.dir });
     assert.strictEqual(res.rotated, false);
     assert.strictEqual(res.reason, "below-pregate");
   } finally {
@@ -160,72 +201,76 @@ h.test("pre-gate: tiny file below the byte floor never reads/rotates", () => {
   }
 });
 
-// ── 4. fault-injection — NEVER throws, returns falsy ────────────────────────
-h.violation("rename throwing surfaces as a falsy result, never a throw", () => {
-  const fx = sealedDir({}, "rotate-fault-rename");
+// ── 5. F-ROT-3: at/over-cap boundary — exactly `cap` rotates, `cap-1` doesn't ─
+h.test("F-ROT-3: exactly cap lines rotates (at/over); cap-1 does not", () => {
+  const fx = sealedDir({}, "rotate-exact-cap");
+  try {
+    const cap = 12;
+    const atCap = fx.file("at.jsonl");
+    fs.writeFileSync(atCap, mkLines(cap, 40), "utf8"); // EXACTLY cap lines
+    let res = rotateIfNeeded(atCap, cap, { root: fx.dir });
+    assert.strictEqual(res.rotated, true, "exactly cap lines must rotate (>= cap)");
+
+    const underCap = fx.file("under.jsonl");
+    fs.writeFileSync(underCap, mkLines(cap - 1, 40), "utf8"); // cap-1 lines
+    res = rotateIfNeeded(underCap, cap, { root: fx.dir });
+    assert.strictEqual(res.rotated, false, "cap-1 lines must NOT rotate");
+    assert.strictEqual(res.reason, "under-cap");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 6. F-ROT-4: rotateSink is CLOSED over SINK_CAPS — unknown path no-ops ────
+h.test("F-ROT-4: rotateSink no-ops on an unknown (unregistered) path", () => {
+  const fx = sealedDir({}, "rotate-sink-closure");
+  try {
+    const file = fx.file("not-a-known-sink.jsonl");
+    fs.writeFileSync(file, mkLines(50, 200), "utf8"); // way over any default cap
+    const res = rotateSink(file, { root: fx.dir });
+    assert.strictEqual(res.rotated, false, "an unknown sink must never rotate");
+    assert.strictEqual(res.reason, "unknown-sink");
+    assert.strictEqual(archivedFiles(fx.dir).length, 0, "nothing archived for an unknown sink");
+    assert.ok(fs.existsSync(file), "the unknown file is left untouched");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 7. fault-injection — archive move throws → falsy, NEVER throws ───────────
+h.violation("archive move throwing surfaces as a falsy result, never a throw; source kept", () => {
+  const fx = sealedDir({}, "rotate-fault-move");
   try {
     const file = fx.file("events.jsonl");
     const cap = 5;
     fs.writeFileSync(file, mkLines(cap + 5, 120), "utf8");
     const origRename = fs.renameSync;
     fs.renameSync = () => {
-      throw new Error("injected rename failure");
+      throw new Error("injected move failure");
     };
     let res;
     let threw = false;
     try {
-      res = rotateIfNeeded(file, cap);
+      res = rotateIfNeeded(file, cap, { root: fx.dir });
     } catch {
       threw = true;
     } finally {
       fs.renameSync = origRename;
     }
-    // { ok: true } (isPass=true, a "pass") would mean the planted fault WAS
-    // handled safely — but this is a violation() assertion, so we invert:
-    // we WANT the safe outcome (no throw, falsy rotated) to register as
-    // "not a pass" is wrong framing — assert directly instead and return a
-    // shape isPass() reads as a fail (throwing) if our own assertion fails.
-    assert.strictEqual(threw, false, "rotateIfNeeded must NEVER throw, even on a fs fault");
-    assert.strictEqual(res.rotated, false, "a fault must surface as a falsy rotated result");
-    return { ok: false }; // mark this h.violation as "correctly caught" (see harness semantics)
+    assert.strictEqual(threw, false, "rotateIfNeeded must NEVER throw, even on a move fault");
+    assert.strictEqual(res.rotated, false, "a move fault must surface as a falsy result");
+    assert.ok(fs.existsSync(file), "the source must be KEPT when the archive move fails (no data loss)");
+    return { ok: false }; // mark this h.violation as "correctly caught"
   } finally {
     fx.cleanup();
   }
 });
 
-h.violation("readFileSync throwing after the pre-gate also returns falsy, never throws", () => {
-  const fx = sealedDir({}, "rotate-fault-read");
-  try {
-    const file = fx.file("events.jsonl");
-    const cap = 5;
-    fs.writeFileSync(file, mkLines(cap + 5, 120), "utf8");
-    const origRead = fs.readFileSync;
-    fs.readFileSync = () => {
-      throw new Error("injected read failure");
-    };
-    let res;
-    let threw = false;
-    try {
-      res = rotateIfNeeded(file, cap);
-    } catch {
-      threw = true;
-    } finally {
-      fs.readFileSync = origRead;
-    }
-    assert.strictEqual(threw, false, "rotateIfNeeded must NEVER throw, even on a fs fault");
-    assert.strictEqual(res.rotated, false, "a fault must surface as a falsy rotated result");
-    return { ok: false };
-  } finally {
-    fx.cleanup();
-  }
-});
-
-// ── 5. missing / 0-byte file → no-op ────────────────────────────────────────
+// ── 8. missing / 0-byte file → no-op ────────────────────────────────────────
 h.test("missing file is a no-op (falsy, no throw)", () => {
   const fx = sealedDir({}, "rotate-missing");
   try {
-    const file = fx.file("does-not-exist.jsonl");
-    const res = rotateIfNeeded(file, 10);
+    const res = rotateIfNeeded(fx.file("does-not-exist.jsonl"), 10, { root: fx.dir });
     assert.strictEqual(res.rotated, false);
   } finally {
     fx.cleanup();
@@ -237,27 +282,29 @@ h.test("0-byte file is a no-op", () => {
   try {
     const file = fx.file("empty.jsonl");
     fs.writeFileSync(file, "", "utf8");
-    const res = rotateIfNeeded(file, 1);
+    const res = rotateIfNeeded(file, 1, { root: fx.dir });
     assert.strictEqual(res.rotated, false);
   } finally {
     fx.cleanup();
   }
 });
 
-// ── 6. rotateBytesIfNeeded — byte-cap sibling ───────────────────────────────
-h.test("rotateBytesIfNeeded: under cap no-op, over cap rotates", () => {
+// ── 9. rotateBytesIfNeeded — byte-cap sibling, archive semantics ─────────────
+h.test("rotateBytesIfNeeded: under cap no-op, over cap archives", () => {
   const fx = sealedDir({}, "rotate-bytes");
   try {
     const file = fx.file("team-guard-debug.log");
     fs.writeFileSync(file, "x".repeat(1000), "utf8");
-    let res = rotateBytesIfNeeded(file, 2000);
+    let res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
     assert.strictEqual(res.rotated, false, "under cap must not rotate");
 
     fs.writeFileSync(file, "x".repeat(3000), "utf8");
-    res = rotateBytesIfNeeded(file, 2000);
-    assert.strictEqual(res.rotated, true, "over cap must rotate");
-    assert.ok(fs.existsSync(file + ".1"));
-    assert.strictEqual(fs.readFileSync(file + ".1", "utf8").length, 3000);
+    res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
+    assert.strictEqual(res.rotated, true, "over cap must archive");
+    assert.ok(!fs.existsSync(file), "active file moved to archive");
+    const arch = archivedFiles(fx.dir);
+    assert.strictEqual(arch.length, 1);
+    assert.strictEqual(fs.readFileSync(arch[0], "utf8").length, 3000, "archive carries the full bytes");
   } finally {
     fx.cleanup();
   }
@@ -275,7 +322,7 @@ h.violation("rotateBytesIfNeeded fault-injection never throws", () => {
     let res;
     let threw = false;
     try {
-      res = rotateBytesIfNeeded(file, 2000);
+      res = rotateBytesIfNeeded(file, 2000, { root: fx.dir });
     } catch {
       threw = true;
     } finally {
@@ -289,12 +336,16 @@ h.violation("rotateBytesIfNeeded fault-injection never throws", () => {
   }
 });
 
-// ── Bonus: SINK_CAPS shape sanity (single source of truth) ─────────────────
-h.test("SINK_CAPS carries the expected default line cap", () => {
+// ── Bonus: SINK_CAPS shape + per-class caps (amendment #2) ──────────────────
+h.test("SINK_CAPS carries per-class caps (amendment #2)", () => {
   assert.strictEqual(DEFAULT_JSONL_CAP_LINES, 20000);
-  const kinds = Object.values(SINK_CAPS).map((e) => e.kind);
-  assert.ok(kinds.length > 0, "SINK_CAPS should not be empty in a real checkout");
-  assert.ok(kinds.every((k) => k === "lines" || k === "bytes"), "every entry has a recognized kind");
+  const entries = Object.values(SINK_CAPS);
+  assert.ok(entries.length > 0, "SINK_CAPS should not be empty in a real checkout");
+  assert.ok(entries.every((e) => e.kind === "lines" || e.kind === "bytes"), "recognized kinds only");
+  assert.ok(entries.every((e) => typeof e.class === "string" && CAP_CLASSES[e.class]), "every sink carries a known class");
+  // Distinct classes really do carry distinct caps (not a uniform 20k).
+  const caps = new Set(Object.values(CAP_CLASSES).map((c) => c.cap));
+  assert.ok(caps.size > 1, "the classes must not all share one cap");
 });
 
 h.done();

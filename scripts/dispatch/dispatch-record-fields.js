@@ -164,15 +164,16 @@ function quotaField(provider, known = {}) {
 function appendRecord(file, record) {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    // Write-time rotation before the append (SINK_CAPS-driven when `file`
-    // matches a known sink — e.g. dispatch-completions.jsonl — else a no-op).
-    // rotate.js functions never throw, but guard the call itself too so a
-    // future rotate.js change can't regress this file's fail-open contract.
+    // Write-time rotation before the append — CLOSED over the SINK_CAPS
+    // allowlist (F-ROT-4). rotateSink is a no-op for any path that is NOT a
+    // known sink; we must NEVER rotate an arbitrary caller-supplied path (that
+    // was the unknown-sink fallback bug — it could archive-move any file the
+    // caller named). rotate.js functions never throw, but guard the call itself
+    // too so a future rotate.js change can't regress this file's fail-open
+    // contract.
     if (_rotate) {
       try {
-        const entry = _rotate.sinkCapFor(file);
-        if (entry) _rotate.rotateSink(file);
-        else _rotate.rotateIfNeeded(file); // unknown sink — default line cap
+        _rotate.rotateSink(file); // known sinks only; unknown → no-op
       } catch {
         /* rotation is best-effort */
       }
