@@ -58,6 +58,50 @@ function resolveInsideRoot(rootAbs, candidate) {
   }
 }
 
+/**
+ * containResolved — the SINGLE REALPATH-based containment predicate, applied at
+ * EVERY path-crossing site in this module (archive source, archive dest dir,
+ * index, restore origin, restore archived). Lexical resolveInsideRoot alone
+ * misses a symlink/JUNCTION ANCESTOR (a parent dir that is itself a link out of
+ * root); this resolves the REAL path and refuses anything whose real location
+ * escapes root. Handles an ABOUT-TO-BE-CREATED target (e.g. the dest file, or a
+ * restore origin) by realpath-resolving its nearest EXISTING ancestor and
+ * re-checking the composed real path. Returns the safe absolute path, or null
+ * when real containment cannot be proven (fail-closed).
+ */
+function containResolved(rootAbs, candidate) {
+  try {
+    const lexical = resolveInsideRoot(rootAbs, candidate);
+    if (!lexical) return null; // fast lexical pre-check
+    // Walk up to the nearest EXISTING ancestor and realpath THAT.
+    let probe = lexical;
+    let real = null;
+    for (let i = 0; i < 128; i++) {
+      try {
+        real = fs.realpathSync(probe);
+        break;
+      } catch (e) {
+        if (e && e.code === "ENOENT") {
+          const parent = path.dirname(probe);
+          if (parent === probe) return null; // reached the fs root unresolved
+          probe = parent;
+          continue;
+        }
+        return null; // any other stat/permission fault → fail-closed
+      }
+    }
+    if (real === null) return null;
+    if (!resolveInsideRoot(rootAbs, real)) return null; // real ancestor escapes root
+    // Re-attach the not-yet-existing suffix onto the REAL ancestor and re-check.
+    const suffix = path.relative(probe, lexical); // "" when the candidate existed
+    if (suffix.startsWith("..")) return null; // paranoia — suffix must descend
+    const composed = suffix ? path.join(real, suffix) : real;
+    return resolveInsideRoot(rootAbs, composed);
+  } catch {
+    return null;
+  }
+}
+
 /** Absolute path to the archive dir for `root`. */
 function archiveDir(rootAbs) {
   return path.join(rootAbs, ARCHIVE_SUBDIR);
@@ -107,7 +151,9 @@ function archive(srcPath, opts) {
       return { ok: false, reason: "no-trusted-root" };
     }
     const rootAbs = path.resolve(opts.root);
-    const srcAbs = resolveInsideRoot(rootAbs, srcPath);
+    // SOURCE containment — realpath (containResolved), so a symlink/junction
+    // ANCESTOR that lexical resolution misses cannot pull an external file in.
+    const srcAbs = containResolved(rootAbs, srcPath);
     if (!srcAbs) return { ok: false, reason: "escapes-root" };
 
     // Regular-file only, no symlink-follow (defense against a swapped target).
@@ -119,51 +165,37 @@ function archive(srcPath, opts) {
     }
     if (!st.isFile()) return { ok: false, reason: "not-a-regular-file" };
 
-    // Realpath containment (F-RET-1 hardening): the LEXICAL resolveInsideRoot
-    // above misses a symlink/JUNCTION ANCESTOR — a parent dir that is itself a
-    // link pointing OUTSIDE root — which would let the rename pull an external
-    // file INTO the archive. Resolve the REAL path of the source's parent and
-    // refuse if it escapes root. This closes the ancestor-junction vector
-    // present at check time. The irreducible residual (a swap in the narrow
-    // realpath→rename window) is the Node-openat limitation tracked in ADR 0017.
-    try {
-      const realParent = fs.realpathSync(path.dirname(srcAbs));
-      if (!resolveInsideRoot(rootAbs, realParent)) {
-        return { ok: false, reason: "escapes-root-real" };
-      }
-    } catch {
-      return { ok: false, reason: "unresolvable-parent" }; // fail-closed
-    }
-
+    // DEST-DIR containment — the archive dir itself must stay inside root. If
+    // .claude/runtime/archive is a JUNCTION/symlink out of root, the move would
+    // otherwise follow it and write the raw log + index OUTSIDE root (breaking
+    // the in-root archive guarantee). mkdir first (so realpath can resolve it),
+    // then containResolve it.
     const dir = archiveDir(rootAbs);
     try {
       fs.mkdirSync(dir, { recursive: true });
     } catch {
       return { ok: false, reason: "archive-dir-unwritable" };
     }
+    const dirSafe = containResolved(rootAbs, dir);
+    if (!dirSafe) return { ok: false, reason: "archive-dir-escapes-root" };
 
     // Capture size/lines BEFORE the move (best-effort telemetry for the index).
     const bytes = typeof st.size === "number" ? st.size : null;
     const lines = countLinesSafe(srcAbs);
 
-    const destAbs = path.join(dir, uniqueArchiveName(path.basename(srcAbs)));
+    const destAbs = path.join(dirSafe, uniqueArchiveName(path.basename(srcAbs)));
 
-    // Move: rename is atomic on-device; fall back to copy+unlink across devices.
+    // Move = rename ONLY. The archive tier lives under the SAME root (and volume)
+    // as the source, so a legitimate rename never crosses devices. The old EXDEV
+    // copy-THEN-unlink(src) fallback was REMOVED: a cross-volume ancestor swap in
+    // the check→rename window could make that unlink DELETE an external file —
+    // arbitrary out-of-root deletion, WORSE than a recoverable move (ADR-0017).
+    // On ANY rename error (incl. EXDEV) we fail cleanly: source KEPT, nothing
+    // copied, nothing unlinked. This is why archive.js has NO source unlink at all.
     try {
       fs.renameSync(srcAbs, destAbs);
-    } catch (e) {
-      if (e && e.code === "EXDEV") {
-        try {
-          fs.copyFileSync(srcAbs, destAbs);
-          fs.unlinkSync(srcAbs);
-        } catch {
-          return { ok: false, reason: "move-failed" };
-        }
-      } else {
-        // Source vanished between lstat and rename (a concurrent archiver won
-        // the race) — NOT data loss: the other archiver moved it. No-op.
-        return { ok: false, reason: "move-failed" };
-      }
+    } catch {
+      return { ok: false, reason: "move-failed" };
     }
 
     const entry = {
@@ -243,16 +275,23 @@ function restore(entry, opts) {
     if (!entry || typeof entry !== "object") return { ok: false, reason: "bad-entry" };
     if (!opts.root) return { ok: false, reason: "no-trusted-root" };
     const rootAbs = path.resolve(opts.root);
-    const archivedAbs = resolveInsideRoot(rootAbs, path.join(rootAbs, entry.archived || ""));
-    const originAbs = resolveInsideRoot(rootAbs, path.join(rootAbs, entry.origin || ""));
+    // REALPATH containment on BOTH paths (containResolved) — an origin/archived
+    // ancestor junction can otherwise redirect the copy/unlink OUT of root even
+    // though the lexical path looks in-root (gauntlet R3). archived exists;
+    // origin is about-to-be-created (containResolved resolves its real ancestor).
+    const archivedAbs = containResolved(rootAbs, path.join(rootAbs, entry.archived || ""));
+    const originAbs = containResolved(rootAbs, path.join(rootAbs, entry.origin || ""));
     if (!archivedAbs || !originAbs) return { ok: false, reason: "escapes-root" };
-    let archivedPresent = true;
+    // archived must be a REGULAR file (lstat, no-follow) — never copy through a
+    // symlink source.
+    let ast;
     try {
-      fs.lstatSync(archivedAbs);
+      ast = fs.lstatSync(archivedAbs);
     } catch (e) {
-      if (e && e.code === "ENOENT") archivedPresent = false;
+      if (e && e.code === "ENOENT") return { ok: false, reason: "archived-missing" };
+      return { ok: false, reason: "archived-unreadable" };
     }
-    if (!archivedPresent) return { ok: false, reason: "archived-missing" };
+    if (!ast.isFile()) return { ok: false, reason: "archived-not-a-regular-file" };
     // ATOMIC no-clobber restore. A manual "does the origin exist?" check
     // followed by renameSync is TOCTOU-racy (a file created between the check
     // and the rename gets overwritten — renameSync replaces on POSIX). Instead,

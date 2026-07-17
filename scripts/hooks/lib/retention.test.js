@@ -507,14 +507,23 @@ test("F-RET-2: retention CLI refuses --apply without --root or CLAUDE_PROJECT_DI
   }
 });
 
-// ── session-start NEWDEF: the live-state scan uses lstat (no symlink-follow) ─
-test("session-start.js live-state scan uses lstat (no-follow) + isFile (symlink content-injection guard)", () => {
+// ── session-start NEWDEF: the live-state scan uses lstat + an ATOMIC no-follow read ─
+test("session-start.js live-state uses lstat(no-follow)+isFile AND an O_NOFOLLOW atomic read (content-injection guard)", () => {
   const ssPath = path.join(__dirname, "..", "session-start.js");
   const src = fs.readFileSync(ssPath, "utf8");
   const anchor = src.indexOf("HANDOFF_LIVE_RE.test(f)");
   const mapRegion = src.slice(anchor, anchor + 900);
   assert.ok(/lstatSync/.test(mapRegion), "the live-state scan must lstat the handoff-live entries (no-follow)");
   assert.ok(/isFile\(\)/.test(mapRegion), "the live-state scan must drop non-regular files (isFile)");
+  // The READ that surfaces content must be atomic no-follow (openSync O_NOFOLLOW +
+  // read from the fd), closing the lstat→read window a symlink swap could exploit.
+  const readRegion = src.slice(anchor, anchor + 3000);
+  assert.ok(/O_NOFOLLOW/.test(readRegion), "the surfacing read must open with O_NOFOLLOW");
+  assert.ok(/openSync/.test(readRegion) && /O_RDONLY/.test(readRegion), "the surfacing read must openSync (fd-based)");
+  assert.ok(
+    /readFileSync\(fd/.test(readRegion) || /fstatSync\(fd/.test(readRegion),
+    "the surfacing read must read from the OPEN fd (not readFileSync-by-path) so it is atomic with the check",
+  );
 });
 
 // ── Bonus: the load/prune invariant this module encodes at require-time ─────

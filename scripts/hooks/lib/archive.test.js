@@ -374,11 +374,128 @@ h.test("β no-delete proof: retention.js + rotate.js contain NO fs.unlink/fs.rm/
       );
     }
   }
-  // archive.js's unlinks are ONLY the EXDEV copy-THEN-unlink move + lock release —
-  // never a user-data delete. Assert each data-move unlink is paired with a copy.
+  // archive.js: the EXDEV copy-then-unlink(SOURCE) fallback is REMOVED (it could
+  // delete an external cross-volume file via an ancestor swap). archive() now
+  // moves by rename ONLY, so archive.js has NO source unlink at all. The only
+  // remaining unlinks are restore()'s archived-file unlink (a MOVE completion on
+  // a containResolved in-root path) and the lock-file release — never a source or
+  // out-of-root delete.
   const arch = stripComments(fs.readFileSync(path.join(__dirname, "archive.js"), "utf8"));
-  const copyCount = (arch.match(/fs\.copyFileSync/g) || []).length;
-  assert.ok(copyCount >= 2, "archive.js keeps its EXDEV copy-before-unlink move semantics (archive + restore)");
+  assert.ok(
+    !/unlinkSync\(srcAbs\)/.test(arch),
+    "archive.js must NOT unlink the move source (the EXDEV external-delete vector is removed)",
+  );
+  assert.ok(
+    !/code === "EXDEV"/.test(arch) || !/copyFileSync\(srcAbs/.test(arch),
+    "archive.js archive() must not carry the EXDEV copyFileSync(src)+unlink(src) fallback",
+  );
+});
+
+// ── β containment (R3): the EXDEV fallback fails CLEANLY (external-delete removed) ─
+h.violation("EXDEV rename fails cleanly — no copy, no unlink, source KEPT", () => {
+  const fx = sealedDir({}, "archive-exdev");
+  try {
+    seedRuntime(fx);
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "data\n", "utf8");
+    const origRename = fs.renameSync;
+    const origCopy = fs.copyFileSync;
+    const origUnlink = fs.unlinkSync;
+    let copyCalled = false;
+    let unlinkCalled = false;
+    fs.renameSync = () => {
+      const e = new Error("EXDEV: cross-device link not permitted");
+      e.code = "EXDEV";
+      throw e;
+    };
+    fs.copyFileSync = (...a) => {
+      copyCalled = true;
+      return origCopy(...a);
+    };
+    fs.unlinkSync = (...a) => {
+      unlinkCalled = true;
+      return origUnlink(...a);
+    };
+    let res;
+    let threw = false;
+    try {
+      res = archive.archive(src, { root: fx.dir, reason: "x" });
+    } catch {
+      threw = true;
+    } finally {
+      fs.renameSync = origRename;
+      fs.copyFileSync = origCopy;
+      fs.unlinkSync = origUnlink;
+    }
+    assert.strictEqual(threw, false, "archive must not throw on EXDEV");
+    assert.strictEqual(res.ok, false, "EXDEV must fail cleanly");
+    assert.strictEqual(res.reason, "move-failed");
+    assert.ok(fs.existsSync(src), "the source is KEPT on EXDEV (never deleted)");
+    assert.strictEqual(copyCalled, false, "NO copyFileSync on EXDEV (the fallback is removed)");
+    assert.strictEqual(unlinkCalled, false, "NO unlink on EXDEV (the external-delete vector is gone)");
+    return { ok: false };
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── β containment (R3): a JUNCTION/symlink archive DEST dir is refused ───────
+h.test("dest containment: a symlinked archive dir (out of root) is REFUSED, source not moved out", () => {
+  const fx = sealedDir({}, "archive-dest-junction");
+  const outside = sealedDir({}, "archive-dest-outside");
+  try {
+    seedRuntime(fx);
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "data\n", "utf8");
+    // Make .claude/runtime/archive a symlink to an OUTSIDE dir.
+    const archDir = path.join(fx.dir, ".claude", "runtime", "archive");
+    let symlinkOk = true;
+    try {
+      fs.symlinkSync(outside.dir, archDir, "dir");
+    } catch {
+      symlinkOk = false;
+    }
+    if (!symlinkOk) return; // platform without symlink perms — skip
+    const res = archive.archive(src, { root: fx.dir, reason: "x" });
+    assert.strictEqual(res.ok, false, "a symlinked-out archive dir must be refused");
+    assert.strictEqual(res.reason, "archive-dir-escapes-root");
+    assert.ok(fs.existsSync(src), "the source is NOT moved out of root");
+    assert.strictEqual(fs.readdirSync(outside.dir).length, 0, "nothing was written outside root");
+  } finally {
+    fx.cleanup();
+    outside.cleanup();
+  }
+});
+
+// ── β containment (R3): restore refuses an out-of-root (junction) origin/archived ─
+h.test("restore containment: an out-of-root origin (via ancestor junction) is REFUSED", () => {
+  const fx = sealedDir({}, "restore-junction");
+  const outside = sealedDir({}, "restore-outside");
+  try {
+    seedRuntime(fx);
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "data\n", "utf8");
+    const a = archive.archive(src, { root: fx.dir, reason: "x" });
+    assert.strictEqual(a.ok, true);
+    // Make an in-root "restoredir" that is actually a junction to OUTSIDE, and
+    // craft an entry whose origin resolves through it.
+    const restoredir = path.join(fx.dir, ".claude", "runtime", "restoredir");
+    let symlinkOk = true;
+    try {
+      fs.symlinkSync(outside.dir, restoredir, "dir");
+    } catch {
+      symlinkOk = false;
+    }
+    if (!symlinkOk) return; // skip on platforms without symlink perms
+    const poisoned = { ...a.entry, origin: ".claude/runtime/restoredir/pwned.md" };
+    const r = archive.restore(poisoned, { root: fx.dir });
+    assert.strictEqual(r.ok, false, "an out-of-root origin (via junction) must be refused");
+    assert.strictEqual(r.reason, "escapes-root");
+    assert.strictEqual(fs.readdirSync(outside.dir).length, 0, "nothing written outside root");
+  } finally {
+    fx.cleanup();
+    outside.cleanup();
+  }
 });
 
 // ── lstat restore no-clobber (LOW hardening, both security passes flagged) ──

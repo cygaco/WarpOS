@@ -354,27 +354,52 @@ process.stdin.on("end", () => {
         // Surface only when the live snapshot is NEWER than the narrative (or no
         // narrative exists) AND recent enough to matter (≤72h).
         if (ageHours < 72 && chosen.mtime > handoffMtime + 1000) {
-          const content = fs
-            .readFileSync(path.join(runtimeDir, chosen.name), "utf8")
-            .trim();
-          // F-RET-4: the live handoff this session just surfaced must never be
-          // archived out from under it (even if it is beyond the newest-N rank).
-          protectedHandoffPaths.push(path.join(runtimeDir, chosen.name));
-          let label;
-          if (source === "clear") {
-            label =
-              "captured at /clear — pre-clear live state; ignore if you cleared to switch tasks (the uncommitted-files list is useful either way)";
-          } else if (source === "startup" && (!curSid || chosen.sid !== curSid)) {
-            label = `from a PRIOR session (\`${chosen.sid}\`) — verify against current git state before trusting`;
-          } else if (curSid && chosen.sid === curSid) {
-            label = "this session's live state — newer than the last narrative handoff";
-          } else {
-            label = `live state from session \`${chosen.sid}\` — verify against current git`;
+          // ATOMIC no-follow read (gauntlet R3 NEWDEF): the earlier lstat proved
+          // a regular file, but a symlink swapped in between that lstat and this
+          // read would inject its target's content into additionalContext. Open
+          // with O_NOFOLLOW (refuses a symlink final component — ELOOP) and read
+          // from the OPEN fd (fstat-confirmed regular file), closing the
+          // check→read window. On any fault (ELOOP / not-a-file / read error) →
+          // do not surface.
+          let content = null;
+          try {
+            const O_NOFOLLOW = fs.constants.O_NOFOLLOW || 0;
+            const fd = fs.openSync(
+              path.join(runtimeDir, chosen.name),
+              fs.constants.O_RDONLY | O_NOFOLLOW,
+            );
+            try {
+              if (fs.fstatSync(fd).isFile()) content = fs.readFileSync(fd, "utf8").trim();
+            } finally {
+              try {
+                fs.closeSync(fd);
+              } catch {
+                /* fd already gone */
+              }
+            }
+          } catch {
+            /* symlink (ELOOP) / vanished / unreadable — never surface external content */
           }
-          liveStateContext = `(${label})\n\n${content}`;
-          checks.push(
-            `Live-state: surfaced (${ageHours < 1 ? "just now" : Math.round(ageHours) + "h ago"}, newer than narrative)`,
-          );
+          if (content != null) {
+            // F-RET-4: the live handoff this session just surfaced must never be
+            // archived out from under it (even if it is beyond the newest-N rank).
+            protectedHandoffPaths.push(path.join(runtimeDir, chosen.name));
+            let label;
+            if (source === "clear") {
+              label =
+                "captured at /clear — pre-clear live state; ignore if you cleared to switch tasks (the uncommitted-files list is useful either way)";
+            } else if (source === "startup" && (!curSid || chosen.sid !== curSid)) {
+              label = `from a PRIOR session (\`${chosen.sid}\`) — verify against current git state before trusting`;
+            } else if (curSid && chosen.sid === curSid) {
+              label = "this session's live state — newer than the last narrative handoff";
+            } else {
+              label = `live state from session \`${chosen.sid}\` — verify against current git`;
+            }
+            liveStateContext = `(${label})\n\n${content}`;
+            checks.push(
+              `Live-state: surfaced (${ageHours < 1 ? "just now" : Math.round(ageHours) + "h ago"}, newer than narrative)`,
+            );
+          }
         }
       }
     } catch {
