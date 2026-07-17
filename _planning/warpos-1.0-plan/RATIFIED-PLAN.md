@@ -1,6 +1,20 @@
 # WarpOS 1.0 — Ratified Kernel Plan (2026-07-17)
 
-**Status: RATIFIED by the operator 2026-07-17 (5 explicit confirmations, this session). Execution begins NEXT session. This document is the source the next session executes from — read it with `verify-don't-inherit` (re-verify live claims against disk/git before building).**
+**Status: RATIFIED by the operator 2026-07-17 (5 explicit confirmations, this session). The NEXT session is a PLAN-HARDENING session, NOT execution (operator directive at wrap, 2026-07-17). Read this doc with `verify-don't-inherit` (re-verify live claims against disk/git before building).**
+
+## NEXT-SESSION DIRECTIVE — plan hardening (operator-ordered procedure, in order)
+1. **Run through the whole plan** — every phase, every ruling, every evidence file — challenging each claim against disk/git (verify-don't-inherit).
+2. **Harden it**: tighten scope/AC per phase, resolve the known discrepancies (§ below), turn phase exits into testable gates, and eyeball any packet doc not yet read firsthand by α (02, 03, 07, 09–15, 17, 18, templates — the 5 keystones 04/05/06/08/16 WERE read firsthand).
+3. **Consult gpt-5.6-sol again on the HARDENED plan** ("sol-reharden"): cabinet role, advisory-only/change-nothing, via `node scripts/dispatch-agent.js cabinet <prompt-file>` — MUST run with `WARPOS_DISPATCH_BACKGROUND=1` and a detached/background shell or the 540s foreground clamp kills the ultra consult deterministically (proven this session: first attempt died at exactly 540373ms; re-run with the env succeeded). `beta-consult.js --out` crashes on absolute paths (I-3) — cabinet route unaffected.
+4. **Then STOP and get the operator's FINAL approval** with an ELI5 summary of EVERY single change and the problem(s) it solves — one line per change, plain language. No execution until that approval.
+
+### Everything the hardening session needs (all in-repo, committed)
+- **This plan** (`RATIFIED-PLAN.md`) — phases, 5 ratified decisions, α rulings (marked "α ruling"), deliberate-drop ledger.
+- **The ORIGINAL packet, verbatim**: `packet-original/` (18 docs + 5 templates, copied from the operator's zip 2026-07-17).
+- **Evidence**: `evidence/packet-analysis.md` (doc-by-doc verdicts) · `evidence/enforcement-audit.md` (per-provider hooks reality) · `evidence/runtime-hygiene.md` (mess inventory) · `evidence/cabinet-consult-gpt56sol-ultra.md` (first sol consult, full text) · `evidence/sp-20260717-001-gauntlet-findings.md` (SP-001 RED fix-brief + tooling findings I-1/I-2/I-3).
+- **Parked work**: SP-20260717-001 branches `sprint/SP-20260717-001-builder` @ `00040620` (worktree `../WarpOS-wt/SP-20260717-001-builder`) + `sprint/SP-20260717-001-runtime-retention` @ `67d7900b` — HELD unmerged, gauntlet RED, fix-brief above. Do NOT merge or delete during hardening.
+- **Session-decision trail (2026-07-17)**: operator ratified — consultant's phase order (after ELI5) · keep Fable-5 judge + defensive prompt reframe (NOT a judge swap, NOT excluding security review) · operator voice = ELI5-default/depth-when-it-matters, audience-scoped · SP-001 hold + fold amendments · packet coverage gaps 03+07 added, drops (02/09/10/11/12) acknowledged.
+- **Live tooling facts the hardening session will hit**: harness Agent-tool spawns fail on non-Claude registry pins (β `gpt-5.6-sol`, product-lead `gpt-5.6-terra` — override with a Claude `model` param at spawn, as done this session with Beta2) · `gpt-5.6-terra` IS live via codex CLI (I-1) · provider-id `antigravity` vs tool-id `agy` contract mismatch (I-2) · turbo re-grants that WIDEN need `--attest` with operator provenance.
 
 ## Provenance
 - Input: the operator's 18-doc "warpos_1_0_finish_packet" (generated 2026-06-28, ~3 weeks stale vs HEAD `c3dab137`).
