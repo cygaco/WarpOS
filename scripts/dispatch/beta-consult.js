@@ -135,7 +135,9 @@ function parseVerdict(output) {
 function attestRanOnGpt(result) {
   const fellBack = !!(result && (result.fallback === true || result.quotaFallbackFrom));
   const observedCmd = (result && result.cmd) || "";
-  const codexFired = /^\s*codex\b/.test(observedCmd); // the OBSERVED command that executed
+  // R3 COR-002: require the codex EXEC trace shape — `codex login`, bare `codex`, and
+  // `codex-malicious exec` must NOT attest. Only `codex exec …` is a dispatch trace.
+  const codexFired = /^\s*codex\s+exec(?:\s|$)/.test(observedCmd); // the OBSERVED command that executed
   const ranOnGpt = !!(result && result.ok === true && result.provider === "openai" && codexFired && !fellBack);
   return { ranOnGpt, fellBack, codexFired, observedCmd };
 }

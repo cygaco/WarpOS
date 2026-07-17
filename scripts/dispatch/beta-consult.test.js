@@ -100,6 +100,26 @@ test("β-rider: provider claude → ran_on_gpt false", () => {
   assert.equal(attestRanOnGpt({ ok: true, provider: "claude", cmd: "claude -p" }).ranOnGpt, false);
 });
 
+// ── R3 COR-002: only the `codex exec …` trace shape attests — non-exec codex commands must NOT ──
+test("R3: 'codex login' (non-exec codex command) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "codex login --with-api-key" }).ranOnGpt, false);
+});
+test("R3: bare 'codex' → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "codex" }).ranOnGpt, false);
+});
+test("R3: 'codex-malicious exec' (prefix-spoof binary) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "codex-malicious exec -m gpt-5.6-sol -" }).ranOnGpt, false);
+});
+test("R3: 'codex execute' (exec-prefix spoof subcommand) → ran_on_gpt false", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "codex execute -m gpt-5.6-sol -" }).ranOnGpt, false);
+});
+test("R3: leading-whitespace 'codex exec …' still attests (shape preserved)", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "  codex exec -m gpt-5.6-sol -" }).ranOnGpt, true);
+});
+test("R3: exact 'codex exec' with no trailing args still attests", () => {
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: "codex exec" }).ranOnGpt, true);
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [beta-consult.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
