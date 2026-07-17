@@ -61,6 +61,35 @@ wake event entirely: the poller drives the clock itself and observes the
 durable artifact (a posted signal, or a completion record) directly. You are
 never parked on an event the harness will not deliver.
 
+## Poll patience — the 540s clamp bound (live evidence, 2026-07-16)
+
+Do not declare a dispatch dead early. Tonight's ledger gave three deterministic
+signals about WHEN a worker is actually gone:
+
+- **Long reviewers die at the clamp, not at random.** Two `backend-reviewer`
+  runs died at **exactly the 540s timeout clamp** (`elapsed_ms` ≈ 540000 in the
+  ledger — deterministic, not a random reap). A death right at the clamp is a
+  *timeout*, a distinct failure class from an early silent reap.
+- **"Reaped" often means "not done yet."** BOTH `qa` attempts the conductor
+  declared reaped had actually **COMPLETED late** — their artifacts landed at
+  00:53:58, after the conductor had already written them off. The narration was
+  wrong; the artifact was the truth.
+- **Short dispatches never died.** The β consults (22–100s) always returned.
+  Short lanes are not the risk; long lanes near the clamp are.
+
+**The bound:** nothing is dead before **540s + margin**. Before declaring a
+long-running dispatch dead:
+
+1. Keep polling until at least the clamp bound (`DISPATCH_BUILDER_TIMEOUT_MS`,
+   ~540s) plus a margin has elapsed — an earlier "no return yet" is expected,
+   not death.
+2. **Check for the artifact before declaring death** — look for the completion
+   record / evidence file the dispatch was told to write. A late-landing
+   artifact (the qa case above) beats a premature "reaped" verdict every time.
+3. Only after the bound has passed AND no artifact exists is the lane a genuine
+   death (re-dispatch). A death *at* the clamp is a timeout — re-dispatch with a
+   larger bound or a smaller unit, not an identical retry.
+
 ## Rule of thumb — which channel
 
 | Waiting on… | Poll | Why |
