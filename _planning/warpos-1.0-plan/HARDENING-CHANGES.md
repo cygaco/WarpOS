@@ -16,10 +16,11 @@ One line per change, plain language, with the problem it solves. This is the ELI
 9. **Confined the "top-level session defaults to Alpha" rule to Claude-side boot files only.** Problem: the packet's own AGENTS.md template puts that rule in the *neutral* file every worker reads — which would let any worker talk itself into Alpha authority. The neutral handbook keeps binding rules 1–4; rule 5 lives only where the human-facing session boots.
 10. **Reconciled the result-status vocabulary.** Problem: the packet template has 7 result statuses, the plan has 5 — two conflicting vocabularies would fork the schema at build time. Ruling: 5 terminal states; things like "timeout" and "quota exhausted" become failure-REASON codes (from the packet's failure taxonomy), not extra states.
 
-## Discrepancy resolutions (ε-conducted probes)
-11. *(pending — agy lane: which source is stale, audit or tracker)*
-12. *(pending — gpt-5.6-terra liveness record verification)*
-13. *(pending — the 3 pre-existing test failures re-confirmed + still flip-independent)*
+## Discrepancy resolutions (ε-conducted probes, all 3 closed)
+11. **agy lane: the audit was right — the lane is DOWN, and our tracker was wrong to say it ran.** Problem: the flip-close note "3-lab panel attested live" was config-echo (the settings SAY agy, but zero agy dispatches ever actually ran — a live probe gets blocked before dispatch). The plan now says so, and the tracker gets a stale-marker at next reconcile.
+12. **⚑ NEW DECISION FOR YOU (came out of #11): what does "the security panel" mean for 1.0?** Problem: the ratified Phase-1 exit says "full 3-lab panel end-to-end," but the third lab (Google/Antigravity) needs a real migration, not a quick fix. My recommendation: timebox that migration inside Phase 1; if it doesn't prove out, 1.0 binds on the 2-family panel (GPT+Claude) with the Google lane as a dated optional extra — so a dead lane can't freeze every build. You decide at final approval.
+13. **gpt-5.6-terra is real and proven live** — a genuine dispatch record exists (408 seconds, real output, no fallback). Problem solved: the plan's claim is now evidence-backed, not hearsay.
+14. **The 3 old test failures are confirmed harmless to this plan** — none block 1.0. Sharper than before: two of them are stale test fixtures complaining about debts that were since fixed (the checks themselves pass); only one is substantive (a file-count baseline that drifted during the v1 rebuild). Cheap cleanup queued for after your approval.
 
 ## Process notes (not plan changes)
 - Claim sweep: 15 claim groups verified against disk/git — 13 confirmed, 1 refuted (→ change #1), 1 partial (→ change #2). Report: `runtime/plan-hardening-20260717/verify-claims.md`.
