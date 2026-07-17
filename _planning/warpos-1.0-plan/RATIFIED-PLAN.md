@@ -1,6 +1,6 @@
 # WarpOS 1.0 — Ratified Kernel Plan (2026-07-17)
 
-**Status: HARDENED + FINAL-RATIFIED 2026-07-17 (operator: "Ok proceed" after top-5 review; hardening session complete — 7 passes + β×3 + sol-reharden + release audit + learn-mine all folded). EXECUTION AUTHORIZED: SP-20260717-001 fix-cycle FIRST (with the archive-not-delete amendment), then Phase 0. Read this doc with `verify-don't-inherit` (re-verify live claims against disk/git before building).**
+**Status: HARDENED + FINAL-RATIFIED 2026-07-17 (operator: "Ok proceed" after top-5 review; hardening session complete — 7 passes + β×3 + sol-reharden + release audit + learn-mine all folded). EXECUTION AUTHORIZED — begins NEXT SESSION (operator correction at wrap: the hardening session ends at ratification): SP-20260717-001 fix-cycle FIRST (with the archive-not-delete amendment), then Phase 0. Read this doc with `verify-don't-inherit` (re-verify live claims against disk/git before building).**
 
 ## NEXT-SESSION DIRECTIVE — plan hardening (operator-ordered procedure, in order)
 1. **Run through the whole plan** — every phase, every ruling, every evidence file — challenging each claim against disk/git (verify-don't-inherit).
