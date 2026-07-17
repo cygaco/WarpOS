@@ -22,7 +22,12 @@ One line per change, plain language, with the problem it solves. This is the ELI
 13. **gpt-5.6-terra is real and proven live** — a genuine dispatch record exists (408 seconds, real output, no fallback). Problem solved: the plan's claim is now evidence-backed, not hearsay.
 14. **The 3 old test failures are confirmed harmless to this plan** — none block 1.0. Sharper than before: two of them are stale test fixtures complaining about debts that were since fixed (the checks themselves pass); only one is substantive (a file-count baseline that drifted during the v1 rebuild). Cheap cleanup queued for after your approval.
 
+## β checkpoint folds (verdict: DECIDE, confidence 0.88 + 0.90 refinement — "proceed"; logged to the beta events ledger)
+15. **Honesty note on ED-205 (β's top catch): backfilling the ledger entry is NOT the same as verifying the bug.** Problem: we confirmed the *entry* was missing and restored it, but nobody has re-proven the underlying `--provider` defect still exists — it's inherited from the flip session. The gate is now "reproduce FIRST, then fix — or correct the record if it's a phantom," and a code-level repro probe is running right now (result appended below when it lands).
+16. **Four gate tightenings from β folded:** (a) the Phase-0 conformance runner's report-only mode now names its debt entry and the phase where it turns binding — no silent report-only; (b) the authority-leak fixture must plant the *default-binding rule* text, not just "you are Alpha" — the sneakier leak is the one tested; (c) one line added explaining who checks the checkers before Phase 4 exists (self/CI, closed retroactively by Phase 4's self-modification test); (d) the Phase-1 lane ruling now presents both options with β's 2-family floor as the guaranteed fallback (Option A degrades into Option B).
+
 ## Process notes (not plan changes)
+- **Go/no-go header (for your decision):** every change in this ledger is a plan-document or bookkeeping edit — ZERO runtime/product code touched, no phase executed, SP-001 still parked, all fully git-revertable.
 - Claim sweep: 15 claim groups verified against disk/git — 13 confirmed, 1 refuted (→ change #1), 1 partial (→ change #2). Report: `runtime/plan-hardening-20260717/verify-claims.md`.
 - α rulings detail: `runtime/plan-hardening-20260717/alpha-eyeball-rulings.md`.
 - sol-reharden consult + β checkpoint verdicts appended below when they land.
