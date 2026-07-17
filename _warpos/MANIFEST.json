@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T01:11:47.476Z",
+  "generatedAt": "2026-07-17T19:52:56.659Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -23099,6 +23099,10 @@
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/events.jsonl.1": {
       "owner": "runtime",
       "managed": false
     },

@@ -1,0 +1,65 @@
+# WarpOS 1.0 Finish Packet — Analysis vs Current Repo
+
+Repo: `C:\Users\Vlad\Desktop\Claude\Projects\WarpOS` · branch `session/2026-07-17` · HEAD `c3dab137`.
+Packet generated **2026-06-28** from a **2026-06-27** `warpos.md` snapshot — it predates the 2026-07-12 ADR-0016 model flip, the 2026-07-16/17 §8 provider flip, the 3-lab security panel, the β-consult CLI rewire, signal-board, dispatch-record-fields, teammate-stall-rules, and the epsilon-runtime ADR-0009. Treat every "current state" claim in the packet as **~3 weeks stale**.
+
+## Operator kernel lens (the yardstick)
+The operator says the TRUE kernel is: **(a) interoperability / any provider at the helm · (b) enforcements that work with every provider · (c) model routing · (d) the sprint development cycle** — and that the packet over-indexes on release ceremony + product-readiness guardrails. I scored every doc against that.
+
+Where the packet is strongest: **04, 05, 06, 16 + the two identity templates** — these are the interop/portability kernel and they are genuinely **not yet built**. Where it is weakest: **08 (dispatch/liveness)** which WarpOS already built *further* than the packet describes, and **10/11 (webapp-baseline / founder-panel)** which are product-layer guardrails the operator explicitly de-prioritizes.
+
+---
+
+## Doc-by-doc verdict
+
+| Doc | Core premise | Premise status vs repo | Class | Evidence |
+|---|---|---|---|---|
+| 00-README | "start with kernel not founder panel" | STILL-VALID (agrees w/ operator) | context | — |
+| 01-MASTER-PROMPT | paste-and-boot Alpha; "do everything from this prompt, wait for confirm" | STALE-WRONG as a driver | **REJECT** (prompt-as-driver) / **ADAPT** (its 12 non-negotiables) | Contradicts CLAUDE.md "mode-init ≠ authorization / act-don't-ask"; Phase-0 "verify repo" premise assumes untrusted state that TRACKER already reconciles. The *principles* (evidence, no self-grade, no-alpha-poison, ping-before-reap) are sound. |
+| 02-CHARTER | foundry product def + faces + invariants | ALREADY the de-facto reality | **ADAPT / ALREADY-LANDED** | Faces α–ε, departments, "written state outranks chat" all live in CLAUDE.md + role-registry. Charter adds no mechanism. |
+| 03-ADR durable-company / ephemeral-executors | demote live agent teams; company = durable state, models = executors | Premise ("we lean toward persistent live teams") is STALE — WarpOS already demoted them (dispatch ledgers, ADR-0009, teammate-stall) | **ADAPT** (formalize as ADR; cheap, high kernel-(a) value) | Durable=TRACKER/role-registry/dispatch-completions ledger; ephemeral=claude/codex runs. De-facto true; ADR would just ratify it. |
+| **04-INTEROPERABILITY** | role-binding order · Top-Level Runtime Contract · Level 0–3 hosts · provider adapters · portable-policy/provider-specific-enforcer split | **STILL-VALID + mostly NOT built** | **ADOPT** (kernel a+b, top rank) | No role-binding-order doc exists. CODEX.md is a partial hand-rolled shim. The "policy neutral / enforcement per-provider" split is exactly WarpOS's real problem (hooks only fire under Claude — see CODEX.md §"NO HOOKS FIRE"). |
+| **05-INSTRUCTION-COMPILER** | generate AGENTS/CLAUDE/GEMINI from one source; `no-root-alpha-poison` + conflict/size audits | **STILL-VALID + NOT built** | **ADOPT** (this is the *enforcer* for 04's doctrine) | `scripts/instructions/` and `_warpos/instructions/source/` do NOT exist. AGENTS.md, CLAUDE.md, CODEX.md are all hand-maintained + drift-prone. This is the mechanism that fixes the identity leak. Scope down: a full compiler may be more than needed — minimum = provider-neutral source + no-alpha-poison check. |
+| **06-WORKORDER / RESULTENVELOPE** | provider-neutral job-ticket + receipt schema · validators · prompt-size floor · close-gate | **STILL-VALID + partially present as ad-hoc** | **ADOPT** (kernel a+d) | No `work-order`/`result-envelope` module exists (grep: 0 hits). But the *shape* is half-there: dispatch-completions ledger, `dispatch-record-fields.js`, gauntlet-verify `ok:true`. The **prompt-size floor** maps directly to WG-10 "hollow dispatch prompts" (already repaired) — formalize it. ADAPT to reuse existing ledger, don't greenfield. |
+| 07-SPRINTROOM-PERSISTENCE | durable resumable sprint room + leases + do-not-reopen | Partially STALE — `checkpoint.js` + `sprintProgress` + TRACKER + DUMP already give resume | **ADAPT** (harvest leases + do-not-reopen; reject greenfield `_state/sprints/` paths) | `scripts/sprint/checkpoint.js` writes frozen checkpoints + history; TRACKER 20-check validator covers most "tracker-fidelity"; `tracker-fidelity.js`/`room-doctor.js`/`session/intent.js` do NOT exist (real small gaps). |
+| 08-DISPATCH-LIVENESS-WORKTREE | route-resolver · adapters · heartbeat/reaper · worktree base=live_head · started/death records · failure classes · doctor | **LARGELY ALREADY-LANDED, more advanced in repo** | **ADAPT** as coverage checklist / **REJECT** greenfield rewrite | Already live: `reap-orphans.js`, `safe-spawn.js` injection kernel, started-row mechanism (ED-069/WG-13), death records, `provider-breaker.js`, family-aware fallback (WG-11b), 540s foreground clamp (`timeout-policy.js`), `gauntlet-verify.js`, `provider-trace.js`. Maps to **ED-069/070/071**. Genuine residuals: single named `route-resolver` (routing is distributed across role-registry+registry-roles+catalog), `dispatch doctor --json`, explicit worktree-base=live_head policy. |
+| 09-PACKS-CATALOG | "pack" = manifest+templates+scripts+checks+hooks+fixtures+gates | New abstraction competing with skills/hooks/_warpos-templates/capsules | **ADAPT** (kernel packs only) / **REJECT** (pack-as-new-layer = ceremony) | WarpOS already ships reusable machinery as skills + scans + `_warpos/` templates + release capsules. A parallel "pack" registry risks a second manifest to drift (cf. the ownership-vs-shipping manifest drift already burned us). |
+| 10-WEBAPP-PRODUCTION-BASELINE | RLS/auth/route-matrix/API-boundary defaults for generated apps | Product-LAYER (ships to generated apps), NOT kernel | **ADAPT → route to lastmile/bootstrap** (operator-deprioritized) | Real value for foundry OUTPUT, but out of "interop/routing/sprint kernel" scope. Belongs to `/bootstrap:lastmile` + `admin:readiness`, not WarpOS 1.0 kernel. |
+| 11-FOUNDER-PANEL | generated interactive founder panel + store | Product-layer; partially EXISTS | **ADAPT / ALREADY-partial** | `admin:preview/seed/readiness` skills + in-app founder panel + `FOUNDERS_CHECKLIST.md` already exist. Packet itself says "don't build this first." Non-kernel. |
+| 12-OBSERVABILITY-MEMORY-LEARNING | split event streams · materialized state · project/studio sleep · learning-promotion | Core ALREADY-LANDED; stream-split is a reframe | **ADAPT (small) / ALREADY-LANDED (most)** | `paths.eventsFile`, learnings, traces, `sleep:deep/quick`, `learn:integrate`, memory stores all live. "No lesson complete until it becomes a hook/check/test…" IS WarpOS's enforcement-debt discipline (`/enforcement:log`). |
+| 13-CHECKLIST | 1.0 acceptance checklist | Useful coverage lens; many rows already green | **ADAPT** (map rows → existing `/scan:*`) | Truth/manifest/dispatch/liveness rows largely satisfied by existing scans; interop rows are the real reds. |
+| 14-FIRST-SPRINTS | staged sequence truth→interop→WO/RE→room→dispatch | Sequence STALE (dispatch already done; truth already reconciled) | **ADAPT** (reorder: interop + instruction-compiler FIRST) | Sprint 4 (dispatch kernel) is mostly built; Sprint 1 (interop) is the actual frontier. |
+| 15-VERIFICATION-GATES | gate catalog | Many gates already exist as scans | **ADAPT** (dedupe vs `/scan:*` catalog) | e.g. cross-provider-review invariant, raw-CLI guard, prompt-floor already have enforcers. |
+| **16-TOP-LEVEL-AI-PORTABILITY** | any AI as top-level via runtime contract; Master Console target | **STILL-VALID + NOT built** — operator kernel item (a) | **ADOPT** (pairs with 04) | The Top-Level Runtime Contract + host binding (Claude/Codex/Gemini/chat) is the concrete "any provider at the helm" spec. CODEX.md is a first step; this generalizes it. |
+| 17-DO-NOT-BUILD | anti-scope-creep boundaries | STILL-VALID (agrees w/ operator) | **ADOPT** (discipline) | "Don't start with Master Console/Founder Panel UI; fix kernel first; every policy needs enforcer" — matches CLAUDE.md policy-hygiene + operator lens exactly. |
+| 18-SOURCE-INDEX | provenance + "verify live, registers are stale" | STILL-VALID caution | context/**ADOPT caution** | Confirms the packet is derived from stale gap-registers (doogle/nightweaver) — treat as test cases, not truth. |
+| AGENTS.md.template | provider-neutral handbook w/ role-binding order | Fix mechanism for the leak | **ADOPT/ADAPT** | Current AGENTS.md is an Alex-org *router*, not a provider-neutral role-binding handbook. Template's binding-order block is the missing piece. |
+| CLAUDE.md.template | thin bootloader: `@AGENTS.md` + conditional Alpha binding | Fix mechanism for the leak | **ADOPT/ADAPT** | Current CLAUDE.md opens "You are Alex — the President" **unconditionally**; template makes it "default alpha UNLESS WorkOrder/agent/command binds a role" — which correctly yields to `--agent`. |
+| GEMINI.md.template | Gemini shim `@AGENTS.md` | Gemini individual CLI is SUNSET → antigravity/agy | **ADAPT** (retarget to antigravity, or skip) | No GEMINI.md exists; gemini routes via `agy`. A GEMINI.md is low-value while the tier block stands. |
+| WorkOrder.schema / ResultEnvelope.schema | schema templates | pair with 06 | **ADOPT** (with 06) | — |
+
+---
+
+## Identity-pollution verdict (the load-bearing finding)
+
+**Does the current CLAUDE.md "You are Alex" leak into dispatched agents? — YES, a partial leak. But NOT the catastrophic form the packet feared.**
+
+1. **Root AGENTS.md does NOT say "you are Alpha."** It is a router/TOC ("Alex is the President… his faces"). So the packet's headline anti-pattern (#5, 17) is **already avoided**. Good.
+2. **Claude builders DO inherit the President identity.** `dispatch-claude.js` runs `claude -p --agent <role>` with `cwd = the worktree` (`runCwd = worktreeReal`, line ~348). A git worktree carries the tracked `CLAUDE.md`, and Claude Code auto-loads project `CLAUDE.md` as memory **in addition to** the `--agent` spec. So every dispatched builder's context contains **"You are Alex — the President of this autonomous AI company"** layered under its builder persona. Mild but real over-identity risk (a scoped builder told it is the President).
+3. **Codex/Gemini workers inherit the Alex org handbook.** `providers.js runProvider` spawns `codex exec … -` with **`cwd: PROJECT`** (canonical root, line ~876). `codex` auto-loads root `AGENTS.md` from cwd — the full 14KB Alex-org router — as ambient context for a GPT reviewer that only needed its prompt. Not "you are Alpha," but heavy irrelevant identity context.
+
+**Do the templates fix it? — Directionally yes, but the templates alone are insufficient; the mechanism must change too.**
+- The template CLAUDE.md's **conditional** binding ("you are Alpha UNLESS a WorkOrder/agent/command binds a role") is the correct fix for #2 — it makes the auto-loaded CLAUDE.md yield to `--agent`. Adopt that phrasing.
+- But even a thin CLAUDE.md **still auto-loads** into the builder's worktree cwd. The full fix is the **05 instruction-compiler + role-binding-order (04)** so that (a) AGENTS.md carries the binding-order rule any worker can read, (b) a `no-root-alpha-poison` check keeps unconditional "you are Alpha/President" out of provider-neutral files, and (c) ideally dispatch sets a neutral cwd or `--add-dir` scoping so codex reviewers don't slurp the org handbook. Templates are necessary, not sufficient.
+
+**Bottom line:** the leak is real but mild and fixable; it is an **argument FOR adopting 04+05+templates**, and it is the single most kernel-aligned justification in the packet.
+
+---
+
+## Mapping to already-tracked debts (do NOT double-build)
+- **ED-069** (WG-13 write-ahead started-row) = packet 08 "STARTED record before spawn." Mechanism landed (`dispatch-record-fields.js`); writer-wiring deferred (dispatch-agent.js frozen). Packet reinforces; already tracked.
+- **ED-070** (WG-11a quota field) = packet 08 `quota_exhausted` classification. Builder landed; wiring deferred. Tracked.
+- **ED-071** (WG-29 fire-and-poll / teammate-stall) = packet 08 reaper "ping-before-reap" + liveness. `teammate-stall-rules.md` landed; epsilon.md fold-back deferred. Tracked.
+- **ED-203–207** (TRACKER, this session): in-process claude-hunter dispatch-review handoff · β consult-shape enforcer · **ED-205** `--provider` override→provider-DEFAULT-model routing gap (this is model-routing kernel-c, overlaps packet 08 route-resolver quotas) · session-log effective-model · taste-gate runtime-binding. Mostly model-routing follow-ups, orthogonal to packet.
+
+**Net:** packet's dispatch/liveness "new work" is ~80% already built or already logged as ED debt. Its genuinely-new kernel contribution is **interop + instruction-compiler + WorkOrder/Envelope + portability**, not dispatch.

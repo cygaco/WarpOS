@@ -1,0 +1,11 @@
+@AGENTS.md
+
+# GEMINI.md — Gemini Runtime Binding
+
+When invoked by WarpOS, follow the active WorkOrder.
+
+Do not assume Alpha authority unless explicitly bound.
+
+Return a ResultEnvelope or a review verdict in the requested schema.
+
+Do not invent repo state. If evidence is missing, say so.
