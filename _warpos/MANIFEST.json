@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T21:54:20.223Z",
+  "generatedAt": "2026-07-17T22:30:32.252Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -9243,8 +9243,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-start.js",
-      "sha256": "a93307e8c2870273b8da2da84171b2e4c200ebf15a07a82985166d3772bcd527",
-      "installedSha": "a93307e8c2870273b8da2da84171b2e4c200ebf15a07a82985166d3772bcd527"
+      "sha256": "3e4e87550ccb55df39c8d388f89ef777f414f307c2621ebd7c68464930686dbe",
+      "installedSha": "3e4e87550ccb55df39c8d388f89ef777f414f307c2621ebd7c68464930686dbe"
     },
     "scripts/hooks/session-stop-sentinel.test.js": {
       "owner": "framework",
@@ -9446,15 +9446,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/archive.js",
-      "sha256": "b184c10e03fd4f5b17d9e4b8342cdbf0208a06677cb19c2df7cfdc0a5cf20d95",
-      "installedSha": "b184c10e03fd4f5b17d9e4b8342cdbf0208a06677cb19c2df7cfdc0a5cf20d95"
+      "sha256": "28505db83c420b685720c9728d148595af5edaa10dacae2cbf055217507e2088",
+      "installedSha": "28505db83c420b685720c9728d148595af5edaa10dacae2cbf055217507e2088"
     },
     "scripts/hooks/lib/archive.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/archive.test.js",
-      "sha256": "1271750963fa9b383cbdcf6796f07a5dda757b48f4c49d9194c3bcdf2a0eea4f",
-      "installedSha": "1271750963fa9b383cbdcf6796f07a5dda757b48f4c49d9194c3bcdf2a0eea4f"
+      "sha256": "5115e84b67eadd0a904024708e40c32601cbded381f2e14846ca08fdc1a42eb8",
+      "installedSha": "5115e84b67eadd0a904024708e40c32601cbded381f2e14846ca08fdc1a42eb8"
     },
     "scripts/hooks/lib/banner.js": {
       "owner": "framework",
@@ -9565,15 +9565,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/retention.js",
-      "sha256": "55cdf8243af55eb224fc7a0d582d2f63d8972daedd1be2159525e2e9e00ad0cf",
-      "installedSha": "55cdf8243af55eb224fc7a0d582d2f63d8972daedd1be2159525e2e9e00ad0cf"
+      "sha256": "431a7fbac8215fc3986baf144a193f81acf44d55330411983b8ca4eb63b5a897",
+      "installedSha": "431a7fbac8215fc3986baf144a193f81acf44d55330411983b8ca4eb63b5a897"
     },
     "scripts/hooks/lib/retention.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/retention.test.js",
-      "sha256": "dc35a008a95905f4f3f541625426226773df071ac96db869436703195d4140a6",
-      "installedSha": "dc35a008a95905f4f3f541625426226773df071ac96db869436703195d4140a6"
+      "sha256": "223797f0ddef30911153f36933735e50e7371ed45236ec40223898083949acda",
+      "installedSha": "223797f0ddef30911153f36933735e50e7371ed45236ec40223898083949acda"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
@@ -9586,15 +9586,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/rotate.js",
-      "sha256": "f9600783acc3577ac4218151d3d9d2be6f7b82c3b27ce9895bda4454564bcd4e",
-      "installedSha": "f9600783acc3577ac4218151d3d9d2be6f7b82c3b27ce9895bda4454564bcd4e"
+      "sha256": "d4ca277d0663df001427526d5b0e6070a6abe62cfed43107d2ce506ef11ac505",
+      "installedSha": "d4ca277d0663df001427526d5b0e6070a6abe62cfed43107d2ce506ef11ac505"
     },
     "scripts/hooks/lib/rotate.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/rotate.test.js",
-      "sha256": "c669b0cbfed4ed349d15947b14fdcb0b0f52c6d7440b8f1f14eb54df484fda03",
-      "installedSha": "c669b0cbfed4ed349d15947b14fdcb0b0f52c6d7440b8f1f14eb54df484fda03"
+      "sha256": "fffc2bd906f1e5a82f4a8f4383d0dd9e6972803409f628d8762471adf60164ff",
+      "installedSha": "fffc2bd906f1e5a82f4a8f4383d0dd9e6972803409f628d8762471adf60164ff"
     },
     "scripts/hooks/lib/skill-telemetry.js": {
       "owner": "framework",
@@ -25554,13 +25554,21 @@
       "sha256": "4b940c2943f78f8b1b9c0457ce5af48d429256a24edb984da7b5c6df91ea2e01",
       "installedSha": "4b940c2943f78f8b1b9c0457ce5af48d429256a24edb984da7b5c6df91ea2e01"
     },
+    ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md",
+      "kind": "md",
+      "sha256": "4661c0d81997514c7a24af5c79493fd321ce656a7e83037cf26b44ba94813bed",
+      "installedSha": "4661c0d81997514c7a24af5c79493fd321ce656a7e83037cf26b44ba94813bed"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "40730b46d30efb95ad5f1a108102d96e593c96d3a40d6501cef6f1d85b06057c",
-      "installedSha": "40730b46d30efb95ad5f1a108102d96e593c96d3a40d6501cef6f1d85b06057c"
+      "sha256": "109de06839b07889a80144a38da2fe27b61d529a7dad7e5573af290eb20f0621",
+      "installedSha": "109de06839b07889a80144a38da2fe27b61d529a7dad7e5573af290eb20f0621"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
