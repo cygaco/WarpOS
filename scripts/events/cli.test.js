@@ -362,4 +362,36 @@ h.violation("BR-6 unreadable live file → fail-closed (not a silent empty histo
   }
 });
 
+// ── 12. BR-9 path-aware completeness: a same-basename decoy elsewhere does NOT cover an un-indexed generation ──
+// An un-indexed raw generation lives in the archive dir; the index references a
+// DIFFERENT in-root file with the SAME basename. A basename-only completeness check
+// would call this "healthy" and silently omit the archive-dir raw. The path-aware
+// check (resolved abs path, dirname === archive dir) must FAIL CLOSED.
+const DECOY_REL = "docs/events.jsonl.genX";
+const REAL_GEN_REL = ".claude/runtime/archive/events.jsonl.genX";
+h.violation("BR-9 same-basename decoy does NOT cover an un-indexed archive generation → fail-closed", () => {
+  const fx = sealedDir(
+    {
+      [LIVE_REL]: jsonl(...LIVE_TAIL),
+      // A REAL raw generation on disk in the archive dir, NOT properly indexed:
+      [REAL_GEN_REL]: jsonl({ id: "EVT-realgen", ts: "2026-07-18T02:20:00Z", type: "prompt", message: "real-archived-raw" }),
+      // A DECOY file elsewhere in-root with the SAME basename that the index points at:
+      [DECOY_REL]: jsonl({ id: "EVT-decoy", ts: "2026-07-18T02:21:00Z", type: "prompt", message: "decoy" }),
+      [IDX_REL]: jsonl({ origin: LIVE_REL, archived: DECOY_REL, reason: "compaction:fold", lines: 1 }),
+    },
+    "events-cli-basename-decoy",
+  );
+  try {
+    const cap = capture(() =>
+      cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
+    );
+    assert.strictEqual(cap.stdout, "", "NO partial output — the archive-dir raw is un-indexed");
+    assert.ok(/un-indexed generation/i.test(cap.stderr), "path-aware check flags the un-indexed generation");
+    assert.notStrictEqual(cap.code, 0, "a same-basename decoy must NOT satisfy completeness (fail-closed)");
+    return cap.code;
+  } finally {
+    fx.cleanup();
+  }
+});
+
 h.done();

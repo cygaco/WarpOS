@@ -120,12 +120,17 @@ function computeStaleSnapshot(events) {
       // File doesn't exist, skip
     }
   }
-  return { currentlyStale };
+  // BR-3 (gauntlet R2): materialize-core treats a NON-ARRAY source() return as an
+  // empty/cold source (Array.isArray gate). Returning an object here made the stale
+  // reducer/renderer never run → STALE-FILES.md always "No stale files". The source
+  // MUST return an ARRAY (the currently-stale file list); the reducer is a passthrough.
+  return currentlyStale;
 }
 
-// ── reducer: PURE — extract the pre-read stale list from the source snapshot ──
-function computeStale(snapshot) {
-  return (snapshot && snapshot.currentlyStale) || [];
+// ── reducer: PURE passthrough — the source already produced the currently-stale ──
+// list (the filesystem I/O lives in the source, BR-3). Identity over the array.
+function computeStale(currentlyStale) {
+  return Array.isArray(currentlyStale) ? currentlyStale : [];
 }
 
 // ── renderer: STALE-FILES.md from the currently-stale list ──────────────────

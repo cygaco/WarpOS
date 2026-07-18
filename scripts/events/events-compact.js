@@ -273,6 +273,18 @@ function reconcileOrphans(rootAbs, opts) {
     // the scan read — and appendIndex WRITE — OUTSIDE root. Fail-closed to a no-op.
     const dir = containedReal(rootAbs, archive.archiveDir(rootAbs));
     if (!dir) return { reconciled: 0 };
+    // SEC-2 (gauntlet R2 defense-in-depth for THIS caller): if index.jsonl EXISTS as
+    // a symlink (or its realpath escapes root), refuse — appendIndex opens it for
+    // append and would follow the link OUTSIDE root. (The frozen archive() S5 path's
+    // exposure is the ED-212-class index-telemetry residual, dispositioned separately;
+    // this guard closes the reconcileOrphans caller I introduced.)
+    const idxPath = archive.archiveIndexPath(rootAbs);
+    try {
+      const ist = fs.lstatSync(idxPath);
+      if (ist.isSymbolicLink() || !containedReal(rootAbs, idxPath)) return { reconciled: 0 };
+    } catch {
+      /* ENOENT — index not created yet; appendIndex creates it inside the contained dir */
+    }
     let entries;
     try {
       entries = fs.readdirSync(dir);
@@ -473,18 +485,36 @@ function compactOnce(rootAbs, opts) {
       (ares.entry && typeof ares.entry.archived === "string" && ares.entry.archived) ||
       relFromRoot(rootAbs, ares.archived);
 
-    // BR-5 (gauntlet R1): compute the summary + reseeded tail from the ARCHIVED
-    // COPY (the exact bytes moved at S5) — NOT the pre-lock read. This guarantees
-    // the summary + tail correspond precisely to the archived generation even if
-    // the file changed between the pre-lock read and the move. Fall back to the
-    // pre-lock lines only if the just-moved copy is somehow unreadable (the raw is
-    // still in the archive either way — conservation holds).
-    let archivedLines = lines;
+    // BR-5 (gauntlet R1/R2): compute the summary + reseeded tail from the ARCHIVED
+    // COPY (the exact bytes moved at S5) — NOT the pre-lock read. If the just-moved
+    // copy is unreadable we do NOT fall back to the stale pre-lock lines (R2: they
+    // may differ from what was archived, so the reseeded tail/summary would not match
+    // the generation). Raw is SAFE + indexed in the archive; fail LOUD WITHOUT
+    // reseeding stale data. Next pass: live is empty → no-op; query --archive recovers.
+    let archivedLines;
     try {
       const ac = fs.readFileSync(ares.archived, "utf8");
       archivedLines = ac.length ? ac.split("\n").filter(Boolean) : [];
     } catch {
-      archivedLines = lines;
+      try {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[events-compact] ARCHIVED COPY UNREADABLE at ${ares.archived} after S5 — cannot build an ` +
+            `accurate summary/tail. Raw is SAFE + indexed (recoverable via 'events:query --archive'); ` +
+            `skipping the live reseed rather than reseeding stale bytes. FAIL-CLOSED (non-zero exit).`,
+        );
+      } catch {
+        /* never let logging crash the compactor */
+      }
+      return {
+        ok: false,
+        reason: "archived-copy-unreadable",
+        compacted: true,
+        indexed: ares.indexed !== false,
+        archived: ares.archived,
+        reconciled,
+        exitCode: 1,
+      };
     }
     const summaryData = computeSummary(parseLines(archivedLines));
     const tailLines = archivedLines.slice(Math.max(0, archivedLines.length - TAIL_KEEP_LINES));
@@ -501,9 +531,16 @@ function compactOnce(rootAbs, opts) {
       try {
         // eslint-disable-next-line no-console
         console.error(
-          `[events-compact] ARCHIVE INDEXED:FALSE — generation is on disk but UNINDEXED at ` +
-            `${ares.archived}. Summary flagged index_pending; reconcileOrphans will re-index next ` +
-            `pass. FAIL-CLOSED (non-zero exit).`,
+          reseeded
+            ? `[events-compact] ARCHIVE INDEXED:FALSE — generation on disk but UNINDEXED at ` +
+                `${ares.archived}. Summary flagged index_pending; reconcileOrphans re-indexes next ` +
+                `pass. FAIL-CLOSED (non-zero exit).`
+            : // BR-1 (gauntlet R2): the index write AND the live reseed both failed.
+              // Report it honestly — do NOT claim the index_pending summary was written.
+              `[events-compact] ARCHIVE INDEXED:FALSE **AND** RESEED FAILED — generation on disk but ` +
+                `UNINDEXED at ${ares.archived}, and the live summary/tail could NOT be written. Raw is ` +
+                `SAFE in the archive (recoverable via 'events:query --archive'); reconcileOrphans ` +
+                `re-indexes next pass. FAIL-CLOSED (non-zero exit).`,
         );
       } catch {
         /* never let logging crash the compactor */
@@ -511,12 +548,14 @@ function compactOnce(rootAbs, opts) {
       if (crashAfter === "S7") return crashReturn("S7", { archived: ares.archived });
       return {
         ok: false,
-        reason: "index-pending",
+        // BR-1 (gauntlet R2): distinguish the reseed-succeeded from the reseed-failed
+        // S7 case; summary_id is null when the summary was NOT actually written.
+        reason: reseeded ? "index-pending" : "index-pending-and-reseed-failed",
         compacted: true,
         indexed: false,
-        reseeded, // BR-1: surface whether the live reseed succeeded
+        reseeded,
         archived: ares.archived,
-        summary_id: summary.id,
+        summary_id: reseeded ? summary.id : null,
         reconciled,
         exitCode: 1,
       };

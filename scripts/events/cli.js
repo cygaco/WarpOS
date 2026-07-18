@@ -327,14 +327,24 @@ function readArchiveStrict(root) {
   } catch {
     return { tier: "corrupt", error: "archive dir unreadable" };
   }
-  const indexedBasenames = new Set(
-    indexEntries.map((e) => path.basename(String((e && e.archived) || ""))),
-  );
+  // BR-9 (gauntlet R2): compare RESOLVED ABSOLUTE PATHS, not basenames. An index
+  // entry referencing a DIFFERENT in-root file with the SAME basename as an
+  // unindexed generation would otherwise falsely "cover" it. Only an index entry
+  // whose `archived` realpath-resolves to a file DIRECTLY inside the archive dir
+  // counts as covering the generation of that same resolved path.
+  const indexedGenReal = new Set();
+  for (const e of indexEntries) {
+    const rel = e && e.archived;
+    if (typeof rel !== "string" || !rel) continue;
+    const abs = containedReal(rootAbs, path.resolve(rootAbs, rel));
+    if (abs && path.dirname(abs) === dirSafe) indexedGenReal.add(abs);
+  }
   for (const d of dirents) {
     if (!d.isFile()) continue;
     if (d.name === archive.INDEX_BASENAME) continue; // the index itself
     if (d.name.endsWith(".lock")) continue; // rotation/compaction lock sidecars
-    if (!indexedBasenames.has(d.name)) {
+    const genReal = containedReal(rootAbs, path.join(dirSafe, d.name));
+    if (!genReal || !indexedGenReal.has(genReal)) {
       return {
         tier: "corrupt",
         error:
