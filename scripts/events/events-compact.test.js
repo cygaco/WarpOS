@@ -135,21 +135,42 @@ h.test("AC-1: every raw id survives in (live tail ∪ archived) after a fold", (
   }
 });
 
-h.test("AC-1 negative control: a DROPPED raw id MUST fail the conservation check (teeth)", () => {
+h.test("AC-1 negative control: a genuinely DROPPED seeded event MUST fail conservation (real teeth, QA-2)", () => {
   const fx = sealedDir({}, "compact-ac1-neg");
   try {
     const file = seedEvents(fx, 9000);
     const idsBefore = readIds(file);
     compact.compactOnce(fx.dir, { apply: true });
-    const have = union(readIds(file), archivedIdsOnDisk(fx.dir));
-    // Inject a phantom "dropped" id into the NEED set — it is present NOWHERE, so a
-    // conservation check WITH TEETH must reject. If assertSubset did NOT throw here,
-    // the whole AC-1 ⊆ assertion would be vacuous — assert.throws catches that.
-    const needWithDrop = union(idsBefore, new Set(["EVT-DROPPED-PHANTOM"]));
+
+    // Physically DROP a REAL seeded event from the archived generation on disk
+    // (simulating a compaction bug that lost raw) — NOT a phantom injected into the
+    // NEED set. The conservation check reading the REAL (live tail ∪ archive) must
+    // then FAIL for that specific seeded id. This exercises the read path end-to-end.
+    const foldEntry = archive.readIndex(fx.dir).find((e) => e.reason === "compaction:fold");
+    assert.ok(foldEntry, "a compaction:fold generation exists");
+    const genAbs = path.join(fx.dir, foldEntry.archived);
+    const genLines = fs.readFileSync(genAbs, "utf8").split("\n").filter(Boolean);
+    const victim = JSON.parse(genLines[0]).id; // the OLDEST seeded id — not in the live tail
+    fs.writeFileSync(
+      genAbs,
+      genLines.filter((l) => {
+        try {
+          return JSON.parse(l).id !== victim;
+        } catch {
+          return true;
+        }
+      }).join("\n") + "\n",
+    );
+
+    const haveAfterDrop = union(readIds(file), archivedIdsOnDisk(fx.dir));
+    assert.ok(
+      idsBefore.has(victim) && !haveAfterDrop.has(victim),
+      "victim is a REAL seeded id now present in NEITHER live tail nor archive",
+    );
     assert.throws(
-      () => assertSubset(needWithDrop, have, "AC-1 mutant"),
-      /missing id EVT-DROPPED-PHANTOM/,
-      "the conservation check must reject a dropped id (else AC-1 is vacuous)",
+      () => assertSubset(idsBefore, haveAfterDrop, "AC-1 real-drop"),
+      new RegExp(`missing id ${victim}`),
+      "conservation must reject a genuinely dropped seeded event (not just a phantom)",
     );
   } finally {
     fx.cleanup();
@@ -325,6 +346,94 @@ h.test("AC-3 seam renameSync-EPERM: the archive move fault ⇒ events INTACT (fa
     assert.strictEqual(res2.ok, true);
     assert.strictEqual(res2.compacted, true);
     assertSubset(idsBefore, union(readIds(file), archivedIdsOnDisk(fx.dir)), "AC-3/EPERM CONSERVES after recovery");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+h.test("BR-1 (QA-2): a REAL appendFileSync reseed fault ⇒ reseed-failed non-zero; archive CONSERVES; --archive union recovers", () => {
+  const fx = sealedDir({}, "compact-br1-reseed-fail");
+  try {
+    const file = seedEvents(fx, 9000);
+    const idsBefore = readIds(file);
+
+    // Inject a REAL appendFileSync FAULT (not a slice-simulation): the S9 reseed
+    // fails after S5 already archived the whole file. Raw is SAFE in the archive,
+    // but the live tail cannot be written — BR-1: compactOnce must fail LOUD, never ok:true.
+    const origAppend = fs.appendFileSync;
+    fs.appendFileSync = () => {
+      throw new Error("injected appendFileSync failure");
+    };
+    let res;
+    try {
+      res = compact.compactOnce(fx.dir, { apply: true });
+    } finally {
+      fs.appendFileSync = origAppend;
+    }
+    assert.strictEqual(res.ok, false, "a failed reseed is NOT reported as success (BR-1)");
+    assert.strictEqual(res.reason, "reseed-failed");
+    assert.strictEqual(res.exitCode, 1, "reseed-failed exits NON-ZERO");
+    assertSubset(idsBefore, archivedIdsOnDisk(fx.dir), "BR-1 CONSERVES via archive after a failed reseed");
+
+    // Validate the ARCHIVE-UNION result (QA-2): query --archive recovers every raw
+    // id despite the failed/empty live reseed — the archive holds the truth.
+    const cli = require("./cli");
+    const captured = [];
+    const origOut = process.stdout.write;
+    process.stdout.write = (s) => {
+      captured.push(String(s));
+      return true;
+    };
+    let code;
+    try {
+      code = cli.query(["--archive", "--root", fx.dir, "--source", file, "--json"]);
+    } finally {
+      process.stdout.write = origOut;
+    }
+    assert.strictEqual(code, 0, "healthy indexed archive tier → query --archive exits 0");
+    const unionIds = new Set(
+      captured
+        .join("")
+        .split("\n")
+        .filter(Boolean)
+        .map((l) => {
+          try {
+            return JSON.parse(l).id;
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean),
+    );
+    assertSubset(idsBefore, unionIds, "query --archive union recovers every raw id after a failed reseed");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+h.test("BR-4: a dry-run (apply:false) does NOT mutate disk — reconcileOrphans is a read-only preview", () => {
+  const fx = sealedDir({}, "compact-br4-dryrun");
+  try {
+    seedEvents(fx, 9000);
+    // An ORPHAN generation on disk not in the index (an apply pass would re-index it).
+    const dir = archive.archiveDir(fx.dir);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, "events.jsonl.orphan1"),
+      JSON.stringify({ id: "EVT-orphan", ts: "2026-01-01T00:00:00Z" }) + "\n",
+    );
+    const idxBefore = archive.readIndex(fx.dir).length;
+
+    const res = compact.compactOnce(fx.dir, { apply: false });
+    assert.strictEqual(res.reason, "dry-run");
+    assert.strictEqual(res.wouldCompact, true);
+    assert.ok(res.reconciled >= 1, "dry-run still PREVIEWS the orphan count");
+    // The index was NOT mutated (the orphan was previewed, not re-indexed).
+    assert.strictEqual(
+      archive.readIndex(fx.dir).length,
+      idxBefore,
+      "dry-run must not appendIndex (BR-4)",
+    );
   } finally {
     fx.cleanup();
   }
