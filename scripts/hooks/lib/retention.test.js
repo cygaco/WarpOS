@@ -464,16 +464,16 @@ test("R2-ARCHIVE-INDEX: applyRetention surfaces indexFailures when the archive i
     const namedLogDir = path.join(root, "runtime");
     ensureDir(namedLogDir);
     touch(path.join(namedLogDir, "s-pf-03-security-review.err.log"), FIXED_NOW - 1 * DAY_MS);
-    const origAppend = fs.appendFileSync;
-    fs.appendFileSync = (p, ...rest) => {
-      if (String(p).endsWith("index.jsonl")) throw new Error("injected index failure");
-      return origAppend(p, ...rest);
+    const origOpen = fs.openSync;
+    fs.openSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index open failure");
+      return origOpen(p, ...rest);
     };
     let result;
     try {
       result = applyRetention(root, { apply: true, now: FIXED_NOW });
     } finally {
-      fs.appendFileSync = origAppend;
+      fs.openSync = origOpen;
     }
     assert.strictEqual(result.archived.length, 1, "the file IS archived (data safe)");
     assert.strictEqual(result.indexFailures, 1, "the index failure is surfaced in the result, not swallowed");
@@ -517,13 +517,17 @@ test("session-start.js live-state uses lstat(no-follow)+isFile AND an O_NOFOLLOW
   assert.ok(/isFile\(\)/.test(mapRegion), "the live-state scan must drop non-regular files (isFile)");
   // The READ that surfaces content must be atomic no-follow (openSync O_NOFOLLOW +
   // read from the fd), closing the lstat→read window a symlink swap could exploit.
-  const readRegion = src.slice(anchor, anchor + 3000);
+  const readRegion = src.slice(anchor, anchor + 3800);
   assert.ok(/O_NOFOLLOW/.test(readRegion), "the surfacing read must open with O_NOFOLLOW");
   assert.ok(/openSync/.test(readRegion) && /O_RDONLY/.test(readRegion), "the surfacing read must openSync (fd-based)");
   assert.ok(
     /readFileSync\(fd/.test(readRegion) || /fstatSync\(fd/.test(readRegion),
     "the surfacing read must read from the OPEN fd (not readFileSync-by-path) so it is atomic with the check",
   );
+  // Cross-platform best-effort: Windows O_NOFOLLOW is undefined→0, so the read
+  // also inode-rechecks the fd against the enumeration lstat (a swap changes the inode).
+  assert.ok(/inodeStable|fst\.ino/.test(readRegion), "the surfacing read must inode-recheck (fstat fd vs lstat)");
+  assert.ok(/WINDOWS|Windows/.test(readRegion), "the comment must honestly note the Windows O_NOFOLLOW residual (no overclaim)");
 });
 
 // ── Bonus: the load/prune invariant this module encodes at require-time ─────

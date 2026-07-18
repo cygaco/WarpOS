@@ -340,6 +340,9 @@ process.stdin.on("end", () => {
             name: f,
             sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
             mtime: st.mtimeMs,
+            // Captured for the best-effort post-open inode recheck below.
+            ino: st.ino,
+            dev: st.dev,
           };
         })
         .filter(Boolean)
@@ -354,13 +357,20 @@ process.stdin.on("end", () => {
         // Surface only when the live snapshot is NEWER than the narrative (or no
         // narrative exists) AND recent enough to matter (≤72h).
         if (ageHours < 72 && chosen.mtime > handoffMtime + 1000) {
-          // ATOMIC no-follow read (gauntlet R3 NEWDEF): the earlier lstat proved
-          // a regular file, but a symlink swapped in between that lstat and this
-          // read would inject its target's content into additionalContext. Open
-          // with O_NOFOLLOW (refuses a symlink final component — ELOOP) and read
-          // from the OPEN fd (fstat-confirmed regular file), closing the
-          // check→read window. On any fault (ELOOP / not-a-file / read error) →
-          // do not surface.
+          // No-follow read of the live snapshot. The earlier lstat proved a
+          // regular file; a symlink swapped in between that lstat and this read
+          // would otherwise inject its target's content into additionalContext.
+          // O_NOFOLLOW refuses a symlink final component (ELOOP) — EFFECTIVE ON
+          // POSIX. On WINDOWS `fs.constants.O_NOFOLLOW` is UNDEFINED (→ 0), so the
+          // open does NOT block a symlink there; as a cross-platform best-effort we
+          // also fstat the OPEN fd and refuse if its inode/device differ from the
+          // enumeration-time lstat (a swap changes the inode). RESIDUAL (honest,
+          // out-of-model per the standing discriminator, ADR-0017): on Windows,
+          // absent both O_NOFOLLOW and reliable inode ids, a swapped-symlink race
+          // could still read external content — attacker-only, NON-destructive
+          // (a content read into context), and NO new capability over a same-user
+          // attacker simply writing a regular handoff-live file. Not further
+          // mechanised; the CLAIM is corrected here, not overstated.
           let content = null;
           try {
             const O_NOFOLLOW = fs.constants.O_NOFOLLOW || 0;
@@ -369,7 +379,12 @@ process.stdin.on("end", () => {
               fs.constants.O_RDONLY | O_NOFOLLOW,
             );
             try {
-              if (fs.fstatSync(fd).isFile()) content = fs.readFileSync(fd, "utf8").trim();
+              const fst = fs.fstatSync(fd);
+              // Best-effort inode recheck: only enforce when both ids are present
+              // (0/undefined on some Windows FS → skip, don't false-drop).
+              const inodeStable =
+                !chosen.ino || !fst.ino || (fst.ino === chosen.ino && fst.dev === chosen.dev);
+              if (fst.isFile() && inodeStable) content = fs.readFileSync(fd, "utf8").trim();
             } finally {
               try {
                 fs.closeSync(fd);

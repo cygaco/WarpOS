@@ -221,13 +221,33 @@ function archive(srcPath, opts) {
   }
 }
 
-/** Append one index entry. Best-effort — appendFileSync of one line is atomic. */
+/**
+ * Append one index entry. Refuses a HARD-LINKED index (nlink !== 1). The index
+ * has a KNOWN name (`archive/index.jsonl`), so an attacker with archive-dir write
+ * could pre-create it as a hard link to a file OUTSIDE root — and `containResolved`
+ * CANNOT detect that (a hard link shares the target's inode; realpath resolves to
+ * the same in-root name, lstat says "regular file"). The append would then reach
+ * the external inode, breaking the "never writes outside root" guarantee. We open
+ * for append and `fstat` the OPEN fd (atomic with the write): a fresh index has
+ * nlink 1; nlink > 1 means it is hard-linked → refuse (return false → surfaced as
+ * indexed:false), never writing. NEVER throws.
+ */
 function appendIndex(rootAbs, entry) {
   try {
     const idx = archiveIndexPath(rootAbs);
     fs.mkdirSync(path.dirname(idx), { recursive: true });
-    fs.appendFileSync(idx, JSON.stringify(entry) + "\n");
-    return true;
+    const fd = fs.openSync(idx, "a"); // create-if-absent, append
+    try {
+      if (fs.fstatSync(fd).nlink !== 1) return false; // hard-linked index — refuse
+      fs.writeSync(fd, JSON.stringify(entry) + "\n");
+      return true;
+    } finally {
+      try {
+        fs.closeSync(fd);
+      } catch {
+        /* fd already gone */
+      }
+    }
   } catch {
     return false; // the index is telemetry — never block an archive on it
   }

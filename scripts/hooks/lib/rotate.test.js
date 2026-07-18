@@ -408,16 +408,16 @@ h.test("R2-ARCHIVE-INDEX: rotate returns indexed:false when the index write fail
   try {
     const file = regSink(fx.file("events.jsonl"));
     fs.writeFileSync(file, mkLines(30, 120), "utf8");
-    const origAppend = fs.appendFileSync;
-    fs.appendFileSync = (p, ...rest) => {
-      if (String(p).endsWith("index.jsonl")) throw new Error("injected index failure");
-      return origAppend(p, ...rest);
+    const origOpen = fs.openSync;
+    fs.openSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index open failure");
+      return origOpen(p, ...rest);
     };
     let res;
     try {
       res = rotateIfNeeded(file, 5, { root: fx.dir });
     } finally {
-      fs.appendFileSync = origAppend;
+      fs.openSync = origOpen;
     }
     assert.strictEqual(res.rotated, true, "the file IS archived (data safe)");
     assert.strictEqual(res.indexed, false, "the index failure is PROPAGATED to the caller, not swallowed");

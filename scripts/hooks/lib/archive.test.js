@@ -274,17 +274,18 @@ h.test("archive surfaces an index-write failure as indexed:false (file still arc
     seedRuntime(fx);
     const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
     fs.writeFileSync(src, "a\nb\n", "utf8");
-    const origAppend = fs.appendFileSync;
-    // Fail ONLY the index append (the path ends with index.jsonl).
-    fs.appendFileSync = (p, ...rest) => {
-      if (String(p).endsWith("index.jsonl")) throw new Error("injected index write failure");
-      return origAppend(p, ...rest);
+    // Fail ONLY the index write (appendIndex opens index.jsonl for append; stub
+    // openSync to throw for that path — the append then fails, surfaced as indexed:false).
+    const origOpen = fs.openSync;
+    fs.openSync = (p, ...rest) => {
+      if (String(p).endsWith("index.jsonl")) throw new Error("injected index open failure");
+      return origOpen(p, ...rest);
     };
     let res;
     try {
       res = archive.archive(src, { root: fx.dir, reason: "rotation" });
     } finally {
-      fs.appendFileSync = origAppend;
+      fs.openSync = origOpen;
     }
     assert.strictEqual(res.ok, true, "the file IS archived (data safe) even when the index write fails");
     assert.strictEqual(res.indexed, false, "the index-write failure must be SURFACED, not swallowed");
@@ -492,6 +493,44 @@ h.test("restore containment: an out-of-root origin (via ancestor junction) is RE
     assert.strictEqual(r.ok, false, "an out-of-root origin (via junction) must be refused");
     assert.strictEqual(r.reason, "escapes-root");
     assert.strictEqual(fs.readdirSync(outside.dir).length, 0, "nothing written outside root");
+  } finally {
+    fx.cleanup();
+    outside.cleanup();
+  }
+});
+
+// ── β containment (R4): a HARD-LINKED index.jsonl is refused (write-outside-root) ─
+h.test("hard-link index: a hard-linked index.jsonl → indexed:false, external file NOT written (nlink guard)", () => {
+  const fx = sealedDir({}, "archive-hardlink-index");
+  const outside = sealedDir({}, "archive-hardlink-outside");
+  try {
+    seedRuntime(fx);
+    const archDir = path.join(fx.dir, ".claude", "runtime", "archive");
+    fs.mkdirSync(archDir, { recursive: true });
+    const external = path.join(outside.dir, "external-target.txt");
+    fs.writeFileSync(external, "EXTERNAL-ORIGINAL\n", "utf8");
+    const idxPath = path.join(archDir, "index.jsonl");
+    // Pre-create index.jsonl as a HARD LINK to the external file (realpath can't
+    // detect this — same inode, lstat says regular file). Same-volume required.
+    let linkOk = true;
+    try {
+      fs.linkSync(external, idxPath);
+    } catch {
+      linkOk = false;
+    }
+    if (!linkOk) return; // cross-device / unsupported — skip
+    assert.ok(fs.statSync(idxPath).nlink >= 2, "precondition: index is hard-linked (nlink>=2)");
+
+    const src = path.join(fx.dir, ".claude", "runtime", "events.jsonl");
+    fs.writeFileSync(src, "a\nb\n", "utf8");
+    const res = archive.archive(src, { root: fx.dir, reason: "x" });
+    assert.strictEqual(res.ok, true, "the file is still archived (data safe)");
+    assert.strictEqual(res.indexed, false, "a hard-linked index is REFUSED (indexed:false)");
+    assert.strictEqual(
+      fs.readFileSync(external, "utf8"),
+      "EXTERNAL-ORIGINAL\n",
+      "the external file was NOT written to (nlink guard held)",
+    );
   } finally {
     fx.cleanup();
     outside.cleanup();
