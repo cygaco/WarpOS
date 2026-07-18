@@ -1,0 +1,20 @@
+{
+  "schema": "warpos/kernel/role-binding/v1",
+  "_doc": "D3 — role-binding precedence graph (SP-20260718-001 Phase 0). Machine-readable companion to top-level-runtime-contract.md §3. Consumed today by conformance-matrix.js (Phase-0 kernel fixtures, gate 'role-binding'); Phase-2 G2.1 wires this into the live dispatch/session-bootstrap runtime (ED-216).",
+  "order": ["explicit_user", "validated_workorder_or_cli", "explicit_top_level_helm", "UNBOUND"],
+  "sources": {
+    "helm": { "can_bind": true },
+    "agents_md": { "can_bind": false },
+    "repo_prose": { "can_bind": false }
+  },
+  "worker_default_when_unbound": "FAIL_CLOSED",
+  "top_level_human_default": "alex-alpha",
+  "top_level_default_binding_source": "helm_only",
+  "core_refs": ["CORE-1", "CORE-3"],
+  "notes": {
+    "CORE-1": "Dispatched workers NEVER default to binding as the President (alex-alpha) when unbound; worker_default_when_unbound = FAIL_CLOSED is the machine-readable form of this invariant.",
+    "CORE-3": "repo_prose.can_bind = false and agents_md.can_bind = false — neutral, provider-neutral prose (root AGENTS.md, ambient CLAUDE.md/GEMINI.md shims) can NEVER manufacture a binding. Only a validated WorkOrder/CLI binding or an explicit top-level helm binding (sources.helm.can_bind = true) can bind a role.",
+    "top_level_default": "The TOP-LEVEL human-facing session defaults to alex-alpha (packet-04 binding order #5), but ONLY via an explicit helm binding (top_level_default_binding_source = helm_only) — never via ambient/neutral prose. This is the RATIFIED-PLAN Phase-2 α ruling: dispatched workers are UNBOUND-fail-closed; the operator's own top-level session is NOT left unbound."
+  },
+  "phase_seed": "Phase-0 SEED — fixture-proven (unbound-dispatch-fails-closed, no-root-alpha-poison) but not yet wired into the live runtime. See ED-216. Full precedence enforcement lands at RATIFIED-PLAN Phase 2 (G2.1)."
+}
