@@ -72,13 +72,23 @@ function requiredLanes(manifest, profileName) {
   });
 }
 
+/** The sanctioned in-process hunter role identity (ADR-0016). The exemption binds to THIS role. */
+const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
+
 /**
- * The ONE sanctioned in-process panel lane: the claude hunter. POSITIVE identity scope (β rider #3):
- * lane id === "claude" AND provider === "claude". NOT the shape alone, NOT a settable flag — an
- * agy/gpt lane can NEVER assert this exemption because its provider is not claude.
+ * The ONE sanctioned in-process panel lane: the claude hunter. POSITIVE identity scope (β rider #3,
+ * SR-005): lane id === "claude" AND provider === "claude" AND the lane carries the sanctioned hunter
+ * ROLE identity (`sanctioned_lane_id`/`role` === "security_claude_hunter"). NOT the shape alone, NOT a
+ * settable flag, and NOT merely provider===claude — an arbitrary Claude in-process security-reviewer
+ * lane (no hunter role) can NEVER assert this exemption, nor can a gpt/agy lane.
  */
 function isSanctionedInProcessLane(laneId, lane) {
-  return laneId === "claude" && !!lane && lane.provider === "claude";
+  return (
+    laneId === "claude" &&
+    !!lane &&
+    lane.provider === "claude" &&
+    (lane.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE || lane.role === SANCTIONED_HUNTER_ROLE)
+  );
 }
 
 /**
@@ -161,13 +171,23 @@ function validatePanelManifest(opts = {}) {
     const agyRow = supportMatrix && supportMatrix.rows && supportMatrix.rows["agy-antigravity"];
     if (!agyRow) errors.push(`support-matrix.json has no 'agy-antigravity' row (the lane-status single-source) — cannot certify agy liveness`);
   }
-  // (5) Profiles: panel-3lab BINDING required=[gpt,claude,agy]; panel-2family NON-binding, agy optional.
+  // (5) Profiles: EXACT required sets (SR-006). An `includes()` check let a mutated
+  // panel-3lab.required=[agy] or panel-2family.required=[gpt] validate ok — a required lane could be
+  // silently DROPPED. Derive the expected sets from the REAL labs (passesOf → provider → laneId, the
+  // single source) and assert set-EQUALITY: panel-3lab === the full lab set; panel-2family === the
+  // full lab set MINUS agy (agy is optional/operator-owned in the degraded floor).
+  const setEq = (a, b) =>
+    Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x) => b.includes(x)) && b.every((x) => a.includes(x));
+  const providerToLaneId = {};
+  for (const [laneId, lane] of laneEntries) providerToLaneId[lane.provider] = laneId;
+  const allLabLaneIds = passes.map((p) => providerToLaneId[p.provider]).filter(Boolean);
+  const nonAgyLaneIds = passes.filter((p) => p.provider !== "antigravity").map((p) => providerToLaneId[p.provider]).filter(Boolean);
   const p3 = (manifest.profiles || {})["panel-3lab"];
   const p2 = (manifest.profiles || {})["panel-2family"];
   if (!p3 || p3.binding !== true) errors.push(`panel-3lab must exist and be binding:true`);
-  else if (!(p3.required || []).includes("agy")) errors.push(`panel-3lab.required must include the agy lane (the binding 3rd lab)`);
+  else if (!setEq(p3.required || [], allLabLaneIds)) errors.push(`panel-3lab.required must be EXACTLY the full lab set ${JSON.stringify(allLabLaneIds)} (got ${JSON.stringify(p3.required)}) — an included-not-exact set lets a required lane be silently dropped (SR-006)`);
   if (!p2 || p2.binding === true) errors.push(`panel-2family must exist as the non-binding degraded floor (binding:false)`);
-  else if ((p2.required || []).includes("agy")) errors.push(`panel-2family must NOT require agy (agy is optional in the degraded floor)`);
+  else if (!setEq(p2.required || [], nonAgyLaneIds)) errors.push(`panel-2family.required must be EXACTLY the non-agy lab set ${JSON.stringify(nonAgyLaneIds)} (got ${JSON.stringify(p2.required)}) — agy is optional (operator-owned), not required, in the degraded floor (SR-006)`);
 
   return { ok: errors.length === 0, errors, passes, lanes };
 }
@@ -218,17 +238,24 @@ function panelStatus(profile, lanes = [], opts = {}) {
 
   for (const laneId of required) {
     const l = laneById[laneId];
-    // ABSENT — no lane evidence at all.
-    if (!l || l.hasEvidence === false) {
+    // ABSENT — no lane evidence at all. FAIL-CLOSED (SR-002): require hasEvidence === true explicitly.
+    // An OMITTED hasEvidence is NOT proof — treating undefined as "present" is the fail-open hole a
+    // caller slips through with a labels-only lane object (observedProvider set, evidence/liveness omitted).
+    if (!l || l.hasEvidence !== true) {
       if (opts.agyOperatorOwned && laneId === "agy") { operatorBlocked.push(laneId); laneStatus[laneId] = "operator-owned-absent"; }
       else { blocked.push(laneId); laneStatus[laneId] = "missing-evidence"; }
       continue;
     }
     // COERCED — ran on the WRONG provider or via fallback (the masquerade). Never counts as its lab.
-    const coerced = l.fallback === true || (!!l.observedProvider && !!l.contractedProvider && l.observedProvider !== l.contractedProvider);
+    // FAIL-CLOSED: an omitted observedProvider is itself a coercion signal (no proof of the contracted lab).
+    const coerced =
+      l.fallback === true ||
+      !l.observedProvider ||
+      (!!l.contractedProvider && l.observedProvider !== l.contractedProvider);
     if (coerced) { blocked.push(laneId); laneStatus[laneId] = "coerced"; continue; }
-    // DEAD — a record exists but the dispatch was reaped / exited non-ok.
-    if (l.alive === false) { blocked.push(laneId); laneStatus[laneId] = "dead"; continue; }
+    // DEAD — a record exists but the dispatch was reaped / exited non-ok. FAIL-CLOSED (SR-002): require
+    // alive === true explicitly; an OMITTED alive is not liveness proof.
+    if (l.alive !== true) { blocked.push(laneId); laneStatus[laneId] = "dead"; continue; }
     const v = String(l.verdict || "").toLowerCase();
     if (v === "fail") { failed.push(laneId); laneStatus[laneId] = "fail"; continue; }
     if (v === "error" || v === "") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }

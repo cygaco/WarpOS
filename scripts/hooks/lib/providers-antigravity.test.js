@@ -71,12 +71,15 @@ test("buildProviderArgv(unknown) → fail-closed (no unvetted spawn)", () => {
 // ── BLOCKED-ON-OPERATOR: agy absent → runProvider fail-closes to the fallback, NOT a crash and NOT
 //    the "custom cfg.syntax not covered" error (which would mean the antigravity branch is missing). ──
 test("runProvider(provider:antigravity) with agy absent → fail-closed fallback (branch wired)", () => {
-  // strict:false to skip the model-availability pre-flight; agy CLI is not installed in CI, so this
+  // HERMETIC (D6-TEST-002 fix): force agy-unavailable via the opts.cliAvailable seam instead of ASSUMING
+  // the CLI is absent — agy 1.1.4 may be installed, and a real spawn would be non-deterministic (depends
+  // on ambient auth/account). strict:false skips the model pre-flight; the injected probe deterministically
   // exercises the cliAvailable('agy') fail-closed path (the operator-owned liveness gate).
-  const r = runProvider("security-reviewer", "probe", { provider: "antigravity", strict: false, timeoutMs: 5000 });
+  const r = runProvider("security-reviewer", "probe", { provider: "antigravity", strict: false, timeoutMs: 5000, cliAvailable: () => false });
   assert.equal(r.ok, false);
   assert.equal(r.fallback, true, "an absent agy must fall back (BLOCKED-ON-OPERATOR), not hard-fail");
   assert.ok(!/custom cfg\.syntax not covered/.test(r.error || ""), "antigravity must NOT hit the unknown-provider branch — its branch is wired");
+  assert.ok(/not found/.test(r.error || ""), "the forced-unavailable seam drives the CLI-absent fail-closed reason (seam is load-bearing)");
 });
 
 if (failures.length) {

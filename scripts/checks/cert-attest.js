@@ -30,6 +30,10 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..
 const NAME = "cert-attest";
 const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 
+// The sanctioned in-process hunter role identity (ADR-0016). The claude-hunter panel exemption binds
+// to THIS role (β#3/SR-005) — provider===claude alone does not.
+const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
+
 function loadCatalog() {
   return require(path.join(ROOT, "scripts", "dispatch", "catalog.js"));
 }
@@ -145,20 +149,40 @@ function readLedgerRecords(sprintId, runId, ledgerPath) {
  *     (provider claude, via 'epsilon-agent' / shape in-process-agent) with evidence.
  * @returns {{ laneId, attested, observedProvider?, tool_id?, invocation_digest?, evidence_digest?, reason }}
  */
-function attestLane(lane, records, role = "security-reviewer") {
+function attestLane(lane, records, opts = {}) {
+  // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
+  const { role = "security-reviewer", runId = null, sprintId = null } =
+    typeof opts === "string" ? { role: opts } : opts || {};
   const claudeHunter = lane.shape === "in-process-agent" && lane.provider === "claude";
-  // Scope to the PANEL ROLE (security-reviewer): a design-phase dispatch that happens to share a lane
-  // shape (e.g. a product-lead codex consult) must NOT attest a security-panel lane. Without this the
-  // attestation false-greens on ANY same-sprint dispatch of the right provider/shape.
-  const alive = (records || []).filter((r) => r.ok === true && r.fallback === false && (!role || r.role === role));
+  // SAME-RUN correlation (SR-004/QA-003): a record attests a lane ONLY if it belongs to THIS run+sprint.
+  // A cross-run/cross-sprint record with the right provider/shape must NOT attest — else the attestation
+  // false-greens on ANY historic same-provider dispatch. sprint_id must match strictly; run_id must match
+  // when BOTH the requested runId and the record carry one (a null-run_id ledger isn't falsely excluded,
+  // but two DIFFERENT non-null run_ids are distinguished).
+  const sameRun = (records || []).filter(
+    (r) =>
+      r.ok === true &&
+      r.fallback === false &&
+      (sprintId == null || r.sprint_id === sprintId) &&
+      (runId == null || r.run_id == null || r.run_id === runId),
+  );
   let match;
   if (claudeHunter) {
-    match = alive.find(
-      (r) => r.provider === "claude" && (r.via === "epsilon-agent" || r.shape === "in-process-agent" || r.record_via === "inprocess") && (r.evidence_sha || r.output_digest),
+    // The sanctioned hunter (β#3/SR-005): provider claude, in-process, AND the security_claude_hunter
+    // ROLE identity. An arbitrary Claude in-process security-reviewer record (no hunter role) does NOT
+    // attest the hunter lane — provider===claude alone is insufficient.
+    match = sameRun.find(
+      (r) =>
+        r.provider === "claude" &&
+        (r.role === SANCTIONED_HUNTER_ROLE || r.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE) &&
+        (r.via === "epsilon-agent" || r.shape === "in-process-agent" || r.record_via === "inprocess") &&
+        (r.evidence_sha || r.output_digest),
     );
   } else {
-    match = alive.find(
-      (r) => r.provider === lane.provider && r.tool_id === lane.tool_id && r.shape === "subprocess-cross-provider" && !!r.output_digest,
+    // A CLI cross-provider lane: the record must be the PANEL ROLE (security-reviewer) on the contracted
+    // provider/tool_id. A design-phase codex consult (different role) must NOT attest a security lane.
+    match = sameRun.find(
+      (r) => r.role === role && r.provider === lane.provider && r.tool_id === lane.tool_id && r.shape === "subprocess-cross-provider" && !!r.output_digest,
     );
   }
   if (!match) {
@@ -166,8 +190,8 @@ function attestLane(lane, records, role = "security-reviewer") {
       laneId: lane.laneId,
       attested: false,
       reason: claudeHunter
-        ? "no same-run in-process claude-hunter record (provider claude, record-inprocess, with evidence)"
-        : `no same-run CLI record for ${lane.provider}/${lane.tool_id} (fallback:false, output_digest present) — a wrapper claim is NOT proof`,
+        ? "no same-run in-process claude-hunter record (provider claude, role security_claude_hunter, record-inprocess, with evidence)"
+        : `no same-run CLI record for ${lane.provider}/${lane.tool_id} (role ${role}, fallback:false, output_digest present) — a wrapper claim is NOT proof`,
     };
   }
   return {
@@ -188,15 +212,20 @@ function attestLane(lane, records, role = "security-reviewer") {
  * @param {{ runId?, sprintId, profile:{name}, lanes:Array, records:Array, codeSha? }} args
  */
 function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, role = "security-reviewer" } = {}) {
-  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], role));
+  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId }));
   const attestedLanes = laneResults.filter((l) => l.attested);
   const allAttested = laneResults.length > 0 && laneResults.every((l) => l.attested);
+  // CODE-SHA binding (SR-004/QA-003, AC-14): a binding attestation MUST carry the code identity it
+  // certifies. A null/absent codeSha cannot bind the evidence to a specific build → NOT ok, even when
+  // every lane attests. This closes the "attested panel returns ok:true with code_sha:null" false-green.
+  const codeShaBound = typeof codeSha === "string" && codeSha.length > 0;
+  const ok = allAttested && codeShaBound;
   const evidenceDigest = crypto
     .createHash("sha256")
     .update(attestedLanes.map((l) => `${l.laneId}:${l.evidence_digest || ""}`).join("|"))
     .digest("hex");
   return {
-    ok: allAttested,
+    ok,
     profile: (profile && profile.name) || null,
     run_id: runId || null,
     sprint_id: sprintId || null,
@@ -204,9 +233,11 @@ function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, rol
     invocation_digests: attestedLanes.map((l) => l.invocation_digest).filter(Boolean),
     evidence_digest: evidenceDigest,
     lanes: laneResults,
-    reason: allAttested
-      ? "every required lane attested SAME-RUN on its contracted provider (fallback:false)"
-      : `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`,
+    reason: !allAttested
+      ? `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`
+      : !codeShaBound
+        ? "every required lane attested SAME-RUN, but code_sha is absent — a binding attestation must bind to a code SHA (AC-14) → NOT ok"
+        : "every required lane attested SAME-RUN on its contracted provider (fallback:false), bound to code_sha",
   };
 }
 

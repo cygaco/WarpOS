@@ -29,13 +29,45 @@ const S = "SP-TEST-001", R = "run-abc";
 const rec = (o) => ({ sprint_id: S, run_id: R, ok: true, fallback: false, ...o });
 const gptOk = rec({ role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-gpt", cmdline_checksum: "c-gpt" });
 const agyOk = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-agy", cmdline_checksum: "c-agy" });
-const claudeHunterOk = rec({ role: "security-reviewer", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-cl", cmdline_checksum: "c-cl" });
+// The hunter record carries the sanctioned ROLE identity (β#3/SR-005) — not a bare security-reviewer.
+const claudeHunterOk = rec({ role: "security_claude_hunter", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-cl", cmdline_checksum: "c-cl" });
+const SHA = "abc1234";
 
-// ── POSITIVE: full same-run 3-lab → attested. ──
-test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) → attested", () => {
-  const out = attestPanelRun({ runId: R, sprintId: S, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+// ── POSITIVE: full same-run 3-lab WITH code_sha → attested. ──
+test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha → attested", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
   assert.ok(out.ok, out.reason);
   assert.ok(out.evidence_digest && out.invocation_digests.length === 3);
+  assert.equal(out.code_sha, SHA);
+});
+
+// ── SR-004/QA-003: code_sha ABSENT → NOT ok even when every lane attests (AC-14 binding). ──
+test("SR-004: every lane attested but code_sha absent → NOT ok", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, /* codeSha omitted */ profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  assert.equal(out.ok, false, "a binding attestation must bind to a code SHA");
+  assert.ok(/code_sha/.test(out.reason), out.reason);
+});
+
+// ── SR-004: a record from a DIFFERENT sprint must NOT attest (same-run correlation). ──
+test("SR-004: cross-sprint record for gpt → gpt unattested → panel FAILS", () => {
+  const otherSprintGpt = { sprint_id: "SP-OTHER-999", run_id: R, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [otherSprintGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a cross-sprint record must not attest a lane in this run");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+});
+
+// ── SR-004: a record from a DIFFERENT run (same sprint) must NOT attest. ──
+test("SR-004: cross-run record (same sprint) for gpt → gpt unattested", () => {
+  const otherRunGpt = { sprint_id: S, run_id: "run-OTHER", ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestLane(LANES.gpt, [otherRunGpt], { runId: R, sprintId: S });
+  assert.equal(out.attested, false, "a different-run record must not attest this run's lane");
+});
+
+// ── SR-005: an arbitrary claude in-process security-reviewer record (NO hunter role) → does NOT attest. ──
+test("SR-005: claude in-process record without security_claude_hunter role → hunter unattested", () => {
+  const notHunter = rec({ role: "security-reviewer", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-x" });
+  const out = attestLane(LANES.claude, [notHunter], { runId: R, sprintId: S });
+  assert.equal(out.attested, false, "provider=claude alone must not attest the sanctioned hunter (β#3/SR-005)");
 });
 
 // ── T5a (THE fixture): wrapper CLAIMS agy but the record is provider:claude → agy NOT attested. ──

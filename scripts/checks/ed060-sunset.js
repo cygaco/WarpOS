@@ -45,11 +45,17 @@ function evaluateSunset({ sunsetDate, now, resolved }) {
 function loadLive() {
   const pl = require(path.join(ROOT, "scripts", "dispatch", "panel-lanes"));
   const manifest = pl.loadManifest();
-  const sunsetDate = manifest && manifest.sunset && manifest.sunset.date;
+  let sunsetDate = manifest && manifest.sunset && manifest.sunset.date;
   if (!sunsetDate) throw new Error("panel-lane-manifest.json has no sunset.date (fail-closed — the enforcer needs a dated deadline)");
   let supportMatrix = null;
   try { supportMatrix = pl.loadSupportMatrix(); } catch { /* unreadable → treat as not-live (fail-closed) */ }
-  const resolved = pl.agyLive(supportMatrix);
+  let resolved = pl.agyLive(supportMatrix);
+  // TEST-ONLY seam (AC-17 two-sided integration): let the /scan:full exit-path test drive a fixture
+  // sunset date / resolved state through the REAL main() → exit code, WITHOUT mutating the shipped
+  // manifest. Never set in production. This is what makes AC-17 a falsifiable INTEGRATION tooth (a
+  // past-date fixture must make the actual CLI exit non-zero), not merely a pure-function assertion.
+  if (process.env.WARPOS_ED060_SUNSET_DATE_TEST) sunsetDate = process.env.WARPOS_ED060_SUNSET_DATE_TEST;
+  if (process.env.WARPOS_ED060_RESOLVED_TEST != null) resolved = process.env.WARPOS_ED060_RESOLVED_TEST === "true";
   return { sunsetDate, resolved };
 }
 

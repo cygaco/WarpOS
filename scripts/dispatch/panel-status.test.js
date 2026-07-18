@@ -138,6 +138,35 @@ test("INVARIANT: PASS only when every required lane is attested + diverse", () =
   assert.notEqual(r.status, STATUS.PASS, "fallback:true must never count as an attested lane");
 });
 
+// ── FAIL-CLOSED on OMISSION (SR-002): a labels-only lane (observedProvider+verdict:pass set, but
+//    hasEvidence/alive OMITTED) must BLOCK, not fall through to PASS. This is the exact fail-open the
+//    security lane reproduced: undefined liveness/evidence fields were treated as "present". ──
+test("SR-002 omitted hasEvidence: a labels-only lane (no hasEvidence) → BLOCKED, not PASS", () => {
+  const r = panelStatus(PANEL_2FAM, [
+    { laneId: "gpt", contractedProvider: "openai", observedProvider: "openai", fallback: false, alive: true, verdict: "pass" /* hasEvidence OMITTED */ },
+    clean("claude", "claude"),
+  ]);
+  assert.notEqual(r.status, STATUS.PASS, "omitted hasEvidence must never be treated as proof");
+  assert.equal(r.status, STATUS.BLOCKED_INCONCLUSIVE, r.reason);
+  assert.equal(r.laneStatus.gpt, "missing-evidence");
+});
+test("SR-002 omitted alive: a lane with evidence but no liveness (alive omitted) → BLOCKED, not PASS", () => {
+  const r = panelStatus(PANEL_2FAM, [
+    { laneId: "gpt", contractedProvider: "openai", observedProvider: "openai", fallback: false, verdict: "pass", hasEvidence: true /* alive OMITTED */ },
+    clean("claude", "claude"),
+  ]);
+  assert.notEqual(r.status, STATUS.PASS, "omitted alive must never be treated as liveness");
+  assert.equal(r.laneStatus.gpt, "dead");
+});
+test("SR-002 omitted observedProvider: no proof of the contracted lab → coerced/BLOCKED, not PASS", () => {
+  const r = panelStatus(PANEL_2FAM, [
+    { laneId: "gpt", contractedProvider: "openai", fallback: false, alive: true, verdict: "pass", hasEvidence: true /* observedProvider OMITTED */ },
+    clean("claude", "claude"),
+  ]);
+  assert.notEqual(r.status, STATUS.PASS, "no observed provider = no proof of the contracted lab");
+  assert.equal(r.laneStatus.gpt, "coerced");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [panel-status.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

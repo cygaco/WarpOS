@@ -53,6 +53,24 @@ function providerToolId(provider) {
   return PROVIDER_TOOL_ID[provider] ?? provider;
 }
 
+// ── OBSERVED completion fields (C2, SP-20260718-003 / D2-FALSE-GREEN-001 · SR-004/QA-002) ────────────
+// The completion record must reflect what ACTUALLY ran, never what was requested. On a quota-fallback
+// (a contracted lab is down → runProvider retries on another lab and returns it as result.provider with
+// result.quotaFallbackFrom set), stamping the REQUESTED provider/tool_id with fallback:false lets an
+// openai run masquerade as an observed-agy record — which cert-attest then accepts as agy evidence (the
+// binding false-green the security lane reproduced). PURE + exported so the shaping is a tested surface.
+//   provider  = the observed lab (result.provider), falling back to the requested provider when absent
+//   tool_id   = providerToolId of the OBSERVED provider (openai→codex, not the requested agy)
+//   fallback  = true if runProvider fell back OR a quota-fallback ran another lab (contracted lab didn't run)
+function observedCompletionFields(requestedProvider, result) {
+  const observed = (result && result.provider) || requestedProvider;
+  return {
+    provider: observed,
+    tool_id: providerToolId(observed),
+    fallback: !!(result && (result.fallback || result.quotaFallbackFrom)),
+  };
+}
+
 // ── model/provider run-opts resolution (D4, SP-20260718-003 / ED-205 regression guard) ──
 // ED-205 is RESOLVED / correct-by-design — inventing a "fix" would create a PHANTOM regression.
 // The run-opts a dispatch passes to runProvider are a pure function of three inputs (an explicit
@@ -442,6 +460,7 @@ if (require.main !== module) {
   module.exports = {
     findAgentSpec,
     providerToolId, // D2 (SP-20260718-003 / I-2): provider-id → tool-id map
+    observedCompletionFields, // C2 (SP-20260718-003 / D2-FALSE-GREEN-001): observed-provider record shaping
     resolveModelRunOpts, // D4 (SP-20260718-003 / ED-205): run-opts semantics — regression guard
     getRoleModel,
     detectMode,
@@ -873,12 +892,16 @@ try {
   const completedAt = new Date().toISOString();
   const completedMs = Date.now();
   const elapsedMs = completedMs - dispatchStartedMs;
+  // C2 (D2-FALSE-GREEN-001 · SR-004/QA-002): the record's provider/tool_id/fallback derive from the
+  // OBSERVED result via ONE helper — a quota-fallback openai run can never be stamped as observed-agy.
+  const observedRec = observedCompletionFields(provider, result);
   recordCompletion({
     dispatch_id: dispatchId,
     pid: process.pid,
     role,
     domain: domainFlag || null,
-    provider,
+    // OBSERVED provider (C2): what ACTUALLY ran. The intended/expected provider lives in the provider-trace.
+    provider: observedRec.provider,
     model: result.model || roleModel || null,
     started_at: dispatchStartedAt,
     completed_at: completedAt,
@@ -888,13 +911,15 @@ try {
     exit_code: result.ok ? 0 : 1,
     stdout_bytes: stdoutBytes,
     stderr_bytes: stderrBytes,
-    fallback: !!result.fallback,
+    // A quota-fallback that ran another lab is STILL a fallback for attestation (contracted lab didn't run).
+    fallback: observedRec.fallback,
     ok: !!result.ok,
     // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
     ...runContext(),
     prompt_digest: promptDigest(prompt),
     shape: "subprocess-cross-provider",
-    tool_id: providerToolId(provider),
+    // tool_id derives from the OBSERVED provider (C2): a quota-fallback openai run stamps 'codex', not 'agy'.
+    tool_id: observedRec.tool_id,
     // §17.4 strengthening: schema version (the gate rejects stale/backfilled
     // records), cwd, and output_digest (proof the dispatch produced real output —
     // a record's mere existence is not coverage).

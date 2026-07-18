@@ -34,6 +34,9 @@ const AGENT = path.join(__dirname, "dispatch-agent.js");
 const CLAUDE = path.join(__dirname, "dispatch-claude.js");
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..");
 
+// provider-id → panel lane-id (the security 3-lab): claude→claude, openai→gpt, antigravity→agy.
+const LANE_ID = { claude: "claude", antigravity: "agy", openai: "gpt" };
+
 function parseFlag(argv, name) {
   const i = argv.indexOf(name);
   return i >= 0 && argv[i + 1] ? argv[i + 1] : null;
@@ -146,43 +149,121 @@ async function main() {
 
   // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
   const settled = await Promise.all(passes.map((p) => spawnPass(role, promptFile, p, domain, laneOutDir)));
-  const lanes = settled.map((s) => ({
-    pass: s.pass.key,
-    provider: s.pass.provider,
-    model: s.pass.model,
-    ok: !s.spawnError && !!(s.result && s.result.ok),
-    verdict: verdictOf(s.result),
-    lane_out: s.laneOut ? path.relative(ROOT, s.laneOut) : null,
-  }));
+  const lanes = settled.map((s) => {
+    // OBSERVED evidence (C1/SR-001): the provider/fallback the dispatch ACTUALLY returned — after the C2
+    // fix the completion envelope carries the OBSERVED provider, and a quota-fallback is marked via
+    // quotaFallbackFrom. The panel gate reduces over THIS, never the declared pass label — so a lane that
+    // CLAIMS gpt/agy but ran on Claude (coerced/fallback) can never merge to pass. The claude pass runs
+    // via dispatch-claude.js, which is claude BY CONSTRUCTION — so its observed provider is a true
+    // observation, not a trusted label (the masquerade only threatens the CROSS-PROVIDER labs).
+    const r = s.result || {};
+    const isClaude = s.pass.provider === "claude";
+    return {
+      pass: s.pass.key,
+      provider: s.pass.provider, // the CONTRACTED provider (declared)
+      model: s.pass.model,
+      ok: !s.spawnError && !!r.ok,
+      verdict: verdictOf(s.result),
+      laneId: LANE_ID[s.pass.provider] || s.pass.provider,
+      observedProvider: isClaude ? "claude" : r.provider || null, // cross-provider: the REAL returned provider
+      fallback: isClaude ? false : !!(r.fallback || r.quotaFallbackFrom),
+      hasEvidence: !s.spawnError && !!s.result,
+      lane_out: s.laneOut ? path.relative(ROOT, s.laneOut) : null,
+    };
+  });
   // D5 CLI-only panel tooth (SP-20260718-003, AC-7): a cross-provider lab (non-claude) MUST run as a
   // CLI subprocess. This runner fires every non-claude pass through dispatch-agent.js
   // (subprocess-cross-provider) and the claude pass through dispatch-claude.js (subprocess-claude) —
-  // NEVER an in-process Agent-tool spawn. Assert it BEFORE merge so a future route change that
-  // resolves a cross-provider lane in-process is refused, not silently merged (the D1<->D5
-  // masquerade). The sanctioned in-process claude HUNTER is summoned by ε OUTSIDE this runner, so it
-  // never appears here. Fail-OPEN only on a missing module (additive contract); an actual violation
-  // exits 1 above via the guard.
+  // NEVER an in-process Agent-tool spawn. Assert it BEFORE merge so a future route change that resolves
+  // a cross-provider lane in-process is refused, not silently merged (the D1<->D5 masquerade). The
+  // sanctioned in-process claude HUNTER is summoned by ε OUTSIDE this runner, so it never appears here.
+  //
+  // SR-003 loader fail-CLOSED: distinguish a MISSING module (additive contract → fail-open, the negative
+  // teeth live in its test) from a loader/eval THROW (the module is PRESENT but errored → BLOCK, never a
+  // silent fall-through into merge). The old bare `catch {}` swallowed BOTH — a real loader error
+  // false-greened.
+  let panelLanes = null;
   try {
-    const { assertCliOnlyPanel } = require("./dispatch/panel-lanes");
-    const LANE_ID = { claude: "claude", antigravity: "agy", openai: "gpt" };
-    const observed = lanes.map((l) => ({
-      laneId: LANE_ID[l.provider] || l.provider,
-      provider: l.provider,
-      shape: l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider",
-    }));
-    const tooth = assertCliOnlyPanel(observed);
-    if (!tooth.ok) {
-      console.error(JSON.stringify({ ok: false, role, error: "panel_cli_only_violation", violations: tooth.violations }));
+    panelLanes = require("./dispatch/panel-lanes");
+  } catch (e) {
+    if (e && e.code === "MODULE_NOT_FOUND" && /panel-lanes/.test(String(e.message || ""))) {
+      panelLanes = null; // the module genuinely isn't present — additive contract, fail-open.
+    } else {
+      console.error(JSON.stringify({ ok: false, role, error: "panel_loader_error", detail: e.message }));
       process.exit(1);
     }
-  } catch {
-    /* panel-lanes module absent — additive contract, fail-open (the negative teeth live in its test) */
+  }
+  if (panelLanes) {
+    try {
+      const observed = lanes.map((l) => ({
+        laneId: l.laneId,
+        provider: l.provider,
+        shape: l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider",
+      }));
+      const tooth = panelLanes.assertCliOnlyPanel(observed);
+      if (!tooth.ok) {
+        console.error(JSON.stringify({ ok: false, role, error: "panel_cli_only_violation", violations: tooth.violations }));
+        process.exit(1);
+      }
+    } catch (e) {
+      // SR-003: an EVAL error inside the tooth must BLOCK (fail-closed), never continue into merge.
+      console.error(JSON.stringify({ ok: false, role, error: "panel_tooth_error", detail: e.message }));
+      process.exit(1);
+    }
   }
 
   const merged = mergeLanes(role, lanes);
   merged.lane_out_dir = path.relative(ROOT, laneOutDir);
+
+  // C1 (SR-001/QA-001): for the SECURITY PANEL, the binding outcome ALSO runs the D7 panelStatus reducer
+  // over the OBSERVED per-lane evidence (never the declared labels). mergeLanes alone (verdict/liveness on
+  // the declared passes) let an all-Claude masquerade — a gpt/agy lane that silently ran on Claude
+  // (observedProvider=claude / fallback:true) — merge to pass. The reducer marks such a lane COERCED and
+  // BLOCKS. The gate can only HOLD the merged outcome, never loosen it. agy is operator-owned (ED-060):
+  // the operative gating floor is panel-2family (GPT+Claude); panel-3lab is surfaced as its honest
+  // BLOCKED-ON-OPERATOR binding exit (the D8 SAME-RUN attestation is the ε-conductor's panel-exit cert).
+  if (panelLanes && isSecurityPanelRole(role)) {
+    const panelGate = applyPanelGate(panelLanes, lanes);
+    merged.panel = panelGate;
+    if (!panelGate.floor_pass) {
+      merged.ok = false;
+      if (merged.verdict === "pass" || merged.verdict === "warn") merged.verdict = "error";
+    }
+  }
+
   console.log(JSON.stringify(merged));
-  process.exit(merged.ok ? 0 : 1); // exit reflects the BINDING outcome (any-FAIL/dead lane → non-zero)
+  process.exit(merged.ok ? 0 : 1); // exit reflects the BINDING outcome (any-FAIL/dead lane/coerced-panel → non-zero)
+}
+
+function isSecurityPanelRole(role) {
+  return role === "security-reviewer";
+}
+
+// Run the D7 panelStatus reducer over the OBSERVED lane evidence for BOTH profiles: panel-2family (the
+// operative degraded floor that GATES today, agy operator-owned) and panel-3lab (the honest binding exit,
+// BLOCKED-ON-OPERATOR while agy is down). `floor_pass` gates the runner. PURE given lanes + the panel-lanes
+// module (injectable for tests). The gate can only HOLD (never loosen) the merged outcome.
+function applyPanelGate(panelLanes, lanes) {
+  const { panelStatus, STATUS, loadManifest } = panelLanes;
+  const manifest = loadManifest();
+  const observedLanes = lanes.map((l) => ({
+    laneId: l.laneId,
+    contractedProvider: l.provider,
+    observedProvider: l.observedProvider,
+    fallback: l.fallback,
+    alive: l.ok,
+    verdict: l.verdict,
+    hasEvidence: l.hasEvidence,
+  }));
+  const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
+  const bindingProfile = { name: "panel-3lab", ...manifest.profiles["panel-3lab"] };
+  const floor = panelStatus(floorProfile, observedLanes, { agyOperatorOwned: true });
+  const binding = panelStatus(bindingProfile, observedLanes, { agyOperatorOwned: true });
+  return {
+    floor_pass: floor.status === STATUS.PASS,
+    floor: { status: floor.status, reason: floor.reason, families: floor.families, laneStatus: floor.laneStatus },
+    binding: { status: binding.status, reason: binding.reason, operator_blocked: binding.operator_blocked || null },
+  };
 }
 
 // Merge per-lane outcomes into the binding review result. PURE (unit-testable). any-FAIL holds; a
@@ -235,4 +316,4 @@ function mergeLanes(role, lanes) {
 }
 
 if (require.main === module) main();
-module.exports = { verdictOf, mergeLanes, persistLane, laneFileName };
+module.exports = { verdictOf, mergeLanes, persistLane, laneFileName, isSecurityPanelRole, applyPanelGate };

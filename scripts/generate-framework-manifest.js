@@ -349,6 +349,10 @@ const TOP_LEVEL_SCRIPTS = [
   // at the 0.17.0 release. Same class as dispatch-claude/agent: ship them.
   { src: "scripts/dispatch-skill.js", kind: "top_script" },
   { src: "scripts/dispatch-review.js", kind: "top_script" },
+  // SP-20260718-003 D4 (gauntlet R1 / QA-007 · AC-19): the ED-205 run-opts regression guard is a NEW
+  // top-level test. Top-level scripts/*.test.js are NOT auto-walked (only scripts/<subdir> is), so a new
+  // top-level test must be enumerated here or it stays un-hash-tracked (the AC-19 all-new-scripts gap).
+  { src: "scripts/dispatch-agent-model-semantics.test.js", kind: "top_script" },
   // warp-setup.js is NOT shipped to target projects — it's the installer itself.
   //   Clients invoke it from ../WarpOS/, not from their own scripts/.
 ];

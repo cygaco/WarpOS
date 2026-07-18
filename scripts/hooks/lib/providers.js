@@ -777,7 +777,12 @@ function runProvider(role, prompt, opts = {}) {
     };
   }
 
-  if (!cliAvailable(cfg.cli)) {
+  // TEST seam (opts.cliAvailable): injectable CLI-availability probe so a HERMETIC test can force the
+  // fail-closed BLOCKED-ON-OPERATOR path deterministically — the agy CLI may or may not be installed in
+  // a given environment, and a test that assumes "absent" is non-deterministic (D6-TEST-002). Defaults
+  // to the real cliAvailable; never passed in production.
+  const probeCliAvailable = opts.cliAvailable || cliAvailable;
+  if (!probeCliAvailable(cfg.cli)) {
     return {
       ok: false,
       provider: providerName,

@@ -121,14 +121,42 @@ test("T1-B (negative, the false-green): a gpt lane ASSERTING lane id 'claude' bu
   const out = assertCliOnlyPanel([{ laneId: "claude", provider: "openai", shape: "in-process-agent" }]);
   assert.ok(!out.ok, "a non-claude-provider lane must NOT be exempted even if it labels itself 'claude'");
 });
-test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process → accepted", () => {
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), true);
+test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process (WITH hunter role) → accepted", () => {
+  // β#3/SR-005: the exemption now requires the sanctioned hunter ROLE identity, not just provider=claude.
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", sanctioned_lane_id: "security_claude_hunter" }), true);
   const out = assertCliOnlyPanel([
     { laneId: "gpt", provider: "openai", shape: "subprocess-cross-provider" },
     { laneId: "agy", provider: "antigravity", shape: "subprocess-cross-provider" },
-    { laneId: "claude", provider: "claude", shape: "in-process-agent" },
+    { laneId: "claude", provider: "claude", shape: "in-process-agent", sanctioned_lane_id: "security_claude_hunter" },
   ]);
   assert.ok(out.ok, `sanctioned hunter over-rejected: ${out.violations.join(" | ")}`);
+});
+test("T1-D (negative, SR-005): a claude/claude in-process lane WITHOUT the hunter role → REFUSED", () => {
+  // The SR-005 hole: an arbitrary Claude in-process security-reviewer lane (no security_claude_hunter
+  // identity) must NOT ride the sanctioned exemption. Provider=claude alone is insufficient.
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), false);
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", role: "security-reviewer" }), false);
+  const out = assertCliOnlyPanel([{ laneId: "claude", provider: "claude", shape: "in-process-agent" }]);
+  assert.ok(!out.ok, "a claude in-process lane lacking the security_claude_hunter role must be refused");
+});
+
+// ── H2/SR-006: EXACT required-set validation. A mutated required set that DROPS a lane must FAIL. ──
+test("SR-006: panel-3lab.required=[agy] (gpt,claude dropped) → validation FAILS", () => {
+  const mutated = JSON.parse(JSON.stringify(loadManifest()));
+  mutated.profiles["panel-3lab"].required = ["agy"];
+  const out = validatePanelManifest({ manifest: mutated, passesOf, toolIdOf, supportMatrix });
+  assert.ok(!out.ok, "a panel-3lab that silently drops gpt+claude must not validate");
+  assert.ok(out.errors.some((e) => /EXACTLY the full lab set|SR-006/.test(e)), out.errors.join(" | "));
+});
+test("SR-006: panel-2family.required=[gpt] (claude dropped) → validation FAILS", () => {
+  const mutated = JSON.parse(JSON.stringify(loadManifest()));
+  mutated.profiles["panel-2family"].required = ["gpt"];
+  const out = validatePanelManifest({ manifest: mutated, passesOf, toolIdOf, supportMatrix });
+  assert.ok(!out.ok, "a panel-2family that silently drops claude must not validate");
+});
+test("SR-006 negative control: the REAL manifest (exact sets) still validates ok", () => {
+  const out = validatePanelManifest({ manifest: loadManifest(), passesOf, toolIdOf, supportMatrix });
+  assert.ok(out.ok, `real manifest must validate: ${(out.errors || []).join(" | ")}`);
 });
 
 if (failures.length) {
