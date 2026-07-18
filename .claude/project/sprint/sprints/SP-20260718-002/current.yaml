@@ -10,7 +10,7 @@ interpreted_intent: "C1 events-compact.js · C2 scripts/state/materialize.js (re
 plan_contract: null
 risk_level: high
 approval_state: none_required
-current_phase: design
+current_phase: release-prep
 recommended_mode: sprint
 mode_invocation_required_by_user: false
 external_services:
@@ -49,12 +49,12 @@ requirements:
   redteam_plan: "design/qa-plan.md#4-gauntlet-lane-note (security-reviewer lane)"
   release_plan: null
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint: { status: pass, last_run: "2026-07-18", evidence: "node -c syntax clean on all changed scripts" }
+  typecheck: { status: n/a, last_run: null, evidence: "CommonJS node subsystem, no TS (mirrors archive.js)" }
+  tests: { status: pass, last_run: "2026-07-18", evidence: "60 fixture tests green: events-compact 16, materialize 10, cli 13, reader-discipline 16, materialize-decisions 5" }
+  build: { status: pass, last_run: "2026-07-18", evidence: "framework manifest regen + non-strict validate exit 0 + framework-purity exit 0" }
+  qa: { status: pass, last_run: "2026-07-18", evidence: "gauntlet R4 qa-reviewer PASS (gpt-5.6-terra); AC-1..AC-13 covered; QA-3-_warpos + QA-4 β-dispositioned (RI-003 / ED-223)" }
+  redteam: { status: pass, last_run: "2026-07-18", evidence: "gauntlet R4 security-reviewer PASS (gpt-5.6-terra); SEC-1..SEC-6 closed/dispositioned; SEC-2-frozen ED-212-class, SEC-6 ED-222" }
 approvals:
   plan: { required: false, state: not_required, ref: null }
   design: { required: false, state: not_required, ref: null }
@@ -64,8 +64,8 @@ approvals:
 reports:
   plan: "plan-composition.md"
   design: "design/ (PRD.md + build-spec.md + qa-plan.md; consults recorded via record-inprocess: DoE + quality-lead ok:true; product-lead route-deviated in-process, artifact=PRD.md)"
-  execution: null
-  release: null
+  execution: "GAUNTLET GREEN — 4 rounds (R1 16 findings → R4 0). backend/qa/security all PASS @R4 (gauntlet-verify real records). 15 commits e725f12c→6a52cedd, 14 files +3550/-47, frozen foundation 0-diff. β DECIDE ×2 (design→build 0.89; gauntlet→release cap-ruling 0.90)."
+  release: "release-prep: gauntlet GREEN + frozen 0-diff + ED-221/222/223 in canonical ledger → gauntlet→release cleared per β. Merge-to-main OPERATOR-GATED (through α). _warpos shipping-manifest converges at release flow (RI-003)."
 ralph:
   active: false
   current_ticket: null
