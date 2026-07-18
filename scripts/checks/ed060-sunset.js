@@ -81,4 +81,7 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 
-module.exports = { evaluateSunset, loadLive, NAME };
+// `main` is exported so the AC-17 two-sided integration test can drive the REAL exit-path in-process
+// (loadLive + evaluateSunset + exit code) without a nested node spawn — the sandbox blocks nested
+// spawnSync with EPERM (R2-AC17), and in-process still exercises the same code path /scan:full runs.
+module.exports = { evaluateSunset, loadLive, main, NAME };

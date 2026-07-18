@@ -15,7 +15,6 @@
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const ADR_DIR = path.join(ROOT, ".claude", "agents", "president", "_system", "policy", "adr");
@@ -59,27 +58,28 @@ test("AC-16 negative control: a drifted required-set phrase would NOT be found",
   assert.ok(!adr0020.includes("panel-3lab.required = [gpt, claude]"), "the ADR must not state a drifted 2-lane 3lab set");
 });
 
-// ── AC-17 (two-sided INTEGRATION): the REAL enforcer CLI exit code is controlled by the date. ──
+// ── AC-17 (two-sided INTEGRATION): the REAL enforcer exit path is controlled by the date. Driven
+//    IN-PROCESS via the exported main() — the sandbox blocks nested node spawns with EPERM (R2-AC17),
+//    and in-process still exercises the same loadLive + evaluateSunset + exit-code path /scan:full runs. ──
+const { main: ed060Main } = require(path.join(ROOT, "scripts", "checks", "ed060-sunset"));
 function runSunset(env) {
+  const saved = {};
+  for (const k of Object.keys(env)) { saved[k] = process.env[k]; process.env[k] = env[k]; }
   try {
-    execFileSync(process.execPath, [path.join(ROOT, "scripts", "checks", "ed060-sunset.js")], {
-      env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT, ...env },
-      stdio: "pipe",
-    });
-    return 0;
-  } catch (e) {
-    return typeof e.status === "number" ? e.status : 1;
+    return ed060Main([]); // returns the exit code (0/1/2); no process.exit when called as a function
+  } finally {
+    for (const k of Object.keys(env)) { if (saved[k] === undefined) delete process.env[k]; else process.env[k] = saved[k]; }
   }
 }
-test("AC-17: a PAST sunset date (unresolved) → the CLI exits NON-ZERO", () => {
+test("AC-17: a PAST sunset date (unresolved) → the enforcer exits NON-ZERO", () => {
   const code = runSunset({ WARPOS_ED060_SUNSET_DATE_TEST: "2020-01-01", WARPOS_ED060_RESOLVED_TEST: "false" });
   assert.equal(code, 1, "a passed, unresolved sunset must fail /scan:full");
 });
-test("AC-17: a FUTURE sunset date (unresolved) → the CLI exits 0", () => {
+test("AC-17: a FUTURE sunset date (unresolved) → the enforcer exits 0", () => {
   const code = runSunset({ WARPOS_ED060_SUNSET_DATE_TEST: "2099-01-01", WARPOS_ED060_RESOLVED_TEST: "false" });
   assert.equal(code, 0, "a future sunset is tracked debt, not overdue");
 });
-test("AC-17: a PAST sunset date but RESOLVED → the CLI exits 0 (moot)", () => {
+test("AC-17: a PAST sunset date but RESOLVED → the enforcer exits 0 (moot)", () => {
   const code = runSunset({ WARPOS_ED060_SUNSET_DATE_TEST: "2020-01-01", WARPOS_ED060_RESOLVED_TEST: "true" });
   assert.equal(code, 0, "resolving ED-060 makes the deadline moot");
 });

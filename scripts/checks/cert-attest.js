@@ -164,7 +164,10 @@ function attestLane(lane, records, opts = {}) {
       r.ok === true &&
       r.fallback === false &&
       (sprintId == null || r.sprint_id === sprintId) &&
-      (runId == null || r.run_id == null || r.run_id === runId),
+      // R2-A (SR-004-REOPEN/QA-003-R2): when a runId is REQUIRED, the record's run_id must be present AND
+      // exactly equal. The prior `r.run_id == null` acceptance was a bypass — a legacy/uncorrelated
+      // same-sprint record with no run_id could attest an arbitrary later run. Strict: no null-run_id pass.
+      (runId == null || (r.run_id != null && r.run_id === runId)),
   );
   let match;
   if (claudeHunter) {

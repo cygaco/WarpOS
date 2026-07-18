@@ -62,6 +62,14 @@ h.test("observedCompletionFields: agy quota-fallback → openai stamps codex/fal
 h.test("observedCompletionFields: an explicit runProvider fallback is marked fallback:true", () => {
   assert.strictEqual(observedCompletionFields("openai", { provider: "openai", fallback: true }).fallback, true);
 });
+h.test("observedCompletionFields (R2-D): MISSING result.provider → unattestable (fallback:true), no false-agy", () => {
+  // A dispatch that returned no provider identity cannot honestly attest the contracted lab. Stamping the
+  // requested provider with fallback:false was a false-green (D2-FALSE-GREEN-003); force fallback:true.
+  const f = observedCompletionFields("antigravity", { ok: true, fallback: false /* NO result.provider */ });
+  assert.strictEqual(f.fallback, true, "an identity-less dispatch must be unattestable (fallback:true)");
+  const empty = observedCompletionFields("antigravity", { provider: "", ok: true, fallback: false });
+  assert.strictEqual(empty.fallback, true, "an empty-string provider is also unattestable");
+});
 
 h.violation("negative control: recording the REQUESTED provider on quota-fallback would false-attest agy", () => {
   // The OLD shape stamped the requested provider/tool_id with fallback:false — an openai run recorded as

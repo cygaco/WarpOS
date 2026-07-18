@@ -147,6 +147,9 @@ async function main() {
     process.exit(2);
   }
 
+  // Capture the firing start — the panel gate correlates same-run ledger records by sprint_id within
+  // this wall-clock window (records carry no shared run_id), isolating this run from earlier rounds.
+  const runnerStartMs = Date.now();
   // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
   const settled = await Promise.all(passes.map((p) => spawnPass(role, promptFile, p, domain, laneOutDir)));
   const lanes = settled.map((s) => {
@@ -223,7 +226,10 @@ async function main() {
   // the operative gating floor is panel-2family (GPT+Claude); panel-3lab is surfaced as its honest
   // BLOCKED-ON-OPERATOR binding exit (the D8 SAME-RUN attestation is the ε-conductor's panel-exit cert).
   if (panelLanes && isSecurityPanelRole(role)) {
-    const panelGate = applyPanelGate(panelLanes, lanes);
+    const panelGate = applyPanelGate(panelLanes, lanes, {
+      sprintId: process.env.WARPOS_SPRINT_ID || null,
+      sinceMs: runnerStartMs,
+    });
     merged.panel = panelGate;
     if (!panelGate.floor_pass) {
       merged.ok = false;
@@ -239,28 +245,77 @@ function isSecurityPanelRole(role) {
   return role === "security-reviewer";
 }
 
-// Run the D7 panelStatus reducer over the OBSERVED lane evidence for BOTH profiles: panel-2family (the
-// operative degraded floor that GATES today, agy operator-owned) and panel-3lab (the honest binding exit,
-// BLOCKED-ON-OPERATOR while agy is down). `floor_pass` gates the runner. PURE given lanes + the panel-lanes
-// module (injectable for tests). The gate can only HOLD (never loosen) the merged outcome.
-function applyPanelGate(panelLanes, lanes) {
-  const { panelStatus, STATUS, loadManifest } = panelLanes;
+// Default ledger reader — the same-run completion records for a sprint (cert-attest is the single reader).
+function defaultReadLedger(sprintId) {
+  try {
+    return require("./checks/cert-attest").readLedgerRecords(sprintId, null) || [];
+  } catch {
+    return [];
+  }
+}
+
+function panelBlocked(reason) {
+  const r = { status: "BLOCKED-INCONCLUSIVE", reason: `panel gate fail-closed: ${reason}` };
+  return { floor_pass: false, manifest_valid: false, floor: r, binding: r };
+}
+
+// Run the D7 panelStatus reducer for BOTH profiles: panel-2family (the operative degraded floor that GATES
+// today, agy operator-owned) and panel-3lab (the honest binding exit, BLOCKED-ON-OPERATOR while agy is
+// down). `floor_pass` gates the runner. The gate can only HOLD (never loosen) the merged outcome.
+//
+// R2-B (SR-008): the manifest is VALIDATED (validatePanelManifest) before its profiles are trusted — a
+// mutated/drifted manifest (required=['claude'], min_families=1) would otherwise let an all-Claude set
+// pass. Any validator/loader error fails the runner CLOSED.
+// R2-C (SR-009/QA-001-R2): liveness/provider/fallback are bound to the SAME-RUN LEDGER record, not the
+// parsed child envelope — an envelope can claim ok:true while the ledger write failed (appendJsonl
+// swallows errors). A lane with no corroborating durable record (non-null output_digest) has
+// hasEvidence:false and is blocked. The verdict (a review JUDGMENT) still comes from the child output.
+function applyPanelGate(panelLanes, lanes, ctx = {}) {
+  const { panelStatus, STATUS, loadManifest, validatePanelManifest } = panelLanes;
+  let validation;
+  try {
+    validation = validatePanelManifest();
+  } catch (e) {
+    return panelBlocked(`manifest validation threw: ${e.message}`);
+  }
+  if (!validation || !validation.ok) {
+    return panelBlocked(`manifest INVALID: ${((validation && validation.errors) || []).join("; ")}`);
+  }
   const manifest = loadManifest();
-  const observedLanes = lanes.map((l) => ({
-    laneId: l.laneId,
-    contractedProvider: l.provider,
-    observedProvider: l.observedProvider,
-    fallback: l.fallback,
-    alive: l.ok,
-    verdict: l.verdict,
-    hasEvidence: l.hasEvidence,
-  }));
+
+  const sprintId = ctx.sprintId || process.env.WARPOS_SPRINT_ID || null;
+  const sinceMs = ctx.sinceMs || 0;
+  const readLedger = ctx.readLedger || defaultReadLedger;
+  const records = (readLedger(sprintId) || []).filter((r) => {
+    if (!sinceMs) return true;
+    const t = Date.parse(r.completed_at || "");
+    return Number.isFinite(t) && t >= sinceMs;
+  });
+  const observedLanes = lanes.map((l) => {
+    const expectShape = l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider";
+    // Corroborate the child envelope against a durable same-run record (proof the dispatch was actually
+    // recorded — a config echo without output_digest is NOT proof). Match by role + shape + the envelope's
+    // observed provider.
+    const rec = records.find(
+      (r) => r.role === "security-reviewer" && r.shape === expectShape && r.provider === l.observedProvider && !!r.output_digest,
+    );
+    return {
+      laneId: l.laneId,
+      contractedProvider: l.provider,
+      observedProvider: rec ? rec.provider : l.observedProvider, // ledger-confirmed when corroborated
+      fallback: rec ? !!rec.fallback : true, // no durable record → treat as unattestable (fallback)
+      alive: !!(rec && rec.ok === true), // liveness from the LEDGER, not the envelope
+      verdict: l.verdict, // the review JUDGMENT stays from the child output
+      hasEvidence: !!(rec && rec.output_digest), // SR-009: a real durable record is required
+    };
+  });
   const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
   const bindingProfile = { name: "panel-3lab", ...manifest.profiles["panel-3lab"] };
   const floor = panelStatus(floorProfile, observedLanes, { agyOperatorOwned: true });
   const binding = panelStatus(bindingProfile, observedLanes, { agyOperatorOwned: true });
   return {
     floor_pass: floor.status === STATUS.PASS,
+    manifest_valid: true,
     floor: { status: floor.status, reason: floor.reason, families: floor.families, laneStatus: floor.laneStatus },
     binding: { status: binding.status, reason: binding.reason, operator_blocked: binding.operator_blocked || null },
   };

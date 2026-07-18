@@ -63,11 +63,19 @@ function providerToolId(provider) {
 //   tool_id   = providerToolId of the OBSERVED provider (openai→codex, not the requested agy)
 //   fallback  = true if runProvider fell back OR a quota-fallback ran another lab (contracted lab didn't run)
 function observedCompletionFields(requestedProvider, result) {
-  const observed = (result && result.provider) || requestedProvider;
+  // R2-D (D2-FALSE-GREEN-003): a MISSING observed provider (result carries no provider identity) cannot
+  // honestly attest the contracted lab. The old `|| requestedProvider` fallback stamped the requested
+  // provider with fallback:false → an identity-less dispatch false-attested (e.g. agy). Now: use the
+  // observed provider when present; when ABSENT, stamp the requested provider for traceability but force
+  // fallback:true so the record is UNATTESTABLE (cert-attest requires fallback:false). No false-green.
+  const observedProvider = result && result.provider;
+  const hasObserved = typeof observedProvider === "string" && observedProvider.length > 0;
+  const provider = hasObserved ? observedProvider : requestedProvider;
+  const fallback = !!(result && (result.fallback || result.quotaFallbackFrom)) || !hasObserved;
   return {
-    provider: observed,
-    tool_id: providerToolId(observed),
-    fallback: !!(result && (result.fallback || result.quotaFallbackFrom)),
+    provider,
+    tool_id: providerToolId(provider),
+    fallback,
   };
 }
 

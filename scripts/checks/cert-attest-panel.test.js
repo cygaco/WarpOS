@@ -63,6 +63,18 @@ test("SR-004: cross-run record (same sprint) for gpt → gpt unattested", () => 
   assert.equal(out.attested, false, "a different-run record must not attest this run's lane");
 });
 
+// ── R2-A (SR-004-REOPEN/QA-003-R2): a NULL-run_id record must NOT attest when a runId is required. ──
+test("R2-A: null-run_id record does NOT attest a required-runId lane (no null bypass)", () => {
+  const nullRunGpt = { sprint_id: S, run_id: null, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestLane(LANES.gpt, [nullRunGpt], { runId: R, sprintId: S });
+  assert.equal(out.attested, false, "a null-run_id record must not attest when a specific runId is required");
+});
+test("R2-A: null-run_id via attestPanelRun → panel FAILS (the reproduced bypass is closed)", () => {
+  const nullRunGpt = { sprint_id: S, run_id: null, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [nullRunGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a null-run_id GPT record must not attest a required run");
+});
+
 // ── SR-005: an arbitrary claude in-process security-reviewer record (NO hunter role) → does NOT attest. ──
 test("SR-005: claude in-process record without security_claude_hunter role → hunter unattested", () => {
   const notHunter = rec({ role: "security-reviewer", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-x" });
