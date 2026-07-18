@@ -275,6 +275,19 @@ function readArchiveStrict(root) {
     indexEntries.push(entry);
   }
 
+  // The archive dir (realpath-contained) — HOISTED so BOTH Phase 1b (every index
+  // entry must reference a file DIRECTLY inside it, BR-10) and Phase 1c (files→index
+  // completeness, SEC-3/BR-9) share the same trusted dir.
+  let dirSafe;
+  try {
+    dirSafe = containedReal(rootAbs, archive.archiveDir(rootAbs));
+  } catch {
+    dirSafe = null;
+  }
+  if (!dirSafe) {
+    return { tier: "corrupt", error: "archive dir escapes root (realpath)" };
+  }
+
   // Phase 1b — VALIDATE existence + readability of EVERY referenced generation
   // BEFORE emitting anything. Buffer the raw content; only Phase 2 parses it.
   const genBuffers = [];
@@ -289,6 +302,16 @@ function readArchiveStrict(root) {
     const genSafe = containedReal(rootAbs, path.resolve(rootAbs, rel));
     if (!genSafe) {
       return { tier: "corrupt", error: `archived generation escapes root (realpath): ${rel}` };
+    }
+    // BR-10 (gauntlet R3): an index entry's generation MUST live DIRECTLY inside the
+    // archive dir. Without this, an indexed decoy elsewhere in-root (e.g.
+    // docs/events.jsonl.genX) is accepted as a "healthy" generation and emitted as
+    // raw — an out-of-archive file masquerading as archived history. Fail closed.
+    if (path.dirname(genSafe) !== dirSafe) {
+      return {
+        tier: "corrupt",
+        error: `archived generation is not inside the archive dir (decoy?): ${rel}`,
+      };
     }
     let content;
     try {
@@ -311,16 +334,7 @@ function readArchiveStrict(root) {
   // index (the compactor's S7 `index_pending` window, or a reconcile-pending
   // orphan) would otherwise be SILENTLY OMITTED while the reader reports
   // "healthy" — a never-lose-raw READ gap. Fail closed loudly instead of
-  // returning a clean-looking partial history.
-  let dirSafe;
-  try {
-    dirSafe = containedReal(rootAbs, archive.archiveDir(rootAbs));
-  } catch {
-    dirSafe = null;
-  }
-  if (!dirSafe) {
-    return { tier: "corrupt", error: "archive dir escapes root (realpath)" };
-  }
+  // returning a clean-looking partial history. (dirSafe is hoisted above Phase 1b.)
   let dirents;
   try {
     dirents = fs.readdirSync(dirSafe, { withFileTypes: true });

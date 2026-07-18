@@ -439,6 +439,43 @@ h.test("BR-4: a dry-run (apply:false) does NOT mutate disk — reconcileOrphans 
   }
 });
 
+h.test("BR-11 (gauntlet R3): reconcileOrphans re-indexes a REAL orphan even when a same-basename decoy is indexed", () => {
+  const fx = sealedDir({}, "compact-br11");
+  try {
+    const dir = archive.archiveDir(fx.dir);
+    fs.mkdirSync(dir, { recursive: true });
+    // A REAL orphan generation IN the archive dir, NOT in the index:
+    fs.writeFileSync(
+      path.join(dir, "events.jsonl.genX"),
+      JSON.stringify({ id: "EVT-realorphan", ts: "2026-07-18T01:00:00Z" }) + "\n",
+    );
+    // A DECOY elsewhere in-root with the SAME basename, which IS indexed:
+    fs.mkdirSync(path.join(fx.dir, "docs"), { recursive: true });
+    fs.writeFileSync(
+      path.join(fx.dir, "docs", "events.jsonl.genX"),
+      JSON.stringify({ id: "EVT-decoy", ts: "2026-07-18T02:00:00Z" }) + "\n",
+    );
+    archive.appendIndex(fx.dir, { archived: "docs/events.jsonl.genX", reason: "compaction:fold", origin: null });
+    assert.strictEqual(
+      archive.readIndex(fx.dir).filter((e) => e.reason === "reconcile:orphan").length,
+      0,
+      "precondition: the real orphan is NOT yet reconciled",
+    );
+
+    // A basename-based reconciler would SKIP the real orphan (basename collides with
+    // the indexed decoy) → reconciled:0 → permanent fail-closed. Path-aware re-indexes it.
+    const res = compact.reconcileOrphans(fx.dir, { apply: true });
+    assert.ok(res.reconciled >= 1, "the REAL orphan is re-indexed despite the same-basename decoy (BR-11)");
+    const recon = archive.readIndex(fx.dir).find((e) => e.reason === "reconcile:orphan");
+    assert.ok(
+      recon && /runtime[\\/]archive[\\/]events\.jsonl\.genX$/.test(recon.archived),
+      "re-indexed the archive-dir orphan, not the docs decoy",
+    );
+  } finally {
+    fx.cleanup();
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════════════════
 // AC-4 — no-unlink grep/AST over the compactor's OWN source (+ teeth)
 // ═══════════════════════════════════════════════════════════════════════════

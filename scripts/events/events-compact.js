@@ -291,16 +291,25 @@ function reconcileOrphans(rootAbs, opts) {
     } catch {
       return { reconciled: 0 }; // no archive tier yet — nothing to reconcile
     }
-    const indexed = new Set();
+    // BR-11 (gauntlet R3): compare RESOLVED ABSOLUTE PATHS, not basenames. A
+    // same-basename decoy elsewhere in-root would otherwise make this generation
+    // read as "already indexed" and SKIP the REAL orphan → it stays un-indexed
+    // forever (permanent fail-closed on query --archive). Only an index entry whose
+    // `archived` resolves DIRECTLY inside the archive dir counts as covering the
+    // generation of that same resolved path.
+    const indexedReal = new Set();
     for (const e of archive.readIndex(rootAbs)) {
-      if (e && typeof e.archived === "string") indexed.add(path.basename(e.archived));
+      if (!e || typeof e.archived !== "string") continue;
+      const abs = containedReal(rootAbs, path.resolve(rootAbs, e.archived));
+      if (abs && path.dirname(abs) === dir) indexedReal.add(abs);
     }
     let count = 0;
     for (const name of entries) {
       if (name === archive.INDEX_BASENAME) continue;
       if (name.endsWith(".lock")) continue; // lock sidecars are not generations
-      if (indexed.has(name)) continue;
       const full = path.join(dir, name);
+      const fullReal = containedReal(rootAbs, full);
+      if (fullReal && indexedReal.has(fullReal)) continue; // already indexed (path-identity)
       let st;
       try {
         st = fs.lstatSync(full);

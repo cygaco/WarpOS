@@ -386,8 +386,44 @@ h.violation("BR-9 same-basename decoy does NOT cover an un-indexed archive gener
       cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
     );
     assert.strictEqual(cap.stdout, "", "NO partial output — the archive-dir raw is un-indexed");
-    assert.ok(/un-indexed generation/i.test(cap.stderr), "path-aware check flags the un-indexed generation");
+    // Fail-closed via EITHER path: the decoy index entry is rejected in Phase 1b
+    // (BR-10, "not inside the archive dir") OR the archive-dir orphan is flagged in
+    // Phase 1c (BR-9, "un-indexed generation"). Both are correct — the decoy never
+    // covers the real orphan and the raw is never silently omitted.
+    assert.ok(
+      /un-indexed generation|not inside the archive dir|decoy/i.test(cap.stderr),
+      "path-aware fail-closed (decoy rejected and/or un-indexed generation flagged)",
+    );
+    assert.ok(!/EVT-realgen|EVT-decoy/.test(cap.stdout), "neither the real orphan nor the decoy is emitted");
     assert.notStrictEqual(cap.code, 0, "a same-basename decoy must NOT satisfy completeness (fail-closed)");
+    return cap.code;
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 13. BR-10: an index entry whose generation resolves OUTSIDE the archive dir → fail-closed ──
+// Even with NO generation in the archive dir, an indexed decoy elsewhere in-root
+// (docs/events.jsonl.genX) must NOT be accepted as a healthy generation and emitted
+// as raw. Phase 1b requires every index entry's generation to live INSIDE the archive dir.
+h.violation("BR-10 an indexed generation outside the archive dir is a decoy → fail-closed (not emitted as raw)", () => {
+  const fx = sealedDir(
+    {
+      [LIVE_REL]: jsonl(...LIVE_TAIL),
+      [DECOY_REL]: jsonl({ id: "EVT-decoy-only", ts: "2026-07-18T02:30:00Z", type: "prompt", message: "decoy-only" }),
+      // The index references the DECOY (in-root, but NOT inside the archive dir):
+      [IDX_REL]: jsonl({ origin: LIVE_REL, archived: DECOY_REL, reason: "compaction:fold", lines: 1 }),
+    },
+    "events-cli-decoy-only",
+  );
+  try {
+    const cap = capture(() =>
+      cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
+    );
+    assert.strictEqual(cap.stdout, "", "NO output — the indexed generation is a decoy outside the archive dir");
+    assert.ok(/not inside the archive dir|decoy/i.test(cap.stderr), "explicit decoy/out-of-archive-dir error");
+    assert.ok(!/EVT-decoy-only/.test(cap.stdout), "the decoy event is NEVER emitted as raw");
+    assert.notStrictEqual(cap.code, 0, "a decoy indexed generation fails closed (non-zero)");
     return cap.code;
   } finally {
     fx.cleanup();

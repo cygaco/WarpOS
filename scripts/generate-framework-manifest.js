@@ -327,6 +327,12 @@ const TOP_LEVEL_SCRIPTS = [
   // 0.8.2 fix-forward (2026-05-21): mode-set.js backs /mode:* skills (adhoc/oneshot/solo).
   // a consumer install couldn't run /mode:adhoc --turbo because this file wasn't classified.
   { src: "scripts/mode-set.js", kind: "top_script" },
+  // SP-20260718-002 C2 (gauntlet R3 / QA-3): materialize-decisions.js is a top-level
+  // delivery script the sprint MODIFIED (routed through scripts/state/materialize-core
+  // — AC-7). It was never enumerated, so the modification (and its new test) were not
+  // shipped. Enumerate both so the framework generator tracks + ships them.
+  { src: "scripts/materialize-decisions.js", kind: "top_script" },
+  { src: "scripts/materialize-decisions.test.js", kind: "top_script" },
   // WG-1 (T-20260610-292): dispatch-claude.js is the MANDATORY build-chain dispatch
   // wrapper (reap-guarded) for all Claude builder/fixer roles. The dispatch guides
   // instruct products to use `node scripts/dispatch-claude.js <role> <prompt-file> -w`
