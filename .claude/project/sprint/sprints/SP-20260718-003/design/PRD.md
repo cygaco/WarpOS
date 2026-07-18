@@ -82,5 +82,10 @@
 | AC-18 | S-14 | After documented burn-in, a formerly report-only skill-shape violation blocks; each sanctioned lane retains a no-widen negative fixture; FIX-A3 sanctioned-lane suppression stays rejected. | dispatch-shape test + shape-door regression |
 | AC-19 | S-15 | New scripts hash-tracked in regenerated manifest; non-strict manifest validate exit 0; ED-060/ED-221 reconciled in the canonical ledger pre-release. | manifest build + validate + ED-ledger reconcile |
 
+## BINDING verification strengthenings (quality-lead qa-plan §AC-audit — read WITH the AC table)
+- **AC-3 / AC-16 structural, not grep:** assert the ADR normative decision line + resolved-status token (AC-3), and each of the 6 lane-contract tokens as a value-defining field cross-checked against panel-lane-manifest.json (AC-16) — a literal grep passing on prose is a false-green in the verification itself.
+- **AC-17 TWO-SIDED sunset:** a PAST-date fixture → /scan:full non-zero AND a FUTURE-date fixture → exit 0 (else the sunset enforcer is unfalsifiable — the exact class this sprint kills, applied to its own tooling).
+- **T1-B + T5 negative attestation REQUIRED-PRESENT pre-gauntlet:** the all-Claude-masquerade rejection (T1-B) and the claimed-agy/returned-Claude attestation-fails fixture (T5) must be NAMED, PRESENT artifacts before the gauntlet opens — their absence = the false-green surface is unfalsifiable = design-incomplete.
+
 ## Note (ε)
 Cross-provider route this time (gpt-5.6-terra via dispatch-agent.js) — no route deviation. `verified_by` cells name test intents; the qa-plan (quality-lead) turns them into concrete fixtures with teeth (esp. the fail-closed/negative-fixture per β tightening #3-4). AC-7 is the D1↔D5 false-green guard; AC-9 the honest panel-3lab-blocked accounting.
