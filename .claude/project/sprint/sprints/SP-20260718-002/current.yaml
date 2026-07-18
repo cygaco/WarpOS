@@ -1,18 +1,18 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-002"
 title: "D-1 second half — event compactor (fold→summary, raw→archive) + materialized state + query --archive read path (archive-not-delete)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Event compactor (fold→summary, raw→archive-not-delete) + materialized state + query --archive read path — runtime side of kernel CORE-4 for the events subsystem."
+status: in_progress
 created_at: "2026-07-18T07:43:37.019Z"
-updated_at: "2026-07-18T07:43:37.019Z"
-source_request: ""
-interpreted_intent: ""
+updated_at: "2026-07-18T09:20:00.000Z"
+source_request: "RATIFIED-PLAN D-1 second half; resumed from plan→design park (conduct order, operator-authorized this session)."
+interpreted_intent: "C1 events-compact.js · C2 scripts/state/materialize.js (reconcile w/ materialize-decisions.js) · C3 cli.js query --archive · C4 query-first doctrine. Never-lose-raw is the CORE invariant."
 plan_contract: null
-risk_level: low
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
-mode_invocation_required_by_user: true
+current_phase: release-prep
+recommended_mode: sprint
+mode_invocation_required_by_user: false
 external_services:
   identified: []
   blocked: []
@@ -38,23 +38,23 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
+  prd: "design/PRD.md"
+  high_level_stories: "design/PRD.md#2-stories"
+  granular_stories: "design/PRD.md#2-stories"
   copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
+  inputs: "design/build-spec.md#2-inputstrace"
+  trace: "design/build-spec.md#2-inputstrace"
+  acceptance_criteria: "design/PRD.md#3-acceptance-criteria (refined by design/qa-plan.md#3)"
+  qa_plan: "design/qa-plan.md"
+  redteam_plan: "design/qa-plan.md#4-gauntlet-lane-note (security-reviewer lane)"
   release_plan: null
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint: { status: pass, last_run: "2026-07-18", evidence: "node -c syntax clean on all changed scripts" }
+  typecheck: { status: n/a, last_run: null, evidence: "CommonJS node subsystem, no TS (mirrors archive.js)" }
+  tests: { status: pass, last_run: "2026-07-18", evidence: "60 fixture tests green: events-compact 16, materialize 10, cli 13, reader-discipline 16, materialize-decisions 5" }
+  build: { status: pass, last_run: "2026-07-18", evidence: "framework manifest regen + non-strict validate exit 0 + framework-purity exit 0" }
+  qa: { status: pass, last_run: "2026-07-18", evidence: "gauntlet R4 qa-reviewer PASS (gpt-5.6-terra); AC-1..AC-13 covered; QA-3-_warpos + QA-4 β-dispositioned (RI-003 / ED-223)" }
+  redteam: { status: pass, last_run: "2026-07-18", evidence: "gauntlet R4 security-reviewer PASS (gpt-5.6-terra); SEC-1..SEC-6 closed/dispositioned; SEC-2-frozen ED-212-class, SEC-6 ED-222" }
 approvals:
   plan: { required: false, state: not_required, ref: null }
   design: { required: false, state: not_required, ref: null }
@@ -62,10 +62,10 @@ approvals:
   release: { required: false, state: not_required, ref: null }
   external_services: { required: false, state: not_required, ref: null }
 reports:
-  plan: null
-  design: null
-  execution: null
-  release: null
+  plan: "plan-composition.md"
+  design: "design/ (PRD.md + build-spec.md + qa-plan.md; consults recorded via record-inprocess: DoE + quality-lead ok:true; product-lead route-deviated in-process, artifact=PRD.md)"
+  execution: "GAUNTLET GREEN — 4 rounds (R1 16 findings → R4 0). backend/qa/security all PASS @R4 (gauntlet-verify real records). 15 commits e725f12c→6a52cedd, 14 files +3550/-47, frozen foundation 0-diff. β DECIDE ×2 (design→build 0.89; gauntlet→release cap-ruling 0.90)."
+  release: "release-prep: gauntlet GREEN + frozen 0-diff + ED-221/222/223 in canonical ledger → gauntlet→release cleared per β. Merge-to-main OPERATOR-GATED (through α). _warpos shipping-manifest converges at release flow (RI-003)."
 ralph:
   active: false
   current_ticket: null
