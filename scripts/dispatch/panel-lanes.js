@@ -31,6 +31,19 @@ const SECURITY_ROLE = "security-reviewer";
 const CROSS_PROVIDER_SHAPE = "subprocess-cross-provider";
 const IN_PROCESS_SHAPE = "in-process-agent";
 
+// The panel status vocabulary (PRD "Status contract"). The reducer NEVER normalizes a BLOCKED to
+// PASS/GREEN — that normalization IS the false-green this phase kills.
+const STATUS = Object.freeze({
+  PASS: "PASS",
+  FAIL: "FAIL",
+  BLOCKED_INCONCLUSIVE: "BLOCKED-INCONCLUSIVE",
+  BLOCKED_ON_OPERATOR: "BLOCKED-ON-OPERATOR",
+});
+
+// provider → model FAMILY, for the OBSERVED-provider diversity count (β rider #1). antigravity + gemini
+// are BOTH the google family — an agy lane that fell back to gemini adds NO new family, and vice versa.
+const PANEL_PROVIDER_FAMILY = { claude: "anthropic", openai: "openai", gemini: "google", antigravity: "google" };
+
 /** Read + parse the panel-lane manifest. THROWS on read/parse failure (loader boundary — the caller
  *  fails closed to BLOCKED-INCONCLUSIVE rather than proceeding with a partial contract). */
 function loadManifest(manifestPath = MANIFEST_PATH) {
@@ -159,6 +172,96 @@ function validatePanelManifest(opts = {}) {
   return { ok: errors.length === 0, errors, passes, lanes };
 }
 
+/**
+ * The panel VERDICT reducer (D7, AC-1,9,11,12,13). PURE. Reduces the per-required-lane OBSERVED
+ * evidence + the profile into a status. PASS ONLY when EVERY required lane is alive, clean, and
+ * ATTESTED on its CONTRACTED provider (fallback:false, observedProvider === contractedProvider), with
+ * >= min_families DISTINCT provider families OBSERVED.
+ *
+ * β rider #1 (the coupling that kills the all-Claude masquerade): the diversity family count is
+ * computed from the OBSERVED provider per lane, NEVER the manifest label. A lane counts toward
+ * diversity IFF it ran on its contracted provider with fallback:false — a coerced/fallback lane (a
+ * gpt/agy lane that silently became a Claude clone) adds NO family and BLOCKS. This is ONE gate, not
+ * a parallel check a coerced lane slips past with its label intact.
+ *
+ * eval-fail-closed vs loader-fail-open SPLIT (T4): opts.loaderError → BLOCKED at the LOADER boundary,
+ * a DISTINCT path from an evaluator finding (a lane verdict of "error"/"" → BLOCKED at eval). Two
+ * paths so a fix to one cannot mask the other.
+ *
+ * @param {object} profile  { name, required:[laneId], min_families, binding }
+ * @param {Array}  lanes    per-required-lane evidence:
+ *   { laneId, contractedProvider, observedProvider, fallback, alive, verdict, hasEvidence }
+ *     alive          a completion record exists AND exit was ok
+ *     hasEvidence    a real ledger record backs the lane (false/absent = missing-evidence)
+ *     verdict        'pass'|'warn'|'fail'|'error'  ('error'/'' = judge-refusal or malformed)
+ *     observedProvider  the provider the ledger record actually names (β#1 diversity source)
+ *     fallback       the record's fallback flag (true = a Claude clone ran, NOT the contracted lab)
+ * @param {object} [opts]   { loaderError:boolean, agyOperatorOwned:boolean }
+ * @returns {{ status, reason, families, laneStatus, binding, loader?, operator_blocked? }}
+ */
+function panelStatus(profile, lanes = [], opts = {}) {
+  const binding = !!(profile && profile.binding);
+  // LOADER-fail-closed (distinct path, T4): a contract that could not even be LOADED cannot certify.
+  if (opts.loaderError) {
+    return { status: STATUS.BLOCKED_INCONCLUSIVE, reason: "loader error — the panel contract could not be loaded (fail-closed at the loader boundary)", families: 0, laneStatus: {}, binding, loader: true };
+  }
+
+  const required = (profile && profile.required) || [];
+  const laneById = {};
+  for (const l of lanes) laneById[l.laneId] = l;
+
+  const laneStatus = {};
+  const blocked = [];          // laneIds that are unprovable (missing/coerced/dead/refused/malformed)
+  const failed = [];           // laneIds with a binding FAIL verdict
+  const operatorBlocked = [];  // operator-owned lanes (agy) absent — the honest BLOCKED-ON-OPERATOR exit
+  const observedFamilies = new Set();
+
+  for (const laneId of required) {
+    const l = laneById[laneId];
+    // ABSENT — no lane evidence at all.
+    if (!l || l.hasEvidence === false) {
+      if (opts.agyOperatorOwned && laneId === "agy") { operatorBlocked.push(laneId); laneStatus[laneId] = "operator-owned-absent"; }
+      else { blocked.push(laneId); laneStatus[laneId] = "missing-evidence"; }
+      continue;
+    }
+    // COERCED — ran on the WRONG provider or via fallback (the masquerade). Never counts as its lab.
+    const coerced = l.fallback === true || (!!l.observedProvider && !!l.contractedProvider && l.observedProvider !== l.contractedProvider);
+    if (coerced) { blocked.push(laneId); laneStatus[laneId] = "coerced"; continue; }
+    // DEAD — a record exists but the dispatch was reaped / exited non-ok.
+    if (l.alive === false) { blocked.push(laneId); laneStatus[laneId] = "dead"; continue; }
+    const v = String(l.verdict || "").toLowerCase();
+    if (v === "fail") { failed.push(laneId); laneStatus[laneId] = "fail"; continue; }
+    if (v === "error" || v === "") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }
+    // ALIVE + CLEAN + ATTESTED on the CONTRACTED provider → counts toward diversity (β#1 observed).
+    laneStatus[laneId] = "alive-clean";
+    const fam = PANEL_PROVIDER_FAMILY[l.observedProvider] || l.observedProvider;
+    if (fam) observedFamilies.add(fam);
+  }
+
+  const families = observedFamilies.size;
+  const minFamilies = (profile && profile.min_families) || 2;
+
+  // FAIL takes precedence — a concrete binding defect is the most actionable non-green outcome.
+  if (failed.length) {
+    return { status: STATUS.FAIL, reason: `required lane(s) FAILED: ${failed.join(", ")}`, families, laneStatus, binding };
+  }
+  // BLOCKED-ON-OPERATOR: the ONLY blocking issue is the operator-owned lane(s) (agy). The honest
+  // "seam built, lane awaiting operator" exit (ED-060) — never GREEN.
+  if (operatorBlocked.length && blocked.length === 0) {
+    return { status: STATUS.BLOCKED_ON_OPERATOR, reason: `awaiting operator-owned lane(s): ${operatorBlocked.join(", ")} (ED-060) — never GREEN`, families, laneStatus, binding, operator_blocked: operatorBlocked };
+  }
+  // Any other unprovable lane (with or without an operator-owned absence) → INCONCLUSIVE.
+  if (blocked.length || operatorBlocked.length) {
+    return { status: STATUS.BLOCKED_INCONCLUSIVE, reason: `unprovable required lane(s): ${[...blocked, ...operatorBlocked].join(", ")}`, families, laneStatus, binding };
+  }
+  // Diversity: fewer than min_families OBSERVED → BLOCKED (a collapsed panel is not a pass).
+  if (families < minFamilies) {
+    return { status: STATUS.BLOCKED_INCONCLUSIVE, reason: `observed provider families ${families} < required ${minFamilies} (diversity loss — β#1 observed count)`, families, laneStatus, binding };
+  }
+  // Every required lane alive + clean + attested on its contracted provider + >= min_families.
+  return { status: STATUS.PASS, reason: "all required lanes alive, clean, attested on the contracted provider; family diversity met", families, laneStatus, binding };
+}
+
 /** Whether the support-matrix reports the agy lab as live (status 'supported' + proven). Reads the
  *  STATUS field directly (never a cached/echoed liveness claim) — a down row → false (BLOCKED, not pass). */
 function agyLive(supportMatrix) {
@@ -201,7 +304,10 @@ module.exports = {
   isSanctionedInProcessLane,
   assertCliOnlyPanel,
   validatePanelManifest,
+  panelStatus,
   agyLive,
+  STATUS,
+  PANEL_PROVIDER_FAMILY,
   MANIFEST_PATH,
   SUPPORT_MATRIX_PATH,
   CROSS_PROVIDER_SHAPE,
