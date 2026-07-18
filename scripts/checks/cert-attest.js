@@ -151,24 +151,25 @@ function readLedgerRecords(sprintId, runId, ledgerPath) {
  */
 function attestLane(lane, records, opts = {}) {
   // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
-  const { role = "security-reviewer", runId = null, sprintId = null } =
+  const { role = "security-reviewer", runId = null, sprintId = null, codeSha = null } =
     typeof opts === "string" ? { role: opts } : opts || {};
   const claudeHunter = lane.shape === "in-process-agent" && lane.provider === "claude";
-  // SAME-RUN correlation (SR-004/QA-003): a record attests a lane ONLY if it belongs to THIS run+sprint.
-  // A cross-run/cross-sprint record with the right provider/shape must NOT attest — else the attestation
-  // false-greens on ANY historic same-provider dispatch. sprint_id must match strictly; run_id must match
-  // when BOTH the requested runId and the record carry one (a null-run_id ledger isn't falsely excluded,
-  // but two DIFFERENT non-null run_ids are distinguished).
+  // SAME-RUN correlation by RUN IDENTITY (SR-004/SR-011/SR-012): a record attests a lane ONLY if it
+  // belongs to THIS run+sprint. Identity is the panel_run_id the runner MINTS (or a run_id) — NOT a
+  // time window, which a concurrent same-sprint run could satisfy (SR-011). A NULL requested runId
+  // matches nothing — a binding attestation must certify a SPECIFIC run, never historical evidence (SR-012).
   const sameRun = (records || []).filter(
     (r) =>
       r.ok === true &&
       r.fallback === false &&
       (sprintId == null || r.sprint_id === sprintId) &&
-      // R2-A (SR-004-REOPEN/QA-003-R2): when a runId is REQUIRED, the record's run_id must be present AND
-      // exactly equal. The prior `r.run_id == null` acceptance was a bypass — a legacy/uncorrelated
-      // same-sprint record with no run_id could attest an arbitrary later run. Strict: no null-run_id pass.
-      (runId == null || (r.run_id != null && r.run_id === runId)),
+      runId != null &&
+      (r.panel_run_id === runId || r.run_id === runId),
   );
+  // SR-013: the record must carry the code_sha it EXECUTED against (persisted at write-time), matching the
+  // attested HEAD — never a caller-supplied SHA — AND a non-empty invocation digest (cmdline_checksum).
+  const provenanceOk = (r) =>
+    typeof r.code_sha === "string" && r.code_sha.length > 0 && (codeSha == null || r.code_sha === codeSha) && !!r.cmdline_checksum;
   let match;
   if (claudeHunter) {
     // The sanctioned hunter (β#3/SR-005): provider claude, in-process, AND the security_claude_hunter
@@ -179,13 +180,20 @@ function attestLane(lane, records, opts = {}) {
         r.provider === "claude" &&
         (r.role === SANCTIONED_HUNTER_ROLE || r.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE) &&
         (r.via === "epsilon-agent" || r.shape === "in-process-agent" || r.record_via === "inprocess") &&
-        (r.evidence_sha || r.output_digest),
+        (r.evidence_sha || r.output_digest) &&
+        provenanceOk(r),
     );
   } else {
     // A CLI cross-provider lane: the record must be the PANEL ROLE (security-reviewer) on the contracted
     // provider/tool_id. A design-phase codex consult (different role) must NOT attest a security lane.
     match = sameRun.find(
-      (r) => r.role === role && r.provider === lane.provider && r.tool_id === lane.tool_id && r.shape === "subprocess-cross-provider" && !!r.output_digest,
+      (r) =>
+        r.role === role &&
+        r.provider === lane.provider &&
+        r.tool_id === lane.tool_id &&
+        r.shape === "subprocess-cross-provider" &&
+        !!r.output_digest &&
+        provenanceOk(r),
     );
   }
   if (!match) {
@@ -215,14 +223,17 @@ function attestLane(lane, records, opts = {}) {
  * @param {{ runId?, sprintId, profile:{name}, lanes:Array, records:Array, codeSha? }} args
  */
 function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, role = "security-reviewer" } = {}) {
-  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId }));
+  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId, codeSha }));
   const attestedLanes = laneResults.filter((l) => l.attested);
   const allAttested = laneResults.length > 0 && laneResults.every((l) => l.attested);
-  // CODE-SHA binding (SR-004/QA-003, AC-14): a binding attestation MUST carry the code identity it
-  // certifies. A null/absent codeSha cannot bind the evidence to a specific build → NOT ok, even when
-  // every lane attests. This closes the "attested panel returns ok:true with code_sha:null" false-green.
+  // CODE-SHA binding (SR-004/QA-003/SR-013, AC-14): a binding attestation MUST carry the code identity it
+  // certifies (read FROM each record, matched to this HEAD in attestLane). A null/absent codeSha cannot
+  // bind evidence to a specific build → NOT ok.
   const codeShaBound = typeof codeSha === "string" && codeSha.length > 0;
-  const ok = allAttested && codeShaBound;
+  // RUN-IDENTITY binding (SR-012): a binding panel attestation must certify a SPECIFIC run — an omitted/
+  // empty runId would certify historical same-sprint evidence, which is a false-green. NOT ok without it.
+  const runBound = typeof runId === "string" && runId.length > 0;
+  const ok = allAttested && codeShaBound && runBound;
   const evidenceDigest = crypto
     .createHash("sha256")
     .update(attestedLanes.map((l) => `${l.laneId}:${l.evidence_digest || ""}`).join("|"))
@@ -236,11 +247,13 @@ function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, rol
     invocation_digests: attestedLanes.map((l) => l.invocation_digest).filter(Boolean),
     evidence_digest: evidenceDigest,
     lanes: laneResults,
-    reason: !allAttested
-      ? `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`
-      : !codeShaBound
-        ? "every required lane attested SAME-RUN, but code_sha is absent — a binding attestation must bind to a code SHA (AC-14) → NOT ok"
-        : "every required lane attested SAME-RUN on its contracted provider (fallback:false), bound to code_sha",
+    reason: !runBound
+      ? "no runId supplied — a binding panel attestation must certify a SPECIFIC run (an omitted runId certifies historical evidence) → NOT ok (SR-012)"
+      : !allAttested
+        ? `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`
+        : !codeShaBound
+          ? "every required lane attested SAME-RUN, but code_sha is absent — a binding attestation must bind to a code SHA (AC-14) → NOT ok"
+          : "every required lane attested SAME-RUN on its contracted provider (fallback:false), bound to run_id + code_sha",
   };
 }
 
@@ -275,8 +288,10 @@ function mainPanel(argv) {
   const sprintId = get("--sprint");
   const runId = get("--run");
   const profileName = get("--profile") || "panel-2family";
-  if (!sprintId) {
-    process.stderr.write("usage: cert-attest.js panel --sprint <id> [--run <id>] [--profile panel-2family|panel-3lab] [--json]\n");
+  // SR-012: --run is MANDATORY for a binding panel attestation — certifying by --sprint alone would
+  // attest historical same-sprint evidence rather than the specific run being certified.
+  if (!sprintId || !runId) {
+    process.stderr.write("usage: cert-attest.js panel --sprint <id> --run <panel_run_id> [--profile panel-2family|panel-3lab] [--json]\n");
     return 2;
   }
   const out = attestPanelRunLive({ runId, sprintId, profileName });

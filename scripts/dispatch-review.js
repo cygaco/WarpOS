@@ -147,8 +147,12 @@ async function main() {
     process.exit(2);
   }
 
-  // Capture the firing start — the panel gate correlates same-run ledger records by sprint_id within
-  // this wall-clock window (records carry no shared run_id), isolating this run from earlier rounds.
+  // SR-011: MINT one panel_run_id before fan-out and propagate it to every child via the environment
+  // (spawnPass inherits process.env). Each child's completion record is stamped with it (recordCompletion),
+  // so the panel gate correlates lanes by RUN IDENTITY — not the firing-time window, which a concurrent
+  // same-sprint run could satisfy (the SR-011 substitution gap). The window remains a secondary narrow.
+  const panelRunId = `panel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  process.env.WARPOS_PANEL_RUN_ID = panelRunId;
   const runnerStartMs = Date.now();
   // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
   const settled = await Promise.all(passes.map((p) => spawnPass(role, promptFile, p, domain, laneOutDir)));
@@ -189,12 +193,11 @@ async function main() {
   try {
     panelLanes = require("./dispatch/panel-lanes");
   } catch (e) {
-    if (e && e.code === "MODULE_NOT_FOUND" && /panel-lanes/.test(String(e.message || ""))) {
-      panelLanes = null; // the module genuinely isn't present — additive contract, fail-open.
-    } else {
-      console.error(JSON.stringify({ ok: false, role, error: "panel_loader_error", detail: e.message }));
+    if (panelLoaderFailClosed(role, e)) {
+      console.error(JSON.stringify({ ok: false, role, error: "panel_loader_error", detail: e.message || String(e) }));
       process.exit(1);
     }
+    panelLanes = null; // additive fail-open (non-security role, module genuinely absent)
   }
   if (panelLanes) {
     try {
@@ -229,6 +232,7 @@ async function main() {
     const panelGate = applyPanelGate(panelLanes, lanes, {
       sprintId: process.env.WARPOS_SPRINT_ID || null,
       sinceMs: runnerStartMs,
+      panelRunId,
     });
     merged.panel = panelGate;
     if (!panelGate.floor_pass) {
@@ -245,12 +249,33 @@ function isSecurityPanelRole(role) {
   return role === "security-reviewer";
 }
 
+// QA-010: decide how a panel-lanes LOAD error is handled. For the SECURITY panel, ANY load failure —
+// INCLUDING a missing module — fails CLOSED: a green security result cannot rest on an absent gate (the
+// eval-fail-closed-vs-loader-fail-OPEN split, resolved at the loader boundary). For a non-security role
+// the panel gate does not apply, so a genuinely-missing module fails OPEN (additive contract). A
+// non-module-absent loader error (syntax/parse) ALWAYS fails closed. PURE + exported for teeth.
+function panelLoaderFailClosed(role, err) {
+  const moduleAbsent = err && err.code === "MODULE_NOT_FOUND" && /panel-lanes/.test(String((err && err.message) || ""));
+  if (moduleAbsent && !isSecurityPanelRole(role)) return false; // additive fail-open (non-security only)
+  return true; // security-reviewer + module-absent, OR any non-module-absent loader error → fail-closed
+}
+
 // Default ledger reader — the same-run completion records for a sprint (cert-attest is the single reader).
 function defaultReadLedger(sprintId) {
   try {
     return require("./checks/cert-attest").readLedgerRecords(sprintId, null) || [];
   } catch {
     return [];
+  }
+}
+
+// provider-id → tool-id, the SINGLE map (dispatch-agent). A lane's corroborating record must name the
+// contracted EXECUTABLE (SR-010) — codex for openai, agy for antigravity, claude for claude.
+function requireToolIdOf() {
+  try {
+    return require("./dispatch-agent").providerToolId;
+  } catch {
+    return (p) => ({ openai: "codex", gemini: "gemini", antigravity: "agy" }[p] ?? p);
   }
 }
 
@@ -285,28 +310,44 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
 
   const sprintId = ctx.sprintId || process.env.WARPOS_SPRINT_ID || null;
   const sinceMs = ctx.sinceMs || 0;
+  const panelRunId = ctx.panelRunId || process.env.WARPOS_PANEL_RUN_ID || null;
   const readLedger = ctx.readLedger || defaultReadLedger;
+  // SR-011: correlate by RUN IDENTITY (panel_run_id) — not the firing-time window (a concurrent same-sprint
+  // run could fall in the same window). The window remains a secondary narrow. If a panel_run_id was minted,
+  // a record MUST carry the matching one to corroborate a lane.
   const records = (readLedger(sprintId) || []).filter((r) => {
+    if (panelRunId && r.panel_run_id !== panelRunId) return false;
     if (!sinceMs) return true;
     const t = Date.parse(r.completed_at || "");
     return Number.isFinite(t) && t >= sinceMs;
   });
+  const toolIdOf = requireToolIdOf();
   const observedLanes = lanes.map((l) => {
     const expectShape = l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider";
-    // Corroborate the child envelope against a durable same-run record (proof the dispatch was actually
-    // recorded — a config echo without output_digest is NOT proof). Match by role + shape + the envelope's
-    // observed provider.
+    const expectTool = toolIdOf(l.observedProvider);
+    // SR-010/QA-008 — corroborate against a durable, LIVE, NON-FALLBACK record on the contracted EXECUTABLE:
+    // require ok===true, fallback===false (EXPLICIT — never coerced from an omitted field), the contracted
+    // tool_id, the expected shape, a non-empty output_digest (real output) AND a non-empty cmdline_checksum
+    // (a real invocation). A malformed/legacy/config-shaped row can no longer certify a lane.
     const rec = records.find(
-      (r) => r.role === "security-reviewer" && r.shape === expectShape && r.provider === l.observedProvider && !!r.output_digest,
+      (r) =>
+        r.role === "security-reviewer" &&
+        r.shape === expectShape &&
+        r.provider === l.observedProvider &&
+        r.tool_id === expectTool &&
+        r.ok === true &&
+        r.fallback === false &&
+        !!r.output_digest &&
+        !!r.cmdline_checksum,
     );
     return {
       laneId: l.laneId,
       contractedProvider: l.provider,
       observedProvider: rec ? rec.provider : l.observedProvider, // ledger-confirmed when corroborated
-      fallback: rec ? !!rec.fallback : true, // no durable record → treat as unattestable (fallback)
-      alive: !!(rec && rec.ok === true), // liveness from the LEDGER, not the envelope
+      fallback: rec ? false : true, // corroborated record is fallback:false by the filter; else unattestable
+      alive: !!rec, // liveness from a durable LIVE record, not the envelope
       verdict: l.verdict, // the review JUDGMENT stays from the child output
-      hasEvidence: !!(rec && rec.output_digest), // SR-009: a real durable record is required
+      hasEvidence: !!rec, // SR-009/SR-010: a real, live, non-fallback durable record on the contracted tool
     };
   });
   const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
@@ -371,4 +412,4 @@ function mergeLanes(role, lanes) {
 }
 
 if (require.main === module) main();
-module.exports = { verdictOf, mergeLanes, persistLane, laneFileName, isSecurityPanelRole, applyPanelGate };
+module.exports = { verdictOf, mergeLanes, persistLane, laneFileName, isSecurityPanelRole, applyPanelGate, panelLoaderFailClosed };

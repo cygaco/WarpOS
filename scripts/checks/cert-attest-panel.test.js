@@ -23,15 +23,15 @@ const LANES = {
   claude: { laneId: "claude", provider: "claude", tool_id: "claude", shape: "in-process-agent" },
   agy: { laneId: "agy", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider" },
 };
-const S = "SP-TEST-001", R = "run-abc";
+const S = "SP-TEST-001", R = "panel-run-abc";
+const SHA = "abc1234";
 
-// same-run REAL records (the contracted-provider observed returns).
-const rec = (o) => ({ sprint_id: S, run_id: R, ok: true, fallback: false, ...o });
+// same-run REAL records: bound to the run IDENTITY (panel_run_id, SR-011) + the code_sha executed (SR-013).
+const rec = (o) => ({ sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, ...o });
 const gptOk = rec({ role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-gpt", cmdline_checksum: "c-gpt" });
 const agyOk = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-agy", cmdline_checksum: "c-agy" });
 // The hunter record carries the sanctioned ROLE identity (β#3/SR-005) — not a bare security-reviewer.
 const claudeHunterOk = rec({ role: "security_claude_hunter", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-cl", cmdline_checksum: "c-cl" });
-const SHA = "abc1234";
 
 // ── POSITIVE: full same-run 3-lab WITH code_sha → attested. ──
 test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha → attested", () => {
@@ -92,20 +92,20 @@ test("T5a: agy claimed but record is provider:claude → agy unattested → pane
 
 // ── T5b: a record-inprocess/provider:claude record offered for the gpt lane → satisfies only claude. ──
 test("T5b: provider:claude in-process record does NOT attest the gpt CLI lane", () => {
-  const out = attestLane(LANES.gpt, [claudeHunterOk]);
+  const out = attestLane(LANES.gpt, [claudeHunterOk], { runId: R, codeSha: SHA });
   assert.equal(out.attested, false, "a claude in-process record satisfies only the claude hunter, not gpt");
 });
 
 // ── Liveness−: fallback:true → NOT attested (a Claude clone ran, not the contracted lab). ──
 test("Liveness-: fallback:true record → NOT attested", () => {
-  const fb = { sprint_id: S, run_id: R, ok: true, fallback: true, provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d" };
-  assert.equal(attestLane(LANES.gpt, [fb]).attested, false);
+  const fb = rec({ fallback: true, provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d", cmdline_checksum: "c" });
+  assert.equal(attestLane(LANES.gpt, [fb], { runId: R, codeSha: SHA }).attested, false);
 });
 
 // ── Liveness−: a config echo (no output_digest) → NOT attested (a declaration is not a run). ──
 test("Liveness-: CLI record without output_digest → NOT attested (config echo insufficient)", () => {
-  const echo = { sprint_id: S, run_id: R, ok: true, fallback: false, provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider" };
-  assert.equal(attestLane(LANES.gpt, [echo]).attested, false);
+  const echo = rec({ provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", cmdline_checksum: "c" });
+  assert.equal(attestLane(LANES.gpt, [echo], { runId: R, codeSha: SHA }).attested, false);
 });
 
 // ── Liveness−: wrong-run record → NOT correlated (same-run binding). ──
@@ -120,8 +120,38 @@ test("Liveness-: a record from a DIFFERENT run is not same-run correlated", () =
 
 // ── missing required lane → panel FAILS (never a green with a lane absent). ──
 test("missing required lane record → panel FAILS", () => {
-  const out = attestPanelRun({ runId: R, sprintId: S, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk /* claude hunter absent */] });
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk /* claude hunter absent */] });
   assert.equal(out.ok, false);
+});
+
+// ── SR-012: an OMITTED runId → NOT ok, even with fully-attested records (certifying historical evidence). ──
+test("SR-012: attestPanelRun with omitted runId → NOT ok (no historical certification)", () => {
+  const out = attestPanelRun({ /* runId omitted */ sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeHunterOk] });
+  assert.equal(out.ok, false, "a binding attestation must certify a SPECIFIC run");
+  assert.ok(/runId|SR-012|specific run/i.test(out.reason), out.reason);
+});
+
+// ── SR-011: a record from a DIFFERENT panel_run_id (stale run) → NOT correlated → panel FAILS. ──
+test("SR-011: a record with a different panel_run_id → not same-run → gpt unattested", () => {
+  const staleGpt = { ...gptOk, panel_run_id: "panel-OTHER", run_id: "panel-OTHER" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [staleGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a stale-run record must not attest this run's lane");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+});
+
+// ── SR-013: a record whose code_sha MISMATCHES the attested HEAD → NOT attested. ──
+test("SR-013: record code_sha != attested codeSha → gpt unattested → panel FAILS", () => {
+  const staleShaGpt = { ...gptOk, code_sha: "old-commit-999" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [staleShaGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a record from a different build must not attest the current HEAD");
+});
+test("SR-013: a record with NO persisted code_sha → NOT attested (provenance required)", () => {
+  const noShaGpt = { ...gptOk, code_sha: undefined };
+  assert.equal(attestLane(LANES.gpt, [noShaGpt], { runId: R, codeSha: SHA }).attested, false);
+});
+test("SR-013: a record with NO cmdline_checksum (no invocation digest) → NOT attested", () => {
+  const noInvGpt = { ...gptOk, cmdline_checksum: undefined };
+  assert.equal(attestLane(LANES.gpt, [noInvGpt], { runId: R, codeSha: SHA }).attested, false);
 });
 
 if (failures.length) {

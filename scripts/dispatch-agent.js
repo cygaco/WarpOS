@@ -272,6 +272,22 @@ function ledgerFile(pathsValue, relFallback) {
   return canonicalFile(pathsValue, relFallback);
 }
 
+// Execution-time code SHA — the git HEAD the dispatch actually ran against. Cached per-process (a
+// dispatch never rewrites HEAD mid-run). Empty on a non-git install → attestation blocks (fail-closed).
+let _cachedCodeSha;
+function currentCodeSha() {
+  if (_cachedCodeSha !== undefined) return _cachedCodeSha;
+  try {
+    _cachedCodeSha = require("child_process")
+      .execFileSync("git", ["rev-parse", "HEAD"], { cwd: AGENT_ROOT, stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
+  } catch {
+    _cachedCodeSha = "";
+  }
+  return _cachedCodeSha;
+}
+
 function recordCompletion(record) {
   // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
   // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
@@ -279,7 +295,19 @@ function recordCompletion(record) {
     PATHS.dispatchCompletionsFile,
     path.join(".claude", "runtime", "dispatch-completions.jsonl"),
   );
-  appendJsonl(file, record);
+  // SR-011/SR-013 (execution PROVENANCE): every completion record is bound to its run IDENTITY and its
+  // CODE at write-time — injected HERE, the single record-writer that every dispatch wrapper shares
+  // (dispatch-agent/dispatch-claude/dispatch-skill/epsilon-runtime), so NO call site can omit them:
+  //   panel_run_id — the id the panel runner MINTS and propagates to each child via WARPOS_PANEL_RUN_ID;
+  //                  proves SAME-RUN identity (not mere time-proximity — the SR-011 firing-window gap).
+  //   code_sha     — git HEAD the dispatch ran against; attestation reads THIS, never a caller-supplied
+  //                  SHA (SR-013). Additive + backward-compatible; an explicit record value still wins.
+  const enriched = {
+    panel_run_id: process.env.WARPOS_PANEL_RUN_ID || null,
+    code_sha: currentCodeSha() || null,
+    ...record,
+  };
+  appendJsonl(file, enriched);
 }
 
 function recordDeath(record) {
