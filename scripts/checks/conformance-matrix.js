@@ -71,7 +71,10 @@ const FIXTURES_DIR = path.join(KERNEL_DIR, "fixtures");
 const MANIFEST_PATH = path.join(FIXTURES_DIR, "manifest.json");
 
 // contract-lint.js's OWN R1 self-test corpus — never a kernel-conformance gate.
-const EXCLUDED_GATE_DIRS = new Set(["contract-lint"]);
+// conformance-matrix-selftest: this runner's OWN N-2 negative self-test corpus
+// (deliberately shape-malformed fixtures used only by conformance-matrix.test.js)
+// — same exclusion rationale, never a kernel-conformance gate.
+const EXCLUDED_GATE_DIRS = new Set(["contract-lint", "conformance-matrix-selftest"]);
 
 const REQUIRED_CORE_IDS = ["CORE-1", "CORE-2", "CORE-3", "CORE-4"];
 
@@ -83,21 +86,52 @@ const REQUIRED_CORE_IDS = ["CORE-1", "CORE-2", "CORE-3", "CORE-4"];
 const GATE_EVALUATORS = {
   "role-binding": (input, ctx) => {
     const rb = ctx.roleBinding || {};
+    const sources = rb.sources || {};
     if (input.actor_kind === "dispatched_worker") {
-      const bound =
-        input.explicit_user_instruction ||
-        input.validated_workorder_or_cli_binding ||
-        input.explicit_top_level_helm_binding;
-      if (!bound) {
+      // N-5 [gauntlet round 2, CORE-1 bypass fix]: binding sources are now
+      // scoped by actor_kind via role-binding.json's per-source
+      // 'applies_to_actor'. A dispatched_worker is bindable ONLY by a source
+      // whose applies_to_actor includes "dispatched_worker" (today: only
+      // validated_workorder_or_cli, the RATIFIED-PLAN alpha ruling).
+      // explicit_user and explicit_top_level_helm are top_level_session-ONLY
+      // sources — a worker PRESENTING one of those is a category error, not
+      // a legitimate bind, and must fail closed rather than resolve through
+      // the precedence order as though it were a top-level session.
+      const presented = [
+        { field: "explicit_user_instruction", source: "explicit_user" },
+        { field: "validated_workorder_or_cli_binding", source: "validated_workorder_or_cli" },
+        { field: "explicit_top_level_helm_binding", source: "explicit_top_level_helm" },
+      ].filter((m) => input[m.field]);
+
+      if (presented.length === 0) {
         return {
           outcome: (rb.worker_default_when_unbound === "FAIL_CLOSED" ? "BLOCK" : "PASS"),
           reason: "unbound dispatched worker; worker_default_when_unbound governs",
         };
       }
-      return { outcome: "PASS", reason: "role resolved through the precedence order" };
+
+      for (const m of presented) {
+        const src = sources[m.source] || {};
+        const appliesTo = Array.isArray(src.applies_to_actor) ? src.applies_to_actor : [];
+        if (!appliesTo.includes("dispatched_worker")) {
+          return {
+            outcome: "BLOCK",
+            reason: `dispatched_worker presented '${m.source}', scoped to applies_to_actor=[${appliesTo.join(", ")}] only -- category error, fail-closed (CORE-1)`,
+          };
+        }
+      }
+
+      const bound = presented.some((m) => (sources[m.source] || {}).can_bind);
+      if (!bound) {
+        return {
+          outcome: (rb.worker_default_when_unbound === "FAIL_CLOSED" ? "BLOCK" : "PASS"),
+          reason: "presented source(s) are actor-scoped to dispatched_worker but none is can_bind:true; worker_default_when_unbound governs",
+        };
+      }
+      return { outcome: "PASS", reason: "role resolved through the precedence order (actor-scoped to dispatched_worker)" };
     }
     if (input.attempted_binding_source) {
-      const src = (rb.sources && rb.sources[input.attempted_binding_source]) || {};
+      const src = sources[input.attempted_binding_source] || {};
       return {
         outcome: src.can_bind ? "PASS" : "BLOCK",
         reason: `sources.${input.attempted_binding_source}.can_bind = ${!!src.can_bind}`,
@@ -313,6 +347,20 @@ function loadFixtures(fixturesDir) {
       if (!Object.prototype.hasOwnProperty.call(GATE_EVALUATORS, parsed.gate)) {
         const err = new Error(`fixture ${full} names unknown gate '${parsed.gate}' (no evaluator registered)`);
         err.code = "FIXTURE_UNKNOWN_GATE";
+        throw err;
+      }
+      // N-2 [gauntlet round 2]: 'input' must be PRESENT and a JSON object
+      // (never missing, a string, an array, or null). Without this, a
+      // shape-malformed 'input' silently became '{}' at evaluate() time
+      // (`fx.input || {}`) — and several evaluators fail-closed to BLOCK on
+      // an empty/unrecognized input shape, which can accidentally MATCH an
+      // expect.outcome:"BLOCK" fixture and read green without ever
+      // exercising real evaluator logic against a real input. A fixture
+      // whose 'input' cannot be trusted is never handed to evaluate() —
+      // fail-closed here (exit 2), not a reportable mismatch/PASS.
+      if (!parsed.input || typeof parsed.input !== "object" || Array.isArray(parsed.input)) {
+        const err = new Error(`fixture ${full} missing/invalid 'input' (must be a JSON object)`);
+        err.code = "FIXTURE_SHAPE_ERROR";
         throw err;
       }
       if (

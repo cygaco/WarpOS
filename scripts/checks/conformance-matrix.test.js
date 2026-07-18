@@ -75,11 +75,13 @@ test("run(): --coverage-equivalent (evaluateCoverage over the real corpus) repor
   }
 });
 
-test("run(): the contract-lint self-test corpus is EXCLUDED from the kernel-conformance walk", () => {
+test("run(): the contract-lint + conformance-matrix-selftest corpora are EXCLUDED from the kernel-conformance walk", () => {
   const res = run();
-  // 12 kernel-conformance fixtures per manifest.json; the 4 contract-lint/*.json
-  // descriptors must NOT inflate this count.
-  assert.strictEqual(res.fixtureCount, 12, `expected exactly 12 kernel-conformance fixtures, got ${res.fixtureCount}`);
+  // 13 kernel-conformance fixtures per manifest.json (gauntlet round 2 N-5
+  // added role-binding/worker-helm-binding-category-error.json, 12 -> 13);
+  // the contract-lint/*.json descriptors and the conformance-matrix-selftest
+  // corpus (N-2) must NOT inflate this count.
+  assert.strictEqual(res.fixtureCount, 13, `expected exactly 13 kernel-conformance fixtures, got ${res.fixtureCount}`);
 });
 
 // ── Per-gate pure evaluators (unit-level, no fs). ──
@@ -90,13 +92,76 @@ test("role-binding evaluator: unbound dispatched worker -> BLOCK (CORE-1)", () =
   assert.strictEqual(out.outcome, "BLOCK");
 });
 
-test("role-binding evaluator: bound dispatched worker -> PASS", () => {
-  const rb = { worker_default_when_unbound: "FAIL_CLOSED" };
+test("role-binding evaluator: dispatched worker bound via validated_workorder_or_cli -> PASS", () => {
+  const rb = {
+    worker_default_when_unbound: "FAIL_CLOSED",
+    sources: {
+      explicit_user: { can_bind: true, applies_to_actor: ["top_level_session"] },
+      validated_workorder_or_cli: { can_bind: true, applies_to_actor: ["dispatched_worker", "top_level_session"] },
+      explicit_top_level_helm: { can_bind: true, applies_to_actor: ["top_level_session"] },
+    },
+  };
+  const out = GATE_EVALUATORS["role-binding"](
+    { actor_kind: "dispatched_worker", validated_workorder_or_cli_binding: "wo-123" },
+    { roleBinding: rb },
+  );
+  assert.strictEqual(out.outcome, "PASS");
+});
+
+// N-5 [gauntlet round 2, CORE-1 bypass fix]: a dispatched_worker presenting a
+// source scoped to top_level_session ONLY (explicit_user or
+// explicit_top_level_helm) is a category error, not a legitimate bind, and
+// must BLOCK — never PASS/resolve as alex-alpha.
+
+test("N-5: role-binding evaluator — dispatched worker presenting explicit_top_level_helm_binding -> BLOCK (category error, CORE-1)", () => {
+  const rb = {
+    worker_default_when_unbound: "FAIL_CLOSED",
+    sources: {
+      explicit_user: { can_bind: true, applies_to_actor: ["top_level_session"] },
+      validated_workorder_or_cli: { can_bind: true, applies_to_actor: ["dispatched_worker", "top_level_session"] },
+      explicit_top_level_helm: { can_bind: true, applies_to_actor: ["top_level_session"] },
+    },
+  };
+  const out = GATE_EVALUATORS["role-binding"](
+    { actor_kind: "dispatched_worker", explicit_top_level_helm_binding: true },
+    { roleBinding: rb },
+  );
+  assert.strictEqual(out.outcome, "BLOCK", JSON.stringify(out));
+});
+
+test("N-5: role-binding evaluator — dispatched worker presenting explicit_user_instruction -> BLOCK (category error, CORE-1)", () => {
+  const rb = {
+    worker_default_when_unbound: "FAIL_CLOSED",
+    sources: {
+      explicit_user: { can_bind: true, applies_to_actor: ["top_level_session"] },
+      validated_workorder_or_cli: { can_bind: true, applies_to_actor: ["dispatched_worker", "top_level_session"] },
+      explicit_top_level_helm: { can_bind: true, applies_to_actor: ["top_level_session"] },
+    },
+  };
   const out = GATE_EVALUATORS["role-binding"](
     { actor_kind: "dispatched_worker", explicit_user_instruction: "build X" },
     { roleBinding: rb },
   );
-  assert.strictEqual(out.outcome, "PASS");
+  assert.strictEqual(out.outcome, "BLOCK", JSON.stringify(out));
+});
+
+test("N-5: role-binding evaluator — the SAME explicit_top_level_helm source PASSES for a top_level_session actor (only the actor-scope differs)", () => {
+  const rb = {
+    sources: {
+      explicit_top_level_helm: { can_bind: true, applies_to_actor: ["top_level_session"] },
+    },
+  };
+  const out = GATE_EVALUATORS["role-binding"](
+    { attempted_binding_source: "explicit_top_level_helm" },
+    { roleBinding: rb },
+  );
+  assert.strictEqual(out.outcome, "PASS", JSON.stringify(out));
+});
+
+test("N-5: run() — the real worker-helm-binding-category-error.json fixture executes clean (no mismatch)", () => {
+  const res = run();
+  const mismatch = res.mismatches.find((m) => m.id === "role-binding-worker-helm-binding-category-error");
+  assert.strictEqual(mismatch, undefined, JSON.stringify(res.mismatches));
 });
 
 test("role-binding evaluator: agents_md cannot bind (CORE-3) -> BLOCK", () => {
@@ -239,6 +304,76 @@ test("B-2: loadFixtures() throws (fail-closed) on a non-canonical expect.outcome
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+});
+
+// ── N-2 [gauntlet round 2] regression: loadFixtures() fails CLOSED on a
+// fixture whose 'input' is missing or not a JSON object — before this fix, a
+// malformed 'input' silently became '{}' at evaluate() time and could
+// accidentally MATCH an expect.outcome:"BLOCK" fixture (several evaluators
+// fail-closed to BLOCK on an empty/unrecognized input), reading green
+// without ever exercising real evaluator logic. ──
+
+test("N-2: loadFixtures() throws (fail-closed) on a fixture with a MISSING 'input'", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /input/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("N-2: loadFixtures() throws (fail-closed) on a fixture whose 'input' is a STRING, not an object", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", input: "not-an-object", expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /input/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("N-2: loadFixtures() throws (fail-closed) on a fixture whose 'input' is an ARRAY, not an object", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", input: ["not", "an", "object"], expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /input/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("N-2: loadFixtures() throws (fail-closed) on a fixture whose 'input' is NULL", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", input: null, expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /input/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("N-2: the real conformance-matrix-selftest/retention/bad-input-shape.json fixture is shape-malformed -> loadFixtures throws", () => {
+  const dir = path.join(KERNEL_DIR, "fixtures", "conformance-matrix-selftest");
+  assert.throws(() => loadFixtures(dir), /input/);
+});
+
+test("N-2: the real kernel-conformance walk EXCLUDES conformance-matrix-selftest — run() never trips on it", () => {
+  const res = run();
+  assert.strictEqual(res.mismatches.length, 0, JSON.stringify(res.mismatches));
+  assert.ok(res.fixtureCount > 0);
 });
 
 test("B-2: run() propagates a malformed fixture as a thrown error — the CLI maps this to exit 2, never a clean 0/1", () => {

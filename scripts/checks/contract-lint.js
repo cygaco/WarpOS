@@ -80,7 +80,20 @@ const DEFAULT_MANIFEST = path.join(ROOT, ".claude", "kernel", "fixtures", "manif
 const H1_SENTENCE =
   "1.0 is done when a clean installed product moves idea→canon→roadmap→sprint→build→gauntlet→launch-readiness→release→retro→learning-promotion without relying on chat memory, stale trackers, manual Alpha heroics, or unverified agent claims.";
 
-const HEADING_RE = /^####\s+P(\d+)\.(\d+)\b/;
+// N-1 [gauntlet round 2]: a policy-block heading is well-formed ONLY when it
+// carries the FULL shape — the em-dash delimiter (U+2014, ` — `) AND a
+// non-empty title after it. `#### P1.1` alone (no delimiter/title) is NOT a
+// valid heading — see HEADING_ATTEMPT_RE below for how that case is caught
+// as a distinct structural failure rather than silently accepted or silently
+// swallowed as trailing prose of whatever block happens to be open.
+const HEADING_RE = /^####\s+P(\d+)\.(\d+)\s+—\s+(\S.*)$/;
+// Loose "attempt" pattern — ANY line that opens a `#### P<n>.<m>` heading,
+// well-formed or not. Used to detect a heading that OPENS a policy block
+// (matches the numbering shape) but fails HEADING_RE's full-shape
+// requirement (missing delimiter and/or title) — that line must never be
+// silently accepted as valid, and must never be silently absorbed as body
+// content of a DIFFERENT (previous or next) block either.
+const HEADING_ATTEMPT_RE = /^####\s+P(\d+)\.(\d+)\b/;
 // A "## " OR "### " heading boundary closes any open block (#### is unaffected
 // — it OPENS a new block via HEADING_RE, checked first). Widened from "## "-only
 // (S-1 fix): a "### " subsection appendix (e.g. "### Policy-block register")
@@ -124,9 +137,16 @@ function parseLedgerIds(text) {
   return ids;
 }
 
-/** Split doc lines into policy blocks: [{ id, headingLine, lines:[...] }]. Zero blocks = malformed input. */
+/**
+ * Split doc lines into policy blocks: [{ id, headingLine, lines:[...] }]. Zero
+ * blocks = malformed input. The returned array also carries a
+ * `.malformedHeadings` property (N-1): [{ line, text, attemptedId }] for any
+ * line that OPENS a `#### P<n>.<m>` heading attempt but does not match the
+ * full well-formed HEADING_RE shape (delimiter + non-empty title).
+ */
 function findBlocks(lines) {
   const blocks = [];
+  const malformedHeadings = [];
   let current = null;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -134,6 +154,21 @@ function findBlocks(lines) {
     if (h) {
       if (current) blocks.push(current);
       current = { id: `P${h[1]}.${h[2]}`, headingLine: i, lines: [line] };
+      continue;
+    }
+    // N-1: a line that OPENS a policy-block heading (matches the loose
+    // `#### P<n>.<m>` numbering shape) but fails the strict HEADING_RE
+    // (missing the ` — ` delimiter and/or a non-empty title) must NEVER be
+    // silently accepted, and must NEVER be silently absorbed as trailing
+    // body content of whatever block happens to be open — both of those
+    // were the round-1 gap. Record it explicitly and treat it as a block
+    // boundary (same as a well-formed heading would be), so it neither opens
+    // a bogus block nor gets swallowed into an unrelated one.
+    const attempt = HEADING_ATTEMPT_RE.exec(line);
+    if (attempt) {
+      malformedHeadings.push({ line: i + 1, text: line, attemptedId: `P${attempt[1]}.${attempt[2]}` });
+      if (current) blocks.push(current);
+      current = null;
       continue;
     }
     if (current) {
@@ -146,6 +181,7 @@ function findBlocks(lines) {
     }
   }
   if (current) blocks.push(current);
+  blocks.malformedHeadings = malformedHeadings;
   return blocks;
 }
 
@@ -244,13 +280,34 @@ function evaluate(opts) {
 
   const lines = docText.split("\n");
   const blocks = findBlocks(lines);
+  const malformedHeadings = blocks.malformedHeadings || [];
+
+  // N-1: any malformed heading attempt is ALWAYS a structural failure —
+  // pushed regardless of whether any well-formed blocks also exist elsewhere
+  // in the document (a document can be partially well-formed and still be
+  // untrustworthy as a whole).
+  for (const mh of malformedHeadings) {
+    structural.push({
+      reason: "malformed-heading",
+      line: mh.line,
+      attemptedId: mh.attemptedId,
+      detail: mh.text.trim(),
+    });
+  }
 
   if (blocks.length === 0) {
-    structural.push({ reason: "no-policy-blocks" });
+    // Only push the generic "no-policy-blocks" reason when there wasn't
+    // even a malformed heading ATTEMPT — a malformed-heading-only document
+    // already has a more specific structural reason recorded above, and
+    // "no-policy-blocks" would be a misleading duplicate (it implies no
+    // heading was ever attempted at all).
+    if (malformedHeadings.length === 0) {
+      structural.push({ reason: "no-policy-blocks" });
+    }
     return finalize(structural, policy);
   }
 
-  const coreBlocks = new Map(); // core_id -> { block, trailerKind, waivableFalse }
+  const coreBlocks = new Map(); // core_id -> [{ block, trailerKind, waivableFalse }, ...] (N-6: ALL declarations, not just the last)
 
   for (const block of blocks) {
     const trailerMatches = [];
@@ -293,14 +350,22 @@ function evaluate(opts) {
       // can be tagged core_id/waivable:false with the WRONG trailer (Deferred
       // instead of Core); that mismatch is the core-waived-by-ed case (AC-5),
       // a CONTENT/policy violation on an otherwise well-formed block.
+      // N-6 [gauntlet round 2]: record EVERY declaration of a core_id, not
+      // just the most recent — a Map.set() here used to OVERWRITE an earlier
+      // (waived) declaration with a later (correct) one, hiding the waiver.
+      // CORE ids are non-waivable EVERYWHERE they appear, so every
+      // declaration must be checked independently.
       const blockText = block.lines.join("\n");
       const coreMatch = CORE_ID_RE.exec(blockText);
       if (coreMatch) {
-        coreBlocks.set(coreMatch[1], {
+        const coreId = coreMatch[1];
+        const entries = coreBlocks.get(coreId) || [];
+        entries.push({
           block: block.id,
           trailerKind: trailer.kind,
           waivableFalse: WAIVABLE_FALSE_RE.test(blockText),
         });
+        coreBlocks.set(coreId, entries);
       }
     }
   }
@@ -318,13 +383,19 @@ function evaluate(opts) {
   // the document parses fine; a CORE invariant is either absent from the
   // register or has been given an ED escape hatch instead of `Core: non-waivable`.
   for (const coreId of REQUIRED_CORE_IDS) {
-    const entry = coreBlocks.get(coreId);
-    if (!entry) {
+    const entries = coreBlocks.get(coreId);
+    if (!entries || entries.length === 0) {
       policy.push({ reason: "core-incomplete", core: coreId });
       continue;
     }
-    if (!entry.waivableFalse || entry.trailerKind !== "Core") {
-      policy.push({ reason: "core-waived", core: coreId, block: entry.block, trailerKind: entry.trailerKind });
+    // N-6: scan ALL declarations — ANY waived/Deferred instance of a CORE id
+    // is a policy FAIL, even when the SAME core_id also appears elsewhere
+    // with a correct `Core: non-waivable` trailer. A CORE invariant is
+    // non-waivable everywhere it is declared, not just in its "best" block.
+    for (const entry of entries) {
+      if (!entry.waivableFalse || entry.trailerKind !== "Core") {
+        policy.push({ reason: "core-waived", core: coreId, block: entry.block, trailerKind: entry.trailerKind });
+      }
     }
   }
 

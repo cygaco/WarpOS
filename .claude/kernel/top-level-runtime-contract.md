@@ -50,17 +50,23 @@ distinction packet-03's ADR draws between the durable company and its ephemeral 
 come and go; the four powers above stay anchored to a trusted layer that no single provider session
 controls unilaterally.
 
-**S-3 disambiguation — `write-durable-state` (D4/§4) is a provider CAPABILITY, not the CORE-2 power.**
-`support-matrix.json` grants providers a `write-durable-state` capability at helm-levels 1-2. That
-capability means a provider may PROPOSE durable state by writing to an ISOLATED WORKTREE (or via the
-trusted dispatch bridge) — an UNTRUSTED proposal, exactly like any other patch a provider produces.
-It does NOT mean a provider may perform **protected mutation** (writes that land directly in the
-company's durable state — trackers, ledgers, registries — on the integrated/main tree) or
-**integration-to-main** — those two of the four CORE-2 powers above stay SOLELY with the trusted
-layer, regardless of what any support-matrix row says a provider can write. A provider's
-`write-durable-state` capability and the trusted layer's `protected mutation` + `integration-to-main`
-powers are different things named similarly; this contract does not read the matrix as granting
-providers protected mutation.
+**S-3 disambiguation — `write-durable-state` AND `update-tracker` (D4/§4) are provider CAPABILITIES,
+not the CORE-2 power.** `support-matrix.json` grants providers a `write-durable-state` capability at
+helm-levels 1-2, AND a SEPARATE `update-tracker` capability at helm-levels 1-2 — trackers are named
+explicitly, above, among the "durable company state" this section opens with, so `update-tracker` gets
+the exact same disambiguation (N-3, gauntlet round 2: the round-1 S-3 fix scoped `write-durable-state`
+only and missed this sibling). BOTH capabilities mean a provider may PROPOSE durable state — including
+a proposed TRACKER.md edit — by writing to an ISOLATED WORKTREE (or via the trusted dispatch bridge) —
+an UNTRUSTED proposal, exactly like any other patch a provider produces. NEITHER capability means a
+provider may perform **protected mutation** (writes that land directly in the company's durable state
+— trackers, ledgers, registries — on the integrated/main tree) or **integration-to-main** — those two
+of the four CORE-2 powers above stay SOLELY with the trusted layer, regardless of what any
+support-matrix row says a provider can write. A provider's `write-durable-state`/`update-tracker`
+capabilities and the trusted layer's `protected mutation` + `integration-to-main` powers are different
+things named similarly; this contract does not read the matrix as granting providers protected
+mutation of ANY durable-state-mutation capability, tracker edits included. Any future
+durable-state-mutation capability added to the matrix inherits this same disambiguation — see
+support-matrix.json's `durable_state_mutation_capabilities_note`.
 
 **Phase-0 DEFINES this boundary only.** The mechanism that makes it binding — a pinned, content-addressed
 trusted checker running OUTSIDE any candidate provider's writable domain, the sole integration
@@ -121,17 +127,20 @@ copy: `role-binding.json`):
 4. **UNBOUND** — nothing above resolved a role.
 
 This is a TOTAL machine graph over the four `order` entries above (Q-2) — every ordered source except
-`UNBOUND` has a `sources` entry, and the entry's key name matches the `order` name exactly:
+`UNBOUND` has a `sources` entry, and the entry's key name matches the `order` name exactly. As of
+gauntlet round 2 (N-5), the graph is ALSO total over `{source × actor_kind}`: every `sources` entry
+carries an `applies_to_actor` array (`role-binding.json`) naming which actor_kind(s) may bind through
+it —
 
-| Source | Can bind a role? | Meaning |
-|---|---|---|
-| `explicit_user` | **true** | An explicit, in-session user/operator instruction — the OPERATOR's own direct instruction (a trusted human), categorically different from ambient repo prose. Order position #1. |
-| `validated_workorder_or_cli` | **true** | A validated WorkOrder field or CLI/dispatch binding. "Validated" is DEFINED at P3.2 below (S-2). Order position #2. |
-| `explicit_top_level_helm` | **true** | An explicit top-level runtime (helm) binding. The ONLY source for the top-level human-facing session default (`top_level_default_binding_source: "helm_only"`). Order position #3. |
-| `agents_md` (the neutral, provider-neutral handbook) | **false** | Ambient prose every provider auto-loads — NOT an ordered binding source; ambient prose can never manufacture a binding (CORE-3). |
-| `repo_prose` (any other ambient repository text) | **false** | Same CORE-3 refusal as `agents_md` — stale worktree copies, handoff prompts, any other non-operator, non-WorkOrder, non-helm text. |
+| Source | Can bind a role? | Applies to actor | Meaning |
+|---|---|---|---|
+| `explicit_user` | **true** | `top_level_session` only | An explicit, in-session user/operator instruction — the OPERATOR's own direct instruction (a trusted human), categorically different from ambient repo prose. Order position #1. |
+| `validated_workorder_or_cli` | **true** | `dispatched_worker`, `top_level_session` | A validated WorkOrder field or CLI/dispatch binding. "Validated" is DEFINED at P3.2 below (S-2). Order position #2. The ONLY source a `dispatched_worker` may bind through (N-5). |
+| `explicit_top_level_helm` | **true** | `top_level_session` only | An explicit top-level runtime (helm) binding. The ONLY source for the top-level human-facing session default (`top_level_default_binding_source: "helm_only"`). Order position #3. |
+| `agents_md` (the neutral, provider-neutral handbook) | **false** | n/a (never binds, any actor) | Ambient prose every provider auto-loads — NOT an ordered binding source; ambient prose can never manufacture a binding (CORE-3). |
+| `repo_prose` (any other ambient repository text) | **false** | n/a (never binds, any actor) | Same CORE-3 refusal as `agents_md` — stale worktree copies, handoff prompts, any other non-operator, non-WorkOrder, non-helm text. |
 
-Two ratified rules follow directly from this table:
+Three ratified rules follow directly from this table:
 
 - **Dispatched workers default to `FAIL_CLOSED` when unbound** — never to the President (alex-alpha).
   A worker that cannot resolve a role through steps 1–3 stops rather than silently assuming top-level
@@ -145,15 +154,25 @@ Two ratified rules follow directly from this table:
   legitimate binding source per the precedence order above (Q-1). The RATIFIED-PLAN Phase-2 α ruling is
   exactly this split: DISPATCHED workers are unbound-fail-closed; the OPERATOR's own top-level session
   is not left unbound, because a blanket no-default rule would strand the operator.
+- **A `dispatched_worker` is bindable ONLY through `validated_workorder_or_cli`** (N-5, gauntlet round
+  2, closing a CORE-1 bypass) — `explicit_user` and `explicit_top_level_helm` are `top_level_session`-
+  ONLY sources per the `applies_to_actor` column above. A `dispatched_worker` that PRESENTS an
+  `explicit_user` or `explicit_top_level_helm` binding is a **category error**, not a legitimate bind —
+  the source exists and can bind *in the abstract*, but not for this actor_kind — and must resolve
+  BLOCK (fail-closed), never PASS as though it had resolved through the precedence order. Fixture:
+  `fixtures/role-binding/worker-helm-binding-category-error.json`.
 
-#### P3.1 — Role-binding precedence graph (fail-closed; repo prose cannot bind)
+#### P3.1 — Role-binding precedence graph (fail-closed; repo prose cannot bind; actor-scoped)
 
-The full machine-readable precedence graph — order, per-source `can_bind`, `worker_default_when_unbound:
-"FAIL_CLOSED"`, `top_level_human_default: "alex-alpha"`, `top_level_default_binding_source: "helm_only"`
-— is `role-binding.json`. It is fixture-proven at the Phase-0 SEED level: `fixtures/role-binding/
-unbound-dispatch-fails-closed.json` (CORE-1) and `fixtures/role-binding/no-root-alpha-poison.json`
-(CORE-3). It is NOT yet wired into the live dispatch/session-bootstrap runtime — nothing today reads
-`role-binding.json` to gate a real dispatch. That wiring is RATIFIED-PLAN Phase 2 (G2.1).
+The full machine-readable precedence graph — order, per-source `can_bind` + `applies_to_actor`,
+`worker_default_when_unbound: "FAIL_CLOSED"`, `top_level_human_default: "alex-alpha"`,
+`top_level_default_binding_source: "helm_only"` — is `role-binding.json`. It is fixture-proven at the
+Phase-0 SEED level: `fixtures/role-binding/unbound-dispatch-fails-closed.json` (CORE-1),
+`fixtures/role-binding/no-root-alpha-poison.json` (CORE-3), and
+`fixtures/role-binding/worker-helm-binding-category-error.json` (CORE-1, N-5 actor-scoping — a
+`dispatched_worker` presenting a `top_level_session`-only source must BLOCK, never resolve). It is NOT
+yet wired into the live dispatch/session-bootstrap runtime — nothing today reads `role-binding.json` to
+gate a real dispatch. That wiring is RATIFIED-PLAN Phase 2 (G2.1).
 
 Deferred: ED-216 @ Phase-2-exit
 
@@ -193,14 +212,17 @@ probe was contract-BLOCKED (`antigravity` ∉ `[codex, gemini, agy]`, reproducin
 migration is IN-SCOPE Phase-1 work per the operator's ruling (RATIFIED-PLAN Phase 1); it is NOT
 Phase-0's job to make this cell green, and this contract will not pretend it is.
 
-**S-3 disambiguation:** each row's per-capability `write-durable-state` cell (e.g. `claude`/`codex-gpt`
-at helm-levels 1-2, evidenced by "file writes in an isolated worktree, live") describes an UNTRUSTED-
-PROPOSAL capability — a provider writing to an isolated worktree it does not control the integration
-of, or proposing a change via the trusted dispatch bridge — never direct protected mutation of the
-company's integrated/main durable state. §1/CORE-2's **protected mutation** and **integration-to-main**
-powers stay SOLELY with the provider-independent trusted layer regardless of this matrix; see §1's S-3
-disambiguation for the full statement. This matrix cannot be read as granting any provider row
-protected mutation or integration authority.
+**S-3 disambiguation:** each row's per-capability `write-durable-state` cell AND `update-tracker` cell
+(e.g. `claude`/`codex-gpt` at helm-levels 1-2, evidenced by "file writes in an isolated worktree, live"
+/ "TRACKER.md edits ... isolated-worktree proposal only, never direct protected mutation of main's
+TRACKER.md") describe an UNTRUSTED-PROPOSAL capability — a provider writing to an isolated worktree it
+does not control the integration of, or proposing a change via the trusted dispatch bridge — never
+direct protected mutation of the company's integrated/main durable state (trackers included, N-3).
+§1/CORE-2's **protected mutation** and **integration-to-main** powers stay SOLELY with the
+provider-independent trusted layer regardless of this matrix; see §1's S-3 disambiguation for the full
+statement. This matrix cannot be read as granting any provider row protected mutation or integration
+authority over ANY durable-state-mutation capability — `write-durable-state`, `update-tracker`, or any
+future capability of the same kind.
 
 **Addendum A — model × channel (Phase-0 seed; Phase-1 F3 refines with the prompt-shape dimension):**
 

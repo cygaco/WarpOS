@@ -87,6 +87,110 @@ test("all four R1 negative fixtures are non-zero AND the structural trio is dist
   assert.strictEqual(coreWaived.exitCode, 1);
 });
 
+// ── N-1 [gauntlet round 2] negative fixture: a heading that opens a policy
+// block but lacks the ' — ' delimiter/title must fail CLOSED (exit 2), never
+// be silently accepted or silently absorbed as another block's content. ──
+
+test("N-1: malformed-heading.md — a heading missing the delimiter/title -> exit 2 (structural, fail-closed)", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "malformed-heading.md") });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "malformed-heading" && s.attemptedId === "P1.1"),
+    JSON.stringify(res.structural),
+  );
+  assert.ok(
+    res.structural.some((s) => s.reason === "malformed-heading" && s.attemptedId === "P2.1"),
+    JSON.stringify(res.structural),
+  );
+});
+
+test("N-1 (pure-core): a bare '#### P1.1' heading with no delimiter/title is never accepted as a valid block", () => {
+  const doc = ["#### P1.1", "Core: non-waivable"].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(res.structural.some((s) => s.reason === "malformed-heading"), JSON.stringify(res.structural));
+});
+
+test("N-1 (pure-core): a '#### P1.1 — ' heading with the delimiter but an empty title is malformed", () => {
+  const doc = ["#### P1.1 — ", "Core: non-waivable"].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(res.structural.some((s) => s.reason === "malformed-heading"), JSON.stringify(res.structural));
+});
+
+test("N-1 (pure-core): a malformed heading is never silently absorbed as body content of the PRECEDING block", () => {
+  const doc = ["#### P1.1 — A fine block", "Core: non-waivable", "#### P2.1", "more text"].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  // P1.1 is well-formed and clean; the malformed P2.1 attempt must still surface
+  // as its own structural failure, not get swallowed into P1.1's trailing content.
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "malformed-heading" && s.attemptedId === "P2.1"),
+    JSON.stringify(res.structural),
+  );
+  assert.ok(
+    !res.structural.some((s) => s.reason === "trailer-not-terminal"),
+    "the malformed heading must close P1.1 as a boundary, not read as P1.1's trailing content: " +
+      JSON.stringify(res.structural),
+  );
+});
+
+// ── N-6 [gauntlet round 2] negative fixture: a CORE id declared twice — once
+// waived, once correct — must still FAIL on the waived instance (exit 1),
+// never be masked by the correct duplicate. ──
+
+test("N-6: core-waived-with-correct-duplicate.md — a waived CORE-1 instance FAILs even though a correct duplicate exists -> exit 1", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "core-waived-with-correct-duplicate.md") });
+  assert.strictEqual(res.exitCode, 1, JSON.stringify(res));
+  assert.strictEqual(
+    res.structural.length,
+    0,
+    "this fixture must NOT trip a structural failure: " + JSON.stringify(res.structural),
+  );
+  assert.ok(
+    res.policy.some((p) => p.reason === "core-waived" && p.core === "CORE-1" && p.block === "P7.1"),
+    JSON.stringify(res.policy),
+  );
+});
+
+test("N-6 (pure-core): a core_id declared twice (waived then correct) is caught via evaluate() directly", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 waived instance",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Deferred: ED-060 @ Phase-1-exit",
+    "#### P9.1 — CORE-1 correct instance",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(["ED-060"]), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 1, JSON.stringify(res));
+  assert.strictEqual(res.structural.length, 0, JSON.stringify(res.structural));
+  assert.ok(
+    res.policy.some((p) => p.reason === "core-waived" && p.core === "CORE-1" && p.block === "P7.1"),
+    "the waived P7.1 declaration must be flagged despite the correct P9.1 duplicate: " + JSON.stringify(res.policy),
+  );
+});
+
+test("N-6 (pure-core): a core_id declared correctly TWICE never trips core-waived (no false positive)", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 first correct instance",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "#### P9.1 — CORE-1 second correct instance",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.ok(
+    !res.policy.some((p) => p.reason === "core-waived"),
+    "two correct declarations of the same core_id must never spuriously trip core-waived: " + JSON.stringify(res.policy),
+  );
+});
+
 // ── Positive self-host: the REAL contract must lint clean. ──
 
 test("self-host: the real top-level-runtime-contract.md lints clean (exit 0)", () => {
