@@ -855,7 +855,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md",
         "dest": ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md",
         "kind": "agent",
-        "sha256": "7c67c7e5f89672fdaac1caed2794de5d1241a62ee904ab7c56b0e4414ee588b5",
+        "sha256": "f4a87b90ed058a51b00e0c8a26a9157807f375636a6720bd13ad2d2bd1834e23",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
