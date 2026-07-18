@@ -1,26 +1,26 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260718-002"
-updated_at: "2026-07-18T07:43:37.019Z"
-current_phase: idle
+updated_at: "2026-07-18T11:45:00.000Z"
+current_phase: release
 current_command: none
 current_ticket: null
 current_task: null
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+status: completed
+last_completed_step: "merged-to-main"
+next_action: "SP-002 COMPLETE + merged @65c9ecc4. Next: Phase 1 (routing + security truth) as a fresh sprint. Formal retro deferred to WarpOS-1.0 milestone close (RI-001)."
 active_files: []
 modified_files: []
-checks_last_run: null
-checks_passing: []
+checks_last_run: "2026-07-18"
+checks_passing: ["tests (60 fixture)", "manifest-validate", "framework-purity", "gauntlet-R4-backend", "gauntlet-R4-qa", "gauntlet-R4-security"]
 checks_failing: []
 blockers: []
 approvals_needed: []
 external_services_needed: []
-issues_opened: []
+issues_opened: ["ED-222 (5 tail-only readers migration)", "ED-223 (reader-discipline process-tests sandbox limit)"]
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "none — sprint closed"
+resume_notes: "Full lifecycle complete: plan->design->build(C1-C4)->gauntlet(GREEN, 4 rounds 16->0)->release->merged @65c9ecc4. beta DECIDE x2 (0.89/0.90). Never-lose-raw held by construction. Dispositions: SEC-2-frozen (ED-212-class), SEC-6 (ED-222), QA-3-_warpos (RI-003), QA-4 (ED-223)."
 safe_to_continue: true
 stop_reason: null
