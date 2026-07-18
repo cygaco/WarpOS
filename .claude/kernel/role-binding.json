@@ -11,7 +11,7 @@
     "validated_workorder_or_cli": {
       "can_bind": true,
       "applies_to_actor": ["dispatched_worker", "top_level_session"],
-      "_meaning": "A validated WorkOrder field or CLI/dispatch binding. 'Validated' means it passed schema validation against workorder-min.schema.json AND arrived via the trusted dispatch bridge (scripts/dispatch-claude.js / scripts/dispatch-agent.js), never a self-asserted claim — see top-level-runtime-contract.md §3 P3.2 (S-2) for the full provenance definition. Precedence order position #2. applies_to_actor = dispatched_worker AND top_level_session: this is the ONLY source a dispatched_worker may bind through (N-5, RATIFIED-PLAN α-ruling)."
+      "_meaning": "A validated WorkOrder field or CLI/dispatch binding. 'Validated' means the TRUSTED dispatch bridge (scripts/dispatch-claude.js / scripts/dispatch-agent.js) has ACTIVELY validated it -- schema conformance against workorder-min.schema.json AND an authority/provenance check, BOTH performed BY the trusted layer itself -- not merely that the binding transited the bridge (transit alone is insufficient) and never a self-asserted claim — see top-level-runtime-contract.md §3 P3.2 (S-2) for the full provenance definition. Precedence order position #2. applies_to_actor = dispatched_worker AND top_level_session: this is the ONLY source a dispatched_worker may bind through (N-5, RATIFIED-PLAN α-ruling)."
     },
     "explicit_top_level_helm": {
       "can_bind": true,

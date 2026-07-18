@@ -38,9 +38,11 @@
  *      a row missing a required field — B-3); an unreadable fixtures dir; or
  *      a SEMANTICALLY malformed fixture file — unparseable JSON, missing
  *      required fields, an unrecognized `gate` name with no registered
- *      evaluator, or a non-canonical `expect.outcome` (B-2). A fixture/matrix
- *      the runner CANNOT decide is always fail-closed, never a reportable
- *      mismatch or a silent pass.
+ *      evaluator, a non-canonical `expect.outcome` (B-2), or an `input` that
+ *      is a valid JSON object (N-2) but is missing/mistyped one of its OWN
+ *      gate's required input fields (R3-1 — see REQUIRED_INPUT_FIELDS).
+ *      A fixture/matrix the runner CANNOT decide is always fail-closed, never
+ *      a reportable mismatch or a silent pass.
  *
  *   node scripts/checks/conformance-matrix.js [--report-only|--enforce] [--coverage] [--json]
  */
@@ -290,6 +292,79 @@ function loadRoleBinding(kernelDir) {
   }
 }
 
+// R3-1 [CRIT, gauntlet round 3]: PER-GATE required input-field schema. N-2
+// (gauntlet round 2) proved a fixture's 'input' is a present JSON object, but
+// never that it carries the FIELDS its own gate's evaluator actually reads.
+// 'input:{}' IS a valid object (passes N-2) -- yet nearly every evaluator
+// above has a final fallback branch for an input shape it doesn't recognize,
+// and that fallback frequently computes a real, comparable outcome (BLOCK for
+// retention/support-matrix/role-binding's dispatched_worker path, PASS for
+// trust-boundary/dispatch-honesty/tracker/worktree/workorder/dispatch-review)
+// -- which can coincidentally MATCH a fixture's expect.outcome and read green
+// ('bound') without the evaluator ever touching a real field. A fixture whose
+// 'input' lacks its OWN gate's required field(s) can never be trusted enough
+// to hand to evaluate() -- fail-closed here (exit 2), same posture as N-2/B-2.
+const REQUIRED_INPUT_FIELDS = {
+  "role-binding": [{ field: "actor_kind", type: "string" }],
+  "trust-boundary": [
+    { field: "attempted_action", type: "string" },
+    { field: "actor_is_trusted_layer", type: "boolean" },
+  ],
+  retention: [{ field: "attempted_disposition", type: "string" }],
+  "support-matrix": [{ field: "helm", type: "string" }],
+  "dispatch-honesty": [{ field: "result_envelope", type: "object" }],
+  tracker: [
+    { field: "tracker_claim", type: "string" },
+    { field: "disk_evidence", type: "string" },
+    { field: "git_evidence", type: "string" },
+  ],
+  worktree: [{ field: "base_is_ancestor_of_head", type: "boolean" }],
+  workorder: [
+    { field: "role_kind", type: "string" },
+    { field: "prompt_bytes", type: "number" },
+    { field: "floor_bytes", type: "number" },
+  ],
+  "dispatch-review": [
+    { field: "builder_provider", type: "string" },
+    { field: "reviewer_provider", type: "string" },
+  ],
+};
+
+/**
+ * Validate a fixture's `input` against its gate's REQUIRED_INPUT_FIELDS
+ * schema. Returns an error string describing the FIRST violation, or null
+ * when `input` satisfies every required field for its gate. A gate with no
+ * registered schema entry is skipped -- every GATE_EVALUATORS key above has a
+ * REQUIRED_INPUT_FIELDS entry; a future gate added to one map without the
+ * other is an authoring bug in THIS file, not a fixture problem, so it stays
+ * permissive here rather than fail-closed on our own gap (the existing
+ * "unknown gate" check already fail-closes on a gate with no evaluator at
+ * all).
+ */
+function validateGateInputShape(gate, input) {
+  const schema = REQUIRED_INPUT_FIELDS[gate];
+  if (!schema) return null;
+  for (const req of schema) {
+    if (!Object.prototype.hasOwnProperty.call(input, req.field)) {
+      return `missing required input field '${req.field}' for gate '${gate}'`;
+    }
+    const val = input[req.field];
+    if (req.type === "string" && (typeof val !== "string" || !val)) {
+      return `input field '${req.field}' for gate '${gate}' must be a non-empty string`;
+    }
+    if (req.type === "boolean" && typeof val !== "boolean") {
+      return `input field '${req.field}' for gate '${gate}' must be a boolean`;
+    }
+    if (req.type === "number" && typeof val !== "number") {
+      return `input field '${req.field}' for gate '${gate}' must be a number`;
+    }
+    if (req.type === "object" && (typeof val !== "object" || val === null || Array.isArray(val))) {
+      return `input field '${req.field}' for gate '${gate}' must be a JSON object`;
+    }
+  }
+  return null;
+}
+
 // B-2: the closed set of outcomes any GATE_EVALUATORS function can compute —
 // a fixture's expect.outcome outside this set can never be matched, so it is
 // SEMANTICALLY malformed, not a legitimate (if surprising) expectation.
@@ -361,6 +436,17 @@ function loadFixtures(fixturesDir) {
       if (!parsed.input || typeof parsed.input !== "object" || Array.isArray(parsed.input)) {
         const err = new Error(`fixture ${full} missing/invalid 'input' (must be a JSON object)`);
         err.code = "FIXTURE_SHAPE_ERROR";
+        throw err;
+      }
+      // R3-1 [gauntlet round 3]: 'input' is a valid object (N-2 above already
+      // proved that) -- now prove it carries the fields ITS OWN gate reads.
+      // A fixture that is shape-valid in general but missing a gate-specific
+      // required field can never be trusted enough to reach evaluate() --
+      // fail-closed here (exit 2), never a coincidental green.
+      const gateInputError = validateGateInputShape(parsed.gate, parsed.input);
+      if (gateInputError) {
+        const err = new Error(`fixture ${full}: ${gateInputError}`);
+        err.code = "FIXTURE_GATE_INPUT_SHAPE_ERROR";
         throw err;
       }
       if (

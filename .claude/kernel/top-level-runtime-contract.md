@@ -179,17 +179,25 @@ Deferred: ED-216 @ Phase-2-exit
 #### P3.2 — `validated_workorder_or_cli` provenance (S-2: what makes a binding "validated")
 
 A WorkOrder/CLI binding is **"validated"** — and therefore eligible to bind a role at precedence order
-position #2 — IF AND ONLY IF it (a) passed schema validation against the minimal WorkOrder field set
-(§5, D5, `workorder-min.schema.json`) AND (b) arrived via the TRUSTED dispatch bridge
-(`scripts/dispatch-claude.js` / `scripts/dispatch-agent.js`), never a self-asserted claim embedded in a
-candidate provider's own output. Self-assertion (a provider's session simply claiming "I am a validated
-WorkOrder binding") never satisfies (b), regardless of how the claim is phrased — provenance must be
-established by the TRANSPORT the binding arrived through, not by the content of the claim itself.
+position #2 — IF AND ONLY IF the TRUSTED dispatch bridge (`scripts/dispatch-claude.js` /
+`scripts/dispatch-agent.js`) has ACTIVELY VALIDATED it: (a) affirmatively checked it for schema
+conformance against the minimal WorkOrder field set (§5, D5, `workorder-min.schema.json`), AND (b)
+affirmatively checked its authority/provenance — that the binding genuinely originates from a source the
+trusted layer itself recognizes as legitimate — BEFORE the binding is allowed to resolve a role. Both
+checks must be PERFORMED BY the trusted layer itself. Merely TRANSITING the trusted dispatch bridge — a
+request that reaches the bridge's transport but is never actually checked against (a) and (b) — does NOT
+satisfy this definition, no matter how schema-shaped the object looks: transit is not validation.
+Self-assertion (a provider's session simply claiming "I am a validated WorkOrder binding") never
+satisfies it either, regardless of how the claim is phrased — "validated" names an ACT the trusted layer
+performs, never a passive property of the request having arrived through a particular transport or
+merely having the right shape.
 
 This is the Phase-0 DEFINITION of provenance only. The FULL live validation mechanism — a WorkOrder
-schema validator wired into every dispatch writer, rejecting an unvalidated or self-asserted binding at
+schema validator AND an authority/provenance checker wired into every dispatch writer, ACTIVELY
+performing (a) and (b) above and rejecting an unvalidated, self-asserted, or merely-transited binding at
 dispatch time before it can resolve a role — is RATIFIED-PLAN Phase-3 work; see ED-218. Nothing today
-rejects a dispatch for failing this provenance test.
+performs this active validation — today's dispatch bridge is transport only, so no binding it carries may
+yet be treated as "validated" under this definition.
 
 Deferred: ED-218 @ Phase-3-exit
 
@@ -281,9 +289,11 @@ full v1 schema — deliberately NOT the ResultEnvelope; that is Phase 3):
 faces. The full JSON Schema is `workorder-min.schema.json`.
 
 This field set is also HALF of what makes a `validated_workorder_or_cli` role-binding source
-"validated" per §3 P3.2 (S-2): schema validation against this field set is necessary condition (a);
-arrival via the trusted dispatch bridge is the other, condition (b). See P3.2 for the full provenance
-definition — this section defines the schema; §3 defines when passing it counts as a binding.
+"validated" per §3 P3.2 (S-2): schema validation against this field set is necessary condition (a); the
+trusted dispatch bridge ACTIVELY validating the binding's authority/provenance — not merely the binding
+transiting the bridge, which is insufficient on its own — is the other, condition (b). See P3.2 for the
+full provenance definition — this section defines the schema; §3 defines when passing it counts as a
+binding.
 
 #### P5.1 — Minimal WorkOrder field set (Phase-3 G3.1 seed)
 

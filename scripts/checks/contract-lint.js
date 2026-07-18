@@ -30,11 +30,17 @@
  *      whose (single) trailer is not the LAST non-empty line of its block
  *      (S-1 — trailing content after the trailer is unparseable-as-terminal),
  *      an Enforcer ref that does not resolve (missing file, escapes
- *      scripts/checks/ — B-1, or fails to load), a ledger file that could not
+ *      scripts/checks/ — B-1, is not a `.js` FILE — a directory or non-.js
+ *      requireable, R3-2 — or fails to load), a ledger file that could not
  *      be read/parsed, the D6 fixture manifest present-but-unreadable/
  *      unparseable/missing-count (C-1 — distinct from a manifest that reads
- *      fine with a legitimately-zero count, which is policy §1), or any
- *      `ED-NNN` cited anywhere in the document that is absent from the ledger.
+ *      fine with a legitimately-zero count, which is policy §1), the
+ *      declared "### Policy-block register" (§7) disagreeing with the blocks
+ *      actually parsed — a registered id with no matching block, a parsed
+ *      block absent from the register, or a numbering gap within a section
+ *      (R3-4 — catches a policy block silently REMOVED from the document),
+ *      or any `ED-NNN` cited anywhere in the document that is absent from
+ *      the ledger.
  * A malformed/unparseable input NEVER reads clean (0) — this is the bootstrap
  * trust root; a green-pass-on-unparseable is the false-green class this whole
  * Phase-0 build exists to kill.
@@ -185,6 +191,53 @@ function findBlocks(lines) {
   return blocks;
 }
 
+// R3-4 [HIGH, gauntlet round 3]: the "### Policy-block register" appendix
+// table (§7) — when a document declares one, it becomes the single source of
+// truth for "which policy blocks must exist," closing the gap where a
+// critical policy block that is silently REMOVED (heading + trailer both
+// deleted) was previously invisible: findBlocks()/evaluate() only ever
+// inspect blocks they FIND, so a document with fewer blocks than it should
+// have read exactly as clean as one that never had the extra block. See
+// parsePolicyRegister() below + its call site in evaluate() for the
+// completeness checks this enables.
+const REGISTER_HEADING_RE = /^###\s+Policy-block register\s*$/;
+const REGISTER_ROW_RE = /^\|\s*(P(\d+)\.(\d+))\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|$/;
+
+/**
+ * Parse the "### Policy-block register" markdown table, if the document
+ * declares one. Returns { found: false, rows: [] } when no such heading
+ * exists anywhere in the document — register-completeness is OPT-IN per
+ * document: most narrow structural/policy pure-core test snippets deliberately
+ * don't declare a register (they're testing one orthogonal parsing rule in
+ * isolation), and requiring one universally would turn every such snippet
+ * into a spurious register-completeness failure unrelated to what it's
+ * actually testing. The REAL contract (top-level-runtime-contract.md) DOES
+ * declare one (§7), so this check is fully active for the document that
+ * matters — the one G0.1 self-hosts.
+ */
+function parsePolicyRegister(lines) {
+  const headingIdx = lines.findIndex((l) => REGISTER_HEADING_RE.test(l.trim()));
+  if (headingIdx === -1) return { found: false, rows: [] };
+  const rows = [];
+  let sawTableRow = false;
+  for (let i = headingIdx + 1; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed.startsWith("|")) {
+      if (sawTableRow) break; // the table has ended
+      if (trimmed === "") continue; // blank line(s) between the heading and the table are fine
+      break; // some other content before any table row appeared -- no table here
+    }
+    sawTableRow = true;
+    const m = REGISTER_ROW_RE.exec(trimmed);
+    // Header ("| Block | Section | Trailer |") and separator ("|---|---|---|")
+    // rows never match REGISTER_ROW_RE's P<n>.<m> id shape — skipped naturally.
+    if (m) {
+      rows.push({ id: m[1], section: Number(m[2]), index: Number(m[3]), line: i + 1 });
+    }
+  }
+  return { found: true, rows };
+}
+
 /**
  * Resolve + attempt to load an Enforcer script ref (fail-CLOSED: existence AND
  * loadability, per R2 — "ref MUST resolve to an existing script"). Scripts
@@ -217,6 +270,36 @@ function resolveEnforcer(ref, rootDir) {
   }
 
   if (!fs.existsSync(resolvedAbs)) return { resolved: false, error: `does not exist: ${trimmed}` };
+
+  // R3-2 [HIGH, gauntlet round 3]: the containment guard above only proves the
+  // resolved path stays INSIDE scripts/checks/ — it says nothing about WHAT
+  // that path is. Node's `require()` happily resolves a DIRECTORY (via its
+  // index.js) and happily resolves a non-`.js` requireable file (e.g. a
+  // `.json` module) — either of those would let an `Enforcer:` trailer point
+  // at something other than the single, individually-audited `.js` script the
+  // contract's own convention (`Enforcer: scripts/checks/<x>.js`) promises. A
+  // ref that is not BOTH (a) `.js`-suffixed AND (b) a regular file (never a
+  // directory, symlink-to-directory included — fs.statSync follows symlinks)
+  // is unresolvable by definition and is NEVER passed to require() — same
+  // fail-closed posture as the path-containment guard above.
+  if (!resolvedAbs.toLowerCase().endsWith(".js")) {
+    return {
+      resolved: false,
+      error: `enforcer ref does not resolve to a .js file (refused before require(), never loaded): ${trimmed}`,
+    };
+  }
+  let stat;
+  try {
+    stat = fs.statSync(resolvedAbs);
+  } catch (e) {
+    return { resolved: false, error: `failed to stat: ${(e && e.message) || e}` };
+  }
+  if (!stat.isFile()) {
+    return {
+      resolved: false,
+      error: `enforcer ref does not resolve to a regular file (refused before require(), never loaded): ${trimmed}`,
+    };
+  }
 
   // Symlink-escape guard: if the ref exists, its REAL (symlink-resolved)
   // target must also stay inside scripts/checks/ — a symlink planted inside
@@ -370,6 +453,67 @@ function evaluate(opts) {
     }
   }
 
+  // R3-4: §7 policy-block REGISTER completeness. When the document declares a
+  // "### Policy-block register" table, it is the single source of truth for
+  // "which policy blocks must exist" — cross-check it against the blocks this
+  // parse ACTUALLY found:
+  //   - a registered id with no matching parsed block -> the block was
+  //     silently removed but its register row survived (structural).
+  //   - a parsed block absent from the register -> register drift, the
+  //     register no longer accounts for a real block (structural).
+  //   - a numbering GAP within a section's register rows -> catches the case
+  //     where BOTH a block's heading AND its register row were removed
+  //     together (so neither of the two checks above fires on their own) —
+  //     a hole in the P<n>.<m> sequence still gives it away (structural).
+  // A document that never declares the register is unaffected (see
+  // parsePolicyRegister()'s doc comment).
+  const registerResult = parsePolicyRegister(lines);
+  if (registerResult.found) {
+    const registerIds = new Set(registerResult.rows.map((r) => r.id));
+    const actualIds = new Set(blocks.map((b) => b.id));
+
+    for (const row of registerResult.rows) {
+      if (!actualIds.has(row.id)) {
+        structural.push({
+          reason: "register-block-missing",
+          block: row.id,
+          detail: `${row.id} is enumerated in the §7 policy-block register but no matching '#### ${row.id} — ...' heading exists in the document`,
+        });
+      }
+    }
+    for (const block of blocks) {
+      if (!registerIds.has(block.id)) {
+        structural.push({
+          reason: "register-drift",
+          block: block.id,
+          detail: `${block.id} exists in the document but is not enumerated in the §7 policy-block register`,
+        });
+      }
+    }
+
+    const bySection = new Map();
+    for (const row of registerResult.rows) {
+      const arr = bySection.get(row.section) || [];
+      arr.push(row.index);
+      bySection.set(row.section, arr);
+    }
+    for (const [section, indices] of bySection.entries()) {
+      const sorted = [...new Set(indices)].sort((a, b) => a - b);
+      for (let i = 0; i < sorted.length; i++) {
+        const expected = i + 1;
+        if (sorted[i] !== expected) {
+          structural.push({
+            reason: "register-gap",
+            section: `§${section}`,
+            expected: `P${section}.${expected}`,
+            detail: `the §7 register has a numbering gap at P${section}.${expected} (next present entry is P${section}.${sorted[i]}) — a removed policy block leaves a hole in the sequence even when both its heading and its register row are deleted together`,
+          });
+          break;
+        }
+      }
+    }
+  }
+
   // Whole-document ED citation scan — catches EDs cited in prose/tables/JSON
   // evidence_refs too, not only inside a Deferred trailer line.
   if (ledgerIds) {
@@ -482,7 +626,7 @@ function run(opts) {
   return evaluate({ docText, ledgerIds, ledgerError, fixtureCount, manifestError, rootDir });
 }
 
-module.exports = { evaluate, run, findBlocks, resolveEnforcer, parseLedgerIds, H1_SENTENCE };
+module.exports = { evaluate, run, findBlocks, resolveEnforcer, parseLedgerIds, parsePolicyRegister, H1_SENTENCE };
 
 if (require.main === module) {
   const JSON_OUT = process.argv.includes("--json");

@@ -5,7 +5,7 @@
   "counts": {
     "agent": 93,
     "skill": 233,
-    "kernel": 33,
+    "kernel": 36,
     "reference": 27,
     "maps_baseline": 25,
     "hook": 79,
@@ -68,7 +68,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1447,
+  "total": 1450,
   "assets": {
     "agent": [
       {
@@ -4000,6 +4000,18 @@
         "replaces": null
       },
       {
+        "id": "kernel.fixtures.conformance-matrix-selftest.role-binding.missing-required-field.json",
+        "src": ".claude/kernel/fixtures/conformance-matrix-selftest/role-binding/missing-required-field.json",
+        "dest": ".claude/kernel/fixtures/conformance-matrix-selftest/role-binding/missing-required-field.json",
+        "kind": "kernel",
+        "sha256": "50db6a8ccf3850de044d3e036edf11c7d66a2bf818457d188087b64d05058f47",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "kernel.fixtures.contract-lint.core-waived-by-ed.json",
         "src": ".claude/kernel/fixtures/contract-lint/core-waived-by-ed.json",
         "dest": ".claude/kernel/fixtures/contract-lint/core-waived-by-ed.json",
@@ -4120,6 +4132,30 @@
         "replaces": null
       },
       {
+        "id": "kernel.fixtures.contract-lint.register-block-removed.json",
+        "src": ".claude/kernel/fixtures/contract-lint/register-block-removed.json",
+        "dest": ".claude/kernel/fixtures/contract-lint/register-block-removed.json",
+        "kind": "kernel",
+        "sha256": "e61f24d8e37169eb662b209efb2b510a74263d2d2359b4b0f29c01869be96fea",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "kernel.fixtures.contract-lint.register-block-removed.md",
+        "src": ".claude/kernel/fixtures/contract-lint/register-block-removed.md",
+        "dest": ".claude/kernel/fixtures/contract-lint/register-block-removed.md",
+        "kind": "kernel",
+        "sha256": "5896b00abe2b377b902825891751e56c8b05db6fd9d9ffa202e49640447c4941",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "kernel.fixtures.contract-lint.trailer-not-terminal.json",
         "src": ".claude/kernel/fixtures/contract-lint/trailer-not-terminal.json",
         "dest": ".claude/kernel/fixtures/contract-lint/trailer-not-terminal.json",
@@ -4196,7 +4232,7 @@
         "src": ".claude/kernel/fixtures/manifest.json",
         "dest": ".claude/kernel/fixtures/manifest.json",
         "kind": "kernel",
-        "sha256": "74d22e5aca597f9e2312a38398117f131cd6f7b6715206c710b8cd6a8499c113",
+        "sha256": "b7ef000d07e7f21dabd84886b2a026b840b8e3d0e66aadc2791771e78f115a94",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -4340,7 +4376,7 @@
         "src": ".claude/kernel/role-binding.json",
         "dest": ".claude/kernel/role-binding.json",
         "kind": "kernel",
-        "sha256": "ab2f1254bc32d615c0ffa97cce1b9ada428e0733cf65770ae0d7dfe2090bd9df",
+        "sha256": "667b6852ddbb68963ca1b6e3a2b2941e81bc25efd061d2cd96511e2bbccc6ee5",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -4364,7 +4400,7 @@
         "src": ".claude/kernel/top-level-runtime-contract.md",
         "dest": ".claude/kernel/top-level-runtime-contract.md",
         "kind": "kernel",
-        "sha256": "49c0052fcb2ff052d3294135ad4a94dce2855bebbe0046afe51e3cca508d4255",
+        "sha256": "175e42d6b8735bc81bd4ca4b0ce4b59eb1ae0902a191059127e337f2ae88e60c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7514,7 +7550,7 @@
         "src": "scripts/checks/conformance-matrix.js",
         "dest": "scripts/checks/conformance-matrix.js",
         "kind": "check_tool",
-        "sha256": "9a6d2723578dbaf1ee885eae6a5ed5be9fb43029f9955cadfc31f49a4705eae5",
+        "sha256": "c4b9010775b393772dd1396559f4814f872509d330c6c68b8a60c89b6f59a0f0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7526,7 +7562,7 @@
         "src": "scripts/checks/conformance-matrix.test.js",
         "dest": "scripts/checks/conformance-matrix.test.js",
         "kind": "check_tool",
-        "sha256": "72c351be30b5c97e5a3ffdc0b02e8350cdf02f6a080f92551c31db42ebf7a28f",
+        "sha256": "bdbeb51bb9b006501f807df096ffd5dce333b1281e5bc53059f634d56b98d3ba",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7562,7 +7598,7 @@
         "src": "scripts/checks/contract-lint.js",
         "dest": "scripts/checks/contract-lint.js",
         "kind": "check_tool",
-        "sha256": "4656f620eb4a27abf0f21c873b3799c105b26fec35c9517b1094aa885086f275",
+        "sha256": "00a698b88f03530adb79e1d2c7ea3722bbe9301e1eb9df7985aa4fdfd01454f6",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7574,7 +7610,7 @@
         "src": "scripts/checks/contract-lint.test.js",
         "dest": "scripts/checks/contract-lint.test.js",
         "kind": "check_tool",
-        "sha256": "612ef16aae5b15611137df0fa9197f050ea6ae3cb2ba9680220475bdd2790361",
+        "sha256": "2e5ea339f223f605be1dd26ee4cdcb0af54947fc544615859f6ca1c22ff3f0b2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

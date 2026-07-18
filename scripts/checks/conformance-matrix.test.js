@@ -297,7 +297,16 @@ test("B-2: loadFixtures() throws (fail-closed) on a non-canonical expect.outcome
   const tmpDir = writeTmpFixture(
     "retention",
     "case.json",
-    JSON.stringify({ id: "x", gate: "retention", input: {}, expect: { outcome: "MAYBE" } }),
+    // R3-1: 'input' must be gate-shape-valid here (attempted_disposition
+    // present) so this fixture isolates the ONE violation it's testing
+    // (a non-canonical expect.outcome) — otherwise the R3-1 gate-input-shape
+    // check would fire first and this would stop proving what it says it does.
+    JSON.stringify({
+      id: "x",
+      gate: "retention",
+      input: { attempted_disposition: "archive" },
+      expect: { outcome: "MAYBE" },
+    }),
   );
   try {
     assert.throws(() => loadFixtures(tmpDir), /expect\.outcome/);
@@ -374,6 +383,107 @@ test("N-2: the real kernel-conformance walk EXCLUDES conformance-matrix-selftest
   const res = run();
   assert.strictEqual(res.mismatches.length, 0, JSON.stringify(res.mismatches));
   assert.ok(res.fixtureCount > 0);
+});
+
+// ── R3-1 [gauntlet round 3] regression: loadFixtures() fails CLOSED on a
+// fixture whose 'input' IS a valid JSON object (passes N-2) but is missing
+// its OWN gate's required field(s) -- before the fix, several evaluators'
+// final fallback branches compute a real, comparable outcome for an
+// empty/unrecognized input shape, which can coincidentally MATCH the
+// fixture's expect.outcome and read green without ever exercising real
+// evaluator logic. ──
+
+test("R3-1: loadFixtures() throws (fail-closed) on a role-binding fixture with input:{} (missing actor_kind)", () => {
+  const tmpDir = writeTmpFixture(
+    "role-binding",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "role-binding", input: {}, expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /actor_kind/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R3-1: loadFixtures() throws (fail-closed) on a retention fixture missing attempted_disposition", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", input: { unrelated: true }, expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /attempted_disposition/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R3-1: loadFixtures() throws (fail-closed) on a support-matrix fixture missing helm", () => {
+  const tmpDir = writeTmpFixture(
+    "support-matrix",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "support-matrix", input: {}, expect: { outcome: "BLOCK" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /helm/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R3-1: loadFixtures() throws (fail-closed) on a trust-boundary fixture with a wrong-typed required field", () => {
+  const tmpDir = writeTmpFixture(
+    "trust-boundary",
+    "case.json",
+    JSON.stringify({
+      id: "x",
+      gate: "trust-boundary",
+      input: { attempted_action: "integrate_to_main", actor_is_trusted_layer: "false" },
+      expect: { outcome: "BLOCK" },
+    }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /actor_is_trusted_layer/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R3-1: loadFixtures() still accepts a gate-shape-valid fixture (positive control)", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({
+      id: "x",
+      gate: "retention",
+      input: { attempted_disposition: "archive" },
+      expect: { outcome: "PASS" },
+    }),
+  );
+  try {
+    const fixtures = loadFixtures(tmpDir);
+    assert.strictEqual(fixtures.length, 1);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R3-1: the real conformance-matrix-selftest/role-binding/missing-required-field.json fixture is gate-shape-malformed -> loadFixtures throws on actor_kind", () => {
+  const realFixturePath = path.join(
+    KERNEL_DIR,
+    "fixtures",
+    "conformance-matrix-selftest",
+    "role-binding",
+    "missing-required-field.json",
+  );
+  const content = fs.readFileSync(realFixturePath, "utf8");
+  const tmpDir = writeTmpFixture("role-binding", "case.json", content);
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /actor_kind/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 });
 
 test("B-2: run() propagates a malformed fixture as a thrown error — the CLI maps this to exit 2, never a clean 0/1", () => {

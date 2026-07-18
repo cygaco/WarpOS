@@ -324,6 +324,87 @@ test("B-1: resolveEnforcer still resolves a legitimate ref INSIDE scripts/checks
   assert.strictEqual(res.resolved, true, JSON.stringify(res));
 });
 
+// ── R3-2 [HIGH, gauntlet round 3] regression: the path-containment guard (B-1)
+// restricts an Enforcer ref to scripts/checks/, but on its own still accepts a
+// DIRECTORY (Node `require()`s a dir via its index.js) or a non-.js
+// requireable ref. resolveEnforcer must additionally require the resolved ref
+// to be a `.js`-suffixed REGULAR FILE before ever calling require(). ──
+
+test("R3-2: resolveEnforcer refuses a plain directory ref (no .js suffix) — never require()'d", () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "clint-r32-dir-"));
+  try {
+    const checksDir = path.join(tmpRoot, "scripts", "checks");
+    fs.mkdirSync(path.join(checksDir, "some-plain-dir"), { recursive: true });
+
+    const res = resolveEnforcer("scripts/checks/some-plain-dir", tmpRoot);
+    assert.strictEqual(res.resolved, false, JSON.stringify(res));
+    assert.ok(/\.js file/.test(res.error), res.error);
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("R3-2: resolveEnforcer refuses a DIRECTORY disguised with a '.js' suffix (Node would require() its index.js) — never require()'d", () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "clint-r32-dirjs-"));
+  try {
+    const checksDir = path.join(tmpRoot, "scripts", "checks");
+    const dirRef = path.join(checksDir, "fake-enforcer.js"); // a DIRECTORY named with a .js suffix
+    fs.mkdirSync(dirRef, { recursive: true });
+    fs.writeFileSync(
+      path.join(dirRef, "index.js"),
+      "global.__CLINT_R32_DIR_INDEX_REQUIRED__ = true;\n",
+    );
+    delete global.__CLINT_R32_DIR_INDEX_REQUIRED__;
+
+    const res = resolveEnforcer("scripts/checks/fake-enforcer.js", tmpRoot);
+    assert.strictEqual(res.resolved, false, JSON.stringify(res));
+    assert.ok(/regular file/.test(res.error), res.error);
+    assert.strictEqual(
+      global.__CLINT_R32_DIR_INDEX_REQUIRED__,
+      undefined,
+      "a directory ref must NEVER be require()'d, even via its own index.js — arbitrary code execution during a lint",
+    );
+  } finally {
+    delete global.__CLINT_R32_DIR_INDEX_REQUIRED__;
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("R3-2: resolveEnforcer refuses a non-.js requireable ref (e.g. .json)", () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "clint-r32-json-"));
+  try {
+    const checksDir = path.join(tmpRoot, "scripts", "checks");
+    fs.mkdirSync(checksDir, { recursive: true });
+    fs.writeFileSync(path.join(checksDir, "not-a-script.json"), "{}");
+
+    const res = resolveEnforcer("scripts/checks/not-a-script.json", tmpRoot);
+    assert.strictEqual(res.resolved, false, JSON.stringify(res));
+    assert.ok(/\.js file/.test(res.error), res.error);
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("R3-2 (end-to-end): a document whose Enforcer trailer points to a directory fails closed (structural, exit 2)", () => {
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "clint-r32-e2e-"));
+  try {
+    const checksDir = path.join(tmpRoot, "scripts", "checks");
+    fs.mkdirSync(path.join(checksDir, "dir-enforcer.js"), { recursive: true });
+    const doc = [
+      "#### P1.1 — Uses a directory ref",
+      "Enforcer: scripts/checks/dir-enforcer.js",
+    ].join("\n");
+    const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: tmpRoot });
+    assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+    assert.ok(
+      res.structural.some((s) => s.reason === "unresolvable-enforcer" && /regular file/.test(s.detail)),
+      JSON.stringify(res.structural),
+    );
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+});
+
 // ── S-1 regression: a block whose (single) trailer is not the last non-empty
 // line of the block is malformed (structural, exit 2), never a silent pass. ──
 
@@ -427,6 +508,111 @@ test("C-1 (pure-core): a manifest that reads fine with a legitimately-zero count
   const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 0, manifestError: null, rootDir: ROOT });
   assert.strictEqual(res.exitCode, 1, JSON.stringify(res));
   assert.ok(res.policy.some((p) => p.reason === "fixture-count-zero"));
+});
+
+// ── R3-4 [HIGH, gauntlet round 3] regression: the lint only ever inspected
+// blocks it FOUND, so a critical policy block silently REMOVED from the
+// document (heading + trailer both gone) was previously invisible. When a
+// document declares a "### Policy-block register" table (§7), it becomes the
+// single source of truth for "which policy blocks must exist" — a registered
+// id with no matching block, a parsed block absent from the register, or a
+// numbering GAP within a section (catches the case where BOTH the heading
+// AND its register row were removed together) are all structural (exit 2). ──
+
+test("R3-4: register-block-removed.md — a registered block whose heading was removed -> exit 2 (structural, fail-closed)", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "register-block-removed.md") });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "register-block-missing" && s.block === "P3.1"),
+    JSON.stringify(res.structural),
+  );
+});
+
+test("R3-4 (pure-core): a parsed block absent from the register is register drift (structural, exit 2)", () => {
+  const doc = [
+    "#### P1.1 — A fine block",
+    "Core: non-waivable",
+    "#### P2.1 — A block that exists but was never registered",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+    "### Policy-block register",
+    "| Block | Section | Trailer |",
+    "|---|---|---|",
+    "| P1.1 | §1 | `Core: non-waivable` |",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "register-drift" && s.block === "P2.1"),
+    JSON.stringify(res.structural),
+  );
+});
+
+test("R3-4 (pure-core): a numbering GAP within a section is caught even when BOTH the heading and the register row were removed together", () => {
+  // §7 should run P7.1..P7.4, but P7.3 (heading AND register row) was
+  // deleted together — neither register-block-missing nor register-drift
+  // fires on their own (both sides agree there's no P7.3), so the gap in the
+  // numbering sequence is the only signal left to catch it.
+  const doc = [
+    "#### P7.1 — First",
+    "Core: non-waivable",
+    "#### P7.2 — Second",
+    "Core: non-waivable",
+    "#### P7.4 — Fourth (P7.3 silently removed, heading AND register row)",
+    "Core: non-waivable",
+    "### Policy-block register",
+    "| Block | Section | Trailer |",
+    "|---|---|---|",
+    "| P7.1 | §7 | `Core: non-waivable` |",
+    "| P7.2 | §7 | `Core: non-waivable` |",
+    "| P7.4 | §7 | `Core: non-waivable` |",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "register-gap" && s.expected === "P7.3"),
+    JSON.stringify(res.structural),
+  );
+  assert.ok(
+    !res.structural.some((s) => s.reason === "register-block-missing" || s.reason === "register-drift"),
+    "the gap check is the ONLY signal here — register and blocks otherwise agree: " + JSON.stringify(res.structural),
+  );
+});
+
+test("R3-4 (pure-core): a document with NO register table declared is unaffected (register-completeness is opt-in per document)", () => {
+  const doc = ["#### P1.1 — Fine block, no register anywhere in this doc", "Core: non-waivable"].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.ok(
+    !res.structural.some((s) => /^register-/.test(s.reason)),
+    "a document that never declares a register must never trip a register-* check: " + JSON.stringify(res.structural),
+  );
+});
+
+test("R3-4 (pure-core): a register that exactly matches its document's blocks trips no register-* failure (no false positive)", () => {
+  const doc = [
+    "#### P1.1 — First",
+    "Core: non-waivable",
+    "#### P2.1 — Second",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+    "### Policy-block register",
+    "| Block | Section | Trailer |",
+    "|---|---|---|",
+    "| P1.1 | §1 | `Core: non-waivable` |",
+    "| P2.1 | §2 | `Enforcer: scripts/checks/log-sink-caps.js` |",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.ok(
+    !res.structural.some((s) => /^register-/.test(s.reason)),
+    "a register that exactly matches the document's blocks must never spuriously fail: " + JSON.stringify(res.structural),
+  );
+});
+
+test("R3-4: self-host — the real contract's §7 register exactly enumerates its actual policy blocks (no drift, no gaps)", () => {
+  const res = run();
+  assert.strictEqual(res.exitCode, 0, JSON.stringify({ structural: res.structural, policy: res.policy }));
+  assert.ok(
+    !res.structural.some((s) => /^register-/.test(s.reason)),
+    JSON.stringify(res.structural),
+  );
 });
 
 if (failures.length) {
