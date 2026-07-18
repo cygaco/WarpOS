@@ -30,6 +30,12 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..
 const NAME = "cert-attest";
 const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 
+// The SINGLE provenance-verifier choke-point (α round-6 / ED-225): the hunter-identity predicate + the
+// PROFILE-AWARE lane contract live HERE ONLY. cert-attest + dispatch-review both consume it; neither
+// re-implements a lane-identity check (the duplication was the SR-016/SR-017 root). Structural guard:
+// scripts/checks/provenance-invariants.js.
+const pv = require(path.join(__dirname, "..", "dispatch", "provenance-verifier"));
+
 function loadCatalog() {
   return require(path.join(ROOT, "scripts", "dispatch", "catalog.js"));
 }
@@ -104,7 +110,185 @@ function providerForModel(catalog, model, explicit) {
   return null;
 }
 
+// ── D8: same-run panel attestation (SP-20260718-003, AC-14,15) ─────────────────
+//
+// attestPanelRun correlates a SAME-RUN ledger record PER REQUIRED LANE and attests the panel ONLY
+// when every lane ran on its CONTRACTED provider with fallback:false + real evidence. This is the
+// attestRanOnGpt discipline (beta-consult.js) generalized to the whole panel: attest on the OBSERVED
+// ledger return, NEVER a wrapper claim. The load-bearing NEGATIVE (T5): a wrapper that CLAIMS agy but
+// whose ledger record is provider:claude/absent does NOT attest the agy lane (a record-inprocess/
+// provider:claude record satisfies ONLY the claude hunter) — so the attestation FAILS, which is what
+// makes the provider-diversity claim FALSIFIABLE.
+
+/** Read the dispatch-completions ledger, filtered to a sprint (+ optional run). Injectable path. */
+function readLedgerRecords(sprintId, panelRunId, ledgerPath) {
+  let file = ledgerPath;
+  if (!file) {
+    try { file = require(path.join(ROOT, "scripts", "hooks", "lib", "paths")).PATHS.dispatchCompletionsFile; }
+    catch { file = path.join(ROOT, ".claude", "runtime", "dispatch-completions.jsonl"); }
+  }
+  let raw;
+  try { raw = fs.readFileSync(file, "utf8"); } catch { return []; }
+  const out = [];
+  for (const line of raw.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    let r;
+    try { r = JSON.parse(t); } catch { continue; }
+    if (sprintId && r.sprint_id !== sprintId) continue;
+    // QA-014 sweep: the panel-run IDENTITY is `panel_run_id` (SR-011 — minted by the runner, propagated to
+    // every child record). The prior filter used `run_id`, which the runner never carries as the panel id
+    // (recordCompletion writes run_id from WARPOS_RUN_ID) → real runner records were DISCARDED before
+    // attestation. Filter by panel_run_id so the live-read pre-filter agrees with attestLane's correlation.
+    if (panelRunId != null && r.panel_run_id !== panelRunId) continue;
+    out.push(r);
+  }
+  return out;
+}
+
+/**
+ * Attest ONE required lane against the same-run ledger records. PURE. A lane is attested ONLY by a
+ * record that ran on its CONTRACTED provider (observed, never claimed):
+ *   - a CLI cross-provider lane (gpt/agy): provider === contracted, tool_id === contracted tool_id,
+ *     shape 'subprocess-cross-provider', fallback:false, ok:true, non-null evidence digest.
+ *   - the sanctioned claude hunter (in-process-agent + provider claude): a record-inprocess record
+ *     (provider claude, via 'epsilon-agent' / shape in-process-agent) with evidence.
+ * @returns {{ laneId, attested, observedProvider?, tool_id?, invocation_digest?, evidence_digest?, reason }}
+ */
+function attestLane(lane, records, opts = {}) {
+  // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
+  const { runId = null, sprintId = null, codeSha = null, profileName = "panel-2family" } =
+    typeof opts === "string" ? {} : opts || {};
+  // IDENTITY via the SINGLE choke-point (α round-6): the claude lane's contract is PROFILE-AWARE
+  // (2family FLOOR → subprocess-claude/security-reviewer; 3lab BINDING → the in-process hunter), and the
+  // hunter is identified by WRITER-STAMPED shape+role ONLY (no settable via/record_via/sanctioned_lane_id).
+  // NO identity predicate is re-implemented here — provenance-verifier owns them (the duplication was the disease).
+  const contract = pv.laneContract(profileName, lane.provider);
+  // SAME-RUN correlation by RUN IDENTITY (SR-004/SR-011/SR-012/SR-014): a record attests a lane ONLY if it
+  // belongs to THIS run+sprint. Identity is the panel_run_id the runner MINTS — NEVER run_id (a different
+  // panel could match) NOR a time window. A NULL requested runId matches nothing (no historical certification).
+  const sameRun = (records || []).filter(
+    (r) => r.ok === true && r.fallback === false && (sprintId == null || r.sprint_id === sprintId) && runId != null && r.panel_run_id === runId,
+  );
+  // SR-013: the record must carry the code_sha it EXECUTED against (persisted at write-time), matching the
+  // attested HEAD — never a caller-supplied SHA — AND a non-empty invocation digest (cmdline_checksum).
+  const provenanceOk = (r) =>
+    typeof r.code_sha === "string" && r.code_sha.length > 0 && (codeSha == null || r.code_sha === codeSha) && !!r.cmdline_checksum;
+  const match = sameRun.find((r) => {
+    if (!pv.recordMatchesLane(r, contract, lane.provider)) return false; // IDENTITY (shape+role) from the module
+    if (contract.isHunter) return (r.evidence_sha || r.output_digest) && provenanceOk(r);
+    // A subprocess lane (cross-provider CLI, or the floor's subprocess-claude): the contracted executable
+    // (tool_id) + real output + provenance.
+    return r.tool_id === lane.tool_id && !!r.output_digest && provenanceOk(r);
+  });
+  if (!match) {
+    return {
+      laneId: lane.laneId,
+      attested: false,
+      reason: contract.isHunter
+        ? "no same-run in-process HUNTER record (writer-stamped shape in-process-agent + role security_claude_hunter, with evidence + provenance)"
+        : `no same-run record for ${lane.provider}/${lane.tool_id} (contract ${contract.shape}/${contract.role}, panel_run_id, fallback:false, output_digest + code_sha) — a wrapper claim is NOT proof`,
+    };
+  }
+  return {
+    laneId: lane.laneId,
+    attested: true,
+    observedProvider: match.provider,
+    tool_id: match.tool_id || null,
+    invocation_digest: match.cmdline_checksum || null, // sanitized invocation digest
+    evidence_digest: match.output_digest || match.evidence_sha || null,
+    reason: "same-run observed record on the contracted provider (fallback:false + evidence)",
+  };
+}
+
+/**
+ * Attest the whole panel run: every required lane must be same-run attested on its contracted provider.
+ * Bundles invocation-digests (cmdline_checksum) + code-SHA (git HEAD) + panel-profile + evidence-digest.
+ * PURE given { lanes, records }. `codeSha` is the caller's git HEAD (the live CLI reads it).
+ * @param {{ runId?, sprintId, profile:{name}, lanes:Array, records:Array, codeSha? }} args
+ */
+function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, role = "security-reviewer" } = {}) {
+  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId, codeSha, profileName: (profile && profile.name) || "panel-2family" }));
+  const attestedLanes = laneResults.filter((l) => l.attested);
+  const allAttested = laneResults.length > 0 && laneResults.every((l) => l.attested);
+  // CODE-SHA binding (SR-004/QA-003/SR-013, AC-14): a binding attestation MUST carry the code identity it
+  // certifies (read FROM each record, matched to this HEAD in attestLane). A null/absent codeSha cannot
+  // bind evidence to a specific build → NOT ok.
+  const codeShaBound = typeof codeSha === "string" && codeSha.length > 0;
+  // RUN-IDENTITY binding (SR-012): a binding panel attestation must certify a SPECIFIC run — an omitted/
+  // empty runId would certify historical same-sprint evidence, which is a false-green. NOT ok without it.
+  const runBound = typeof runId === "string" && runId.length > 0;
+  const ok = allAttested && codeShaBound && runBound;
+  const evidenceDigest = crypto
+    .createHash("sha256")
+    .update(attestedLanes.map((l) => `${l.laneId}:${l.evidence_digest || ""}`).join("|"))
+    .digest("hex");
+  return {
+    ok,
+    profile: (profile && profile.name) || null,
+    run_id: runId || null,
+    sprint_id: sprintId || null,
+    code_sha: codeSha || null,
+    invocation_digests: attestedLanes.map((l) => l.invocation_digest).filter(Boolean),
+    evidence_digest: evidenceDigest,
+    lanes: laneResults,
+    reason: !runBound
+      ? "no runId supplied — a binding panel attestation must certify a SPECIFIC run (an omitted runId certifies historical evidence) → NOT ok (SR-012)"
+      : !allAttested
+        ? `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`
+        : !codeShaBound
+          ? "every required lane attested SAME-RUN, but code_sha is absent — a binding attestation must bind to a code SHA (AC-14) → NOT ok"
+          : "every required lane attested SAME-RUN on its contracted provider (fallback:false), bound to run_id + code_sha",
+  };
+}
+
+/** git HEAD SHA via the safe-spawn kernel (read-only git; the model never chooses the exe). */
+function gitHeadSha() {
+  // QA-012: read HEAD via fs — the SAME provenance source the record WRITER (recordCompletion) uses, so
+  // the attestor's HEAD and the persisted code_sha agree. A nested `git` subprocess is EPERM-blocked in
+  // the CI/reviewer sandbox (which made this return null → attestPanelRunLive never ok); the fs read works.
+  try {
+    return require(path.join(ROOT, "scripts", "dispatch", "git-head")).readGitHead(ROOT) || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Live panel attestation: read the real ledger + manifest lanes + git HEAD, then attest. */
+function attestPanelRunLive({ runId, sprintId, profileName = "panel-2family" } = {}) {
+  let lanes;
+  try {
+    const pl = require(path.join(ROOT, "scripts", "dispatch", "panel-lanes"));
+    lanes = pl.requiredLanes(pl.loadManifest(), profileName);
+  } catch (e) {
+    return { ok: false, reason: `panel-lanes loader failed (fail-closed): ${e.message}`, lanes: [] };
+  }
+  const records = readLedgerRecords(sprintId, runId);
+  return attestPanelRun({ runId, sprintId, profile: { name: profileName }, lanes, records, codeSha: gitHeadSha() });
+}
+
+function mainPanel(argv) {
+  const get = (flag) => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 1] : null; };
+  const json = argv.includes("--json");
+  const sprintId = get("--sprint");
+  const runId = get("--run");
+  const profileName = get("--profile") || "panel-2family";
+  // SR-012: --run is MANDATORY for a binding panel attestation — certifying by --sprint alone would
+  // attest historical same-sprint evidence rather than the specific run being certified.
+  if (!sprintId || !runId) {
+    process.stderr.write("usage: cert-attest.js panel --sprint <id> --run <panel_run_id> [--profile panel-2family|panel-3lab] [--json]\n");
+    return 2;
+  }
+  const out = attestPanelRunLive({ runId, sprintId, profileName });
+  if (json) process.stdout.write(JSON.stringify(out, null, 2) + "\n");
+  else if (out.ok) process.stdout.write(`ATTESTED [panel] ${profileName} sprint=${sprintId} — every required lane same-run attested on its contracted provider.\n`);
+  else process.stderr.write(`FAIL [panel] ${profileName} sprint=${sprintId} — ${out.reason}\n`);
+  return out.ok ? 0 : 1;
+}
+
 function main(argv) {
+  // D8: the panel-attestation subcommand (SP-20260718-003). `cert-attest.js panel --sprint <id> …`.
+  if (argv[0] === "panel") return mainPanel(argv.slice(1));
   const get = (flag) => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 1] : null; };
   const json = argv.includes("--json");
   const model = get("--model");
@@ -185,4 +369,16 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { evaluateAttestation, providerForModel, probeShape, norm, NAME };
+module.exports = {
+  evaluateAttestation,
+  providerForModel,
+  probeShape,
+  norm,
+  NAME,
+  // D8 (SP-20260718-003): same-run panel attestation.
+  attestLane,
+  attestPanelRun,
+  attestPanelRunLive,
+  readLedgerRecords,
+  gitHeadSha,
+};

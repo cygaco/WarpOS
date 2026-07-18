@@ -402,6 +402,11 @@ function recordAgentDispatch(
     stderr_bytes: 0,
     fallback: false,
     ok,
+    // SR-016 sweep: the in-process record carries its STRUCTURAL channel shape, exactly as the subprocess
+    // wrappers do (dispatch-agent → subprocess-cross-provider, dispatch-claude → subprocess-claude). This
+    // is the non-settable identity the panel hunter attestation keys on — a subprocess record (shape
+    // subprocess-claude) can never masquerade as the in-process hunter by setting a `via` label.
+    shape: "in-process-agent",
     // T-303 (N8): run-context for §17.4 coverage-gate run-scoped filtering.
     // run_id from env (set by full.js or inherited — null when dispatched standalone).
     // phase_id derived from agentPlan.step (authoritative for in-process records;

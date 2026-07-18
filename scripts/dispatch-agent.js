@@ -42,6 +42,69 @@ const {
 } = require("./hooks/lib/concurrency-lock");
 const { record: recordProviderTrace } = require("./agents/provider-trace");
 
+// ── provider-id → tool-id (D2, SP-20260718-003 / I-2) ────────────────────────
+// The dispatch CONTRACT keys on tool-id (`codex`/`gemini`/`agy`); the registry +
+// callers speak provider-id (`openai`/`gemini`/`antigravity`). ONE map, used at
+// BOTH the validate call and the completion record — an inlined ternary that
+// omitted `antigravity`→`agy` tripped dispatch-contract on security-reviewer.
+// Refactor-hygiene: replace EVERY occurrence, not just the one you remember.
+const PROVIDER_TOOL_ID = { openai: "codex", gemini: "gemini", antigravity: "agy" };
+function providerToolId(provider) {
+  return PROVIDER_TOOL_ID[provider] ?? provider;
+}
+
+// ── OBSERVED completion fields (C2, SP-20260718-003 / D2-FALSE-GREEN-001 · SR-004/QA-002) ────────────
+// The completion record must reflect what ACTUALLY ran, never what was requested. On a quota-fallback
+// (a contracted lab is down → runProvider retries on another lab and returns it as result.provider with
+// result.quotaFallbackFrom set), stamping the REQUESTED provider/tool_id with fallback:false lets an
+// openai run masquerade as an observed-agy record — which cert-attest then accepts as agy evidence (the
+// binding false-green the security lane reproduced). PURE + exported so the shaping is a tested surface.
+//   provider  = the observed lab (result.provider), falling back to the requested provider when absent
+//   tool_id   = providerToolId of the OBSERVED provider (openai→codex, not the requested agy)
+//   fallback  = true if runProvider fell back OR a quota-fallback ran another lab (contracted lab didn't run)
+function observedCompletionFields(requestedProvider, result) {
+  // R2-D (D2-FALSE-GREEN-003): a MISSING observed provider (result carries no provider identity) cannot
+  // honestly attest the contracted lab. The old `|| requestedProvider` fallback stamped the requested
+  // provider with fallback:false → an identity-less dispatch false-attested (e.g. agy). Now: use the
+  // observed provider when present; when ABSENT, stamp the requested provider for traceability but force
+  // fallback:true so the record is UNATTESTABLE (cert-attest requires fallback:false). No false-green.
+  const observedProvider = result && result.provider;
+  const hasObserved = typeof observedProvider === "string" && observedProvider.length > 0;
+  const provider = hasObserved ? observedProvider : requestedProvider;
+  const fallback = !!(result && (result.fallback || result.quotaFallbackFrom)) || !hasObserved;
+  return {
+    provider,
+    tool_id: providerToolId(provider),
+    fallback,
+  };
+}
+
+// ── model/provider run-opts resolution (D4, SP-20260718-003 / ED-205 regression guard) ──
+// ED-205 is RESOLVED / correct-by-design — inventing a "fix" would create a PHANTOM regression.
+// The run-opts a dispatch passes to runProvider are a pure function of three inputs (an explicit
+// --provider override, an explicit --model override, and the role's registry model getRoleModel).
+// The BINDING semantics (do NOT change):
+//   - no override            → the role's native provider_model applies (runProvider uses roleModel);
+//   - --provider X (no -m)   → the spec model belongs to the WRONG provider → DROPPED; the override
+//                              provider's own default is used;
+//   - --provider X --model Y → both forced;
+//   - --model Y only         → force the model on the native provider.
+// Extracted PURE (behavior-IDENTICAL to the prior inline block at the runProvider call site) so the
+// ED-205 semantics are a tested surface, not an untestable inline branch. Regression teeth:
+// scripts/dispatch-agent-model-semantics.test.js (3 cases).
+function resolveModelRunOpts({ providerOverride, modelOverride, roleModel }) {
+  const runOpts = {};
+  if (providerOverride) {
+    runOpts.provider = providerOverride;
+    if (modelOverride) runOpts.model = modelOverride;
+  } else if (modelOverride) {
+    runOpts.model = modelOverride;
+  } else if (roleModel) {
+    runOpts.model = roleModel;
+  }
+  return runOpts;
+}
+
 // ── Canonical root anchor (AC2 / ED-016 / class-#20 fix) ──
 //
 // AGENT_ROOT is resolved from THIS FILE'S location (__dirname), NOT from
@@ -209,6 +272,21 @@ function ledgerFile(pathsValue, relFallback) {
   return canonicalFile(pathsValue, relFallback);
 }
 
+// Execution-time code SHA — the git HEAD the dispatch actually ran against. Cached per-process (a
+// dispatch never rewrites HEAD mid-run). Read via fs (NO subprocess — QA-012: a nested spawn is
+// EPERM-blocked in the CI/reviewer sandbox, which made code_sha null and the attestation inoperable
+// there). Empty on a non-git install → attestation blocks (fail-closed).
+let _cachedCodeSha;
+function currentCodeSha() {
+  if (_cachedCodeSha !== undefined) return _cachedCodeSha;
+  try {
+    _cachedCodeSha = require("./dispatch/git-head").readGitHead(AGENT_ROOT) || "";
+  } catch {
+    _cachedCodeSha = "";
+  }
+  return _cachedCodeSha;
+}
+
 function recordCompletion(record) {
   // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
   // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
@@ -216,7 +294,19 @@ function recordCompletion(record) {
     PATHS.dispatchCompletionsFile,
     path.join(".claude", "runtime", "dispatch-completions.jsonl"),
   );
-  appendJsonl(file, record);
+  // SR-011/SR-013 (execution PROVENANCE): every completion record is bound to its run IDENTITY and its
+  // CODE at write-time — injected HERE, the single record-writer that every dispatch wrapper shares
+  // (dispatch-agent/dispatch-claude/dispatch-skill/epsilon-runtime), so NO call site can omit them:
+  //   panel_run_id — the id the panel runner MINTS and propagates to each child via WARPOS_PANEL_RUN_ID;
+  //                  proves SAME-RUN identity (not mere time-proximity — the SR-011 firing-window gap).
+  //   code_sha     — git HEAD the dispatch ran against; attestation reads THIS, never a caller-supplied
+  //                  SHA (SR-013). Additive + backward-compatible; an explicit record value still wins.
+  const enriched = {
+    panel_run_id: process.env.WARPOS_PANEL_RUN_ID || null,
+    code_sha: currentCodeSha() || null,
+    ...record,
+  };
+  appendJsonl(file, enriched);
 }
 
 function recordDeath(record) {
@@ -404,6 +494,9 @@ function getRoleModel(role) {
 if (require.main !== module) {
   module.exports = {
     findAgentSpec,
+    providerToolId, // D2 (SP-20260718-003 / I-2): provider-id → tool-id map
+    observedCompletionFields, // C2 (SP-20260718-003 / D2-FALSE-GREEN-001): observed-provider record shaping
+    resolveModelRunOpts, // D4 (SP-20260718-003 / ED-205): run-opts semantics — regression guard
     getRoleModel,
     detectMode,
     readModeFromProjectRoot,
@@ -554,7 +647,7 @@ if (contractMod) {
     verdict = validateDispatch({
       role: normalizeRole(role),
       shape: "subprocess-cross-provider",
-      toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+      toolId: providerToolId(provider),
       mode: currentMode,
     });
   } catch (evalErr) {
@@ -756,15 +849,7 @@ try {
   // absent → propagatedChildBaseMs null) keep runProvider's own default, byte-identical.
   const withPropagatedTimeout = (opts) =>
     propagatedChildBaseMs != null ? { ...opts, timeoutMs: propagatedChildBaseMs } : opts;
-  const runOpts = {};
-  if (providerOverride) {
-    runOpts.provider = providerOverride;
-    if (modelOverride) runOpts.model = modelOverride;
-  } else if (modelOverride) {
-    runOpts.model = modelOverride;
-  } else if (roleModel) {
-    runOpts.model = roleModel;
-  }
+  const runOpts = resolveModelRunOpts({ providerOverride, modelOverride, roleModel }); // D4/ED-205
   result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
 
   // WI-18 + WG-11(b): family-aware quota fallback. When ANY non-claude provider 429s / exhausts
@@ -842,12 +927,16 @@ try {
   const completedAt = new Date().toISOString();
   const completedMs = Date.now();
   const elapsedMs = completedMs - dispatchStartedMs;
+  // C2 (D2-FALSE-GREEN-001 · SR-004/QA-002): the record's provider/tool_id/fallback derive from the
+  // OBSERVED result via ONE helper — a quota-fallback openai run can never be stamped as observed-agy.
+  const observedRec = observedCompletionFields(provider, result);
   recordCompletion({
     dispatch_id: dispatchId,
     pid: process.pid,
     role,
     domain: domainFlag || null,
-    provider,
+    // OBSERVED provider (C2): what ACTUALLY ran. The intended/expected provider lives in the provider-trace.
+    provider: observedRec.provider,
     model: result.model || roleModel || null,
     started_at: dispatchStartedAt,
     completed_at: completedAt,
@@ -857,13 +946,15 @@ try {
     exit_code: result.ok ? 0 : 1,
     stdout_bytes: stdoutBytes,
     stderr_bytes: stderrBytes,
-    fallback: !!result.fallback,
+    // A quota-fallback that ran another lab is STILL a fallback for attestation (contracted lab didn't run).
+    fallback: observedRec.fallback,
     ok: !!result.ok,
     // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
     ...runContext(),
     prompt_digest: promptDigest(prompt),
     shape: "subprocess-cross-provider",
-    tool_id: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+    // tool_id derives from the OBSERVED provider (C2): a quota-fallback openai run stamps 'codex', not 'agy'.
+    tool_id: observedRec.tool_id,
     // §17.4 strengthening: schema version (the gate rejects stale/backfilled
     // records), cwd, and output_digest (proof the dispatch produced real output —
     // a record's mere existence is not coverage).

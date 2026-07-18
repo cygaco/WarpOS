@@ -108,3 +108,18 @@ non-office role carrying one FAILS. The keeper that makes the rule self-detectin
 ## Precedent
 
 ADR-0013 (a live-default flip needs GREEN + kill-switch; the enforce-flip reverted once for false-refusing a legit `-w` builder); SP-20260627-001 (enforcer-flip: no-widen proof = negative fixtures per refused class); ADR-0014 (teammate-ε has the Agent tool — the collision analysis above depends on the Agent-tool reachability model). β records `EVT-session-20260716-sprintA-plandesign-beta-002`, `...-designbuild-beta-004`, `...-pipeline-amend-beta-005`.
+
+## Amendment — 2026-07-18 (SR-015, SP-20260718-003; α-ruled, β-recommended)
+
+The "Security = a 3-lab panel" clause (§Decision #3) and the security-panel claude lane are **refined by
+a two-tier claude contract**, homed in **ADR-0020** (security panel lane contract): the `security_claude_hunter`
+in-process lane defined here remains the contracted claude lane for the **BINDING `panel-3lab`** exit, but
+the **degraded `panel-2family` FLOOR** (the operative interim while agy is DOWN, ED-060) accepts a
+**`subprocess-claude`** security review. Rationale: the hunter's adversarial semantics come from the
+security-reviewer SPEC (which subprocess-claude runs identically), not the in-process shape — which was
+this ADR's answer to the provider-pin↔Agent-tool collision (§"GPT-pin ↔ Agent-tool collision"), not a
+stronger review capability. Requiring the in-process hunter for the floor would couple a node-script gate
+to conductor presence (ED-041) and re-create the hollow-gate class. The two-tier split is **reverting by
+construction**: when ED-060 resolves and panel-3lab binds, the binding evaluation demands the in-process
+hunter (a subprocess record can never satisfy it — identity is shape + role). See ADR-0020 "Two-tier CLAUDE
+lane contract" + the `claude_lane_reversion` note on the panel-lane-manifest sunset.

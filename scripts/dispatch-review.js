@@ -34,6 +34,9 @@ const AGENT = path.join(__dirname, "dispatch-agent.js");
 const CLAUDE = path.join(__dirname, "dispatch-claude.js");
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..");
 
+// provider-id → panel lane-id (the security 3-lab): claude→claude, openai→gpt, antigravity→agy.
+const LANE_ID = { claude: "claude", antigravity: "agy", openai: "gpt" };
+
 function parseFlag(argv, name) {
   const i = argv.indexOf(name);
   return i >= 0 && argv[i + 1] ? argv[i + 1] : null;
@@ -144,20 +147,221 @@ async function main() {
     process.exit(2);
   }
 
+  // SR-011: MINT one panel_run_id before fan-out and propagate it to every child via the environment
+  // (spawnPass inherits process.env). Each child's completion record is stamped with it (recordCompletion),
+  // so the panel gate correlates lanes by RUN IDENTITY — not the firing-time window, which a concurrent
+  // same-sprint run could satisfy (the SR-011 substitution gap). The window remains a secondary narrow.
+  const panelRunId = `panel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  process.env.WARPOS_PANEL_RUN_ID = panelRunId;
+  const runnerStartMs = Date.now();
   // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
   const settled = await Promise.all(passes.map((p) => spawnPass(role, promptFile, p, domain, laneOutDir)));
-  const lanes = settled.map((s) => ({
-    pass: s.pass.key,
-    provider: s.pass.provider,
-    model: s.pass.model,
-    ok: !s.spawnError && !!(s.result && s.result.ok),
-    verdict: verdictOf(s.result),
-    lane_out: s.laneOut ? path.relative(ROOT, s.laneOut) : null,
-  }));
+  const lanes = settled.map((s) => {
+    // OBSERVED evidence (C1/SR-001): the provider/fallback the dispatch ACTUALLY returned — after the C2
+    // fix the completion envelope carries the OBSERVED provider, and a quota-fallback is marked via
+    // quotaFallbackFrom. The panel gate reduces over THIS, never the declared pass label — so a lane that
+    // CLAIMS gpt/agy but ran on Claude (coerced/fallback) can never merge to pass. The claude pass runs
+    // via dispatch-claude.js, which is claude BY CONSTRUCTION — so its observed provider is a true
+    // observation, not a trusted label (the masquerade only threatens the CROSS-PROVIDER labs).
+    const r = s.result || {};
+    const isClaude = s.pass.provider === "claude";
+    return {
+      pass: s.pass.key,
+      provider: s.pass.provider, // the CONTRACTED provider (declared)
+      model: s.pass.model,
+      ok: !s.spawnError && !!r.ok,
+      verdict: verdictOf(s.result),
+      laneId: LANE_ID[s.pass.provider] || s.pass.provider,
+      observedProvider: isClaude ? "claude" : r.provider || null, // cross-provider: the REAL returned provider
+      fallback: isClaude ? false : !!(r.fallback || r.quotaFallbackFrom),
+      hasEvidence: !s.spawnError && !!s.result,
+      lane_out: s.laneOut ? path.relative(ROOT, s.laneOut) : null,
+    };
+  });
+  // D5 CLI-only panel tooth (SP-20260718-003, AC-7): a cross-provider lab (non-claude) MUST run as a
+  // CLI subprocess. This runner fires every non-claude pass through dispatch-agent.js
+  // (subprocess-cross-provider) and the claude pass through dispatch-claude.js (subprocess-claude) —
+  // NEVER an in-process Agent-tool spawn. Assert it BEFORE merge so a future route change that resolves
+  // a cross-provider lane in-process is refused, not silently merged (the D1<->D5 masquerade). The
+  // sanctioned in-process claude HUNTER is summoned by ε OUTSIDE this runner, so it never appears here.
+  //
+  // SR-003 loader fail-CLOSED: distinguish a MISSING module (additive contract → fail-open, the negative
+  // teeth live in its test) from a loader/eval THROW (the module is PRESENT but errored → BLOCK, never a
+  // silent fall-through into merge). The old bare `catch {}` swallowed BOTH — a real loader error
+  // false-greened.
+  let panelLanes = null;
+  try {
+    panelLanes = require("./dispatch/panel-lanes");
+  } catch (e) {
+    if (panelLoaderFailClosed(role, e)) {
+      console.error(JSON.stringify({ ok: false, role, error: "panel_loader_error", detail: e.message || String(e) }));
+      process.exit(1);
+    }
+    panelLanes = null; // additive fail-open (non-security role, module genuinely absent)
+  }
+  if (panelLanes) {
+    try {
+      const observed = lanes.map((l) => ({
+        laneId: l.laneId,
+        provider: l.provider,
+        shape: l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider",
+      }));
+      const tooth = panelLanes.assertCliOnlyPanel(observed);
+      if (!tooth.ok) {
+        console.error(JSON.stringify({ ok: false, role, error: "panel_cli_only_violation", violations: tooth.violations }));
+        process.exit(1);
+      }
+    } catch (e) {
+      // SR-003: an EVAL error inside the tooth must BLOCK (fail-closed), never continue into merge.
+      console.error(JSON.stringify({ ok: false, role, error: "panel_tooth_error", detail: e.message }));
+      process.exit(1);
+    }
+  }
+
   const merged = mergeLanes(role, lanes);
   merged.lane_out_dir = path.relative(ROOT, laneOutDir);
+
+  // C1 (SR-001/QA-001): for the SECURITY PANEL, the binding outcome ALSO runs the D7 panelStatus reducer
+  // over the OBSERVED per-lane evidence (never the declared labels). mergeLanes alone (verdict/liveness on
+  // the declared passes) let an all-Claude masquerade — a gpt/agy lane that silently ran on Claude
+  // (observedProvider=claude / fallback:true) — merge to pass. The reducer marks such a lane COERCED and
+  // BLOCKS. The gate can only HOLD the merged outcome, never loosen it. agy is operator-owned (ED-060):
+  // the operative gating floor is panel-2family (GPT+Claude); panel-3lab is surfaced as its honest
+  // BLOCKED-ON-OPERATOR binding exit (the D8 SAME-RUN attestation is the ε-conductor's panel-exit cert).
+  if (panelLanes && isSecurityPanelRole(role)) {
+    const panelGate = applyPanelGate(panelLanes, lanes, {
+      sprintId: process.env.WARPOS_SPRINT_ID || null,
+      sinceMs: runnerStartMs,
+      panelRunId,
+    });
+    merged.panel = panelGate;
+    if (!panelGate.floor_pass) {
+      merged.ok = false;
+      if (merged.verdict === "pass" || merged.verdict === "warn") merged.verdict = "error";
+    }
+  }
+
   console.log(JSON.stringify(merged));
-  process.exit(merged.ok ? 0 : 1); // exit reflects the BINDING outcome (any-FAIL/dead lane → non-zero)
+  process.exit(merged.ok ? 0 : 1); // exit reflects the BINDING outcome (any-FAIL/dead lane/coerced-panel → non-zero)
+}
+
+function isSecurityPanelRole(role) {
+  return role === "security-reviewer";
+}
+
+// QA-010: decide how a panel-lanes LOAD error is handled. For the SECURITY panel, ANY load failure —
+// INCLUDING a missing module — fails CLOSED: a green security result cannot rest on an absent gate (the
+// eval-fail-closed-vs-loader-fail-OPEN split, resolved at the loader boundary). For a non-security role
+// the panel gate does not apply, so a genuinely-missing module fails OPEN (additive contract). A
+// non-module-absent loader error (syntax/parse) ALWAYS fails closed. PURE + exported for teeth.
+function panelLoaderFailClosed(role, err) {
+  const moduleAbsent = err && err.code === "MODULE_NOT_FOUND" && /panel-lanes/.test(String((err && err.message) || ""));
+  if (moduleAbsent && !isSecurityPanelRole(role)) return false; // additive fail-open (non-security only)
+  return true; // security-reviewer + module-absent, OR any non-module-absent loader error → fail-closed
+}
+
+// Default ledger reader — the same-run completion records for a sprint (cert-attest is the single reader).
+function defaultReadLedger(sprintId) {
+  try {
+    return require("./checks/cert-attest").readLedgerRecords(sprintId, null) || [];
+  } catch {
+    return [];
+  }
+}
+
+// provider-id → tool-id, the SINGLE map (dispatch-agent). A lane's corroborating record must name the
+// contracted EXECUTABLE (SR-010) — codex for openai, agy for antigravity, claude for claude.
+function requireToolIdOf() {
+  try {
+    return require("./dispatch-agent").providerToolId;
+  } catch {
+    return (p) => ({ openai: "codex", gemini: "gemini", antigravity: "agy" }[p] ?? p);
+  }
+}
+
+function panelBlocked(reason) {
+  const r = { status: "BLOCKED-INCONCLUSIVE", reason: `panel gate fail-closed: ${reason}` };
+  return { floor_pass: false, manifest_valid: false, floor: r, binding: r };
+}
+
+// Run the D7 panelStatus reducer for BOTH profiles: panel-2family (the operative degraded floor that GATES
+// today, agy operator-owned) and panel-3lab (the honest binding exit, BLOCKED-ON-OPERATOR while agy is
+// down). `floor_pass` gates the runner. The gate can only HOLD (never loosen) the merged outcome.
+//
+// R2-B (SR-008): the manifest is VALIDATED (validatePanelManifest) before its profiles are trusted — a
+// mutated/drifted manifest (required=['claude'], min_families=1) would otherwise let an all-Claude set
+// pass. Any validator/loader error fails the runner CLOSED.
+// R2-C (SR-009/QA-001-R2): liveness/provider/fallback are bound to the SAME-RUN LEDGER record, not the
+// parsed child envelope — an envelope can claim ok:true while the ledger write failed (appendJsonl
+// swallows errors). A lane with no corroborating durable record (non-null output_digest) has
+// hasEvidence:false and is blocked. The verdict (a review JUDGMENT) still comes from the child output.
+function applyPanelGate(panelLanes, lanes, ctx = {}) {
+  const { panelStatus, STATUS, loadManifest, validatePanelManifest } = panelLanes;
+  let validation;
+  try {
+    validation = validatePanelManifest();
+  } catch (e) {
+    return panelBlocked(`manifest validation threw: ${e.message}`);
+  }
+  if (!validation || !validation.ok) {
+    return panelBlocked(`manifest INVALID: ${((validation && validation.errors) || []).join("; ")}`);
+  }
+  const manifest = loadManifest();
+
+  const sprintId = ctx.sprintId || process.env.WARPOS_SPRINT_ID || null;
+  const sinceMs = ctx.sinceMs || 0;
+  const panelRunId = ctx.panelRunId || process.env.WARPOS_PANEL_RUN_ID || null;
+  const readLedger = ctx.readLedger || defaultReadLedger;
+  // SR-011: correlate by RUN IDENTITY (panel_run_id) — not the firing-time window (a concurrent same-sprint
+  // run could fall in the same window). The window remains a secondary narrow. If a panel_run_id was minted,
+  // a record MUST carry the matching one to corroborate a lane.
+  const records = (readLedger(sprintId) || []).filter((r) => {
+    if (panelRunId && r.panel_run_id !== panelRunId) return false;
+    if (!sinceMs) return true;
+    const t = Date.parse(r.completed_at || "");
+    return Number.isFinite(t) && t >= sinceMs;
+  });
+  const toolIdOf = requireToolIdOf();
+  // Two-tier claude contract (SR-015, α-ruled — ADR-0016) resolved through the SINGLE provenance-verifier
+  // choke-point (α round-6 / ED-225): the panel-2family FLOOR's claude lane is a subprocess-claude review;
+  // the panel-3lab BINDING's claude lane is the in-process hunter (writer-stamped shape+role ONLY, no
+  // settable via/record_via/sanctioned_lane_id). Identity is NOT re-implemented here — pv.laneContract +
+  // pv.recordMatchesLane own it (the duplication was the SR-016/SR-017 root). Corroboration (SR-010:
+  // durable-live-non-fallback record on the contracted executable) stays local.
+  const pv = require("./dispatch/provenance-verifier");
+  const buildObserved = (profileName) =>
+    lanes.map((l) => {
+      const contract = pv.laneContract(profileName, l.observedProvider);
+      const rec = records.find((r) => {
+        if (!pv.recordMatchesLane(r, contract, l.observedProvider)) return false; // IDENTITY from the module
+        if (!(r.ok === true && r.fallback === false)) return false;
+        // The in-process hunter's proof is its evidence digest (no CLI cmdline); a subprocess/CLI lane needs
+        // real output + a real invocation (cmdline_checksum) on the contracted executable (tool_id).
+        if (contract.isHunter) return !!r.output_digest || !!r.evidence_sha;
+        return !!r.output_digest && !!r.cmdline_checksum && r.tool_id === toolIdOf(l.observedProvider);
+      });
+      return {
+        laneId: l.laneId,
+        contractedProvider: l.provider,
+        observedProvider: rec ? rec.provider : l.observedProvider,
+        fallback: rec ? false : true,
+        alive: !!rec,
+        verdict: l.verdict, // the review JUDGMENT stays from the child output
+        hasEvidence: !!rec,
+      };
+    });
+  const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
+  const bindingProfile = { name: "panel-3lab", ...manifest.profiles["panel-3lab"] };
+  const floor = panelStatus(floorProfile, buildObserved("panel-2family"), { agyOperatorOwned: true });
+  const binding = panelStatus(bindingProfile, buildObserved("panel-3lab"), { agyOperatorOwned: true });
+  return {
+    floor_pass: floor.status === STATUS.PASS,
+    manifest_valid: true,
+    // Condition 3 (α ruling): the result records WHICH contract gated — no ambiguity about what passed.
+    contract_evaluated: "panel-2family-floor",
+    floor: { contract: "panel-2family-floor", claude_channel: "subprocess", status: floor.status, reason: floor.reason, families: floor.families, laneStatus: floor.laneStatus },
+    binding: { contract: "panel-3lab-binding", claude_channel: "in-process-hunter", status: binding.status, reason: binding.reason, operator_blocked: binding.operator_blocked || null },
+  };
 }
 
 // Merge per-lane outcomes into the binding review result. PURE (unit-testable). any-FAIL holds; a
@@ -210,4 +414,4 @@ function mergeLanes(role, lanes) {
 }
 
 if (require.main === module) main();
-module.exports = { verdictOf, mergeLanes, persistLane, laneFileName };
+module.exports = { verdictOf, mergeLanes, persistLane, laneFileName, isSecurityPanelRole, applyPanelGate, panelLoaderFailClosed };

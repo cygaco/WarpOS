@@ -1,0 +1,240 @@
+#!/usr/bin/env node
+"use strict";
+/**
+ * Bite-test for cert-attest.js attestPanelRun — same-run panel attestation (D8, AC-14,15 · qa-plan T5).
+ *
+ * THE FALSIFIABILITY FIXTURE (T5, load-bearing): a wrapper that CLAIMS agy but whose ledger record is
+ * provider:claude/absent does NOT attest the agy lane → the panel attestation FAILS. Without this the
+ * attestation surface is unfalsifiable = ship-blocker. Every positive has its negative control.
+ *
+ *   node scripts/checks/cert-attest-panel.test.js
+ */
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { attestLane, attestPanelRun, readLedgerRecords } = require("./cert-attest");
+
+let passed = 0;
+const failures = [];
+function test(name, fn) {
+  try { fn(); passed++; } catch (e) { failures.push(`${name}: ${e.message}`); }
+}
+
+const LANES = {
+  gpt: { laneId: "gpt", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider" },
+  claude: { laneId: "claude", provider: "claude", tool_id: "claude", shape: "in-process-agent" },
+  agy: { laneId: "agy", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider" },
+};
+const S = "SP-TEST-001", R = "panel-run-abc";
+const SHA = "abc1234";
+
+// same-run REAL records: bound to the run IDENTITY (panel_run_id, SR-011) + the code_sha executed (SR-013).
+const rec = (o) => ({ sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, ...o });
+const gptOk = rec({ role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-gpt", cmdline_checksum: "c-gpt" });
+const agyOk = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-agy", cmdline_checksum: "c-agy" });
+// The hunter record carries the sanctioned ROLE identity (β#3/SR-005) — not a bare security-reviewer.
+const claudeHunterOk = rec({ role: "security_claude_hunter", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-cl", cmdline_checksum: "c-cl" });
+// The panel-2family FLOOR's claude lane = a subprocess-claude security review (α option B; SR-018/QA-017).
+const claudeFloorOk = rec({ role: "security-reviewer", provider: "claude", tool_id: "claude", shape: "subprocess-claude", output_digest: "d-fl", cmdline_checksum: "c-fl" });
+
+// ── POSITIVE: full same-run 3-lab WITH code_sha → attested. ──
+test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha → attested", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  assert.ok(out.ok, out.reason);
+  assert.ok(out.evidence_digest && out.invocation_digests.length === 3);
+  assert.equal(out.code_sha, SHA);
+});
+
+// ── QA-017/SR-018 (α choke-point false-RED fix): the panel-2family FLOOR attests with a subprocess-claude
+//    record under the PROFILE-AWARE resolver; the SAME record does NOT attest the panel-3lab binding hunter. ──
+test("QA-017: panel-2family FLOOR (gpt CLI + claude subprocess) → ATTESTED via the profile-aware resolver", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeFloorOk] });
+  assert.ok(out.ok, `the valid subprocess-claude floor must attest: ${out.reason}`);
+});
+test("QA-017: the SAME subprocess-claude floor record does NOT attest the panel-3lab binding hunter lane", () => {
+  const out = attestLane(LANES.claude, [claudeFloorOk], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "the binding hunter lane requires the in-process hunter, not the floor's subprocess-claude");
+});
+
+// ── SR-017 (α choke-point): a subprocess record with sanctioned_lane_id='security_claude_hunter' must NOT
+//    attest the binding hunter — sanctioned_lane_id is a SETTABLE per-record label, not the identity. ──
+test("SR-017: role='security-reviewer' + sanctioned_lane_id='security_claude_hunter' + shape=in-process-agent → hunter unattested", () => {
+  const labelSpoof = rec({ role: "security-reviewer", sanctioned_lane_id: "security_claude_hunter", provider: "claude", shape: "in-process-agent", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [labelSpoof], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "sanctioned_lane_id is a settable label — identity is the WRITER-STAMPED role (SR-017)");
+});
+test("SR-017: sanctioned_lane_id=hunter but shape FORGED-ABSENT (subprocess-claude) → hunter unattested", () => {
+  const shapeForged = rec({ role: "security_claude_hunter", sanctioned_lane_id: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [shapeForged], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "a subprocess-claude record can never be the in-process hunter (shape is writer-stamped)");
+});
+
+// ── SR-004/QA-003: code_sha ABSENT → NOT ok even when every lane attests (AC-14 binding). ──
+test("SR-004: every lane attested but code_sha absent → NOT ok", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, /* codeSha omitted */ profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  assert.equal(out.ok, false, "a binding attestation must bind to a code SHA");
+  assert.ok(/code_sha/.test(out.reason), out.reason);
+});
+
+// ── SR-004: a record from a DIFFERENT sprint must NOT attest (same-run correlation). ──
+test("SR-004: cross-sprint record for gpt → gpt unattested → panel FAILS", () => {
+  const otherSprintGpt = { sprint_id: "SP-OTHER-999", run_id: R, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [otherSprintGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a cross-sprint record must not attest a lane in this run");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+});
+
+// ── SR-004: a record from a DIFFERENT run (same sprint) must NOT attest. ──
+test("SR-004: cross-run record (same sprint) for gpt → gpt unattested", () => {
+  const otherRunGpt = { sprint_id: S, run_id: "run-OTHER", ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestLane(LANES.gpt, [otherRunGpt], { runId: R, sprintId: S });
+  assert.equal(out.attested, false, "a different-run record must not attest this run's lane");
+});
+
+// ── R2-A (SR-004-REOPEN/QA-003-R2): a NULL-run_id record must NOT attest when a runId is required. ──
+test("R2-A: null-run_id record does NOT attest a required-runId lane (no null bypass)", () => {
+  const nullRunGpt = { sprint_id: S, run_id: null, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestLane(LANES.gpt, [nullRunGpt], { runId: R, sprintId: S });
+  assert.equal(out.attested, false, "a null-run_id record must not attest when a specific runId is required");
+});
+test("R2-A: null-run_id via attestPanelRun → panel FAILS (the reproduced bypass is closed)", () => {
+  const nullRunGpt = { sprint_id: S, run_id: null, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-x" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [nullRunGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a null-run_id GPT record must not attest a required run");
+});
+
+// ── SR-005: an arbitrary claude in-process security-reviewer record (NO hunter role) → does NOT attest. ──
+test("SR-005: claude in-process record without security_claude_hunter role → hunter unattested", () => {
+  const notHunter = rec({ role: "security-reviewer", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-x" });
+  const out = attestLane(LANES.claude, [notHunter], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, false, "provider=claude alone must not attest the sanctioned hunter (β#3/SR-005)");
+});
+
+// ── SR-015 (option B, condition 2) / SR-016: a SUBPROCESS-claude record must NEVER satisfy the in-process
+//    hunter lane — even claiming the hunter role AND setting the settable `via:"epsilon-agent"` label.
+//    Identity is the STRUCTURAL shape (in-process-agent), NOT a settable via/record_via label. ──
+test("SR-015 cond-2: subprocess-claude record claiming the hunter role → hunter (in-process) unattested", () => {
+  const subprocessFakeHunter = rec({ role: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [subprocessFakeHunter], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, false, "a subprocess-claude record must not satisfy the in-process hunter lane (shape mismatch)");
+});
+test("SR-016: subprocess-claude + via:'epsilon-agent' + hunter role → in-process hunter STILL unattested", () => {
+  // The exact reopened case: a settable `via` label must NOT let a subprocess record ride the hunter lane.
+  const viaSpoofHunter = rec({ role: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", via: "epsilon-agent", record_via: "inprocess", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [viaSpoofHunter], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, false, "a settable via/record_via label must not spoof the in-process hunter shape (SR-016)");
+});
+
+// ── T5a (THE fixture): wrapper CLAIMS agy but the record is provider:claude → agy NOT attested. ──
+test("T5a: agy claimed but record is provider:claude → agy unattested → panel FAILS", () => {
+  const fakeAgy = rec({ role: "security-reviewer", provider: "claude", tool_id: "claude", shape: "in-process-agent", evidence_sha: "e-fake" });
+  const out = attestPanelRun({ runId: R, sprintId: S, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, claudeHunterOk, fakeAgy] });
+  assert.equal(out.ok, false, "a Claude record must NOT attest the agy lane (the masquerade)");
+  assert.ok(out.lanes.find((l) => l.laneId === "agy" && !l.attested));
+});
+
+// ── T5b: a record-inprocess/provider:claude record offered for the gpt lane → satisfies only claude. ──
+test("T5b: provider:claude in-process record does NOT attest the gpt CLI lane", () => {
+  const out = attestLane(LANES.gpt, [claudeHunterOk], { runId: R, codeSha: SHA });
+  assert.equal(out.attested, false, "a claude in-process record satisfies only the claude hunter, not gpt");
+});
+
+// ── Liveness−: fallback:true → NOT attested (a Claude clone ran, not the contracted lab). ──
+test("Liveness-: fallback:true record → NOT attested", () => {
+  const fb = rec({ fallback: true, provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d", cmdline_checksum: "c" });
+  assert.equal(attestLane(LANES.gpt, [fb], { runId: R, codeSha: SHA }).attested, false);
+});
+
+// ── Liveness−: a config echo (no output_digest) → NOT attested (a declaration is not a run). ──
+test("Liveness-: CLI record without output_digest → NOT attested (config echo insufficient)", () => {
+  const echo = rec({ provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", cmdline_checksum: "c" });
+  assert.equal(attestLane(LANES.gpt, [echo], { runId: R, codeSha: SHA }).attested, false);
+});
+
+// ── Liveness−: wrong-run record → NOT correlated (same-run binding). ──
+test("Liveness-: a record from a DIFFERENT run is not same-run correlated", () => {
+  const other = { sprint_id: S, run_id: "run-OTHER", ok: true, fallback: false, provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d" };
+  // readLedgerRecords does the run filter; here we prove attestLane won't match if the caller passed
+  // only cross-run records (it received an empty same-run set).
+  const out = attestPanelRun({ runId: R, sprintId: S, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [claudeHunterOk /* only claude; gpt absent this run */] });
+  assert.equal(out.ok, false);
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+});
+
+// ── missing required lane → panel FAILS (never a green with a lane absent). ──
+test("missing required lane record → panel FAILS", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk /* claude hunter absent */] });
+  assert.equal(out.ok, false);
+});
+
+// ── SR-012: an OMITTED runId → NOT ok, even with fully-attested records (certifying historical evidence). ──
+test("SR-012: attestPanelRun with omitted runId → NOT ok (no historical certification)", () => {
+  const out = attestPanelRun({ /* runId omitted */ sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeHunterOk] });
+  assert.equal(out.ok, false, "a binding attestation must certify a SPECIFIC run");
+  assert.ok(/runId|SR-012|specific run/i.test(out.reason), out.reason);
+});
+
+// ── SR-011: a record from a DIFFERENT panel_run_id (stale run) → NOT correlated → panel FAILS. ──
+test("SR-011: a record with a different panel_run_id → not same-run → gpt unattested", () => {
+  const staleGpt = { ...gptOk, panel_run_id: "panel-OTHER", run_id: "panel-OTHER" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [staleGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a stale-run record must not attest this run's lane");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+});
+
+// ── SR-014: THE reopened case — a DIFFERENT panel_run_id whose run_id happens to MATCH must NOT attest
+//    (the dropped `|| r.run_id === runId` fallback). Correlation is by panel_run_id IDENTITY only. ──
+test("SR-014: different panel_run_id but matching run_id → NOT attested (no run_id fallback)", () => {
+  const otherPanelGpt = { ...gptOk, panel_run_id: "panel-OTHER", run_id: R /* run_id MATCHES the requested run */ };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [otherPanelGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a record from a different panel must not certify this panel via a matching run_id");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+  // and the direct lane check
+  assert.equal(attestLane(LANES.gpt, [otherPanelGpt], { runId: R, sprintId: S, codeSha: SHA }).attested, false);
+});
+
+// ── QA-014: the panel identity is panel_run_id — a record with a DIFFERENT run_id (from WARPOS_RUN_ID)
+//    but the matching panel_run_id must STILL correlate. The prior live filter keyed on run_id → real
+//    runner records were discarded. Prove attestLane AND readLedgerRecords correlate by panel_run_id. ──
+test("QA-014: a record with panel_run_id===run but a DIFFERENT run_id still attests (identity is panel_run_id)", () => {
+  const runnerGpt = { ...gptOk, run_id: "sprint-run-XYZ" /* differs from panel_run_id */, panel_run_id: R };
+  const out = attestLane(LANES.gpt, [runnerGpt], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, true, "a real runner record must correlate by panel_run_id, not be discarded on run_id");
+});
+test("QA-014: readLedgerRecords filters by panel_run_id, not run_id", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-qa014-"));
+  const ledger = path.join(dir, "l.jsonl");
+  try {
+    const recA = JSON.stringify({ sprint_id: S, run_id: "sprint-run-XYZ", panel_run_id: R, role: "security-reviewer", provider: "openai", ok: true });
+    const recB = JSON.stringify({ sprint_id: S, run_id: R, panel_run_id: "panel-OTHER", role: "security-reviewer", provider: "openai", ok: true });
+    fs.writeFileSync(ledger, recA + "\n" + recB + "\n");
+    const got = readLedgerRecords(S, R, ledger);
+    assert.equal(got.length, 1, "exactly the panel_run_id===R record is returned");
+    assert.equal(got[0].panel_run_id, R);
+    assert.equal(got[0].run_id, "sprint-run-XYZ", "correlated by panel_run_id despite a different run_id");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// ── SR-013: a record whose code_sha MISMATCHES the attested HEAD → NOT attested. ──
+test("SR-013: record code_sha != attested codeSha → gpt unattested → panel FAILS", () => {
+  const staleShaGpt = { ...gptOk, code_sha: "old-commit-999" };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [staleShaGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a record from a different build must not attest the current HEAD");
+});
+test("SR-013: a record with NO persisted code_sha → NOT attested (provenance required)", () => {
+  const noShaGpt = { ...gptOk, code_sha: undefined };
+  assert.equal(attestLane(LANES.gpt, [noShaGpt], { runId: R, codeSha: SHA }).attested, false);
+});
+test("SR-013: a record with NO cmdline_checksum (no invocation digest) → NOT attested", () => {
+  const noInvGpt = { ...gptOk, cmdline_checksum: undefined };
+  assert.equal(attestLane(LANES.gpt, [noInvGpt], { runId: R, codeSha: SHA }).attested, false);
+});
+
+if (failures.length) {
+  process.stderr.write(`FAIL [cert-attest-panel.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
+  process.exit(1);
+}
+process.stdout.write(`OK   [cert-attest-panel.test] ${passed} passed (T5 claimed-agy/returned-claude FAILS; wrapper claim != proof)\n`);

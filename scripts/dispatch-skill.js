@@ -415,6 +415,16 @@ function dispatchSkill(opts) {
   // stamping the heavy-by-design skills (scan:full/research:deep/…) — until they're
   // stamped, an enforce gate would false-refuse them. Pin beats WARPOS_SHAPE_DOOR; the
   // advisory always surfaces. The record (below) already stamps shape:"subprocess-skill".
+  //
+  // D10 (SP-20260718-003) — BURN-IN GATE, verified 2026-07-18: the heavy skills are STILL
+  // unstamped (scan:full / research:deep / qa:audit resolve inline/proven:false), so the flip
+  // reportOnlyPin→enforceDefault stays DEFERRED — flipping now would false-refuse them (proven by
+  // dispatch-skill-shape-flip.test.js: scan:full → REFUSE under enforce). The enforce machinery +
+  // no-widen + FIX-A3 are already correct (same test, 10/10); the ONLY remaining precondition is the
+  // stamping burn-in (real §13.6 smoke run + §13.7 pay/good measurement per heavy skill), which is
+  // out of a routing/security sprint's scope (research:deep stamping crosses the >$5 API-approval
+  // line). Flip ONE line below (reportOnlyPin:true → enforceDefault:true) once the heavy skills are
+  // stamped subprocess_verified. Tracked residual: ED-057 earn-it tail / ED-224 (D10 flip-gate).
   try {
     const { shapeDoor } = require("./dispatch/dispatch-shape");
     const door = shapeDoor("subprocess-skill", { kind: "skill", id: skill }, process.env, { reportOnlyPin: true });
