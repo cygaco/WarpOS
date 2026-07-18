@@ -23,7 +23,7 @@
       "status": "supported",
       "required": true,
       "proven": true,
-      "evidence_ref": "CLAUDE.md binds the top-level Claude Code session to alex-alpha; live dispatch ledger (dispatch-completions.jsonl)",
+      "evidence_ref": "helm projection binds the top-level session (Phase-2/ED-216) -- CLAUDE.md is the Claude HELM's trusted projection surface for the top-level human-facing session only (sources.explicit_top_level_helm, applies_to_actor: top_level_session), never ambient prose and never a binding for a dispatched_worker (CORE-3); live dispatch ledger (dispatch-completions.jsonl)",
       "capabilities": {
         "read-files": { "supported_levels": [1, 2], "evidence_ref": "Read/Grep/Glob tools, live. N-4: Level 0 (chat-only) EXCLUDED -- packet-16/contract §2 Level 0 is explicitly 'No file/tool access'; a helm cannot autonomously read repo files at Level 0 without a human-operated copy/paste bridge." },
         "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "Write/Edit tools + git commit -- isolated-worktree proposal only, never direct protected mutation of main (S-3, contract §1/§4); live" },

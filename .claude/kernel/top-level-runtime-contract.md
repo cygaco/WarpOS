@@ -6,13 +6,19 @@ binds to. Home: `.claude/kernel/` (`paths.kernel`). Companions: `role-binding.js
 `support-matrix.json` (D4), `workorder-min.schema.json` (D5), `fixtures/` + `fixtures/manifest.json` (D6).
 ADR: `.claude/agents/president/_system/policy/adr/0018-durable-company-ephemeral-executors.md` (D2).
 
-This contract is a SEQUENCE of numbered POLICY BLOCKS (`#### P<section>.<index> — <title>`). Every
-policy block ends with EXACTLY ONE machine-parseable trailer line:
+This contract is a SEQUENCE of numbered POLICY BLOCKS (`#### P<section>.<index> — <title>`), each with
+a UNIQUE id (no two blocks, and no two §7 register rows, may share one — R4-2/R4-4, gauntlet round 4).
+Every ORDINARY (non-CORE) policy block ends with EXACTLY ONE machine-parseable trailer line:
 
 - `Enforcer: scripts/checks/<x>.js` — enforceable-now; the ref MUST resolve to an existing, loadable script.
 - `Deferred: ED-NNN @ Phase-X-exit` — enforced-later; the ED MUST exist in `paths.enforcementDebt`
   and name the phase where binding flips. Never a dangling `Enforcer: future.js`.
 - `Core: non-waivable` — a CORE invariant (§7); the ED escape-hatch is refused for these blocks.
+
+A CORE-tagged block (§7) carries a RICHER trailer shape: exactly one `Core: non-waivable` trailer PLUS
+one-or-more `Enforcer:` refs naming the check(s) that enforce its substance NOW (R4-2) — `Core:
+non-waivable` alone, with no enforcer named, is aspirational, not itself a waiver, but not enforcement
+either.
 
 `scripts/checks/contract-lint.js` (G0.1) parses this document structurally — never by prose-scraping —
 and self-hosts (it lints this very file to exit 0).
@@ -140,7 +146,7 @@ it —
 | `agents_md` (the neutral, provider-neutral handbook) | **false** | n/a (never binds, any actor) | Ambient prose every provider auto-loads — NOT an ordered binding source; ambient prose can never manufacture a binding (CORE-3). |
 | `repo_prose` (any other ambient repository text) | **false** | n/a (never binds, any actor) | Same CORE-3 refusal as `agents_md` — stale worktree copies, handoff prompts, any other non-operator, non-WorkOrder, non-helm text. |
 
-Three ratified rules follow directly from this table:
+Four ratified rules follow directly from this table:
 
 - **Dispatched workers default to `FAIL_CLOSED` when unbound** — never to the President (alex-alpha).
   A worker that cannot resolve a role through steps 1–3 stops rather than silently assuming top-level
@@ -161,6 +167,22 @@ Three ratified rules follow directly from this table:
   the source exists and can bind *in the abstract*, but not for this actor_kind — and must resolve
   BLOCK (fail-closed), never PASS as though it had resolved through the precedence order. Fixture:
   `fixtures/role-binding/worker-helm-binding-category-error.json`.
+- **`CLAUDE.md` binds ONLY as the Claude helm's trusted `explicit_top_level_helm` projection for the
+  top-level human-facing session — NEVER as ambient prose, and NEVER for a `dispatched_worker`** (R4-3,
+  gauntlet round 4 reconciliation). `support-matrix.json`'s `claude` row `evidence_ref` reads "helm
+  projection binds the top-level session (Phase-2/ED-216)" — deliberately not a bare "CLAUDE.md binds"
+  — to avoid the exact contradiction that phrasing would otherwise read as against CORE-3: `CLAUDE.md`
+  the FILE auto-loads as ambient prose for EVERY session, top-level or dispatched worker alike, exactly
+  like root `AGENTS.md` (`sources.agents_md`/`sources.repo_prose`, both `can_bind: false`) — and ambient
+  prose can never itself manufacture a binding. What actually binds the top-level, human-facing Claude
+  Code session is the `explicit_top_level_helm` SOURCE (order position #3, `can_bind: true`,
+  `applies_to_actor: [top_level_session]` only) — the runtime's own explicit helm-binding mechanism,
+  live-wired at RATIFIED-PLAN Phase 2 (ED-216) — for which `CLAUDE.md` is merely the trusted PROJECTED
+  representation surface at the top level, never a self-sufficient ambient-prose bind on its own. A
+  `dispatched_worker` that inherits `CLAUDE.md`'s "You are Alex" text via ordinary ambient auto-load
+  (rather than through the actor-scoped `validated_workorder_or_cli` source, N-5) is exactly the CORE-3
+  ambient-prose refusal — the RATIFIED-PLAN Phase-2 leak evidence this contract is written against —
+  never a legitimate bind for that actor_kind.
 
 #### P3.1 — Role-binding precedence graph (fail-closed; repo prose cannot bind; actor-scoped)
 
@@ -209,7 +231,7 @@ Provider (helm) × capability × helm-level (§2), rendered from `support-matrix
 
 | Helm | Current level | Status | Required | Proven | Evidence |
 |---|---|---|---|---|---|
-| `claude` | 2 | supported | true | true | CLAUDE.md binds top-level Claude Code to alex-alpha; live dispatch ledger |
+| `claude` | 2 | supported | true | true | helm projection binds the top-level session (Phase-2/ED-216); live dispatch ledger |
 | `codex-gpt` | 2 | supported | true | true | dispatch-agent.js codex route; ledger record `d-mrob0i1p` (2026-07-17, exit 0, fallback:false) |
 | `agy-antigravity` | — | **down** | **true** | **false** | **ED-060** |
 
@@ -340,9 +362,14 @@ Enforcer: scripts/checks/log-sink-caps.js
 ## §7 — CORE-Invariant Register + Policy-Block Register
 
 The four CORE invariants below are **non-waivable** — the `Deferred: ED-NNN` escape hatch is refused
-for them. A block tagged `**core_id:**` MUST carry the `Core: non-waivable` trailer and
-`**waivable:** false`; a CORE-tagged block carrying a `Deferred:` trailer instead is a contract
-authoring error and `contract-lint.js` fails it (AC-5).
+for them. A block tagged `**core_id:**` MUST carry the `Core: non-waivable` trailer, `**waivable:**
+false`, AND one-or-more `Enforcer:` refs naming the check(s) that enforce its substance NOW (R4-2,
+gauntlet round 4 — β's policy-hygiene refinement: `Core: non-waivable` alone, with no enforcer named,
+is aspirational; the invariant itself stays non-waivable, but nothing enforces it — a named enforcer
+is not a waiver, it names what enforces the SUBSTANCE). A CORE-tagged block carrying a `Deferred:`
+trailer instead of `Core: non-waivable` is a contract authoring error and `contract-lint.js` fails it
+(AC-5); a CORE-tagged block carrying `Core: non-waivable` but zero `Enforcer:` refs is also a contract
+authoring error and `contract-lint.js` fails it (R4-2, "core-unenforced").
 
 #### P7.1 — CORE-1: unbound dispatch fails closed
 
@@ -352,9 +379,13 @@ authoring error and `contract-lint.js` fails it (AC-5).
 A dispatched worker that cannot resolve a role through §3's precedence order (explicit user →
 validated WorkOrder/CLI → explicit top-level helm) MUST fail closed. It must NEVER default to
 binding as the President (alex-alpha) merely because no other binding resolved. Fixture:
-`fixtures/role-binding/unbound-dispatch-fails-closed.json`.
+`fixtures/role-binding/unbound-dispatch-fails-closed.json`. Live runtime enforcement of this
+precedence graph — wiring `role-binding.json` into the dispatch/session-bootstrap runtime — is
+RATIFIED-PLAN Phase 2 (see §3 P3.1's own `Deferred: ED-216` trailer; ED-216 already on the ledger).
 
 Core: non-waivable
+Enforcer: scripts/checks/contract-lint.js
+Enforcer: scripts/checks/conformance-matrix.js
 
 #### P7.2 — CORE-2: the provider-independent trusted layer solely owns capability grants, protected mutation, verification, and integration-to-main
 
@@ -369,6 +400,8 @@ how far off the mechanism is. Fixture: `fixtures/trust-boundary/trusted-layer-so
 (report-only, definition-level — see the fixture's own note).
 
 Core: non-waivable
+Enforcer: scripts/checks/contract-lint.js
+Enforcer: scripts/checks/conformance-matrix.js
 
 #### P7.3 — CORE-3: repo prose can never manufacture a binding
 
@@ -382,9 +415,13 @@ and `sources.repo_prose`, both `can_bind: false`) — it is NOT an enumeration o
 CAN bind. Per §3's precedence order, `explicit_user` (the operator's own direct, in-session
 instruction — a trusted human, categorically different from ambient repo prose), a validated
 WorkOrder/CLI binding, and an explicit top-level helm binding can all bind a role (Q-1). Fixture:
-`fixtures/role-binding/no-root-alpha-poison.json`.
+`fixtures/role-binding/no-root-alpha-poison.json`. Live runtime enforcement of this restriction —
+wiring `role-binding.json` into the dispatch/session-bootstrap runtime — is RATIFIED-PLAN Phase 2
+(see §3 P3.1's own `Deferred: ED-216` trailer; ED-216 already on the ledger).
 
 Core: non-waivable
+Enforcer: scripts/checks/contract-lint.js
+Enforcer: scripts/checks/conformance-matrix.js
 
 #### P7.4 — CORE-4: raw history is never destroyed
 
@@ -394,18 +431,35 @@ Core: non-waivable
 Retention/rotation/compaction NEVER delete raw history. An over-cap or compacted sink is archived
 (`scripts/hooks/lib/archive.js`), never removed — the archive tier stays accessible via an
 `events:query --archive`-class read path and carries a restore-drill test. Fixture:
-`fixtures/retention/retention-archive-not-delete.json`.
+`fixtures/retention/retention-archive-not-delete.json`. Unlike CORE-1/2/3, this invariant's runtime
+mechanism is ALREADY LIVE today, not deferred: write-time rotation (`scripts/hooks/lib/rotate.js`)
+archives — never deletes — any over-cap sink, and `scripts/checks/log-sink-caps.js` (§6 P6.1) is the
+real, wired `>2x`-cap gate.
 
 Core: non-waivable
+Enforcer: scripts/checks/contract-lint.js
+Enforcer: scripts/checks/conformance-matrix.js
 
 #### P7.5 — This contract self-validates (G0.1 self-hosts)
 
 This document is not truth because it exists — it is truth because `contract-lint.js` can prove
-every policy block above names a resolving `Enforcer:`, a real `Deferred: ED-NNN`, or a non-waivable
-`Core:`; every cited `ED-NNN` exists in `paths.enforcementDebt`; the CORE register above enumerates
-all four invariants with `waivable:false`; the D8 sentence (§0) is present verbatim; and the D6
-fixture manifest count is nonzero. `contract-lint.js` lints THIS FILE as part of its own test suite
-(dogfooding) — a lint failure on this document is a Phase-0 build defect, not a downstream problem.
+every ordinary policy block above names a resolving `Enforcer:`, a real `Deferred: ED-NNN`, or a
+non-waivable `Core:`; every CORE-tagged block ADDITIONALLY names >=1 resolving `Enforcer:` alongside
+its `Core: non-waivable` trailer (R4-2 — a CORE invariant naming no enforcer is aspirational, a
+false-green in a BINDING P0 register); no policy-block id or §7 register row is duplicated (R4-4 —
+an ambiguous/contradictory contract); every cited `ED-NNN` exists in `paths.enforcementDebt`; the CORE
+register above enumerates all four invariants with `waivable:false`; the D8 sentence (§0) is present
+verbatim; and the D6 fixture manifest count is nonzero. `contract-lint.js` lints THIS FILE as part of
+its own test suite (dogfooding) — a lint failure on this document is a Phase-0 build defect, not a
+downstream problem.
+
+**Known residual (ED-219, gauntlet round 4, opus OBS-2):** a TRAILING policy block removed together
+with its OWN §7 register row (both a section's last heading and its last register row deleted in the
+same edit) evades every register-completeness check above (register-block-missing / register-drift /
+register-gap) — the remaining sequence stays fully consecutive with no internal gap, so nothing
+disagrees. A cheap in-document guard for this specific shape would require an EXTERNAL expected-block-
+count manifest per section, which is Phase-1 hardening scope (β's no-widening ruling, gauntlet round
+4) — named, dated debt, never a silent gap.
 
 Enforcer: scripts/checks/contract-lint.js
 
@@ -420,10 +474,10 @@ Enforcer: scripts/checks/contract-lint.js
 | P4.1 | §4 Support matrix | `Deferred: ED-214 @ Phase-3-exit` |
 | P5.1 | §5 Minimal WorkOrder | `Deferred: ED-217 @ Phase-3-exit` |
 | P6.1 | §6 Retention classes | `Enforcer: scripts/checks/log-sink-caps.js` |
-| P7.1 | §7 CORE-1 | `Core: non-waivable` |
-| P7.2 | §7 CORE-2 | `Core: non-waivable` |
-| P7.3 | §7 CORE-3 | `Core: non-waivable` |
-| P7.4 | §7 CORE-4 | `Core: non-waivable` |
+| P7.1 | §7 CORE-1 | `Core: non-waivable` (+ `Enforcer:` x2, R4-2) |
+| P7.2 | §7 CORE-2 | `Core: non-waivable` (+ `Enforcer:` x2, R4-2) |
+| P7.3 | §7 CORE-3 | `Core: non-waivable` (+ `Enforcer:` x2, R4-2) |
+| P7.4 | §7 CORE-4 | `Core: non-waivable` (+ `Enforcer:` x2, R4-2) |
 | P7.5 | §7 Self-validation | `Enforcer: scripts/checks/contract-lint.js` |
 
 **Kernel scope (H-4, versioned, candidate-immutable):** IN = §1–§7 above + their JSON/fixture

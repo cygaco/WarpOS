@@ -20,6 +20,8 @@ const {
   evaluateCoverage,
   loadFixtures,
   loadSupportMatrix,
+  loadRoleBinding,
+  validateRoleBinding,
   run,
   GATE_EVALUATORS,
 } = require("./conformance-matrix");
@@ -568,6 +570,105 @@ test("B-3: loadSupportMatrix() still accepts the REAL support-matrix.json (posit
   const matrix = loadSupportMatrix(path.join(KERNEL_DIR, "support-matrix.json"));
   assert.ok(matrix && typeof matrix === "object");
   assert.ok(matrix.rows && matrix.rows.claude && matrix.rows.claude.status === "supported");
+});
+
+// ── R4-1 [HIGH, gauntlet round 4] regression: loadRoleBinding() fails CLOSED
+// on a malformed/unreadable/unparseable/structurally-invalid role-binding.json
+// -- the pre-fix version caught any read/parse failure and returned '{}',
+// which made the role-binding gate evaluate against an EMPTY control: a
+// dispatched_worker unbound path reads
+// `rb.worker_default_when_unbound !== "FAIL_CLOSED"` against '{}' ->
+// `undefined !== "FAIL_CLOSED"` -> true -> PASS instead of BLOCK, silently
+// flipping CORE-1's fail-closed guarantee open. Mirrors loadSupportMatrix's
+// B-3 pattern (same file). ──
+
+function writeTmpRoleBinding(obj) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cfm-r41-"));
+  const p = path.join(tmpDir, "role-binding.json");
+  fs.writeFileSync(p, typeof obj === "string" ? obj : JSON.stringify(obj));
+  return { tmpDir, p };
+}
+
+test("R4-1: loadRoleBinding() throws (fail-closed) when role-binding.json is missing", () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cfm-r41-missing-"));
+  try {
+    assert.throws(() => loadRoleBinding(tmpDir), /unreadable/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1: loadRoleBinding() throws (fail-closed) on unparseable JSON", () => {
+  const { tmpDir } = writeTmpRoleBinding("{ not valid json");
+  try {
+    assert.throws(() => loadRoleBinding(tmpDir), /not valid JSON/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1: loadRoleBinding() throws (fail-closed) when 'order' is missing", () => {
+  const { tmpDir } = writeTmpRoleBinding({ sources: {}, worker_default_when_unbound: "FAIL_CLOSED" });
+  try {
+    assert.throws(() => loadRoleBinding(tmpDir), /order/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1: loadRoleBinding() throws (fail-closed) when 'sources' is missing", () => {
+  const { tmpDir } = writeTmpRoleBinding({ order: ["UNBOUND"], worker_default_when_unbound: "FAIL_CLOSED" });
+  try {
+    assert.throws(() => loadRoleBinding(tmpDir), /sources/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1: loadRoleBinding() throws (fail-closed) when 'worker_default_when_unbound' is missing", () => {
+  const { tmpDir } = writeTmpRoleBinding({ order: ["UNBOUND"], sources: {} });
+  try {
+    assert.throws(() => loadRoleBinding(tmpDir), /worker_default_when_unbound/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1: loadRoleBinding() still accepts the REAL role-binding.json (positive control)", () => {
+  const rb = loadRoleBinding(KERNEL_DIR);
+  assert.ok(rb && typeof rb === "object");
+  assert.strictEqual(rb.worker_default_when_unbound, "FAIL_CLOSED");
+  assert.ok(Array.isArray(rb.order) && rb.order.length > 0);
+});
+
+test("R4-1 (end-to-end): a malformed role-binding.json makes run() throw (fail-closed) -- CLI maps this to exit 2, never a coincidental green", () => {
+  const { tmpDir: kernelTmpDir } = writeTmpRoleBinding({ order: ["UNBOUND"] }); // missing sources + worker_default_when_unbound
+  try {
+    assert.throws(
+      () =>
+        run({
+          kernelDir: kernelTmpDir,
+          supportMatrixPath: path.join(KERNEL_DIR, "support-matrix.json"),
+          fixturesDir: path.join(KERNEL_DIR, "fixtures"),
+        }),
+      /role binding/,
+    );
+  } finally {
+    fs.rmSync(kernelTmpDir, { recursive: true, force: true });
+  }
+});
+
+test("R4-1 (pure-core): validateRoleBinding() rejects a non-object payload", () => {
+  assert.throws(() => validateRoleBinding(null, "x"), /not a JSON object/);
+  assert.throws(() => validateRoleBinding(["array"], "x"), /not a JSON object/);
+});
+
+test("R4-1 (pure-core): validateRoleBinding() accepts a minimal well-formed graph", () => {
+  const rb = validateRoleBinding(
+    { order: ["UNBOUND"], sources: {}, worker_default_when_unbound: "FAIL_CLOSED" },
+    "x",
+  );
+  assert.strictEqual(rb.worker_default_when_unbound, "FAIL_CLOSED");
 });
 
 if (failures.length) {

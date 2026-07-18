@@ -6,11 +6,16 @@
  * (.claude/kernel/top-level-runtime-contract.md, D1 — SP-20260718-001 Phase 0).
  *
  * The contract is a SEQUENCE of numbered POLICY BLOCKS (`#### P<section>.<index>
- * — <title>`). Every policy block must end with EXACTLY ONE machine-parseable
- * trailer line:
+ * — <title>`), each with a UNIQUE id. Every ORDINARY (non-CORE) policy block
+ * must end with EXACTLY ONE machine-parseable trailer line:
  *   Enforcer: scripts/checks/<x>.js   — enforceable-now; ref MUST resolve.
  *   Deferred: ED-NNN @ Phase-X-exit   — enforced-later; ED MUST exist in the ledger.
  *   Core: non-waivable                — a CORE invariant (§7); the ED hatch is refused.
+ * A CORE-tagged block (`**core_id:**` present, §7) carries a RICHER trailer
+ * shape (R4-2, gauntlet round 4): exactly one `Core: non-waivable` trailer
+ * PLUS one-or-more `Enforcer:` refs naming the check(s) that enforce its
+ * substance NOW — `Core: non-waivable` alone (no enforcer named) is
+ * aspirational, not itself a waiver, but not enforcement either.
  *
  * This lints STRUCTURALLY (heading/trailer regex parsing over the document),
  * never by prose-scraping.
@@ -18,16 +23,23 @@
  * FAIL-CLOSED, three-way exit contract (mirrors log-sink-caps.js's shape, but
  * splits the non-zero case in two per R1/AC-4 — a structural/reference-integrity
  * failure must be DISTINCT from a content policy failure):
- *   0  clean — every block well-formed + resolving, CORE register complete,
- *      D8 sentence present, fixture count nonzero.
- *   1  policy-FAIL — the document PARSES fine (every block has exactly one
- *      well-formed trailer, every reference resolves) but violates a CONTENT
- *      policy: a CORE-tagged block waived by a Deferred/ED instead of
- *      `Core: non-waivable`, the CORE register incomplete, the fixture count
- *      zero, or the D8 sentence missing.
+ *   0  clean — every block well-formed + resolving, no duplicate ids, CORE
+ *      register complete + every CORE block names an enforcer, D8 sentence
+ *      present, fixture count nonzero.
+ *   1  policy-FAIL — the document PARSES fine (every block has a well-formed
+ *      trailer shape, every reference resolves, no duplicates) but violates a
+ *      CONTENT policy: a CORE-tagged block waived by a Deferred/ED instead of
+ *      `Core: non-waivable` (core-waived), a CORE-tagged block correctly using
+ *      `Core: non-waivable` but naming ZERO `Enforcer:` refs (core-unenforced,
+ *      R4-2 — aspirational, a false-green in a BINDING P0 register), the CORE
+ *      register incomplete, the fixture count zero, or the D8 sentence missing.
  *   2  fail-closed/structural — the input could not be TRUSTED at all: no
- *      policy blocks found, a block with zero or 2+ trailer lines, a block
- *      whose (single) trailer is not the LAST non-empty line of its block
+ *      policy blocks found, TWO POLICY BLOCKS SHARING THE SAME ID (R4-4,
+ *      gauntlet round 4 — an ambiguous/contradictory contract), a block with
+ *      an unrecognized trailer shape (zero trailers; 2+ trailers on a
+ *      non-CORE block; a CORE-tagged block missing its `Core:`/`Deferred:`
+ *      anchor or mixing `Core:`+`Deferred:` together), a block whose
+ *      (last-recognized) trailer is not the LAST non-empty line of its block
  *      (S-1 — trailing content after the trailer is unparseable-as-terminal),
  *      an Enforcer ref that does not resolve (missing file, escapes
  *      scripts/checks/ — B-1, is not a `.js` FILE — a directory or non-.js
@@ -37,10 +49,12 @@
  *      fine with a legitimately-zero count, which is policy §1), the
  *      declared "### Policy-block register" (§7) disagreeing with the blocks
  *      actually parsed — a registered id with no matching block, a parsed
- *      block absent from the register, or a numbering gap within a section
- *      (R3-4 — catches a policy block silently REMOVED from the document),
- *      or any `ED-NNN` cited anywhere in the document that is absent from
- *      the ledger.
+ *      block absent from the register, TWO REGISTER ROWS FOR THE SAME ID
+ *      (R4-4), or a numbering gap within a section (R3-4 — catches a policy
+ *      block silently REMOVED from the document; a TRAILING removal — the
+ *      section's own LAST block AND its LAST register row deleted together —
+ *      is a known residual this check does not catch, see ED-219), or any
+ *      `ED-NNN` cited anywhere in the document that is absent from the ledger.
  * A malformed/unparseable input NEVER reads clean (0) — this is the bootstrap
  * trust root; a green-pass-on-unparseable is the false-green class this whole
  * Phase-0 build exists to kill.
@@ -390,9 +404,33 @@ function evaluate(opts) {
     return finalize(structural, policy);
   }
 
-  const coreBlocks = new Map(); // core_id -> [{ block, trailerKind, waivableFalse }, ...] (N-6: ALL declarations, not just the last)
+  // R4-4 [HIGH, gauntlet round 4]: reject DUPLICATE policy-block ids. The
+  // pre-fix R3-4 register check caught missing/orphaned/gap ids but never a
+  // RE-SEEN id — two separate '#### P<n>.<m>' headings sharing the same id
+  // made an ambiguous/contradictory contract that read exactly as clean as a
+  // document where every id appears once, as long as each individual block
+  // was itself well-formed. A repeated id is a structural fail (exit 2),
+  // never a silent duplicate pass.
+  const blockIdCounts = new Map();
+  for (const block of blocks) {
+    blockIdCounts.set(block.id, (blockIdCounts.get(block.id) || 0) + 1);
+  }
+  for (const [id, count] of blockIdCounts.entries()) {
+    if (count > 1) {
+      structural.push({ reason: "duplicate-block-id", block: id, count });
+    }
+  }
+
+  const coreBlocks = new Map(); // core_id -> [{ block, trailerKind, hasEnforcer, waivableFalse }, ...] (N-6: ALL declarations, not just the last)
 
   for (const block of blocks) {
+    const blockText = block.lines.join("\n");
+    // core_id tagging is computed BEFORE trailer-shape validation (R4-2) --
+    // a core_id-tagged block is now VALIDATED against a different trailer
+    // shape than an ordinary block (see below).
+    const coreMatch = CORE_ID_RE.exec(blockText);
+    const isCoreTagged = !!coreMatch;
+
     const trailerMatches = [];
     for (let li = 0; li < block.lines.length; li++) {
       const trimmed = block.lines[li].trim();
@@ -400,56 +438,109 @@ function evaluate(opts) {
       else if (DEFERRED_RE.test(trimmed)) trailerMatches.push({ kind: "Deferred", line: trimmed, idx: li });
       else if (CORE_RE.test(trimmed)) trailerMatches.push({ kind: "Core", line: trimmed, idx: li });
     }
+    const coreTrailers = trailerMatches.filter((t) => t.kind === "Core");
+    const enforcerTrailers = trailerMatches.filter((t) => t.kind === "Enforcer");
+    const deferredTrailers = trailerMatches.filter((t) => t.kind === "Deferred");
 
-    if (trailerMatches.length !== 1) {
+    // R4-2 [HIGH, gauntlet round 4]: a core_id-tagged block's valid trailer
+    // SHAPE is now one of two forms:
+    //   (a) exactly one `Core: non-waivable` trailer PLUS one-or-more
+    //       `Enforcer:` refs naming its enforced-NOW check(s) — the shape
+    //       this fix REQUIRES going forward. Whether an Enforcer is actually
+    //       PRESENT is a CONTENT/policy question (see "core-unenforced"
+    //       below, mirrors core-incomplete/core-waived being policy, not
+    //       structural) — an Enforcer-less `Core:` block is still
+    //       STRUCTURALLY well-formed, just POLICY-incomplete (aspirational).
+    //   (b) exactly one `Deferred:` trailer and nothing else — the
+    //       pre-existing AC-5 "core-waived-by-ED" shape, still structurally
+    //       fine, POLICY-flagged as core-waived below.
+    // ANY other combination on a core_id-tagged block (zero trailers, 2+
+    // `Core:` lines, `Core:` + `Deferred:` together, `Deferred:` +
+    // `Enforcer:` together, an `Enforcer:`-only block with no `Core:`/
+    // `Deferred:` at all) is NOT a recognized shape and fails structural —
+    // same fail-closed posture as before.
+    //
+    // A block that is NOT core_id-tagged is COMPLETELY UNCHANGED: it still
+    // requires EXACTLY ONE trailer of any kind. This is what
+    // malformed-heading.md / trailer-not-terminal.md's incidental
+    // "Core: non-waivable" trailers on non-core_id blocks continue to
+    // exercise, unaffected by this fix.
+    let shapeOk = false;
+    let terminalIdx = -1;
+    let recognized = []; // the trailer(s) counted toward this block's shape, in document order
+
+    if (isCoreTagged && coreTrailers.length === 1 && deferredTrailers.length === 0) {
+      shapeOk = true;
+      recognized = [...coreTrailers, ...enforcerTrailers].sort((a, b) => a.idx - b.idx);
+      terminalIdx = recognized[recognized.length - 1].idx;
+    } else if (
+      isCoreTagged &&
+      deferredTrailers.length === 1 &&
+      coreTrailers.length === 0 &&
+      enforcerTrailers.length === 0
+    ) {
+      shapeOk = true;
+      recognized = deferredTrailers;
+      terminalIdx = deferredTrailers[0].idx;
+    } else if (!isCoreTagged && trailerMatches.length === 1) {
+      shapeOk = true;
+      recognized = trailerMatches;
+      terminalIdx = trailerMatches[0].idx;
+    }
+
+    if (!shapeOk) {
       structural.push({ reason: "malformed-block-trailer", block: block.id, found: trailerMatches.length });
-    } else {
-      const trailer = trailerMatches[0];
+      continue;
+    }
 
-      // S-1: the (single) trailer must be the LAST non-empty line of its
-      // block — a trailer followed by more non-trailer content is malformed
-      // (the block cannot be trusted to have "ended" at the trailer).
-      const hasTrailingContent = block.lines.slice(trailer.idx + 1).some((l) => l.trim().length > 0);
-      if (hasTrailingContent) {
-        structural.push({ reason: "trailer-not-terminal", block: block.id });
-        continue;
-      }
+    // S-1: the recognized trailer(s) must end at the LAST non-empty line of
+    // the block — content after the LAST recognized trailer line is malformed
+    // (the block cannot be trusted to have "ended" at its trailer(s)).
+    const hasTrailingContent = block.lines.slice(terminalIdx + 1).some((l) => l.trim().length > 0);
+    if (hasTrailingContent) {
+      structural.push({ reason: "trailer-not-terminal", block: block.id });
+      continue;
+    }
 
-      if (trailer.kind === "Enforcer") {
-        const m = ENFORCER_RE.exec(trailer.line);
+    for (const t of recognized) {
+      if (t.kind === "Enforcer") {
+        const m = ENFORCER_RE.exec(t.line);
         const res = doResolve(m[1]);
         if (!res.resolved) {
           structural.push({ reason: "unresolvable-enforcer", block: block.id, detail: res.error });
         }
-      } else if (trailer.kind === "Deferred") {
-        const m = DEFERRED_RE.exec(trailer.line);
+      } else if (t.kind === "Deferred") {
+        const m = DEFERRED_RE.exec(t.line);
         const edId = m[1];
         if (!ledgerIds || !ledgerIds.has(edId)) {
           structural.push({ reason: "missing-ed", block: block.id, ed: edId });
         }
       }
+    }
 
-      // core_id tagging is INDEPENDENT of which trailer kind matched — a block
-      // can be tagged core_id/waivable:false with the WRONG trailer (Deferred
-      // instead of Core); that mismatch is the core-waived-by-ed case (AC-5),
-      // a CONTENT/policy violation on an otherwise well-formed block.
-      // N-6 [gauntlet round 2]: record EVERY declaration of a core_id, not
-      // just the most recent — a Map.set() here used to OVERWRITE an earlier
-      // (waived) declaration with a later (correct) one, hiding the waiver.
-      // CORE ids are non-waivable EVERYWHERE they appear, so every
-      // declaration must be checked independently.
-      const blockText = block.lines.join("\n");
-      const coreMatch = CORE_ID_RE.exec(blockText);
-      if (coreMatch) {
-        const coreId = coreMatch[1];
-        const entries = coreBlocks.get(coreId) || [];
-        entries.push({
-          block: block.id,
-          trailerKind: trailer.kind,
-          waivableFalse: WAIVABLE_FALSE_RE.test(blockText),
-        });
-        coreBlocks.set(coreId, entries);
-      }
+    // core_id tagging is INDEPENDENT of which trailer kind matched — a block
+    // can be tagged core_id/waivable:false with the WRONG trailer (Deferred
+    // instead of Core); that mismatch is the core-waived-by-ed case (AC-5),
+    // a CONTENT/policy violation on an otherwise well-formed block.
+    // N-6 [gauntlet round 2]: record EVERY declaration of a core_id, not
+    // just the most recent — a Map.set() here used to OVERWRITE an earlier
+    // (waived) declaration with a later (correct) one, hiding the waiver.
+    // CORE ids are non-waivable EVERYWHERE they appear, so every
+    // declaration must be checked independently.
+    if (isCoreTagged) {
+      const coreId = coreMatch[1];
+      const entries = coreBlocks.get(coreId) || [];
+      entries.push({
+        block: block.id,
+        trailerKind: coreTrailers.length === 1 ? "Core" : deferredTrailers.length === 1 ? "Deferred" : "Enforcer",
+        // R4-2: recorded so the CORE completeness loop below can flag a
+        // correctly-`Core:`-tagged (not waived) block that names ZERO
+        // `Enforcer:` refs — an aspirational non-waivable invariant with
+        // nothing enforcing its substance.
+        hasEnforcer: enforcerTrailers.length >= 1,
+        waivableFalse: WAIVABLE_FALSE_RE.test(blockText),
+      });
+      coreBlocks.set(coreId, entries);
     }
   }
 
@@ -487,6 +578,26 @@ function evaluate(opts) {
           reason: "register-drift",
           block: block.id,
           detail: `${block.id} exists in the document but is not enumerated in the §7 policy-block register`,
+        });
+      }
+    }
+
+    // R4-4 [HIGH, gauntlet round 4]: reject DUPLICATE register rows — two rows
+    // for the SAME id let an ambiguous/contradictory contract read clean as
+    // long as the id resolves to a matching block at all (register-block-missing/
+    // register-drift only ever check SET membership, so a re-seen id in the
+    // table itself was previously invisible to both).
+    const registerRowCounts = new Map();
+    for (const row of registerResult.rows) {
+      registerRowCounts.set(row.id, (registerRowCounts.get(row.id) || 0) + 1);
+    }
+    for (const [id, count] of registerRowCounts.entries()) {
+      if (count > 1) {
+        structural.push({
+          reason: "duplicate-register-row",
+          block: id,
+          count,
+          detail: `${id} is listed ${count} times in the §7 policy-block register — an ambiguous/contradictory register entry`,
         });
       }
     }
@@ -539,6 +650,17 @@ function evaluate(opts) {
     for (const entry of entries) {
       if (!entry.waivableFalse || entry.trailerKind !== "Core") {
         policy.push({ reason: "core-waived", core: coreId, block: entry.block, trailerKind: entry.trailerKind });
+      } else if (!entry.hasEnforcer) {
+        // R4-2 [HIGH, gauntlet round 4]: a CORE block correctly using
+        // `Core: non-waivable` (i.e. NOT waived — the branch above already
+        // handles the wrong-trailer-kind case) but naming ZERO `Enforcer:`
+        // refs is an ASPIRATIONAL non-waivable invariant with nothing named
+        // that enforces its SUBSTANCE — a false-green in a BINDING P0
+        // register (β's policy-hygiene refinement: `Core: non-waivable`
+        // alone is not itself a waiver, but it is not enforcement either).
+        // Distinct from core-waived (flags the WRONG trailer kind); this
+        // flags the RIGHT trailer kind with nothing enforcing it.
+        policy.push({ reason: "core-unenforced", core: coreId, block: entry.block });
       }
     }
   }

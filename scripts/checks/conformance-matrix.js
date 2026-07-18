@@ -35,7 +35,12 @@
  *   2  runner error — fail-closed, distinct from a clean 0. Covers: missing/
  *      unreadable/unparseable support-matrix.json; a support-matrix that
  *      parses as JSON but is STRUCTURALLY invalid (missing/invalid `rows`, or
- *      a row missing a required field — B-3); an unreadable fixtures dir; or
+ *      a row missing a required field — B-3); a missing/unreadable/unparseable
+ *      OR structurally invalid (missing `order`/`sources`/
+ *      `worker_default_when_unbound`) role-binding.json — R4-1, gauntlet round
+ *      4, mirrors B-3's posture: a corrupt role-binding control file must
+ *      never silently degrade to `{}`, which would flip the role-binding
+ *      gate's fail-closed default open; an unreadable fixtures dir; or
  *      a SEMANTICALLY malformed fixture file — unparseable JSON, missing
  *      required fields, an unrecognized `gate` name with no registered
  *      evaluator, a non-canonical `expect.outcome` (B-2), or an `input` that
@@ -283,13 +288,74 @@ function loadSupportMatrix(supportMatrixPath) {
   return validateSupportMatrix(parsed, supportMatrixPath);
 }
 
-/** Load role-binding.json (best-effort companion for the role-binding gate). */
-function loadRoleBinding(kernelDir) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(kernelDir, "role-binding.json"), "utf8"));
-  } catch {
-    return {};
+/**
+ * R4-1 [HIGH, gauntlet round 4]: validate role-binding.json's STRUCTURE, not
+ * just its JSON syntax -- a syntactically-valid-but-structurally-invalid
+ * control file (missing `order`, `sources`, or `worker_default_when_unbound`)
+ * must fail closed, never be silently accepted as a legitimate (if minimal)
+ * graph. Mirrors validateSupportMatrix's B-3 pattern (same file). Throws on
+ * any violation.
+ */
+function validateRoleBinding(rb, roleBindingPath) {
+  if (!rb || typeof rb !== "object" || Array.isArray(rb)) {
+    const err = new Error(`role binding ${roleBindingPath} is not a JSON object`);
+    err.code = "ROLE_BINDING_SHAPE_ERROR";
+    throw err;
   }
+  if (!Array.isArray(rb.order) || rb.order.length === 0) {
+    const err = new Error(`role binding ${roleBindingPath} missing/invalid 'order' (must be a non-empty array)`);
+    err.code = "ROLE_BINDING_SHAPE_ERROR";
+    throw err;
+  }
+  if (!rb.sources || typeof rb.sources !== "object" || Array.isArray(rb.sources)) {
+    const err = new Error(`role binding ${roleBindingPath} missing/invalid 'sources' (must be an object)`);
+    err.code = "ROLE_BINDING_SHAPE_ERROR";
+    throw err;
+  }
+  if (typeof rb.worker_default_when_unbound !== "string" || !rb.worker_default_when_unbound) {
+    const err = new Error(
+      `role binding ${roleBindingPath} missing/invalid 'worker_default_when_unbound' (must be a non-empty string)`,
+    );
+    err.code = "ROLE_BINDING_SHAPE_ERROR";
+    throw err;
+  }
+  return rb;
+}
+
+/**
+ * R4-1 [HIGH, gauntlet round 4]: load role-binding.json. THROWS (fail-closed,
+ * -> run() -> exit 2 structural) on a missing/unreadable/unparseable file OR
+ * a structurally invalid one (validateRoleBinding above) -- role-binding.json
+ * is TRUSTED-KERNEL CONTROL input for the 'role-binding' gate evaluator. The
+ * pre-fix version caught any read/parse failure and returned '{}', which made
+ * the role-binding gate evaluate against an EMPTY control: a dispatched_worker
+ * unbound path reads `rb.worker_default_when_unbound !== "FAIL_CLOSED"` against
+ * '{}' -> undefined !== "FAIL_CLOSED" -> true -> PASS instead of BLOCK, flipping
+ * CORE-1's fail-closed guarantee open on a corrupt/unreadable control file. A
+ * corrupt control file is a STRUCTURAL failure, never a silent '{}' that reads
+ * as an (incorrectly) permissive graph. Mirrors loadSupportMatrix's B-3 posture
+ * (same file) -- both trusted-kernel JSON control files now fail closed the
+ * same way on read/parse/shape failure.
+ */
+function loadRoleBinding(kernelDir) {
+  const roleBindingPath = path.join(kernelDir, "role-binding.json");
+  let text;
+  try {
+    text = fs.readFileSync(roleBindingPath, "utf8");
+  } catch (e) {
+    const err = new Error(`role binding ${roleBindingPath} is unreadable: ${(e && e.message) || e}`);
+    err.code = "ROLE_BINDING_READ_ERROR";
+    throw err;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    const err = new Error(`role binding ${roleBindingPath} is not valid JSON: ${(e && e.message) || e}`);
+    err.code = "ROLE_BINDING_PARSE_ERROR";
+    throw err;
+  }
+  return validateRoleBinding(parsed, roleBindingPath);
 }
 
 // R3-1 [CRIT, gauntlet round 3]: PER-GATE required input-field schema. N-2
@@ -568,7 +634,16 @@ function run(opts) {
   return { results, mismatches, requiredDownLanes, coverage, fixtureCount: fixtures.length, manifestCount };
 }
 
-module.exports = { evaluate, evaluateCoverage, loadFixtures, loadSupportMatrix, loadRoleBinding, run, GATE_EVALUATORS };
+module.exports = {
+  evaluate,
+  evaluateCoverage,
+  loadFixtures,
+  loadSupportMatrix,
+  loadRoleBinding,
+  validateRoleBinding,
+  run,
+  GATE_EVALUATORS,
+};
 
 if (require.main === module) {
   const argv = process.argv.slice(2);

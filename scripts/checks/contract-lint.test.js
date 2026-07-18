@@ -615,6 +615,157 @@ test("R3-4: self-host — the real contract's §7 register exactly enumerates it
   );
 });
 
+// ── R4-2 [HIGH, gauntlet round 4] negative fixture: a CORE block correctly
+// using `Core: non-waivable` (not waived) but naming ZERO `Enforcer:` refs is
+// an aspirational non-waivable invariant with nothing enforcing its substance
+// -- a false-green in a BINDING P0 register (β's policy-hygiene refinement).
+// This must FAIL as a POLICY violation (exit 1), distinct from core-waived
+// (wrong trailer kind) and from any structural exit-2 case. ──
+
+test("R4-2: core-no-enforcer.md — a CORE block with only Core: non-waivable and no Enforcer ref -> exit 1 (policy-FAIL, aspirational)", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "core-no-enforcer.md") });
+  assert.strictEqual(res.exitCode, 1, JSON.stringify(res));
+  assert.strictEqual(res.structural.length, 0, "this fixture must NOT trip a structural failure: " + JSON.stringify(res.structural));
+  assert.ok(
+    res.policy.some((p) => p.reason === "core-unenforced" && p.core === "CORE-1" && p.block === "P7.1"),
+    JSON.stringify(res.policy),
+  );
+});
+
+test("R4-2 (pure-core): a CORE block with Core: non-waivable PLUS >=1 Enforcer: ref never trips core-unenforced (positive control)", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 with an enforcer named",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.structural.length, 0, JSON.stringify(res.structural));
+  assert.ok(!res.policy.some((p) => p.reason === "core-unenforced"), JSON.stringify(res.policy));
+});
+
+test("R4-2 (pure-core): a CORE block may carry Core: non-waivable PLUS multiple Enforcer: refs (structurally fine, all must resolve)", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 with two enforcers named",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+    "Enforcer: scripts/checks/contract-lint.js",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.structural.length, 0, JSON.stringify(res.structural));
+  assert.ok(!res.policy.some((p) => p.reason === "core-unenforced"), JSON.stringify(res.policy));
+});
+
+test("R4-2 (pure-core): a CORE block's Enforcer ref must still resolve — an unresolvable one among the combo fails structural", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 with a bad enforcer ref",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "Enforcer: scripts/checks/does-not-exist-xyz.js",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(res.structural.some((s) => s.reason === "unresolvable-enforcer"), JSON.stringify(res.structural));
+});
+
+test("R4-2 (pure-core): a CORE block with TWO 'Core:' trailers (no Deferred) is an unrecognized shape -> structural, exit 2", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 with two Core: lines",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "Core: non-waivable",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(res.structural.some((s) => s.reason === "malformed-block-trailer"), JSON.stringify(res.structural));
+});
+
+test("R4-2 (pure-core): a CORE block mixing Core: AND Deferred: together is an unrecognized shape -> structural, exit 2", () => {
+  const doc = [
+    "#### P7.1 — CORE-1 mixing Core and Deferred",
+    "**core_id:** CORE-1",
+    "**waivable:** false",
+    "Core: non-waivable",
+    "Deferred: ED-060 @ Phase-1-exit",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(["ED-060"]), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(res.structural.some((s) => s.reason === "malformed-block-trailer"), JSON.stringify(res.structural));
+});
+
+test("R4-2: self-host — every CORE block in the real contract names >=1 resolving Enforcer alongside Core: non-waivable", () => {
+  const res = run();
+  assert.strictEqual(res.exitCode, 0, JSON.stringify({ structural: res.structural, policy: res.policy }));
+  assert.ok(!res.policy.some((p) => p.reason === "core-unenforced"), JSON.stringify(res.policy));
+});
+
+// ── R4-4 [HIGH, gauntlet round 4] negative fixtures: a DUPLICATE policy-block
+// id (two blocks, or two §7 register rows, sharing the same id) makes an
+// ambiguous/contradictory contract that previously read clean as long as
+// every individual block/row was well-formed — the pre-fix R3-4 register
+// check caught missing/orphaned/gap ids but never a RE-SEEN one. ──
+
+test("R4-4: duplicate-block-id.md — two blocks declaring the SAME id -> exit 2 (structural, fail-closed)", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "duplicate-block-id.md") });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "duplicate-block-id" && s.block === "P3.1"),
+    JSON.stringify(res.structural),
+  );
+});
+
+test("R4-4: duplicate-register-row.md — the §7 register lists the SAME id twice -> exit 2 (structural, fail-closed)", () => {
+  const res = run({ docPath: path.join(FIXTURES_DIR, "duplicate-register-row.md") });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "duplicate-register-row" && s.block === "P3.1"),
+    JSON.stringify(res.structural),
+  );
+  assert.ok(
+    !res.structural.some((s) => s.reason === "duplicate-block-id"),
+    "only ONE real block exists in this fixture -- duplicate-block-id must never spuriously fire: " +
+      JSON.stringify(res.structural),
+  );
+});
+
+test("R4-4 (pure-core): two blocks sharing the same id are caught even with no §7 register declared at all", () => {
+  const doc = [
+    "#### P1.1 — First declaration",
+    "Core: non-waivable",
+    "#### P1.1 — Second declaration, same id, no register anywhere",
+    "Enforcer: scripts/checks/log-sink-caps.js",
+  ].join("\n");
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.strictEqual(res.exitCode, 2, JSON.stringify(res));
+  assert.ok(
+    res.structural.some((s) => s.reason === "duplicate-block-id" && s.block === "P1.1" && s.count === 2),
+    JSON.stringify(res.structural),
+  );
+});
+
+test("R4-4 (pure-core): distinct block ids never spuriously trip duplicate-block-id (no false positive)", () => {
+  const doc = ["#### P1.1 — First", "Core: non-waivable", "#### P2.1 — Second", "Enforcer: scripts/checks/log-sink-caps.js"].join(
+    "\n",
+  );
+  const res = evaluate({ docText: doc, ledgerIds: new Set(), fixtureCount: 1, rootDir: ROOT });
+  assert.ok(!res.structural.some((s) => s.reason === "duplicate-block-id"), JSON.stringify(res.structural));
+});
+
+test("R4-4: self-host — the real contract has zero duplicate block ids and zero duplicate register rows", () => {
+  const res = run();
+  assert.strictEqual(res.exitCode, 0, JSON.stringify({ structural: res.structural, policy: res.policy }));
+  assert.ok(
+    !res.structural.some((s) => s.reason === "duplicate-block-id" || s.reason === "duplicate-register-row"),
+    JSON.stringify(res.structural),
+  );
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [contract-lint.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
