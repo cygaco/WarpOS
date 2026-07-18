@@ -11,6 +11,10 @@ const fs = require("fs");
 const path = require("path");
 const { logEvent, query, RUNTIME_DIR } = require("./lib/logger");
 const { PATHS } = require("./lib/paths");
+// F-RET-3: single source for the handoff-live basename allowlist — the same
+// tightened regex retention.js uses, so the live-state scan and the retention
+// sweep can never disagree on what a valid handoff-live name is.
+const { HANDOFF_LIVE_RE } = require("./lib/retention");
 
 let input = "";
 process.stdin.on("data", (chunk) => (input += chunk));
@@ -220,6 +224,9 @@ process.stdin.on("end", () => {
 
     // ── Load Handoff / Checkpoint ─────────────────────────────
     let handoffContext = "";
+    // F-RET-4: paths this session LOADED — retention must never archive a
+    // handoff the current session is actively using (passed as `protected`).
+    const protectedHandoffPaths = [];
 
     // Priority 1: handoff.md (most recent, written by session-stop)
     const handoffPath = path.join(runtimeDir, "handoff.md");
@@ -279,6 +286,7 @@ process.stdin.on("end", () => {
               handoffContext = fs
                 .readFileSync(path.join(handoffsDir, latest), "utf-8")
                 .trim();
+              protectedHandoffPaths.push(path.join(handoffsDir, latest));
               checks.push(
                 `Handoff: loaded from archive (${latest}, ${Math.round(ageHours)}h ago)`,
               );
@@ -315,12 +323,29 @@ process.stdin.on("end", () => {
         .slice(0, 48);
       const liveFiles = fs
         .readdirSync(runtimeDir)
-        .filter((f) => /^handoff-live-.+\.md$/.test(f))
-        .map((f) => ({
-          name: f,
-          sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
-          mtime: fs.statSync(path.join(runtimeDir, f)).mtimeMs,
-        }))
+        .filter((f) => HANDOFF_LIVE_RE.test(f)) // F-RET-3: tightened basename allowlist (no `..`)
+        .map((f) => {
+          // lstat (NO symlink-follow) + regular-file-only. A symlink/junction
+          // named handoff-live-<sid>.md would otherwise have its TARGET's content
+          // read into the session additionalContext — an external content-injection
+          // vector (gauntlet R2 NEWDEF). Drop anything non-regular.
+          let st;
+          try {
+            st = fs.lstatSync(path.join(runtimeDir, f));
+          } catch {
+            return null;
+          }
+          if (!st.isFile()) return null;
+          return {
+            name: f,
+            sid: f.replace(/^handoff-live-/, "").replace(/\.md$/, ""),
+            mtime: st.mtimeMs,
+            // Captured for the best-effort post-open inode recheck below.
+            ino: st.ino,
+            dev: st.dev,
+          };
+        })
+        .filter(Boolean)
         .sort((a, b) => b.mtime - a.mtime);
       // Prefer the file matching the CURRENT sid; else the most recent + label it.
       const chosen = liveFiles.find((f) => curSid && f.sid === curSid) || liveFiles[0];
@@ -332,28 +357,97 @@ process.stdin.on("end", () => {
         // Surface only when the live snapshot is NEWER than the narrative (or no
         // narrative exists) AND recent enough to matter (≤72h).
         if (ageHours < 72 && chosen.mtime > handoffMtime + 1000) {
-          const content = fs
-            .readFileSync(path.join(runtimeDir, chosen.name), "utf8")
-            .trim();
-          let label;
-          if (source === "clear") {
-            label =
-              "captured at /clear — pre-clear live state; ignore if you cleared to switch tasks (the uncommitted-files list is useful either way)";
-          } else if (source === "startup" && (!curSid || chosen.sid !== curSid)) {
-            label = `from a PRIOR session (\`${chosen.sid}\`) — verify against current git state before trusting`;
-          } else if (curSid && chosen.sid === curSid) {
-            label = "this session's live state — newer than the last narrative handoff";
-          } else {
-            label = `live state from session \`${chosen.sid}\` — verify against current git`;
+          // No-follow read of the live snapshot. The earlier lstat proved a
+          // regular file; a symlink swapped in between that lstat and this read
+          // would otherwise inject its target's content into additionalContext.
+          // O_NOFOLLOW refuses a symlink final component (ELOOP) — EFFECTIVE ON
+          // POSIX. On WINDOWS `fs.constants.O_NOFOLLOW` is UNDEFINED (→ 0), so the
+          // open does NOT block a symlink there; as a cross-platform best-effort we
+          // also fstat the OPEN fd and refuse if its inode/device differ from the
+          // enumeration-time lstat (a swap changes the inode). RESIDUAL (honest,
+          // out-of-model per the standing discriminator, ADR-0017): on Windows,
+          // absent both O_NOFOLLOW and reliable inode ids, a swapped-symlink race
+          // could still read external content — attacker-only, NON-destructive
+          // (a content read into context), and NO new capability over a same-user
+          // attacker simply writing a regular handoff-live file. Not further
+          // mechanised; the CLAIM is corrected here, not overstated.
+          let content = null;
+          try {
+            const O_NOFOLLOW = fs.constants.O_NOFOLLOW || 0;
+            const fd = fs.openSync(
+              path.join(runtimeDir, chosen.name),
+              fs.constants.O_RDONLY | O_NOFOLLOW,
+            );
+            try {
+              const fst = fs.fstatSync(fd);
+              // Best-effort inode recheck: only enforce when both ids are present
+              // (0/undefined on some Windows FS → skip, don't false-drop).
+              const inodeStable =
+                !chosen.ino || !fst.ino || (fst.ino === chosen.ino && fst.dev === chosen.dev);
+              if (fst.isFile() && inodeStable) content = fs.readFileSync(fd, "utf8").trim();
+            } finally {
+              try {
+                fs.closeSync(fd);
+              } catch {
+                /* fd already gone */
+              }
+            }
+          } catch {
+            /* symlink (ELOOP) / vanished / unreadable — never surface external content */
           }
-          liveStateContext = `(${label})\n\n${content}`;
-          checks.push(
-            `Live-state: surfaced (${ageHours < 1 ? "just now" : Math.round(ageHours) + "h ago"}, newer than narrative)`,
-          );
+          if (content != null) {
+            // F-RET-4: the live handoff this session just surfaced must never be
+            // archived out from under it (even if it is beyond the newest-N rank).
+            protectedHandoffPaths.push(path.join(runtimeDir, chosen.name));
+            let label;
+            if (source === "clear") {
+              label =
+                "captured at /clear — pre-clear live state; ignore if you cleared to switch tasks (the uncommitted-files list is useful either way)";
+            } else if (source === "startup" && (!curSid || chosen.sid !== curSid)) {
+              label = `from a PRIOR session (\`${chosen.sid}\`) — verify against current git state before trusting`;
+            } else if (curSid && chosen.sid === curSid) {
+              label = "this session's live state — newer than the last narrative handoff";
+            } else {
+              label = `live state from session \`${chosen.sid}\` — verify against current git`;
+            }
+            liveStateContext = `(${label})\n\n${content}`;
+            checks.push(
+              `Live-state: surfaced (${ageHours < 1 ? "just now" : Math.round(ageHours) + "h ago"}, newer than narrative)`,
+            );
+          }
         }
       }
     } catch {
       /* live-state surfacing is optional + fail-open */
+    }
+
+    // ── Retention sweep (S: runtime-retention) ─────────────────────────
+    // Conservative-by-construction ARCHIVING of transient runtime cruft
+    // (handoff-live-*.md beyond the newest 10 / not recent, handoffs/* older
+    // than 14d, the one named stray error log) — MOVED to the archive tier, not
+    // deleted (D-1). MUST run AFTER the handoff-load blocks above (load first,
+    // prune second) so a file this session just loaded is never archived out
+    // from under it (F-RET-4: `protectedHandoffPaths`). F-RET-2: the apply root
+    // is the TRUSTED PATHS-anchored root (CLAUDE_PROJECT_DIR-derived), NOT
+    // event.cwd. Best-effort/fail-open — a retention fault must never disturb
+    // session start.
+    if (source === "startup" || source === "clear") {
+      try {
+        const { applyRetention } = require("./lib/retention");
+        // Trusted root: anchor to PATHS (derived from CLAUDE_PROJECT_DIR), never
+        // the possibly-attacker-influenced event.cwd.
+        const trustedRoot = path.resolve(PATHS.runtime, "..", "..");
+        const r = applyRetention(trustedRoot, {
+          apply: true,
+          protected: protectedHandoffPaths,
+        });
+        const n = (r && r.archived && r.archived.length) || 0;
+        if (n > 0) {
+          checks.push(`Retention: archived ${n} transient(s)`);
+        }
+      } catch {
+        /* retention is best-effort — never block session start */
+      }
     }
 
     // ── Systems Health Nudge ────────────────────────────────

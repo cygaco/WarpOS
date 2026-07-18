@@ -146,6 +146,16 @@ node scripts/checks/no-nul-bytes.js   # scans scripts/** + .claude/** text sourc
 
 A non-zero exit names the corrupted file + byte offset. The fix is `\u0000` (the escape) not a literal NUL. This is the enforcer pairing for the regex-charclass-space-becomes-NUL learning; it caught a real latent NUL in `scripts/trackers/validate.js` on first run.
 
+**Log-sink caps gate — rotation is firing on every known sink** *(default + `--deep`)*
+
+SP-20260717-001 AC6 (F-ENF-1): the retention/rotation gate. `log-sink-caps.js` imports the SAME `SINK_CAPS` map the write-time rotation trigger uses (single source of truth) and flags any known sink grown past **2× its cap** — a breach means rotation is not firing on that sink — AND validates the SINK_CAPS INVENTORY itself (every declared descriptor well-formed) whether or not the sink exists yet. Fail-closed: an unrecognized `kind`, an `existsSync` fault, a non-finite `actual`, or a stat/read error is an offender, never a silent pass. This invocation was the AC6 wiring the original build skipped (builder hit the 540s clamp) — it is now delegated here:
+
+```bash
+node scripts/checks/log-sink-caps.js   # SP-20260717-001 AC6 (REPORT-ONLY): flags any SINK_CAPS sink over 2x cap + validates the inventory descriptors; fail-closed on unreadable/malformed/non-finite (exit 0 report-only; --enforce -> exit 1 on a breach; exit 2 = runner error)
+```
+
+Wired **REPORT-ONLY** (default invocation exits 0 even on a breach) so a pre-existing oversized sink cannot break `/scan:full` on landing; `--enforce` (exit 1 on a breach) is the ramp tail once the archive-move rotation has kept the hot sinks under cap across a watch window. Test: `scripts/checks/log-sink-caps.test.js`.
+
 **Dead team-tools gate — TeamCreate/TeamDelete regression** *(default + `--deep`)*
 
 Claude Code v2.1.178 (2026-06-15) REMOVED the `TeamCreate`/`TeamDelete` tools (teams are now implicit + session-scoped; teammates spawn via `Agent(run_in_background:true)`). This gate (E-TEAMS-MIGRATION-001) prevents a new LIVE directive instructing the removed tools from creeping back into the active skill/hook/script layer, and ALSO asserts the POSITIVE — that the NEW remediation (`Agent` background-subagent spawn) is actually present, so a future edit can't trade one dead tool-name for another:

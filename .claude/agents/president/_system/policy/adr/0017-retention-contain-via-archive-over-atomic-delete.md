@@ -1,0 +1,55 @@
+# ADR 0017 — Retention/rotation contain-via-archive-rename instead of an atomic-delete guard
+
+**Date:** 2026-07-17
+**Status:** accepted (β DECIDE, class B, 0.88, logged to the β events ledger; SP-20260717-001 fix-cycle)
+**Class:** B (security / data-durability model for the runtime retention + rotation path)
+**OPEN_ADR:** true
+
+---
+
+## Decision
+
+The runtime retention (`scripts/hooks/lib/retention.js`) and rotation (`scripts/hooks/lib/rotate.js`) paths **NEVER delete** transient runtime files. Their terminal operation is a **MOVE-TO-ARCHIVE** (`scripts/hooks/lib/archive.js`): a **`renameSync`-only** move (the earlier EXDEV `copy`-then-`unlink` fallback was **removed** — see the residual section) of the eligible/over-cap file INTO an in-root, indexed, walk-skipped archive tier (`.claude/runtime/archive/`) under a **verified trusted root** + a **single-writer lock** + a **strict shape-allowlist** + a **regular-file `lstat` (no symlink-follow)** + **realpath ancestor containment**.
+
+The original CRIT (destructive-harm class — an unbounded `fs.unlink` under a TOCTOU-swappable path / an untrusted deletion root) is **CLOSED**: deletion has left the outcome set of the former-deleter code paths (asserted by a grep test — retention.js/rotate.js carry zero `fs.unlink`/`fs.rm`/`fs.rmdir`), so the worst achievable outcome for non-malicious operation is a **contained, recoverable move into our own archive**, never an arbitrary delete. Two attacker-only residuals (a symlink-swap read on Windows, and a raced hard-linked index write) are enumerated honestly in the residual section — both require an attacker-planted filesystem primitive plus a won race and confer no new capability.
+
+## Context
+
+The SP-20260717-001 gauntlet raised F-RET-1 (TOCTOU between the containment check and the terminal filesystem op). The ideal fix is an atomic no-follow directory-handle operation (`openat`/`renameat`/`unlinkat` relative to a `dirfd`). **Node has no portable binding for these** — `fs` operates on paths, which are re-resolved by the OS at call time, leaving an irreducible check→use window.
+
+Two truths from the cross-provider gauntlet, both preserved (β ruling):
+- **Claude lane:** the CRIT *closes* — the destructive-harm class is removed; a same-uid attacker who can plant an ancestor swap already holds equal-or-greater capability (`mv`/`rm` directly) and crosses no privilege boundary; content is always copied/moved INTO the in-root archive (recoverable).
+- **GPT lane:** the TOCTOU is *reduced, not eliminated* — an ancestor swap in the narrow realpath→rename window can still cause an in-root (or, pre-realpath-hardening, an external) file to be moved into the archive.
+
+## Residual (tracked, re-classed)
+
+**F-RET-1 residual — MED-LOW, tracked here.** Root cause: Node lacks portable `openat`/`renameat`. Bounded by: verified trusted root + single-writer lock + shape-allowlist + `lstat`(no-follow) + **one realpath containment predicate (`archive.js#containResolved`) applied UNIFORMLY at every path-crossing site** — archive source, archive DEST dir, index, and restore origin/archived (gauntlet R3 systematic pass; grep-proven each `fs.rename`/`copy` sits behind `containResolved`). Worst case: a same-uid actor with write access inside `.claude/runtime` causes an in-root file to be **moved into the archive** (contained + recoverable) in the narrow realpath→rename window — never deleted, never written outside root. Discharge criterion for the CRIT: contained + recoverable + no privilege crossing + no deletion primitive reachable — all met and test-asserted (adversarial containment fixtures per vector + the no-delete grep proof in `archive.test.js`).
+
+**EXDEV external-delete class — ELIMINATED (not tracked).** An earlier EXDEV fallback did `copyFileSync(src,dest)` then `unlinkSync(src)`; a cross-volume ancestor swap could make that `unlink` DELETE an external file — arbitrary out-of-root deletion, worse than a recoverable move. That fallback is **removed** (gauntlet R3): `archive()` moves by `rename` ONLY (the archive tier is on the same volume/root as the source, so a legitimate rename never crosses devices), and on any rename error it fails cleanly — source kept, nothing copied, nothing unlinked. `archive.js` therefore has **no source unlink at all** (asserted by the no-delete grep test). This residual class is gone, not deferred.
+
+**Companion (closed):** `archive.js#restore` no-clobber is atomic via `COPYFILE_EXCL` (was a check-then-rename race); its origin + archived paths are now realpath-contained via the same `containResolved`, and the archived source is `lstat`-confirmed a regular file before the copy. Recovery-only, off the auto-apply path.
+
+**"Never writes outside root" — hard-link guard + its residual (gauntlet R4/R5).** `containResolved` cannot detect a HARD LINK (a hard link shares the target's inode; realpath resolves to the same in-root name, `lstat` says "regular file"). The one KNOWN-name write target is `archive/index.jsonl`; an attacker with archive-dir write could pre-create it as a hard link to a file outside root, so `appendIndex` would reach the external inode. `appendIndex` now opens for append and `fstat`s the OPEN fd, refusing when `nlink !== 1` (a hard-linked index) — surfaced as `indexed:false`, never writing. This closes the **PRE-EXISTING hard-linked index** vector (negative test: `archive.test.js` plants a hard-linked index and asserts the external file is untouched).
+
+**Honest residual — a raced post-`fstat` hard link (α ruling; β confirm DECIDE 0.89, entry 132).** Stated at its honest ceiling (β language, verbatim): *The nlink guard refuses PRE-EXISTING hard links (nlink>1 at fstat time). It does NOT prevent a hard link created by an attacker in the window between fstat and write — that raced link is a disclosed residual: same-UID, attacker already holds direct write to the target, zero new capability, non-destructive (index-telemetry append; the archived raw log is untouched), and not mistake-reachable. No atomic append-only-if-nlink-1 primitive exists in Node/POSIX.* Per the standing mistake-vs-attacker discriminator this is **out-of-model** (adversarial-helm, above the operator's dropped boundary) and is **dispositioned, not mechanised** — the disposition is **scope-based, not a denial of the finding's technical reality** (the race is real; the *claim* was the overclaim, corrected here per P-061). Tracked at ED-212. **O_EXCL per-entry files stay NAMED as the mitigation** if the threat model ever admits archive-dir-write attackers (write each index entry as an `O_EXCL` unique-named per-entry file — an unpredictable name cannot be pre-hard-linked or raced): **out-of-scope, not deferred**. The "never writes outside root" guarantee therefore holds for **non-malicious operation + pre-existing hard links**; this raced-link residual is the sole documented exception, and its decisive bound is that **the archived raw log is untouched in all outcomes** — only recoverable index telemetry can ever be misdirected, so the raw-history invariant was never reachable.
+
+**Honest residual — Windows symlink-swap read (out-of-model, NOT overstated).** `session-start`'s live-state read opens with `O_NOFOLLOW`, which refuses a symlink final component on POSIX. On **Windows** `fs.constants.O_NOFOLLOW` is undefined (→ 0), so the open does not block a symlink there; as a cross-platform best-effort the read also `fstat`s the fd and refuses on an inode/device mismatch vs the enumeration `lstat`. The **honest residual**: on Windows, absent both `O_NOFOLLOW` and reliable inode ids, a swapped-symlink race could still read external CONTENT into `additionalContext`. This is **attacker-only** (a planted symlink + a won race), **non-destructive** (a content read, not a write/delete), and confers **no new capability** — a same-uid attacker who can plant the symlink can already inject content by writing a plain regular `handoff-live` file. Per the standing discriminator it is out-of-model (adversarial-helm); it is documented here rather than mechanised further, and the code comment is corrected to say exactly this (the earlier "O_NOFOLLOW closes the window" claim was POSIX-only — the overclaim, not the outcome, is what this fix corrects).
+
+## Scope boundary — F-ROT-4 "SINK_CAPS is a mutable exported map" (β DECIDE 0.90)
+
+A gauntlet lane raised: `rotate.js` exports the mutable `SINK_CAPS` object, so a caller could register an arbitrary victim path and then rotate it, bypassing the allowlist. **Disposition: OUT-OF-SCOPE + TRACKED, no code change** (β ruling; Object.freeze REJECTED — it would force a test-architecture redesign of `regSink` in the closing round for zero in-model benefit).
+
+Reasoning: the ONLY attacker precondition is **in-process module mutation** — i.e. arbitrary JS execution inside the Node process. Such an attacker already calls `fs.unlinkSync` (or anything) directly; the SINK_CAPS gate is not the boundary against them. It sits *above* the operator's dropped adversarial-helm threat model. And terra's own PoC victim is in-root, so even the "bypass" yields a **contained** move, not destruction. The non-malicious **mistake** case (a buggy caller passing a bad path argument) is backstopped by the use-site predicate: `archiveFile` refuses any path not in SINK_CAPS, and `containResolved` bounds the outcome to in-root.
+
+### Standing discriminator (delegated for SP-20260717-001)
+
+- A finding whose ONLY precondition is **in-process code-exec / module-object mutation** → auto-disposition to this residuals ADR, **no β round**.
+- A finding where a non-malicious **MISTAKE** (a bug, a wrong path, a race under normal operation) could reach a **DESTRUCTIVE / irreversible** outcome → **in-scope** at the F-RET-1 bar (contain-by-construction + an adversarial test).
+- The discriminator is **"does a mistake reach an irreversible outcome"**, NOT the severity label. Straddlers → back to β.
+
+## Consequences
+
+- Raw history is never destroyed (D-1); the archive tier keeps it accessible + indexed + restorable.
+- The residual (single realpath→rename window) + the F-ROT-4 scope boundary have a durable home here rather than only code-header comments or a lane transcript.
+- A future runtime with a native no-follow directory-handle primitive (or a vetted npm binding) can retire the realpath→rename residual; until then this contain-via-archive model is the strongest closure the platform permits.
+- Enforcer: the adversarial containment + no-delete grep tests (`archive.test.js`) fail loudly if a delete primitive re-enters the retention/rotation paths or if a containment vector regresses. F-ROT-4 disposition tracked at ED-211.

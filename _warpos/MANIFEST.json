@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T19:52:56.659Z",
+  "generatedAt": "2026-07-18T03:22:11.049Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -20,8 +20,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "62b25ebfe6e56d0c11df8890dc98b3974dc257803b22a1966316be1057cfac7d",
-      "installedSha": "62b25ebfe6e56d0c11df8890dc98b3974dc257803b22a1966316be1057cfac7d"
+      "sha256": "f7f07cb7c973296239012344e2459a140894d31dae6d93965faacf6a9e1fdc00",
+      "installedSha": "f7f07cb7c973296239012344e2459a140894d31dae6d93965faacf6a9e1fdc00"
     },
     "AGENT-STRUCTURE.md": {
       "owner": "framework",
@@ -7836,8 +7836,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "666c94e810ccde4cca3d69c451b64a8535675c8538a4d812c090e3a175ba1749",
-      "installedSha": "666c94e810ccde4cca3d69c451b64a8535675c8538a4d812c090e3a175ba1749"
+      "sha256": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758",
+      "installedSha": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -9243,8 +9243,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-start.js",
-      "sha256": "c2c5ef3516a587b02450757bb42340ce66e154e331bc6fe22d8d7b5acc11ba33",
-      "installedSha": "c2c5ef3516a587b02450757bb42340ce66e154e331bc6fe22d8d7b5acc11ba33"
+      "sha256": "8a89ec18c434a5752984423e8a705c39b8c1c95a7f1c58a40149e1778890b1a9",
+      "installedSha": "8a89ec18c434a5752984423e8a705c39b8c1c95a7f1c58a40149e1778890b1a9"
     },
     "scripts/hooks/session-stop-sentinel.test.js": {
       "owner": "framework",
@@ -9376,8 +9376,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/team-guard.js",
-      "sha256": "533e527f543f0a8e112f55bf8e119f6e739ca765a3673f3a059ea4ab71e2ce2c",
-      "installedSha": "533e527f543f0a8e112f55bf8e119f6e739ca765a3673f3a059ea4ab71e2ce2c"
+      "sha256": "dd43fda78a5d166b73a377965a662033831c247ca95caf4f0db5fdcb007e163f",
+      "installedSha": "dd43fda78a5d166b73a377965a662033831c247ca95caf4f0db5fdcb007e163f"
     },
     "scripts/hooks/template-fillability.js": {
       "owner": "framework",
@@ -9442,6 +9442,20 @@
       "sha256": "9336f2ec2f342185caecf96ef6f3eb32da3b08f4f18ca60aa188449b6571e0e7",
       "installedSha": "9336f2ec2f342185caecf96ef6f3eb32da3b08f4f18ca60aa188449b6571e0e7"
     },
+    "scripts/hooks/lib/archive.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/archive.js",
+      "sha256": "68ac3cb4f8eed9b6bf2a39bcb59fbec4e5af2b5179f6d35d02e500cd46529196",
+      "installedSha": "68ac3cb4f8eed9b6bf2a39bcb59fbec4e5af2b5179f6d35d02e500cd46529196"
+    },
+    "scripts/hooks/lib/archive.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/archive.test.js",
+      "sha256": "72051f29c83c05c653340b7361fc8076ffc10e032deeb2ce231f80b0b21e175c",
+      "installedSha": "72051f29c83c05c653340b7361fc8076ffc10e032deeb2ce231f80b0b21e175c"
+    },
     "scripts/hooks/lib/banner.js": {
       "owner": "framework",
       "managed": true,
@@ -9488,8 +9502,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/logger.js",
-      "sha256": "0dcaa16e87808a67ea9f686b592dfc048497f45523a59472bcd574eb99e694a3",
-      "installedSha": "0dcaa16e87808a67ea9f686b592dfc048497f45523a59472bcd574eb99e694a3"
+      "sha256": "de1f8db0c7882b98ece1fcf52bdeaee8647791f884007cd8bc8378029cb41100",
+      "installedSha": "de1f8db0c7882b98ece1fcf52bdeaee8647791f884007cd8bc8378029cb41100"
     },
     "scripts/hooks/lib/mode-lifecycle.js": {
       "owner": "framework",
@@ -9547,12 +9561,40 @@
       "sha256": "75c2505b024658f6724675144c44138fc6b3bc4ac7837fea7c153f54891571bb",
       "installedSha": "75c2505b024658f6724675144c44138fc6b3bc4ac7837fea7c153f54891571bb"
     },
+    "scripts/hooks/lib/retention.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/retention.js",
+      "sha256": "431a7fbac8215fc3986baf144a193f81acf44d55330411983b8ca4eb63b5a897",
+      "installedSha": "431a7fbac8215fc3986baf144a193f81acf44d55330411983b8ca4eb63b5a897"
+    },
+    "scripts/hooks/lib/retention.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/retention.test.js",
+      "sha256": "ed2f576586d5605872f1313ace53b0a00606cdec3466d2ef95dcfac2c49fd663",
+      "installedSha": "ed2f576586d5605872f1313ace53b0a00606cdec3466d2ef95dcfac2c49fd663"
+    },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/role-aliases.js",
       "sha256": "d5a84009631f1659cf237f3fc7bef87243fa654d3fed13459c7c9baa607e7dff",
       "installedSha": "d5a84009631f1659cf237f3fc7bef87243fa654d3fed13459c7c9baa607e7dff"
+    },
+    "scripts/hooks/lib/rotate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/rotate.js",
+      "sha256": "d4ca277d0663df001427526d5b0e6070a6abe62cfed43107d2ce506ef11ac505",
+      "installedSha": "d4ca277d0663df001427526d5b0e6070a6abe62cfed43107d2ce506ef11ac505"
+    },
+    "scripts/hooks/lib/rotate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/hooks/lib/rotate.test.js",
+      "sha256": "7a710dd1e7bc76909947412d756fbd8e89b14e5bc7465cc8f23f634f5cfdd0a6",
+      "installedSha": "7a710dd1e7bc76909947412d756fbd8e89b14e5bc7465cc8f23f634f5cfdd0a6"
     },
     "scripts/hooks/lib/skill-telemetry.js": {
       "owner": "framework",
@@ -9768,8 +9810,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/dispatch-record-fields.js",
-      "sha256": "1b189df50b4dd093d0e8b435bfed3e9405399910e4dcdfcab08e780f39aad888",
-      "installedSha": "1b189df50b4dd093d0e8b435bfed3e9405399910e4dcdfcab08e780f39aad888"
+      "sha256": "da477abd8cb7fb776bdffcd0af23c07b82d469536205cdee52a1af27878702a6",
+      "installedSha": "da477abd8cb7fb776bdffcd0af23c07b82d469536205cdee52a1af27878702a6"
     },
     "scripts/dispatch/dispatch-record-fields.test.js": {
       "owner": "framework",
@@ -10463,6 +10505,20 @@
       "source": "scripts/checks/knowledge-coverage.test.js",
       "sha256": "519c42a329718564317acbd1a4442d32e9564548d81ad7231b36bf2b3a7f756e",
       "installedSha": "519c42a329718564317acbd1a4442d32e9564548d81ad7231b36bf2b3a7f756e"
+    },
+    "scripts/checks/log-sink-caps.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/log-sink-caps.js",
+      "sha256": "27fcabbecceac9a766f97550391495543d0e8ec5859622807325e62ca6146e7a",
+      "installedSha": "27fcabbecceac9a766f97550391495543d0e8ec5859622807325e62ca6146e7a"
+    },
+    "scripts/checks/log-sink-caps.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/log-sink-caps.test.js",
+      "sha256": "218715daa8d98decbebca1336cdd4ae717f2f2e8cddbe195122af45e71603262",
+      "installedSha": "218715daa8d98decbebca1336cdd4ae717f2f2e8cddbe195122af45e71603262"
     },
     "scripts/checks/manager-principles-scan.js": {
       "owner": "framework",
@@ -13158,10 +13214,6 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
-    },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
     },
     ".claude/.last-checkpoint": {
       "owner": "runtime",
@@ -22970,30 +23022,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/beta-honesty-waivers.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/traces.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -23090,23 +23118,11 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/maps/tools.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/tools.md": {
       "owner": "runtime",
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/events.jsonl.1": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/manager-consult.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -23131,10 +23147,6 @@
       "managed": false
     },
     ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -23661,8 +23673,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "18c66a7c1fc93197276f635ba8c16e4a0775e501b92c3408d00096f92f40208f",
-      "installedSha": "18c66a7c1fc93197276f635ba8c16e4a0775e501b92c3408d00096f92f40208f"
+      "sha256": "302a1f7566f0f061edef7374106a8a2d55d6688190b10b2f7e462c514afd909b",
+      "installedSha": "302a1f7566f0f061edef7374106a8a2d55d6688190b10b2f7e462c514afd909b"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
@@ -25542,13 +25554,21 @@
       "sha256": "4b940c2943f78f8b1b9c0457ce5af48d429256a24edb984da7b5c6df91ea2e01",
       "installedSha": "4b940c2943f78f8b1b9c0457ce5af48d429256a24edb984da7b5c6df91ea2e01"
     },
+    ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md",
+      "kind": "md",
+      "sha256": "6e2064bd93f8dcbf57a57c5535393392a85a1d4787793c51fcba22d8b126f4ed",
+      "installedSha": "6e2064bd93f8dcbf57a57c5535393392a85a1d4787793c51fcba22d8b126f4ed"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "40730b46d30efb95ad5f1a108102d96e593c96d3a40d6501cef6f1d85b06057c",
-      "installedSha": "40730b46d30efb95ad5f1a108102d96e593c96d3a40d6501cef6f1d85b06057c"
+      "sha256": "109de06839b07889a80144a38da2fe27b61d529a7dad7e5573af290eb20f0621",
+      "installedSha": "109de06839b07889a80144a38da2fe27b61d529a7dad7e5573af290eb20f0621"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
@@ -25590,11 +25610,6 @@
       "sha256": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012",
       "installedSha": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012"
     },
-    ".claude/agents/president/_system/gamma/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -25602,11 +25617,6 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
-    },
-    ".claude/agents/president/_system/beta/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -25631,11 +25641,6 @@
       "kind": "md",
       "sha256": "c35c9c44d350af58f1167eaafa92683ce0c8f99bb0300c05e3a5735712b58266",
       "installedSha": "c35c9c44d350af58f1167eaafa92683ce0c8f99bb0300c05e3a5735712b58266"
-    },
-    ".claude/agents/president/_system/alpha/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",

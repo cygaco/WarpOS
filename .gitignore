@@ -21,6 +21,13 @@ Thumbs.db
 .claude/project/decisions/provider-trace.jsonl
 .claude/project/memory/
 .claude/runtime/
+# Addendum C (SP-20260717-001): the declared rotation/archive manifest-ignore
+# class. All under .claude/runtime/ (covered above); listed explicitly so the
+# class is self-documenting — the archive tier holds MOVED raw logs (D-1) and
+# the locks serialize rotation/retention. Raw history is archived, never staged.
+.claude/runtime/archive/
+.claude/runtime/rotate-locks/
+.claude/runtime/retention.lock
 .claude/content/
 .claude/.session-id
 .claude/handoffs/

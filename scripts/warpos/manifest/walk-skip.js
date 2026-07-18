@@ -19,6 +19,14 @@
 // Directories (matched by basename, at any depth) never enumerated in the
 // shipping manifest: package/build caches, VCS, IDE config, agent/operator
 // scratch, and transient runtime state.
+// ADDENDUM C (SP-20260717-001): rotation/archive artifacts are a DECLARED
+// manifest-ignore class. The archive tier (.claude/runtime/archive/), the
+// rotation locks (.claude/runtime/rotate-locks/), and the retention lock all
+// live UNDER .claude/runtime/ — covered by the "runtime" dir skip below (and
+// gitignored via `.claude/runtime/`). Rotation MOVES over-cap logs into that
+// archive tier rather than leaving `.1` generations next to a manifest-tracked
+// sink dir, so rotation can never trip BC-02 (manifest coverage/honesty drift).
+// This comment is the explicit declaration; the "runtime" entry is the mechanism.
 const WALK_SKIP_DIRS = new Set([
   "node_modules",
   ".git",

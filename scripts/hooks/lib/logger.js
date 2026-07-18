@@ -39,6 +39,10 @@
 const fs = require("fs");
 const path = require("path");
 const { PROJECT, PATHS } = require("./paths");
+// Write-time rotation (own lib — see rotate.js header for the DoE seam note).
+// rotateSink() is a no-op no-throw for any file not in SINK_CAPS, so wiring it
+// in unconditionally ahead of every append is safe and cheap (single stat).
+const { rotateIfNeeded, rotateSink, SINK_CAPS } = require("./rotate");
 
 // ── Paths ───────────────────────────────────────────────
 
@@ -207,6 +211,9 @@ function log(cat, data, opts) {
     };
     const sid = resolveSprintId(opts);
     if (sid) event.sprint_id = sid;
+    // Rotate BEFORE the append (write-time rotation) — best-effort, never
+    // throws (see rotate.js). Keeps events.jsonl bounded without a cron/sweep.
+    rotateSink(LOG_FILE);
     fs.appendFileSync(LOG_FILE, JSON.stringify(event) + "\n", "utf8");
 
     // Fan-out: write to category-specific file if mapped
@@ -215,6 +222,7 @@ function log(cat, data, opts) {
       const line = JSON.stringify(event) + "\n";
       for (const f of catFiles) {
         try {
+          rotateSink(f); // tools.jsonl is high-volume — DoE seam note
           fs.appendFileSync(f, line, "utf8");
         } catch {
           /* best-effort */
@@ -479,4 +487,9 @@ module.exports = {
   MEMORY_DIR,
   LEARNINGS_FILE,
   CATEGORY_FILES,
+  // Backward-compat convenience re-export (S: runtime-retention) — callers
+  // that already `require("./logger")` can reach rotation without a second
+  // require. Canonical source stays scripts/hooks/lib/rotate.js.
+  rotateIfNeeded,
+  SINK_CAPS,
 };
