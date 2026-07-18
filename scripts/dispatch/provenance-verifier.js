@@ -27,6 +27,28 @@ const SUBPROCESS_CLAUDE_SHAPE = "subprocess-claude";
 const CROSS_PROVIDER_SHAPE = "subprocess-cross-provider";
 const PANEL_ROLE = "security-reviewer";
 
+// (R7-BE-001, fail-CLOSED) The WHITELIST of recognized panel profiles. The lane contract is defined ONLY
+// for these two — the BINDING `panel-3lab` and the degraded FLOOR `panel-2family` (ADR-0020 / panel-lane-
+// manifest.json `profiles`). Before this whitelist, `claudeLaneContract` treated ANY non-`panel-3lab` string
+// as the floor contract, so a typo'd/unknown/absent profile ("panel-2famly", undefined, "") silently
+// false-greened to the subprocess-claude floor. Now an unrecognized/absent profile FAILS CLOSED (throws) —
+// a crash is never a pass. This set must track `claudeLaneContract`'s profile branches (they co-live in this
+// module, so they cannot drift) + the manifest `profiles`; adding a profile is a deliberate edit to BOTH.
+const RECOGNIZED_PROFILES = Object.freeze(["panel-3lab", "panel-2family"]);
+
+// FAIL-CLOSED profile guard. An unrecognized or absent profile is a contract error, not a floor default.
+// Throws so an unknown profile can NEVER resolve to a contract — the consumers (cert-attest, dispatch-review)
+// only ever pass a recognized literal (or the "panel-2family" default), so this never fires on the GREEN path.
+function assertRecognizedProfile(profileName) {
+  if (!RECOGNIZED_PROFILES.includes(profileName)) {
+    throw new Error(
+      `provenance-verifier: unrecognized panel profile ${JSON.stringify(profileName)} — recognized profiles are ` +
+        `[${RECOGNIZED_PROFILES.join(", ")}]. A typo'd/unknown/absent profile FAILS CLOSED (R7-BE-001); it must ` +
+        `never default to the floor contract.`,
+    );
+  }
+}
+
 // (1) THE hunter-identity predicate. Identity = writer-stamped provider + shape + role. A subprocess
 // wrapper hardcodes subprocess-claude / subprocess-cross-provider and CANNOT write in-process-agent; the
 // conductor stamps role=security_claude_hunter only for the sanctioned hunter dispatch. NO settable label.
@@ -34,16 +56,22 @@ function isHunterRecord(r) {
   return !!r && r.provider === "claude" && r.shape === IN_PROCESS_SHAPE && r.role === HUNTER_ROLE;
 }
 
-// (2) THE profile-aware claude lane contract. Returns { shape, role, isHunter }.
+// (2) THE profile-aware claude lane contract. Returns { shape, role, isHunter }. FAILS CLOSED on an
+// unrecognized/absent profile (R7-BE-001) — only `panel-3lab` (BINDING → hunter) and `panel-2family`
+// (FLOOR → subprocess-claude review) are contracted; a typo'd profile throws, it does not floor-default.
 function claudeLaneContract(profileName) {
+  assertRecognizedProfile(profileName);
   if (profileName === "panel-3lab") return { shape: IN_PROCESS_SHAPE, role: HUNTER_ROLE, isHunter: true };
-  // panel-2family FLOOR (and any degraded/interim profile): a subprocess-claude security review.
+  // panel-2family FLOOR: a subprocess-claude security review. (Reached ONLY for the whitelisted floor now.)
   return { shape: SUBPROCESS_CLAUDE_SHAPE, role: PANEL_ROLE, isHunter: false };
 }
 
 // The full per-lane contract for a profile: claude is profile-dependent (above); every cross-provider lab
-// is a CLI subprocess review in both profiles.
+// is a CLI subprocess review in both profiles. The profile is validated FIRST (R7-BE-001, fail-closed) so an
+// unrecognized profile throws for EVERY provider — not only the claude lane — closing the partial false-green
+// where a bogus profile would still resolve the gpt/agy lanes to a cross-provider contract.
 function laneContract(profileName, provider) {
+  assertRecognizedProfile(profileName);
   if (provider === "claude") return claudeLaneContract(profileName);
   return { shape: CROSS_PROVIDER_SHAPE, role: PANEL_ROLE, isHunter: false };
 }
@@ -66,6 +94,8 @@ module.exports = {
   SUBPROCESS_CLAUDE_SHAPE,
   CROSS_PROVIDER_SHAPE,
   PANEL_ROLE,
+  RECOGNIZED_PROFILES,
+  assertRecognizedProfile,
   isHunterRecord,
   claudeLaneContract,
   laneContract,
