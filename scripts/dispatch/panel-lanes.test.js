@@ -121,23 +121,32 @@ test("T1-B (negative, the false-green): a gpt lane ASSERTING lane id 'claude' bu
   const out = assertCliOnlyPanel([{ laneId: "claude", provider: "openai", shape: "in-process-agent" }]);
   assert.ok(!out.ok, "a non-claude-provider lane must NOT be exempted even if it labels itself 'claude'");
 });
-test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process (WITH hunter role) → accepted", () => {
-  // β#3/SR-005: the exemption now requires the sanctioned hunter ROLE identity, not just provider=claude.
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", sanctioned_lane_id: "security_claude_hunter" }), true);
+test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process (structural: claude+claude+in-process) → accepted", () => {
+  // SR-020 (ADR-0022 teeth-2): the exemption is DELEGATED to provenance-verifier.isSanctionedHunterLane and
+  // keys on the STRUCTURAL contract — laneId "claude" AND provider "claude" AND the in-process shape — NOT a
+  // settable label. (In production the observed claude lane is subprocess-claude; the in-process HUNTER is a
+  // separate record whose writer-stamped role is still enforced at the RECORD level by pv.isHunterRecord.)
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", shape: "in-process-agent" }), true);
   const out = assertCliOnlyPanel([
     { laneId: "gpt", provider: "openai", shape: "subprocess-cross-provider" },
     { laneId: "agy", provider: "antigravity", shape: "subprocess-cross-provider" },
-    { laneId: "claude", provider: "claude", shape: "in-process-agent", sanctioned_lane_id: "security_claude_hunter" },
+    { laneId: "claude", provider: "claude", shape: "in-process-agent" },
   ]);
   assert.ok(out.ok, `sanctioned hunter over-rejected: ${out.violations.join(" | ")}`);
 });
-test("T1-D (negative, SR-005): a claude/claude in-process lane WITHOUT the hunter role → REFUSED", () => {
-  // The SR-005 hole: an arbitrary Claude in-process security-reviewer lane (no security_claude_hunter
-  // identity) must NOT ride the sanctioned exemption. Provider=claude alone is insufficient.
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), false);
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", role: "security-reviewer" }), false);
-  const out = assertCliOnlyPanel([{ laneId: "claude", provider: "claude", shape: "in-process-agent" }]);
-  assert.ok(!out.ok, "a claude in-process lane lacking the security_claude_hunter role must be refused");
+test("T1-D (SR-020): the settable sanctioned_lane_id/role LABEL does NOT grant the exemption — structure does", () => {
+  // SR-020 close (the THIRD settable-identity consumer): the exemption no longer trusts a settable label. A
+  // gpt lane setting sanctioned_lane_id='security_claude_hunter' gets NOTHING (positive scope: provider must be
+  // claude); a claude lane's exemption keys on the in-process SHAPE, and the label is ignored entirely
+  // (SR-016/SR-017 root: identity is never a settable field). The record-level role check (pv.isHunterRecord)
+  // is where the writer-stamped security_claude_hunter identity is enforced for actual attestation — unchanged.
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "openai", sanctioned_lane_id: "security_claude_hunter", shape: "in-process-agent" }), false, "provider must be claude — a gpt lane can't ride the settable label");
+  assert.equal(isSanctionedInProcessLane("gpt", { provider: "claude", shape: "in-process-agent" }), false, "only laneId 'claude' can be the sanctioned lane");
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), false, "no in-process shape → not the sanctioned in-process lane");
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", shape: "subprocess-claude" }), false, "a subprocess-claude lane is not the in-process hunter lane (it does not need the exemption)");
+  // the masquerade STILL blocks: a gpt lane resolved in-process is refused even if it sets the sanctioned label.
+  const out = assertCliOnlyPanel([{ laneId: "gpt", provider: "openai", shape: "in-process-agent", sanctioned_lane_id: "security_claude_hunter" }]);
+  assert.ok(!out.ok, "a gpt lane resolved in-process must be refused even if it sets the sanctioned label");
 });
 
 // ── H2/SR-006: EXACT required-set validation. A mutated required set that DROPS a lane must FAIL. ──

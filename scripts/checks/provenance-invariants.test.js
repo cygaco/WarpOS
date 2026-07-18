@@ -44,6 +44,27 @@ test("clean: the identity value inside a DIAGNOSTIC message string is NOT a deci
   assert.equal(g.hasLocalIdentityDecision(`reason: "no same-run in-process HUNTER record (shape in-process-agent + role security_claude_hunter, with evidence)"`), false);
 });
 
+// ── R6-BE-002 (ADR-0022): the HARDENED detector catches the constant-ref / Object.is / destructuring
+//    role-evasions the string-literal regex missed. The hunter ROLE value is flagged in EVERY form. ──
+test("R6-BE-002: a constant-ref to the role (=== pv.HUNTER_ROLE) is flagged (regex-evasion closed)", () => {
+  assert.equal(g.hasLocalIdentityDecision(`if (rec.role === pv.HUNTER_ROLE) accept();`), true);
+});
+test("R6-BE-002: Object.is with the role constant is flagged", () => {
+  assert.equal(g.hasLocalIdentityDecision(`if (Object.is(rec.role, HUNTER_ROLE)) accept();`), true);
+});
+test("R6-BE-002: a destructured role constant (const {HUNTER_ROLE}=pv) is flagged", () => {
+  assert.equal(g.hasLocalIdentityDecision(`const { HUNTER_ROLE } = pv;\nif (r.role === HUNTER_ROLE) ok();`), true);
+});
+test("R6-BE-002: a renamed destructure whose line still names HUNTER_ROLE is flagged", () => {
+  assert.equal(g.hasLocalIdentityDecision(`const { HUNTER_ROLE: R } = require("./provenance-verifier");\nif (r.role === R) ok();`), true);
+});
+// ── R6-BE-002 carve-out (SR-020 compatibility): a SHAPE-constant ref for manifest/lane validation is NOT a
+//    hunter-identity decision (a shape-only check needs no role) — it must stay CLEAN so panel-lanes delegates. ──
+test("R6-BE-002 carve-out: a shape-constant ref (lane.shape === IN_PROCESS_SHAPE) is CLEAN (manifest validation)", () => {
+  assert.equal(g.hasLocalIdentityDecision(`if (lane.shape === IN_PROCESS_SHAPE) violations.push(...);`), false);
+  assert.equal(g.hasLocalIdentityDecision(`const expectShape = provider === "claude" ? pv.IN_PROCESS_SHAPE : pv.CROSS_PROVIDER_SHAPE;`), false);
+});
+
 // ── DELEGATE: a consumer must import the verifier. ──
 test("importsVerifier: detects the require (relative + path.join)", () => {
   assert.equal(g.importsVerifier(`const pv = require("../dispatch/provenance-verifier");`), true);

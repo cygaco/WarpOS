@@ -27,9 +27,15 @@ const MANIFEST_PATH = path.join(ROOT, ".claude", "agents", "_org", "panel-lane-m
 const SUPPORT_MATRIX_PATH = path.join(ROOT, ".claude", "kernel", "support-matrix.json");
 const SECURITY_ROLE = "security-reviewer";
 
-// The shapes the contract fixes per lane class (single place, so validate + the tooth agree).
-const CROSS_PROVIDER_SHAPE = "subprocess-cross-provider";
-const IN_PROCESS_SHAPE = "in-process-agent";
+// SR-020 (ADR-0022 teeth-2): the shape identity VALUES + the sanctioned-lane predicate come from the SINGLE
+// provenance-verifier choke-point. panel-lanes no longer defines the identity values locally (a local
+// `const IN_PROCESS_SHAPE = "in-process-agent"` is exactly the re-implementation the delegation-complete
+// guard flags — the choke-point owns the values so EVERY lane-identity consumer routes through the ONE
+// authority). The shape constants below are RE-EXPORTS of pv's, used here only for manifest CONTRACT
+// validation (does the manifest declare the required shape per lane class), never to decide a RECORD's identity.
+const pv = require("./provenance-verifier");
+const CROSS_PROVIDER_SHAPE = pv.CROSS_PROVIDER_SHAPE;
+const IN_PROCESS_SHAPE = pv.IN_PROCESS_SHAPE;
 
 // The panel status vocabulary (PRD "Status contract"). The reducer NEVER normalizes a BLOCKED to
 // PASS/GREEN — that normalization IS the false-green this phase kills.
@@ -72,23 +78,16 @@ function requiredLanes(manifest, profileName) {
   });
 }
 
-/** The sanctioned in-process hunter role identity (ADR-0016). The exemption binds to THIS role. */
-const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
-
 /**
- * The ONE sanctioned in-process panel lane: the claude hunter. POSITIVE identity scope (β rider #3,
- * SR-005): lane id === "claude" AND provider === "claude" AND the lane carries the sanctioned hunter
- * ROLE identity (`sanctioned_lane_id`/`role` === "security_claude_hunter"). NOT the shape alone, NOT a
- * settable flag, and NOT merely provider===claude — an arbitrary Claude in-process security-reviewer
- * lane (no hunter role) can NEVER assert this exemption, nor can a gpt/agy lane.
+ * The ONE sanctioned in-process panel lane: the claude hunter. SR-020 (ADR-0022 teeth-2): identity is
+ * DELEGATED to the provenance-verifier choke-point — it keys on the STRUCTURAL contract (laneId "claude"
+ * AND provider "claude" AND the in-process shape), NEVER the settable `sanctioned_lane_id`/`role` label
+ * that panel-lanes used to compare here (the third settable-identity consumer SR-020 flagged). The
+ * laneId+provider positive scope still means only lane "claude" on provider "claude" can qualify — a
+ * gpt/agy lane, or an arbitrary in-process claude lane without the contracted shape, can NEVER assert it.
  */
 function isSanctionedInProcessLane(laneId, lane) {
-  return (
-    laneId === "claude" &&
-    !!lane &&
-    lane.provider === "claude" &&
-    (lane.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE || lane.role === SANCTIONED_HUNTER_ROLE)
-  );
+  return pv.isSanctionedHunterLane(laneId, lane);
 }
 
 /**

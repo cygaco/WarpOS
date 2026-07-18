@@ -367,7 +367,7 @@ function telemetry() {
 function recordAgentDispatch(
   agentPlan,
   sprintId,
-  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime" } = {},
+  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime", verdict } = {},
 ) {
   // FAKE-GREEN GUARD: refuse to write a completion record without an EXPLICIT boolean
   // outcome from a real spawn. The prior `{ ok = true }` default let conductStep stamp
@@ -423,6 +423,10 @@ function recordAgentDispatch(
     route: agentPlan.route,
     // in-process evidence binding (Increment B): sha256 of the Agent-tool return that backs ok.
     ...(evidenceSha ? { evidence_sha: evidenceSha } : {}),
+    // SR-019 (ADR-0022): the REVIEW verdict (pass/fail/warn) extracted from the Agent-tool return, so the
+    // panel gate can bind the binding claude lane to the HUNTER's verdict. Only stamped when a real verdict
+    // was parsed from the evidence — an absent verdict leaves the field off → the gate treats it as BLOCK.
+    ...(verdict ? { verdict } : {}),
   });
   return { recorded: true, dispatch_id: dispatchId };
 }
@@ -690,12 +694,27 @@ function recordInProcessCompletion(agentPlan, sprintId, { evidenceFile, elapsedM
   const evidenceBytes = buf.length;
   const evidenceSha = crypto.createHash("sha256").update(buf).digest("hex");
   const ok = evidenceBytes > 0; // 0-byte return = reap (ED-018 analog), NOT a success
+  // SR-019 (ADR-0022): extract the hunter's REVIEW verdict from the Agent-tool return so the panel gate
+  // can bind the binding claude lane to the HUNTER's verdict (dispatch-review#applyPanelGate). The evidence
+  // is the hunter's ReviewResult JSON; read its top-level `verdict`. Fail-CLOSED: a non-JSON return or an
+  // absent/invalid verdict leaves `verdict` undefined → the record carries no verdict → the gate BLOCKS the
+  // hunter lane (a hunter that produced no parseable verdict must never read as a pass). `ok` (did it RUN)
+  // stays independent of the verdict (did it PASS) — a hunter that ran and FAILED is ok:true + verdict:fail.
+  let verdict;
+  try {
+    const parsed = JSON.parse(buf.toString("utf8"));
+    const v = parsed && typeof parsed.verdict === "string" ? parsed.verdict.toLowerCase() : null;
+    if (v === "pass" || v === "fail" || v === "warn") verdict = v;
+  } catch {
+    /* non-JSON evidence → no verdict → the panel gate treats the hunter lane as BLOCK (fail-closed) */
+  }
   const result = recordAgentDispatch(agentPlan, sprintId, {
     ok,
     evidenceBytes,
     evidenceSha,
     elapsedMs,
     via: "epsilon-agent",
+    verdict,
   });
   // Surface the DERIVED outcome so callers (CLI + tests) see what ok was bound to — proves
   // ok came from the evidence bytes, not an assertion.

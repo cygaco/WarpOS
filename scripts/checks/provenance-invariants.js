@@ -23,9 +23,12 @@ const path = require("path");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "provenance-invariants";
-// The attestation CONSUMERS that must delegate identity to the choke-point (NOT the module itself, NOT the
-// manifest-lane checker panel-lanes.js which legitimately reads a MANIFEST lane's sanctioned_lane_id).
-const CONSUMERS = ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js"];
+// The lane-identity CONSUMERS that must delegate identity to the choke-point (NOT the module itself). SR-020
+// (ADR-0022 teeth-2) added panel-lanes.js: it used to decide the sanctioned in-process lane from the settable
+// `sanctioned_lane_id`/`role` label (the third settable-identity consumer) — it now delegates to
+// provenance-verifier.isSanctionedHunterLane (structural laneId+provider+shape), so it is a full CONSUMER and
+// the guard is delegation-COMPLETE across EVERY lane-identity consumer (not enumerate-the-known-callers).
+const CONSUMERS = ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js", "scripts/dispatch/panel-lanes.js"];
 const VERIFIER = "provenance-verifier";
 
 function read(rel) {
@@ -45,13 +48,38 @@ function stripComments(src) {
 // blocklist gap: it does NOT enumerate label fields (a new/renamed field would slip a field-list), it
 // catches the identity VALUE in a comparison/assignment context. NOT flagged: a value appearing INSIDE a
 // larger diagnostic message string (not a standalone quoted literal after ===/!==/=).
-const IDENTITY_VALUE = `["'](security_claude_hunter|in-process-agent)["']`;
+// R6-BE-002 (ADR-0022 teeth-2): the detector is HARDENED beyond the string-literal regex to catch the
+// constant-ref / Object.is / destructuring evasions the old regex missed — WITHOUT a JS-AST parser (none is a
+// dependency of this repo; a true parser-based AST is a separate dependency decision, tracked). The
+// hardening is VALUE-KIND-AWARE, which is what lets it stay compatible with the SR-020 panel-lanes consumer:
+//
+//   - The hunter ROLE value ("security_claude_hunter") is PURE record-identity: a consumer NEVER legitimately
+//     names it — it delegates to pv.isHunterRecord/isSanctionedHunterLane. So it is flagged in EVERY form:
+//     the raw literal AND any reference to pv's `HUNTER_ROLE` export (member `pv.HUNTER_ROLE`, a destructured
+//     `const {HUNTER_ROLE}=pv`, an `Object.is(x, HUNTER_ROLE)`, or a renamed alias whose destructure line
+//     still names HUNTER_ROLE). A COMPLETE hunter-identity re-implementation ALWAYS needs the role → always caught.
+//   - The in-process SHAPE value ("in-process-agent") is flagged as a raw LITERAL only. A constant-REF
+//     (`x === IN_PROCESS_SHAPE` / `x === pv.IN_PROCESS_SHAPE`) is intentionally ALLOWED: that is legitimate
+//     manifest/observed-lane SHAPE validation (panel-lanes' assertCliOnlyPanel + validatePanelManifest), and a
+//     shape-only check decides NO hunter identity (that needs the role, caught above). This is the deliberate
+//     carve-out that makes panel-lanes a clean CONSUMER without over-flagging its contract validation.
+//
+// RESIDUAL (documented, not a hunter-identity hole): a consumer could write a SHAPE-ONLY re-implementation via
+// the imported IN_PROCESS_SHAPE constant and it would not be flagged — but a shape-only comparison establishes
+// no hunter identity on its own. A full parser-based AST that reasons about the compared object's ORIGIN
+// (record vs manifest-lane) would close even that; it needs a parser dependency (out of this build's scope).
+const HUNTER_ROLE_VALUE = `["']security_claude_hunter["']`;
+const SHAPE_VALUE = `["']in-process-agent["']`;
 function hasLocalIdentityDecision(code) {
   const c = stripComments(code);
   return (
-    new RegExp(`(===|!==)\\s*${IDENTITY_VALUE}`).test(c) || // <field> === "value"  (any field/alias, any name)
-    new RegExp(`${IDENTITY_VALUE}\\s*(===|!==)`).test(c) || // "value" === <field>  (reversed operands)
-    new RegExp(`=\\s*${IDENTITY_VALUE}\\s*[;,)]`).test(c) // const X = "value";   (aliased into a var to compare)
+    // (A) the hunter ROLE value — literal OR any ref to pv's HUNTER_ROLE export (constant/member/destructured).
+    new RegExp(HUNTER_ROLE_VALUE).test(c) || // literal "security_claude_hunter" (its own quoted string; message-safe)
+    /\bHUNTER_ROLE\b/.test(c) || // pv.HUNTER_ROLE / {HUNTER_ROLE} / Object.is(x, HUNTER_ROLE) / aliased destructure
+    // (B) the in-process SHAPE value as a raw LITERAL in a comparison/assignment (import the constant instead).
+    new RegExp(`(===|!==)\\s*${SHAPE_VALUE}`).test(c) || // <field> === "in-process-agent"
+    new RegExp(`${SHAPE_VALUE}\\s*(===|!==)`).test(c) || // "in-process-agent" === <field> (reversed)
+    new RegExp(`=\\s*${SHAPE_VALUE}\\s*[;,)]`).test(c) // const X = "in-process-agent"; (aliased into a var)
   );
 }
 function importsVerifier(code) {
@@ -86,7 +114,7 @@ if (require.main === module) {
   try { violations = run(); } catch (e) { process.stderr.write(`FAIL [${NAME}] fail-closed: ${e.message}\n`); process.exit(2); }
   const fatal = violations.some((v) => v.fatal);
   if (json) process.stdout.write(JSON.stringify({ check: NAME, ok: violations.length === 0, violations }, null, 2) + "\n");
-  else if (violations.length === 0) process.stdout.write(`OK   [${NAME}] both attestation consumers delegate identity to the provenance-verifier choke-point; no local re-implementation, no settable-label identity; git-head SHA-validates every ref-read\n`);
+  else if (violations.length === 0) process.stdout.write(`OK   [${NAME}] all ${CONSUMERS.length} lane-identity consumers (${CONSUMERS.map((f) => f.split("/").pop()).join(", ")}) delegate identity to the provenance-verifier choke-point; no local re-implementation, no settable-label identity; git-head SHA-validates every ref-read\n`);
   else process.stderr.write(`FAIL [${NAME}] ${violations.length} drift(s):\n${violations.map((v) => `  - [${v.inv}] ${v.file}: ${v.msg}`).join("\n")}\n`);
   process.exit(violations.length === 0 ? 0 : fatal ? 2 : 1);
 }

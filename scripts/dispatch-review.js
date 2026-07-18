@@ -340,13 +340,23 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
         if (contract.isHunter) return !!r.output_digest || !!r.evidence_sha;
         return !!r.output_digest && !!r.cmdline_checksum && r.tool_id === toolIdOf(l.observedProvider);
       });
+      // SR-019 (ADR-0022): the panel-3lab BINDING claude lane binds its verdict to the SAME-RUN HUNTER
+      // record (the `rec` found above via the choke-point identity), NEVER the floor subprocess pass's
+      // l.verdict. A missing rec, or a hunter record with a missing/invalid verdict, resolves to "error"
+      // → panelStatus BLOCKS at eval (a hunter-fail or hunter-absent can never read as the floor's pass).
+      // The floor (isHunter:false) is unchanged: its verdict stays the subprocess/CLI child judgment.
+      let verdict = l.verdict; // the review JUDGMENT from the child output (floor + CLI lanes)
+      if (contract.isHunter) {
+        const hv = rec && typeof rec.verdict === "string" ? rec.verdict.toLowerCase() : null;
+        verdict = hv === "pass" || hv === "fail" || hv === "warn" ? hv : "error";
+      }
       return {
         laneId: l.laneId,
         contractedProvider: l.provider,
         observedProvider: rec ? rec.provider : l.observedProvider,
         fallback: rec ? false : true,
         alive: !!rec,
-        verdict: l.verdict, // the review JUDGMENT stays from the child output
+        verdict,
         hasEvidence: !!rec,
       };
     });
