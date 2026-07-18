@@ -106,6 +106,18 @@ const GATE_EVALUATORS = {
     return { outcome: "BLOCK", reason: "unrecognized role-binding input shape (fail-closed)" };
   },
 
+  // C-2 [DISPOSITIONED, security-Claude]: this seed only evaluates
+  // `integrate_to_main`, ONE of CORE-2's four named powers (§1/§7 P7.2:
+  // capability grants, protected mutation, verification, integration-to-main).
+  // The other three are DEFINED by the contract but have NO evaluator logic
+  // here — that is intentional Phase-0 scope, not a gap: CORE-2's live
+  // enforcement mechanism (the pinned trusted checker / atomic CAS integration
+  // principal) is RATIFIED-PLAN Phase-4 work (ED-215). This evaluator is a
+  // REPORT-ONLY Phase-0 seed for the one power that has a clean binary
+  // input shape today; do not read a PASS from this gate as proof that
+  // capability-grants/protected-mutation/verification are themselves
+  // enforced — they are not, until Phase 4 ships (see fixtures/manifest.json
+  // core_coverage.CORE-2's note for the fixture-level restatement).
   "trust-boundary": (input) => {
     if (input.attempted_action === "integrate_to_main" && !input.actor_is_trusted_layer) {
       return { outcome: "BLOCK", reason: "only the provider-independent trusted layer may integrate to main" };

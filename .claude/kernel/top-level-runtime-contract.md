@@ -50,6 +50,18 @@ distinction packet-03's ADR draws between the durable company and its ephemeral 
 come and go; the four powers above stay anchored to a trusted layer that no single provider session
 controls unilaterally.
 
+**S-3 disambiguation — `write-durable-state` (D4/§4) is a provider CAPABILITY, not the CORE-2 power.**
+`support-matrix.json` grants providers a `write-durable-state` capability at helm-levels 1-2. That
+capability means a provider may PROPOSE durable state by writing to an ISOLATED WORKTREE (or via the
+trusted dispatch bridge) — an UNTRUSTED proposal, exactly like any other patch a provider produces.
+It does NOT mean a provider may perform **protected mutation** (writes that land directly in the
+company's durable state — trackers, ledgers, registries — on the integrated/main tree) or
+**integration-to-main** — those two of the four CORE-2 powers above stay SOLELY with the trusted
+layer, regardless of what any support-matrix row says a provider can write. A provider's
+`write-durable-state` capability and the trusted layer's `protected mutation` + `integration-to-main`
+powers are different things named similarly; this contract does not read the matrix as granting
+providers protected mutation.
+
 **Phase-0 DEFINES this boundary only.** The mechanism that makes it binding — a pinned, content-addressed
 trusted checker running OUTSIDE any candidate provider's writable domain, the sole integration
 principal, atomic compare-and-swap into the destination ref — is RATIFIED-PLAN Phase 4's "trusted
@@ -104,14 +116,20 @@ copy: `role-binding.json`):
 
 1. **explicit_user** — an explicit, in-session user/operator instruction.
 2. **validated_workorder_or_cli** — a validated WorkOrder field or CLI/dispatch binding.
-3. **explicit_top_level_helm** — an explicit top-level runtime (helm) binding (`sources.helm.can_bind: true`).
+3. **explicit_top_level_helm** — an explicit top-level runtime (helm) binding
+   (`sources.explicit_top_level_helm.can_bind: true`).
 4. **UNBOUND** — nothing above resolved a role.
 
-| Source | Can bind a role? |
-|---|---|
-| `helm` (an explicit top-level runtime binding) | **true** |
-| `agents_md` (the neutral, provider-neutral handbook) | **false** |
-| `repo_prose` (any other ambient repository text) | **false** |
+This is a TOTAL machine graph over the four `order` entries above (Q-2) — every ordered source except
+`UNBOUND` has a `sources` entry, and the entry's key name matches the `order` name exactly:
+
+| Source | Can bind a role? | Meaning |
+|---|---|---|
+| `explicit_user` | **true** | An explicit, in-session user/operator instruction — the OPERATOR's own direct instruction (a trusted human), categorically different from ambient repo prose. Order position #1. |
+| `validated_workorder_or_cli` | **true** | A validated WorkOrder field or CLI/dispatch binding. "Validated" is DEFINED at P3.2 below (S-2). Order position #2. |
+| `explicit_top_level_helm` | **true** | An explicit top-level runtime (helm) binding. The ONLY source for the top-level human-facing session default (`top_level_default_binding_source: "helm_only"`). Order position #3. |
+| `agents_md` (the neutral, provider-neutral handbook) | **false** | Ambient prose every provider auto-loads — NOT an ordered binding source; ambient prose can never manufacture a binding (CORE-3). |
+| `repo_prose` (any other ambient repository text) | **false** | Same CORE-3 refusal as `agents_md` — stale worktree copies, handoff prompts, any other non-operator, non-WorkOrder, non-helm text. |
 
 Two ratified rules follow directly from this table:
 
@@ -120,10 +138,13 @@ Two ratified rules follow directly from this table:
   authority. This is **CORE-1** (§7).
 - **The top-level, human-facing session defaults to `alex-alpha`** (packet-04 binding order #5) — but
   ONLY through an explicit helm binding (`top_level_default_binding_source: "helm_only"`). Neutral,
-  provider-neutral prose (root `AGENTS.md`, or any file every provider auto-loads) can NEVER itself
-  manufacture that default — this is **CORE-3** (§7). The RATIFIED-PLAN Phase-2 α ruling is exactly
-  this split: DISPATCHED workers are unbound-fail-closed; the OPERATOR's own top-level session is not
-  left unbound, because a blanket no-default rule would strand the operator.
+  provider-neutral, AMBIENT prose (root `AGENTS.md`, or any file every provider auto-loads) can NEVER
+  itself manufacture that default — this is **CORE-3** (§7). CORE-3 is a restriction on ambient/neutral
+  PROSE specifically; it is NOT a claim that only a WorkOrder/CLI binding or a helm binding can bind a
+  role at all — `explicit_user` (the operator's own direct, in-session instruction) is ALSO a
+  legitimate binding source per the precedence order above (Q-1). The RATIFIED-PLAN Phase-2 α ruling is
+  exactly this split: DISPATCHED workers are unbound-fail-closed; the OPERATOR's own top-level session
+  is not left unbound, because a blanket no-default rule would strand the operator.
 
 #### P3.1 — Role-binding precedence graph (fail-closed; repo prose cannot bind)
 
@@ -135,6 +156,23 @@ unbound-dispatch-fails-closed.json` (CORE-1) and `fixtures/role-binding/no-root-
 `role-binding.json` to gate a real dispatch. That wiring is RATIFIED-PLAN Phase 2 (G2.1).
 
 Deferred: ED-216 @ Phase-2-exit
+
+#### P3.2 — `validated_workorder_or_cli` provenance (S-2: what makes a binding "validated")
+
+A WorkOrder/CLI binding is **"validated"** — and therefore eligible to bind a role at precedence order
+position #2 — IF AND ONLY IF it (a) passed schema validation against the minimal WorkOrder field set
+(§5, D5, `workorder-min.schema.json`) AND (b) arrived via the TRUSTED dispatch bridge
+(`scripts/dispatch-claude.js` / `scripts/dispatch-agent.js`), never a self-asserted claim embedded in a
+candidate provider's own output. Self-assertion (a provider's session simply claiming "I am a validated
+WorkOrder binding") never satisfies (b), regardless of how the claim is phrased — provenance must be
+established by the TRANSPORT the binding arrived through, not by the content of the claim itself.
+
+This is the Phase-0 DEFINITION of provenance only. The FULL live validation mechanism — a WorkOrder
+schema validator wired into every dispatch writer, rejecting an unvalidated or self-asserted binding at
+dispatch time before it can resolve a role — is RATIFIED-PLAN Phase-3 work; see ED-218. Nothing today
+rejects a dispatch for failing this provenance test.
+
+Deferred: ED-218 @ Phase-3-exit
 
 ---
 
@@ -154,6 +192,15 @@ exist across the entire dispatch ledger, `providers.js` carries no agy invocatio
 probe was contract-BLOCKED (`antigravity` ∉ `[codex, gemini, agy]`, reproducing I-2). Antigravity
 migration is IN-SCOPE Phase-1 work per the operator's ruling (RATIFIED-PLAN Phase 1); it is NOT
 Phase-0's job to make this cell green, and this contract will not pretend it is.
+
+**S-3 disambiguation:** each row's per-capability `write-durable-state` cell (e.g. `claude`/`codex-gpt`
+at helm-levels 1-2, evidenced by "file writes in an isolated worktree, live") describes an UNTRUSTED-
+PROPOSAL capability — a provider writing to an isolated worktree it does not control the integration
+of, or proposing a change via the trusted dispatch bridge — never direct protected mutation of the
+company's integrated/main durable state. §1/CORE-2's **protected mutation** and **integration-to-main**
+powers stay SOLELY with the provider-independent trusted layer regardless of this matrix; see §1's S-3
+disambiguation for the full statement. This matrix cannot be read as granting any provider row
+protected mutation or integration authority.
 
 **Addendum A — model × channel (Phase-0 seed; Phase-1 F3 refines with the prompt-shape dimension):**
 
@@ -210,6 +257,11 @@ full v1 schema — deliberately NOT the ResultEnvelope; that is Phase 3):
 "Build roles" = `role-registry.json` entries with `kind: builder|fixer` (`build_chain: true`);
 "non-build roles" = reviewers, leads, directors, tools, checks, and the President/Beta/mode-conductor
 faces. The full JSON Schema is `workorder-min.schema.json`.
+
+This field set is also HALF of what makes a `validated_workorder_or_cli` role-binding source
+"validated" per §3 P3.2 (S-2): schema validation against this field set is necessary condition (a);
+arrival via the trusted dispatch bridge is the other, condition (b). See P3.2 for the full provenance
+definition — this section defines the schema; §3 defines when passing it counts as a binding.
 
 #### P5.1 — Minimal WorkOrder field set (Phase-3 G3.1 seed)
 
@@ -293,8 +345,12 @@ Core: non-waivable
 
 Neutral, provider-neutral, ambient prose — root `AGENTS.md`, any file every provider auto-loads, any
 stale worktree copy, any handoff prompt — can NEVER itself bind a role, grant a default, or assert
-top-level authority. Only a validated WorkOrder/CLI binding or an explicit top-level helm binding can
-bind a role (§3). Fixture: `fixtures/role-binding/no-root-alpha-poison.json`.
+top-level authority. This is a restriction on AMBIENT/NEUTRAL PROSE specifically (`sources.agents_md`
+and `sources.repo_prose`, both `can_bind: false`) — it is NOT an enumeration of the only sources that
+CAN bind. Per §3's precedence order, `explicit_user` (the operator's own direct, in-session
+instruction — a trusted human, categorically different from ambient repo prose), a validated
+WorkOrder/CLI binding, and an explicit top-level helm binding can all bind a role (Q-1). Fixture:
+`fixtures/role-binding/no-root-alpha-poison.json`.
 
 Core: non-waivable
 
@@ -328,6 +384,7 @@ Enforcer: scripts/checks/contract-lint.js
 | P1.1 | §1 Trust boundary | `Deferred: ED-215 @ Phase-4-exit` |
 | P2.1 | §2 Runtime levels | `Deferred: ED-214 @ Phase-3-exit` |
 | P3.1 | §3 Role-binding precedence | `Deferred: ED-216 @ Phase-2-exit` |
+| P3.2 | §3 `validated_workorder_or_cli` provenance | `Deferred: ED-218 @ Phase-3-exit` |
 | P4.1 | §4 Support matrix | `Deferred: ED-214 @ Phase-3-exit` |
 | P5.1 | §5 Minimal WorkOrder | `Deferred: ED-217 @ Phase-3-exit` |
 | P6.1 | §6 Retention classes | `Enforcer: scripts/checks/log-sink-caps.js` |
@@ -339,6 +396,7 @@ Enforcer: scripts/checks/contract-lint.js
 
 **Kernel scope (H-4, versioned, candidate-immutable):** IN = §1–§7 above + their JSON/fixture
 companions. OUT = the Phase-4 trusted enforcement adapter itself (ED-215), the full WorkOrder/
-ResultEnvelope v1 (ED-217), live role-binding runtime wiring (ED-216), G0.3 BINDING enforcement
-(ED-214) — all named, dated debt, never a silent gap — and product-pack/webapp/founder-panel gates
-(route to bootstrap:lastmile, never kernel scope).
+ResultEnvelope v1 (ED-217), live role-binding runtime wiring (ED-216), the live
+`validated_workorder_or_cli` provenance validator (ED-218), G0.3 BINDING enforcement (ED-214) — all
+named, dated debt, never a silent gap — and product-pack/webapp/founder-panel gates (route to
+bootstrap:lastmile, never kernel scope).

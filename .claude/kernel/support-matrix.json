@@ -26,7 +26,7 @@
       "evidence_ref": "CLAUDE.md binds the top-level Claude Code session to alex-alpha; live dispatch ledger (dispatch-completions.jsonl)",
       "capabilities": {
         "read-files": { "supported_levels": [0, 1, 2], "evidence_ref": "Read/Grep/Glob tools, live" },
-        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "Write/Edit tools + git commit, live" },
+        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "Write/Edit tools + git commit -- isolated-worktree proposal only, never direct protected mutation of main (S-3, contract §1/§4); live" },
         "run-commands": { "supported_levels": [2], "evidence_ref": "Bash tool, live" },
         "create-workorder": { "supported_levels": [2], "evidence_ref": "dispatch-claude.js / dispatch-agent.js, live" },
         "inspect-envelope": { "supported_levels": [2], "evidence_ref": "dispatch-completions.jsonl reads, live" },
@@ -42,7 +42,7 @@
       "evidence_ref": "scripts/dispatch-agent.js codex route; ledger record d-mrob0i1p (qa-reviewer/openai/gpt-5.6-terra, exit 0, fallback:false, 2026-07-17)",
       "capabilities": {
         "read-files": { "supported_levels": [0, 1, 2], "evidence_ref": "codex CLI reads repo AGENTS.md + cwd, live" },
-        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "codex CLI file writes in an isolated worktree, live" },
+        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "codex CLI file writes -- isolated-worktree proposal only, never direct protected mutation of main (S-3, contract §1/§4); live" },
         "run-commands": { "supported_levels": [2], "evidence_ref": "codex exec --sandbox workspace-write, live" },
         "create-workorder": { "supported_levels": [2], "evidence_ref": "dispatch-agent.js codex route, live" },
         "inspect-envelope": { "supported_levels": [2], "evidence_ref": "dispatch-completions.jsonl records the codex route, live" },
@@ -110,5 +110,6 @@
     "in": "helm x capability x helm-level support contract (this file) + the model x channel Addendum A seed. Both are Phase-0 SEED data, positively fixture-covered (gate 'support-matrix').",
     "out": "per-request routing POLICY (RATIFIED-PLAN Phase 1: routing + security truth); the full panel-3lab BINDING gate (RATIFIED-PLAN Phase 1 G1.5); product-pack/webapp/founder-panel provider gates (lastmile, never kernel scope)."
   },
-  "durable_rule": "A lane resolved DOWN is reflected in EVERY artifact that assumed it UP. conformance-matrix.js reads the 'status' field directly (not a cached/echoed liveness claim) so a false-green agy seed cannot propagate into the Phase-1 G1.5 panel lane contract — a config-intent echo is NOT liveness (the exact trap that fooled the 2026-07-16 attestation)."
+  "durable_rule": "A lane resolved DOWN is reflected in EVERY artifact that assumed it UP. conformance-matrix.js reads the 'status' field directly (not a cached/echoed liveness claim) so a false-green agy seed cannot propagate into the Phase-1 G1.5 panel lane contract — a config-intent echo is NOT liveness (the exact trap that fooled the 2026-07-16 attestation).",
+  "write_durable_state_note": "S-3 disambiguation (gauntlet round 1 fix): a row's 'write-durable-state' capability describes an UNTRUSTED-PROPOSAL capability -- a provider writing to an isolated worktree it does not control the integration of, or proposing a change via the trusted dispatch bridge (scripts/dispatch-claude.js / scripts/dispatch-agent.js). It does NOT mean, and must never be read as, a grant of CORE-2's protected-mutation or integration-to-main powers (top-level-runtime-contract.md §1/§4) -- those two powers stay SOLELY with the provider-independent trusted layer regardless of any row's supported_levels here. See each row's write-durable-state.evidence_ref for the per-provider restatement."
 }
