@@ -1,0 +1,116 @@
+{
+  "schema": "warpos/kernel/support-matrix/v1",
+  "_doc": "D4 — provider x capability x helm-level support matrix (SP-20260718-001 Phase 0). Companion to top-level-runtime-contract.md §4. Consumed by conformance-matrix.js (gate 'support-matrix') and, from Phase-3 exit, becomes the BINDING G0.3 gate (ED-214).",
+  "_encoding_note": "Each row's capabilities map gives, per capability, the set of packet-16 helm-levels (0-3) at which that capability is PROVEN supported today, plus an evidence_ref. Level 3 (WarpOS Master Console, packet-16: 'long-term target') is NOT built for ANY helm yet — no row's supported_levels includes 3. That is a Phase-2+ deliverable (RATIFIED-PLAN Phase 2: per-helm trusted bindings), not a Phase-0 fabrication. This is the Phase-0 SEED granularity; Phase-1 F3 refines with the prompt-shape dimension (RATIFIED-PLAN Phase 1).",
+  "helm_levels": {
+    "0": "chat-only (plan/review only, cannot safely operate WarpOS alone)",
+    "1": "file-aware (reads repo, produces patches; no command execution)",
+    "2": "tool-capable (reads/writes files AND runs commands)",
+    "3": "WarpOS Master Console (provider-neutral top-level UI/API; long-term target, not yet built for any helm)"
+  },
+  "capabilities": [
+    "read-files",
+    "write-durable-state",
+    "run-commands",
+    "create-workorder",
+    "inspect-envelope",
+    "update-tracker",
+    "obey-gates"
+  ],
+  "rows": {
+    "claude": {
+      "current_level": 2,
+      "status": "supported",
+      "required": true,
+      "proven": true,
+      "evidence_ref": "helm projection binds the top-level session (Phase-2/ED-216) -- CLAUDE.md is the Claude HELM's trusted projection surface for the top-level human-facing session only (sources.explicit_top_level_helm, applies_to_actor: top_level_session), never ambient prose and never a binding for a dispatched_worker (CORE-3); live dispatch ledger (dispatch-completions.jsonl)",
+      "capabilities": {
+        "read-files": { "supported_levels": [1, 2], "evidence_ref": "Read/Grep/Glob tools, live. N-4: Level 0 (chat-only) EXCLUDED -- packet-16/contract §2 Level 0 is explicitly 'No file/tool access'; a helm cannot autonomously read repo files at Level 0 without a human-operated copy/paste bridge." },
+        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "Write/Edit tools + git commit -- isolated-worktree proposal only, never direct protected mutation of main (S-3, contract §1/§4); live" },
+        "run-commands": { "supported_levels": [2], "evidence_ref": "Bash tool, live" },
+        "create-workorder": { "supported_levels": [2], "evidence_ref": "dispatch-claude.js / dispatch-agent.js, live" },
+        "inspect-envelope": { "supported_levels": [2], "evidence_ref": "dispatch-completions.jsonl reads, live" },
+        "update-tracker": { "supported_levels": [1, 2], "evidence_ref": "TRACKER.md edits + scripts/trackers/validate.js -- isolated-worktree proposal only, never direct protected mutation of main's TRACKER.md (S-3, contract §1/§4); live" },
+        "obey-gates": { "supported_levels": [2], "evidence_ref": "PreToolUse/Stop hooks + /scan:full, live" }
+      }
+    },
+    "codex-gpt": {
+      "current_level": 2,
+      "status": "supported",
+      "required": true,
+      "proven": true,
+      "evidence_ref": "scripts/dispatch-agent.js codex route; ledger record d-mrob0i1p (qa-reviewer/openai/gpt-5.6-terra, exit 0, fallback:false, 2026-07-17)",
+      "capabilities": {
+        "read-files": { "supported_levels": [1, 2], "evidence_ref": "codex CLI reads repo AGENTS.md + cwd, live. N-4: Level 0 (chat-only) EXCLUDED -- packet-16/contract §2 Level 0 is explicitly 'No file/tool access'; a helm cannot autonomously read repo files at Level 0 without a human-operated copy/paste bridge." },
+        "write-durable-state": { "supported_levels": [1, 2], "evidence_ref": "codex CLI file writes -- isolated-worktree proposal only, never direct protected mutation of main (S-3, contract §1/§4); live" },
+        "run-commands": { "supported_levels": [2], "evidence_ref": "codex exec --sandbox workspace-write, live" },
+        "create-workorder": { "supported_levels": [2], "evidence_ref": "dispatch-agent.js codex route, live" },
+        "inspect-envelope": { "supported_levels": [2], "evidence_ref": "dispatch-completions.jsonl records the codex route, live" },
+        "update-tracker": { "supported_levels": [1, 2], "evidence_ref": "codex-authored TRACKER/handoff edits via dispatch -- isolated-worktree proposal only, never direct protected mutation of main's TRACKER.md (S-3, contract §1/§4); live" },
+        "obey-gates": { "supported_levels": [2], "evidence_ref": "dispatch-contract.js validate + gauntlet-verify, live" }
+      }
+    },
+    "agy-antigravity": {
+      "current_level": null,
+      "status": "down",
+      "required": true,
+      "proven": false,
+      "evidence_ref": "ED-060",
+      "capabilities": {
+        "read-files": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "write-durable-state": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "run-commands": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "create-workorder": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "inspect-envelope": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "update-tracker": { "supported_levels": [], "evidence_ref": "ED-060" },
+        "obey-gates": { "supported_levels": [], "evidence_ref": "ED-060" }
+      },
+      "note": "CONTRACTED (RATIFIED-PLAN panel-3lab is the binding 1.0 profile; agy is IN-SCOPE Phase-1 work), but NOT a working cell today. Zero agy ledger records ever across the dispatch ledger; providers.js carries no agy invocation syntax; a live probe was contract-BLOCKED ('antigravity' not in [codex,gemini,agy] — reproduces I-2). A down REQUIRED lane resolves BLOCKED, never a silent pass (see durable_rule below)."
+    }
+  },
+  "addendum_a_channels": [
+    {
+      "model": "gpt-5.6-terra",
+      "channel": "cli",
+      "proven": true,
+      "evidence_ref": "dispatch ledger d-mrob0i1p (qa-reviewer, openai, exit 0, 408s, fallback:false, 2026-07-17)"
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "channel": "harness",
+      "proven": false,
+      "evidence_ref": "ED-208 — harness Agent-tool spawns fail on non-Claude registry pins; requires a Claude model override at spawn"
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "channel": "cli",
+      "proven": "code-shape",
+      "evidence_ref": "evidence/cabinet-consult-gpt56sol-ultra.md — proven live on code/planning/cabinet consult shape (real CLI dispatch, ok:true)"
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "channel": "cli-security-shape",
+      "proven": false,
+      "evidence_ref": "RATIFIED-PLAN.md ratified decision #2 — gpt-5.6-sol trips defensively on raw security/exploit-shaped prompts; the security-panel prompt reframe (Phase 1) is the mitigation, not a channel fix"
+    },
+    {
+      "model": "claude-opus-4-8",
+      "channel": "harness",
+      "proven": true,
+      "evidence_ref": "in-process Agent-tool spawns (alpha/beta/epsilon faces + the in-process roster), live"
+    },
+    {
+      "model": "gemini-3.1-pro-high",
+      "channel": "agy",
+      "proven": false,
+      "evidence_ref": "ED-060"
+    }
+  ],
+  "kernel_scope": {
+    "in": "helm x capability x helm-level support contract (this file) + the model x channel Addendum A seed. Both are Phase-0 SEED data, positively fixture-covered (gate 'support-matrix').",
+    "out": "per-request routing POLICY (RATIFIED-PLAN Phase 1: routing + security truth); the full panel-3lab BINDING gate (RATIFIED-PLAN Phase 1 G1.5); product-pack/webapp/founder-panel provider gates (lastmile, never kernel scope)."
+  },
+  "durable_rule": "A lane resolved DOWN is reflected in EVERY artifact that assumed it UP. conformance-matrix.js reads the 'status' field directly (not a cached/echoed liveness claim) so a false-green agy seed cannot propagate into the Phase-1 G1.5 panel lane contract — a config-intent echo is NOT liveness (the exact trap that fooled the 2026-07-16 attestation).",
+  "write_durable_state_note": "S-3 disambiguation (gauntlet round 1 fix): a row's 'write-durable-state' capability describes an UNTRUSTED-PROPOSAL capability -- a provider writing to an isolated worktree it does not control the integration of, or proposing a change via the trusted dispatch bridge (scripts/dispatch-claude.js / scripts/dispatch-agent.js). It does NOT mean, and must never be read as, a grant of CORE-2's protected-mutation or integration-to-main powers (top-level-runtime-contract.md §1/§4) -- those two powers stay SOLELY with the provider-independent trusted layer regardless of any row's supported_levels here. See each row's write-durable-state.evidence_ref for the per-provider restatement.",
+  "durable_state_mutation_capabilities_note": "N-3 [HIGH, gauntlet round 1 fix scoped write-durable-state but MISSED its sibling]: the S-3 disambiguation above applies to EVERY capability in this matrix that mutates durable company state, not only 'write-durable-state'. 'update-tracker' is the other one today -- top-level-runtime-contract.md §1 names trackers explicitly among the four CORE-2 protected-mutation targets ('trackers, ledgers, registries'), so a row's update-tracker capability is under the exact same S-3 disambiguation: PROPOSAL via an isolated worktree or the trusted dispatch bridge, never direct protected mutation of the integrated/main TRACKER.md. See each row's update-tracker.evidence_ref for the per-provider restatement (gauntlet round 2 fix). Any FUTURE capability added to this matrix that mutates durable company state must receive the same per-capability evidence_ref treatment -- do not leave a sibling capability unscoped again."
+}

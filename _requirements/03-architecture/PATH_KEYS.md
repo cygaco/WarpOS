@@ -61,6 +61,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `judgmentModel` | `.claude/agents/president/_system/beta/judgement-model.md` | md | framework | yes | 0.0.0 |  |
 | `judgmentRecommendations` | `.claude/agents/president/_system/beta/judgement-model-recommendations.md` | md | runtime | yes | 0.0.0 |  |
 | `karpathyRuns` | `_docs/karpathy-auto-research` | dir | runtime | yes | 0.0.0 |  |
+| `kernel` | `.claude/kernel` | dir | framework | yes | 0.17.0 | WarpOS 1.0 kernel governance home (SP-20260718-001 Phase 0): |
 | `learningsFile` | `.claude/project/memory/learnings.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `lexicon` | `.claude/agents/president/_system/lexicon.md` | md | framework | yes | 0.0.0 |  |
 | `loggerLib` | `scripts/hooks/lib/logger.js` | js | framework | no | 0.0.0 |  |

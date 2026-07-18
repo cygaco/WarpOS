@@ -19,6 +19,7 @@
   "currentStage": ".claude/agents/president/_system/policy/current-stage.md",
   "adrIndex": ".claude/agents/president/_system/policy/adr/INDEX.md",
   "commands": ".claude/commands",
+  "kernel": ".claude/kernel",
   "content": ".claude/content",
   "dreams": ".claude/dreams",
   "favorites": ".claude/content/favorites",

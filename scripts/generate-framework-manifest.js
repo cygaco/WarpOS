@@ -120,6 +120,7 @@ const DEFAULT_MERGE_STRATEGY = {
   requirement: "keep_local",
   pattern: "three_way_markdown",
   framework_doc: "three_way_markdown",
+  kernel: "replace_if_unmodified",
 };
 
 const DEFAULT_OWNER_BY_KIND = {
@@ -134,6 +135,7 @@ const DEFAULT_OWNER_BY_KIND = {
   requirement: "project",
   pattern: "framework",
   framework_doc: "framework",
+  kernel: "framework",
 };
 
 // SP-20260514-001 R-1 / T-20260514-070 — full 64-char sha256 via the central
@@ -165,6 +167,14 @@ function idForAsset(kind, srcRel, srcRoot) {
 const ASSET_DIRS = [
   { src: ".claude/agents", kind: "agent" },
   { src: ".claude/commands", kind: "skill" },
+  // SP-20260718-001 Phase 0 (β Q1 manifest-walker check): the kernel governance
+  // home (Top-Level Runtime Contract + JSON companions + conformance fixtures)
+  // was previously NOT enumerated by any ASSET_DIRS entry — a silent-drop gap,
+  // not a dot-dir skip (the walker has no dot-dir special-case at all; it
+  // simply never visited .claude/kernel because nothing named it as a root).
+  // Without this entry the kernel contract could drift untracked by
+  // shipping/update — exactly what Phase 0 exists to prevent.
+  { src: ".claude/kernel", kind: "kernel" },
   { src: ".claude/project/reference", kind: "reference" },
   { src: ".claude/project/maps", kind: "maps_baseline" },
   { src: "scripts/hooks", kind: "hook" }, // refined to hook_lib by path below

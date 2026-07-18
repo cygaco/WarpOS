@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "warpos/kernel/workorder-min/v1",
+  "title": "WarpOS Minimal WorkOrder (Phase-0 seed)",
+  "description": "D5 (SP-20260718-001 Phase 0). The MINIMAL required field set for a valid, auditable WorkOrder binding — a subset of packet-06's full v1 schema, deliberately NOT the full WorkOrder/ResultEnvelope contract (that lands at RATIFIED-PLAN Phase 3, G3.1; see ED-217). Companion to top-level-runtime-contract.md §5.",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "role",
+    "objective",
+    "scope",
+    "acceptance_criteria",
+    "verified_by",
+    "output_contract"
+  ],
+  "properties": {
+    "schema": { "type": "string", "description": "schema version tag, e.g. warpos/work-order/v1" },
+    "id": { "type": "string", "pattern": "^WO-", "description": "WO-... identifier" },
+    "role": { "type": "string", "description": "provider-neutral role_id (ADR-0018 role-identity triple: role_id/provider/runtime)" },
+    "objective": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "description": "allowed_files/forbidden_files are MANDATORY for build roles (kind: builder|fixer, build_chain:true in role-registry.json) and WAIVED for non-build roles (reviewers, leads, directors, consults).",
+      "properties": {
+        "allowed_files": { "type": "array", "items": { "type": "string" } },
+        "forbidden_files": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "acceptance_criteria": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "verified_by": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "timeout": { "type": "object", "description": "soft_minutes/hard_minutes — at least one of timeout|lease is required" },
+    "lease": { "type": "object", "description": "type: one_shot|wave|phase|session (packet-03 Persistence policy) — at least one of timeout|lease is required" },
+    "output_contract": {
+      "type": "object",
+      "required": ["result_envelope_required", "evidence_required"],
+      "properties": {
+        "result_envelope_required": { "type": "boolean" },
+        "evidence_required": { "type": "boolean" }
+      }
+    }
+  },
+  "oneOf": [{ "required": ["timeout"] }, { "required": ["lease"] }],
+  "_mandatory_validation": {
+    "build_roles": "ALL TEN fields required: schema, id, role, objective, scope.allowed_files, scope.forbidden_files, acceptance_criteria, verified_by, timeout|lease, output_contract.",
+    "non_build_roles": "WAIVE scope.allowed_files + scope.forbidden_files; the other eight fields remain required.",
+    "role_kind_source": "role-registry.json's kind field (builder|fixer with build_chain:true = build role; reviewer|lead|director|tool|check|run = non-build) — the Phase-3 wiring point (ED-217)."
+  },
+  "_phase_seed": "Phase-0 SEED per SP-20260718-001 build-spec D5, deliberately NOT the ResultEnvelope (RATIFIED-PLAN Phase 3 ships the full WorkOrder/ResultEnvelope suite: 5 terminal states + failure_reason codes, adapted onto the EXISTING dispatch ledger). See ED-217."
+}

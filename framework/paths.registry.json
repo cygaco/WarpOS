@@ -159,6 +159,15 @@
       "introducedIn": "0.0.0",
       "docsToken": "paths.commands"
     },
+    "kernel": {
+      "path": ".claude/kernel",
+      "kind": "dir",
+      "owner": "framework",
+      "mutable": true,
+      "introducedIn": "0.17.0",
+      "docsToken": "paths.kernel",
+      "_note": "WarpOS 1.0 kernel governance home (SP-20260718-001 Phase 0): the Top-Level Runtime Contract (top-level-runtime-contract.md), its JSON companions (role-binding.json, support-matrix.json, workorder-min.schema.json), and the kernel-conformance fixtures (fixtures/). mutable:true — the matrix/fixtures grow across Phases 1-4."
+    },
     "content": {
       "path": ".claude/content",
       "kind": "dir",
