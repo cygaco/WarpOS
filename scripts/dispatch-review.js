@@ -154,6 +154,31 @@ async function main() {
     verdict: verdictOf(s.result),
     lane_out: s.laneOut ? path.relative(ROOT, s.laneOut) : null,
   }));
+  // D5 CLI-only panel tooth (SP-20260718-003, AC-7): a cross-provider lab (non-claude) MUST run as a
+  // CLI subprocess. This runner fires every non-claude pass through dispatch-agent.js
+  // (subprocess-cross-provider) and the claude pass through dispatch-claude.js (subprocess-claude) —
+  // NEVER an in-process Agent-tool spawn. Assert it BEFORE merge so a future route change that
+  // resolves a cross-provider lane in-process is refused, not silently merged (the D1<->D5
+  // masquerade). The sanctioned in-process claude HUNTER is summoned by ε OUTSIDE this runner, so it
+  // never appears here. Fail-OPEN only on a missing module (additive contract); an actual violation
+  // exits 1 above via the guard.
+  try {
+    const { assertCliOnlyPanel } = require("./dispatch/panel-lanes");
+    const LANE_ID = { claude: "claude", antigravity: "agy", openai: "gpt" };
+    const observed = lanes.map((l) => ({
+      laneId: LANE_ID[l.provider] || l.provider,
+      provider: l.provider,
+      shape: l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider",
+    }));
+    const tooth = assertCliOnlyPanel(observed);
+    if (!tooth.ok) {
+      console.error(JSON.stringify({ ok: false, role, error: "panel_cli_only_violation", violations: tooth.violations }));
+      process.exit(1);
+    }
+  } catch {
+    /* panel-lanes module absent — additive contract, fail-open (the negative teeth live in its test) */
+  }
+
   const merged = mergeLanes(role, lanes);
   merged.lane_out_dir = path.relative(ROOT, laneOutDir);
   console.log(JSON.stringify(merged));
