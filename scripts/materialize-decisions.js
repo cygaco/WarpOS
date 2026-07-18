@@ -95,10 +95,17 @@ Grouped by change-set. "Why" auto-filled from event metadata.
   return md;
 }
 
-// ── reducer: currently-stale files (reads STALE markers off disk) ───────────
-function computeStale(events) {
+// ── SOURCE (I/O boundary): read events + the CURRENT on-disk STALE markers once ──
+// BR-3 (gauntlet R1): the stale-marker filesystem reads are I/O and belong in the
+// primitive's SOURCE (its I/O boundary: `source: () => snapshot`), NOT in the
+// reducer. Reading files inside the reducer made STALE-FILES.md change for the SAME
+// events when marker state changed — content-nondeterminism relative to the source.
+// Moving the reads here makes the reducer PURE over the returned snapshot, so
+// materialize()'s delete->regen->byte-identical guarantee holds for a given source
+// snapshot while STALE-FILES.md still reflects the markers as read at source time.
+function computeStaleSnapshot(events) {
   const staleSet = new Set();
-  for (const evt of events) {
+  for (const evt of events || []) {
     if (evt.stale_consumers) {
       for (const c of evt.stale_consumers) staleSet.add(c);
     }
@@ -113,7 +120,12 @@ function computeStale(events) {
       // File doesn't exist, skip
     }
   }
-  return currentlyStale;
+  return { currentlyStale };
+}
+
+// ── reducer: PURE — extract the pre-read stale list from the source snapshot ──
+function computeStale(snapshot) {
+  return (snapshot && snapshot.currentlyStale) || [];
 }
 
 // ── renderer: STALE-FILES.md from the currently-stale list ──────────────────
@@ -152,7 +164,9 @@ function run() {
   });
 
   const stale = materialize({
-    source,
+    // The stale materialization's SOURCE reads events + the current markers (I/O at
+    // the source boundary, BR-3); the reducer above is then a PURE extraction.
+    source: () => computeStaleSnapshot(events),
     reducer: computeStale,
     renderer: renderStaleFiles,
     emptyRender: () => renderStaleFiles([]),
@@ -168,6 +182,7 @@ module.exports = {
   readEvents,
   groupEvents,
   renderDecisions,
+  computeStaleSnapshot,
   computeStale,
   renderStaleFiles,
   inferWhy,

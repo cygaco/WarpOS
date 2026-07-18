@@ -171,9 +171,19 @@ function emptyHappened() {
 function run(opts) {
   const o = opts || {};
   const root = o.root || process.env.CLAUDE_PROJECT_DIR || process.cwd();
-  // Same source feeds BOTH files (per AC-8 "same injected source"); each
-  // reducer filters what it needs. LIVE events only.
-  const source = o.source || (() => query({}));
+  // BR-7 (gauntlet R1): read the events ONCE and feed BOTH files the SAME immutable
+  // snapshot. Passing the source fn straight to both materialize() calls would run
+  // query() TWICE — two independent snapshots — so an event appended between the
+  // calls could make what-running and what-happened disagree despite the stated
+  // "same source" contract. Capturing the snapshot up front makes them consistent.
+  const rawSource = o.source || (() => query({}));
+  let snapshot;
+  try {
+    snapshot = rawSource() || [];
+  } catch {
+    snapshot = [];
+  }
+  const source = () => snapshot;
 
   const running = materialize({
     source,
