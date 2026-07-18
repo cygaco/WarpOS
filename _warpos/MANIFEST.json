@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T22:58:05.425Z",
+  "generatedAt": "2026-07-18T01:44:27.702Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -9243,8 +9243,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/session-start.js",
-      "sha256": "dd458c9067dccb2e23a09fac9b4e503c4958ebcc5b3804aa005c12acab740ffb",
-      "installedSha": "dd458c9067dccb2e23a09fac9b4e503c4958ebcc5b3804aa005c12acab740ffb"
+      "sha256": "8a89ec18c434a5752984423e8a705c39b8c1c95a7f1c58a40149e1778890b1a9",
+      "installedSha": "8a89ec18c434a5752984423e8a705c39b8c1c95a7f1c58a40149e1778890b1a9"
     },
     "scripts/hooks/session-stop-sentinel.test.js": {
       "owner": "framework",
@@ -9446,15 +9446,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/archive.js",
-      "sha256": "ca3b9c80b38e1d3b3dbacea009439ba7051cb3e74916d8d545ac3188168b1559",
-      "installedSha": "ca3b9c80b38e1d3b3dbacea009439ba7051cb3e74916d8d545ac3188168b1559"
+      "sha256": "68ac3cb4f8eed9b6bf2a39bcb59fbec4e5af2b5179f6d35d02e500cd46529196",
+      "installedSha": "68ac3cb4f8eed9b6bf2a39bcb59fbec4e5af2b5179f6d35d02e500cd46529196"
     },
     "scripts/hooks/lib/archive.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/archive.test.js",
-      "sha256": "ac25f91f4826c12f6f87d418dfcaaf35207af987bfee940885101e1c5b9b1a5e",
-      "installedSha": "ac25f91f4826c12f6f87d418dfcaaf35207af987bfee940885101e1c5b9b1a5e"
+      "sha256": "72051f29c83c05c653340b7361fc8076ffc10e032deeb2ce231f80b0b21e175c",
+      "installedSha": "72051f29c83c05c653340b7361fc8076ffc10e032deeb2ce231f80b0b21e175c"
     },
     "scripts/hooks/lib/banner.js": {
       "owner": "framework",
@@ -9572,8 +9572,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/retention.test.js",
-      "sha256": "55b3e4ce00bdc9e434fbb2991e00b500bc9818577b9c51a6a2b58bfc28a839e7",
-      "installedSha": "55b3e4ce00bdc9e434fbb2991e00b500bc9818577b9c51a6a2b58bfc28a839e7"
+      "sha256": "ed2f576586d5605872f1313ace53b0a00606cdec3466d2ef95dcfac2c49fd663",
+      "installedSha": "ed2f576586d5605872f1313ace53b0a00606cdec3466d2ef95dcfac2c49fd663"
     },
     "scripts/hooks/lib/role-aliases.js": {
       "owner": "framework",
@@ -9593,8 +9593,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/rotate.test.js",
-      "sha256": "fffc2bd906f1e5a82f4a8f4383d0dd9e6972803409f628d8762471adf60164ff",
-      "installedSha": "fffc2bd906f1e5a82f4a8f4383d0dd9e6972803409f628d8762471adf60164ff"
+      "sha256": "7a710dd1e7bc76909947412d756fbd8e89b14e5bc7465cc8f23f634f5cfdd0a6",
+      "installedSha": "7a710dd1e7bc76909947412d756fbd8e89b14e5bc7465cc8f23f634f5cfdd0a6"
     },
     "scripts/hooks/lib/skill-telemetry.js": {
       "owner": "framework",
@@ -25559,8 +25559,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0017-retention-contain-via-archive-over-atomic-delete.md",
       "kind": "md",
-      "sha256": "7a1bdf693c31665600b36fac8da0faa6310093a1eed36d1a55e29c44950e69e3",
-      "installedSha": "7a1bdf693c31665600b36fac8da0faa6310093a1eed36d1a55e29c44950e69e3"
+      "sha256": "7c67c7e5f89672fdaac1caed2794de5d1241a62ee904ab7c56b0e4414ee588b5",
+      "installedSha": "7c67c7e5f89672fdaac1caed2794de5d1241a62ee904ab7c56b0e4414ee588b5"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
