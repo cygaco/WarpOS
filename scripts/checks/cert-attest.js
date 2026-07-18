@@ -30,10 +30,6 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..
 const NAME = "cert-attest";
 const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 
-// The sanctioned in-process hunter role identity (ADR-0016). The claude-hunter panel exemption binds
-// to THIS role (β#3/SR-005) — provider===claude alone does not.
-const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
-
 // The SINGLE provenance-verifier choke-point (α round-6 / ED-225): the hunter-identity predicate + the
 // PROFILE-AWARE lane contract live HERE ONLY. cert-attest + dispatch-review both consume it; neither
 // re-implements a lane-identity check (the duplication was the SR-016/SR-017 root). Structural guard:

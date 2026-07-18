@@ -37,18 +37,22 @@ function stripComments(src) {
 
 // ── PURE detectors (injectable content → boolean) — order/name-independent (R6-BE-002-robust). ──
 
-// A consumer re-implements the hunter identity if it compares a RECORD `.shape` to "in-process-agent"
-// (either operand order). `shape: "in-process-agent"` (an object-literal assignment) is NOT a comparison.
-function hasLocalShapeIdentity(code) {
+// DELEGATION-COMPLETE identity check (β round-6 catch): a hunter/lane-identity DECISION requires one of the
+// identity VALUES — the hunter role "security_claude_hunter" or the in-process channel shape "in-process-
+// agent". Those values belong ONLY in the verifier. A consumer that COMPARES a field to one (any field —
+// via/record_via/sanctioned_lane_id/shape/a new label), or ASSIGNS one to a local const (to compare via an
+// aliased var), re-implements identity — the VALUE is the tell, not the field name. This closes the SR-017
+// blocklist gap: it does NOT enumerate label fields (a new/renamed field would slip a field-list), it
+// catches the identity VALUE in a comparison/assignment context. NOT flagged: a value appearing INSIDE a
+// larger diagnostic message string (not a standalone quoted literal after ===/!==/=).
+const IDENTITY_VALUE = `["'](security_claude_hunter|in-process-agent)["']`;
+function hasLocalIdentityDecision(code) {
   const c = stripComments(code);
-  return /\.shape\s*===\s*["']in-process-agent["']/.test(c) || /["']in-process-agent["']\s*===\s*[A-Za-z_$][\w$]*\.shape/.test(c);
-}
-// A consumer keys identity on a settable per-record label if it compares `.via`/`.record_via`/
-// `.sanctioned_lane_id` (either operand order, any variable name).
-function hasSettableLabelIdentity(code) {
-  const c = stripComments(code);
-  const fields = "(via|record_via|sanctioned_lane_id)";
-  return new RegExp(`\\.${fields}\\s*===`).test(c) || new RegExp(`===\\s*[A-Za-z_$][\\w$]*\\.${fields}\\b`).test(c);
+  return (
+    new RegExp(`(===|!==)\\s*${IDENTITY_VALUE}`).test(c) || // <field> === "value"  (any field/alias, any name)
+    new RegExp(`${IDENTITY_VALUE}\\s*(===|!==)`).test(c) || // "value" === <field>  (reversed operands)
+    new RegExp(`=\\s*${IDENTITY_VALUE}\\s*[;,)]`).test(c) // const X = "value";   (aliased into a var to compare)
+  );
 }
 function importsVerifier(code) {
   return new RegExp(`require\\([^)]*${VERIFIER}[^)]*\\)`).test(code);
@@ -68,8 +72,7 @@ function run() {
     let src;
     try { src = read(f); } catch (e) { violations.push({ inv: "CONSUMER", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); continue; }
     if (!importsVerifier(src)) violations.push({ inv: "DELEGATE", file: f, msg: `does not import the ${VERIFIER} choke-point — it must consume the shared identity predicates, not re-implement them` });
-    if (hasLocalShapeIdentity(src)) violations.push({ inv: "NO-LOCAL-IDENTITY", file: f, msg: "re-implements a hunter-identity check (a RECORD .shape==='in-process-agent' comparison) — delegate to provenance-verifier.isHunterRecord/recordMatchesLane" });
-    if (hasSettableLabelIdentity(src)) violations.push({ inv: "NO-SETTABLE-LABEL", file: f, msg: "keys identity on a SETTABLE per-record label (.via/.record_via/.sanctioned_lane_id) — identity is writer-stamped shape+role ONLY (SR-016/SR-017)" });
+    if (hasLocalIdentityDecision(src)) violations.push({ inv: "NO-LOCAL-IDENTITY", file: f, msg: "re-implements a lane/hunter-identity DECISION — compares/assigns an identity VALUE ('security_claude_hunter' or 'in-process-agent') outside the verifier. Delegate to provenance-verifier.isHunterRecord/recordMatchesLane; identity is derived from the channel (shape) + contract (role), NEVER a per-record field (SR-016/SR-017)" });
   }
   let gh;
   try { gh = read("scripts/dispatch/git-head.js"); } catch (e) { violations.push({ inv: "INV-3", file: "scripts/dispatch/git-head.js", msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); }
@@ -88,4 +91,4 @@ if (require.main === module) {
   process.exit(violations.length === 0 ? 0 : fatal ? 2 : 1);
 }
 
-module.exports = { run, NAME, hasLocalShapeIdentity, hasSettableLabelIdentity, importsVerifier, gitHeadTokenValidated };
+module.exports = { run, NAME, hasLocalIdentityDecision, importsVerifier, gitHeadTokenValidated };
