@@ -415,6 +415,26 @@ const DEFAULT_PROVIDERS = {
     // `{reasoning}` template var is empty for gemini (kept for syntax uniformity).
     syntax: `gemini {reasoning} -m {model} -p`,
   },
+  // D6 (SP-20260718-003, ED-060): Antigravity CLI (`agy`) — the migration target for the SUNSET
+  // gemini individual CLI (IneligibleTierError → "migrate to Antigravity", 2026-06-18). This is the
+  // Gemini LAB of the panel-3lab security review. LIVENESS IS OPERATOR-OWNED (ED-060): no live agy
+  // CLI + tier exists yet, so this headless contract is BEST-KNOWN / UNPROVEN — gated behind
+  // providerAvailable (cliAvailable fail-closes to `fallback` when agy is absent), and the panel-3lab
+  // exit stays BLOCKED-ON-OPERATOR until one real agy `fallback:false` ledger record exists.
+  antigravity: {
+    cli: "agy",
+    // gemini-3.1-pro-high — the panel Gemini-lab model (role-registry security-reviewer.provider).
+    default_model: process.env.ANTIGRAVITY_MODEL || "gemini-3.1-pro-high",
+    // CROSS-FAMILY fallback (WG-11(b)): antigravity is google-family, so a Google-lab outage must
+    // retry on the GPT lab, NOT another google endpoint. openai is the cross-family target.
+    fallback: "openai",
+    // Headless contract (UNPROVEN): `agy --model <id> --print-timeout <dur> -p '<prompt>'`. The prompt
+    // is the `-p` argv VALUE (agy has no stdin '-' positional) — safe-spawn's agy ARG_POLICY (#27
+    // carve-out) bounds it (200k cap + newline-tolerant injection refusal + native-exe ONLY, so a
+    // .cmd shim cannot reparse the multi-line arg). thinking is always-on (no reasoning-effort flag).
+    // `{reasoning}` is empty for agy (kept for syntax uniformity).
+    syntax: `agy {reasoning} --model {model} --print-timeout 90s -p`,
+  },
 };
 
 /**
@@ -669,6 +689,49 @@ function modelsMatch(requested, reported) {
   return false;
 }
 
+/**
+ * Build the { toolId, argv, usesStdin } CLI invocation shape for a provider dispatch. PURE — the
+ * single source of each provider's argv (D6 added agy), so the invocation shape is an assertable
+ * surface instead of an untestable inline branch. Behavior-identical to the prior inline block for
+ * openai/gemini. Returns { fail:true, error } for a provider with no kernel-covered shape (fail-CLOSED
+ * — refuse an unvetted spawn rather than shell out a custom cfg.syntax).
+ *
+ * @param {string} providerName  openai | gemini | antigravity
+ * @param {string} model
+ * @param {string[]} reasoningArgs  pre-split reasoning-effort tokens (openai only; [] otherwise)
+ * @param {object} [opts]  { geminiTrustBypass:boolean, prompt:string }  prompt is agy's -p VALUE
+ * @returns {{ toolId, argv, usesStdin } | { fail:true, error }}
+ */
+function buildProviderArgv(providerName, model, reasoningArgs = [], opts = {}) {
+  if (providerName === "openai") {
+    // `codex exec --sandbox workspace-write [-c …] -m <model> -` — prompt on stdin.
+    return { toolId: "codex", argv: ["exec", "--sandbox", "workspace-write", ...reasoningArgs, "-m", model, "-"], usesStdin: true };
+  }
+  if (providerName === "gemini") {
+    // gemini: context on stdin, fixed instruction via -p, `-o json` envelope. --skip-trust gated by
+    // WARPOS_GEMINI_TRUST_BYPASS (default OFF).
+    const trustArgs = opts.geminiTrustBypass ? ["--skip-trust"] : [];
+    return {
+      toolId: "gemini",
+      argv: [...trustArgs, "-m", model, "-p", "Process the instructions on stdin and produce the requested output.", "-o", "json"],
+      usesStdin: true,
+    };
+  }
+  if (providerName === "antigravity") {
+    // agy (Antigravity CLI) — the SUNSET-gemini migration target (ED-060). BEST-KNOWN, UNPROVEN
+    // headless contract: `agy --model <id> --print-timeout <dur> -p '<prompt>'`. The prompt is the
+    // `-p` argv VALUE (agy has no stdin '-' positional), bounded + injection-checked + native-exe-only
+    // by safe-spawn's agy ARG_POLICY carve-out (#27). usesStdin:false — the prompt rides -p, not stdin.
+    return { toolId: "agy", argv: ["--model", model, "--print-timeout", "90s", "-p", opts.prompt || ""], usesStdin: false };
+  }
+  // A manifest-overridden provider with a custom cfg.syntax has no ARG_POLICY entry in the safety
+  // kernel → fail CLOSED rather than spawn an unvetted shell string.
+  return {
+    fail: true,
+    error: `Provider "${providerName}" uses a custom cfg.syntax not covered by the dispatch safety kernel (safe-spawn ARG_POLICY). Add a tool-ID + arg-policy before dispatching — refusing an unvetted shell spawn.`,
+  };
+}
+
 function runProvider(role, prompt, opts = {}) {
   // Bumped 2026-04-28 from 120s → 900s. xhigh reasoning + 175KB review prompts
   // routinely exceed 2 min on gpt-5.4; gemini-3.1 pro-preview with 90KB prompts
@@ -766,37 +829,16 @@ function runProvider(role, prompt, opts = {}) {
     const reasoningArgs = reasoningFlag
       ? reasoningFlag.split(/\s+/).filter(Boolean)
       : [];
-    let toolId;
-    let argv;
-    if (providerName === "openai") {
-      // `codex exec --sandbox workspace-write [-c …] -m <model> -` (stdin prompt).
-      toolId = "codex";
-      argv = ["exec", "--sandbox", "workspace-write", ...reasoningArgs, "-m", model, "-"];
-    } else if (providerName === "gemini") {
-      // gemini: context on stdin, fixed instruction via -p, `-o json` envelope.
-      // --skip-trust gated by WARPOS_GEMINI_TRUST_BYPASS (default OFF).
-      toolId = "gemini";
-      const trustArgs =
-        process.env.WARPOS_GEMINI_TRUST_BYPASS === "1" ? ["--skip-trust"] : [];
-      argv = [
-        ...trustArgs,
-        "-m", model,
-        "-p", "Process the instructions on stdin and produce the requested output.",
-        "-o", "json",
-      ];
-    } else {
-      // A manifest-overridden provider with a custom cfg.syntax has no ARG_POLICY
-      // entry in the safety kernel → fail CLOSED rather than spawn an unvetted
-      // shell string. (Add a tool-ID + arg-policy to safe-spawn.js to support it.)
-      return {
-        ok: false,
-        provider: providerName,
-        model,
-        output: "",
-        fallback: true,
-        error: `Provider "${providerName}" uses a custom cfg.syntax not covered by the dispatch safety kernel (safe-spawn ARG_POLICY). Add a tool-ID + arg-policy before dispatching — refusing an unvetted shell spawn.`,
-      };
+    // D6: single-source the per-provider argv shape (openai/gemini unchanged; agy added). agy carries
+    // the prompt as its `-p` argv value (usesStdin:false) — every other provider streams it on stdin.
+    const built = buildProviderArgv(providerName, model, reasoningArgs, {
+      geminiTrustBypass: process.env.WARPOS_GEMINI_TRUST_BYPASS === "1",
+      prompt: promptContent,
+    });
+    if (built.fail) {
+      return { ok: false, provider: providerName, model, output: "", fallback: true, error: built.error };
     }
+    const { toolId, argv, usesStdin } = built;
 
     // Phase 0 workstream C: capture stderr so silent zero-byte deaths leave
     // evidence. execSync only returns stdout; stderr is reachable only via the
@@ -875,7 +917,9 @@ function runProvider(role, prompt, opts = {}) {
     const spawned = safeSpawn.safeSpawnSync(toolId, argv, {
       cwd: PROJECT,
       env: childEnv,
-      input: promptContent,
+      // D6: agy (usesStdin:false) carries its prompt as the `-p` argv value — passing it ALSO on
+      // stdin would double-feed. Every other provider streams the prompt on stdin.
+      input: usesStdin ? promptContent : undefined,
       timeoutMs,
       maxBuffer: 32 * 1024 * 1024, // 32MB for long review outputs
     });
@@ -1079,6 +1123,7 @@ function assertStrictModel(envelope, expectedModel) {
 
 module.exports = {
   runProvider,
+  buildProviderArgv, // D6 (SP-20260718-003): per-provider argv shape — assertable surface incl. agy
   getProviderForRole,
   getProviderConfig,
   getReasoningEffort,
