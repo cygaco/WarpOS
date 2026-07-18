@@ -1,18 +1,18 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-002"
 title: "D-1 second half — event compactor (fold→summary, raw→archive) + materialized state + query --archive read path (archive-not-delete)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Event compactor (fold→summary, raw→archive-not-delete) + materialized state + query --archive read path — runtime side of kernel CORE-4 for the events subsystem."
+status: in_progress
 created_at: "2026-07-18T07:43:37.019Z"
-updated_at: "2026-07-18T07:43:37.019Z"
-source_request: ""
-interpreted_intent: ""
+updated_at: "2026-07-18T09:20:00.000Z"
+source_request: "RATIFIED-PLAN D-1 second half; resumed from plan→design park (conduct order, operator-authorized this session)."
+interpreted_intent: "C1 events-compact.js · C2 scripts/state/materialize.js (reconcile w/ materialize-decisions.js) · C3 cli.js query --archive · C4 query-first doctrine. Never-lose-raw is the CORE invariant."
 plan_contract: null
-risk_level: low
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
-mode_invocation_required_by_user: true
+current_phase: design
+recommended_mode: sprint
+mode_invocation_required_by_user: false
 external_services:
   identified: []
   blocked: []
@@ -38,15 +38,15 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
+  prd: "design/PRD.md"
+  high_level_stories: "design/PRD.md#2-stories"
+  granular_stories: "design/PRD.md#2-stories"
   copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
+  inputs: "design/build-spec.md#2-inputstrace"
+  trace: "design/build-spec.md#2-inputstrace"
+  acceptance_criteria: "design/PRD.md#3-acceptance-criteria (refined by design/qa-plan.md#3)"
+  qa_plan: "design/qa-plan.md"
+  redteam_plan: "design/qa-plan.md#4-gauntlet-lane-note (security-reviewer lane)"
   release_plan: null
 checks:
   lint: { status: not_run, last_run: null, evidence: "" }
@@ -62,8 +62,8 @@ approvals:
   release: { required: false, state: not_required, ref: null }
   external_services: { required: false, state: not_required, ref: null }
 reports:
-  plan: null
-  design: null
+  plan: "plan-composition.md"
+  design: "design/ (PRD.md + build-spec.md + qa-plan.md; consults recorded via record-inprocess: DoE + quality-lead ok:true; product-lead route-deviated in-process, artifact=PRD.md)"
   execution: null
   release: null
 ralph:
