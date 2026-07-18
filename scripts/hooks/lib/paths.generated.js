@@ -30,6 +30,7 @@ const PATHS = {
   "currentStage": path.join(PROJECT, ".claude", "agents", "president", "_system", "policy", "current-stage.md"),
   "adrIndex": path.join(PROJECT, ".claude", "agents", "president", "_system", "policy", "adr", "INDEX.md"),
   "commands": path.join(PROJECT, ".claude", "commands"),
+  "kernel": path.join(PROJECT, ".claude", "kernel"),
   "content": path.join(PROJECT, ".claude", "content"),
   "dreams": path.join(PROJECT, ".claude", "dreams"),
   "favorites": path.join(PROJECT, ".claude", "content", "favorites"),

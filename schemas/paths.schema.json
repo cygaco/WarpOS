@@ -107,6 +107,11 @@
       "const": ".claude/commands",
       "description": "dir (framework) — paths.commands"
     },
+    "kernel": {
+      "type": "string",
+      "const": ".claude/kernel",
+      "description": "dir (framework) — paths.kernel"
+    },
     "content": {
       "type": "string",
       "const": ".claude/content",
