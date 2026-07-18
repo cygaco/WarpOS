@@ -840,6 +840,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260718-003](.claude/project/sprint/sprints/SP-20260718-003/) | Phase 1 — routing + security truth (harness-spawn model rule G1.1, I-2 provider-id/tool-id reconcile, I-3 beta-consult abs-path, panel-3lab lane contract + agy migration seam ED-060, effective-model attestation G1.7, skill-lane dispatch-shape flip ED-057) | planning | 2026-07-18T11:43:05.704Z |  |  |
 | [SP-20260718-002](.claude/project/sprint/sprints/SP-20260718-002/) | D-1 second half — event compactor (fold→summary, raw→archive) + materialized state + query --archive read path (archive-not-delete) | done | 2026-07-18T07:43:37.019Z | 2026-07-18 | merged @65c9ecc4 (gauntlet GREEN 4 rounds 16→0; β 0.89/0.90; never-lose-raw held) |
 | [SP-20260718-001](.claude/project/sprint/sprints/SP-20260718-001/) | WarpOS 1.0 Phase 0 — Kernel contract + trust boundary (Top-Level Runtime Contract, durable-company ADR, precedence graph, helm support matrix, WorkOrder field set, conformance fixtures, retention classes) | planning | 2026-07-18T04:14:28.628Z |  |  |
 | [SP-20260716-003](.claude/project/sprint/sprints/SP-20260716-003/) | Reusable input-composer UI/UX pattern (COMPOSER) | done | 2026-07-16T16:08:30.160Z | 2026-07-16 | RI-001 ff-merge (6b9ec0d9); retro deferred to epic/milestone close |
