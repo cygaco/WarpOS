@@ -35,6 +35,8 @@ const gptOk = rec({ role: "security-reviewer", provider: "openai", tool_id: "cod
 const agyOk = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-agy", cmdline_checksum: "c-agy" });
 // The hunter record carries the sanctioned ROLE identity (β#3/SR-005) — not a bare security-reviewer.
 const claudeHunterOk = rec({ role: "security_claude_hunter", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-cl", cmdline_checksum: "c-cl" });
+// The panel-2family FLOOR's claude lane = a subprocess-claude security review (α option B; SR-018/QA-017).
+const claudeFloorOk = rec({ role: "security-reviewer", provider: "claude", tool_id: "claude", shape: "subprocess-claude", output_digest: "d-fl", cmdline_checksum: "c-fl" });
 
 // ── POSITIVE: full same-run 3-lab WITH code_sha → attested. ──
 test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha → attested", () => {
@@ -42,6 +44,30 @@ test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha �
   assert.ok(out.ok, out.reason);
   assert.ok(out.evidence_digest && out.invocation_digests.length === 3);
   assert.equal(out.code_sha, SHA);
+});
+
+// ── QA-017/SR-018 (α choke-point false-RED fix): the panel-2family FLOOR attests with a subprocess-claude
+//    record under the PROFILE-AWARE resolver; the SAME record does NOT attest the panel-3lab binding hunter. ──
+test("QA-017: panel-2family FLOOR (gpt CLI + claude subprocess) → ATTESTED via the profile-aware resolver", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeFloorOk] });
+  assert.ok(out.ok, `the valid subprocess-claude floor must attest: ${out.reason}`);
+});
+test("QA-017: the SAME subprocess-claude floor record does NOT attest the panel-3lab binding hunter lane", () => {
+  const out = attestLane(LANES.claude, [claudeFloorOk], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "the binding hunter lane requires the in-process hunter, not the floor's subprocess-claude");
+});
+
+// ── SR-017 (α choke-point): a subprocess record with sanctioned_lane_id='security_claude_hunter' must NOT
+//    attest the binding hunter — sanctioned_lane_id is a SETTABLE per-record label, not the identity. ──
+test("SR-017: role='security-reviewer' + sanctioned_lane_id='security_claude_hunter' + shape=in-process-agent → hunter unattested", () => {
+  const labelSpoof = rec({ role: "security-reviewer", sanctioned_lane_id: "security_claude_hunter", provider: "claude", shape: "in-process-agent", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [labelSpoof], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "sanctioned_lane_id is a settable label — identity is the WRITER-STAMPED role (SR-017)");
+});
+test("SR-017: sanctioned_lane_id=hunter but shape FORGED-ABSENT (subprocess-claude) → hunter unattested", () => {
+  const shapeForged = rec({ role: "security_claude_hunter", sanctioned_lane_id: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [shapeForged], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "a subprocess-claude record can never be the in-process hunter (shape is writer-stamped)");
 });
 
 // ── SR-004/QA-003: code_sha ABSENT → NOT ok even when every lane attests (AC-14 binding). ──

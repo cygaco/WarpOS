@@ -30,11 +30,17 @@ function readGitHead(root) {
     // A worktree's per-worktree HEAD may reference a commondir for refs — resolve loose ref there too.
     const commonDir = readCommonDir(gitDir) || gitDir;
     for (const base of [gitDir, commonDir]) {
+      let looseContent = null;
       try {
-        const loose = fs.readFileSync(path.join(base, refName), "utf8").trim();
-        if (/^[0-9a-f]{7,40}$/i.test(loose)) return loose;
+        looseContent = fs.readFileSync(path.join(base, refName), "utf8").trim();
       } catch {
-        /* not a loose ref here — try packed */
+        looseContent = null; // no loose ref FILE here — fall through to packed-refs
+      }
+      if (looseContent !== null) {
+        // R6-BE-001: the loose ref file EXISTS → it is AUTHORITATIVE. Validate it as a hex SHA; a MALFORMED
+        // loose ref must fail CLOSED (return "") — it must NEVER fall through to a stale packed-refs entry
+        // (which would yield a different, wrong commit identity for the same ref).
+        return /^[0-9a-f]{7,40}$/i.test(looseContent) ? looseContent : "";
       }
       const packed = readPackedRef(path.join(base, "packed-refs"), refName);
       if (packed) return packed;

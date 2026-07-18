@@ -34,6 +34,12 @@ const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 // to THIS role (β#3/SR-005) — provider===claude alone does not.
 const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
 
+// The SINGLE provenance-verifier choke-point (α round-6 / ED-225): the hunter-identity predicate + the
+// PROFILE-AWARE lane contract live HERE ONLY. cert-attest + dispatch-review both consume it; neither
+// re-implements a lane-identity check (the duplication was the SR-016/SR-017 root). Structural guard:
+// scripts/checks/provenance-invariants.js.
+const pv = require(path.join(__dirname, "..", "dispatch", "provenance-verifier"));
+
 function loadCatalog() {
   return require(path.join(ROOT, "scripts", "dispatch", "catalog.js"));
 }
@@ -155,65 +161,37 @@ function readLedgerRecords(sprintId, panelRunId, ledgerPath) {
  */
 function attestLane(lane, records, opts = {}) {
   // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
-  const { role = "security-reviewer", runId = null, sprintId = null, codeSha = null } =
-    typeof opts === "string" ? { role: opts } : opts || {};
-  const claudeHunter = lane.shape === "in-process-agent" && lane.provider === "claude";
-  // SAME-RUN correlation by RUN IDENTITY (SR-004/SR-011/SR-012): a record attests a lane ONLY if it
-  // belongs to THIS run+sprint. Identity is the panel_run_id the runner MINTS (or a run_id) — NOT a
-  // time window, which a concurrent same-sprint run could satisfy (SR-011). A NULL requested runId
-  // matches nothing — a binding attestation must certify a SPECIFIC run, never historical evidence (SR-012).
+  const { runId = null, sprintId = null, codeSha = null, profileName = "panel-2family" } =
+    typeof opts === "string" ? {} : opts || {};
+  // IDENTITY via the SINGLE choke-point (α round-6): the claude lane's contract is PROFILE-AWARE
+  // (2family FLOOR → subprocess-claude/security-reviewer; 3lab BINDING → the in-process hunter), and the
+  // hunter is identified by WRITER-STAMPED shape+role ONLY (no settable via/record_via/sanctioned_lane_id).
+  // NO identity predicate is re-implemented here — provenance-verifier owns them (the duplication was the disease).
+  const contract = pv.laneContract(profileName, lane.provider);
+  // SAME-RUN correlation by RUN IDENTITY (SR-004/SR-011/SR-012/SR-014): a record attests a lane ONLY if it
+  // belongs to THIS run+sprint. Identity is the panel_run_id the runner MINTS — NEVER run_id (a different
+  // panel could match) NOR a time window. A NULL requested runId matches nothing (no historical certification).
   const sameRun = (records || []).filter(
-    (r) =>
-      r.ok === true &&
-      r.fallback === false &&
-      (sprintId == null || r.sprint_id === sprintId) &&
-      // SR-014: STRICT panel-run identity — the record's panel_run_id must equal the requested run. The
-      // prior `|| r.run_id === runId` fallback re-opened SR-011: a DIFFERENT-panel record whose run_id
-      // happened to match could attest. A record without the minted panel_run_id cannot prove membership.
-      runId != null &&
-      r.panel_run_id === runId,
+    (r) => r.ok === true && r.fallback === false && (sprintId == null || r.sprint_id === sprintId) && runId != null && r.panel_run_id === runId,
   );
   // SR-013: the record must carry the code_sha it EXECUTED against (persisted at write-time), matching the
   // attested HEAD — never a caller-supplied SHA — AND a non-empty invocation digest (cmdline_checksum).
   const provenanceOk = (r) =>
     typeof r.code_sha === "string" && r.code_sha.length > 0 && (codeSha == null || r.code_sha === codeSha) && !!r.cmdline_checksum;
-  let match;
-  if (claudeHunter) {
-    // The sanctioned hunter (β#3/SR-005): provider claude, in-process, AND the security_claude_hunter
-    // ROLE identity. An arbitrary Claude in-process security-reviewer record (no hunter role) does NOT
-    // attest the hunter lane — provider===claude alone is insufficient.
-    match = sameRun.find(
-      (r) =>
-        r.provider === "claude" &&
-        (r.role === SANCTIONED_HUNTER_ROLE || r.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE) &&
-        // SR-016 sweep: the hunter's identity is the STRUCTURAL channel shape (in-process-agent), NOT a
-        // settable `via`/`record_via` label. The prior OR let a subprocess-claude record with
-        // via:"epsilon-agent" + the hunter role masquerade as the in-process hunter. shape is written by
-        // the in-process record writer (never by a subprocess wrapper) → it cannot be spoofed per-call.
-        r.shape === "in-process-agent" &&
-        (r.evidence_sha || r.output_digest) &&
-        provenanceOk(r),
-    );
-  } else {
-    // A CLI cross-provider lane: the record must be the PANEL ROLE (security-reviewer) on the contracted
-    // provider/tool_id. A design-phase codex consult (different role) must NOT attest a security lane.
-    match = sameRun.find(
-      (r) =>
-        r.role === role &&
-        r.provider === lane.provider &&
-        r.tool_id === lane.tool_id &&
-        r.shape === "subprocess-cross-provider" &&
-        !!r.output_digest &&
-        provenanceOk(r),
-    );
-  }
+  const match = sameRun.find((r) => {
+    if (!pv.recordMatchesLane(r, contract, lane.provider)) return false; // IDENTITY (shape+role) from the module
+    if (contract.isHunter) return (r.evidence_sha || r.output_digest) && provenanceOk(r);
+    // A subprocess lane (cross-provider CLI, or the floor's subprocess-claude): the contracted executable
+    // (tool_id) + real output + provenance.
+    return r.tool_id === lane.tool_id && !!r.output_digest && provenanceOk(r);
+  });
   if (!match) {
     return {
       laneId: lane.laneId,
       attested: false,
-      reason: claudeHunter
-        ? "no same-run in-process claude-hunter record (provider claude, role security_claude_hunter, record-inprocess, with evidence)"
-        : `no same-run CLI record for ${lane.provider}/${lane.tool_id} (role ${role}, fallback:false, output_digest present) — a wrapper claim is NOT proof`,
+      reason: contract.isHunter
+        ? "no same-run in-process HUNTER record (writer-stamped shape in-process-agent + role security_claude_hunter, with evidence + provenance)"
+        : `no same-run record for ${lane.provider}/${lane.tool_id} (contract ${contract.shape}/${contract.role}, panel_run_id, fallback:false, output_digest + code_sha) — a wrapper claim is NOT proof`,
     };
   }
   return {
@@ -234,7 +212,7 @@ function attestLane(lane, records, opts = {}) {
  * @param {{ runId?, sprintId, profile:{name}, lanes:Array, records:Array, codeSha? }} args
  */
 function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, role = "security-reviewer" } = {}) {
-  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId, codeSha }));
+  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], { role, runId, sprintId, codeSha, profileName: (profile && profile.name) || "panel-2family" }));
   const attestedLanes = laneResults.filter((l) => l.attested);
   const allAttested = laneResults.length > 0 && laneResults.every((l) => l.attested);
   // CODE-SHA binding (SR-004/QA-003/SR-013, AC-14): a binding attestation MUST carry the code identity it

@@ -2,103 +2,90 @@
 "use strict";
 /**
  * provenance-invariants.js — the STRUCTURAL anti-recurrence guard for the security-panel evidence-
- * provenance class (SP-20260718-003, β round-5 ruling). Five gauntlet rounds recurred the SAME three
- * invariants at MISSED SITES (a coverage-discipline gap, not a model leak). This guard makes a missed
- * site SELF-DETECTING: it fails (exit 1) if ANY site of these classes drifts back to the leaky form,
- * so a future edit can't silently re-open the class between gauntlet rounds.
- *
- * INV-1 HUNTER-IDENTITY: the sanctioned in-process hunter is identified by its STRUCTURAL channel shape
- *   (`in-process-agent`) + role — NEVER a settable `via`/`record_via` label OR'd as an alternative to
- *   shape (SR-016: a subprocess record with via:"epsilon-agent" masqueraded as the hunter).
- * INV-2 RUN-IDENTITY: every attestation-gating ledger filter/correlation keys on `panel_run_id` (the
- *   minted panel identity, SR-011), NEVER `run_id` (QA-014: run_id is written from a different env → the
- *   live filter discarded real runner records).
- * INV-3 PROVENANCE-TOKEN: every git-head ref-read path (loose, detached, packed) validates the token as
- *   a hex SHA before returning (R5-BE-001: an unvalidated packed-ref yielded a non-commit code_sha).
+ * provenance class (SP-20260718-003; α round-6 CHOKE-POINT ruling; ED-225). The 6-round recurrence proved
+ * a grep-guard is insufficient (R6-BE-002: it missed reversed operands, renamed callback vars, and the
+ * sanctioned_lane_id settable-label vector — SR-017). α's fix: ONE module (scripts/dispatch/provenance-
+ * verifier.js) owns the identity predicates; the CONSUMERS (cert-attest.js, dispatch-review.js) call it and
+ * re-implement NOTHING. This guard enforces THAT — it FAILS if a consumer:
+ *   (a) does not import the provenance-verifier (it must consume the choke-point), OR
+ *   (b) re-implements a hunter-identity check locally — a RECORD `.shape === "in-process-agent"` comparison
+ *       (either operand order), OR
+ *   (c) keys identity on ANY settable per-record label — a `.via` / `.record_via` / `.sanctioned_lane_id`
+ *       comparison (either operand order, any variable name).
+ * Plus INV-3: git-head.js SHA-validates every ref-read path. The check is order/name-independent (R6-BE-002's
+ * fragility list is its test set), not a brittle single-spelling grep — a missed site is now self-detecting.
  *
  *   node scripts/checks/provenance-invariants.js [--json]
- * Exit: 0 all invariants hold · 1 a site drifted (the finding) · 2 fail-closed (a guarded file unreadable).
+ * Exit: 0 all hold · 1 a consumer drifted (the finding) · 2 fail-closed (a guarded file unreadable).
  */
 const fs = require("fs");
 const path = require("path");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "provenance-invariants";
+// The attestation CONSUMERS that must delegate identity to the choke-point (NOT the module itself, NOT the
+// manifest-lane checker panel-lanes.js which legitimately reads a MANIFEST lane's sanctioned_lane_id).
+const CONSUMERS = ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js"];
+const VERIFIER = "provenance-verifier";
 
 function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), "utf8");
 }
-
-// Strip doc-comments + line comments so a comment MENTIONING an old pattern isn't a false positive.
 function stripComments(src) {
   return src.replace(/^\s*\*.*$/gm, "").replace(/\/\/.*$/gm, "");
 }
 
-// ── PURE detectors (injectable content → boolean leak) — the guard's testable core. ──
+// ── PURE detectors (injectable content → boolean) — order/name-independent (R6-BE-002-robust). ──
 
-// INV-1 leak: a hunter-identity check ORs a settable via/record_via label as an ALTERNATIVE to the shape.
-function hasHunterIdentityLeak(code) {
-  return /(r\.via\s*===\s*["']epsilon-agent["']\s*\|\||r\.record_via\s*===\s*["']inprocess["']\s*\|\|)/.test(stripComments(code));
+// A consumer re-implements the hunter identity if it compares a RECORD `.shape` to "in-process-agent"
+// (either operand order). `shape: "in-process-agent"` (an object-literal assignment) is NOT a comparison.
+function hasLocalShapeIdentity(code) {
+  const c = stripComments(code);
+  return /\.shape\s*===\s*["']in-process-agent["']/.test(c) || /["']in-process-agent["']\s*===\s*[A-Za-z_$][\w$]*\.shape/.test(c);
 }
-// INV-2 leak: an attestation filter keys on r.run_id (the panel identity is panel_run_id). `run_id: x` (output) is fine.
-function hasRunIdentityLeak(code) {
-  return /r\.run_id\s*(===|!==)\s*(runId|panelRunId)/.test(stripComments(code));
+// A consumer keys identity on a settable per-record label if it compares `.via`/`.record_via`/
+// `.sanctioned_lane_id` (either operand order, any variable name).
+function hasSettableLabelIdentity(code) {
+  const c = stripComments(code);
+  const fields = "(via|record_via|sanctioned_lane_id)";
+  return new RegExp(`\\.${fields}\\s*===`).test(c) || new RegExp(`===\\s*[A-Za-z_$][\\w$]*\\.${fields}\\b`).test(c);
 }
-// INV-3 hold: every git-head ref-read path (packed + loose/detached) SHA-validates its token.
+function importsVerifier(code) {
+  return new RegExp(`require\\([^)]*${VERIFIER}[^)]*\\)`).test(code);
+}
+// INV-3: every git-head ref-read path (packed + loose/detached) SHA-validates its token.
 function gitHeadTokenValidated(src) {
   const packed = /function readPackedRef[\s\S]*?\n}/.exec(src);
-  const loose = /readGitHead[\s\S]*?\n}/.exec(src);
+  const readHead = /function readGitHead[\s\S]*?\n}/.exec(src);
   const packedOk = !!packed && /\[0-9a-f\]\{7,40\}/.test(packed[0]);
-  const looseOk = !!loose && (loose[0].match(/\[0-9a-f\]\{7,40\}/g) || []).length >= 2;
+  const looseOk = !!readHead && (readHead[0].match(/\[0-9a-f\]\{7,40\}/g) || []).length >= 2;
   return packedOk && looseOk;
-}
-
-function checkHunterIdentity(violations) {
-  for (const f of ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js", "scripts/dispatch/panel-lanes.js"]) {
-    let src;
-    try { src = read(f); } catch (e) { violations.push({ inv: "INV-1", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); continue; }
-    if (hasHunterIdentityLeak(src)) violations.push({ inv: "INV-1", file: f, msg: "a hunter-identity check ORs a settable via/record_via label — require shape==='in-process-agent' AND role, not the label (SR-016)" });
-  }
-}
-function checkRunIdentity(violations) {
-  const f = "scripts/checks/cert-attest.js";
-  let src;
-  try { src = read(f); } catch (e) { violations.push({ inv: "INV-2", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); return; }
-  if (hasRunIdentityLeak(src)) violations.push({ inv: "INV-2", file: f, msg: "an attestation filter keys on r.run_id — the panel identity is panel_run_id (QA-014/SR-011)" });
-}
-function checkProvenanceToken(violations) {
-  const f = "scripts/dispatch/git-head.js";
-  let src;
-  try { src = read(f); } catch (e) { violations.push({ inv: "INV-3", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); return; }
-  if (!gitHeadTokenValidated(src)) violations.push({ inv: "INV-3", file: f, msg: "a git-head ref-read path returns a token without hex-SHA validation (R5-BE-001)" });
 }
 
 function run() {
   const violations = [];
-  checkHunterIdentity(violations);
-  checkRunIdentity(violations);
-  checkProvenanceToken(violations);
+  for (const f of CONSUMERS) {
+    let src;
+    try { src = read(f); } catch (e) { violations.push({ inv: "CONSUMER", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); continue; }
+    if (!importsVerifier(src)) violations.push({ inv: "DELEGATE", file: f, msg: `does not import the ${VERIFIER} choke-point — it must consume the shared identity predicates, not re-implement them` });
+    if (hasLocalShapeIdentity(src)) violations.push({ inv: "NO-LOCAL-IDENTITY", file: f, msg: "re-implements a hunter-identity check (a RECORD .shape==='in-process-agent' comparison) — delegate to provenance-verifier.isHunterRecord/recordMatchesLane" });
+    if (hasSettableLabelIdentity(src)) violations.push({ inv: "NO-SETTABLE-LABEL", file: f, msg: "keys identity on a SETTABLE per-record label (.via/.record_via/.sanctioned_lane_id) — identity is writer-stamped shape+role ONLY (SR-016/SR-017)" });
+  }
+  let gh;
+  try { gh = read("scripts/dispatch/git-head.js"); } catch (e) { violations.push({ inv: "INV-3", file: "scripts/dispatch/git-head.js", msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); }
+  if (gh && !gitHeadTokenValidated(gh)) violations.push({ inv: "INV-3", file: "scripts/dispatch/git-head.js", msg: "a ref-read path returns a token without hex-SHA validation (R5/R6-BE-001)" });
   return violations;
 }
 
 if (require.main === module) {
   const json = process.argv.includes("--json");
   let violations;
-  try {
-    violations = run();
-  } catch (e) {
-    process.stderr.write(`FAIL [${NAME}] fail-closed: ${e.message}\n`);
-    process.exit(2);
-  }
+  try { violations = run(); } catch (e) { process.stderr.write(`FAIL [${NAME}] fail-closed: ${e.message}\n`); process.exit(2); }
   const fatal = violations.some((v) => v.fatal);
-  if (json) {
-    process.stdout.write(JSON.stringify({ check: NAME, ok: violations.length === 0, violations }, null, 2) + "\n");
-  } else if (violations.length === 0) {
-    process.stdout.write(`OK   [${NAME}] hunter-identity (shape not label), run-identity (panel_run_id), provenance-token (SHA-validated) hold at every guarded site\n`);
-  } else {
-    process.stderr.write(`FAIL [${NAME}] ${violations.length} invariant drift(s):\n${violations.map((v) => `  - [${v.inv}] ${v.file}: ${v.msg}`).join("\n")}\n`);
-  }
+  if (json) process.stdout.write(JSON.stringify({ check: NAME, ok: violations.length === 0, violations }, null, 2) + "\n");
+  else if (violations.length === 0) process.stdout.write(`OK   [${NAME}] both attestation consumers delegate identity to the provenance-verifier choke-point; no local re-implementation, no settable-label identity; git-head SHA-validates every ref-read\n`);
+  else process.stderr.write(`FAIL [${NAME}] ${violations.length} drift(s):\n${violations.map((v) => `  - [${v.inv}] ${v.file}: ${v.msg}`).join("\n")}\n`);
   process.exit(violations.length === 0 ? 0 : fatal ? 2 : 1);
 }
 
-module.exports = { run, NAME, hasHunterIdentityLeak, hasRunIdentityLeak, gitHeadTokenValidated };
+module.exports = { run, NAME, hasLocalShapeIdentity, hasSettableLabelIdentity, importsVerifier, gitHeadTokenValidated };

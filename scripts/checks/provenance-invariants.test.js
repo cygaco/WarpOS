@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 /**
- * Self-verifying teeth for the STRUCTURAL anti-recurrence guard (SP-20260718-003, β round-5 ruling). The
- * guard is only a class-CLOSE if it actually CATCHES a re-introduced leak — so each detector is proven
- * against a leak fixture AND a clean fixture, and the live guard is asserted GREEN on the swept code.
+ * Self-verifying teeth for the STRUCTURAL choke-point guard (SP-20260718-003, α round-6 ruling). The guard
+ * is only a class-CLOSE if it catches every equivalent spelling of a re-introduced leak — so each detector
+ * is proven against R6-BE-002's exact fragility list (reversed operands, renamed callback vars, the
+ * sanctioned_lane_id settable-label vector) AND the live guard is asserted GREEN on the refactored consumers.
  *
  *   node scripts/checks/provenance-invariants.test.js
  */
@@ -16,65 +17,56 @@ function test(name, fn) {
   try { fn(); passed++; } catch (e) { failures.push(`${name}: ${e.message}`); }
 }
 
-// ── INV-1 hunter-identity: the via/record_via OR is the SR-016 leak; strict shape is clean. ──
-test("INV-1: detects a via/record_via OR in a hunter-identity check", () => {
-  const leak = `match = recs.find(r => r.role === HUNTER && (r.via === "epsilon-agent" || r.shape === "in-process-agent") && r.output_digest);`;
-  assert.equal(g.hasHunterIdentityLeak(leak), true, "the settable-label OR must be flagged");
+// ── NO-SETTABLE-LABEL: sanctioned_lane_id (SR-017), via (SR-016), record_via — any operand order/var name. ──
+test("catches sanctioned_lane_id identity (SR-017), authored order", () => {
+  assert.equal(g.hasSettableLabelIdentity(`m = recs.find(r => r.sanctioned_lane_id === HUNTER && r.shape === S);`), true);
 });
-test("INV-1: a strict shape check (no label OR) is clean", () => {
-  const clean = `match = recs.find(r => r.role === HUNTER && r.shape === "in-process-agent" && r.output_digest);`;
-  assert.equal(g.hasHunterIdentityLeak(clean), false);
+test("catches sanctioned_lane_id identity, REVERSED operands (R6-BE-002)", () => {
+  assert.equal(g.hasSettableLabelIdentity(`m = recs.find(r => HUNTER === r.sanctioned_lane_id);`), true);
 });
-test("INV-1: a via mention inside a COMMENT is not a false positive", () => {
-  const commented = `// legacy: (r.via === "epsilon-agent" || r.shape === "in-process-agent")\nmatch = recs.find(r => r.shape === "in-process-agent");`;
-  assert.equal(g.hasHunterIdentityLeak(commented), false);
+test("catches via identity with a RENAMED callback variable (R6-BE-002)", () => {
+  assert.equal(g.hasSettableLabelIdentity(`m = recs.find(record => record.via === "epsilon-agent");`), true);
+  assert.equal(g.hasSettableLabelIdentity(`m = recs.find(x => x.record_via === "inprocess");`), true);
 });
-
-// ── INV-2 run-identity: an r.run_id filter is the QA-014 leak; panel_run_id / output field is clean. ──
-test("INV-2: detects an r.run_id === runId attestation filter", () => {
-  assert.equal(g.hasRunIdentityLeak(`if (r.run_id !== runId) continue;`), true);
-  assert.equal(g.hasRunIdentityLeak(`recs.filter(r => r.run_id === runId)`), true);
-});
-test("INV-2: filtering by panel_run_id is clean; run_id as an OUTPUT field is clean", () => {
-  assert.equal(g.hasRunIdentityLeak(`if (r.panel_run_id !== panelRunId) continue;`), false);
-  assert.equal(g.hasRunIdentityLeak(`return { run_id: runId, ok };`), false);
+test("clean: no settable-label comparison", () => {
+  assert.equal(g.hasSettableLabelIdentity(`m = recs.find(r => pv.isHunterRecord(r) && r.output_digest);`), false);
 });
 
-// ── INV-3 provenance-token: an unvalidated packed-ref return is the R5-BE-001 leak. ──
-test("INV-3: flags git-head source whose readPackedRef does NOT SHA-validate", () => {
-  const leak = [
-    "function readGitHead(root) {",
-    "  if (/^[0-9a-f]{7,40}$/i.test(x)) return x;",
-    "  if (/^[0-9a-f]{7,40}$/i.test(y)) return y;",
-    "}",
-    "function readPackedRef(p, ref) {",
-    "  return t.slice(0, sp);",
-    "}",
-  ].join("\n");
-  assert.equal(g.gitHeadTokenValidated(leak), false, "an unvalidated packed-ref return must be flagged");
+// ── NO-LOCAL-IDENTITY: a RECORD .shape==='in-process-agent' comparison (either order). ──
+test("catches a local shape-identity re-implementation, authored + reversed order", () => {
+  assert.equal(g.hasLocalShapeIdentity(`if (r.shape === "in-process-agent") ...`), true);
+  assert.equal(g.hasLocalShapeIdentity(`if ("in-process-agent" === rec.shape) ...`), true);
 });
-test("INV-3: git-head source that SHA-validates every path is clean", () => {
-  const clean = [
-    "function readGitHead(root) {",
-    "  if (/^[0-9a-f]{7,40}$/i.test(x)) return x;",
-    "  if (/^[0-9a-f]{7,40}$/i.test(y)) return y;",
-    "}",
-    "function readPackedRef(p, ref) {",
-    "  const s = t.slice(0, sp);",
-    "  return /^[0-9a-f]{7,40}$/i.test(s) ? s : '';",
-    "}",
-  ].join("\n");
+test("clean: a shape object-LITERAL assignment is not a comparison; a pv delegate is clean", () => {
+  assert.equal(g.hasLocalShapeIdentity(`return { shape: "in-process-agent", role: HUNTER };`), false);
+  assert.equal(g.hasLocalShapeIdentity(`if (pv.recordMatchesLane(r, contract, prov)) ...`), false);
+});
+
+// ── DELEGATE: a consumer must import the verifier. ──
+test("importsVerifier: detects the require", () => {
+  assert.equal(g.importsVerifier(`const pv = require("../dispatch/provenance-verifier");`), true);
+  assert.equal(g.importsVerifier(`const pv = require(path.join(x, "dispatch", "provenance-verifier"));`), true);
+  assert.equal(g.importsVerifier(`const x = require("./something-else");`), false);
+});
+
+// ── INV-3 (git-head): every ref-read path SHA-validates (multi-line function bodies). ──
+test("INV-3: flags a readPackedRef that does NOT SHA-validate", () => {
+  const leak = ["function readGitHead(root) {", "  if (/^[0-9a-f]{7,40}$/i.test(x)) return x;", "  if (/^[0-9a-f]{7,40}$/i.test(y)) return y;", "}", "function readPackedRef(p, ref) {", "  return t.slice(0, sp);", "}"].join("\n");
+  assert.equal(g.gitHeadTokenValidated(leak), false);
+});
+test("INV-3: a fully SHA-validating git-head is clean", () => {
+  const clean = ["function readGitHead(root) {", "  if (/^[0-9a-f]{7,40}$/i.test(x)) return x;", "  if (/^[0-9a-f]{7,40}$/i.test(y)) return y;", "}", "function readPackedRef(p, ref) {", "  const s = t.slice(0, sp);", "  return /^[0-9a-f]{7,40}$/i.test(s) ? s : '';", "}"].join("\n");
   assert.equal(g.gitHeadTokenValidated(clean), true);
 });
 
-// ── the LIVE guard must be GREEN on the swept code (all three invariants hold at every guarded site). ──
-test("live: the swept code has ZERO invariant violations", () => {
+// ── the LIVE guard: the refactored consumers delegate to the choke-point → ZERO violations. ──
+test("live: cert-attest + dispatch-review delegate identity to the verifier (0 violations)", () => {
   const v = g.run();
-  assert.equal(v.length, 0, `guard must be green on swept code: ${v.map((x) => `[${x.inv}] ${x.file}: ${x.msg}`).join(" | ")}`);
+  assert.equal(v.length, 0, `guard must be green on the refactored consumers: ${v.map((x) => `[${x.inv}] ${x.file}: ${x.msg}`).join(" | ")}`);
 });
 
 if (failures.length) {
   process.stderr.write(`FAIL [provenance-invariants.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [provenance-invariants.test] ${passed} passed (the guard catches a re-introduced leak per class AND is green on the swept code)\n`);
+process.stdout.write(`OK   [provenance-invariants.test] ${passed} passed (order/name-independent; catches sanctioned_lane_id + reversed + renamed; live consumers delegate)\n`);

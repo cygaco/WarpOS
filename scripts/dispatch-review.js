@@ -322,46 +322,24 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
     return Number.isFinite(t) && t >= sinceMs;
   });
   const toolIdOf = requireToolIdOf();
-  // Option B (SR-015, α-ruled — amends ADR-0016; two-tier claude contract): the CLAUDE lane's contract
-  // differs by profile. The panel-2family FLOOR accepts a subprocess-claude review (channel:subprocess,
-  // role:security-reviewer) — a REAL Claude security review with 2-family diversity intact, observed-
-  // provider-attested; the runner (a node script) can self-complete it without a conductor. The BINDING
-  // panel-3lab requires the IN-PROCESS security_claude_hunter IDENTITY: a subprocess-claude record can
-  // NEVER satisfy it (condition 2), so in the runner (which never fires the hunter) the binding claude lane
-  // is absent → panel-3lab stays BLOCKED. When agy goes live AND the hunter runs, 3lab binds with the
-  // hunter (condition 4). Corroboration otherwise stays the SR-010/QA-008 durable-live-non-fallback filter.
-  const HUNTER_ROLE = "security_claude_hunter";
-  const buildObserved = (claudeContract) =>
+  // Two-tier claude contract (SR-015, α-ruled — ADR-0016) resolved through the SINGLE provenance-verifier
+  // choke-point (α round-6 / ED-225): the panel-2family FLOOR's claude lane is a subprocess-claude review;
+  // the panel-3lab BINDING's claude lane is the in-process hunter (writer-stamped shape+role ONLY, no
+  // settable via/record_via/sanctioned_lane_id). Identity is NOT re-implemented here — pv.laneContract +
+  // pv.recordMatchesLane own it (the duplication was the SR-016/SR-017 root). Corroboration (SR-010:
+  // durable-live-non-fallback record on the contracted executable) stays local.
+  const pv = require("./dispatch/provenance-verifier");
+  const buildObserved = (profileName) =>
     lanes.map((l) => {
-      const isClaude = l.provider === "claude";
-      let rec;
-      if (isClaude && claudeContract === "hunter") {
-        // BINDING claude lane = the sanctioned in-process hunter IDENTITY (an in-process record via the
-        // conductor). A subprocess-claude record does not match — it is the FLOOR's lane, not the hunter.
-        rec = records.find(
-          (r) =>
-            r.provider === "claude" &&
-            r.shape === "in-process-agent" &&
-            (r.role === HUNTER_ROLE || r.sanctioned_lane_id === HUNTER_ROLE) &&
-            r.ok === true &&
-            r.fallback === false &&
-            (!!r.output_digest || !!r.evidence_sha),
-        );
-      } else {
-        const expectShape = isClaude ? "subprocess-claude" : "subprocess-cross-provider";
-        const expectTool = toolIdOf(l.observedProvider);
-        rec = records.find(
-          (r) =>
-            r.role === "security-reviewer" &&
-            r.shape === expectShape &&
-            r.provider === l.observedProvider &&
-            r.tool_id === expectTool &&
-            r.ok === true &&
-            r.fallback === false &&
-            !!r.output_digest &&
-            !!r.cmdline_checksum,
-        );
-      }
+      const contract = pv.laneContract(profileName, l.observedProvider);
+      const rec = records.find((r) => {
+        if (!pv.recordMatchesLane(r, contract, l.observedProvider)) return false; // IDENTITY from the module
+        if (!(r.ok === true && r.fallback === false)) return false;
+        // The in-process hunter's proof is its evidence digest (no CLI cmdline); a subprocess/CLI lane needs
+        // real output + a real invocation (cmdline_checksum) on the contracted executable (tool_id).
+        if (contract.isHunter) return !!r.output_digest || !!r.evidence_sha;
+        return !!r.output_digest && !!r.cmdline_checksum && r.tool_id === toolIdOf(l.observedProvider);
+      });
       return {
         laneId: l.laneId,
         contractedProvider: l.provider,
@@ -374,8 +352,8 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
     });
   const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
   const bindingProfile = { name: "panel-3lab", ...manifest.profiles["panel-3lab"] };
-  const floor = panelStatus(floorProfile, buildObserved("subprocess"), { agyOperatorOwned: true });
-  const binding = panelStatus(bindingProfile, buildObserved("hunter"), { agyOperatorOwned: true });
+  const floor = panelStatus(floorProfile, buildObserved("panel-2family"), { agyOperatorOwned: true });
+  const binding = panelStatus(bindingProfile, buildObserved("panel-3lab"), { agyOperatorOwned: true });
   return {
     floor_pass: floor.status === STATUS.PASS,
     manifest_valid: true,

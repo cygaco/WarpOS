@@ -64,6 +64,17 @@ test("R5-BE-001: malformed LOOSE ref (non-hex) → '' (fail-closed)", () => {
     assert.equal(readGitHead(root), "");
   });
 });
+// ── R6-BE-001: a malformed LOOSE ref that EXISTS must NOT fall through to a valid packed-refs entry —
+//    the loose ref is authoritative; a malformed one fails CLOSED (a stale packed SHA is the WRONG commit). ──
+test("R6-BE-001: malformed loose ref + VALID packed fallback → '' (loose is authoritative, no fall-through)", () => {
+  mkRepo((root, gitDir) => {
+    fs.writeFileSync(path.join(gitDir, "HEAD"), "ref: refs/heads/main\n");
+    fs.mkdirSync(path.join(gitDir, "refs", "heads"), { recursive: true });
+    fs.writeFileSync(path.join(gitDir, "refs", "heads", "main"), "garbage-not-a-sha\n");
+    fs.writeFileSync(path.join(gitDir, "packed-refs"), `${SHA} refs/heads/main\n`); // a stale/valid packed entry
+    assert.equal(readGitHead(root), "", "a malformed loose ref must not fall through to the packed SHA");
+  });
+});
 test("no .git → '' (fail-closed, not a crash)", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-nogit-"));
   try { assert.equal(readGitHead(root), ""); } finally { fs.rmSync(root, { recursive: true, force: true }); }
