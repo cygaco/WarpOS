@@ -1,0 +1,15 @@
+{
+  "id": "workorder-prompt-size-floor",
+  "gate": "workorder",
+  "input": {
+    "role_kind": "feature-build",
+    "prompt_bytes": 480,
+    "floor_bytes": 2048
+  },
+  "expect": {
+    "outcome": "BLOCK",
+    "reason": "for feature-build WorkOrders, a generated prompt below the configured floor (2 KB) must block dispatch -- tiny stub prompts produce hollow ok:true records with zero real changes (packet-06 Prompt-size floor, proven live by the WG-10 hollow-prompt bug)."
+  },
+  "kernel_scope": "IN",
+  "note": "RATIFIED-PLAN Phase-3 alpha ruling: KEEP the packet's prompt-size floor as a cheap tripwire AND add required-semantics validation -- belt and suspenders, not either/or (G3.2). This fixture covers the floor half."
+}

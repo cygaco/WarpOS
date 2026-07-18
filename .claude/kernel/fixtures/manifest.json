@@ -1,0 +1,53 @@
+{
+  "schema": "warpos/kernel/fixtures-manifest/v1",
+  "manifest_version": "1.0.0",
+  "_doc": "D6 (SP-20260718-001 Phase 0). Kernel-scope conformance fixtures harvested from packet-13/15, proving positive coverage per CORE invariant (§7 of top-level-runtime-contract.md) and per in-kernel-scope support-matrix cell (D4). Consumed by scripts/checks/conformance-matrix.js (G0.3) and counted by scripts/checks/contract-lint.js (G0.1 check 4, fixture count nonzero).",
+  "count": 12,
+  "gates": {
+    "role-binding": 2,
+    "trust-boundary": 1,
+    "retention": 1,
+    "support-matrix": 3,
+    "dispatch-honesty": 1,
+    "tracker": 1,
+    "worktree": 1,
+    "workorder": 1,
+    "dispatch-review": 1
+  },
+  "core_coverage": {
+    "CORE-1": ["role-binding/unbound-dispatch-fails-closed.json"],
+    "CORE-2": ["trust-boundary/trusted-layer-sole-integrator.json"],
+    "CORE-3": ["role-binding/no-root-alpha-poison.json"],
+    "CORE-4": ["retention/retention-archive-not-delete.json"]
+  },
+  "matrix_cell_coverage": {
+    "claude": ["support-matrix/claude-row-supported.json"],
+    "codex-gpt": ["support-matrix/codex-gpt-row-supported.json"],
+    "agy-antigravity": ["support-matrix/agy-row-down-blocks.json"]
+  },
+  "_contract_lint_selftest_note": "The 4-file 'contract-lint' directory (malformed, unresolvable-ref, missing-ed, core-waived-by-ed — each a .md fixture + a documenting .json descriptor) is contract-lint.js's OWN R1 negative self-test corpus (consumed directly by contract-lint.test.js). It is DELIBERATELY EXCLUDED from the count above and from conformance-matrix.js's fixture walker: those inputs are contract-shaped documents fed to contract-lint itself, not {input,expect} kernel-conformance cases evaluated against role-binding.json/support-matrix.json. Counting or executing them as kernel-conformance fixtures would conflate G0.1's self-test with G0.3's matrix conformance.",
+  "kernel_scope": {
+    "version": "1.0.0",
+    "immutable_from": "SP-20260718-001",
+    "in": [
+      "role-binding (CORE-1, CORE-3)",
+      "trust-boundary (CORE-2, definition-level/report-only)",
+      "retention (CORE-4, archive-not-delete)",
+      "support-matrix (D4 helm rows: claude, codex-gpt, agy-antigravity)",
+      "dispatch-honesty (false-green ResultEnvelope claims)",
+      "tracker (tracker/disk/git drift)",
+      "worktree (stale base vs integration head)",
+      "workorder (prompt-size floor)",
+      "dispatch-review (cross-provider review invariant)"
+    ],
+    "out": [
+      "product-pack gates (route to bootstrap:lastmile)",
+      "webapp production baseline gates (route to bootstrap:lastmile)",
+      "founder-panel gates (route to bootstrap:lastmile)",
+      "agy migration liveness (RATIFIED-PLAN Phase 1 — recorded DOWN here as a kernel-scope fixture, ED-060; the MIGRATION itself is Phase-1 work, not kernel-conformance-fixture work)",
+      "the full WorkOrder/ResultEnvelope v1 validator (RATIFIED-PLAN Phase 3, ED-217)",
+      "the Phase-4 trusted enforcement adapter (ED-215)"
+    ],
+    "candidate_immutability_note": "This IN/OUT line is versioned (manifest_version) and CANDIDATE-IMMUTABLE — a candidate tree editing this manifest to narrow the IN list (so a difficult check no longer applies to it) is itself an untrusted change once the Phase-4 trusted adapter exists (ED-215); today (Phase 0-3) contract-lint.js's self-host + conformance-matrix.js's coverage assertion are the interim guard (H-4)."
+  }
+}

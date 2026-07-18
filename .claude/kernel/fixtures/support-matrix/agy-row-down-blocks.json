@@ -1,0 +1,12 @@
+{
+  "id": "support-matrix-agy-row-down-blocks",
+  "gate": "support-matrix",
+  "bound_matrix_cell": "agy-antigravity",
+  "input": { "helm": "agy-antigravity" },
+  "expect": {
+    "outcome": "BLOCK",
+    "reason": "support-matrix.json rows['agy-antigravity'].status is 'down' with required:true -- a down REQUIRED lane resolves BLOCKED, never a silent green pass (R4). evidence_ref: ED-060."
+  },
+  "kernel_scope": "IN",
+  "note": "R4 CRITICAL fixture -- the specific case the whole D4/G0.3 durable rule exists to catch: 'a lane resolved DOWN is reflected in EVERY artifact that assumed it UP'. A conformance-matrix.js that ever returns PASS for this fixture is the false-green class the whole Phase-0 build defends against."
+}

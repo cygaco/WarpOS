@@ -1,0 +1,17 @@
+{
+  "id": "trust-boundary-trusted-layer-sole-integrator",
+  "gate": "trust-boundary",
+  "bound_core": "CORE-2",
+  "input": {
+    "actor_kind": "untrusted_provider_session",
+    "attempted_action": "integrate_to_main",
+    "actor_is_trusted_layer": false
+  },
+  "expect": {
+    "outcome": "BLOCK",
+    "reason": "capability grants, protected mutation, verification, and integration-to-main are SOLELY owned by the provider-independent trusted layer; an untrusted provider session attempting integration-to-main directly is refused by definition."
+  },
+  "kernel_scope": "IN",
+  "report_only": true,
+  "note": "DEFINITION-LEVEL fixture (Phase 0 DEFINES the boundary; the Phase-4 trusted enforcement adapter that makes this a LIVE runtime block does not exist yet, ED-215). conformance-matrix.js evaluates this fixture against the CORE-2 rule as declared in top-level-runtime-contract.md §1/§7 -- it proves the RULE is coherent and fixture-testable, not that a live gate blocks the action today. G0.3 stays report-only through Phase 2 (ED-214); this fixture does not change that."
+}
