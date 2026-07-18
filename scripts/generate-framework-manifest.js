@@ -228,6 +228,10 @@ const ASSET_DIRS = [
   { src: "scripts/check", kind: "check_runner_tool" },
   { src: "scripts/docs", kind: "docs_tool" },
   { src: "scripts/events", kind: "events_tool" },
+  // SP-20260718-002 C2: scripts/state backs the materialized-state engine
+  // (materialize-core primitive + what-running/what-happened). Registered so the
+  // new state scripts are hash-tracked in the framework manifest (AC-13 / QA-3).
+  { src: "scripts/state", kind: "state_tool" },
   { src: "scripts/fix-deep", kind: "fix_deep_tool" },
   { src: "scripts/learn", kind: "learn_tool" },
   // E4 (M1 §8): scripts/skills backs the skill→agent hook-points registry +
