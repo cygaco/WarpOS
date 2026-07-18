@@ -163,8 +163,11 @@ function attestLane(lane, records, opts = {}) {
       r.ok === true &&
       r.fallback === false &&
       (sprintId == null || r.sprint_id === sprintId) &&
+      // SR-014: STRICT panel-run identity — the record's panel_run_id must equal the requested run. The
+      // prior `|| r.run_id === runId` fallback re-opened SR-011: a DIFFERENT-panel record whose run_id
+      // happened to match could attest. A record without the minted panel_run_id cannot prove membership.
       runId != null &&
-      (r.panel_run_id === runId || r.run_id === runId),
+      r.panel_run_id === runId,
   );
   // SR-013: the record must carry the code_sha it EXECUTED against (persisted at write-time), matching the
   // attested HEAD — never a caller-supplied SHA — AND a non-empty invocation digest (cmdline_checksum).
@@ -259,11 +262,11 @@ function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, rol
 
 /** git HEAD SHA via the safe-spawn kernel (read-only git; the model never chooses the exe). */
 function gitHeadSha() {
+  // QA-012: read HEAD via fs — the SAME provenance source the record WRITER (recordCompletion) uses, so
+  // the attestor's HEAD and the persisted code_sha agree. A nested `git` subprocess is EPERM-blocked in
+  // the CI/reviewer sandbox (which made this return null → attestPanelRunLive never ok); the fs read works.
   try {
-    const kernel = loadKernel();
-    if (typeof kernel.safeSpawnSync !== "function") return null;
-    const r = kernel.safeSpawnSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, timeoutMs: 10000 });
-    return r && r.ok ? String(r.stdout || "").trim() || null : null;
+    return require(path.join(ROOT, "scripts", "dispatch", "git-head")).readGitHead(ROOT) || null;
   } catch {
     return null;
   }

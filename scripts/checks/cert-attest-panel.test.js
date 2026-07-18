@@ -139,6 +139,17 @@ test("SR-011: a record with a different panel_run_id → not same-run → gpt un
   assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
 });
 
+// ── SR-014: THE reopened case — a DIFFERENT panel_run_id whose run_id happens to MATCH must NOT attest
+//    (the dropped `|| r.run_id === runId` fallback). Correlation is by panel_run_id IDENTITY only. ──
+test("SR-014: different panel_run_id but matching run_id → NOT attested (no run_id fallback)", () => {
+  const otherPanelGpt = { ...gptOk, panel_run_id: "panel-OTHER", run_id: R /* run_id MATCHES the requested run */ };
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [otherPanelGpt, claudeHunterOk] });
+  assert.equal(out.ok, false, "a record from a different panel must not certify this panel via a matching run_id");
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
+  // and the direct lane check
+  assert.equal(attestLane(LANES.gpt, [otherPanelGpt], { runId: R, sprintId: S, codeSha: SHA }).attested, false);
+});
+
 // ── SR-013: a record whose code_sha MISMATCHES the attested HEAD → NOT attested. ──
 test("SR-013: record code_sha != attested codeSha → gpt unattested → panel FAILS", () => {
   const staleShaGpt = { ...gptOk, code_sha: "old-commit-999" };

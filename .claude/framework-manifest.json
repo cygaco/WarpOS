@@ -29,7 +29,7 @@
     "paths_engine": 4,
     "sprint_engine": 43,
     "tracker_tool": 2,
-    "dispatch_engine": 57,
+    "dispatch_engine": 58,
     "check_runner_tool": 4,
     "docs_tool": 1,
     "events_tool": 4,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1488,
+  "total": 1489,
   "assets": {
     "agent": [
       {
@@ -7659,7 +7659,7 @@
         "src": "scripts/checks/cert-attest-panel.test.js",
         "dest": "scripts/checks/cert-attest-panel.test.js",
         "kind": "check_tool",
-        "sha256": "357f467d8f42621cf35b29ab974d6a5e4d8211d394acdd5753561898064a530c",
+        "sha256": "03e990a26e9b2fdbfac0bb27b62c21dbac89902f5197d62a943f270cd3820bca",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7671,7 +7671,7 @@
         "src": "scripts/checks/cert-attest.js",
         "dest": "scripts/checks/cert-attest.js",
         "kind": "check_tool",
-        "sha256": "3d764fea0e3318136ac709365de518a5cf3d350942ab133fa6532340b1a11cc6",
+        "sha256": "848b9f46025aea0f6c91442059a57642517d9e891cefd3d0ba1c42c9dfbcbae7",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -10546,6 +10546,18 @@
         "dest": "scripts/dispatch/gauntlet-verify.test.js",
         "kind": "dispatch_engine",
         "sha256": "929df3613b30effa4ce10bd6b997090bac8910874a380de80486938860e984f0",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.git-head.js",
+        "src": "scripts/dispatch/git-head.js",
+        "dest": "scripts/dispatch/git-head.js",
+        "kind": "dispatch_engine",
+        "sha256": "c63ca1cee04a14684bed9c75ca181990b23fb73c05fc6e604f3f422e1336cc9f",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -17837,7 +17849,7 @@
         "src": "scripts/dispatch-agent.js",
         "dest": "scripts/dispatch-agent.js",
         "kind": "top_script",
-        "sha256": "c43ab5593489fda3e6d470b26f797fb0f969c56d6cd9f052bf6c850a95e10221",
+        "sha256": "37264f5ecf21cbae3b5b1e77ecd9a0dd0a80bf00817c7833fcad9371b73e1968",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

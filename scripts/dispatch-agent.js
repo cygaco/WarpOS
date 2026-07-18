@@ -273,15 +273,14 @@ function ledgerFile(pathsValue, relFallback) {
 }
 
 // Execution-time code SHA — the git HEAD the dispatch actually ran against. Cached per-process (a
-// dispatch never rewrites HEAD mid-run). Empty on a non-git install → attestation blocks (fail-closed).
+// dispatch never rewrites HEAD mid-run). Read via fs (NO subprocess — QA-012: a nested spawn is
+// EPERM-blocked in the CI/reviewer sandbox, which made code_sha null and the attestation inoperable
+// there). Empty on a non-git install → attestation blocks (fail-closed).
 let _cachedCodeSha;
 function currentCodeSha() {
   if (_cachedCodeSha !== undefined) return _cachedCodeSha;
   try {
-    _cachedCodeSha = require("child_process")
-      .execFileSync("git", ["rev-parse", "HEAD"], { cwd: AGENT_ROOT, stdio: ["ignore", "pipe", "ignore"] })
-      .toString()
-      .trim();
+    _cachedCodeSha = require("./dispatch/git-head").readGitHead(AGENT_ROOT) || "";
   } catch {
     _cachedCodeSha = "";
   }
