@@ -87,6 +87,28 @@ test("teeth-1 (positive): record-inprocess PRODUCES a writer-stamped hunter reco
   });
 });
 
+// ACTIVATION same-run correlation: with a panel run active (WARPOS_PANEL_RUN_ID) the hunter record carries
+// panel_run_id + code_sha, exactly as dispatch-agent stamps its CLI lanes — so attestPanelRun can same-run
+// correlate the hunter into a panel-3lab attestation (ADR-0022 teeth-5).
+test("activation: the hunter record carries panel_run_id + code_sha for same-run panel correlation", () => {
+  withIsolatedLedger((dir, led) => {
+    const ev = path.join(dir, "hunter.json");
+    fs.writeFileSync(ev, JSON.stringify({ verdict: "pass", findings: [] }));
+    const prevPanel = process.env.WARPOS_PANEL_RUN_ID;
+    process.env.WARPOS_PANEL_RUN_ID = "panel-ACTIVATION-T";
+    try {
+      rt.recordInProcessCompletion(hunterPlan, "SP-HUNTER-PANEL", { evidenceFile: ev, elapsedMs: 100 });
+    } finally {
+      if (prevPanel === undefined) delete process.env.WARPOS_PANEL_RUN_ID;
+      else process.env.WARPOS_PANEL_RUN_ID = prevPanel;
+    }
+    const rec = readLedger(led).find((r) => r.sprint_id === "SP-HUNTER-PANEL");
+    assert.ok(rec, "hunter record landed");
+    assert.equal(rec.panel_run_id, "panel-ACTIVATION-T", "panel_run_id stamped from WARPOS_PANEL_RUN_ID (same-run correlation)");
+    assert.ok(rec.code_sha && /^[0-9a-f]{7,40}$/i.test(rec.code_sha), `code_sha stamped (git HEAD): ${rec.code_sha}`);
+  });
+});
+
 // SR-019: a verdict-less (non-JSON) return still records liveness (ok) but stamps NO verdict → gate BLOCKS.
 test("SR-019: a non-JSON hunter return records ok but NO verdict (the panel gate will BLOCK the hunter lane)", () => {
   withIsolatedLedger((dir, led) => {

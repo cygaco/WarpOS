@@ -415,6 +415,13 @@ function recordAgentDispatch(
     // sprint_id: use the explicit sprintId arg (reliable even when env not set);
     //   the runContext() single-source reads env, but the arg is always present here.
     run_id: process.env.WARPOS_RUN_ID || null,
+    // SAME-RUN panel correlation (SP-20260718-003 Unit H activation): the in-process hunter record MUST carry
+    // the panel_run_id the runner minted (WARPOS_PANEL_RUN_ID) + the code_sha it ran against (git HEAD), exactly
+    // as dispatch-agent stamps its CLI records — otherwise applyPanelGate / attestPanelRun cannot same-run
+    // correlate the hunter lane into a panel-3lab attestation (ADR-0022 teeth-5: binding-green needs one REAL
+    // same-run hunter record). Both are null when the hunter is dispatched outside a panel run (standalone).
+    panel_run_id: process.env.WARPOS_PANEL_RUN_ID || null,
+    code_sha: (() => { try { return require("../dispatch/git-head").readGitHead(agentRoot()) || null; } catch { return null; } })(),
     phase_id: agentPlan.step,
     // ε-conductor provenance (extra fields are ignored by gauntlet-verify's typed check):
     sprint_id: sprintId,
