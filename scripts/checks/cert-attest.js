@@ -119,7 +119,7 @@ function providerForModel(catalog, model, explicit) {
 // makes the provider-diversity claim FALSIFIABLE.
 
 /** Read the dispatch-completions ledger, filtered to a sprint (+ optional run). Injectable path. */
-function readLedgerRecords(sprintId, runId, ledgerPath) {
+function readLedgerRecords(sprintId, panelRunId, ledgerPath) {
   let file = ledgerPath;
   if (!file) {
     try { file = require(path.join(ROOT, "scripts", "hooks", "lib", "paths")).PATHS.dispatchCompletionsFile; }
@@ -134,7 +134,11 @@ function readLedgerRecords(sprintId, runId, ledgerPath) {
     let r;
     try { r = JSON.parse(t); } catch { continue; }
     if (sprintId && r.sprint_id !== sprintId) continue;
-    if (runId != null && r.run_id !== runId) continue;
+    // QA-014 sweep: the panel-run IDENTITY is `panel_run_id` (SR-011 — minted by the runner, propagated to
+    // every child record). The prior filter used `run_id`, which the runner never carries as the panel id
+    // (recordCompletion writes run_id from WARPOS_RUN_ID) → real runner records were DISCARDED before
+    // attestation. Filter by panel_run_id so the live-read pre-filter agrees with attestLane's correlation.
+    if (panelRunId != null && r.panel_run_id !== panelRunId) continue;
     out.push(r);
   }
   return out;
@@ -182,7 +186,11 @@ function attestLane(lane, records, opts = {}) {
       (r) =>
         r.provider === "claude" &&
         (r.role === SANCTIONED_HUNTER_ROLE || r.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE) &&
-        (r.via === "epsilon-agent" || r.shape === "in-process-agent" || r.record_via === "inprocess") &&
+        // SR-016 sweep: the hunter's identity is the STRUCTURAL channel shape (in-process-agent), NOT a
+        // settable `via`/`record_via` label. The prior OR let a subprocess-claude record with
+        // via:"epsilon-agent" + the hunter role masquerade as the in-process hunter. shape is written by
+        // the in-process record writer (never by a subprocess wrapper) → it cannot be spoofed per-call.
+        r.shape === "in-process-agent" &&
         (r.evidence_sha || r.output_digest) &&
         provenanceOk(r),
     );

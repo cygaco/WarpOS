@@ -59,7 +59,13 @@ function readPackedRef(packedPath, refName) {
       const t = line.trim();
       if (!t || t.startsWith("#") || t.startsWith("^")) continue;
       const sp = t.indexOf(" ");
-      if (sp > 0 && t.slice(sp + 1) === refName) return t.slice(0, sp);
+      if (sp > 0 && t.slice(sp + 1) === refName) {
+        const sha = t.slice(0, sp);
+        // R5-BE-001 sweep: VALIDATE the token as a hex SHA — the SAME rule the loose/detached paths use.
+        // A malformed packed-refs line (`not-a-sha refs/heads/main`) must NOT yield a non-commit-identity
+        // code_sha; fail closed (return "" → unattestable), never a value that is not a commit.
+        return /^[0-9a-f]{7,40}$/i.test(sha) ? sha : "";
+      }
     }
   } catch {
     /* no packed-refs */

@@ -10,7 +10,10 @@
  *   node scripts/checks/cert-attest-panel.test.js
  */
 const assert = require("assert");
-const { attestLane, attestPanelRun } = require("./cert-attest");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { attestLane, attestPanelRun, readLedgerRecords } = require("./cert-attest");
 
 let passed = 0;
 const failures = [];
@@ -82,12 +85,19 @@ test("SR-005: claude in-process record without security_claude_hunter role → h
   assert.equal(out.attested, false, "provider=claude alone must not attest the sanctioned hunter (β#3/SR-005)");
 });
 
-// ── SR-015 (option B, condition 2): a SUBPROCESS-claude record must NEVER satisfy the in-process hunter
-//    lane — even if it CLAIMS the hunter role. Identity is shape + role, not a settable label. ──
+// ── SR-015 (option B, condition 2) / SR-016: a SUBPROCESS-claude record must NEVER satisfy the in-process
+//    hunter lane — even claiming the hunter role AND setting the settable `via:"epsilon-agent"` label.
+//    Identity is the STRUCTURAL shape (in-process-agent), NOT a settable via/record_via label. ──
 test("SR-015 cond-2: subprocess-claude record claiming the hunter role → hunter (in-process) unattested", () => {
   const subprocessFakeHunter = rec({ role: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", output_digest: "d", cmdline_checksum: "c" });
   const out = attestLane(LANES.claude, [subprocessFakeHunter], { runId: R, sprintId: S, codeSha: SHA });
   assert.equal(out.attested, false, "a subprocess-claude record must not satisfy the in-process hunter lane (shape mismatch)");
+});
+test("SR-016: subprocess-claude + via:'epsilon-agent' + hunter role → in-process hunter STILL unattested", () => {
+  // The exact reopened case: a settable `via` label must NOT let a subprocess record ride the hunter lane.
+  const viaSpoofHunter = rec({ role: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", via: "epsilon-agent", record_via: "inprocess", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [viaSpoofHunter], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, false, "a settable via/record_via label must not spoof the in-process hunter shape (SR-016)");
 });
 
 // ── T5a (THE fixture): wrapper CLAIMS agy but the record is provider:claude → agy NOT attested. ──
@@ -156,6 +166,30 @@ test("SR-014: different panel_run_id but matching run_id → NOT attested (no ru
   assert.ok(out.lanes.find((l) => l.laneId === "gpt" && !l.attested));
   // and the direct lane check
   assert.equal(attestLane(LANES.gpt, [otherPanelGpt], { runId: R, sprintId: S, codeSha: SHA }).attested, false);
+});
+
+// ── QA-014: the panel identity is panel_run_id — a record with a DIFFERENT run_id (from WARPOS_RUN_ID)
+//    but the matching panel_run_id must STILL correlate. The prior live filter keyed on run_id → real
+//    runner records were discarded. Prove attestLane AND readLedgerRecords correlate by panel_run_id. ──
+test("QA-014: a record with panel_run_id===run but a DIFFERENT run_id still attests (identity is panel_run_id)", () => {
+  const runnerGpt = { ...gptOk, run_id: "sprint-run-XYZ" /* differs from panel_run_id */, panel_run_id: R };
+  const out = attestLane(LANES.gpt, [runnerGpt], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, true, "a real runner record must correlate by panel_run_id, not be discarded on run_id");
+});
+test("QA-014: readLedgerRecords filters by panel_run_id, not run_id", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-qa014-"));
+  const ledger = path.join(dir, "l.jsonl");
+  try {
+    const recA = JSON.stringify({ sprint_id: S, run_id: "sprint-run-XYZ", panel_run_id: R, role: "security-reviewer", provider: "openai", ok: true });
+    const recB = JSON.stringify({ sprint_id: S, run_id: R, panel_run_id: "panel-OTHER", role: "security-reviewer", provider: "openai", ok: true });
+    fs.writeFileSync(ledger, recA + "\n" + recB + "\n");
+    const got = readLedgerRecords(S, R, ledger);
+    assert.equal(got.length, 1, "exactly the panel_run_id===R record is returned");
+    assert.equal(got[0].panel_run_id, R);
+    assert.equal(got[0].run_id, "sprint-run-XYZ", "correlated by panel_run_id despite a different run_id");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 // ── SR-013: a record whose code_sha MISMATCHES the attested HEAD → NOT attested. ──
