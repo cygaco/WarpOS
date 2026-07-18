@@ -33,9 +33,11 @@ registered route and its fixtures, not in doctrine prose:
    OR a teammate-ε via SYNCHRONOUS in-process spawn, per **ADR-0014** (accepted 2026-06-19; the
    consult's "relaxation not landed" premise was STALE — ADR-0014 is on main and ε live-verified the
    Agent route in its 2026-07-18 startup self-check, noting bg-spawn hard-errors for a teammate-ε, so
-   the route mandates `run_in_background:false` there). Fail-closed by construction: no conductor
-   hand → no hunter record → the binding lane resolves **BLOCKS-INCONCLUSIVE** — never
-   relabeled-floor, never synthetic.
+   the route mandates `run_in_background:false` there). The synchronous-spawn constraint is itself
+   load-bearing (β rider, 2026-07-18): the producer route must spawn-synchronously-or-BLOCK — a
+   bg-spawn hard-error degrades to no-record, never to a retry-as-synthetic or a relabeled-floor
+   record. Fail-closed by construction: no conductor hand → no hunter record → the binding lane
+   resolves **BLOCKS-INCONCLUSIVE** — never relabeled-floor, never synthetic.
 4. **Observed diversity, not label.** The hunter counts toward 3-lab assurance IFF its record's
    ATTESTED provider+shape match the contract (in-process, opus@max-tier per the registry,
    role=`security_claude_hunter`, same-run, `fallback:false`). The family count derives from the
