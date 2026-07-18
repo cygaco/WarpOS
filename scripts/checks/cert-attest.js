@@ -316,6 +316,18 @@ function main(argv) {
 
   // THIS is the sanctioned probe path — declare it to the guards process-internally.
   process.env.WARPOS_PROVIDER_PROBE = "1";
+  // (a) SP-20260718-003 / ADR-0020-amend: agy emits NO served-model id in stdout ("PROBE OK" only). The LAST
+  // avenue is agy's --log-file — capture the CLI log and FOLD it into the attestation input, so IF agy records
+  // the served model there, §7 concludes. If it records it NOWHERE, §7 stays honestly INCONCLUSIVE (a TRUE
+  // ceiling — agy structurally does not emit the served model; recorded in the ADR-0020 amendment). This never
+  // SOFTENS the fail-closed: no model id found in stdout+stderr+log ⇒ evaluateAttestation still returns FAIL.
+  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+  let agyLogPath = null;
+  if (providerId === "antigravity") {
+    agyLogPath = path.join(ARTIFACT_DIR, `agy-log-${Date.now()}.log`);
+    const pIdx = shape.argv.indexOf("-p");
+    if (pIdx > 0) shape.argv.splice(pIdx, 0, "--log-file", agyLogPath);
+  }
   const started = Date.now();
   const spawned = kernel.safeSpawnSync(shape.toolId, shape.argv, {
     cwd: ROOT,
@@ -327,7 +339,9 @@ function main(argv) {
   const elapsedMs = Date.now() - started;
   const stdout = spawned.stdout || "";
   const stderr = spawned.stderr || "";
-  const combined = `${stdout}\n${stderr}`; // the CLI header may land on either stream
+  let agyLog = "";
+  if (agyLogPath) { try { agyLog = fs.readFileSync(agyLogPath, "utf8"); } catch { /* agy wrote no log */ } }
+  const combined = `${stdout}\n${stderr}\n${agyLog}`; // the served model id may land on stdout/stderr OR the CLI log
   const exitOk = spawned.ok === true && spawned.exitCode === 0;
 
   const verdict = evaluateAttestation({ requestedModel: model, providerId, output: combined, exitOk, catalog });

@@ -93,6 +93,28 @@ const INJECT_META = /[`$;&|<>^"%!\r\n\x00]/;
 // and a NATIVE exe (a .cmd/.bat shim is refused in safeSpawnSync — cmd.exe /c would reparse the
 // newline). The same multi-line content in ANY other arg hits full INJECT_META → refused.
 const INJECT_META_ALLOW_NL = /[`$;&|<>^"%!\x00]/; // INJECT_META minus \r\n — but NUL is STILL refused (REG-001)
+// (b) D6-ARGV-POLICY-003 / ADR-0020-amendment (β DECIDE B/0.90, 4 binding riders): the agy `-p` value slot
+// carries a CODE-REVIEW payload — real source/diffs with `$` backtick `;` `|` `<` `>` `"` `%` `!` `&` `^`.
+// agy 1.1.4 has NO stdin and NO --prompt-file (help-verified), so `-p` argv is the ONLY transport. Under
+// safe-spawn's shell:false + native-exe enforcement + a SINGLE DISCRETE argv element (RIDER-3, verified in
+// safeSpawnSync), CreateProcess passes the value VERBATIM to a Go exe — there is no shell to interpret any
+// metachar, so the whole shell-injection premise is void for THIS one slot. So agy `-p` refuses ONLY NUL
+// (\x00 — it truncates the Windows argument / crashes child_process; REG-001, never legitimate). This is a
+// POSITIVE per-tool allow SCOPED to tool `agy` + flag `-p` ONLY — every other tool/slot still hits the full
+// shared INJECT_META (or _ALLOW_NL) denylist, which this does NOT weaken. Argument-injection (a leading-dash
+// payload parsed as a flag) is handled STRUCTURALLY by the discrete-argv next-token bind (RIDER-2); the
+// assembled-command-line LENGTH bound (RIDER-1) is a NAMED oversize outcome in safeSpawnSync — never truncate.
+const INJECT_META_AGY_PAYLOAD = /\x00/; // agy -p code-payload slot: ONLY NUL is refused (shell:false ⇒ metachars are inert)
+
+// (b) RIDER-1 (β DECIDE B/0.90, ADR-0020-amend): the ASSEMBLED-command-line bound (pure + exported for teeth).
+// Windows CreateProcess caps the command line at 32767 chars; we budget below it with margin so an oversize
+// agy `-p` payload fails CLOSED as a NAMED outcome in the spawn path (never truncate-and-send). Sums the exe
+// path + every argv token (+ ~3 chars/token for spacing/quoting overhead). Bidirectional teeth assert both
+// sides of the bound (a real code payload passes; an oversize payload is BLOCKED).
+const CMDLINE_MAX = 32000; // 32767 Windows CreateProcess ceiling minus ~767 chars of quoting/spacing margin
+function assembledCmdlineLen(toolPath, args) {
+  return String(toolPath || "").length + (args || []).reduce((n, a) => n + String(a).length + 3, 0);
+}
 const isInRepo = (p) => {
   try {
     const r = path.resolve(p);
@@ -151,14 +173,20 @@ const ARG_POLICY = {
       "--model": (v) => TOKEN.test(v),
       // duration like 90s / 5m / 500ms — digits + optional unit, no metachars.
       "--print-timeout": (v) => /^[0-9]+(ms|s|m|h)?$/.test(v),
-      // -p is the PROMPT — the ONE multi-line value slot. Its injection check is newline-tolerant
-      // (multilineValueFlags below), but the validator STILL caps length + re-asserts the
-      // newline-tolerant metachar refusal (defense in depth): every metachar except \r\n is refused.
-      "-p": (v) => typeof v === "string" && v.length <= 200000 && !INJECT_META_ALLOW_NL.test(v),
+      // (a) SP-20260718-003: --log-file <path> for the served-model calibration probe. A path token —
+      // no NUL, no shell metachar, no UNC (the injection/UNC checks in consumedValueViolations enforce
+      // the metachar/UNC floor); here just cap length + require a plausible path shape.
+      "--log-file": (v) => typeof v === "string" && v.length > 0 && v.length <= 4096,
+      // -p is the CODE-REVIEW PAYLOAD (codePayloadValueFlags below): under shell:false + native-exe +
+      // discrete-argv (RIDER-3) the shell-injection premise is void, so the validator refuses ONLY NUL.
+      // Length is bounded as the ASSEMBLED command line in safeSpawnSync (RIDER-1, a NAMED oversize
+      // outcome — never truncate); a defense-in-depth payload cap is applied there, not here.
+      "-p": (v) => typeof v === "string" && v.length > 0 && !INJECT_META_AGY_PAYLOAD.test(v),
     },
-    // Flags whose consumed VALUE may contain a newline — consulted by assertArgs to pick the
-    // newline-tolerant injection check for that slot ONLY. Native-exe enforced in safeSpawnSync.
+    // -p may carry a newline (multiline) AND the full code-review char set (codePayload) — both consulted
+    // by assertArgs to pick the injection check for that slot ONLY. Native-exe enforced in safeSpawnSync.
     multilineValueFlags: new Set(["-p"]),
+    codePayloadValueFlags: new Set(["-p"]),
     positionals: () => false,
   },
   claude: {
@@ -210,12 +238,18 @@ const looksLikeUNC = (v) =>
 function consumedValueViolations(flag, v, opts = {}) {
   const out = [];
   if (typeof v !== "string") return out; // undefined handled by the caller
-  // #27: a flag in the tool's multilineValueFlags (agy -p) uses the newline-tolerant injection set —
-  // a newline in that ONE native-exe value slot is safe (CreateProcess passes it verbatim); every
-  // OTHER metachar is still refused, and every OTHER flag uses the full INJECT_META (incl. \r\n).
-  const injectRe = opts.allowNewline ? INJECT_META_ALLOW_NL : INJECT_META;
+  // The injection set is per-slot, widest-carve-out first (each is strictly scoped by the caller):
+  //  - codePayload (agy -p ONLY): a CODE-REVIEW payload under shell:false + native-exe + discrete argv —
+  //    the shell-injection premise is void, so ONLY NUL is refused (b / β 4-rider carve-out, ADR-0020-amend).
+  //  - allowNewline (#27, agy -p multiline): INJECT_META minus \r\n — a native-exe newline slot.
+  //  - default: the full INJECT_META (every metachar incl. \r\n) — every other tool/flag.
+  // A codePayload slot is ALSO a native-exe-only slot (safeSpawnSync refuses a .cmd/.bat agy) — the same
+  // guarantee the allowNewline carve-out relies on. NOTE: the UNC/abs-exe check is SKIPPED for a codePayload
+  // (a code review legitimately quotes Windows paths / UNC strings; the payload is a -p VALUE, never the
+  // executable — the tool is resolveTool-pinned, so a value can't hijack the exe).
+  const injectRe = opts.codePayload ? INJECT_META_AGY_PAYLOAD : opts.allowNewline ? INJECT_META_ALLOW_NL : INJECT_META;
   if (injectRe.test(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) contains a command-injection metacharacter`);
-  if (looksLikeUNC(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) is a UNC/absolute-executable path`);
+  if (!opts.codePayload && looksLikeUNC(v)) out.push(`value of ${flag} (${JSON.stringify(v)}) is a UNC/absolute-executable path`);
   return out;
 }
 
@@ -254,7 +288,7 @@ function assertArgs(toolId, args) {
         const v = args[i + 1];
         if (v === undefined) violations.push(`flag ${a} expects a value`);
         else {
-          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)) })) violations.push(vio);
+          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)), codePayload: !!(policy.codePayloadValueFlags && policy.codePayloadValueFlags.has(a)) })) violations.push(vio);
           if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
         }
         i += 2;
@@ -274,7 +308,7 @@ function assertArgs(toolId, args) {
         const v = args[i + 1];
         if (v === undefined) violations.push(`flag ${a} expects a value`);
         else {
-          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)) })) violations.push(vio);
+          for (const vio of consumedValueViolations(a, v, { allowNewline: !!(policy.multilineValueFlags && policy.multilineValueFlags.has(a)), codePayload: !!(policy.codePayloadValueFlags && policy.codePayloadValueFlags.has(a)) })) violations.push(vio);
           if (!policy.valueFlags[a](v)) violations.push(`flag ${a} got an invalid value ${JSON.stringify(v)}`);
         }
         i += 2;
@@ -447,6 +481,18 @@ function safeSpawnSync(toolId, args, opts = {}) {
     return { ok: false, reaped: false, reason: "agy_requires_native_exe", detail: `agy resolved to a ${tool.kind} (${tool.path}) — the multi-line -p carve-out is native-exe only; a .cmd/.bat shim is refused`, stdout: "", stderr: "", exitCode: null };
   }
 
+  // (b) RIDER-1 (β DECIDE B/0.90, ADR-0020-amend): bound the ASSEMBLED command line. A payload that would
+  // overflow the OS command-line ceiling fails CLOSED as a NAMED oversize outcome — NEVER truncate-and-send
+  // (a truncated payload is a partial review masquerading as a full PASS). The caller accounts an oversize
+  // agy dispatch IDENTICALLY to agy-unavailable (the agy lane is BLOCKED → panel-3lab cannot certify that
+  // run → honest 3-vs-2 accounting per ADR-0020). Bound = exe path + every argv token (+ space/quote
+  // overhead) vs the Windows CreateProcess ceiling (32767) with margin. General (defense in depth); in
+  // practice only agy's -p code payload approaches it.
+  const assembledLen = assembledCmdlineLen(tool.path, args);
+  if (assembledLen > CMDLINE_MAX) {
+    return { ok: false, reaped: false, reason: "cmdline_oversize", detail: `assembled command line ${assembledLen} chars exceeds the ${CMDLINE_MAX} bound (Windows CreateProcess ceiling minus margin) — the payload is BLOCKED, never truncated-and-sent (RIDER-1). Account this run as the lane BLOCKED (agy-unavailable-equivalent), NEVER a partial-review pass.`, stdout: "", stderr: "", exitCode: null };
+  }
+
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
   const childEnv = opts.env || process.env;
@@ -582,6 +628,18 @@ function safeSpawnFile(toolId, args, opts = {}) {
     return { ok: false, reaped: false, reason: "agy_requires_native_exe", detail: `agy resolved to a ${tool.kind} (${tool.path}) — the multi-line -p carve-out is native-exe only; a .cmd/.bat shim is refused`, stdout: "", stderr: "", exitCode: null };
   }
 
+  // (b) RIDER-1 (β DECIDE B/0.90, ADR-0020-amend): bound the ASSEMBLED command line. A payload that would
+  // overflow the OS command-line ceiling fails CLOSED as a NAMED oversize outcome — NEVER truncate-and-send
+  // (a truncated payload is a partial review masquerading as a full PASS). The caller accounts an oversize
+  // agy dispatch IDENTICALLY to agy-unavailable (the agy lane is BLOCKED → panel-3lab cannot certify that
+  // run → honest 3-vs-2 accounting per ADR-0020). Bound = exe path + every argv token (+ space/quote
+  // overhead) vs the Windows CreateProcess ceiling (32767) with margin. General (defense in depth); in
+  // practice only agy's -p code payload approaches it.
+  const assembledLen = assembledCmdlineLen(tool.path, args);
+  if (assembledLen > CMDLINE_MAX) {
+    return { ok: false, reaped: false, reason: "cmdline_oversize", detail: `assembled command line ${assembledLen} chars exceeds the ${CMDLINE_MAX} bound (Windows CreateProcess ceiling minus margin) — the payload is BLOCKED, never truncated-and-sent (RIDER-1). Account this run as the lane BLOCKED (agy-unavailable-equivalent), NEVER a partial-review pass.`, stdout: "", stderr: "", exitCode: null };
+  }
+
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
   const childEnv = opts.env || process.env;
@@ -663,4 +721,4 @@ function safeSpawnFile(toolId, args, opts = {}) {
   };
 }
 
-module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT };
+module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen };
