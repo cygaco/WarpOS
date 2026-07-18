@@ -840,6 +840,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260718-001](.claude/project/sprint/sprints/SP-20260718-001/) | WarpOS 1.0 Phase 0 — Kernel contract + trust boundary (Top-Level Runtime Contract, durable-company ADR, precedence graph, helm support matrix, WorkOrder field set, conformance fixtures, retention classes) | planning | 2026-07-18T04:14:28.628Z |  |  |
 | [SP-20260716-003](.claude/project/sprint/sprints/SP-20260716-003/) | Reusable input-composer UI/UX pattern (COMPOSER) | done | 2026-07-16T16:08:30.160Z | 2026-07-16 | RI-001 ff-merge (6b9ec0d9); retro deferred to epic/milestone close |
 | [SP-20260716-002](.claude/project/sprint/sprints/SP-20260716-002/) | Product auth-system pattern — passwordless Supabase (agent-drivable) | done | 2026-07-16T15:37:56.389Z | 2026-07-16T17:52:00.000Z | RI-001 ff-merge (58909278); passwordless Supabase auth pattern + hardened verifier + open-redirect-safe callback |
 | [SP-20260627-001](.claude/project/sprint/sprints/SP-20260627-001/) | E-DISPATCH-SHAPE-001 ADR-0013 enforce repair + W3 review-lane policy | planning | 2026-06-28T02:47:21.101Z |  |  |
