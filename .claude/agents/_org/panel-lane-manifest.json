@@ -5,6 +5,8 @@
   "sunset": {
     "ref": "ED-060",
     "lane": "agy",
+    "date": "2026-10-16",
+    "_date_note": "OPERATOR-ADJUSTABLE. The date by which the agy lab must be live (one real fallback:false agy ledger record) or /scan:full hard-fails via ed060-sunset.js. 90-day runway from the 2026-07-18 D6 seam. Extend here consciously (do not silently push) if the Antigravity account/tier provisioning slips; resolving ED-060 (agy live in support-matrix) makes the date moot.",
     "note": "The agy (Antigravity) lab liveness is OPERATOR-OWNED: no live agy CLI/tier yet. Until one real agy `fallback:false` ledger record exists, the binding panel-3lab exit is BLOCKED-ON-OPERATOR, never GREEN. Tracked as ED-060; the ed060-sunset.js enforcer fails /scan:full once the sunset date passes unresolved."
   },
   "profiles": {
