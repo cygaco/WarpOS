@@ -41,6 +41,8 @@ The operator dropped the adversarial-helm containment threat model; the gate is 
 
 Cross-family value (honest): the GPT lanes caught real containment-boundary gaps + the add-nlink race direction the Claude lane missed (it analyzed the safe drop-nlink direction). The dispositions are **scope-based, not a denial of the technical reality** of the findings.
 
+**β confirm DECIDE 0.89 (entry 132) — raced hard-link disposition.** Decisive fact: **the archived raw log is untouched in all outcomes of the race**; only index telemetry can be misdirected (recoverable by re-indexing); the raw-history invariant was never reachable. **FAIL lanes honored** — real race, false claim — resolved by honest-ceiling correction (P-061); the disposition is scope-based per the operator threat-model rulings + the β discriminator. **O_EXCL per-entry index files stay NAMED** as the mitigation if the threat model ever admits archive-dir-write attackers (out-of-scope, not deferred).
+
 ## Overclaim corrections (this close commit)
 
 - ADR-0017 Decision paragraph: removed the stale "EXDEV → copy-then-unlink" (the fallback is removed; rename-only).
