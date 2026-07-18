@@ -111,6 +111,62 @@ function countLinesSafe(file) {
   }
 }
 
+/** Parse JSONL lines → event objects, tolerating a torn/non-JSON line (skip it). */
+function parseLines(lines) {
+  const out = [];
+  for (const l of lines) {
+    try {
+      out.push(JSON.parse(l));
+    } catch {
+      /* a torn/non-JSON line is still archived (whole file moves) — no loss */
+    }
+  }
+  return out;
+}
+
+/**
+ * Realpath-based containment (SEC-2 fix, gauntlet R1). archive.js's archive()
+ * realpath-contains via containResolved (ADR-0017), but reconcileOrphans below
+ * calls archive.archiveDir + readdirSync + archive.appendIndex DIRECTLY — bypassing
+ * that guard — so a junctioned/symlinked archive dir would let the scan read, and
+ * appendIndex WRITE, OUTSIDE root. archive.js is FROZEN and does not export
+ * containResolved, so we replicate the guard locally: resolve, realpath the nearest
+ * EXISTING ancestor, refuse anything whose REAL location escapes root. Returns the
+ * safe absolute path, or null (fail-closed). NEVER throws.
+ */
+function containedReal(rootAbs, candidate) {
+  try {
+    const lexical = path.resolve(candidate);
+    const sep = rootAbs.endsWith(path.sep) ? rootAbs : rootAbs + path.sep;
+    if (lexical !== rootAbs && !lexical.startsWith(sep)) return null;
+    let probe = lexical;
+    let real = null;
+    for (let i = 0; i < 128; i++) {
+      try {
+        real = fs.realpathSync(probe);
+        break;
+      } catch (e) {
+        if (e && e.code === "ENOENT") {
+          const parent = path.dirname(probe);
+          if (parent === probe) return null;
+          probe = parent;
+          continue;
+        }
+        return null;
+      }
+    }
+    if (real === null) return null;
+    if (real !== rootAbs && !real.startsWith(sep)) return null;
+    const suffix = path.relative(probe, lexical);
+    if (suffix.startsWith("..")) return null;
+    const composed = suffix ? path.join(real, suffix) : real;
+    if (composed !== rootAbs && !composed.startsWith(sep)) return null;
+    return composed;
+  } catch {
+    return null;
+  }
+}
+
 // ── Test-only crash seam ─────────────────────────────────────────────────────
 // The `crashAfter` hook is honored ONLY under an explicit test env flag, and is
 // NEVER exposed as a documented CLI flag (the CLI main below parses no such
@@ -208,10 +264,15 @@ function reseed(eventsFile, summaryRecord, tailLines, partial) {
  *
  * @returns {{reconciled:number}}
  */
-function reconcileOrphans(rootAbs) {
+function reconcileOrphans(rootAbs, opts) {
+  const applyReconcile = !opts || opts.apply !== false; // default: apply (mutating)
   try {
     rootAbs = path.resolve(rootAbs);
-    const dir = archive.archiveDir(rootAbs);
+    // SEC-2 (gauntlet R1): realpath-contain the archive dir BEFORE scanning or
+    // writing the index. A junctioned/symlinked archive dir would otherwise make
+    // the scan read — and appendIndex WRITE — OUTSIDE root. Fail-closed to a no-op.
+    const dir = containedReal(rootAbs, archive.archiveDir(rootAbs));
+    if (!dir) return { reconciled: 0 };
     let entries;
     try {
       entries = fs.readdirSync(dir);
@@ -225,6 +286,7 @@ function reconcileOrphans(rootAbs) {
     let count = 0;
     for (const name of entries) {
       if (name === archive.INDEX_BASENAME) continue;
+      if (name.endsWith(".lock")) continue; // lock sidecars are not generations
       if (indexed.has(name)) continue;
       const full = path.join(dir, name);
       let st;
@@ -234,6 +296,12 @@ function reconcileOrphans(rootAbs) {
         continue;
       }
       if (!st.isFile()) continue;
+      // BR-4 (gauntlet R1): a dry-run (apply:false) must NOT mutate disk. Count the
+      // orphan as a read-only PREVIEW without appending to the index.
+      if (!applyReconcile) {
+        count++;
+        continue;
+      }
       const rel = relFromRoot(rootAbs, full);
       const entry = {
         ts: new Date().toISOString(),
@@ -277,10 +345,11 @@ function compactOnce(rootAbs, opts) {
     return { ok: false, reason: "bad-root", exitCode: 1 };
   }
 
-  // S0 — reconcile orphans FIRST (recovery is idempotent + runs every pass).
+  // S0 — reconcile orphans FIRST (recovery is idempotent + runs every pass). Pass
+  // `apply` so a dry-run reconciles as a READ-ONLY PREVIEW (BR-4: no disk mutation).
   let reconciled = 0;
   try {
-    reconciled = reconcileOrphans(rootAbs).reconciled || 0;
+    reconciled = reconcileOrphans(rootAbs, { apply }).reconciled || 0;
   } catch {
     reconciled = 0;
   }
@@ -313,19 +382,9 @@ function compactOnce(rootAbs, opts) {
   }
   if (crashAfter === "S3") return crashReturn("S3");
 
-  // Parse events + compute the summary fields (in-memory; no disk mutation yet).
-  const events = [];
-  for (const l of lines) {
-    try {
-      events.push(JSON.parse(l));
-    } catch {
-      /* a torn/non-JSON line is still archived (whole file moves) — no loss */
-    }
-  }
-  const summaryData = computeSummary(events);
-  const tailLines = lines.slice(Math.max(0, lines.length - TAIL_KEEP_LINES));
-
-  // Dry-run — report intent without touching disk.
+  // Dry-run — report intent from the pre-lock read WITHOUT touching disk (no lock
+  // needed for a read-only preview). The apply path recomputes from the archived
+  // copy under the lock (BR-5), so this preview is advisory only.
   if (!apply) {
     return {
       ok: true,
@@ -334,7 +393,7 @@ function compactOnce(rootAbs, opts) {
       wouldCompact: true,
       lineCount: lines.length,
       reconciled,
-      summary: summaryData,
+      summary: computeSummary(parseLines(lines)),
       exitCode: 0,
     };
   }
@@ -360,6 +419,28 @@ function compactOnce(rootAbs, opts) {
   }
 
   try {
+    // S4.5 — RE-VERIFY the fold trigger UNDER the lock (BR-5 stale-decision guard).
+    // The S3 gate was taken BEFORE the lock; a concurrent fold, or the file
+    // shrinking, may have resolved the decision. Re-read under the lock and re-check
+    // the trigger before the destructive move so we never archive a sub-threshold
+    // (already-folded) file with a stale decision.
+    try {
+      const c2 = fs.readFileSync(eventsFile, "utf8");
+      const l2 = c2.length ? c2.split("\n").filter(Boolean) : [];
+      if (l2.length < FOLD_TRIGGER_LINES) {
+        return {
+          ok: true,
+          reason: "resolved-under-lock",
+          compacted: false,
+          lineCount: l2.length,
+          reconciled,
+          exitCode: 0,
+        };
+      }
+    } catch {
+      return { ok: true, reason: "no-events-file", compacted: false, reconciled, exitCode: 0 };
+    }
+
     // S5 — THE destructive move: archive the WHOLE events file. The rename lives
     // inside the FROZEN archive.js; this module never renames the events file.
     let ares;
@@ -392,6 +473,22 @@ function compactOnce(rootAbs, opts) {
       (ares.entry && typeof ares.entry.archived === "string" && ares.entry.archived) ||
       relFromRoot(rootAbs, ares.archived);
 
+    // BR-5 (gauntlet R1): compute the summary + reseeded tail from the ARCHIVED
+    // COPY (the exact bytes moved at S5) — NOT the pre-lock read. This guarantees
+    // the summary + tail correspond precisely to the archived generation even if
+    // the file changed between the pre-lock read and the move. Fall back to the
+    // pre-lock lines only if the just-moved copy is somehow unreadable (the raw is
+    // still in the archive either way — conservation holds).
+    let archivedLines = lines;
+    try {
+      const ac = fs.readFileSync(ares.archived, "utf8");
+      archivedLines = ac.length ? ac.split("\n").filter(Boolean) : [];
+    } catch {
+      archivedLines = lines;
+    }
+    const summaryData = computeSummary(parseLines(archivedLines));
+    const tailLines = archivedLines.slice(Math.max(0, archivedLines.length - TAIL_KEEP_LINES));
+
     // S7 — indexed:false. The generation is ON DISK but NOT in the index. Still
     // reseed the tail (live must not be left empty), write the summary flagged
     // index_pending with NO resolvable ref, emit a LOUD error, and exit NON-ZERO.
@@ -400,7 +497,7 @@ function compactOnce(rootAbs, opts) {
       const summary = buildSummaryRecord(
         Object.assign({}, summaryData, { archived_generation_ref: null, index_pending: true }),
       );
-      reseed(eventsFile, summary, tailLines, crashAfter === "S9-partial");
+      const reseeded = reseed(eventsFile, summary, tailLines, crashAfter === "S9-partial");
       try {
         // eslint-disable-next-line no-console
         console.error(
@@ -417,6 +514,7 @@ function compactOnce(rootAbs, opts) {
         reason: "index-pending",
         compacted: true,
         indexed: false,
+        reseeded, // BR-1: surface whether the live reseed succeeded
         archived: ares.archived,
         summary_id: summary.id,
         reconciled,
@@ -432,9 +530,38 @@ function compactOnce(rootAbs, opts) {
 
     // S9 — additive reseed (summary record + bounded raw tail) via appendFileSync.
     const partial = crashAfter === "S9-partial";
-    reseed(eventsFile, summary, tailLines, partial);
+    const reseeded = reseed(eventsFile, summary, tailLines, partial);
     if (partial) return crashReturn("S9-partial", { archived: ares.archived });
     if (crashAfter === "S9") return crashReturn("S9", { archived: ares.archived });
+
+    // BR-1 (gauntlet R1): if the reseed FAILED, the raw is SAFE in the archived
+    // generation (conservation holds — recoverable via `query --archive`), but the
+    // live tail could NOT be written. Do NOT report ok:true on a partial/empty
+    // live state — fail LOUD, exit non-zero, so a scheduler/hook sees it.
+    if (!reseeded) {
+      try {
+        // eslint-disable-next-line no-console
+        console.error(
+          `[events-compact] RESEED FAILED after S5 archive — raw is SAFE in the archived ` +
+            `generation ${ares.archived} (recoverable via 'events:query --archive') but the live ` +
+            `tail could not be reseeded. FAIL-CLOSED (non-zero exit).`,
+        );
+      } catch {
+        /* never let logging crash the compactor */
+      }
+      return {
+        ok: false,
+        reason: "reseed-failed",
+        compacted: true,
+        indexed: true,
+        reseeded: false,
+        archived: ares.archived,
+        archived_generation_ref: archivedRef,
+        summary_id: summary.id,
+        reconciled,
+        exitCode: 1,
+      };
+    }
 
     // S10 — done.
     return {
@@ -467,6 +594,8 @@ module.exports = {
   OPERATIONAL_CAP,
   eventsFilePath,
   compactLockPath,
+  parseLines,
+  containedReal,
   computeSummary,
   buildSummaryRecord,
   reconcileOrphans,
