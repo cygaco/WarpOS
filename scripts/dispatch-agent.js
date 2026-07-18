@@ -42,6 +42,17 @@ const {
 } = require("./hooks/lib/concurrency-lock");
 const { record: recordProviderTrace } = require("./agents/provider-trace");
 
+// ── provider-id → tool-id (D2, SP-20260718-003 / I-2) ────────────────────────
+// The dispatch CONTRACT keys on tool-id (`codex`/`gemini`/`agy`); the registry +
+// callers speak provider-id (`openai`/`gemini`/`antigravity`). ONE map, used at
+// BOTH the validate call and the completion record — an inlined ternary that
+// omitted `antigravity`→`agy` tripped dispatch-contract on security-reviewer.
+// Refactor-hygiene: replace EVERY occurrence, not just the one you remember.
+const PROVIDER_TOOL_ID = { openai: "codex", gemini: "gemini", antigravity: "agy" };
+function providerToolId(provider) {
+  return PROVIDER_TOOL_ID[provider] ?? provider;
+}
+
 // ── Canonical root anchor (AC2 / ED-016 / class-#20 fix) ──
 //
 // AGENT_ROOT is resolved from THIS FILE'S location (__dirname), NOT from
@@ -404,6 +415,7 @@ function getRoleModel(role) {
 if (require.main !== module) {
   module.exports = {
     findAgentSpec,
+    providerToolId, // D2 (SP-20260718-003 / I-2): provider-id → tool-id map
     getRoleModel,
     detectMode,
     readModeFromProjectRoot,
@@ -554,7 +566,7 @@ if (contractMod) {
     verdict = validateDispatch({
       role: normalizeRole(role),
       shape: "subprocess-cross-provider",
-      toolId: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+      toolId: providerToolId(provider),
       mode: currentMode,
     });
   } catch (evalErr) {
@@ -863,7 +875,7 @@ try {
     ...runContext(),
     prompt_digest: promptDigest(prompt),
     shape: "subprocess-cross-provider",
-    tool_id: provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider,
+    tool_id: providerToolId(provider),
     // §17.4 strengthening: schema version (the gate rejects stale/backfilled
     // records), cwd, and output_digest (proof the dispatch produced real output —
     // a record's mere existence is not coverage).
