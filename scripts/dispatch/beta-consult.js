@@ -55,6 +55,15 @@ function readMaybe(file) {
 }
 
 /** The last N β precedent events (JSONL), newest last — the precedent slice β reasons from. */
+/**
+ * D3 (SP-20260718-003 / I-3): resolve an --out target. An ABSOLUTE path is honored
+ * as-is; a relative path resolves under `root`. `path.join(root, absPath)` corrupts
+ * an absolute path (Windows: root\C:\...\file), so guard on path.isAbsolute.
+ */
+function resolveOutPath(outFile, root) {
+  return path.isAbsolute(outFile) ? outFile : path.join(root, outFile);
+}
+
 function precedentSlice(n) {
   const raw = readMaybe(PATHS.betaEvents);
   if (!raw) return "(no prior β events on record)";
@@ -252,10 +261,10 @@ function main(argv) {
               ? "no single 'VERDICT: DECIDE|DIRECTIVE|ESCALATE' line in β output"
               : (result && result.error) || "β consult not ok",
   };
-  if (outFile) fs.writeFileSync(path.join(ROOT, outFile), JSON.stringify(out, null, 2));
+  if (outFile) fs.writeFileSync(resolveOutPath(outFile, ROOT), JSON.stringify(out, null, 2));
   process.stdout.write(JSON.stringify(out, null, json ? 2 : 0) + "\n");
   return ok ? 0 : 1;
 }
 
 if (require.main === module) process.exit(main(process.argv));
-module.exports = { buildContext, parseVerdict, attestRanOnGpt, judgmentStack, resolveClaims, VERDICTS };
+module.exports = { buildContext, parseVerdict, attestRanOnGpt, judgmentStack, resolveClaims, resolveOutPath, VERDICTS };
