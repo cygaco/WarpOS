@@ -53,6 +53,32 @@ function providerToolId(provider) {
   return PROVIDER_TOOL_ID[provider] ?? provider;
 }
 
+// ── model/provider run-opts resolution (D4, SP-20260718-003 / ED-205 regression guard) ──
+// ED-205 is RESOLVED / correct-by-design — inventing a "fix" would create a PHANTOM regression.
+// The run-opts a dispatch passes to runProvider are a pure function of three inputs (an explicit
+// --provider override, an explicit --model override, and the role's registry model getRoleModel).
+// The BINDING semantics (do NOT change):
+//   - no override            → the role's native provider_model applies (runProvider uses roleModel);
+//   - --provider X (no -m)   → the spec model belongs to the WRONG provider → DROPPED; the override
+//                              provider's own default is used;
+//   - --provider X --model Y → both forced;
+//   - --model Y only         → force the model on the native provider.
+// Extracted PURE (behavior-IDENTICAL to the prior inline block at the runProvider call site) so the
+// ED-205 semantics are a tested surface, not an untestable inline branch. Regression teeth:
+// scripts/dispatch-agent-model-semantics.test.js (3 cases).
+function resolveModelRunOpts({ providerOverride, modelOverride, roleModel }) {
+  const runOpts = {};
+  if (providerOverride) {
+    runOpts.provider = providerOverride;
+    if (modelOverride) runOpts.model = modelOverride;
+  } else if (modelOverride) {
+    runOpts.model = modelOverride;
+  } else if (roleModel) {
+    runOpts.model = roleModel;
+  }
+  return runOpts;
+}
+
 // ── Canonical root anchor (AC2 / ED-016 / class-#20 fix) ──
 //
 // AGENT_ROOT is resolved from THIS FILE'S location (__dirname), NOT from
@@ -416,6 +442,7 @@ if (require.main !== module) {
   module.exports = {
     findAgentSpec,
     providerToolId, // D2 (SP-20260718-003 / I-2): provider-id → tool-id map
+    resolveModelRunOpts, // D4 (SP-20260718-003 / ED-205): run-opts semantics — regression guard
     getRoleModel,
     detectMode,
     readModeFromProjectRoot,
@@ -768,15 +795,7 @@ try {
   // absent → propagatedChildBaseMs null) keep runProvider's own default, byte-identical.
   const withPropagatedTimeout = (opts) =>
     propagatedChildBaseMs != null ? { ...opts, timeoutMs: propagatedChildBaseMs } : opts;
-  const runOpts = {};
-  if (providerOverride) {
-    runOpts.provider = providerOverride;
-    if (modelOverride) runOpts.model = modelOverride;
-  } else if (modelOverride) {
-    runOpts.model = modelOverride;
-  } else if (roleModel) {
-    runOpts.model = roleModel;
-  }
+  const runOpts = resolveModelRunOpts({ providerOverride, modelOverride, roleModel }); // D4/ED-205
   result = runProvider(role, prompt, withPropagatedTimeout(runOpts));
 
   // WI-18 + WG-11(b): family-aware quota fallback. When ANY non-claude provider 429s / exhausts
