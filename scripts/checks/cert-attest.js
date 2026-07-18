@@ -104,7 +104,157 @@ function providerForModel(catalog, model, explicit) {
   return null;
 }
 
+// ── D8: same-run panel attestation (SP-20260718-003, AC-14,15) ─────────────────
+//
+// attestPanelRun correlates a SAME-RUN ledger record PER REQUIRED LANE and attests the panel ONLY
+// when every lane ran on its CONTRACTED provider with fallback:false + real evidence. This is the
+// attestRanOnGpt discipline (beta-consult.js) generalized to the whole panel: attest on the OBSERVED
+// ledger return, NEVER a wrapper claim. The load-bearing NEGATIVE (T5): a wrapper that CLAIMS agy but
+// whose ledger record is provider:claude/absent does NOT attest the agy lane (a record-inprocess/
+// provider:claude record satisfies ONLY the claude hunter) — so the attestation FAILS, which is what
+// makes the provider-diversity claim FALSIFIABLE.
+
+/** Read the dispatch-completions ledger, filtered to a sprint (+ optional run). Injectable path. */
+function readLedgerRecords(sprintId, runId, ledgerPath) {
+  let file = ledgerPath;
+  if (!file) {
+    try { file = require(path.join(ROOT, "scripts", "hooks", "lib", "paths")).PATHS.dispatchCompletionsFile; }
+    catch { file = path.join(ROOT, ".claude", "runtime", "dispatch-completions.jsonl"); }
+  }
+  let raw;
+  try { raw = fs.readFileSync(file, "utf8"); } catch { return []; }
+  const out = [];
+  for (const line of raw.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    let r;
+    try { r = JSON.parse(t); } catch { continue; }
+    if (sprintId && r.sprint_id !== sprintId) continue;
+    if (runId != null && r.run_id !== runId) continue;
+    out.push(r);
+  }
+  return out;
+}
+
+/**
+ * Attest ONE required lane against the same-run ledger records. PURE. A lane is attested ONLY by a
+ * record that ran on its CONTRACTED provider (observed, never claimed):
+ *   - a CLI cross-provider lane (gpt/agy): provider === contracted, tool_id === contracted tool_id,
+ *     shape 'subprocess-cross-provider', fallback:false, ok:true, non-null evidence digest.
+ *   - the sanctioned claude hunter (in-process-agent + provider claude): a record-inprocess record
+ *     (provider claude, via 'epsilon-agent' / shape in-process-agent) with evidence.
+ * @returns {{ laneId, attested, observedProvider?, tool_id?, invocation_digest?, evidence_digest?, reason }}
+ */
+function attestLane(lane, records, role = "security-reviewer") {
+  const claudeHunter = lane.shape === "in-process-agent" && lane.provider === "claude";
+  // Scope to the PANEL ROLE (security-reviewer): a design-phase dispatch that happens to share a lane
+  // shape (e.g. a product-lead codex consult) must NOT attest a security-panel lane. Without this the
+  // attestation false-greens on ANY same-sprint dispatch of the right provider/shape.
+  const alive = (records || []).filter((r) => r.ok === true && r.fallback === false && (!role || r.role === role));
+  let match;
+  if (claudeHunter) {
+    match = alive.find(
+      (r) => r.provider === "claude" && (r.via === "epsilon-agent" || r.shape === "in-process-agent" || r.record_via === "inprocess") && (r.evidence_sha || r.output_digest),
+    );
+  } else {
+    match = alive.find(
+      (r) => r.provider === lane.provider && r.tool_id === lane.tool_id && r.shape === "subprocess-cross-provider" && !!r.output_digest,
+    );
+  }
+  if (!match) {
+    return {
+      laneId: lane.laneId,
+      attested: false,
+      reason: claudeHunter
+        ? "no same-run in-process claude-hunter record (provider claude, record-inprocess, with evidence)"
+        : `no same-run CLI record for ${lane.provider}/${lane.tool_id} (fallback:false, output_digest present) — a wrapper claim is NOT proof`,
+    };
+  }
+  return {
+    laneId: lane.laneId,
+    attested: true,
+    observedProvider: match.provider,
+    tool_id: match.tool_id || null,
+    invocation_digest: match.cmdline_checksum || null, // sanitized invocation digest
+    evidence_digest: match.output_digest || match.evidence_sha || null,
+    reason: "same-run observed record on the contracted provider (fallback:false + evidence)",
+  };
+}
+
+/**
+ * Attest the whole panel run: every required lane must be same-run attested on its contracted provider.
+ * Bundles invocation-digests (cmdline_checksum) + code-SHA (git HEAD) + panel-profile + evidence-digest.
+ * PURE given { lanes, records }. `codeSha` is the caller's git HEAD (the live CLI reads it).
+ * @param {{ runId?, sprintId, profile:{name}, lanes:Array, records:Array, codeSha? }} args
+ */
+function attestPanelRun({ runId, sprintId, profile, lanes, records, codeSha, role = "security-reviewer" } = {}) {
+  const laneResults = (lanes || []).map((lane) => attestLane(lane, records || [], role));
+  const attestedLanes = laneResults.filter((l) => l.attested);
+  const allAttested = laneResults.length > 0 && laneResults.every((l) => l.attested);
+  const evidenceDigest = crypto
+    .createHash("sha256")
+    .update(attestedLanes.map((l) => `${l.laneId}:${l.evidence_digest || ""}`).join("|"))
+    .digest("hex");
+  return {
+    ok: allAttested,
+    profile: (profile && profile.name) || null,
+    run_id: runId || null,
+    sprint_id: sprintId || null,
+    code_sha: codeSha || null,
+    invocation_digests: attestedLanes.map((l) => l.invocation_digest).filter(Boolean),
+    evidence_digest: evidenceDigest,
+    lanes: laneResults,
+    reason: allAttested
+      ? "every required lane attested SAME-RUN on its contracted provider (fallback:false)"
+      : `unattested required lane(s): ${laneResults.filter((l) => !l.attested).map((l) => l.laneId).join(", ")} — attestation FAILS (a wrapper claim is not proof)`,
+  };
+}
+
+/** git HEAD SHA via the safe-spawn kernel (read-only git; the model never chooses the exe). */
+function gitHeadSha() {
+  try {
+    const kernel = loadKernel();
+    if (typeof kernel.safeSpawnSync !== "function") return null;
+    const r = kernel.safeSpawnSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, timeoutMs: 10000 });
+    return r && r.ok ? String(r.stdout || "").trim() || null : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Live panel attestation: read the real ledger + manifest lanes + git HEAD, then attest. */
+function attestPanelRunLive({ runId, sprintId, profileName = "panel-2family" } = {}) {
+  let lanes;
+  try {
+    const pl = require(path.join(ROOT, "scripts", "dispatch", "panel-lanes"));
+    lanes = pl.requiredLanes(pl.loadManifest(), profileName);
+  } catch (e) {
+    return { ok: false, reason: `panel-lanes loader failed (fail-closed): ${e.message}`, lanes: [] };
+  }
+  const records = readLedgerRecords(sprintId, runId);
+  return attestPanelRun({ runId, sprintId, profile: { name: profileName }, lanes, records, codeSha: gitHeadSha() });
+}
+
+function mainPanel(argv) {
+  const get = (flag) => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 1] : null; };
+  const json = argv.includes("--json");
+  const sprintId = get("--sprint");
+  const runId = get("--run");
+  const profileName = get("--profile") || "panel-2family";
+  if (!sprintId) {
+    process.stderr.write("usage: cert-attest.js panel --sprint <id> [--run <id>] [--profile panel-2family|panel-3lab] [--json]\n");
+    return 2;
+  }
+  const out = attestPanelRunLive({ runId, sprintId, profileName });
+  if (json) process.stdout.write(JSON.stringify(out, null, 2) + "\n");
+  else if (out.ok) process.stdout.write(`ATTESTED [panel] ${profileName} sprint=${sprintId} — every required lane same-run attested on its contracted provider.\n`);
+  else process.stderr.write(`FAIL [panel] ${profileName} sprint=${sprintId} — ${out.reason}\n`);
+  return out.ok ? 0 : 1;
+}
+
 function main(argv) {
+  // D8: the panel-attestation subcommand (SP-20260718-003). `cert-attest.js panel --sprint <id> …`.
+  if (argv[0] === "panel") return mainPanel(argv.slice(1));
   const get = (flag) => { const i = argv.indexOf(flag); return i !== -1 ? argv[i + 1] : null; };
   const json = argv.includes("--json");
   const model = get("--model");
@@ -185,4 +335,16 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { evaluateAttestation, providerForModel, probeShape, norm, NAME };
+module.exports = {
+  evaluateAttestation,
+  providerForModel,
+  probeShape,
+  norm,
+  NAME,
+  // D8 (SP-20260718-003): same-run panel attestation.
+  attestLane,
+  attestPanelRun,
+  attestPanelRunLive,
+  readLedgerRecords,
+  gitHeadSha,
+};
