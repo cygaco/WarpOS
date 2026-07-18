@@ -93,6 +93,99 @@ function loadArchive() {
 }
 
 /**
+ * Realpath-based containment (SEC-1 fix, gauntlet R1). archive.js hardens its own
+ * WRITE path with a realpath `containResolved` (ADR-0017) but does NOT export it,
+ * and archive.js is FROZEN this sprint — so the READ path replicates the guard
+ * locally: resolve the candidate, realpath its nearest EXISTING ancestor, and
+ * refuse anything whose REAL location escapes root. Lexical containment alone
+ * (path prefix) misses a junction/symlink ANCESTOR that redirects the read OUT of
+ * root while the lexical path still looks in-root. Returns the safe absolute path,
+ * or null (fail-closed). NEVER throws.
+ */
+function containedReal(rootAbs, candidate) {
+  try {
+    const lexical = path.resolve(candidate);
+    const sep = rootAbs.endsWith(path.sep) ? rootAbs : rootAbs + path.sep;
+    if (lexical !== rootAbs && !lexical.startsWith(sep)) return null;
+    let probe = lexical;
+    let real = null;
+    for (let i = 0; i < 128; i++) {
+      try {
+        real = fs.realpathSync(probe);
+        break;
+      } catch (e) {
+        if (e && e.code === "ENOENT") {
+          const parent = path.dirname(probe);
+          if (parent === probe) return null;
+          probe = parent;
+          continue;
+        }
+        return null; // any other stat/perm fault → fail-closed
+      }
+    }
+    if (real === null) return null;
+    if (real !== rootAbs && !real.startsWith(sep)) return null; // real ancestor escapes root
+    const suffix = path.relative(probe, lexical);
+    if (suffix.startsWith("..")) return null;
+    const composed = suffix ? path.join(real, suffix) : real;
+    if (composed !== rootAbs && !composed.startsWith(sep)) return null;
+    return composed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Live-log read for the `--archive` union that DISTINGUISHES a genuinely-absent
+ * file (ENOENT → ok, []: recreate-on-next-append is normal) from an existing but
+ * UNREADABLE / non-regular file (permission, I/O, a directory → fail-closed).
+ * BR-6 (gauntlet R1): the old readJsonlSafe collapsed EVERY failure into [], so an
+ * unreadable live file silently produced an incomplete "clean" history under
+ * `--archive`. Returns { ok, events } | { ok:false, error }.
+ */
+function readLiveStrict(file) {
+  let st;
+  try {
+    st = fs.lstatSync(file);
+  } catch (e) {
+    if (e && e.code === "ENOENT") return { ok: true, events: [] };
+    return { ok: false, error: `live events file inaccessible: ${file}` };
+  }
+  if (!st.isFile()) return { ok: false, error: `live events path is not a regular file: ${file}` };
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch {
+    return { ok: false, error: `live events file unreadable: ${file}` };
+  }
+  return { ok: true, events: parseJsonl(text) };
+}
+
+/**
+ * Dedup a union by stable event identity (BR-2, gauntlet R1). The compactor
+ * archives the WHOLE file and reseeds the last TAIL_KEEP raw events into the live
+ * log, so every reseeded event appears in BOTH the live tail AND its archived
+ * generation — without dedup the union emits each reseeded event twice (and can
+ * multiply across generations). Dedup by `id`, keeping the first occurrence; an
+ * event with no id is kept as-is (never drop an unkeyed event on a heuristic).
+ */
+function dedupById(events) {
+  const seen = new Set();
+  const out = [];
+  for (const e of events) {
+    const id = e && e.id;
+    if (id === undefined || id === null || id === "") {
+      out.push(e);
+      continue;
+    }
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(e);
+  }
+  return out;
+}
+
+/**
  * readArchiveStrict(root) — the STRICT, two-phase completeness reader for the
  * archive tier. THREE coded branches (build_spec §C3):
  *
@@ -135,15 +228,32 @@ function readArchiveStrict(root) {
     return { tier: "corrupt", error: "cannot resolve archive index path" };
   }
 
-  // Branch: ABSENT (COLD) — a never-archived system. Distinct from corrupt.
-  if (!fs.existsSync(idxPath)) {
-    return { tier: "absent" };
+  // Branch: ABSENT (COLD) vs DANGLING/INACCESSIBLE (fail-closed). SEC-4 (gauntlet
+  // R1): fs.existsSync collapses a DANGLING symlink or an INACCESSIBLE index into
+  // "false", so the old code treated that as a clean cold install and printed
+  // live-only exit 0. Distinguish ENOENT (genuinely never-archived → cold) from
+  // any other stat outcome (exists-but-broken / not-a-regular-file → fail-closed).
+  let idxStat;
+  try {
+    idxStat = fs.lstatSync(idxPath);
+  } catch (e) {
+    if (e && e.code === "ENOENT") return { tier: "absent" };
+    return { tier: "corrupt", error: `archive index inaccessible (not a clean cold install): ${idxPath}` };
+  }
+  if (!idxStat.isFile()) {
+    return { tier: "corrupt", error: `archive index is not a regular file: ${idxPath}` };
+  }
+  // Realpath-contain the index (SEC-1): a junction/symlink ANCESTOR could redirect
+  // the index read out of root even though the lexical path looks in-root.
+  const idxSafe = containedReal(rootAbs, idxPath);
+  if (!idxSafe) {
+    return { tier: "corrupt", error: `archive index escapes root (realpath): ${idxPath}` };
   }
 
-  // The index exists → read it. Unreadable index (e.g. a directory / perms) → corrupt (c).
+  // The index exists → read the REAL, contained path. Unreadable → corrupt (c).
   let raw;
   try {
-    raw = fs.readFileSync(idxPath, "utf8");
+    raw = fs.readFileSync(idxSafe, "utf8");
   } catch {
     return { tier: "corrupt", error: `archive index unreadable: ${idxPath}` };
   }
@@ -174,18 +284,19 @@ function readArchiveStrict(root) {
     if (typeof rel !== "string" || !rel) {
       return { tier: "corrupt", error: "archive index entry missing an `archived` reference" };
     }
-    // Resolve inside root (containment) — a generation ref that escapes root is corrupt.
-    const genAbs = path.resolve(rootAbs, rel);
-    if (!archive.resolveInsideRoot(rootAbs, genAbs)) {
-      return { tier: "corrupt", error: `archived generation escapes root: ${rel}` };
+    // REALPATH containment (SEC-1): a junction/symlink ancestor could redirect the
+    // generation read out of root. Lexical resolveInsideRoot alone misses that.
+    const genSafe = containedReal(rootAbs, path.resolve(rootAbs, rel));
+    if (!genSafe) {
+      return { tier: "corrupt", error: `archived generation escapes root (realpath): ${rel}` };
     }
     let content;
     try {
-      const st = fs.lstatSync(genAbs); // no symlink-follow
+      const st = fs.lstatSync(genSafe); // no symlink-follow
       if (!st.isFile()) {
         return { tier: "corrupt", error: `archived generation is not a regular file (dangling): ${rel}` };
       }
-      content = fs.readFileSync(genAbs, "utf8");
+      content = fs.readFileSync(genSafe, "utf8");
     } catch {
       return { tier: "corrupt", error: `archived generation missing or unreadable (dangling): ${rel}` };
     }
@@ -193,7 +304,47 @@ function readArchiveStrict(root) {
     presentRefs.push(rel);
   }
 
-  // Phase 2 — EMIT. Every generation validated; now parse the raw events.
+  // Phase 1c — BIDIRECTIONAL completeness (SEC-3, gauntlet R1). Phase 1b proved
+  // index→files (every index entry has a present generation). Now prove files→
+  // index: scan the archive dir and refuse if ANY generation file on disk is NOT
+  // referenced by the index. A raw generation present on disk but absent from the
+  // index (the compactor's S7 `index_pending` window, or a reconcile-pending
+  // orphan) would otherwise be SILENTLY OMITTED while the reader reports
+  // "healthy" — a never-lose-raw READ gap. Fail closed loudly instead of
+  // returning a clean-looking partial history.
+  let dirSafe;
+  try {
+    dirSafe = containedReal(rootAbs, archive.archiveDir(rootAbs));
+  } catch {
+    dirSafe = null;
+  }
+  if (!dirSafe) {
+    return { tier: "corrupt", error: "archive dir escapes root (realpath)" };
+  }
+  let dirents;
+  try {
+    dirents = fs.readdirSync(dirSafe, { withFileTypes: true });
+  } catch {
+    return { tier: "corrupt", error: "archive dir unreadable" };
+  }
+  const indexedBasenames = new Set(
+    indexEntries.map((e) => path.basename(String((e && e.archived) || ""))),
+  );
+  for (const d of dirents) {
+    if (!d.isFile()) continue;
+    if (d.name === archive.INDEX_BASENAME) continue; // the index itself
+    if (d.name.endsWith(".lock")) continue; // rotation/compaction lock sidecars
+    if (!indexedBasenames.has(d.name)) {
+      return {
+        tier: "corrupt",
+        error:
+          `archive has an un-indexed generation on disk (raw history not in the index): ${d.name} — ` +
+          "run the compactor/reconcile to re-index before querying (fail-closed to never omit raw)",
+      };
+    }
+  }
+
+  // Phase 2 — EMIT. Every generation validated + completeness proven both ways.
   const entries = [];
   for (const content of genBuffers) {
     for (const e of parseJsonl(content)) entries.push(e);
@@ -307,16 +458,30 @@ function query(args) {
       );
       return 1; // NON-ZERO, and nothing has been written to stdout
     }
-    const liveEvents = readJsonlSafe(file);
+    // Live read is STRICT here (BR-6): an existing-but-unreadable live file must
+    // fail closed, not silently reduce to []. Still no stdout written yet, so a
+    // failure here honors the two-phase no-partial-output guarantee.
+    const liveRes = readLiveStrict(file);
+    if (!liveRes.ok) {
+      process.stderr.write(`error: ${liveRes.error}\n`);
+      process.stderr.write(
+        "fail-closed: refusing to print a partial/incomplete history (no output)\n",
+      );
+      return 1;
+    }
+    const liveEvents = liveRes.events;
     if (arch.tier === "absent") {
       // COLD path (AC-10): a never-archived system. Live-only, distinct note, exit 0.
       process.stderr.write("note: no archive tier yet — showing live events only\n");
       events = liveEvents.slice();
     } else {
-      // healthy: union live ∪ archived, suppress redundant summaries, sort by ts/id.
-      events = suppressRedundantSummaries(
-        liveEvents.concat(arch.entries),
-        arch.presentRefs,
+      // healthy: union live ∪ archived, DEDUP by id (BR-2 — the reseeded tail lives
+      // in both live and its archived generation), suppress redundant summaries.
+      events = dedupById(
+        suppressRedundantSummaries(
+          liveEvents.concat(arch.entries),
+          arch.presentRefs,
+        ),
       );
     }
     events.sort(compareByTsId);
@@ -371,7 +536,10 @@ module.exports = {
   query,
   readJsonl,
   readJsonlSafe,
+  readLiveStrict,
   parseJsonl,
+  containedReal,
+  dedupById,
   readArchiveStrict,
   suppressRedundantSummaries,
   compareByTsId,

@@ -287,4 +287,79 @@ h.test("summary pointer: with no archive tier, a compaction-summary stays VISIBL
   }
 });
 
+// ── 9. SEC-3 bidirectional completeness: an un-indexed generation on disk fails closed ──
+// The never-lose-raw READ teeth. A raw generation present in the archive dir but
+// NOT referenced by the index (the compactor's S7 index_pending window, or a
+// reconcile-pending orphan) must NOT be silently omitted while the reader reports
+// "healthy". Without the files->index scan this returns a clean-looking partial
+// history that drops real raw events.
+const GEN2_REL = ".claude/runtime/archive/events.jsonl.gen2";
+h.violation("SEC-3 un-indexed generation on disk → fail-closed (never silently omit raw)", () => {
+  const fx = sealedDir(
+    {
+      [LIVE_REL]: jsonl(SUMMARY, ...LIVE_TAIL),
+      [GEN_REL]: jsonl(...ARCHIVED_EVENTS),
+      // A SECOND generation ON DISK but absent from the index (unindexed raw).
+      [GEN2_REL]: jsonl({ id: "EVT-orphan", ts: "2026-07-18T02:45:00Z", type: "prompt", message: "orphaned-raw" }),
+      [IDX_REL]: jsonl({ origin: LIVE_REL, archived: GEN_REL, reason: "compaction:fold", lines: 2 }),
+    },
+    "events-cli-unindexed-gen",
+  );
+  try {
+    const cap = capture(() =>
+      cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
+    );
+    assert.strictEqual(cap.stdout, "", "NO partial output when raw exists on disk but is un-indexed");
+    assert.ok(/un-indexed generation/i.test(cap.stderr), "explicit un-indexed-generation error");
+    assert.notStrictEqual(cap.code, 0, "un-indexed raw on disk fails closed (non-zero)");
+    return cap.code;
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 10. BR-2 dedup: a reseeded event present in BOTH live tail and archive appears ONCE ──
+h.test("BR-2 union dedup: an event in both the live tail AND its archived generation appears once", () => {
+  // EVT-a2 is reseeded into the live tail AND still lives in the archived generation.
+  const fx = sealedDir(
+    {
+      [LIVE_REL]: jsonl(SUMMARY, ARCHIVED_EVENTS[1], ...LIVE_TAIL), // EVT-a2 reseeded into live
+      [GEN_REL]: jsonl(...ARCHIVED_EVENTS), // EVT-a1, EVT-a2 in the archive
+      [IDX_REL]: jsonl({ origin: LIVE_REL, archived: GEN_REL, reason: "compaction:fold", lines: 2 }),
+    },
+    "events-cli-dedup",
+  );
+  try {
+    const cap = capture(() =>
+      cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
+    );
+    assert.strictEqual(cap.code, 0);
+    const ids = cap.stdout.split("\n").filter(Boolean).map((l) => JSON.parse(l).id);
+    // EVT-a2 must appear EXACTLY ONCE despite being in both tiers.
+    assert.strictEqual(ids.filter((x) => x === "EVT-a2").length, 1, "reseeded event deduped to a single copy");
+    assert.deepStrictEqual(ids, ["EVT-a1", "EVT-a2", "EVT-t1"], "complete union, no duplicate");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── 11. BR-6 live-read fail-closed: an existing-but-unreadable live file → non-zero, no output ──
+h.violation("BR-6 unreadable live file → fail-closed (not a silent empty history)", () => {
+  const fx = healthyRoot();
+  try {
+    // Make the live log a DIRECTORY: it exists (not ENOENT) but is unreadable as a file.
+    fs.rmSync(fx.file(LIVE_REL), { force: true });
+    fs.mkdirSync(fx.file(LIVE_REL), { recursive: true });
+    const cap = capture(() =>
+      cli.query(["--archive", "--root", fx.dir, "--source", fx.file(LIVE_REL), "--json"]),
+    );
+    assert.strictEqual(cap.stdout, "", "NO partial output on an unreadable live file");
+    assert.ok(/not a regular file|unreadable|inaccessible/i.test(cap.stderr), "explicit fail-closed stderr");
+    assert.notStrictEqual(cap.code, 0, "unreadable live file fails closed (non-zero)");
+    return cap.code;
+  } finally {
+    fx.cleanup();
+  }
+});
+
 h.done();
