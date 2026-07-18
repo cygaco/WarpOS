@@ -198,19 +198,44 @@ function collectJsFiles(dirAbs, acc) {
 function scan(root) {
   const rootAbs = root || process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
   const scriptsDir = path.join(rootAbs, "scripts");
+  // BR-8 + SEC-5 (gauntlet R1): the scripts dir MUST exist, be a real directory,
+  // and be physically CONTAINED in root (realpath). A missing / non-directory
+  // scripts path (e.g. a wrong --root) is a RUNNER ERROR — throw so the CLI fails
+  // closed (exit 2), NEVER a green `scanned:0`. A junctioned/symlinked scripts dir
+  // resolving OUTSIDE root is refused so the scanner never traverses + reads
+  // external files (SEC-5 verified junction escape).
+  let realScripts;
+  try {
+    realScripts = fs.realpathSync(scriptsDir);
+  } catch (e) {
+    throw new Error(
+      `scripts dir not found or inaccessible under root (${scriptsDir}) — cannot scan: ${e && e.message ? e.message : e}`,
+    );
+  }
+  if (!fs.lstatSync(realScripts).isDirectory()) {
+    throw new Error(`scripts path is not a directory: ${scriptsDir}`);
+  }
+  let realRoot;
+  try {
+    realRoot = fs.realpathSync(rootAbs);
+  } catch (e) {
+    throw new Error(`root inaccessible (${rootAbs}): ${e && e.message ? e.message : e}`);
+  }
+  const sep = realRoot.endsWith(path.sep) ? realRoot : realRoot + path.sep;
+  if (realScripts !== realRoot && !realScripts.startsWith(sep)) {
+    throw new Error(`scripts dir escapes root (realpath): ${scriptsDir} → ${realScripts}`);
+  }
   const files = [];
-  if (fs.existsSync(scriptsDir)) {
-    for (const abs of collectJsFiles(scriptsDir, [])) {
-      const rel = path.relative(rootAbs, abs).replace(/\\/g, "/");
-      let content = null;
-      let unreadable = false;
-      try {
-        content = fs.readFileSync(abs, "utf8");
-      } catch {
-        unreadable = true;
-      }
-      files.push({ path: rel, content, unreadable });
+  for (const abs of collectJsFiles(realScripts, [])) {
+    const rel = path.relative(rootAbs, abs).replace(/\\/g, "/");
+    let content = null;
+    let unreadable = false;
+    try {
+      content = fs.readFileSync(abs, "utf8");
+    } catch {
+      unreadable = true;
     }
+    files.push({ path: rel, content, unreadable });
   }
   return { ...evaluate({ files }), scanned: files.length };
 }

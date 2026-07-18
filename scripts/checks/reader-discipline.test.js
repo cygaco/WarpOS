@@ -20,7 +20,7 @@ const path = require("path");
 const assert = require("assert");
 const { spawnSync } = require("child_process");
 const { harness, sealedDir } = require("./lib/fixture-harness");
-const { evaluate, findReads, isSanctioned, stripComments } = require("./reader-discipline");
+const { evaluate, findReads, isSanctioned, stripComments, scan } = require("./reader-discipline");
 
 const h = harness("reader-discipline");
 const CHECK = path.join(__dirname, "reader-discipline.js");
@@ -175,6 +175,34 @@ h.test("CLI default (no --enforce) is REPORT-ONLY — exit 0 even with a violati
     const r = spawnSync(process.execPath, [CHECK, "--root", fx.dir], { encoding: "utf8" });
     assert.strictEqual(r.status, 0, `report-only must exit 0, got ${r.status}`);
     assert.ok(/recap\.js/.test(r.stderr), "still reports the finding");
+  } finally {
+    fx.cleanup();
+  }
+});
+
+// ── BR-8/SEC-5 (gauntlet R1): a missing/non-dir scripts path fails CLOSED, never a green scanned:0 ──
+h.test("BR-8: scan() on a root with NO scripts dir throws (fail-closed), not a green scanned:0", () => {
+  const fx = sealedDir({ "docs/readme.md": "no scripts here\n" }, "reader-discipline-noscripts");
+  try {
+    assert.ok(!fs.existsSync(path.join(fx.dir, "scripts")), "precondition: no scripts dir");
+    assert.throws(
+      () => scan(fx.dir),
+      /scripts dir not found|not a directory/i,
+      "a wrong --root (no scripts dir) must be a RUNNER ERROR, not a clean scanned:0",
+    );
+  } finally {
+    fx.cleanup();
+  }
+});
+
+h.test("BR-8: the CLI exits 2 (fail-closed) when the scripts dir is missing", () => {
+  const fx = sealedDir({ "docs/readme.md": "x\n" }, "reader-discipline-cli-noscripts");
+  try {
+    const r = spawnSync(process.execPath, [path.join(__dirname, "reader-discipline.js"), "--root", fx.dir, "--json"], {
+      encoding: "utf8",
+    });
+    assert.strictEqual(r.status, 2, "runner error → exit 2 (fail-closed)");
+    assert.ok(/scripts dir not found|not a directory/i.test((r.stdout || "") + (r.stderr || "")), "explicit runner-error message");
   } finally {
     fx.cleanup();
   }
