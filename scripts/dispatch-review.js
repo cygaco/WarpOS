@@ -322,43 +322,67 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
     return Number.isFinite(t) && t >= sinceMs;
   });
   const toolIdOf = requireToolIdOf();
-  const observedLanes = lanes.map((l) => {
-    const expectShape = l.provider === "claude" ? "subprocess-claude" : "subprocess-cross-provider";
-    const expectTool = toolIdOf(l.observedProvider);
-    // SR-010/QA-008 — corroborate against a durable, LIVE, NON-FALLBACK record on the contracted EXECUTABLE:
-    // require ok===true, fallback===false (EXPLICIT — never coerced from an omitted field), the contracted
-    // tool_id, the expected shape, a non-empty output_digest (real output) AND a non-empty cmdline_checksum
-    // (a real invocation). A malformed/legacy/config-shaped row can no longer certify a lane.
-    const rec = records.find(
-      (r) =>
-        r.role === "security-reviewer" &&
-        r.shape === expectShape &&
-        r.provider === l.observedProvider &&
-        r.tool_id === expectTool &&
-        r.ok === true &&
-        r.fallback === false &&
-        !!r.output_digest &&
-        !!r.cmdline_checksum,
-    );
-    return {
-      laneId: l.laneId,
-      contractedProvider: l.provider,
-      observedProvider: rec ? rec.provider : l.observedProvider, // ledger-confirmed when corroborated
-      fallback: rec ? false : true, // corroborated record is fallback:false by the filter; else unattestable
-      alive: !!rec, // liveness from a durable LIVE record, not the envelope
-      verdict: l.verdict, // the review JUDGMENT stays from the child output
-      hasEvidence: !!rec, // SR-009/SR-010: a real, live, non-fallback durable record on the contracted tool
-    };
-  });
+  // Option B (SR-015, α-ruled — amends ADR-0016; two-tier claude contract): the CLAUDE lane's contract
+  // differs by profile. The panel-2family FLOOR accepts a subprocess-claude review (channel:subprocess,
+  // role:security-reviewer) — a REAL Claude security review with 2-family diversity intact, observed-
+  // provider-attested; the runner (a node script) can self-complete it without a conductor. The BINDING
+  // panel-3lab requires the IN-PROCESS security_claude_hunter IDENTITY: a subprocess-claude record can
+  // NEVER satisfy it (condition 2), so in the runner (which never fires the hunter) the binding claude lane
+  // is absent → panel-3lab stays BLOCKED. When agy goes live AND the hunter runs, 3lab binds with the
+  // hunter (condition 4). Corroboration otherwise stays the SR-010/QA-008 durable-live-non-fallback filter.
+  const HUNTER_ROLE = "security_claude_hunter";
+  const buildObserved = (claudeContract) =>
+    lanes.map((l) => {
+      const isClaude = l.provider === "claude";
+      let rec;
+      if (isClaude && claudeContract === "hunter") {
+        // BINDING claude lane = the sanctioned in-process hunter IDENTITY (an in-process record via the
+        // conductor). A subprocess-claude record does not match — it is the FLOOR's lane, not the hunter.
+        rec = records.find(
+          (r) =>
+            r.provider === "claude" &&
+            r.shape === "in-process-agent" &&
+            (r.role === HUNTER_ROLE || r.sanctioned_lane_id === HUNTER_ROLE) &&
+            r.ok === true &&
+            r.fallback === false &&
+            (!!r.output_digest || !!r.evidence_sha),
+        );
+      } else {
+        const expectShape = isClaude ? "subprocess-claude" : "subprocess-cross-provider";
+        const expectTool = toolIdOf(l.observedProvider);
+        rec = records.find(
+          (r) =>
+            r.role === "security-reviewer" &&
+            r.shape === expectShape &&
+            r.provider === l.observedProvider &&
+            r.tool_id === expectTool &&
+            r.ok === true &&
+            r.fallback === false &&
+            !!r.output_digest &&
+            !!r.cmdline_checksum,
+        );
+      }
+      return {
+        laneId: l.laneId,
+        contractedProvider: l.provider,
+        observedProvider: rec ? rec.provider : l.observedProvider,
+        fallback: rec ? false : true,
+        alive: !!rec,
+        verdict: l.verdict, // the review JUDGMENT stays from the child output
+        hasEvidence: !!rec,
+      };
+    });
   const floorProfile = { name: "panel-2family", ...manifest.profiles["panel-2family"] };
   const bindingProfile = { name: "panel-3lab", ...manifest.profiles["panel-3lab"] };
-  const floor = panelStatus(floorProfile, observedLanes, { agyOperatorOwned: true });
-  const binding = panelStatus(bindingProfile, observedLanes, { agyOperatorOwned: true });
+  const floor = panelStatus(floorProfile, buildObserved("subprocess"), { agyOperatorOwned: true });
+  const binding = panelStatus(bindingProfile, buildObserved("hunter"), { agyOperatorOwned: true });
   return {
     floor_pass: floor.status === STATUS.PASS,
     manifest_valid: true,
-    floor: { status: floor.status, reason: floor.reason, families: floor.families, laneStatus: floor.laneStatus },
-    binding: { status: binding.status, reason: binding.reason, operator_blocked: binding.operator_blocked || null },
+    // Condition 3 (α ruling): the result records WHICH contract gated — no ambiguity about what passed.
+    contract_evaluated: "panel-2family-floor",
+    floor: { contract: "panel-2family-floor", claude_channel: "subprocess", status: floor.status, reason: floor.reason, families: floor.families, laneStatus: floor.laneStatus },
+    binding: { contract: "panel-3lab-binding", claude_channel: "in-process-hunter", status: binding.status, reason: binding.reason, operator_blocked: binding.operator_blocked || null },
   };
 }
 

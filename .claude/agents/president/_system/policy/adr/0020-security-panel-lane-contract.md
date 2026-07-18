@@ -42,11 +42,37 @@ keystone) + `providerToolId()` — never a 4th source. Two profiles govern which
 ### Shape rule (the CLI-only tooth)
 
 The cross-provider labs (`gpt`, `agy`) MUST run as CLI subprocesses (`subprocess-cross-provider`,
-via `dispatch-agent.js`). The `claude` lane is the ONE sanctioned in-process lane (`in-process-agent`
-— the ADR-0016 hunter, third_pass opus@max), POSITIVE-identity-scoped: lane `claude` AND provider
-`claude`. A gpt/agy lane resolved in-process is a contract violation (a silent Claude clone
-masquerading as cross-provider diversity) — refused before merge. An agy/gpt lane can never assert the
-claude-hunter exemption because its provider is not claude.
+via `dispatch-agent.js`). A gpt/agy lane resolved in-process is a contract violation (a silent Claude
+clone masquerading as cross-provider diversity) — refused before merge. An agy/gpt lane can never assert
+the claude-hunter exemption because its provider is not claude.
+
+### Two-tier CLAUDE lane contract (SR-015, α-ruled 2026-07-18 — amends ADR-0016)
+
+The `claude` lane's contract differs by profile — the shape is NOT uniform:
+
+- **`panel-2family` FLOOR → `subprocess-claude` (channel `subprocess`, role `security-reviewer`).** The
+  degraded interim floor accepts a subprocess Claude security review. RATIONALE (α): the hunter's
+  adversarial semantics come from the security-reviewer SPEC, which a subprocess-claude lane runs
+  identically; the in-process shape was ADR-0016's answer to the provider-pin↔Agent-tool collision, NOT a
+  stronger review capability. A subprocess Claude review is a REAL Claude review — 2-family diversity is
+  intact and the observed-provider attestation verifies it genuinely ran on Claude. Crucially, the panel
+  RUNNER (`dispatch-review.js`, a node script) can self-complete the floor without a conductor; requiring
+  the in-process hunter would couple the floor to conductor presence (ED-041: only the top-level
+  orchestrator can summon an in-process agent), re-creating the hollow-gate class (a floor that can't
+  self-complete degrades to skipped-or-faked). The gate records `contract:"panel-2family-floor"`,
+  `claude_channel:"subprocess"` — honest labeling, no ambiguity about what passed.
+- **`panel-3lab` BINDING → `in-process-agent` + the sanctioned `security_claude_hunter` IDENTITY (ADR-0016
+  hunter, third_pass opus@max), POSITIVE-identity-scoped: lane `claude` AND provider `claude` AND role/
+  `sanctioned_lane_id === security_claude_hunter`.** A `subprocess-claude` record can NEVER satisfy the
+  binding hunter lane — identity is shape + role, not a settable label (a subprocess record claiming the
+  hunter role is refused on the shape mismatch). The binding evaluation records `claude_channel:"in-process-hunter"`.
+
+**Reversion linkage (condition 4):** the two-tier split exists ONLY because the third lab (agy) is down
+(ED-060) and the floor is the operative interim. When agy goes LIVE and `panel-3lab` becomes the binding
+exit, the binding evaluation REQUIRES the in-process hunter for its claude lane — the floor's
+subprocess-claude does not satisfy it. This re-binding is enforced by construction (the binding profile
+always evaluates the hunter contract) and is linked to the ED-060 sunset: resolving ED-060 activates the
+binding path, which demands the hunter. It cannot be silently forgotten.
 
 ## Context
 

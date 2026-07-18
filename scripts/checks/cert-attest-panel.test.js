@@ -78,8 +78,16 @@ test("R2-A: null-run_id via attestPanelRun → panel FAILS (the reproduced bypas
 // ── SR-005: an arbitrary claude in-process security-reviewer record (NO hunter role) → does NOT attest. ──
 test("SR-005: claude in-process record without security_claude_hunter role → hunter unattested", () => {
   const notHunter = rec({ role: "security-reviewer", provider: "claude", via: "epsilon-agent", shape: "in-process-agent", evidence_sha: "e-x" });
-  const out = attestLane(LANES.claude, [notHunter], { runId: R, sprintId: S });
+  const out = attestLane(LANES.claude, [notHunter], { runId: R, sprintId: S, codeSha: SHA });
   assert.equal(out.attested, false, "provider=claude alone must not attest the sanctioned hunter (β#3/SR-005)");
+});
+
+// ── SR-015 (option B, condition 2): a SUBPROCESS-claude record must NEVER satisfy the in-process hunter
+//    lane — even if it CLAIMS the hunter role. Identity is shape + role, not a settable label. ──
+test("SR-015 cond-2: subprocess-claude record claiming the hunter role → hunter (in-process) unattested", () => {
+  const subprocessFakeHunter = rec({ role: "security_claude_hunter", provider: "claude", shape: "subprocess-claude", output_digest: "d", cmdline_checksum: "c" });
+  const out = attestLane(LANES.claude, [subprocessFakeHunter], { runId: R, sprintId: S, codeSha: SHA });
+  assert.equal(out.attested, false, "a subprocess-claude record must not satisfy the in-process hunter lane (shape mismatch)");
 });
 
 // ── T5a (THE fixture): wrapper CLAIMS agy but the record is provider:claude → agy NOT attested. ──

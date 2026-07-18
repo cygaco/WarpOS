@@ -32,11 +32,14 @@ const agyDown = lane({ laneId: "agy", provider: "antigravity", observedProvider:
 // minted panel_run_id — the full SR-010/SR-011 provenance the tightened corroboration requires.
 const PRID = "panel-test-run-1";
 const now = () => new Date().toISOString();
+// The FLOOR's claude lane is a subprocess-claude review (option B, α-ruled); the gpt lane is a CLI lab.
 const ledgerClean = [
   { role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", ok: true, fallback: false, output_digest: "d-gpt", cmdline_checksum: "c-gpt", panel_run_id: PRID, completed_at: now() },
   { role: "security-reviewer", provider: "claude", tool_id: "claude", shape: "subprocess-claude", ok: true, fallback: false, output_digest: "d-cl", cmdline_checksum: "c-cl", panel_run_id: PRID, completed_at: now() },
 ];
 const ctxClean = { readLedger: () => ledgerClean, sinceMs: 0, panelRunId: PRID };
+// The BINDING panel-3lab claude lane is the in-process hunter — a distinct record the runner never fires.
+const hunterRec = { role: "security_claude_hunter", provider: "claude", shape: "in-process-agent", ok: true, fallback: false, output_digest: "d-hunter", panel_run_id: PRID, completed_at: now() };
 
 // ── role scoping ──
 test("isSecurityPanelRole: only security-reviewer is the panel role", () => {
@@ -44,14 +47,39 @@ test("isSecurityPanelRole: only security-reviewer is the panel role", () => {
   assert.equal(isSecurityPanelRole("frontend-reviewer"), false);
 });
 
-// ── NEGATIVE CONTROL: clean 2-family + corroborating ledger → floor PASS; panel-3lab BLOCKED-ON-OPERATOR. ──
-test("clean 2-family + ledger corroboration → floor PASS, binding BLOCKED-ON-OPERATOR", () => {
+// ── NEGATIVE CONTROL: clean 2-family FLOOR PASS on subprocess-claude (option B); binding NOT PASS (hunter
+//    absent in the runner + agy down). Condition 3: the result records WHICH contract gated. ──
+test("clean 2-family + subprocess-claude ledger → floor PASS (option B), binding NOT PASS", () => {
   const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], ctxClean);
   assert.equal(g.manifest_valid, true);
+  assert.equal(g.contract_evaluated, "panel-2family-floor", "the gate must record WHICH contract it evaluated");
+  assert.equal(g.floor.claude_channel, "subprocess", "the floor's claude lane is honestly the subprocess channel");
+  assert.equal(g.binding.claude_channel, "in-process-hunter");
+  assert.notEqual(g.binding.status, "PASS", "panel-3lab must never PASS without the hunter + agy");
   assert.equal(g.floor_pass, true, `floor should pass on a clean, ledger-corroborated 2-family: ${g.floor.reason}`);
   assert.equal(g.floor.status, "PASS");
-  assert.notEqual(g.binding.status, "PASS", "panel-3lab must NEVER be PASS while agy is down");
-  assert.equal(g.binding.status, "BLOCKED-ON-OPERATOR", g.binding.reason);
+});
+
+// ── SR-015 (option B, condition 2): a subprocess-claude record must NEVER satisfy the BINDING hunter lane;
+//    WITH a hunter record present, the binding claude lane is alive and 3lab blocks ONLY on agy. ──
+test("SR-015: binding requires the in-process hunter — subprocess-claude alone → binding claude UNSATISFIED", () => {
+  // ledgerClean has the subprocess-claude floor lane but NO hunter → the binding's claude lane is absent.
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], ctxClean);
+  assert.notEqual(g.binding.status, "PASS");
+  // the binding claude lane is missing-evidence (the subprocess record is the FLOOR's, not the hunter's)
+  assert.equal(g.binding.status.startsWith("BLOCKED"), true, g.binding.reason);
+});
+test("SR-015: WITH a hunter record, the binding claude lane is alive → 3lab BLOCKED-ON-OPERATOR (only agy)", () => {
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => [...ledgerClean, hunterRec], sinceMs: 0, panelRunId: PRID });
+  assert.equal(g.floor_pass, true, "floor still passes on the subprocess-claude lane");
+  assert.equal(g.binding.status, "BLOCKED-ON-OPERATOR", `with the hunter present, only agy blocks 3lab: ${g.binding.reason}`);
+});
+test("SR-015 (condition 2): a subprocess-claude record LABELED as the hunter role does NOT satisfy the binding (shape mismatch)", () => {
+  // even if a subprocess record CLAIMS role security_claude_hunter, its shape is subprocess-claude, not
+  // in-process-agent → the binding hunter match rejects it (identity is shape + role, not a settable label).
+  const fakeHunter = { ...ledgerClean[1], role: "security_claude_hunter" /* still shape:subprocess-claude */ };
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => [ledgerClean[0], fakeHunter], sinceMs: 0, panelRunId: PRID });
+  assert.notEqual(g.binding.status, "PASS", "a subprocess record claiming the hunter role must not satisfy the binding");
 });
 
 // ── THE MASQUERADE (SR-001): a gpt lane that ran on Claude (fallback:true) → floor BLOCKS. ──
