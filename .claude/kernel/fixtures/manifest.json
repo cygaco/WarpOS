@@ -25,7 +25,7 @@
     "codex-gpt": ["support-matrix/codex-gpt-row-supported.json"],
     "agy-antigravity": ["support-matrix/agy-row-down-blocks.json"]
   },
-  "_contract_lint_selftest_note": "The 4-file 'contract-lint' directory (malformed, unresolvable-ref, missing-ed, core-waived-by-ed — each a .md fixture + a documenting .json descriptor) is contract-lint.js's OWN R1 negative self-test corpus (consumed directly by contract-lint.test.js). It is DELIBERATELY EXCLUDED from the count above and from conformance-matrix.js's fixture walker: those inputs are contract-shaped documents fed to contract-lint itself, not {input,expect} kernel-conformance cases evaluated against role-binding.json/support-matrix.json. Counting or executing them as kernel-conformance fixtures would conflate G0.1's self-test with G0.3's matrix conformance.",
+  "_contract_lint_selftest_note": "The 5-file 'contract-lint' directory (malformed, unresolvable-ref, missing-ed, core-waived-by-ed, trailer-not-terminal — each a .md fixture + a documenting .json descriptor) is contract-lint.js's OWN R1 negative self-test corpus (consumed directly by contract-lint.test.js). It is DELIBERATELY EXCLUDED from the count above and from conformance-matrix.js's fixture walker: those inputs are contract-shaped documents fed to contract-lint itself, not {input,expect} kernel-conformance cases evaluated against role-binding.json/support-matrix.json. Counting or executing them as kernel-conformance fixtures would conflate G0.1's self-test with G0.3's matrix conformance. (trailer-not-terminal added SP-20260718-001 Phase 0 gauntlet round 1 fix, S-1.)",
   "kernel_scope": {
     "version": "1.0.0",
     "immutable_from": "SP-20260718-001",

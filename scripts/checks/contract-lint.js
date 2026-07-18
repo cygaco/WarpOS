@@ -26,10 +26,15 @@
  *      `Core: non-waivable`, the CORE register incomplete, the fixture count
  *      zero, or the D8 sentence missing.
  *   2  fail-closed/structural — the input could not be TRUSTED at all: no
- *      policy blocks found, a block with zero or 2+ trailer lines, an
- *      Enforcer ref that does not resolve (missing file or fails to load),
- *      a ledger file that could not be read/parsed, or any `ED-NNN` cited
- *      anywhere in the document that is absent from the ledger.
+ *      policy blocks found, a block with zero or 2+ trailer lines, a block
+ *      whose (single) trailer is not the LAST non-empty line of its block
+ *      (S-1 — trailing content after the trailer is unparseable-as-terminal),
+ *      an Enforcer ref that does not resolve (missing file, escapes
+ *      scripts/checks/ — B-1, or fails to load), a ledger file that could not
+ *      be read/parsed, the D6 fixture manifest present-but-unreadable/
+ *      unparseable/missing-count (C-1 — distinct from a manifest that reads
+ *      fine with a legitimately-zero count, which is policy §1), or any
+ *      `ED-NNN` cited anywhere in the document that is absent from the ledger.
  * A malformed/unparseable input NEVER reads clean (0) — this is the bootstrap
  * trust root; a green-pass-on-unparseable is the false-green class this whole
  * Phase-0 build exists to kill.
@@ -76,7 +81,21 @@ const H1_SENTENCE =
   "1.0 is done when a clean installed product moves idea→canon→roadmap→sprint→build→gauntlet→launch-readiness→release→retro→learning-promotion without relying on chat memory, stale trackers, manual Alpha heroics, or unverified agent claims.";
 
 const HEADING_RE = /^####\s+P(\d+)\.(\d+)\b/;
-const SECTION_RE = /^##\s+/; // a "## " section boundary closes any open block (#### is unaffected)
+// A "## " OR "### " heading boundary closes any open block (#### is unaffected
+// — it OPENS a new block via HEADING_RE, checked first). Widened from "## "-only
+// (S-1 fix): a "### " subsection appendix (e.g. "### Policy-block register")
+// immediately after a block's trailer must NOT be silently absorbed into that
+// block's own lines — the real contract's own P7.5 block was exactly this case
+// before the fix (its Enforcer trailer was followed by the whole appendix table).
+const SECTION_RE = /^#{2,3}\s+/;
+// A markdown thematic break ("---", "***", "___", 3+ repeated, optional
+// trailing whitespace) is ALSO a block-closing boundary (S-1 fix, second half):
+// this contract uses "---" between every §-section as a visual separator
+// AFTER each block's trailer — without this, that separator line reads as
+// "trailing content" and every well-formed block would spuriously trip
+// trailer-not-terminal. A thematic break is a definitive document boundary,
+// never legitimate policy-block content.
+const THEMATIC_BREAK_RE = /^(-{3,}|\*{3,}|_{3,})\s*$/;
 const ENFORCER_RE = /^Enforcer:\s*(.+)$/;
 const DEFERRED_RE = /^Deferred:\s*(ED-\d+)\s*@\s*(Phase-\d+-exit)$/;
 const CORE_RE = /^Core:\s*non-waivable$/;
@@ -118,7 +137,7 @@ function findBlocks(lines) {
       continue;
     }
     if (current) {
-      if (SECTION_RE.test(line)) {
+      if (SECTION_RE.test(line) || THEMATIC_BREAK_RE.test(line.trim())) {
         blocks.push(current);
         current = null;
         continue;
@@ -136,15 +155,51 @@ function findBlocks(lines) {
  * under scripts/checks/ are written `if (require.main === module)`-guarded
  * (log-sink-caps.js style), so `require()`-ing them here executes only their
  * top-level module body, never their CLI side effects.
+ *
+ * B-1 SECURITY: path-containment is enforced BEFORE any require() call
+ * (mirrors scripts/hooks/lib/retention.js#safeResolve). An `Enforcer:`
+ * trailer is document-authored text — trusting it enough to `require()`
+ * without first proving the resolved path stays INSIDE scripts/checks/ would
+ * let a doc author (or a poisoned/traversal `../` ref) achieve arbitrary code
+ * execution during a routine lint. A ref that escapes scripts/checks/ is
+ * UNRESOLVABLE by definition and is NEVER passed to require() — not even to
+ * check if it "would" load.
  */
 function resolveEnforcer(ref, rootDir) {
   const trimmed = String(ref || "").trim();
   if (!trimmed) return { resolved: false, error: "empty enforcer ref" };
   const abs = path.isAbsolute(trimmed) ? trimmed : path.join(rootDir, trimmed);
-  if (!fs.existsSync(abs)) return { resolved: false, error: `does not exist: ${trimmed}` };
+
+  const checksRoot = path.resolve(rootDir, "scripts", "checks");
+  const checksRootWithSep = checksRoot.endsWith(path.sep) ? checksRoot : checksRoot + path.sep;
+  const resolvedAbs = path.resolve(abs);
+  if (resolvedAbs !== checksRoot && !resolvedAbs.startsWith(checksRootWithSep)) {
+    return {
+      resolved: false,
+      error: `enforcer ref escapes scripts/checks/ (refused before require(), never loaded): ${trimmed}`,
+    };
+  }
+
+  if (!fs.existsSync(resolvedAbs)) return { resolved: false, error: `does not exist: ${trimmed}` };
+
+  // Symlink-escape guard: if the ref exists, its REAL (symlink-resolved)
+  // target must also stay inside scripts/checks/ — a symlink planted inside
+  // scripts/checks/ whose target points elsewhere must never be honored.
+  try {
+    const real = fs.realpathSync(resolvedAbs);
+    if (real !== checksRoot && !real.startsWith(checksRootWithSep)) {
+      return {
+        resolved: false,
+        error: `enforcer ref is a symlink escaping scripts/checks/ (refused before require(), never loaded): ${trimmed}`,
+      };
+    }
+  } catch {
+    /* existsSync above already proved it resolves; a realpath race here is not a new risk */
+  }
+
   try {
     // eslint-disable-next-line global-require, import/no-dynamic-require
-    require(abs);
+    require(resolvedAbs);
     return { resolved: true };
   } catch (e) {
     return { resolved: false, error: `failed to load: ${(e && e.message) || e}` };
@@ -156,13 +211,15 @@ function resolveEnforcer(ref, rootDir) {
  *   docText      (string) the contract document text (or a fixture doc under test)
  *   ledgerIds    (Set<string>|null) known ED ids; null signals the ledger could not be read/parsed
  *   ledgerError  (string, optional) set when the ledger read/parse failed
- *   fixtureCount (number|undefined) D6 manifest's `count` field; undefined = manifest missing/unreadable
+ *   fixtureCount (number|undefined) D6 manifest's `count` field; undefined when unset/unreadable
+ *   manifestError (string, optional) set when the D6 manifest read/parse/shape failed (C-1) —
+ *     DISTINCT from a manifest that read fine with a legitimately-zero count (that stays policy)
  *   rootDir      (string) used to resolve Enforcer refs
  *   resolveEnforcerFn (function, optional) injectable for tests
  * Returns { ok, exitCode, structural:[...], policy:[...] }.
  */
 function evaluate(opts) {
-  const { docText, ledgerIds, ledgerError, fixtureCount, rootDir, resolveEnforcerFn } = opts || {};
+  const { docText, ledgerIds, ledgerError, fixtureCount, manifestError, rootDir, resolveEnforcerFn } = opts || {};
   const doResolve = resolveEnforcerFn || ((ref) => resolveEnforcer(ref, rootDir));
 
   const structural = [];
@@ -170,6 +227,14 @@ function evaluate(opts) {
 
   if (ledgerError) {
     structural.push({ reason: "ledger-unreadable", detail: ledgerError });
+  }
+
+  // C-1: a D6 manifest that exists but could not be read/parsed/shape-validated
+  // is CORRUPT, not "legitimately zero" — mirror the ledger-unreadable path
+  // (structural, exit 2), never silently routed to the fixture-count-zero
+  // POLICY case (exit 1).
+  if (manifestError) {
+    structural.push({ reason: "manifest-unreadable", detail: manifestError });
   }
 
   if (typeof docText !== "string" || !docText.trim()) {
@@ -189,17 +254,27 @@ function evaluate(opts) {
 
   for (const block of blocks) {
     const trailerMatches = [];
-    for (const rawLine of block.lines) {
-      const trimmed = rawLine.trim();
-      if (ENFORCER_RE.test(trimmed)) trailerMatches.push({ kind: "Enforcer", line: trimmed });
-      else if (DEFERRED_RE.test(trimmed)) trailerMatches.push({ kind: "Deferred", line: trimmed });
-      else if (CORE_RE.test(trimmed)) trailerMatches.push({ kind: "Core", line: trimmed });
+    for (let li = 0; li < block.lines.length; li++) {
+      const trimmed = block.lines[li].trim();
+      if (ENFORCER_RE.test(trimmed)) trailerMatches.push({ kind: "Enforcer", line: trimmed, idx: li });
+      else if (DEFERRED_RE.test(trimmed)) trailerMatches.push({ kind: "Deferred", line: trimmed, idx: li });
+      else if (CORE_RE.test(trimmed)) trailerMatches.push({ kind: "Core", line: trimmed, idx: li });
     }
 
     if (trailerMatches.length !== 1) {
       structural.push({ reason: "malformed-block-trailer", block: block.id, found: trailerMatches.length });
     } else {
       const trailer = trailerMatches[0];
+
+      // S-1: the (single) trailer must be the LAST non-empty line of its
+      // block — a trailer followed by more non-trailer content is malformed
+      // (the block cannot be trusted to have "ended" at the trailer).
+      const hasTrailingContent = block.lines.slice(trailer.idx + 1).some((l) => l.trim().length > 0);
+      if (hasTrailingContent) {
+        structural.push({ reason: "trailer-not-terminal", block: block.id });
+        continue;
+      }
+
       if (trailer.kind === "Enforcer") {
         const m = ENFORCER_RE.exec(trailer.line);
         const res = doResolve(m[1]);
@@ -253,7 +328,10 @@ function evaluate(opts) {
     }
   }
 
-  if (!(fixtureCount > 0)) {
+  // C-1: only reachable when the manifest read/parsed/shape-validated fine —
+  // a manifestError already routed to the structural "manifest-unreadable"
+  // case above and must not ALSO masquerade as a legitimate zero count here.
+  if (!manifestError && !(fixtureCount > 0)) {
     policy.push({ reason: "fixture-count-zero", fixtureCount: fixtureCount || 0 });
   }
 
@@ -294,15 +372,43 @@ function run(opts) {
     ledgerError = (e && e.message) || String(e);
   }
 
+  // C-1: distinguish a manifest READ/PARSE/SHAPE failure (corrupt — structural,
+  // exit 2) from a manifest that reads fine with a legitimately-zero count
+  // (policy, exit 1). Any fs.readFileSync throw (missing/unreadable), any
+  // JSON.parse throw (malformed), or a missing/non-numeric `count` field all
+  // count as "corrupt" — the runner cannot decide a real fixture count from
+  // any of those, so none of them may fall through to fixture-count-zero.
   let fixtureCount;
+  let manifestError = null;
   try {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-    fixtureCount = typeof manifest.count === "number" ? manifest.count : undefined;
-  } catch {
+    let raw;
+    try {
+      raw = fs.readFileSync(manifestPath, "utf8");
+    } catch (e) {
+      const err = new Error(`manifest unreadable: ${(e && e.message) || e}`);
+      err.code = "MANIFEST_READ_ERROR";
+      throw err;
+    }
+    let manifest;
+    try {
+      manifest = JSON.parse(raw);
+    } catch (e) {
+      const err = new Error(`manifest is not valid JSON: ${(e && e.message) || e}`);
+      err.code = "MANIFEST_PARSE_ERROR";
+      throw err;
+    }
+    if (!manifest || typeof manifest !== "object" || typeof manifest.count !== "number") {
+      const err = new Error(`manifest missing/invalid 'count' field`);
+      err.code = "MANIFEST_SHAPE_ERROR";
+      throw err;
+    }
+    fixtureCount = manifest.count;
+  } catch (e) {
     fixtureCount = undefined;
+    manifestError = (e && e.message) || String(e);
   }
 
-  return evaluate({ docText, ledgerIds, ledgerError, fixtureCount, rootDir });
+  return evaluate({ docText, ledgerIds, ledgerError, fixtureCount, manifestError, rootDir });
 }
 
 module.exports = { evaluate, run, findBlocks, resolveEnforcer, parseLedgerIds, H1_SENTENCE };

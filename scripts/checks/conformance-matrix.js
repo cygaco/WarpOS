@@ -32,9 +32,15 @@
  *      --coverage: 0 = full R3 coverage.
  *   1  --enforce: a mismatch or a down-required-lane was found.
  *      --coverage: a CORE invariant or in-kernel matrix cell has zero bound fixtures.
- *   2  runner error (missing/unreadable/unparseable support-matrix.json,
- *      fixtures dir, or a malformed fixture file) — fail-closed, distinct
- *      from a clean 0.
+ *   2  runner error — fail-closed, distinct from a clean 0. Covers: missing/
+ *      unreadable/unparseable support-matrix.json; a support-matrix that
+ *      parses as JSON but is STRUCTURALLY invalid (missing/invalid `rows`, or
+ *      a row missing a required field — B-3); an unreadable fixtures dir; or
+ *      a SEMANTICALLY malformed fixture file — unparseable JSON, missing
+ *      required fields, an unrecognized `gate` name with no registered
+ *      evaluator, or a non-canonical `expect.outcome` (B-2). A fixture/matrix
+ *      the runner CANNOT decide is always fail-closed, never a reportable
+ *      mismatch or a silent pass.
  *
  *   node scripts/checks/conformance-matrix.js [--report-only|--enforce] [--coverage] [--json]
  */
@@ -164,10 +170,69 @@ const GATE_EVALUATORS = {
   },
 };
 
-/** Load support-matrix.json. Throws on missing/unparseable (fail-closed). */
+/**
+ * B-3: validate support-matrix.json's STRUCTURE, not just its JSON syntax —
+ * a syntactically-valid-but-structurally-invalid matrix (missing `rows`,
+ * `rows` not an object, a row missing a required field, or a required field
+ * with the wrong type) must fail closed, never be silently accepted as if it
+ * were a legitimate (possibly-empty) matrix. Mirrors §4/P4.1: "Every row MUST
+ * carry {status, required, proven, evidence_ref}." Throws on any violation.
+ */
+function validateSupportMatrix(matrix, supportMatrixPath) {
+  if (!matrix || typeof matrix !== "object" || Array.isArray(matrix)) {
+    const err = new Error(`support matrix ${supportMatrixPath} is not a JSON object`);
+    err.code = "SUPPORT_MATRIX_SHAPE_ERROR";
+    throw err;
+  }
+  if (!matrix.rows || typeof matrix.rows !== "object" || Array.isArray(matrix.rows)) {
+    const err = new Error(
+      `support matrix ${supportMatrixPath} missing/invalid 'rows' (must be an object keyed by helm)`,
+    );
+    err.code = "SUPPORT_MATRIX_SHAPE_ERROR";
+    throw err;
+  }
+  for (const [helm, row] of Object.entries(matrix.rows)) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      const err = new Error(`support matrix row '${helm}' is not a JSON object`);
+      err.code = "SUPPORT_MATRIX_ROW_SHAPE_ERROR";
+      throw err;
+    }
+    if (typeof row.status !== "string" || !row.status) {
+      const err = new Error(`support matrix row '${helm}' missing/invalid 'status' (string)`);
+      err.code = "SUPPORT_MATRIX_ROW_SHAPE_ERROR";
+      throw err;
+    }
+    if (typeof row.required !== "boolean") {
+      const err = new Error(`support matrix row '${helm}' missing/invalid 'required' (boolean)`);
+      err.code = "SUPPORT_MATRIX_ROW_SHAPE_ERROR";
+      throw err;
+    }
+    if (typeof row.proven !== "boolean") {
+      const err = new Error(`support matrix row '${helm}' missing/invalid 'proven' (boolean)`);
+      err.code = "SUPPORT_MATRIX_ROW_SHAPE_ERROR";
+      throw err;
+    }
+    if (typeof row.evidence_ref !== "string" || !row.evidence_ref) {
+      const err = new Error(`support matrix row '${helm}' missing/invalid 'evidence_ref' (string)`);
+      err.code = "SUPPORT_MATRIX_ROW_SHAPE_ERROR";
+      throw err;
+    }
+  }
+  return matrix;
+}
+
+/** Load support-matrix.json. Throws on missing/unparseable/structurally-invalid (fail-closed). */
 function loadSupportMatrix(supportMatrixPath) {
   const text = fs.readFileSync(supportMatrixPath, "utf8");
-  return JSON.parse(text);
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    const err = new Error(`support matrix ${supportMatrixPath} is not valid JSON: ${(e && e.message) || e}`);
+    err.code = "SUPPORT_MATRIX_PARSE_ERROR";
+    throw err;
+  }
+  return validateSupportMatrix(parsed, supportMatrixPath);
 }
 
 /** Load role-binding.json (best-effort companion for the role-binding gate). */
@@ -179,9 +244,19 @@ function loadRoleBinding(kernelDir) {
   }
 }
 
+// B-2: the closed set of outcomes any GATE_EVALUATORS function can compute —
+// a fixture's expect.outcome outside this set can never be matched, so it is
+// SEMANTICALLY malformed, not a legitimate (if surprising) expectation.
+const VALID_OUTCOMES = new Set(["PASS", "BLOCK"]);
+
 /**
  * Walk `.claude/kernel/fixtures/<gate>/<case>.json`, excluding EXCLUDED_GATE_DIRS
  * and the top-level manifest.json. Throws on a malformed fixture (fail-closed).
+ *
+ * B-2: a SEMANTICALLY malformed fixture — missing required fields, unparseable
+ * JSON, or a gate name with NO registered evaluator — cannot be DECIDED by
+ * this runner. It must fail closed here (structural, exit 2 at the CLI),
+ * never fall through to evaluate() as a reportable mismatch/PASS.
  */
 function loadFixtures(fixturesDir) {
   const fixtures = [];
@@ -208,8 +283,34 @@ function loadFixtures(fixturesDir) {
         err.code = "FIXTURE_PARSE_ERROR";
         throw err;
       }
-      if (!parsed || typeof parsed !== "object" || !parsed.gate || !parsed.expect || !parsed.expect.outcome) {
-        const err = new Error(`fixture ${full} missing required fields (gate/expect.outcome)`);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        const err = new Error(`fixture ${full} is not a JSON object`);
+        err.code = "FIXTURE_SHAPE_ERROR";
+        throw err;
+      }
+      if (typeof parsed.id !== "string" || !parsed.id) {
+        const err = new Error(`fixture ${full} missing required field 'id'`);
+        err.code = "FIXTURE_SHAPE_ERROR";
+        throw err;
+      }
+      if (typeof parsed.gate !== "string" || !parsed.gate) {
+        const err = new Error(`fixture ${full} missing required field 'gate'`);
+        err.code = "FIXTURE_SHAPE_ERROR";
+        throw err;
+      }
+      if (!Object.prototype.hasOwnProperty.call(GATE_EVALUATORS, parsed.gate)) {
+        const err = new Error(`fixture ${full} names unknown gate '${parsed.gate}' (no evaluator registered)`);
+        err.code = "FIXTURE_UNKNOWN_GATE";
+        throw err;
+      }
+      if (
+        !parsed.expect ||
+        typeof parsed.expect.outcome !== "string" ||
+        !VALID_OUTCOMES.has(parsed.expect.outcome)
+      ) {
+        const err = new Error(
+          `fixture ${full} missing/invalid 'expect.outcome' (must be one of ${[...VALID_OUTCOMES].join("/")})`,
+        );
         err.code = "FIXTURE_SHAPE_ERROR";
         throw err;
       }
@@ -223,6 +324,13 @@ function loadFixtures(fixturesDir) {
  * Pure core: execute every fixture through its gate evaluator, compare to
  * expect.outcome. Returns { results:[{id,gate,pass,computed,expected,file}],
  * mismatches:[...], requiredDownLanes:[...] }.
+ *
+ * B-2: an unknown gate name (no registered evaluator) is a STRUCTURAL error,
+ * not a reportable mismatch — this runner cannot DECIDE such a fixture, so it
+ * throws (fail-closed) rather than silently recording it as a comparable
+ * PASS/BLOCK result. `loadFixtures` already screens file-loaded fixtures for
+ * this; this check stays here too so ANY caller of evaluate() — not only the
+ * fs-backed loader — gets the same fail-closed guarantee.
  */
 function evaluate({ fixtures, supportMatrix, roleBinding }) {
   const ctx = { supportMatrix, roleBinding };
@@ -231,10 +339,11 @@ function evaluate({ fixtures, supportMatrix, roleBinding }) {
   for (const fx of fixtures) {
     const evaluator = GATE_EVALUATORS[fx.gate];
     if (!evaluator) {
-      const r = { id: fx.id, gate: fx.gate, file: fx._file, pass: false, computed: "UNKNOWN_GATE", expected: fx.expect.outcome };
-      results.push(r);
-      mismatches.push(r);
-      continue;
+      const err = new Error(
+        `fixture ${fx.id || fx._file || "<unknown>"} names unknown gate '${fx.gate}' (no evaluator registered) — cannot be decided, fail-closed`,
+      );
+      err.code = "FIXTURE_UNKNOWN_GATE";
+      throw err;
     }
     const computed = evaluator(fx.input || {}, ctx);
     const pass = computed.outcome === fx.expect.outcome;

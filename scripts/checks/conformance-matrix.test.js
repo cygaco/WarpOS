@@ -12,6 +12,8 @@
  *   node scripts/checks/conformance-matrix.test.js
  */
 const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const {
   evaluate,
@@ -165,11 +167,15 @@ test("evaluate(): a fixture whose expect disagrees with the evaluator's computed
   assert.strictEqual(res.mismatches[0].expected, "PASS");
 });
 
-test("evaluate(): an unknown gate name is always a mismatch (fail-closed on an unrecognized gate)", () => {
+// B-2: an unknown gate name is a STRUCTURAL error (evaluate() throws,
+// fail-closed) — this runner cannot DECIDE such a fixture, so it must never
+// become a reportable mismatch/PASS in the results array.
+test("B-2: evaluate() throws (fail-closed) on an unrecognized gate name, never a reportable mismatch", () => {
   const fixtures = [{ id: "synthetic-2", gate: "no-such-gate", input: {}, expect: { outcome: "PASS" } }];
-  const res = evaluate({ fixtures, supportMatrix: { rows: {} }, roleBinding: {} });
-  assert.strictEqual(res.mismatches.length, 1);
-  assert.strictEqual(res.mismatches[0].computed, "UNKNOWN_GATE");
+  assert.throws(
+    () => evaluate({ fixtures, supportMatrix: { rows: {} }, roleBinding: {} }),
+    /unknown gate/,
+  );
 });
 
 test("evaluateCoverage(): a CORE invariant with zero bound fixtures is a gap", () => {
@@ -177,6 +183,146 @@ test("evaluateCoverage(): a CORE invariant with zero bound fixtures is a gap", (
   const cov = evaluateCoverage({ fixtures, supportMatrix: { rows: {} } });
   assert.ok(!cov.ok);
   assert.ok(cov.gaps.some((g) => g.kind === "core" && g.id === "CORE-2"));
+});
+
+// ── B-2 regression: loadFixtures() fails CLOSED on a semantically malformed
+// fixture — missing required fields, unparseable JSON, or an unknown gate —
+// never a reportable mismatch/PASS. ──
+
+function writeTmpFixture(gateName, fileName, content) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cfm-b2-"));
+  const gateDir = path.join(tmpDir, gateName);
+  fs.mkdirSync(gateDir, { recursive: true });
+  fs.writeFileSync(path.join(gateDir, fileName), content);
+  return tmpDir;
+}
+
+test("B-2: loadFixtures() throws (fail-closed) on a fixture naming an unknown gate", () => {
+  const tmpDir = writeTmpFixture(
+    "no-such-gate",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "no-such-gate", input: {}, expect: { outcome: "PASS" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /unknown gate/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-2: loadFixtures() throws (fail-closed) on a fixture missing required fields", () => {
+  const tmpDir = writeTmpFixture("retention", "case.json", JSON.stringify({ gate: "retention" }));
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /missing required field/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-2: loadFixtures() throws (fail-closed) on unparseable fixture JSON", () => {
+  const tmpDir = writeTmpFixture("retention", "case.json", "{ not valid json");
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /malformed fixture/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-2: loadFixtures() throws (fail-closed) on a non-canonical expect.outcome", () => {
+  const tmpDir = writeTmpFixture(
+    "retention",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "retention", input: {}, expect: { outcome: "MAYBE" } }),
+  );
+  try {
+    assert.throws(() => loadFixtures(tmpDir), /expect\.outcome/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-2: run() propagates a malformed fixture as a thrown error — the CLI maps this to exit 2, never a clean 0/1", () => {
+  const tmpDir = writeTmpFixture(
+    "no-such-gate",
+    "case.json",
+    JSON.stringify({ id: "x", gate: "no-such-gate", input: {}, expect: { outcome: "PASS" } }),
+  );
+  try {
+    assert.throws(
+      () =>
+        run({
+          kernelDir: KERNEL_DIR,
+          supportMatrixPath: path.join(KERNEL_DIR, "support-matrix.json"),
+          fixturesDir: tmpDir,
+        }),
+      /unknown gate/,
+    );
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+// ── B-3 regression: loadSupportMatrix() fails CLOSED on a syntactically-valid
+// but STRUCTURALLY invalid support matrix — never silent acceptance. ──
+
+function writeTmpSupportMatrix(obj) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "cfm-b3-"));
+  const p = path.join(tmpDir, "support-matrix.json");
+  fs.writeFileSync(p, typeof obj === "string" ? obj : JSON.stringify(obj));
+  return { tmpDir, p };
+}
+
+test("B-3: loadSupportMatrix() throws (fail-closed) when 'rows' is missing", () => {
+  const { tmpDir, p } = writeTmpSupportMatrix({ schema: "x" });
+  try {
+    assert.throws(() => loadSupportMatrix(p), /rows/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-3: loadSupportMatrix() throws (fail-closed) when 'rows' is not an object", () => {
+  const { tmpDir, p } = writeTmpSupportMatrix({ rows: "not-an-object" });
+  try {
+    assert.throws(() => loadSupportMatrix(p), /rows/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-3: loadSupportMatrix() throws (fail-closed) when a row is missing a required field", () => {
+  const { tmpDir, p } = writeTmpSupportMatrix({ rows: { claude: { status: "supported", required: true } } });
+  try {
+    assert.throws(() => loadSupportMatrix(p), /proven|evidence_ref/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-3: loadSupportMatrix() throws (fail-closed) when a row's field has the wrong type", () => {
+  const { tmpDir, p } = writeTmpSupportMatrix({
+    rows: { claude: { status: "supported", required: "yes", proven: true, evidence_ref: "x" } },
+  });
+  try {
+    assert.throws(() => loadSupportMatrix(p), /required/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-3: loadSupportMatrix() throws (fail-closed) on unparseable JSON", () => {
+  const { tmpDir, p } = writeTmpSupportMatrix("{ not valid json");
+  try {
+    assert.throws(() => loadSupportMatrix(p), /not valid JSON/);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+test("B-3: loadSupportMatrix() still accepts the REAL support-matrix.json (positive control)", () => {
+  const matrix = loadSupportMatrix(path.join(KERNEL_DIR, "support-matrix.json"));
+  assert.ok(matrix && typeof matrix === "object");
+  assert.ok(matrix.rows && matrix.rows.claude && matrix.rows.claude.status === "supported");
 });
 
 if (failures.length) {
