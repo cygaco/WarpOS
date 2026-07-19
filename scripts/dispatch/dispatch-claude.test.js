@@ -324,6 +324,35 @@ test("review-fallback: build-chain role ('builder') via --review-fallback → ex
   assert(comps.length === 0, "no completion record should be written when review-fallback is refused");
 });
 
+// ── 15. G2.4: dispatched worker gets the identity-override preamble ───
+test("G2.4: a dispatched builder's prompt is prefixed with the worker-identity override (President neutralized)", () => {
+  const ledger = path.join(scratch, "l15");
+  const captureFile = path.join(scratch, "captured-prompt.txt");
+  const fakeCapture = path.join(scratch, "fake-capture.js");
+  fs.writeFileSync(
+    fakeCapture,
+    `let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{require("fs").writeFileSync(${JSON.stringify(
+      captureFile,
+    )}, s);process.stdout.write("ok");});\n`,
+  );
+  const res = runWrapper({ fake: fakeCapture, ledgerDir: ledger, role: "backend-builder" });
+  assert(res.status === 0, `expected exit 0, got ${res.status} stderr=${(res.stderr || "").slice(0, 300)}`);
+  const captured = fs.existsSync(captureFile) ? fs.readFileSync(captureFile, "utf8") : "";
+  assert(/DISPATCHED WORKER/.test(captured), `preamble missing from builder prompt; head: ${captured.slice(0, 200)}`);
+  assert(/INERT for you/.test(captured), "preamble must neutralize ambient President identity");
+  assert(/Build the thing per spec/.test(captured), "the original prompt must survive after the preamble");
+});
+
+// ── 16. G2.4/CORE-1: President via the Claude bridge is refused pre-spawn ───
+test("G2.4/CORE-1: dispatching the President role via dispatch-claude is refused (exit 2, no record)", () => {
+  const ledger = path.join(scratch, "l16");
+  const res = runWrapper({ fake: fakeHappy, ledgerDir: ledger, role: "President", iso: "none" });
+  assert(res.status === 2, `expected exit 2 (fail-closed refusal), got ${res.status}`);
+  assert(/REFUSED|top_level_session-only|President-leak/i.test(res.stderr || ""), "expected a CORE-1 refusal message");
+  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  assert(comps.length === 0, "no completion record for a refused President dispatch");
+});
+
 // ── Summary ─────────────────────────────────────────────────
 console.log(`\ndispatch-claude.test.js — ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
