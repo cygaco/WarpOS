@@ -2,7 +2,7 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-004"
 title: "Phase 2 — Identity + host portability (explicit role-bindings precedence graph [dispatched=UNBOUND fail-closed, top-level=Alpha]; provider-neutral canonical instruction source + per-provider projections + drift-check; authority-pollution scan over the EFFECTIVE instruction graph; generic bootstrap; per-provider cwd/sandbox tests; operator-voice helm-only)"
 objective: "Phase 2 — Identity + host portability. PLAN minted + β plan->design DECIDE B/0.89 -> PARKED at the plan->design boundary (2026-07-18). Spine = DERIVED-NOT-SETTABLE (ED-225) primary; a fresh conductor executes design->build. Full plan: .claude/project/sprint/sprints/SP-20260718-004/plan.md."
-status: in_review
+status: released
 created_at: "2026-07-19T01:07:07.383Z"
 updated_at: "2026-07-19T01:07:07.383Z"
 source_request: ""
