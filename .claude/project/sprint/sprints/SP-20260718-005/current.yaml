@@ -4,7 +4,7 @@ title: "Phase 3 — WorkOrder / ResultEnvelope (adapt packet 06 onto the EXISTIN
 objective: "Adapt packet-06 WorkOrder/ResultEnvelope onto the EXISTING dispatch ledger so the propose->dispatch->gauntlet->acceptance->integration loop is auditable + un-forgeable end-to-end (trusted AcceptanceRecord authorizes integration; a provider `success` never does)."
 status: in_progress
 created_at: "2026-07-19T04:27:45.231Z"
-updated_at: "2026-07-19T19:23:21.427Z"
+updated_at: "2026-07-19T22:22:00.000Z"
 source_request: "WARPOS 1.0 Phase 3 (RATIFIED-PLAN); executed via /session:resume 2026-07-19 work order to Epsilon."
 interpreted_intent: "WorkOrder/ResultEnvelope/AcceptanceRecord + conductor-lease + do-not-reopen on the existing ledger; record-trust gate front-loaded at design."
 plan_contract: ".claude/project/sprint/sprints/SP-20260718-005/plan.md"
@@ -109,9 +109,9 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: "BUILD+INTEGRATION COMPLETE (Epsilon resume 2026-07-19) — all AC-1..18 green; integration-seam-gate green; gauntlet in flight (backend/qa/security -> gpt-5.6-terra)"
-  resume_command: "resume GAUNTLET/EXIT-GATES per epsilon.md; conductor lease held (session epsilon-resume-20260719, fencing token 1); do NOT re-run plan/design (verdicts consumed)"
-  resume_summary: "Phase 3 HIGH-risk. Build+integration COMPLETE, all AC-1..18 green. beta build->gauntlet DECIDE B/0.88 PROCEED. Gauntlet dispatched. Next: WG-19 gauntlet-verify + exit gates (falsifier-liveness/record-trust-gate--built/tracker-fidelity--enforce/conformance--flip-gate) + beta gauntlet->release + release + retro."
+  last_checkpoint: "R4 FIX-CYCLE in progress (Epsilon resume 2026-07-19). NOT all-ACs-green: the R3 re-gauntlet returned FAIL (backend C1 pre-stamp lease race; security C2-R3 empty-digest-values + R3-REG-1 wrong-ref tree recompute + C4-R3 tracker overclaim; QA lane reaped 0-byte/no-record). R4 fixes APPLIED with teeth: C1 (conductor-lease: no mtime-reclaim of an unidentifiable mutation lock), C2-R3 (acceptance-record: digest-map VALUES must be non-empty strings), R3-REG-1 (acceptance-record: recompute the accepted tree from the CANDIDATE commit, not the destination targetRef), C4-R3 (this tracker-honesty edit). Local suites GREEN (conductor-lease + acceptance-record 63/63; falsifier corpus 16/16). R4 re-gauntlet (3 lanes incl. a working QA lane) + WG-19 + exit gates + fresh beta gauntlet->release + release + retro are PENDING. Release gates NOT cleared. ED-236 (Phase-4 C4/H5 live-wiring + lexical-control-flow deferral) remains OPEN."
+  resume_command: "resume R4 RE-GAUNTLET per epsilon.md (backend+security+qa via dispatch-agent.js, envelopes to files) then exit gates; conductor lease held (session epsilon-resume-20260719, fencing token 1); do NOT re-run plan/design (verdicts consumed)"
+  resume_summary: "Phase 3 HIGH-risk. R3 re-gauntlet FAILED (4 findings); R4 fixes applied with teeth (C1/C2-R3/R3-REG-1 code + C4-R3 tracker honesty), local unit+falsifier suites green. AC-1..18 are NOT all green — R3/R4 gauntlet + release gates remain PENDING and ED-236 is OPEN (deferred C4/H5 live-wiring). Prior beta gauntlet->release B/0.90 is STALE (pre-dates the R2/R3 FAILs) — a fresh beta consult is required before merge. Next: dispatch the R4 re-gauntlet (3 lanes) + WG-19 gauntlet-verify + exit gates (falsifier-liveness/tracker-fidelity/conformance --flip-gate with AC-16 REFUSAL=expected-green) + fresh beta gauntlet->release + (if green) release + retro."
   active_files: []
   dirty_state: false
   blockers: []
