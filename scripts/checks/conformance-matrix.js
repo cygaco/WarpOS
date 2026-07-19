@@ -85,67 +85,23 @@ const EXCLUDED_GATE_DIRS = new Set(["contract-lint", "conformance-matrix-selftes
 
 const REQUIRED_CORE_IDS = ["CORE-1", "CORE-2", "CORE-3", "CORE-4"];
 
+// SP-20260718-004 Phase 2 (G2.1/ED-216): the role-binding EVALUATOR + LOADERS were EXTRACTED to
+// scripts/dispatch/role-resolver.js — the ONE shared source the LIVE dispatch resolver AND this
+// conformance runner both import (one evaluator, fixture-proven AND live; these fixtures staying
+// green is the extraction's regression guard). Behavior is byte-identical to the pre-extraction
+// local copies; the role-binding GATE_EVALUATOR below wraps evaluateRoleBinding(input, rb).
+const { evaluateRoleBinding, loadRoleBinding, validateRoleBinding } = require("../dispatch/role-resolver");
+
 // ── Per-gate pure evaluators — the Phase-0 SEED reasoning layer. Each maps a
 // fixture's `input` to a computed {outcome, reason}. Deliberately small and
 // literal: the LIVE runtime enforcement of these rules is Phase 1-4 work
 // (see the ED-215/216/217 Deferred trailers in top-level-runtime-contract.md);
 // this is what lets G0.3 "execute" a fixture rather than merely schema-check it.
 const GATE_EVALUATORS = {
-  "role-binding": (input, ctx) => {
-    const rb = ctx.roleBinding || {};
-    const sources = rb.sources || {};
-    if (input.actor_kind === "dispatched_worker") {
-      // N-5 [gauntlet round 2, CORE-1 bypass fix]: binding sources are now
-      // scoped by actor_kind via role-binding.json's per-source
-      // 'applies_to_actor'. A dispatched_worker is bindable ONLY by a source
-      // whose applies_to_actor includes "dispatched_worker" (today: only
-      // validated_workorder_or_cli, the RATIFIED-PLAN alpha ruling).
-      // explicit_user and explicit_top_level_helm are top_level_session-ONLY
-      // sources — a worker PRESENTING one of those is a category error, not
-      // a legitimate bind, and must fail closed rather than resolve through
-      // the precedence order as though it were a top-level session.
-      const presented = [
-        { field: "explicit_user_instruction", source: "explicit_user" },
-        { field: "validated_workorder_or_cli_binding", source: "validated_workorder_or_cli" },
-        { field: "explicit_top_level_helm_binding", source: "explicit_top_level_helm" },
-      ].filter((m) => input[m.field]);
-
-      if (presented.length === 0) {
-        return {
-          outcome: (rb.worker_default_when_unbound === "FAIL_CLOSED" ? "BLOCK" : "PASS"),
-          reason: "unbound dispatched worker; worker_default_when_unbound governs",
-        };
-      }
-
-      for (const m of presented) {
-        const src = sources[m.source] || {};
-        const appliesTo = Array.isArray(src.applies_to_actor) ? src.applies_to_actor : [];
-        if (!appliesTo.includes("dispatched_worker")) {
-          return {
-            outcome: "BLOCK",
-            reason: `dispatched_worker presented '${m.source}', scoped to applies_to_actor=[${appliesTo.join(", ")}] only -- category error, fail-closed (CORE-1)`,
-          };
-        }
-      }
-
-      const bound = presented.some((m) => (sources[m.source] || {}).can_bind);
-      if (!bound) {
-        return {
-          outcome: (rb.worker_default_when_unbound === "FAIL_CLOSED" ? "BLOCK" : "PASS"),
-          reason: "presented source(s) are actor-scoped to dispatched_worker but none is can_bind:true; worker_default_when_unbound governs",
-        };
-      }
-      return { outcome: "PASS", reason: "role resolved through the precedence order (actor-scoped to dispatched_worker)" };
-    }
-    if (input.attempted_binding_source) {
-      const src = sources[input.attempted_binding_source] || {};
-      return {
-        outcome: src.can_bind ? "PASS" : "BLOCK",
-        reason: `sources.${input.attempted_binding_source}.can_bind = ${!!src.can_bind}`,
-      };
-    }
-    return { outcome: "BLOCK", reason: "unrecognized role-binding input shape (fail-closed)" };
-  },
+  // WRAPPER over the extracted evaluateRoleBinding (scripts/dispatch/role-resolver.js). Preserves the
+  // (input, ctx) signature this runner + conformance-matrix.test.js call it with; the evaluator body
+  // is single-sourced in role-resolver.js (the LIVE dispatch resolver imports the SAME function).
+  "role-binding": (input, ctx) => evaluateRoleBinding(input, (ctx && ctx.roleBinding) || {}),
 
   // C-2 [DISPOSITIONED, security-Claude]: this seed only evaluates
   // `integrate_to_main`, ONE of CORE-2's four named powers (§1/§7 P7.2:
@@ -288,75 +244,11 @@ function loadSupportMatrix(supportMatrixPath) {
   return validateSupportMatrix(parsed, supportMatrixPath);
 }
 
-/**
- * R4-1 [HIGH, gauntlet round 4]: validate role-binding.json's STRUCTURE, not
- * just its JSON syntax -- a syntactically-valid-but-structurally-invalid
- * control file (missing `order`, `sources`, or `worker_default_when_unbound`)
- * must fail closed, never be silently accepted as a legitimate (if minimal)
- * graph. Mirrors validateSupportMatrix's B-3 pattern (same file). Throws on
- * any violation.
- */
-function validateRoleBinding(rb, roleBindingPath) {
-  if (!rb || typeof rb !== "object" || Array.isArray(rb)) {
-    const err = new Error(`role binding ${roleBindingPath} is not a JSON object`);
-    err.code = "ROLE_BINDING_SHAPE_ERROR";
-    throw err;
-  }
-  if (!Array.isArray(rb.order) || rb.order.length === 0) {
-    const err = new Error(`role binding ${roleBindingPath} missing/invalid 'order' (must be a non-empty array)`);
-    err.code = "ROLE_BINDING_SHAPE_ERROR";
-    throw err;
-  }
-  if (!rb.sources || typeof rb.sources !== "object" || Array.isArray(rb.sources)) {
-    const err = new Error(`role binding ${roleBindingPath} missing/invalid 'sources' (must be an object)`);
-    err.code = "ROLE_BINDING_SHAPE_ERROR";
-    throw err;
-  }
-  if (typeof rb.worker_default_when_unbound !== "string" || !rb.worker_default_when_unbound) {
-    const err = new Error(
-      `role binding ${roleBindingPath} missing/invalid 'worker_default_when_unbound' (must be a non-empty string)`,
-    );
-    err.code = "ROLE_BINDING_SHAPE_ERROR";
-    throw err;
-  }
-  return rb;
-}
-
-/**
- * R4-1 [HIGH, gauntlet round 4]: load role-binding.json. THROWS (fail-closed,
- * -> run() -> exit 2 structural) on a missing/unreadable/unparseable file OR
- * a structurally invalid one (validateRoleBinding above) -- role-binding.json
- * is TRUSTED-KERNEL CONTROL input for the 'role-binding' gate evaluator. The
- * pre-fix version caught any read/parse failure and returned '{}', which made
- * the role-binding gate evaluate against an EMPTY control: a dispatched_worker
- * unbound path reads `rb.worker_default_when_unbound !== "FAIL_CLOSED"` against
- * '{}' -> undefined !== "FAIL_CLOSED" -> true -> PASS instead of BLOCK, flipping
- * CORE-1's fail-closed guarantee open on a corrupt/unreadable control file. A
- * corrupt control file is a STRUCTURAL failure, never a silent '{}' that reads
- * as an (incorrectly) permissive graph. Mirrors loadSupportMatrix's B-3 posture
- * (same file) -- both trusted-kernel JSON control files now fail closed the
- * same way on read/parse/shape failure.
- */
-function loadRoleBinding(kernelDir) {
-  const roleBindingPath = path.join(kernelDir, "role-binding.json");
-  let text;
-  try {
-    text = fs.readFileSync(roleBindingPath, "utf8");
-  } catch (e) {
-    const err = new Error(`role binding ${roleBindingPath} is unreadable: ${(e && e.message) || e}`);
-    err.code = "ROLE_BINDING_READ_ERROR";
-    throw err;
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch (e) {
-    const err = new Error(`role binding ${roleBindingPath} is not valid JSON: ${(e && e.message) || e}`);
-    err.code = "ROLE_BINDING_PARSE_ERROR";
-    throw err;
-  }
-  return validateRoleBinding(parsed, roleBindingPath);
-}
+// R4-1 [HIGH, gauntlet round 4] validateRoleBinding + loadRoleBinding — RELOCATED to
+// scripts/dispatch/role-resolver.js (SP-20260718-004 Phase 2, G2.1/ED-216) and imported at the top of
+// this file. Behavior is byte-identical (structural fail-closed on a missing/unreadable/unparseable/
+// shape-invalid control); single-sourcing them keeps the LIVE dispatch resolver and this conformance
+// runner in lock-step. run() below and this module's exports reference the imported functions.
 
 // R3-1 [CRIT, gauntlet round 3]: PER-GATE required input-field schema. N-2
 // (gauntlet round 2) proved a fixture's 'input' is a present JSON object, but

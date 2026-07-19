@@ -1,0 +1,8 @@
+{
+  "role": "product-lead",
+  "step": "design",
+  "sprint": "SP-20260718-004",
+  "verdict": "advise",
+  "confidence": 0.86,
+  "envelope": "Keystone = R1 (derived-binding runtime); guarantee is STRUCTURAL, scan is honest-scoped defense-in-depth (do not invert). AC = R1..R9 mapped to gates/EDs each with a verified_by (R1 G2.1/ED-216 live fixtures + BLOCKING FIXTURE (i); R2 ED-220 value-validation BLOCK; R3 G2.2 git-diff-clean + semantic-fidelity; R4 G2.3 standing scan + BLOCKING FIXTURE (ii); R5 G2.4 no-leak; R6 G2.6 operator-voice helm-only; R7 G2.5 cwd tests; R8 ED-231 residuals mistake-class priority; R9 ED-221 ADR). Build order keystone-first: R1->R2->R3->R4->{R5,R6}; parallel R7/R8/R9. Cold-vs-warm (must-follow): kernel 'new user' = fresh/unbound worker; cold-start IS fixture (i); R1 AC MUST assert BOTH unbound(fail-closed) AND bound-helm paths. Escalations to alpha: (a) ED-221 resolution direction (OPEN_ADR — eps drafts, alpha rules); (b) when to retire transition 'you are Alpha unless bound' phrasing; (c) any push to treat scan AS guarantee / pull ED-228 into Phase-2 (both beta-ruled, re-litigation escalates). CHANGES MIND: if harness context-assembly can't be DERIVED by R4, scan ceiling widens -> R4 verified_by adds external expected-surface manifest (alpha escalation)."
+}
