@@ -73,6 +73,15 @@ const SIGNED_FIELDS = Object.freeze([
   // blind field-add. The CORE liveness-decision fields (ok, fallback, verdict) + identity + sprint_id +
   // started_at ARE signed — a forged/unsigned record is rejected; this residual is a same-user re-correlation
   // of an already-valid signed record (within the ADR-0025 account ceiling), lower severity than the closed class.
+  //
+  // APPENDED AT THE END ONLY (SP-20260718-005 BE-3, β directive: signer + verifier must byte-agree — never
+  // reorder the fields above). `workorder_digest` (scripts/dispatch/workorder-schema.js#workOrderDigest) binds
+  // the WorkOrder's immutable identity (schema_version/correlation_id/role/provider/model/base_commit/
+  // result_tree_hash/allowed_capabilities/allowed_paths) into the same-session signature — a WorkOrder is a
+  // SAME-SESSION artifact (build_spec.md "Session-scope partition" — SHARP-1), so per-session HMAC is the
+  // correct trust anchor here (unlike the cross-session AcceptanceRecord/lease, which must NOT use it). A
+  // post-hoc workorder_digest swap on an already-signed record invalidates the signature.
+  "workorder_digest",
 ]);
 
 let _cachedSecret;
