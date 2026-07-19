@@ -65,6 +65,14 @@ const SIGNED_FIELDS = Object.freeze([
   "fallback", // gauntlet R2 SR-R2-001 — ran-vs-fell-back classification
   "sprint_id", // gauntlet R3 SR-R3-002 — the sprint-correlation field gauntlet-verify filters on
   "started_at", // gauntlet R3 SR-R3-002 — window-membership fallback (completed_at ?? started_at); un-signed → replayable
+  // NAMED RESIDUAL (gauntlet R6 SR-R6-003 → ED-232): the BROADER correlation SELECTORS the converted readers
+  // match on (run_id / phase_id / plan_item_id / skill / sprint / step) are NOT yet signed. Binding them
+  // tamper-proofs re-correlation of a valid signed record — BUT `run_id` collides with the panel attestation's
+  // design (cert-attest correlates by panel_run_id and MUST tolerate a different run_id — QA-014), so the
+  // selector-signing set needs panel-semantics-aware design. Tracked as a bounded ED-232 refinement, not a
+  // blind field-add. The CORE liveness-decision fields (ok, fallback, verdict) + identity + sprint_id +
+  // started_at ARE signed — a forged/unsigned record is rejected; this residual is a same-user re-correlation
+  // of an already-valid signed record (within the ADR-0025 account ceiling), lower severity than the closed class.
 ]);
 
 let _cachedSecret;

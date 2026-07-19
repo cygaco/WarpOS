@@ -133,7 +133,9 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
     // <sprint_id>-<step>-<role>.return.txt (epsilon-runtime record-inprocess pattern).
     const basename = path.basename(ef.path, ".return.txt");
     const filenameMatch = records.find((r) => {
-      if (!r.ok) return false;
+      // SP-20260718-004 R6 (SR-R6-001): the filename-fallback backing record must ALSO be a VERIFIED
+      // liveness record (the sha256 primary above already is) — a forged/unsigned record can't hide a stall.
+      if (!isVerifiedLivenessRecord(r, { requireSignature: _reqSig })) return false;
       if (!r.sprint_id || !r.step || !r.role) return false;
       return basename === `${r.sprint_id}-${r.step}-${r.role}`;
     });

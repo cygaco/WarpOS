@@ -53,9 +53,16 @@ const CROSS_SESSION_EXEMPT = Object.freeze({
 
 // A file READS the dispatch-completions ledger if it names it or the canonical read helpers.
 const LEDGER_READ = /dispatch-completions|WARPOS_COVERAGE_LEDGER|readCompletions|dispatchCompletionsFile/;
-// A file GATES on an ok:true liveness RECORD — a dereference of a record's `.ok` field (r.ok === true /
-// rec.ok !== true), the predicate the forgery targets. Deliberately NOT `ok: true` object-literal form:
-// that matches a function's own RETURN value ({ ok: true, ... }), a false positive (e.g. full.js status returns).
+// A file GATES on an ok:true liveness RECORD — a `record.ok === true` / `record.ok !== true` COMPARISON, the
+// canonical form where the actual ledger-record trust checks appear (and where every real reader this sprint
+// converted lived). NAMED RESIDUAL (gauntlet R6 SR-R6-002/LRCP-R6-001 → ED-229): the truthy/negated/destructured
+// equivalents (`if (!r.ok)`, `({ ok }) => ok`) are DELIBERATELY not matched here — a regex cannot distinguish a
+// LEDGER record's `.ok` from a function-result `.ok` (`!res.ok`) or a JSON output literal (`{ ok: true }`) without
+// DATAFLOW, so broadening the pattern produced ~26 pure false positives (unusable). Complete predicate-form +
+// ledger-record-scoped coverage is the AST/dataflow guard upgrade = ED-229 (already tracked, deferred). This
+// guard is therefore a bounded structural DETECTOR (defense-in-depth) at the canonical form; the GUARANTEE is
+// that every ACTUAL current same-session reader is converted through the choke-point (β's structure-is-the-
+// guarantee, scan-is-defense-in-depth framing). Deliberately NOT the `ok: true` object-LITERAL (return values).
 const OK_PREDICATE = /\.ok\s*===\s*true|\.ok\s*!==\s*true/;
 // Verification is PRESENT if it references the shared choke-point or the verifier directly.
 const VERIFIES = /isVerifiedLivenessRecord|filterVerifiedLiveness|verified-liveness-read|verifyRecord/;
@@ -66,6 +73,12 @@ const VERIFIES = /isVerifiedLivenessRecord|filterVerifiedLiveness|verified-liven
 // a reviewed CODE-LINE annotation (NOT a settable per-record field, β teeth #1).
 const WINDOW = 12;
 const PRAGMA = /liveness-verified:/;
+// Strip comments before the VERIFIES check (gauntlet R6 LRCP-R6-002): a verifier NAME mentioned inside a
+// comment is NOT proof of verification. (The `liveness-verified:` PRAGMA is checked on the RAW window — it IS
+// a reviewed comment annotation, deliberately.)
+function stripComments(s) {
+  return s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
+}
 
 function listJs(absDir) {
   const out = [];
@@ -111,7 +124,7 @@ function scan(root = ROOT) {
         const from = Math.max(0, i - WINDOW);
         const to = Math.min(lines.length, i + WINDOW + 1);
         const win = lines.slice(from, to).join("\n");
-        if (!VERIFIES.test(win) && !PRAGMA.test(win)) {
+        if (!VERIFIES.test(stripComments(win)) && !PRAGMA.test(win)) {
           violations.push({
             file: rel,
             line: i + 1,

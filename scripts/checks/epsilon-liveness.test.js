@@ -19,6 +19,10 @@
  *   node scripts/checks/epsilon-liveness.test.js
  */
 
+// These fixtures inject UNSIGNED synthetic ledger records to exercise the stall-DETECTION MATCHING logic
+// (sha256 + filename fallback), so they opt out of the SP-20260718-004 same-session signature requirement
+// (WARPOS_LIVENESS_REQUIRE_SIG=0). The signature gate itself is covered by the verified-liveness-read suite.
+process.env.WARPOS_LIVENESS_REQUIRE_SIG = "0";
 const crypto = require("crypto");
 const { harness } = require("./lib/fixture-harness");
 const { evaluate } = require("./epsilon-liveness");
