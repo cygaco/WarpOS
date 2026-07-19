@@ -27,7 +27,14 @@ test("AC-4 positive companion — a fully valid AcceptanceRecord DOES authorize 
           target_ref: "refs/heads/integration",
           terminal_state: "success",
         };
-  const authorized = acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK" });
+  // SP-20260718-005 gauntlet C2 fix: recompute is MANDATORY. The golden path injects a treeResolver that
+  // returns the record's OWN honest tree — the analog of production's real read-only git resolving the
+  // target ref's actual tree and it MATCHING the honest record's digest. (A forged record's digest would
+  // not match; a reject-everything stub still returns false — both false-greens stay defeated.)
+  const authorized = acc.authorizesIntegration(record, "refs/heads/integration", {
+    integrationHead: "base-OK",
+    treeResolver: () => record.result_tree_hash,
+  });
   assert.strictEqual(
     authorized,
     true,

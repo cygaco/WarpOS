@@ -242,12 +242,18 @@ function authorizesIntegration(record, targetRef, opts = {}) {
     if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) return false;
   }
 
-  // (c) trusted-verifier RECOMPUTE — never trust the record's self-reported result_tree_hash when the
-  //     caller opts in; a fabricated digest that cannot be confirmed against the real target ref BLOCKS.
-  if (opts.recompute) {
-    const actual = resolveTreeHash(targetRef, opts);
-    if (!actual || actual !== String(record.result_tree_hash).toLowerCase()) return false;
-  }
+  // (c) trusted-verifier RECOMPUTE — MANDATORY, never optional (SP-20260718-005 gauntlet C2 fix).
+  //     The content-addressed trust anchor is only real if the verifier ALWAYS recomputes result_tree_hash
+  //     from the target ref's ACTUAL git objects and it MATCHES. The prior `if (opts.recompute)` opt-in was
+  //     a FAIL-OPEN: a caller that omitted `recompute` blessed a forged/provider-authored record (the
+  //     SP-003 attestation-writer-origin recurrence class — a security check that only fires when asked).
+  //     There is NO opt-out flag (a boolean skip would just re-introduce the settable bypass, cf. H4
+  //     trustedBridge). The ONLY variable is the RESOLVER: real read-only git (default) in production, an
+  //     injected `opts.treeResolver(ref, opts) -> hash|null` in tests. A record whose tree cannot be
+  //     resolved OR whose recomputed tree does not match the claimed digest FAILS CLOSED.
+  const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : resolveTreeHash;
+  const actualTree = resolveTree(targetRef, opts);
+  if (!actualTree || String(actualTree).toLowerCase() !== String(record.result_tree_hash).toLowerCase()) return false;
 
   return true;
 }
@@ -273,6 +279,16 @@ function commitIntegration(record, targetRef, opts = {}) {
       return { ok: false, reason: "superseded-lease" };
     }
   }
+
+  // SP-20260718-005 gauntlet C3 fix: the CAS ref-update MUST NOT proceed on target-match + head-CAS alone.
+  // The prior split (pre-merge authorizesIntegration vs post-merge commitIntegration) let a caller reach the
+  // ref mutation by calling commitIntegration DIRECTLY, with no terminal-state / content-recompute /
+  // provenance check — a record carrying only a matching target_ref returned {ok:true} and, with
+  // performRefUpdate, mutated the ref. commitIntegration now RE-VERIFIES full authorization
+  // (authorizesIntegration: terminal-state + MANDATORY content-addressed recompute + freshness + lease
+  // fencing) as a precondition — defense-in-depth over the split, fail-closed if authorization does not hold.
+  // (Ordered AFTER the explicit lease check so a superseded lease keeps its specific reason.)
+  if (!authorizesIntegration(record, targetRef, opts)) return { ok: false, reason: "not-authorized" };
 
   const liveHead = opts.liveHead !== undefined ? opts.liveHead : resolveCommitSha(targetRef, opts);
   if (liveHead == null) return { ok: false, reason: "unresolvable-live-head" };

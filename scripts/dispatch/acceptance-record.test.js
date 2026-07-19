@@ -75,18 +75,24 @@ test("produceForTest() yields a record acceptable to the golden path (positive c
   assert.ok(record.result_tree_hash && record.base_commit && record.workorder_digest);
 });
 
+// SP-20260718-005 gauntlet C2 fix: recompute is now MANDATORY (no opt-in). A happy path must inject a
+// treeResolver that returns the honest synthetic tree ("tree-OK") — the analog of production's real
+// read-only git resolving the target ref's actual tree and it MATCHING the record's claimed digest.
+const okTree = () => "tree-OK";
+
 // ── authorizesIntegration() happy path ──────────────────────────────────────────────────────────────
-test("HAPPY: a fully-valid record for the matching target with a fresh base authorizes", () => {
+test("HAPPY: a fully-valid record for the matching target with a fresh base + confirmed recompute authorizes", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK" }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", treeResolver: okTree }),
     true,
   );
 });
 
-test("HAPPY: authorizesIntegration with NO opts at all still authorizes a structurally-valid record (no freshness/lease/recompute requested)", () => {
+test("FAIL-CLOSED (C2 fix): authorizesIntegration with NO opts DOES NOT authorize — recompute is mandatory, and the default git resolver cannot confirm a synthetic tree, so it BLOCKS (the prior fail-open path is closed)", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration"), true);
+  // No treeResolver -> the real read-only git resolver runs against a ref that does not resolve here -> null -> BLOCK.
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration"), false);
 });
 
 // ── adversarial: not a record at all ────────────────────────────────────────────────────────────────
@@ -141,19 +147,21 @@ test("ADVERSARIAL: stale base against a supplied integrationHead blocks (TOCTOU)
   );
 });
 
-test("ADVERSARIAL: forged result_tree_hash caught ONLY when the caller opts into recompute", () => {
+test("ADVERSARIAL (C2 fix): a forged result_tree_hash is caught ALWAYS — recompute is mandatory, not opt-in", () => {
   const forged = acc.produceForTest({ target_ref: "refs/heads/integration", result_tree_hash: "f".repeat(40) });
-  // Without recompute, the structural checks alone don't catch a fabricated hash value.
-  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration"), true);
-  // With recompute:true, the verifier resolves the ACTUAL tree for the target ref and finds no match
-  // (this repo has no real `refs/heads/integration` branch, so resolution itself fails -> fail-closed).
-  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration", { recompute: true }), false);
+  // (a) With a resolver returning the HONEST real tree ("tree-OK"), the forged digest does not match -> BLOCK.
+  //     This PROVES the recompute catches a fabricated digest against a real ref (the old test only passed
+  //     because the ref failed to resolve at all — a weaker signal the qa lane flagged).
+  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration", { treeResolver: okTree }), false);
+  // (b) With NO resolver (the production default git resolver, unresolvable ref) it also BLOCKS — there is
+  //     no opt-out that would bless the forged record (the fail-open path is gone).
+  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration"), false);
 });
 
 test("ADVERSARIAL: recompute against an unresolvable target ref fails closed even for a plausible-looking hash", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/does-not-exist-at-all" });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/does-not-exist-at-all", { recompute: true }),
+    acc.authorizesIntegration(record, "refs/heads/does-not-exist-at-all"),
     false,
   );
 });
@@ -177,7 +185,7 @@ test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease toke
   const a1 = lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { spId, leaseRoot: root }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { spId, leaseRoot: root, treeResolver: okTree }),
     true,
   );
 });
@@ -195,7 +203,7 @@ test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't 
 // ── commitIntegration() — the post-merge CAS receipt, split from pre-merge authorization ──────────────
 test("HAPPY: commitIntegration succeeds when the live head matches the expected (validated) head", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H1" });
+  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H1", treeResolver: okTree });
   assert.strictEqual(result.ok, true);
   assert.strictEqual(result.receipt.target_ref, "refs/heads/integration");
   assert.strictEqual(result.receipt.committed_head, "H1");
@@ -203,14 +211,14 @@ test("HAPPY: commitIntegration succeeds when the live head matches the expected 
 
 test("ADVERSARIAL: commitIntegration blocks when the live head moved since validation (F12 CAS race)", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H2" });
+  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H2", treeResolver: okTree });
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, "validation-to-merge-race");
 });
 
 test("ADVERSARIAL: commitIntegration blocks on a target-ref mismatch", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/feature-A" });
-  const result = acc.commitIntegration(record, "refs/heads/feature-B", { expectedHead: "H1", liveHead: "H1" });
+  const result = acc.commitIntegration(record, "refs/heads/feature-B", { expectedHead: "H1", liveHead: "H1", treeResolver: okTree });
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, "target-mismatch");
 });
@@ -239,11 +247,27 @@ test("ADVERSARIAL: commitIntegration honors the lease-fencing seam too (a supers
   assert.strictEqual(result.reason, "superseded-lease");
 });
 
+test("TEETH (C3 fix): commitIntegration BLOCKS a forged record even when the heads match — no reaching the CAS without full authorization", () => {
+  // A record with a fabricated result_tree_hash + matching expected/live head. Before the fix, target-match
+  // + head-CAS alone returned {ok:true} and performRefUpdate would mutate the ref. Now commitIntegration
+  // re-verifies authorizesIntegration (mandatory recompute), which the honest resolver ("tree-OK" != forged) BLOCKS.
+  const forged = acc.produceForTest({ target_ref: "refs/heads/integration", result_tree_hash: "f".repeat(40) });
+  const result = acc.commitIntegration(forged, "refs/heads/integration", {
+    expectedHead: "H1",
+    liveHead: "H1",
+    treeResolver: okTree,
+    performRefUpdate: true, // even asking for the real mutation, authorization gates it first
+  });
+  assert.strictEqual(result.ok, false);
+  assert.strictEqual(result.reason, "not-authorized");
+});
+
 test("commitIntegration never mutates git by default (no performRefUpdate opt-in)", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/acc-record-noop-test-ref" });
   const result = acc.commitIntegration(record, "refs/heads/acc-record-noop-test-ref", {
     expectedHead: "H1",
     liveHead: "H1",
+    treeResolver: okTree,
   });
   assert.strictEqual(result.ok, true);
   // resolveCommitSha must still find nothing for this never-created ref (no side effect occurred).
