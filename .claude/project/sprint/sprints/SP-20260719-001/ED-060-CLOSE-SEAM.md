@@ -5,6 +5,19 @@
 > §7 honest-ceiling fix are committed and locally green; the branch is NOT merged. Next session resumes
 > from the PARK STATE section. agy stays UNAUTHENTICATED / support-matrix `down` / ED-060 + ED-230 OPEN.
 
+> **🚨 CRITICAL UPDATE (lead cross-lane research, 2026-07-19) — THE POST-LOGIN "ONE-COMMAND CLOSE" BELOW IS
+> INVALID AS WRITTEN.** agy headless auth is an **UPSTREAM agy BUG, not our defect**: the subprocess CANNOT
+> read the keyring credential (GitHub agy #479 file-token write-only + #88 Windows not-persisted), and
+> API-key env-var auth is OPEN/UNSUPPORTED (staff `rodydavis` 2026-06-29 "not supported currently"). So a
+> fresh operator login will NOT fix the subprocess-can't-read-keyring gap — this is exactly the
+> "authenticates IN NAME ONLY" pattern (token metadata present, every API call fails). **ED-060 reframes
+> from "operator logs in → one command" to an ADR DECISION: agy SDK-exception (a non-CLI authenticated
+> transport) vs accept-agy-down (drop the agy lane / panel-3lab stays a 2-family floor).** Full research:
+> `runtime/cert-attest/agy-auth-research-20260719.md`. The §7 honest-ceiling + attestLane hard-fail SHIP
+> REGARDLESS (they are correct independent of how auth is eventually solved). The operator-step + close
+> sequence below are SUPERSEDED by this finding — treat them as the shape-of-a-close IF auth is ever solved,
+> not an actionable next step.
+
 **Status: BLOCKED-ON-OPERATOR.** agy (Antigravity) is UNAUTHENTICATED — the keyring token is expired,
 so agy serves the account DEFAULT (CCPA), not the contracted `gemini-3.1-pro-high`. The id-mapping fix
 (a), the GATE-1 narrowed hardening, and the agy §7 honest-ceiling fail-closed ship now. The live ED-060
