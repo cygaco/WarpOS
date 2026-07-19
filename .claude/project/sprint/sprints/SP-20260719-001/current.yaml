@@ -1,16 +1,16 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260719-001"
 title: "agy id-mapping reconciliation — slug->display translation at dispatch boundary + real agy serve record (ED-060) + honest panel-3lab activation (ED-230)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Ship agy slug->display id-mapping + agy §7 honest-ceiling fail-closed (attestation cannot trust agy's client-echoed served-model). ED-060/ED-230 post-login."
+status: parked
 created_at: "2026-07-19T18:50:04.146Z"
-updated_at: "2026-07-19T18:50:04.146Z"
+updated_at: "2026-07-19T20:15:00.000Z"
 source_request: ""
 interpreted_intent: ""
 plan_contract: null
-risk_level: low
+risk_level: high
 approval_state: none_required
-current_phase: idle
+current_phase: gauntlet
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -74,10 +74,14 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
-  active_files: []
+  last_checkpoint: "gauntlet R2 FAIL (attestLane §7 gap) — PARKED committed-unmerged 2026-07-19"
+  resume_command: "resume from ED-060-CLOSE-SEAM.md PARK STATE (attestLane §7 hard-fail -> R3 re-gauntlet)"
+  resume_summary: "Branch sprint/SP-20260719-001-agy-idmap off main@5810f60d, committed-unmerged (12 commits) in worktree .claude/runtime/worktrees/SP-20260719-001. DONE+green: 3-layer id-mapping + agy §7 honest-ceiling + narrowed GATE-1 + attribution + full-transcript fixture + non-catalog refusal. R2 FAIL = attestLane still attests the agy panel lane without §7 (fix: hard-fail antigravity in attestLane + panel fixture flips + re-gauntlet). NOT MERGED; nothing broken."
+  active_files:
+    - "scripts/checks/cert-attest.js"
+    - "scripts/checks/cert-attest-panel.test.js"
   dirty_state: false
-  blockers: []
+  blockers:
+    - "agy UNAUTHENTICATED (operator login)"
+    - "R2-CRITICAL-01 attestLane §7 gap"
   safe_to_continue: true

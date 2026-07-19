@@ -1,26 +1,41 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260719-001"
-updated_at: "2026-07-19T18:50:04.146Z"
-current_phase: idle
-current_command: none
+updated_at: "2026-07-19T20:15:00.000Z"
+current_phase: gauntlet
+current_command: "/sprint:full (ε-conducted)"
 current_ticket: null
-current_task: null
+current_task: "R3: attestLane §7 hard-fail + panel fixture flips + re-run both lanes"
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
-active_files: []
-modified_files: []
-checks_last_run: null
-checks_passing: []
-checks_failing: []
-blockers: []
+status: parked
+last_completed_step: "gauntlet R1 FAIL fixed (agy §7 honest-ceiling); gauntlet R2 FAIL (R2-CRITICAL-01, attestLane §7 gap) — PARKED committed-unmerged per lead's standing option"
+next_action: "R3 fix cycle: hard-fail antigravity in attestLane (trust-removal) + flip panel-3lab positive fixture to BLOCKED + add signed unauth/non-catalog agy negative panel fixtures + re-run BOTH gauntlet lanes (security lane needs a codex-cache-error re-run). Then the post-login bundle (b/c + INT-003 + print-timeout). FULL pickup in ED-060-CLOSE-SEAM.md PARK STATE."
+active_files:
+  - "scripts/checks/cert-attest.js"
+  - "scripts/checks/cert-attest.test.js"
+  - "scripts/checks/cert-attest-panel.test.js"
+modified_files:
+  - "scripts/dispatch/catalog.js"
+  - "scripts/hooks/lib/providers.js"
+  - "scripts/checks/cert-attest.js"
+checks_last_run: "2026-07-19T20:06Z"
+checks_passing:
+  - "cert-attest.test.js 22/22"
+  - "cert-attest-panel.test.js 32/32 (but R2-CRITICAL-01 shows the agy panel-lane bypass its positive fixture encodes)"
+  - "providers-antigravity.test.js 8/8"
+  - "panel-lanes.test.js 18/18"
+checks_failing:
+  - "gauntlet R2 (qa lane gpt-5.6-terra): FAIL — R2-CRITICAL-01 attestLane attests the agy panel lane without §7"
+  - "gauntlet R2 (security lane): no verdict — codex CLI cache error (supports_reasoning_summaries), needs re-run"
+blockers:
+  - "agy UNAUTHENTICATED (operator Antigravity login — keyring authenticates in name only across all 9 morning logs)"
+  - "R2-CRITICAL-01: attestLane §7 gap (next-session fix)"
 approvals_needed: []
-external_services_needed: []
+external_services_needed:
+  - "Antigravity login (operator) to unblock ED-060/ED-230 post-login bundle"
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "resume from ED-060-CLOSE-SEAM.md PARK STATE (attestLane §7 hard-fail → R3 re-gauntlet)"
+resume_notes: "Branch sprint/SP-20260719-001-agy-idmap (off main@5810f60d), committed-unmerged, 12 commits, in worktree .claude/runtime/worktrees/SP-20260719-001. DONE + locally green: 3-layer id-mapping + agy §7 honest-ceiling fail-closed + narrowed GATE-1 + attribution + full-transcript negative fixture + non-catalog refusal. NOT MERGED. Nothing broken. agy stays unauthenticated; support-matrix down; ED-060 + ED-230 OPEN blocked-on-operator."
 safe_to_continue: true
-stop_reason: null
+stop_reason: "gauntlet R2 FAIL (attestLane §7 gap) — PARKED committed-unmerged per lead's standing option; clean stop, full pickup documented"
