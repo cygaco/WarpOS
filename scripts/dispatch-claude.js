@@ -350,6 +350,38 @@ const runCwd = worktreeValid && worktreeReal ? worktreeReal : AGENT_ROOT;
 // worktree, so any nested telemetry resolves to canonical, not the worktree.
 const childEnv = { ...process.env, CLAUDE_PROJECT_DIR: AGENT_ROOT };
 
+// ── Derived role binding (SP-20260718-004 Phase 2, G2.1/ED-216; CORE-1) ──────────
+// The CHANNEL (this bridge) derives the worker's actor_kind PRE-SPAWN — the worker
+// does not exist yet, so it CANNOT set/claim its own role. Stamp the derived binding
+// on the child env; a dispatched worker is ALWAYS actor_kind=dispatched_worker (never
+// President), regardless of any ambient "You are Alex" text in the worktree CLAUDE.md.
+// HARD-REFUSE the President-leak class (a dispatched worker asked to bind a
+// top_level_session-only role) fail-closed — that is the CORE-1 guarantee. Other
+// ok:false reasons (unknown role / corrupt control) still stamp dispatched_worker (the
+// worker is never President by construction) and warn — additive, non-breaking.
+try {
+  const { deriveBinding } = require("./dispatch/role-resolver");
+  const __b = deriveBinding({ channel: "dispatch-claude", role });
+  if (__b.actor_kind) childEnv.WARPOS_ACTOR_KIND = __b.actor_kind;
+  if (__b.ok && __b.boundRole) childEnv.WARPOS_BOUND_ROLE = __b.boundRole;
+  if (!__b.ok && /President-leak|top_level_session-only|category error/i.test(__b.reason || "")) {
+    process.stderr.write(
+      `[dispatch-claude] role-binding REFUSED (fail-closed, CORE-1): ${__b.reason}\n`,
+    );
+    process.exit(2);
+  } else if (!__b.ok) {
+    // Non-leak fail (unknown role / corrupt control): the worker is still stamped
+    // dispatched_worker (never President); log so the ED-220 value issue is visible.
+    childEnv.WARPOS_ACTOR_KIND = childEnv.WARPOS_ACTOR_KIND || "dispatched_worker";
+    process.stderr.write(`[dispatch-claude] role-binding advisory (not President-leak): ${__b.reason}\n`);
+  }
+} catch (e) {
+  // Fail-OPEN on a resolver LOAD error only (never on a refusal) — a missing resolver
+  // module must not brick all dispatch, but the worker is still stamped dispatched_worker.
+  childEnv.WARPOS_ACTOR_KIND = childEnv.WARPOS_ACTOR_KIND || "dispatched_worker";
+  process.stderr.write(`[dispatch-claude] role-resolver unavailable (stamping dispatched_worker): ${e.message}\n`);
+}
+
 // Real claude on Windows is a .cmd shim → needs shell. The test seam sets
 // DISPATCH_CLAUDE_BIN (a real node executable) → no shell needed.
 const useShell = process.env.DISPATCH_CLAUDE_BIN ? false : process.platform === "win32";

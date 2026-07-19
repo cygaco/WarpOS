@@ -583,6 +583,30 @@ if (!role || !promptArg) {
   process.exit(2);
 }
 
+// ── Derived role binding (SP-20260718-004 Phase 2, G2.1/ED-216; CORE-1) ──────────
+// The CHANNEL (this cross-provider bridge) derives actor_kind=dispatched_worker PRE-SPAWN — a
+// cross-provider reviewer/consult is NEVER President, regardless of any ambient AGENTS.md/router text
+// it slurps from cwd. HARD-REFUSE the President-leak class fail-closed; stamp the derived binding on
+// the env so downstream records/children inherit it. Non-leak ok:false (unknown role / corrupt
+// control) still stamps dispatched_worker and warns — additive, non-breaking.
+try {
+  const { deriveBinding } = require("./dispatch/role-resolver");
+  const __b = deriveBinding({ channel: "dispatch-agent", role });
+  process.env.WARPOS_ACTOR_KIND = __b.actor_kind || "dispatched_worker";
+  if (__b.ok && __b.boundRole) process.env.WARPOS_BOUND_ROLE = __b.boundRole;
+  if (!__b.ok && /President-leak|top_level_session-only|category error/i.test(__b.reason || "")) {
+    console.error(
+      JSON.stringify({ ok: false, error: `role-binding REFUSED (fail-closed, CORE-1): ${__b.reason}` }),
+    );
+    process.exit(2);
+  } else if (!__b.ok) {
+    process.stderr.write(`[dispatch-agent] role-binding advisory (not President-leak): ${__b.reason}\n`);
+  }
+} catch (e) {
+  process.env.WARPOS_ACTOR_KIND = process.env.WARPOS_ACTOR_KIND || "dispatched_worker";
+  process.stderr.write(`[dispatch-agent] role-resolver unavailable (stamping dispatched_worker): ${e.message}\n`);
+}
+
 // Load the prompt
 let prompt = "";
 if (promptArg === "-") {
