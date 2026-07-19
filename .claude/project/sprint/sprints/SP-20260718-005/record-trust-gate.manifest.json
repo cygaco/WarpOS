@@ -1,0 +1,108 @@
+{
+  "schema": "warpos/record-trust-gate/v0.1",
+  "sprint": "SP-20260718-005",
+  "_note": "The BINDING design->build exit enumeration (record-trust-gate.md SHARP-1..3). Every path where a reader trusts a record/field to gate an irreversible action, PARTITIONED by session-scope. Enforced by scripts/checks/record-trust-gate.js: each surface names a choke-point + structural guard; cross-session surfaces must NOT use a per-session-HMAC trust anchor (the R3 false-RED); each required-present falsifier fixture file must EXIST and carry a MUST-BLOCK assertion. A missing falsifier BLOCKS build-entry.",
+  "trust_anchor_forbidden_for_cross_session": ["hmac", "per-session-signature", "attest-signing", "sessionSecret"],
+  "surfaces": [
+    {
+      "id": "gauntlet-liveness",
+      "reader": "scripts/dispatch/gauntlet-verify.js",
+      "action_gated": "gauntlet PASS -> release/merge",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/verified-liveness-read.js#isVerifiedLivenessRecord",
+      "structural_guard": "scripts/checks/liveness-read-choke-point.js",
+      "trust_anchor": "per-session HMAC (attest-signing)",
+      "falsifier_fixtures": []
+    },
+    {
+      "id": "coverage-claim",
+      "reader": "scripts/dispatch/coverage-gate.js",
+      "action_gated": "phase-covered -> sprint advance",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/verified-liveness-read.js#isVerifiedLivenessRecord",
+      "structural_guard": "scripts/checks/liveness-read-choke-point.js",
+      "trust_anchor": "per-session HMAC (attest-signing)",
+      "falsifier_fixtures": []
+    },
+    {
+      "id": "security-panel",
+      "reader": "scripts/dispatch/dispatch-review.js#applyPanelGate",
+      "action_gated": "panel PASS -> integration",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/provenance-verifier.js#isHunterRecord",
+      "structural_guard": "scripts/checks/provenance-invariants.js",
+      "trust_anchor": "writer-stamped identity (provider/shape/role) + per-session HMAC",
+      "falsifier_fixtures": []
+    },
+    {
+      "id": "worker-role-bind",
+      "reader": "scripts/dispatch/role-resolver.js#deriveBinding",
+      "action_gated": "resolve role -> spawn worker",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/role-resolver.js#deriveBinding",
+      "structural_guard": "scripts/dispatch/role-resolver.js (derived-not-settable: reads channel + trusted argv only)",
+      "trust_anchor": "channel-derived (non-settable by worker)",
+      "falsifier_fixtures": []
+    },
+    {
+      "id": "workorder-at-dispatch",
+      "reader": "scripts/dispatch/role-resolver.js#deriveBinding (via workorder-validator, ED-218)",
+      "action_gated": "resolve role + spawn with capabilities + paths",
+      "scope": "same-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/dispatch/workorder-validator.js#validate",
+      "structural_guard": "scripts/checks/liveness-read-choke-point.js (extended: a dispatch writer that spawns without routing through the WorkOrder validator FAILS)",
+      "trust_anchor": "per-session HMAC + signed workorder_digest",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/forged-workorder.falsifier.test.js"
+      ]
+    },
+    {
+      "id": "acceptance-record-at-integration",
+      "reader": "scripts/dispatch/acceptance-record.js#authorizesIntegration (the integration authorizer)",
+      "action_gated": "MERGE built work into the integration head",
+      "scope": "cross-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/dispatch/acceptance-record.js#authorizesIntegration",
+      "structural_guard": "scripts/checks/acceptance-read-choke-point.js",
+      "trust_anchor": "content-addressed git identity (base SHA + result-tree hash + target ref + checker/policy/evidence digests)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/self-asserted-success.falsifier.test.js",
+        "scripts/dispatch/falsifiers/stale-base.falsifier.test.js",
+        "scripts/dispatch/falsifiers/target-mismatch.falsifier.test.js",
+        "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js"
+      ]
+    },
+    {
+      "id": "conductor-lease-at-acquire",
+      "reader": "scripts/dispatch/conductor-lease.js#verifyToken",
+      "action_gated": "conduct SP-id (ledger writes / integration)",
+      "scope": "cross-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/dispatch/conductor-lease.js#verifyToken",
+      "structural_guard": "scripts/dispatch/conductor-lease.js (monotonic fencing token; a write under a superseded token is REFUSED)",
+      "trust_anchor": "atomic-FS O_EXCL create + durable monotonic fencing token (claimlog)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/superseded-lease.falsifier.test.js",
+        "scripts/dispatch/falsifiers/simultaneous-lease-race.falsifier.test.js"
+      ]
+    },
+    {
+      "id": "do-not-reopen-at-resume",
+      "reader": "scripts/dispatch/do-not-reopen.js#isSettled (the resume gate)",
+      "action_gated": "reverse a settled disposition on resume",
+      "scope": "cross-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/dispatch/do-not-reopen.js#isSettled",
+      "structural_guard": "scripts/dispatch/do-not-reopen.js (append-only; reversal requires an explicit supersession entry, never advisory surfacing)",
+      "trust_anchor": "append-only ledger + explicit supersession entry",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/do-not-reopen-advisory.falsifier.test.js"
+      ]
+    }
+  ]
+}
