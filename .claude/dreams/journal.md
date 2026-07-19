@@ -445,3 +445,56 @@ than pruning.
   confirmed (git push * IS in both settings files, push still gated this session); dispatch-skip-enforcer
   confirmed against the landed SP-20260608-001 resolver; orchestration-invariants synthesis is a
   meta-claim over the other 3, internally consistent. No false memories.
+
+---
+
+# Sleep Journal — 2026-07-18/19 (/sleep:deep, full 6-phase — SP-20260718 sprint arc wrap)
+
+**Mode:** `/sleep:deep` — all 6 phases. Rich session (three sprints SP-003/004/005, 3 conductor reliefs, the settable-label to origin-proof security arc, 9+ wake-seam crossings, the beta judgment lane proven real). Fresh inputs: 12 learnings (sources learn:deep:conv-20260719 / conv+retro-20260719 / events-20260719 / retros-20260719) + the 2026-07-18/19 beta mining block (P-078/P-079/P-080/AP-12/G-23/DP-gap#42 + P-077 reinforcement + the beta-phase-boundary confidence REVERSAL).
+
+## NREM Consolidation
+- Learnings: 134 to 134 (0 pruned, 0 merged, 0 promoted-away). Corpus 134/1000 — far under max; bias-to-keep honored, zero decay actions.
+- Importance audit: all 12 fresh = HIGH (error_prevention / surprising / architectural) — each carries conditions.why + evidence + a cross-reference to the corpus cluster it extends. No LOW/vague entries minted.
+- Selective replay: the 12 map cleanly onto existing clusters (no dedup needed) — **provenance-epistemics** (record-forgery 123, unauth-CLI false-green 124, verify-topology 132) extends the verify-don't-inherit / BC-16 cluster from "done-claims + capability-premises" to **provenance**; **liveness** (adaptive watchdog 125) sharpens F1 wake-seam (118); **mistake-vs-attacker discriminator** (123) sharpens F2 (119); **honest-termination** (pre-declared terminals 128, scope-expanding-beta 127) extends P-061/P-064; **structural-guard-at-design** (130) + **false-RED-honesty** (131) + **regex-ceiling to shared-AST debt** (134) extend the enforcer-honesty class.
+- Pattern promotion (1e): learning 130 self-reports **PROMOTED — binding design-phase record-trust gate** (structural guard named at DESIGN, adversarial fail-open fixtures before build). 3x threshold crossed (SP-002/003/004). Flagged for /learn:integrate to wire as a HYGIENE/gate rule; schema "provenance is derived, never declared" is its parent (see dream schema-formation).
+- Conflicts resolved: 0 open. Apparent tension (scope-EXPANDING beta on security, 127) vs the descope-override / hardening-no-deferral rules is **reconciled by construction inside the learning** (scope-reducing beta = alpha overrides; scope-expanding-on-security beta = alpha pays now) — recorded as a distinction, not a conflict.
+- Retroactive reclassification (1g): 0 traces in the last 7 days (newest trace 2026-06-09, 39d old) — no reclassification. NOTE (blind spot): this session's reasoning landed in learnings + beta consults, NOT traces.jsonl — traces store is stale (10 entries, all <= 2026-06-09).
+- Beta decision review (1h): **17 reasoned beta phase-boundary consults** this arc (beta/events.jsonl 128-146, 2026-07-16 to 19) — all DECIDE, 0 ESCALATE, 0 DIRECTIVE-deferral, 0 override, confidence banded 0.88-0.90; +1 PARK boundary (141) +1 awaiting-response (145). Per the team-lead override I did **NOT** edit judgement-model.md (that is /beta:integrate's job) — confidence findings recorded here + marked integration-ready below.
+
+## Cleanup (Glymphatic)
+- Session files: .claude/.session-checkpoint.json is the LIVE checkpoint (not orphan) to kept. No .tmp/.bak orphans.
+- requirements-staged.jsonl: ABSENT to no drift carry-over.
+- Orphan agent/wt-* branches: 0. Worktrees: canonical only (no stale nested worktree — the cwd-hazard memory not triggered).
+- Handoffs: 11 files; 1 prune-candidate (2026-07-10-0658.md, 8d old, just past the 7-day window) — FLAGGED not deleted (zero-loss bias; single small file).
+- Event log: 5854 events — >30d compaction DEFERRED (events.jsonl is append-only + memory-guard-protected; a rewrite would trip the invariant AP-5 warns against). Flagged, not performed.
+- Git: HEAD on main @2844ebd6; SP-003 branch parked @dbd4b653 pushed to origin (nothing false-green merged). 6 untracked runtime/ per-run dirs = correct location (per-run-artifacts-under-runtime memory) — not orphans.
+- Recurring issues: 7 tracked; **RI-004 (dispatch reap)** got mitigation-progress this arc (WATCHDOG stopgap + adaptive-cadence learning 125) but stays OPEN — the permanent awaited-dispatch seam (roadmap item 11) is not landed. No resolution-candidates from this session's commits (all SP-003 evidence-provenance). **RI-001 (CRLF false-RED) stays a live risk to a Windows sprint-close.**
+
+## Replay (Spindle)
+- Real goal: execute the SP-20260718 arc under the standing-autonomy-opener — land SP-003 floor + close the panel-3lab identity/provenance surface honestly, plan/park SP-004 (Phase-2 identity+portability) and SP-005, relieve conductors cleanly, and mine the session.
+- Achieved: SP-003 Phase-0 merged (@0defcd64) + floor GREEN + ADR-0022 (real hunter producer) ratified + PARK_UNMERGED @dbd4b653 (panel-3lab binding activation to fresh-session review, ED-227); SP-004 plan-locked to parked; SP-005 minted to parked (agy argv carve-out landed); 12 learnings + full beta mining block.
+- Blind spots: (1) the **automated** sprint_full_beta_consult audit stream was NOT re-checked — AP-1/P-043 (canned per-phase strings) can NOT be auto-closed on this pass; (2) traces.jsonl went unwritten this session; (3) events compaction deferred; (4) RI-001 CRLF unresolved could red a Windows /sprint:release; (5) the wake-notification seam is still a stopgap.
+- Unused levers: the shared-AST/dataflow guard lib (learning 134, alpha-ruled OPEN_ADR) — regex structural-guards re-derived per sprint (ED-229/232 now 2x).
+
+## REM Dreams
+- Dream paintings: **3** saved to .claude/dreams/2026-07-18.md — *The Mask and the Writer's Hand* (settable-label to origin-proof), *The Pulse in the Dark Room* (mechanized watchdog liveness), *Trust the Derivation, Not the Declaration* (schema, 4 faces of one lie).
+- Read past dreams (2026-06-09/06-17): the recurring symbols — *the reap leaves no body*, *the gate inside the door*, *trust an independently-run check over any narrator* — surfaced tonight AS SOLVED/SOLVING: the door-to-wall dream became ED-225's single choke-point + structural guard; the empty-room dream grew a heartbeat (P-079 watchdog); P-061's honest-ceiling ran live 3x.
+- Cross-pollination: **June dreamed the diagnosis (can't read state from a narrator); July built the cure (structural derivation + mechanized probe + honest disposition).** Same law drawn across three cycles.
+- Schema formation: **"Provenance is derived, never declared"** subsumes 6 learnings/memories (faked-epsilon / ED-225 / unauth-CLI false-green / false-RED-honesty / watchdog-probe / BC-16) — a source's testimony about its own state is a hypothesis; ground truth is the property it cannot author; the mistake-vs-attacker axis decides which gaps must close.
+- Subconscious learnings extracted: 3 (mask-vs-hand question at every trust gate; the watchdog is a heartbeat on a borrowed clock until the seam is permanent; verify the design-phase gate actually FIRES at SP-005 design).
+- Beta pattern mining: NOT re-run (BetaMiner already produced the 2026-07-18/19 block). Reviewed + marked integration-ready vs held (see Growth).
+
+## Repair
+- False-memory guard: **PASS** — every artifact the fresh learnings cite exists on disk: ADR-0022, ED-225/227/228/231 (in enforcement-debt.jsonl), provenance-verifier.js, liveness-read-choke-point.js, cert-attest served-model logs (agy-log + gemini served-model json corroborate the agy "PROVEN LIVE" to RETRACTED reversal, learning 124). No schema-distortion.
+- Security: this arc's code changes (provenance-verifier, liveness-read-choke-point, safe-spawn #27 agy carve-out) cleared the cross-provider panel gauntlet (GPT + Claude + agy binding); the carve-out is positive-scope one-tool-one-slot, shared denylist untouched, shell:false — no fresh leak-scan finding.
+- Dependencies / architecture / hooks: no src/ mutations this session (sleep does not touch src/); untracked runtime/ dirs are correctly-placed per-run artifacts, not architecture drift.
+
+## Growth
+- System strength: **STRENGTHENING.** Highest-leverage gain = the design-phase record-trust gate promotion (6 gauntlet-rounds/sprint to 1 design-time negative-fixture pass). Second = beta judgment lane proven REAL (confidence reversal). Third = liveness mechanized (watchdog, stopgap).
+- Biggest leverage point (next evolution): (1) land the **permanent awaited-dispatch watchdog seam** (roadmap item 11) to retire the stopgap + close RI-004's live class; (2) consolidate the per-sprint structural guards into the **shared AST/dataflow guard lib** (learning 134, alpha OPEN_ADR); (3) re-check the automated sprint_full_beta_consult audit stream so AP-1/P-043 can be honestly closed or kept.
+- Morning briefing: appended to dreams/coaching.md.
+
+### Beta evolution summary — recs marked for /beta:integrate (NOT applied here)
+- **INTEGRATION-READY** (confidence adjustments / verification-rigor bars / anti-patterns / reinforcements composing existing principles — no NEW authority, per the 2026-06-05 / 06-08 auto-integrate precedent): the **beta-phase-boundary confidence REVERSAL** (reasoned alpha-team-logged consult lane = high-quality REAL judgment, reverses the 2026-06-02 NULL note); **AP-12** (grounded-motion-evidence over reassurance); **G-23** (on-demand latency-transparency bar); **DP-gap #42** (build-the-seam standing authorization — REMOVES an escalation path, integrator confirms "build-seam != sign-up" vs the never-allowed list); the **P-077 reinforcement** (append the DISPATCH-EXPLAINED evidence + P-066 linkage, no new number); **P-079** (mechanized-liveness recorded as the DELIVERED baseline + keep flagging the wake-seam gap); **H-008 +4-confirmations** hold at/near ceiling; the **calibration-watch** note (0-escalate arc is P-064-explained — keep 0.88-0.90 as-is, watch the band).
+- **HELD (operator-must-rule / do-NOT-auto-close):** **P-078** as a NEW named standing-autonomy beta principle (new behavioral stance — its confidence reinforcement + DP-gap#42 are ready, but minting the principle needs a ruling); **P-080** IF minted as a new named comms principle (its bar ships via G-23 otherwise); and **CRITICAL — AP-1/P-043 must NOT be auto-marked resolved**: the miner's caveat is validated — the confidence reversal is against the alpha-team-logged reasoned lane, a DIFFERENT path from the automated sprint_full_beta_consult audit stream (never re-checked this pass); closure waits on that separate check.
+- False-memory guard on beta recs: the reasoned-lane evidence (beta/events.jsonl 128-146) is real and on-disk; the reversal rests on verified records, not inference.

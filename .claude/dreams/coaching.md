@@ -247,3 +247,27 @@ worktree.
 - The operator gates a high-blast-radius PLAN on cross-provider review BEFORE trusting it (P-060) — and
   welcomes an honest ceiling that shrinks an overclaim (P-061). Surface the alarming findings, not a
   clean summary.
+
+---
+
+# Morning Briefing — 2026-07-19 (from /sleep:deep of the SP-20260718 arc)
+
+## Where we parked
+- **SP-003** floor GREEN + merged Phase-0 (@0defcd64); the branch session/2026-07-18-phase1 is **PARK_UNMERGED** @dbd4b653 (pushed to origin, nothing false-green merged). The panel-3lab binding-hunter activation is the open tail: ADR-0022 ratified the real writer-stamped producer; the **build is a scoped follow-up** (ED-227 stays open until it lands). This is the cleanest first task.
+- **SP-004** (Phase-2 identity + host portability) is plan-locked and parked (beta DECIDE 0.89, events.jsonl:146) — spine ruled: PRIMARY = derived-not-settable (ED-225), origin-proof (ED-231) is SECONDARY/persisted-cross-boundary only. Ready to enter design.
+- **SP-005** minted and parked (agy argv carve-out landed, safe-spawn #27).
+
+## Suggested first task
+Resume the **SP-003 panel-3lab binding activation** build (ED-227, ADR-0022 teeth 1-5) — it is the only thing between the parked branch and a clean merge, the design review already happened, and its 5 teeth are written. Verify the **design-phase record-trust gate actually FIRES at SP-005 design** while you're in the neighborhood (the promotion's own falsification demand).
+
+## Two things to check before trusting green
+1. **AP-1/P-043 is NOT closed.** The beta confidence reversal (reasoned lane = real judgment) is genuine, but it is a DIFFERENT logging path from the automated `sprint_full_beta_consult` audit stream that emitted canned per-phase strings. Re-check that automated stream before marking AP-1/P-043 resolved. Do not let the reversal's good news bleed onto the un-checked stream.
+2. **RI-001 (CRLF false-RED) is still open** — a Windows /sprint:release or sprint-close can red BC-02/BC-05 on line-ending drift. If a close reds on manifest staleness with a clean git status, that's this, not a real regression.
+
+## Dream solutions worth reviewing
+- The schema **"provenance is derived, never declared"** (see 2026-07-18.md) is a real /learn:integrate candidate — it subsumes the faked-epsilon, ED-225 settable-label, unauth-CLI false-green, false-RED-honesty, and watchdog learnings into one HYGIENE rule, and the design-phase record-trust gate is its enforcer.
+- The **wake-notification seam** is still a stopgap (a heartbeat on a borrowed clock). Roadmap item 11 (permanent awaited-dispatch watchdog: expected_by + external probe host) retires it AND closes RI-004's live class — high leverage, currently mitigated-not-fixed.
+
+## Gentle coaching (from the session's own patterns)
+- The operator's "**honestly, what is taking so long?**" this arc was a *visibility* demand on a run he WANTS to continue (P-080/AP-12), not "go faster" and not "too autonomous". When it comes again: probe artifacts first (commits, completion records, lane diffs, the watchdog's own read), report the real % and the honest breakdown of where the time went and which lane is the bottleneck, and KEEP the authorized run moving. The reassuring gloss is the one wrong answer.
+- The standing-autonomy opener (P-078) pre-authorizes the run: a missing account/key is **build-the-seam-and-continue**, never a stop; a transient outage is **probe-every-5-min-and-continue**; delegate builder work to subprocesses and protect your own context. These are pre-declared, not per-instance asks.
