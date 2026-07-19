@@ -62,6 +62,10 @@ const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill"
 // validator for that value. positionals: validator for bare args. Unknown flag or
 // a failing value => REJECT.
 const TOKEN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/; // model/role/effort/level tokens
+// agy --model display-name shape ("Gemini 3.1 Pro (High)"): starts alphanumeric, then
+// letters/digits/space/dot/paren/hyphen only, ≤64 chars. NO shell metachars, NO leading dash.
+// Scoped to agy's -m/--model slot ONLY (ADR-0023 positive-allow pattern; see ARG_POLICY.agy).
+const AGY_MODEL_DISPLAY = /^[A-Za-z0-9][A-Za-z0-9 .()\-]{0,63}$/;
 // Effort-token allowlist (structural — a valid effort LEVEL exists). `ultra` added
 // DISPATCH.md 2026-07-12 (GPT-5.6 sol/terra fan-out level). Model-SPECIFIC gating (ultra
 // only on sol/terra, not luna/claude) is the catalog.validateTuple layer's job — this is
@@ -169,8 +173,16 @@ const ARG_POLICY = {
     subcommands: new Set([]),
     boolFlags: new Set([]),
     valueFlags: {
-      "-m": (v) => TOKEN.test(v),
-      "--model": (v) => TOKEN.test(v),
+      // agy's --model takes DISPLAY NAMES, not slug ids — its own error output enumerates
+      // "Available models: Gemini 3.1 Pro (High) / Claude Sonnet 4.6 (Thinking) / …" and a slug is
+      // "not recognized as a known model" (verified live 2026-07-19, exit 1, artifact
+      // runtime/cert-attest/gemini-3.5-flash-medium-2026-07-19T07-09-14-780Z.json). So this slot
+      // accepts the display-name shape: must START with a letter/digit (no leading dash — the
+      // structural next-token bind stays intact), then letters/digits/space/dot/paren/hyphen ONLY,
+      // bounded ≤64 — no shell metachar admitted. Positive per-tool-per-slot allow in the ADR-0023
+      // pattern; every other tool's model slot keeps the strict TOKEN charset.
+      "-m": (v) => TOKEN.test(v) || AGY_MODEL_DISPLAY.test(v),
+      "--model": (v) => TOKEN.test(v) || AGY_MODEL_DISPLAY.test(v),
       // duration like 90s / 5m / 500ms — digits + optional unit, no metachars.
       "--print-timeout": (v) => /^[0-9]+(ms|s|m|h)?$/.test(v),
       // (a) SP-20260718-003: --log-file <path> for the served-model calibration probe. A path token —

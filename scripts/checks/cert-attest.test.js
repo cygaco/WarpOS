@@ -126,6 +126,33 @@ test("positive-proof calibratable: an AUTHENTICATED agy serve ('Model resolved: 
   assert.equal(v.attested, true, "a genuine served self-id ('resolved: <id>') must attest — the fix is not an agy-hardcoded fail");
 });
 
+// ── 2026-07-19 authenticated-agy calibration: order-aware GATE 1 + the backend-label serve form ──
+const AGY_TRANSIENT = 'error getting token source: You are not logged into Antigravity.\nModel ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA\nModel resolved via default';
+test("agy startup TRANSIENT (unauth lines) followed by auth + backend-label serve → ATTESTS (order-aware GATE 1)", () => {
+  const v = evaluateAttestation({
+    requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
+    output: AGY_TRANSIENT + '\nChainedAuth: authenticated via keyring\nOAuth: authenticated successfully as user@x\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nSERVING-CHECK-OK',
+    exitOk: true, catalog,
+  });
+  assert.equal(v.attested, true, "pre-auth transient must not fail an authenticated run with a genuine backend-label serve: " + v.reason);
+});
+test("unauth signal AFTER the last auth line → still FAILS (order-awareness cuts one way only)", () => {
+  const v = evaluateAttestation({
+    requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
+    output: 'ChainedAuth: authenticated via keyring\nsession expired\nerror getting token source: You are not logged into Antigravity.\nModel resolved via default\nPROBE OK',
+    exitOk: true, catalog,
+  });
+  assert.equal(v.attested, false, "a post-auth unauth/default signal is REAL and must fail closed");
+});
+test("authenticated but a DIFFERENT display-name label served → FAILS (GATE 2 positive-proof backstop)", () => {
+  const v = evaluateAttestation({
+    requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
+    output: 'ChainedAuth: authenticated via keyring\nPropagating selected model override to backend: label="Gemini 3.5 Flash (Medium)"\nPROBE OK',
+    exitOk: true, catalog,
+  });
+  assert.equal(v.attested, false, "a different served label must never attest the requested model");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

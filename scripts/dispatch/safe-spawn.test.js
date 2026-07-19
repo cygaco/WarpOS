@@ -53,6 +53,18 @@ h.violation("agy multi-line in --model rejected (carve-out is -p only)", () =>
 // (c) refused: a newline to a DIFFERENT tool (codex -m) is not carved out — agy-only.
 h.violation("codex -m multi-line rejected (carve-out is agy-only)", () =>
   assertArgs("codex", ["exec", "-m", AGY_MULTILINE, "-"]));
+// ── agy --model DISPLAY-NAME allow (2026-07-19: agy's --model takes display names, not slugs —
+// its own error output enumerates "Gemini 3.1 Pro (High)" etc.; ADR-0023 positive-scope pattern) ──
+h.pass("agy --model display name ACCEPTED (agy's real id format)", () =>
+  assertArgs("agy", ["--model", "Gemini 3.1 Pro (High)", "-p", "hi"]));
+h.violation("codex -m display name REFUSED (display-name allow is agy-only)", () =>
+  assertArgs("codex", ["exec", "-m", "Gemini 3.1 Pro (High)", "-"]));
+h.violation("agy --model metachar REFUSED (display allow admits no metachars)", () =>
+  assertArgs("agy", ["--model", "Gemini $(whoami) Pro", "-p", "hi"]));
+h.violation("agy --model leading-dash REFUSED (no flag-shaped model values)", () =>
+  assertArgs("agy", ["--model", "-Gemini Pro (High)", "-p", "hi"]));
+h.violation("agy --model overlong display-shape REFUSED (64-char bound; space forces the display path)", () =>
+  assertArgs("agy", ["--model", "Gemini " + "e".repeat(80), "-p", "hi"]));
 // (d) (b) CARVE-OUT (β DECIDE B/0.90, ADR-0020-amend, RIDER-4): agy `-p` now ACCEPTS the full code-review
 // char set — under shell:false + native-exe + a discrete-argv element (RIDER-3) the shell-injection premise
 // is void, so backtick / pipe / $ / ; / < > / " / % / ^ / & in a code payload are accepted for review. Scoped

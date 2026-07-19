@@ -101,7 +101,20 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   // A blocklist is a LOWER BOUND (a novel unauth phrase could dodge it) — so GATE 2 below is the real
   // positive-proof requirement (β SHARP-1). This gate stays as the loud, named diagnostic.
   const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|local-chrome-mode|eval-mode|authentication-failed|unauthorized)/;
-  if (NON_AUTH_SIGNAL.test(out))
+  // 2026-07-19 ORDER-AWARENESS (authenticated-agy calibration): agy's keyring auth completes
+  // ASYNCHRONOUSLY after process start, so a genuine authenticated run's log ALWAYS carries
+  // transient "not logged in"/"defaulting" lines BEFORE "ChainedAuth: authenticated via keyring" /
+  // "OAuth: authenticated successfully". Rule: if an AFFIRMATIVE auth line exists, GATE 1 evaluates
+  // only the SUFFIX AFTER the LAST auth line (pre-auth signals = the known startup transient); any
+  // unauth/default signal AFTER final auth is REAL and still fails. With NO auth line, the whole
+  // output is evaluated exactly as before (fail-closed unchanged — this never weakens GATE 2's
+  // positive-proof requirement, which remains mandatory).
+  const AUTH_LINE = /(authenticated-via-keyring|oauth:-authenticated-successfully|chainedauth:-authenticated)/g;
+  let gate1Scope = out;
+  let lastAuthIdx = -1;
+  for (let m; (m = AUTH_LINE.exec(out)); ) lastAuthIdx = m.index + m[0].length;
+  if (lastAuthIdx >= 0) gate1Scope = out.slice(lastAuthIdx);
+  if (NON_AUTH_SIGNAL.test(gate1Scope))
     return {
       attested: false,
       effective: null,
@@ -141,7 +154,11 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   // (the R6-BE-002 class), and the REAL proof is an AUTHENTICATED-BACKEND response (for agy, the operator
   // Antigravity login — ED-060). Since agy is operator-BLOCKED and its ACTUAL log fail-closes (GATE 1 + the
   // "Model ID" non-colon echo), there is no LIVE false-green today; the ceiling is tracked, not a shipped hole.
-  const SERVED_MARKER = new RegExp(`(model[-\\s]*:[-\\s]*|(?:serving|resolved|using|active|loaded)[-:\\s]*)${reqEsc}`);
+  // 2026-07-19 (authenticated-agy calibration): agy's genuine serve line is
+  // "Propagating selected model override to backend: label=\"<display name>\"" — normed:
+  // `backend:-label="<id>`. That backend-BIND statement is an affirmative serve marker (in the
+  // default/unauth case the label would be the DEFAULT model → GATE 1 / otherSeen catch it).
+  const SERVED_MARKER = new RegExp(`(model[-\\s]*:[-\\s]*|(?:serving|resolved|using|active|loaded)[-:\\s]*|backend[:\\-]+label[="'\\-]*)${reqEsc}`);
   const REQUEST_CTX = /(request|requested|requesting|submit|submitting|sending|sent|input|prompt|queued|pending|asking|asked|echo)[-\s]*$/;
   let servedSelfId = false;
   const _m = SERVED_MARKER.exec(out);
@@ -382,11 +399,31 @@ function main(argv) {
   // ceiling — agy structurally does not emit the served model; recorded in the ADR-0020 amendment). This never
   // SOFTENS the fail-closed: no model id found in stdout+stderr+log ⇒ evaluateAttestation still returns FAIL.
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
-  let agyLogPath = null;
+  // (a→2026-07-19 REVISION) DO NOT inject --log-file: passing agy a custom --log-file BREAKS its
+  // keyring auth context (verified live 2026-07-19: the identical safe-spawn WITH --log-file →
+  // "not logged into Antigravity" + local-default serve; WITHOUT → keyring auth + the real model
+  // propagated to backend). Instead snapshot the DEFAULT CLI log pre-spawn and fold in only the
+  // DELTA written during this spawn (per-read window — no stale-line false signals). Residual: a
+  // CONCURRENT agy run could interleave lines into the window — probes are single-flight by
+  // convention; an interleaved unauth line fails CLOSED (never green), so the residual is a
+  // false-RED risk only.
+  let agyDefaultLog = null;
+  let agyLogPreSize = 0;
+  let agyLogPrePrefix = null;
   if (providerId === "antigravity") {
-    agyLogPath = path.join(ARTIFACT_DIR, `agy-log-${Date.now()}.log`);
-    const pIdx = shape.argv.indexOf("-p");
-    if (pIdx > 0) shape.argv.splice(pIdx, 0, "--log-file", agyLogPath);
+    agyDefaultLog = path.join(process.env.USERPROFILE || require("os").homedir(), ".gemini", "antigravity-cli", "cli.log");
+    try {
+      agyLogPreSize = fs.statSync(agyDefaultLog).size;
+      // Rotation detection must be CONTENT-based, not size-based: agy truncates+rewrites cli.log per
+      // run, and a fresh log can grow PAST the old size (a size-only check then reads mid-file and
+      // slices out the serve evidence — observed live 2026-07-19). Snapshot the first 256 bytes; a
+      // changed prefix post-run = rotated → read from 0.
+      const fd0 = fs.openSync(agyDefaultLog, "r");
+      const pre = Buffer.alloc(Math.min(256, agyLogPreSize));
+      fs.readSync(fd0, pre, 0, pre.length, 0);
+      fs.closeSync(fd0);
+      agyLogPrePrefix = pre.toString("utf8");
+    } catch { agyLogPreSize = 0; agyLogPrePrefix = null; }
   }
   const started = Date.now();
   const spawned = kernel.safeSpawnSync(shape.toolId, shape.argv, {
@@ -400,7 +437,29 @@ function main(argv) {
   const stdout = spawned.stdout || "";
   const stderr = spawned.stderr || "";
   let agyLog = "";
-  if (agyLogPath) { try { agyLog = fs.readFileSync(agyLogPath, "utf8"); } catch { /* agy wrote no log */ } }
+  if (agyDefaultLog) {
+    try {
+      const fd = fs.openSync(agyDefaultLog, "r");
+      const size = fs.fstatSync(fd).size;
+      // agy ROTATES/TRUNCATES cli.log per run — detect rotation by CONTENT (the pre-spawn 256-byte
+      // prefix no longer matches ⇒ this is a fresh per-run log, read from 0); only an unchanged
+      // prefix means append-mode (read the delta from the pre-spawn size).
+      let rotated = true;
+      if (agyLogPrePrefix && size >= agyLogPrePrefix.length) {
+        const chk = Buffer.alloc(agyLogPrePrefix.length);
+        fs.readSync(fd, chk, 0, chk.length, 0);
+        rotated = chk.toString("utf8") !== agyLogPrePrefix;
+      }
+      const start = rotated ? 0 : agyLogPreSize;
+      const len = Math.max(0, size - start);
+      if (len > 0) {
+        const buf = Buffer.alloc(Math.min(len, 4 * 1024 * 1024));
+        fs.readSync(fd, buf, 0, buf.length, start);
+        agyLog = buf.toString("utf8");
+      }
+      fs.closeSync(fd);
+    } catch { /* no default log — attestation stays fail-closed on absent evidence */ }
+  }
   const combined = `${stdout}\n${stderr}\n${agyLog}`; // the served model id may land on stdout/stderr OR the CLI log
   // liveness-verified: `spawned` is a SUBPROCESS spawn result (carries .exitCode), NOT a dispatch-completion
   // ledger record — this .ok is a process-exit signal, not a forgeable liveness claim.
