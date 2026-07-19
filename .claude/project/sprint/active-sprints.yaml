@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260718-004
+primary: SP-20260718-005
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1147,7 +1147,7 @@ sprints:
     updated_at: "2026-07-18T11:43:05.704Z"
   - id: SP-20260718-004
     title: "Phase 2 — Identity + host portability (explicit role-bindings precedence graph [dispatched=UNBOUND fail-closed, top-level=Alpha]; provider-neutral canonical instruction source + per-provider projections + drift-check; authority-pollution scan over the EFFECTIVE instruction graph; generic bootstrap; per-provider cwd/sandbox tests; operator-voice helm-only)"
-    status: closed
+    status: retrospected
     lane:
       type: default
       value: null
@@ -1156,5 +1156,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260718-004"
     created_at: "2026-07-19T01:07:07.383Z"
     updated_at: "2026-07-19T04:30:00.000Z"
+  - id: SP-20260718-005
+    title: "Phase 3 — WorkOrder / ResultEnvelope (adapt packet 06 onto the EXISTING dispatch ledger: schema version + correlation id + effective role/provider/model + immutable base + result-tree hash + capabilities/paths + retry lineage + evidence refs + 5 terminal states; failure-classification + reaper signal-ranking; ED-069 started-row + ED-070 quota + ED-071 stall fold-back; sprint leases + do-not-reopen ledger [packet 07 / ED-228]; ED-218 workorder provenance validator; ED-232 cross-session key-distribution; ED-221 Option-2 impl; Unit-B instruction-projection follow-up)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260718-005"
+    created_at: "2026-07-19T04:27:45.231Z"
+    updated_at: "2026-07-19T04:27:45.231Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-07-19T01:07:07.383Z"
+updated_at: "2026-07-19T04:27:45.231Z"
