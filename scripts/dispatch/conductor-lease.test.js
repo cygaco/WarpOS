@@ -145,3 +145,43 @@ test("simultaneous acquire race: exactly one winner (AC-6/AC-F7 shape)", () => {
   const winners = results.filter((r) => r.ok === true);
   assert.strictEqual(winners.length, 1);
 });
+
+// ── C1 (SP-20260718-005 gauntlet): mutation-lock serialization + re-read-under-lock ──────────────────
+
+test("TEETH (C1): withMutationLock SERIALIZES — a nested acquire while held is excluded (mutation-contended)", () => {
+  const root = tmpRoot("c1-mutex");
+  const spId = "SP-MUTX";
+  let inner;
+  const outer = lease._withMutationLock(spId, root, () => {
+    // While the outer holds the per-SP mutation lock, a re-entrant acquire MUST NOT get in — proving the
+    // read-check-mutate of release/renew/reclaim can never interleave (the exact TOCTOU window flagged).
+    inner = lease._withMutationLock(spId, root, () => ({ ok: true, ran: true }), { maxWaitMs: 40 });
+    return { ok: true };
+  });
+  assert.strictEqual(outer.ok, true);
+  assert.strictEqual(inner.ok, false);
+  assert.strictEqual(inner.reason, "mutation-contended");
+});
+
+test("TEETH (C1): a superseded holder's release CANNOT delete the current lease (re-read under the lock)", () => {
+  const root = tmpRoot("c1-release");
+  const spId = "SP-C1";
+  const a1 = lease.acquire(spId, { root, sessionId: "A" }); // token 1
+  assert.strictEqual(a1.token, 1);
+  // Force A's lease stale so B may reclaim (mirrors a crashed/idle-past-TTL holder).
+  const lp = path.join(root, "conductor-leases", `${spId}.lease`);
+  const stale = Object.assign(JSON.parse(fs.readFileSync(lp, "utf8")), {
+    renewed_at: Date.now() - (lease.STALE_AFTER_MS + 1000),
+    acquired_at: Date.now() - (lease.STALE_AFTER_MS + 1000),
+  });
+  fs.writeFileSync(lp, JSON.stringify(stale) + "\n");
+  const b = lease.reclaim(spId, { root, sessionId: "B" }); // token 2 supersedes token 1
+  assert.strictEqual(b.ok, true);
+  assert.ok(b.token > a1.token);
+  // A (stale, token 1) tries to release — must REFUSE (re-read sees token 2), never delete B's lease.
+  const rel = lease.release(spId, { root, token: a1.token });
+  assert.strictEqual(rel.ok, false);
+  assert.strictEqual(rel.reason, "fencing-mismatch");
+  // B's lease + token survive intact.
+  assert.strictEqual(lease.verifyToken(spId, b.token, { root }), true);
+});

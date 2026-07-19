@@ -35,6 +35,58 @@ const DEFAULT_ROOT = path.join(PROJECT_ROOT, ".claude", "runtime");
 // Mirrors concurrency-lock.js's crash-recovery window.
 const STALE_AFTER_MS = 20 * 60 * 1000;
 
+// SP-20260718-005 gauntlet C1 fix: a per-SP MUTATION lock serializes release/renew/reclaim so their
+// read-check-mutate is atomic against each other. A lease mutation is microseconds; a mutation-lock file
+// older than this is a crashed holder and is reclaimable (mtime is SAFE here — unlike the fencing token,
+// this lock carries no durable identity, it is a pure short-lived mutex). Deliberately small.
+const MUTATION_LOCK_STALE_MS = 10 * 1000; // 10s — a mutation never legitimately holds this long
+const MUTATION_LOCK_WAIT_MS = 5 * 1000; // total spin budget waiting for a contended mutation lock
+
+function mutationLockPath(spId, root) {
+  return path.join(leaseRoot(root), `${spId}.mutation.lock`);
+}
+
+/**
+ * withMutationLock(spId, root, fn) — run fn() while holding an O_EXCL per-SP mutation lock, so
+ * release/renew/reclaim never interleave their read-check-mutate. Reclaims a STALE mutation lock (a
+ * crashed holder, by mtime — safe for a short-lived mutex). Returns fn()'s value, or
+ * { ok:false, reason:"mutation-contended" } if the lock can't be taken within the wait budget.
+ */
+function withMutationLock(spId, root, fn, opts = {}) {
+  ensureDir(leaseRoot(root));
+  const lp = mutationLockPath(spId, root);
+  const deadline = Date.now() + (Number.isFinite(opts.maxWaitMs) ? opts.maxWaitMs : MUTATION_LOCK_WAIT_MS);
+  let fd = null;
+  for (;;) {
+    try {
+      fd = fs.openSync(lp, "wx");
+      break;
+    } catch (e) {
+      if (!e || e.code !== "EEXIST") throw e;
+      // Held — reclaim it if the holder crashed (mtime past the stale window), else spin briefly.
+      try {
+        const st = fs.statSync(lp);
+        if (Date.now() - st.mtimeMs > MUTATION_LOCK_STALE_MS) {
+          fs.unlinkSync(lp);
+          continue;
+        }
+      } catch {
+        continue; // lock vanished between open and stat — retry the create
+      }
+      if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
+      // Tiny synchronous spin — a lease mutation completes in microseconds; contention is rare + brief.
+      const spinUntil = Date.now() + 2;
+      while (Date.now() < spinUntil) { /* busy-wait 2ms */ }
+    }
+  }
+  try {
+    return fn();
+  } finally {
+    try { fs.closeSync(fd); } catch {}
+    try { fs.unlinkSync(lp); } catch {}
+  }
+}
+
 function leaseRoot(root) {
   return path.join(root || DEFAULT_ROOT, "conductor-leases");
 }
@@ -149,15 +201,19 @@ function acquire(spId, opts = {}) {
  */
 function release(spId, opts = {}) {
   const { root, token } = opts;
-  const holder = readHolder(spId, root);
-  if (!holder) return { ok: false, reason: "not-held" };
-  if (holder.token !== token) return { ok: false, reason: "fencing-mismatch" };
-  try {
-    fs.unlinkSync(leasePath(spId, root));
-  } catch {
-    /* already gone — treat as released */
-  }
-  return { ok: true };
+  // C1 fix: read-check-unlink under the mutation lock, RE-READING the holder inside — so a reclaim that
+  // superseded this token between a stale read and the unlink is seen (fencing-mismatch), never deleted.
+  return withMutationLock(spId, root, () => {
+    const holder = readHolder(spId, root);
+    if (!holder) return { ok: false, reason: "not-held" };
+    if (holder.token !== token) return { ok: false, reason: "fencing-mismatch" };
+    try {
+      fs.unlinkSync(leasePath(spId, root));
+    } catch {
+      /* already gone — treat as released */
+    }
+    return { ok: true };
+  });
 }
 
 /**
@@ -167,12 +223,16 @@ function release(spId, opts = {}) {
  */
 function renew(spId, opts = {}) {
   const { root, token } = opts;
-  const holder = readHolder(spId, root);
-  if (!holder) return { ok: false, reason: "not-held" };
-  if (holder.token !== token) return { ok: false, reason: "fencing-mismatch" };
-  const updated = Object.assign({}, holder, { renewed_at: Date.now() });
-  fs.writeFileSync(leasePath(spId, root), JSON.stringify(updated) + "\n");
-  return { ok: true, token: holder.token };
+  // C1 fix: read-check-write under the mutation lock, RE-READING inside — a stale renew can no longer
+  // overwrite a lease a reclaimer already superseded (which had rolled the fencing token backward).
+  return withMutationLock(spId, root, () => {
+    const holder = readHolder(spId, root);
+    if (!holder) return { ok: false, reason: "not-held" };
+    if (holder.token !== token) return { ok: false, reason: "fencing-mismatch" };
+    const updated = Object.assign({}, holder, { renewed_at: Date.now() });
+    fs.writeFileSync(leasePath(spId, root), JSON.stringify(updated) + "\n");
+    return { ok: true, token: holder.token };
+  });
 }
 
 /**
@@ -186,46 +246,50 @@ function renew(spId, opts = {}) {
 function reclaim(spId, opts = {}) {
   const { root, sessionId } = opts;
   ensureDir(leaseRoot(root));
-  const lp = leasePath(spId, root);
-  const holder = readHolder(spId, root);
-  if (holder) {
-    const dead = !pidAlive(holder.pid);
-    const stale = Date.now() - (holder.renewed_at || holder.acquired_at || 0) > STALE_AFTER_MS;
-    if (!dead && !stale) {
-      return { ok: false, reason: "lease-active", token: holder.token, holder };
+  // C1 fix: the whole read-decide-delete-recreate runs under the mutation lock, so a reclaim can never
+  // interleave with a concurrent release/renew — the exact window backend-reviewer flagged.
+  return withMutationLock(spId, root, () => {
+    const lp = leasePath(spId, root);
+    const holder = readHolder(spId, root);
+    if (holder) {
+      const dead = !pidAlive(holder.pid);
+      const stale = Date.now() - (holder.renewed_at || holder.acquired_at || 0) > STALE_AFTER_MS;
+      if (!dead && !stale) {
+        return { ok: false, reason: "lease-active", token: holder.token, holder };
+      }
+      try {
+        fs.unlinkSync(lp);
+      } catch {
+        /* raced with another reclaimer/release — fall through; the wx create
+           below will fail cleanly if someone else already won */
+      }
+    }
+    let fd;
+    try {
+      fd = fs.openSync(lp, "wx");
+    } catch {
+      const current = readHolder(spId, root);
+      return { ok: false, reason: "raced", token: current ? current.token : null, holder: current };
     }
     try {
-      fs.unlinkSync(lp);
-    } catch {
-      /* raced with another reclaimer/release — fall through; the wx create
-         below will fail cleanly if someone else already won */
+      const token = mintToken(spId, root, {
+        sessionId: sessionId || null,
+        pid: process.pid,
+        action: "reclaim",
+      });
+      const newHolder = {
+        token,
+        sessionId: sessionId || null,
+        pid: process.pid,
+        acquired_at: Date.now(),
+        renewed_at: Date.now(),
+      };
+      writeHolderFd(fd, newHolder);
+      return { ok: true, token, holder: newHolder, reclaimed_from: holder || null };
+    } finally {
+      fs.closeSync(fd);
     }
-  }
-  let fd;
-  try {
-    fd = fs.openSync(lp, "wx");
-  } catch {
-    const current = readHolder(spId, root);
-    return { ok: false, reason: "raced", token: current ? current.token : null, holder: current };
-  }
-  try {
-    const token = mintToken(spId, root, {
-      sessionId: sessionId || null,
-      pid: process.pid,
-      action: "reclaim",
-    });
-    const newHolder = {
-      token,
-      sessionId: sessionId || null,
-      pid: process.pid,
-      acquired_at: Date.now(),
-      renewed_at: Date.now(),
-    };
-    writeHolderFd(fd, newHolder);
-    return { ok: true, token, holder: newHolder, reclaimed_from: holder || null };
-  } finally {
-    fs.closeSync(fd);
-  }
+  });
 }
 
 /**
@@ -260,4 +324,6 @@ module.exports = {
   pidAlive,
   STALE_AFTER_MS,
   DEFAULT_ROOT,
+  // exported for the C1 mutation-lock teeth test (serialization guarantee)
+  _withMutationLock: withMutationLock,
 };
