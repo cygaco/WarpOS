@@ -1136,7 +1136,7 @@ sprints:
     updated_at: "2026-07-18T07:43:37.019Z"
   - id: SP-20260718-003
     title: "Phase 1 — routing + security truth (harness-spawn model rule G1.1, I-2 provider-id/tool-id reconcile, I-3 beta-consult abs-path, panel-3lab lane contract + agy migration seam ED-060, effective-model attestation G1.7, skill-lane dispatch-shape flip ED-057)"
-    status: planning
+    status: closed
     lane:
       type: default
       value: null
