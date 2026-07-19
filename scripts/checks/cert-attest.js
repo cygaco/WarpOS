@@ -88,6 +88,33 @@ const PROBE_PROMPT =
 const norm = (s) => String(s || "").toLowerCase().replace(/[_\s]+/g, "-");
 
 /**
+ * ATTRIBUTION (α/β ruling 2026-07-19, directive #3): keep only the agy cli.log lines that belong to THIS
+ * run's time window, so a PRIOR run's stale lines (auth-shaped / serve-label / unauth signals) in the
+ * shared rotating log cannot bleed into the attestation. agy lines are prefixed
+ * "[IWEF]MMDD HH:MM:SS.ffffff PID file.go:NN]" in LOCAL time. Keep lines in [startedMs - marginMs, now];
+ * DROP out-of-window lines AND non-timestamped continuation lines — a dropped line can never contribute a
+ * stale serve marker (favors fail-closed; agy's line format is stable so a non-parsing line is anomalous).
+ * PURE + exported for the bite-test. A false-RED (dropping a genuine but skewed line) is safe (re-probe);
+ * a false-GREEN (a stale serve marker leaking in) is the class this closes.
+ */
+function filterAgyLogToRunWindow(agyLog, startedMs, marginMs = 5000) {
+  if (!agyLog) return "";
+  const lo = startedMs - marginMs;
+  const hi = Date.now() + 1000;
+  const year = new Date().getFullYear();
+  const kept = [];
+  for (const line of agyLog.split("\n")) {
+    const m = line.match(/^[IWEF](\d{2})(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/);
+    if (!m) continue; // no run-attributable timestamp → drop (never leaks a stale serve marker)
+    const [, mo, da, hh, mm, ss, frac] = m;
+    const ms = frac ? Number(frac.slice(0, 3).padEnd(3, "0")) : 0;
+    const t = new Date(year, Number(mo) - 1, Number(da), Number(hh), Number(mm), Number(ss), ms).getTime();
+    if (t >= lo && t <= hi) kept.push(line);
+  }
+  return kept.join("\n");
+}
+
+/**
  * Decide the attestation from the raw CLI output + the requested model. The KEY check: the requested
  * model id must appear in the CLI's own output (its echoed header / self-id), and NO other catalog
  * model id for the same provider may appear INSTEAD. Pure + injectable for the bite-test.
@@ -466,6 +493,11 @@ function main(argv) {
       }
       fs.closeSync(fd);
     } catch { /* no default log — attestation stays fail-closed on absent evidence */ }
+    // ATTRIBUTION (α/β ruling 2026-07-19, directive #3): bind the folded agy cli.log to THIS run's time
+    // WINDOW so a PRIOR run's lines (stale auth-shaped / serve-label / unauth signals) in the shared
+    // rotating log cannot bleed into this attestation — the cross-run contamination that (with the unsound
+    // GATE-1 slice, now removed) produced the 19-11 false-green. Belt beyond rotation-awareness.
+    agyLog = filterAgyLogToRunWindow(agyLog, started);
   }
   const combined = `${stdout}\n${stderr}\n${agyLog}`; // the served model id may land on stdout/stderr OR the CLI log
   // liveness-verified: `spawned` is a SUBPROCESS spawn result (carries .exitCode), NOT a dispatch-completion
@@ -517,6 +549,7 @@ module.exports = {
   providerForModel,
   probeShape,
   norm,
+  filterAgyLogToRunWindow,
   NAME,
   // D8 (SP-20260718-003): same-run panel attestation.
   attestLane,

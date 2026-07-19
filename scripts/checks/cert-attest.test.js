@@ -212,8 +212,24 @@ test("NEGATIVE FIXTURE: the committed 19-11-56Z false-green output now FAILS clo
   assert.equal(art.attested, true, "the 19-11 artifact stays the frozen false-green exemplar (attested:true as recorded); the FIX is that evaluateAttestation now refuses this output");
 });
 
+// ── ATTRIBUTION (α/β ruling directive #3): the folded agy log is bound to the run's time WINDOW —
+//    cross-run stale lines (a prior run's auth / serve-label / unauth signals) are dropped so they cannot
+//    bleed into the attestation (the contamination that helped produce the 19-11 false-green). ──
+test("filterAgyLogToRunWindow: drops cross-run stale + untimestamped lines, keeps in-window (directive #3)", () => {
+  const { filterAgyLogToRunWindow } = require("./cert-attest");
+  const now = new Date();
+  const fmt = (d) => `I${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}.100000 38760 x.go:1]`;
+  const started = now.getTime();
+  const inWindow = `${fmt(now)} in-window serve line`;
+  const stale = `${fmt(new Date(started - 3600000))} STALE cross-run serve line`; // 1h ago → out of window
+  const kept = filterAgyLogToRunWindow(`${stale}\n${inWindow}\nuntimestamped continuation`, started);
+  assert.ok(kept.includes("in-window serve line"), "in-window line kept");
+  assert.ok(!kept.includes("STALE"), "1h-stale cross-run line DROPPED (no serve-marker bleed)");
+  assert.ok(!kept.includes("continuation"), "untimestamped continuation DROPPED");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 + the 19-11 non-sliceable negative fixture)\n`);
+process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 + 19-11 negative fixture + run-window attribution)\n`);
