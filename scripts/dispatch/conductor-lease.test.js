@@ -216,3 +216,59 @@ test("TEETH (C1/R2): a DEAD owner's mutation lock IS reclaimed (safe crashed-hol
   assert.strictEqual(ran, true, "a dead owner's lock must be reclaimed so the mutator can proceed");
   assert.deepStrictEqual(res, { ok: true, v: 42 });
 });
+
+// ── C1/R3 (gauntlet round 3): an UNIDENTIFIABLE lock (live pre-stamp / torn-stamp) is NEVER mtime-reclaimed ──
+// The R3 finding: reclaim keyed on mtime for an unidentifiable lock. But an EMPTY lock (a live holder paused
+// between openSync() and its PID stamp) is indistinguishable from a crashed torn-stamp holder by mtime — so
+// mtime-reclaiming it lets a contender unlink a LIVE owner's lock, re-opening the exact TOCTOU the lock closes.
+// These teeth assert an unidentifiable ANCIENT lock is NEVER acquired-over or removed by a contender.
+
+test("TEETH (C1/R3): an EMPTY (live pre-stamp) ancient mutation lock is NEVER mtime-reclaimed — contender fails-contended and cannot remove it", () => {
+  const root = tmpRoot("c1r3-empty");
+  const spId = "SP-C1R3-EMPTY";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
+  // An EMPTY lock: a live holder that won openSync("wx") but is paused BEFORE writing its PID stamp. Give it an
+  // ANCIENT mtime — the old mtime-reclaim path would have wrongly unlinked it.
+  fs.writeFileSync(mlp, "");
+  const old = Date.now() - (24 * 60 * 60 * 1000);
+  fs.utimesSync(mlp, new Date(old), new Date(old));
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+  assert.strictEqual(ran, false, "must NOT reclaim an unidentifiable lock by mtime — a live pre-stamp holder looks identical to a crash");
+  assert.strictEqual(res.ok, false);
+  assert.strictEqual(res.reason, "mutation-contended");
+  assert.ok(fs.existsSync(mlp), "the unidentifiable lock must survive (manual-recovery-required, never auto-mtime-reclaimed)");
+});
+
+test("TEETH (C1/R3): a TORN-stamp (unparseable JSON) ancient mutation lock is NEVER reclaimed either", () => {
+  const root = tmpRoot("c1r3-torn");
+  const spId = "SP-C1R3-TORN";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
+  fs.writeFileSync(mlp, '{"pid": 12'); // truncated / torn mid-write — unparseable
+  const old = Date.now() - (24 * 60 * 60 * 1000);
+  fs.utimesSync(mlp, new Date(old), new Date(old));
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+  assert.strictEqual(ran, false, "an unparseable owner stamp is unidentifiable — never mtime-reclaimed");
+  assert.strictEqual(res.ok, false);
+  assert.strictEqual(res.reason, "mutation-contended");
+  assert.ok(fs.existsSync(mlp), "the torn-stamp lock must survive");
+});
+
+test("TEETH (C1/R3): a stamp with NO finite pid (identity-less) ancient mutation lock is NEVER reclaimed", () => {
+  const root = tmpRoot("c1r3-nopid");
+  const spId = "SP-C1R3-NOPID";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
+  fs.writeFileSync(mlp, JSON.stringify({ ts: Date.now() }) + "\n"); // parseable but no pid → unidentifiable owner
+  const old = Date.now() - (24 * 60 * 60 * 1000);
+  fs.utimesSync(mlp, new Date(old), new Date(old));
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+  assert.strictEqual(ran, false, "a stamp with no finite pid cannot prove the owner is dead — never mtime-reclaimed");
+  assert.strictEqual(res.ok, false);
+  assert.strictEqual(res.reason, "mutation-contended");
+  assert.ok(fs.existsSync(mlp), "the identity-less lock must survive");
+});

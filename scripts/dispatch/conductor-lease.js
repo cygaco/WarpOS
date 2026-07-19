@@ -35,11 +35,15 @@ const DEFAULT_ROOT = path.join(PROJECT_ROOT, ".claude", "runtime");
 // Mirrors concurrency-lock.js's crash-recovery window.
 const STALE_AFTER_MS = 20 * 60 * 1000;
 
-// SP-20260718-005 gauntlet C1 fix: a per-SP MUTATION lock serializes release/renew/reclaim so their
-// read-check-mutate is atomic against each other. A lease mutation is microseconds; a mutation-lock file
-// older than this is a crashed holder and is reclaimable (mtime is SAFE here — unlike the fencing token,
-// this lock carries no durable identity, it is a pure short-lived mutex). Deliberately small.
-const MUTATION_LOCK_STALE_MS = 10 * 1000; // 10s — a mutation never legitimately holds this long
+// SP-20260718-005 gauntlet C1 fix (R3-hardened): a per-SP MUTATION lock serializes release/renew/reclaim so
+// their read-check-mutate is atomic against each other. Reclaim keys on OWNER LIVENESS ONLY — a PARSEABLE
+// owner stamp whose pid is provably DEAD. An UNIDENTIFIABLE lock (empty / torn / unparseable stamp / no
+// finite pid) is NEVER mtime-reclaimed: a live holder paused in the window between openSync() and its PID
+// stamp is INDISTINGUISHABLE from a crashed holder by mtime, so mtime-reclaiming it re-opens the exact TOCTOU
+// the lock exists to close (the reclaimer unlinks a live owner's lock; the paused owner's `finally` then
+// unlinks the reclaimer's). An unidentifiable lock is therefore treated as contended / manual-recovery-
+// required — fail-CLOSED, never a silent auto-reclaim. (This is why there is no mtime-staleness constant for
+// the mutex any more: R3 removed the mtime-reclaim path for unidentifiable locks entirely.)
 const MUTATION_LOCK_WAIT_MS = 5 * 1000; // total spin budget waiting for a contended mutation lock
 
 function mutationLockPath(spId, root) {
@@ -48,9 +52,10 @@ function mutationLockPath(spId, root) {
 
 /**
  * withMutationLock(spId, root, fn) — run fn() while holding an O_EXCL per-SP mutation lock, so
- * release/renew/reclaim never interleave their read-check-mutate. Reclaims a STALE mutation lock (a
- * crashed holder, by mtime — safe for a short-lived mutex). Returns fn()'s value, or
- * { ok:false, reason:"mutation-contended" } if the lock can't be taken within the wait budget.
+ * release/renew/reclaim never interleave their read-check-mutate. Reclaims ONLY a lock whose PARSEABLE
+ * owner pid is provably DEAD (a crashed holder). An UNIDENTIFIABLE lock (empty/torn/unparseable stamp) is
+ * NEVER reclaimed — treated as contended/manual-recovery (C1/R3, see the constant comment above). Returns
+ * fn()'s value, or { ok:false, reason:"mutation-contended" } if the lock can't be taken within the budget.
  */
 function withMutationLock(spId, root, fn, opts = {}) {
   ensureDir(leaseRoot(root));
@@ -58,31 +63,27 @@ function withMutationLock(spId, root, fn, opts = {}) {
   const deadline = Date.now() + (Number.isFinite(opts.maxWaitMs) ? opts.maxWaitMs : MUTATION_LOCK_WAIT_MS);
   let fd = null;
   for (;;) {
+    // Try to WIN the lock via O_EXCL create.
     try {
       fd = fs.openSync(lp, "wx");
-      // C1/R2 fix: stamp the OWNER identity so a contender can tell a LIVE holder from a CRASHED one — the
-      // reclaim decision keys on the owner's liveness, never on mtime alone (mtime-only wrongly unlinked a
-      // live-but-paused mutator's lock, re-opening the exact TOCTOU the lock exists to close).
-      try { fs.writeSync(fd, JSON.stringify({ pid: process.pid, ts: Date.now() }) + "\n"); } catch { /* stamp best-effort */ }
-      break;
     } catch (e) {
       if (!e || e.code !== "EEXIST") throw e;
-      // Held — reclaim ONLY if the owner is DEAD (a crashed holder). A live holder (paused past the TTL) is
-      // NEVER reclaimed; the contender waits or fails-contended, so it can never unlink a live owner's lock.
+      // Held by someone. Decide reclaim by OWNER LIVENESS ONLY — NEVER by mtime (C1/R3 gauntlet). Only a
+      // PARSEABLE owner whose pid is provably DEAD is reclaimed. An unidentifiable lock (empty / torn /
+      // unparseable / no finite pid) is a live pre-stamp holder JUST AS MUCH as a crash — mtime cannot tell
+      // them apart — so it is treated as contended (wait or fail-contended), never mtime-reclaimed.
       let ownerDead = false;
       try {
         const raw = fs.readFileSync(lp, "utf8").trim();
         const owner = raw ? JSON.parse(raw) : null;
         if (owner && Number.isFinite(owner.pid)) {
-          ownerDead = !pidAlive(owner.pid); // the load-bearing check: dead pid, not stale mtime
+          ownerDead = !pidAlive(owner.pid); // the load-bearing check: dead pid, never stale mtime
         } else {
-          // Missing/torn owner stamp (a crash mid-write) — fall back to mtime staleness only for THIS
-          // unidentifiable lock (a genuinely-crashed holder), still bounded.
-          const st = fs.statSync(lp);
-          ownerDead = Date.now() - st.mtimeMs > MUTATION_LOCK_STALE_MS;
+          ownerDead = false; // unidentifiable → NOT reclaimable (contended/manual-recovery), never mtime
         }
-      } catch {
-        continue; // lock vanished between open and read — retry the create
+      } catch (readErr) {
+        if (readErr && readErr.code === "ENOENT") continue; // lock vanished between open and read — retry create
+        ownerDead = false; // unreadable owner → cannot identify → do NOT reclaim (fail-closed)
       }
       if (ownerDead) {
         try { fs.unlinkSync(lp); } catch {}
@@ -92,7 +93,22 @@ function withMutationLock(spId, root, fn, opts = {}) {
       // Tiny synchronous spin — a lease mutation completes in microseconds; contention is rare + brief.
       const spinUntil = Date.now() + 2;
       while (Date.now() < spinUntil) { /* busy-wait 2ms */ }
+      continue;
     }
+    // We WON the create. Stamp the OWNER identity so a contender can identify us as a LIVE holder (the reclaim
+    // decision keys on this pid). If the stamp write fails we must NOT hold an UNIDENTIFIABLE live lock — a
+    // contender could never reclaim it, and if we then crash it would block forever — so release our own lock
+    // and retry rather than proceed unstamped (fail-closed on our own side too).
+    try {
+      fs.writeSync(fd, JSON.stringify({ pid: process.pid, ts: Date.now() }) + "\n");
+    } catch {
+      try { fs.closeSync(fd); } catch {}
+      try { fs.unlinkSync(lp); } catch {}
+      fd = null;
+      if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
+      continue;
+    }
+    break;
   }
   try {
     return fn();
