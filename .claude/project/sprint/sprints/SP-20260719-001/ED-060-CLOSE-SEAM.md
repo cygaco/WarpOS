@@ -2,70 +2,74 @@
 
 **Status: BLOCKED-ON-OPERATOR.** agy (Antigravity) is UNAUTHENTICATED — the keyring token is expired,
 so agy serves the account DEFAULT (CCPA), not the contracted `gemini-3.1-pro-high`. The id-mapping fix
-(a) + the GATE-1 non-sliceable false-green fix ship now; the live ED-060 close waits on one operator
-action, after which it is a single command. The fixed cert-attest CANNOT false-green: if the login did
-not take, the re-probe fail-closes (attested:false) — so this seam is safe to run blind.
+(a), the GATE-1 narrowed hardening, and the agy §7 honest-ceiling fail-closed ship now. The live ED-060
+close waits on one operator action.
+
+**cert-attest is NOT the close (α/β-RATIFIED 2026-07-19).** cert-attest's agy §7 path is an HONEST-CEILING
+FAIL-CLOSED: it returns `attested:false` for agy BY CONSTRUCTION, because agy's only "serve marker" is the
+client-side `Propagating … backend: label=<display>` echo, which agy emits from the `--model` arg
+regardless of auth/serve (this echo produced BOTH the 19-11 and 07-18 false-greens). agy's log can NEVER
+prove the served model, so cert-attest cannot close ED-060 — a real authenticated dispatch-agent record does.
 
 ## Operator step (the ONE thing only the operator can do)
 
-1. Open the **Antigravity** app (or run the Antigravity CLI login) and **sign in** as
-   `operator@example.com`. This refreshes the expired keyring token so `agy` serves the
-   contracted model instead of defaulting to CCPA.
-   (Verify: `agy` will no longer log `You are not logged into Antigravity` / `defaulting to CCPA` /
-   `local chrome mode … eval mode`.)
+Open the **Antigravity** app (or run the Antigravity CLI login) and **sign in** as
+`operator@example.com`. This refreshes the expired keyring token so `agy` serves the account's
+configured model instead of defaulting to CCPA.
 
-## One command — the re-probe (produces the ED-060 serve proof)
+## The ED-060 close record — what it proves, and why it's not client-echoable (β B/0.90 rider — LOAD-BEARING)
 
-From the repo root (canonical or this worktree; the fixed adapter translates the slug→display):
+The ED-060-closing record must prove the served model from evidence a CLIENT CANNOT FABRICATE. It must NOT
+re-read agy's backend-label echo — that would just RELOCATE the §7 echo-trust we removed to a different
+reader (ADR-0025 whole-ledger RIDER-1, "same mistake class on a different reader"). The evidence splits:
+
+1. **AUTHENTICATED LIVENESS — log-observable + trustworthy (a client echo cannot fake a valid auth STATE):**
+   keyring VALID (NOT `expired=true`), NO terminal-fallback tell (no `eval mode` / `local chrome mode` /
+   `resolved via default` / `not logged into Antigravity`), a real non-empty response, and `fallback:false`
+   on the dispatch record. These are auth-STATE, not model-name — exactly the signals GATE-1 already keys on.
+2. **SERVED-MODEL IDENTITY — rests on the operator's AUTHENTICATED ACCOUNT CONFIG, never a name-match:**
+   the logged-in Antigravity account is configured to serve the contracted model. The model NAME is never
+   re-trusted from agy's output (at cert-attest OR at dispatch-agent).
+
+   **HONEST RESIDUAL (α-directed):** agy's CLI does NOT emit an authoritative server-side served-model
+   receipt. So the served-model identity ultimately rests on the account config (an operator-attested
+   property), not machine-verifiable server evidence. A stronger, client-un-fakeable proof — e.g. an
+   OUTPUT-CONTENT CHALLENGE (a prompt only the contracted model answers correctly) — is a CANDIDATE, not
+   built. If no client-un-fakeable served-model evidence source exists for agy, that is a **Phase-4 / ED-215
+   problem, NOT a reason to soften §7.** Until then the close is: authenticated-liveness (machine-checked) +
+   account-config model identity (operator-attested), stated honestly as such.
+
+## The close sequence (post-login)
 
 ```bash
-node scripts/checks/cert-attest.js --model gemini-3.1-pro-high --provider antigravity --json
-```
-
-- **PASS (login took):** `attested: true`, `effective_model: "Gemini 3.1 Pro (High)"`, the artifact's
-  raw output carries a `Propagating … backend: label="Gemini 3.1 Pro (High)"` serve marker AND is FREE of
-  any `not logged into Antigravity` / `defaulting to CCPA` / `eval mode` signal. This committed artifact
-  (`runtime/cert-attest/gemini-3.1-pro-high-<ts>.json`) is the ED-060 serve proof.
-- **FAIL (login did not take):** `attested: false` with a GATE-1 fail-closed reason. Re-do the operator
-  step; the seam is safe (no false-green).
-
-## Then: the production-route record + the flip (per lead ruling — b BEFORE c)
-
-The support-matrix flip's PRIMARY evidence_ref is a REAL production-route ledger record, not the probe:
-
-```bash
-# 2) one real security-reviewer dispatch through agy (production route), fallback:false, model served.
-#    Handle the ~2/3 security-framing refusal: bounded retry (<=3); if it persistently declines, that is
-#    a real capability finding — keep the row down for the security lane and consult the lead.
+# 1) one real security-reviewer dispatch through agy (PRODUCTION route, not a probe), authenticated.
+#    ~2/3 security-framing refusal → bounded retry (<=3) + dispatch-guide neutral-framing; if it
+#    persistently declines while authenticated, that's a real capability finding — keep the row down.
 node scripts/dispatch-agent.js security-reviewer <prompt-file>
-#    NB: agy's --print-timeout is 90s; a heavy (18KB+) review may time out — see the review-timeout
-#    residual in acceptance-criteria.md (may need a print-timeout bump, operator-owned).
+#    NB: agy --print-timeout is 90s — a heavy (18KB) review may time out (see the print-timeout rider).
 
-# 3) commit a citation artifact (record fields + dispatch_id + hash) into the sprint evidence dir,
-#    because .claude/runtime/dispatch-completions.jsonl is gitignored (durability rider).
+# 2) VERIFY authenticated-liveness (NOT a model-name echo): fallback:false + real non-empty output +
+#    the run's agy log carries a VALID keyring (no expired=true) + NO terminal-fallback tell. Model
+#    identity = the account config, never a backend-label match.
 
-# 4) flip support-matrix agy-antigravity down->proven citing that record + the cert-attest artifact;
-#    announce the flip to the lead BEFORE merge (lane-1 AC-16 flip-gate auto-authorizes on the flip).
+# 3) commit a citation artifact (record fields + dispatch_id + hash + the auth-state evidence) into the
+#    sprint evidence dir — .claude/runtime/dispatch-completions.jsonl is gitignored (durability rider).
+
+# 4) flip support-matrix agy-antigravity down->proven citing THAT record; announce the flip to the lead
+#    BEFORE merge (lane-1 AC-16 flip-gate auto-authorizes on the flip).
 ```
 
-This closes ED-060. The ED-230 attestPanelRun served-model wiring (landed this sprint, code-only) then
-has its live positive path proven by the same authenticated record; until then ED-230 stays OPEN.
+This closes ED-060 honestly. ED-230's attestPanelRun served-model predicate inherits the SAME rule
+(auth-state + account config, never a client-echo name-match) — see the follow-up rider.
 
-## Why this is safe (the record-trust guarantee)
+## Why the SHIPPED code is safe (the record-trust guarantee)
 
-The cert-attest GATE-1 hard-fails (non-sliceable) on the UNAMBIGUOUS terminal/keyring tells
-(`resolved via default` / `eval mode` / `local chrome mode` / keyring `expired=true` / auth-failed),
-regardless of any deceptive `ChainedAuth: authenticated` line (agy emits auth-shaped + backend-label
-echoes even while unauthenticated — the root of the 19-11 AND 07-18 false-greens). The folded cli.log is
-bound to the run's time window (no cross-run stale-line bleed). So a blind re-probe before a successful
-login CANNOT produce a false close — it fail-closes.
-
-**Post-GATE-1-hardening note (gauntlet R1, 2026-07-19):** both cross-provider reviewers found that GATE-2
-trusting agy's client-side `backend: label` echo is a residual false-green (a novel unauth phrase + the
-echo). The convergent conclusion (both reviewers + β + ADR-0025): agy CANNOT self-attest via its log — so
-the cert-attest agy §7 path becomes an HONEST-CEILING FAIL-CLOSED. The genuine ED-060 proof is a REAL
-AUTHENTICATED dispatch-agent record (the review actually ran + returned a genuine non-default response
-under an authenticated backend), NOT the cert-attest log probe. Pending α/β ratification.
+cert-attest agy §7 is fail-closed BY CONSTRUCTION: for antigravity it returns `attested:false` regardless
+of output — no agy log line (backend-label included) is ever trusted as served-model proof. A blind probe
+before OR after a successful login can NEVER false-green. GATE-1 additionally hard-fails the unambiguous
+terminal/keyring tells (defense-in-depth), and the folded cli.log is bound to the run's time window. The
+convergent gauntlet-R1 CRITICAL (both cross-provider reviewers — a novel unauth phrase + the fake label) is
+structurally closed: the label is never proof.
 
 ---
 
