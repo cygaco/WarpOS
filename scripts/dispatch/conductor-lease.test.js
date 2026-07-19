@@ -381,3 +381,92 @@ test("pidProvenDead: TRUE only for a positive safe-integer pid that is ESRCH-abs
   assert.strictEqual(lease.pidProvenDead(NaN), false);
   assert.strictEqual(lease.pidProvenDead(999999999), true, "a positive safe-int pid with no such process (ESRCH) is proven dead");
 });
+
+// ── ED-237 (mechanism unit, β design-lock 0.90): 3-STATE liveness GATE at ALL reclaim sites ──────────────
+// The occurrence-3 leak was the LEASE reclaim() stale path: `dead || stale` reclaimed an INDETERMINATE-but-
+// stale lease. The 3-state model gates liveness BEFORE the stale branch: indeterminate short-circuits to
+// lease-indeterminate (never reclaimed); dead reclaims; live reclaims ONLY when stale (fencing-protected).
+
+test("pidLiveness: 3-state — 'dead' only on positive-safe-int ESRCH; 'live' on signal success; 'indeterminate' for every invalid pid", () => {
+  assert.strictEqual(lease.pidLiveness(process.pid), "live", "our own pid is live");
+  assert.strictEqual(lease.pidLiveness(999999999), "dead", "no such process → ESRCH → dead");
+  for (const bad of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, "1234", NaN, null, undefined]) {
+    assert.strictEqual(lease.pidLiveness(bad), "indeterminate", "invalid pid → indeterminate: " + String(bad));
+  }
+});
+
+test("pidLiveness: a NON-ESRCH signal error is 'indeterminate', NEVER 'dead' (injected process.kill EPERM / other)", () => {
+  const orig = process.kill;
+  try {
+    process.kill = () => { const e = new Error("perm"); e.code = "EPERM"; throw e; };
+    assert.strictEqual(lease.pidLiveness(12345), "indeterminate", "EPERM → indeterminate (alive-uncertain, never dead)");
+    process.kill = () => { const e = new Error("io"); e.code = "EIO"; throw e; };
+    assert.strictEqual(lease.pidLiveness(12345), "indeterminate", "any non-ESRCH error → indeterminate");
+  } finally {
+    process.kill = orig;
+  }
+});
+
+for (const badPid of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, "1234", NaN]) {
+  for (const staleState of ["fresh", "stale"]) {
+    test(`TEETH (ED-237 lease): reclaim() does NOT reclaim a ${staleState} lease with an INVALID pid (${String(badPid)}) — lease-indeterminate, token survives, no supersession`, () => {
+      const root = tmpRoot("ed237-lease-" + String(badPid).replace(/[^a-z0-9]/gi, "") + "-" + staleState);
+      const spId = "SP-ED237-LEASE";
+      const a = lease.acquire(spId, { root, sessionId: "sess-1" });
+      const lp = path.join(root, "conductor-leases", `${spId}.lease`);
+      const holder = JSON.parse(fs.readFileSync(lp, "utf8"));
+      holder.pid = badPid;
+      if (staleState === "stale") {
+        holder.acquired_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+        holder.renewed_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+      }
+      fs.writeFileSync(lp, JSON.stringify(holder) + "\n");
+      const r = lease.reclaim(spId, { root, sessionId: "sess-rescuer" });
+      assert.strictEqual(r.ok, false, "an invalid-pid lease must NOT be reclaimed REGARDLESS of staleness (indeterminate gate before stale)");
+      assert.strictEqual(r.reason, "lease-indeterminate");
+      assert.strictEqual(lease.verifyToken(spId, a.token, { root }), true, "the original token must survive (no supersession)");
+    });
+  }
+}
+
+test("TEETH (ED-237): reclaim() treats a NON-ESRCH liveness error as indeterminate — a STALE lease whose pid errors non-ESRCH is NOT reclaimed (the stale-path bypass is closed)", () => {
+  const root = tmpRoot("ed237-nonesrch-lease");
+  const spId = "SP-ED237-NONESRCH";
+  const a = lease.acquire(spId, { root, sessionId: "sess-1" });
+  const lp = path.join(root, "conductor-leases", `${spId}.lease`);
+  const holder = JSON.parse(fs.readFileSync(lp, "utf8"));
+  holder.pid = 424242; // valid positive pid, but we force its liveness signal to error non-ESRCH
+  holder.acquired_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+  holder.renewed_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+  fs.writeFileSync(lp, JSON.stringify(holder) + "\n");
+  const orig = process.kill;
+  try {
+    // Force ONLY the holder's pid to error EPERM; leave our own (mutation-lock) pid resolving live.
+    process.kill = (pid, sig) => { if (pid === 424242) { const e = new Error("perm"); e.code = "EPERM"; throw e; } return orig.call(process, pid, sig); };
+    const r = lease.reclaim(spId, { root, sessionId: "sess-rescuer" });
+    assert.strictEqual(r.ok, false, "a non-ESRCH (indeterminate) pid must NOT be reclaimed even when stale");
+    assert.strictEqual(r.reason, "lease-indeterminate");
+    assert.strictEqual(lease.verifyToken(spId, a.token, { root }), true);
+  } finally {
+    process.kill = orig;
+  }
+});
+
+test("TEETH (ED-237): a LIVE stale-past-TTL lease IS reclaimed (hung-conductor recovery) and is FENCING-PROTECTED — the superseded token no longer verifies and its release is refused", () => {
+  const root = tmpRoot("ed237-livestale");
+  const spId = "SP-ED237-LIVESTALE";
+  const a = lease.acquire(spId, { root, sessionId: "sess-hung" }); // live (our) pid
+  const lp = path.join(root, "conductor-leases", `${spId}.lease`);
+  const holder = JSON.parse(fs.readFileSync(lp, "utf8")); // keep the live (our) pid
+  holder.acquired_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+  holder.renewed_at = Date.now() - (lease.STALE_AFTER_MS + 60000);
+  fs.writeFileSync(lp, JSON.stringify(holder) + "\n");
+  const r = lease.reclaim(spId, { root, sessionId: "sess-rescuer" });
+  assert.strictEqual(r.ok, true, "a live-but-stale lease is reclaimable (hung-conductor recovery)");
+  assert.ok(r.token > a.token, "reclaim mints a strictly-higher fencing token");
+  assert.strictEqual(lease.verifyToken(spId, a.token, { root }), false, "the superseded token must no longer verify (fencing)");
+  assert.strictEqual(lease.verifyToken(spId, r.token, { root }), true);
+  const staleRelease = lease.release(spId, { root, token: a.token });
+  assert.strictEqual(staleRelease.ok, false);
+  assert.strictEqual(staleRelease.reason, "fencing-mismatch");
+});

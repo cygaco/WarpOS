@@ -183,35 +183,35 @@ function ensureDir(p) {
   fs.mkdirSync(p, { recursive: true });
 }
 
-function pidAlive(pid) {
-  if (!Number.isFinite(pid) || pid <= 0) return false;
+/**
+ * pidLiveness(pid) -> "dead" | "live" | "indeterminate". The ONE liveness primitive — the SOLE call site of
+ * the OS liveness signal in this module (ED-237, β design-lock 0.90). Every reclaim/supersede decision is a
+ * GATE on this 3-STATE result, at EVERY site; INDETERMINATE never authorizes a reclaim (it short-circuits to
+ * contended / manual-recovery), so an invalid pid (0 / negative / fractional / out-of-range / non-integer) or
+ * a non-ESRCH signal error can NEVER be mistaken for dead — the R4/R5 unsafe-reclaim class root.
+ *   - not a positive safe integer          -> "indeterminate"
+ *   - signal(0) succeeds                    -> "live"
+ *   - signal(0) throws ESRCH                -> "dead"          (no such process — PROVEN absent)
+ *   - signal(0) throws EPERM / other        -> "indeterminate" (cannot prove absence)
+ */
+function pidLiveness(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return "indeterminate";
   try {
     process.kill(pid, 0);
-    return true;
+    return "live";
   } catch (e) {
-    // ESRCH = no such process; EPERM = exists but we lack signal rights
-    // (treat as alive — better to leave the lease than wrongly reclaim it).
-    if (e && e.code === "EPERM") return true;
-    return false;
+    if (e && e.code === "ESRCH") return "dead";
+    return "indeterminate"; // EPERM / any other error → cannot prove absence
   }
 }
 
 /**
- * pidProvenDead(pid) -> boolean. TRUE only when the pid is PROVEN absent: a positive safe-integer AND
- * process.kill(pid,0) throws with code ESRCH (no such process). EVERYTHING else is NOT proof of death and
- * returns false — an invalid pid (0, negative, fractional, non-safe-integer), an EPERM (alive, no signal
- * rights), any other error, or a live process. This is the ONLY gate for a liveness-based reclaim (mutation
- * lock + lease reclaim): a non-proven pid must be treated as unidentifiable/contended, never reclaimed
- * (SP-20260718-005 R4/R5 — backend+qa: invalid finite pids and non-ESRCH errors were wrongly treated as dead).
+ * pidProvenDead(pid) -> boolean. Thin SINGLE-SOURCE wrapper over pidLiveness (β note 2): TRUE iff the pid is
+ * PROVEN dead (ESRCH). Retained for the mutation-lock dead-gate call sites + the invalid-pid regression teeth;
+ * all liveness flows through the ONE pidLiveness primitive.
  */
 function pidProvenDead(pid) {
-  if (!Number.isSafeInteger(pid) || pid <= 0) return false;
-  try {
-    process.kill(pid, 0);
-    return false; // alive
-  } catch (e) {
-    return !!(e && e.code === "ESRCH"); // proven dead ONLY on ESRCH
-  }
+  return pidLiveness(pid) === "dead";
 }
 
 /**
@@ -338,11 +338,14 @@ function renew(spId, opts = {}) {
 
 /**
  * reclaim(spId, {root, sessionId}) -> {ok, token, holder, reclaimed_from?, reason?}
- * A crashed holder's lease is reclaimable: pid-dead OR stale-past-TTL
- * (mirrors concurrency-lock's pidAlive + STALE_AFTER_MS). Reclaim mints a
- * NEW, strictly higher fencing token that supersedes the dead one — safe,
- * not a manual force-delete. A live, healthy lease refuses reclaim. If
- * nothing is currently held, reclaim behaves like a cold acquire.
+ * A crashed holder's lease is reclaimable per the ED-237 3-state liveness GATE
+ * (pidLiveness): DEAD (proven-ESRCH) reclaims; LIVE reclaims ONLY when
+ * stale-past-TTL (STALE_AFTER_MS, fencing-token-protected hung-conductor
+ * recovery); INDETERMINATE (invalid pid / non-ESRCH) is refused
+ * (`lease-indeterminate`, manual-recovery — never reclaimed). Reclaim mints a
+ * NEW, strictly higher fencing token that supersedes the old one — safe, not a
+ * manual force-delete. A live, non-stale lease refuses reclaim (`lease-active`).
+ * If nothing is currently held, reclaim behaves like a cold acquire.
  */
 function reclaim(spId, opts = {}) {
   const { root, sessionId } = opts;
@@ -353,13 +356,24 @@ function reclaim(spId, opts = {}) {
     const lp = leasePath(spId, root);
     const holder = readHolder(spId, root);
     if (holder) {
-      // R5 (fix-all-sites): a lease is "dead" ONLY when its pid is PROVEN dead (positive safe-int + ESRCH) —
-      // an invalid pid / non-ESRCH error is NOT proof of death (else it stays via the stale-past-TTL path).
-      const dead = pidProvenDead(holder.pid);
-      const stale = Date.now() - (holder.renewed_at || holder.acquired_at || 0) > STALE_AFTER_MS;
-      if (!dead && !stale) {
-        return { ok: false, reason: "lease-active", token: holder.token, holder };
+      // ED-237 (β design-lock 0.90): liveness is a 3-STATE GATE evaluated BEFORE the TTL/stale branch. This
+      // RIPS OUT the R5 `dead || stale` OR that let an INDETERMINATE-but-stale lease reclaim via the stale path
+      // (the occurrence-3 leak). INDETERMINATE (invalid pid / non-ESRCH) short-circuits to manual-recovery and
+      // is NEVER reclaimed. DEAD (proven-ESRCH) reclaims. LIVE reclaims ONLY when stale-past-TTL — the
+      // intentional hung-conductor recovery, FENCING-TOKEN-PROTECTED (the new token supersedes; the stale live
+      // holder's release/renew are refused by the fencing check in release()/renew()).
+      const liveness = pidLiveness(holder.pid);
+      if (liveness === "indeterminate") {
+        return { ok: false, reason: "lease-indeterminate", token: holder.token, holder };
       }
+      if (liveness === "live") {
+        const stale = Date.now() - (holder.renewed_at || holder.acquired_at || 0) > STALE_AFTER_MS;
+        if (!stale) {
+          return { ok: false, reason: "lease-active", token: holder.token, holder };
+        }
+        // live AND stale-past-TTL → fall through to reclaim (fencing-token-protected live-recovery).
+      }
+      // liveness === "dead" (proven), OR (liveness === "live" AND stale) → reclaim.
       try {
         fs.unlinkSync(lp);
       } catch {
@@ -424,7 +438,7 @@ module.exports = {
   reclaim,
   verifyToken,
   status,
-  pidAlive,
+  pidLiveness,
   pidProvenDead,
   STALE_AFTER_MS,
   DEFAULT_ROOT,
