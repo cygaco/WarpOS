@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260718-005
-updated_at: "2026-07-19T22:22:00.000Z"
+updated_at: "2026-07-19T23:25:00.000Z"
 current_phase: execute
 current_command: "/sprint:execute"
 current_ticket: null
 current_task: "design-complete; entering build (backend-first)"
 current_loop: null
 status: paused
-last_completed_step: "R4 RE-GAUNTLET COMPLETE = FAIL (all 3 lanes LIVE per WG-19; commit range 16b50e45..ced7a450). R3 findings C2-R3 + C4-R3 CONFIRMED CLOSED. Surviving = 2 root classes: (A) conductor-lease reclaim ABA race + PID-not-proven-dead (backend+qa convergent); (B) acceptance-record recompute candidate is caller-overridable + result_commit not immutable-SHA-pinned (qa+security convergent). R5 fix plan ready; awaiting lead go/rescope (each fix round is a governance decision here)."
-next_action: "R4 FIX-CYCLE in progress (operator-authorized /session:resume 2026-07-19 conduct order to Epsilon — supersedes the prior-session 'no R4' park note). R3 re-gauntlet came back FAIL (4 findings): backend C1 pre-stamp lease race; security C2-R3 empty-digest-values + R3-REG-1 wrong-ref tree recompute + C4-R3 tracker overclaim; QA lane reaped 0-byte (no-record). R4 fixes APPLIED with teeth (C1 conductor-lease no-mtime-reclaim-of-unidentifiable-lock; C2-R3 acceptance-record non-empty-digest-values; R3-REG-1 acceptance-record recompute-from-candidate; C4-R3 this tracker honesty). Local suites GREEN (conductor-lease + acceptance-record 63/63; falsifier corpus 16/16). NEXT: R4 re-gauntlet (backend+security+qa via dispatch-agent.js, incl. a WORKING QA lane) + WG-19 + exit gates + FRESH beta gauntlet->release (prior B/0.90 STALE, pre-dates R2/R3 FAILs) + (if green) release + retro. C4/H5 live-wiring = Phase-4/ED-215 (ED-236 OPEN). AC-16 flip REFUSED (agy upstream-bug down, ED-060)."
+last_completed_step: "R5 (bounded-final, beta DECIDE B/0.89) EXECUTED + RE-GAUNTLET = 3-lane FAIL (all LIVE per WG-19) -> beta bounded-final HARD STOP FIRED -> PARKED. R5 code+teeth committed (d463c50b Cluster-1 whole-lifecycle generation fence + atomic election + pidProvenDead; 22654a3c Cluster-2 immutable-SHA result_commit + recompute-from-record + exact-SHA override + ancestry); local battery 241/241 + exit-gate CLIs green. R5 fixes STRUCTURALLY sound (reviewers confirm ABA + result-side override CLOSED) but a THIRD RECURRENCE of BOTH classes appeared one site/field over: lease reclaim() stale-TTL path reclaims indeterminate-pid leases (ED-237); base_commit still a free string (ED-238). Both binding lanes invoked the cap -> mechanism rethink, NOT R6."
+next_action: "PARKED at beta's bounded-final HARD STOP (3rd recurrence of both defect classes) — do NOT start R6, do NOT patch. AWAIT operator/alpha mechanism-rethink ruling on: ED-237 (model PID liveness as 3-state dead/live/INDETERMINATE and reject indeterminate before ANY reclaim, incl. the lease stale-past-TTL path — a single pidLiveness primitive + uniform policy at all reclaim sites) and ED-238 (a VALIDATED AcceptanceRecord type/schema where EVERY commit-identity field — base_commit + result_commit + the head coordinates — is an immutable 40-hex SHA by construction, not field-by-field regex bolted onto authz; + an independently-reachable CAS-binding tooth). The fix SHAPE (patch-the-flagged-site) is wrong; the class recurs one site/field over each round. R5 code committed (d463c50b, 22654a3c) — a rescoped mechanism fix builds ON it; do NOT revert. ED-236/237/238 OPEN. Release gates NOT cleared. Prior beta gauntlet->release B/0.90 STALE."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "resume R4 re-gauntlet per epsilon.md (backend+security+qa via dispatch-agent.js, envelopes to files) then WG-19 + exit gates; lease held (token 1); branch sprint/SP-20260718-005-phase3"
-resume_notes: "R4 fix cycle (operator-authorized conduct order). R3 re-gauntlet FAILED: C1 (BE), C2-R3 + R3-REG-1 + C4-R3 (SEC), QA lane reaped. R4 fixes committed with teeth this session — do NOT re-apply them. Do NOT re-run plan/design/R2 fixes. Prior beta B/0.90 is STALE — a fresh beta gauntlet->release consult is required before any merge; alpha (not epsilon) merges."
+resume_command: "PARKED at beta bounded-final HARD STOP (do NOT start R6/patch). Await operator/alpha mechanism-rethink ruling on ED-237 (3-state PID liveness at all reclaim sites) + ED-238 (validated AcceptanceRecord schema: every commit-identity field an immutable 40-hex SHA). Lease held (token 1); branch sprint/SP-20260718-005-phase3; R5 code committed (d463c50b, 22654a3c) — build a rescoped mechanism fix ON it, do NOT revert."
+resume_notes: "Bounded-final R5 (beta DECIDE B/0.89) executed + re-gauntlet = 3-lane FAIL = 3rd recurrence of both classes one site/field over -> HARD STOP fired -> PARKED for mechanism rethink (ED-237 liveness 3-state model; ED-238 immutable-commit-SHA record schema). R5 fixes are structurally sound + committed with teeth — do NOT re-apply or revert. Do NOT run plan/design/R2/R3/R4 fixes. Alpha (not epsilon) merges after a fresh beta gauntlet->release; prior B/0.90 STALE. The fix SHAPE (patch-the-flagged-site) is what failed — the rescope must close each class at the MODEL/SCHEMA level."
 safe_to_continue: true
 stop_reason: null

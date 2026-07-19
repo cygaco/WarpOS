@@ -134,3 +134,52 @@ Convergent: qa-reviewer + security-reviewer. Split into TWO findings.
   manual-recovery residual on a reclaimer crash in the election→cleanup window (microsecond),
   and degrades to contended on hardlink-unsupported FS. Fail-closed by design; tracked so a future
   hardening (e.g. a reaper for stale reap links keyed on the reclaimer's own liveness) has a home.
+
+---
+
+## R5 OUTCOME — EXECUTED, RE-GAUNTLET = 3-LANE FAIL → PARKED at β's bounded-final HARD STOP
+
+R5 was executed exactly as briefed (β DECIDE B/0.89). Code + all named teeth committed:
+`d463c50b` (Cluster-1) + `22654a3c` (Cluster-2); local battery **241/241** + exit-gate CLIs green.
+The R5 re-gauntlet (backend gpt-5.6-sol · qa gpt-5.6-terra · security gpt-5.6-sol via codex stdin;
+**all 3 lanes LIVE per WG-19**) returned a **3-lane FAIL**. Raw verdicts: scratchpad `be-r5.out`,
+`qa-r5.out`, `sec-r5.out`.
+
+**What R5 CLOSED (reviewer-confirmed, both lanes):** the Cluster-1 ABA class is structurally closed
+(hardlink-publish → no unstamped window; nonce-keyed reap-link election; reverify-before-remove;
+losers can't remove; nonce-fenced cleanup; `pidProvenDead` correct + used at both mutation-lock
+sites). The Cluster-2 result-side override is closed (recompute from `record.result_commit` only;
+caller refs require exact-SHA equality; `result_commit` FULL_SHA_RE-pinned; ancestry fail-closed;
+CAS exact-candidate comparison present).
+
+**Why it FAILED — a THIRD RECURRENCE of BOTH classes, one site/field over (the HARD-STOP trigger):**
+- **ED-237 — unsafe-reclaim / liveness model.** Backend (`C1-R5-PID-NOT-PROVEN-DEAD-LEASE`, high) +
+  qa (`C1-R5-PID-LEASE-TEETH`, `C1-R5-NON-ESRCH-TEETH`): the LEASE `reclaim()` computes `stale`
+  independently of `pidProvenDead`, so a stale-past-TTL lease with an INDETERMINATE pid (0 / -1 /
+  non-ESRCH error) is reclaimed via the stale path, bypassing the proven-dead gate. NB: the lease
+  stale-TTL reclaim is an INTENTIONAL hung-conductor recovery — so this is a MODEL decision (reject
+  indeterminate vs allow-stale), not a per-site patch.
+- **ED-238 — mutable-binding / record schema.** Security (`R5-BASE-COMMIT-MUTABLE-BINDING`, high):
+  `FULL_SHA_RE` pins `result_commit` but `base_commit` remains any truthy string, so a mutable base
+  (e.g. `refs/heads/integration`) reopens stale-base authorization. Also open: the CAS-binding tooth
+  is not independently reachable (security `R5-CAS-EXACT-SHA-TEETH` / qa `C2-R5-CAS-BINDING-TEETH` —
+  authz rejects first, so the `new-head-not-bound-candidate` guard is never exercised).
+- qa also flagged `SP005-R5-TRACKER-STALE` (a transient — the tracker said "R5 pending" after the R5
+  commits landed); resolved in this park update.
+
+**Root diagnosis (the mechanism rethink β reserved):** the fix SHAPE — *pin/patch the flagged site* —
+is what's failing. Each round closes the named instance and the SAME class reappears one site/field
+over (mutation-lock pid → lease pid; `result_commit` SHA → `base_commit` SHA). The true root of each
+class is at the **model/schema level**:
+- **ED-237:** a single `pidLiveness(pid) → dead|live|indeterminate` primitive + a uniform reclaim
+  policy that requires a DEFINITE state at EVERY reclaim site (mutation-lock + lease fast-path +
+  lease stale-path), + lease-level invalid-pid + injected-non-ESRCH teeth.
+- **ED-238:** a validated AcceptanceRecord type/schema where EVERY commit-identity field
+  (`base_commit` + `result_commit` + the head coordinates) is a 40-hex SHA **by construction**, not
+  ad-hoc regex in `authorizesIntegration`; + an independently-reachable CAS-binding tooth.
+
+**PARK decision (β-binding):** do NOT patch, do NOT start R6. The R5 commits STAY (structurally
+sound; a rescoped mechanism fix builds ON them — do not revert). Await the operator/α mechanism-
+rethink ruling on ED-237 + ED-238. This is the "operator scope reckoning" the cap defines.
+ED-236 + ED-237 + ED-238 OPEN; release gates NOT cleared; α merges only after a fresh β
+gauntlet→release once the rescoped fix is green.
