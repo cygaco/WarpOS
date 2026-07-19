@@ -317,6 +317,30 @@ test("commitIntegration never mutates git by default (no performRefUpdate opt-in
   assert.strictEqual(acc.resolveCommitSha("refs/heads/acc-record-noop-test-ref"), null);
 });
 
+// ── H5 (R2, lead ruling): the no-op-lexical-bypass is REFUSED AT RUNTIME by the mutation primitive ──────
+test("H5 falsifier: a no-op-lexical-choke-point bypass is defeated IN-PRIMITIVE — commitIntegration + authorizesIntegration refuse an under-authorized record regardless of any nearby no-op authorizesIntegration() call", () => {
+  // The attack (H5): an integrator places a NO-OP `authorizesIntegration(record, ref);` (result discarded) near
+  // its `.success` merge gate — that satisfies the BOUNDED LEXICAL choke-point, which cannot prove the call's
+  // result actually gates the merge. The runtime guarantee is IN-PRIMITIVE: the actual merge path
+  // (commitIntegration) internally REQUIRES authorizesIntegration to PASS, so the attacker's under-authorized
+  // record (here a bare provider self-report) is refused when they try to actually mutate — the lexical guard
+  // being fooled is irrelevant. This is the honest boundary marker the H5 ruling requires.
+  const bareEnvelope = { success: true, target_ref: "refs/heads/integration", terminal_state: "success" };
+  // (the no-op the attacker would use to fool the lexical scan: `authorizesIntegration(bareEnvelope, ref); // ignored`)
+  const runtime = acc.commitIntegration(bareEnvelope, "refs/heads/integration", {
+    expectedHead: "base-OK",
+    liveHead: "base-OK",
+    treeResolver: okTree,
+    performRefUpdate: true,
+  });
+  assert.strictEqual(runtime.ok, false, "the mutation primitive must refuse an under-authorized record even if the lexical guard was fooled");
+  // and authorizesIntegration itself refuses the bare envelope (no full content-addressed identity / lease).
+  assert.strictEqual(
+    acc.authorizesIntegration(bareEnvelope, "refs/heads/integration", { integrationHead: "base-OK", treeResolver: okTree }),
+    false,
+  );
+});
+
 // ── resolveTreeHash / resolveCommitSha — read-only git introspection primitives ────────────────────────
 test("resolveTreeHash/resolveCommitSha resolve a REAL ref in this repo to real hex identities", () => {
   const sha = acc.resolveCommitSha("HEAD");

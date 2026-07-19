@@ -16,6 +16,18 @@
  * with a reason, reviewed as code, and tracked — never opted out by a per-record field. Empty today (no
  * known exemption for this surface); the hook exists so a future one is handled the same disciplined way.
  *
+ * BOUNDED LEXICAL GUARD — HONEST CEILING (SP-20260718-005 gauntlet R2/H5, lead ruling): this is a LEXICAL
+ * scan (does an `authorizesIntegration` routing reference sit near the `.success` gate), NOT a control/data-
+ * flow proof. A lexical scan CANNOT prove the routing call's RESULT actually gates the merge — a NO-OP call
+ * (`authorizesIntegration(record, ref);` with the result ignored) satisfies the presence check while the
+ * merge runs on `.success` alone. We do NOT pretend otherwise: this guard is DEFENSE-IN-DEPTH. The REAL
+ * runtime guarantee is IN-PRIMITIVE — `acceptance-record.js#commitIntegration` (the mutation primitive)
+ * INTERNALLY requires `authorizesIntegration` to PASS (fail-closed: mandatory identity + freshness + lease +
+ * recompute), so a no-op-call attacker who then tries to actually MERGE is refused inside the primitive,
+ * regardless of what the lexical scan saw. The DEFINITIVE close of the lexical ceiling is the Phase-4 pinned
+ * external trusted checker (ED-215 family: RATIFIED-PLAN Phase 4 trusted enforcement adapter). Falsifier
+ * proving the in-primitive refusal of the no-op-lexical-bypass: acceptance-record.test.js (H5 runtime teeth).
+ *
  * Exit: 0 clean · 1 an un-routed integrator gates a merge on ResultEnvelope success · 2 usage/internal.
  */
 const fs = require("fs");
@@ -149,7 +161,9 @@ if (require.main === module) {
   } else if (!fail) {
     process.stdout.write(
       `OK   [acceptance-read-choke-point] every merge/integrate reader routes through acceptance-record.authorizesIntegration` +
-        ` (${res.exemptSeen.length} cross-session reader(s) structurally exempt).\n`,
+        ` (${res.exemptSeen.length} cross-session reader(s) structurally exempt). NOTE: bounded LEXICAL guard` +
+        ` (defense-in-depth) — the runtime guarantee is IN-PRIMITIVE (commitIntegration requires` +
+        ` authorizesIntegration); definitive close = Phase-4 pinned trusted checker (ED-215 family).\n`,
     );
   } else {
     if (res.violations.length) {
