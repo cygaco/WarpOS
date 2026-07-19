@@ -291,11 +291,20 @@ const forgedAgy = { sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok:
 test("ED-231: an UNSIGNED forged 3-lab set (the reproduced attack) does NOT attest — fail-closed", () => {
   const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [forgedGpt, forgedAgy, forgedHunter] });
   assert.equal(out.ok, false, "a hand-authored (unsigned) record set must NOT attest — origin-proof closes the forgery");
+  // R3-HIGH-01: the agy lane fails-closed UNCONDITIONALLY (R2-CRITICAL-01), so out.ok===false ALONE is masked
+  // (it would hold even if the signature check broke). Assert the NON-AGY lanes are INDIVIDUALLY unattested —
+  // THAT is what proves origin-proof rejects the unsigned forgery, independent of the agy hard-fail.
+  assert.equal(out.lanes.find((l) => l.laneId === "gpt").attested, false, "origin-proof must reject the unsigned forged gpt record (not masked by the agy hard-fail)");
+  assert.equal(out.lanes.find((l) => l.laneId === "claude").attested, false, "origin-proof must reject the unsigned forged hunter record (not masked by the agy hard-fail)");
 });
 test("ED-231: a WRONG-MAC forged set does NOT attest — fail-closed", () => {
   const bad = [forgedGpt, forgedAgy, forgedHunter].map((r) => ({ ...r, attest_sig: "0".repeat(64) }));
   const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: bad });
   assert.equal(out.ok, false, "an invalid signature must NOT attest");
+  // R3-HIGH-01: assert the NON-AGY lanes are individually unattested so the wrong-MAC rejection is proven
+  // independent of the agy hard-fail mask (a broken signature check would otherwise slip through un-caught).
+  assert.equal(out.lanes.find((l) => l.laneId === "gpt").attested, false, "origin-proof must reject the wrong-MAC gpt record (not masked by the agy hard-fail)");
+  assert.equal(out.lanes.find((l) => l.laneId === "claude").attested, false, "origin-proof must reject the wrong-MAC hunter record (not masked by the agy hard-fail)");
 });
 test("ED-231: a single hand-authored hunter record (right fields, no sig) does NOT attest its lane", () => {
   const out = attestLane(LANES.claude, [forgedHunter], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });

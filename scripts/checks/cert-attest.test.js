@@ -275,6 +275,11 @@ test("ADR-0027 rider-2 teeth-check: the REAL 22:16 spike log (canonical=attested
   // (1) The FULL spike log → attested:false (GATE-1 catches the coexisting pre-auth default/eval/expired tells).
   const vFull = evaluateAttestation({ requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity", output: full, exitOk: true, catalog });
   assert.equal(vFull.attested, false, "the real 22:16 spike log must fail-closed on the hardened gate (canonical returned attested:true — that is the false-green this closes): " + vFull.reason);
+  // R3-MEDIUM-02: PIN the rejection to GATE-1 (not just attested:false) — the full log carries the terminal
+  // default/eval/expired tells, so GATE-1 (defaultSignal) MUST be what rejects it. A future change that
+  // bypasses GATE-1 and leans only on §7 would silently pass a bare attested:false check; asserting
+  // defaultSignal:true keeps this a real GATE-1 teeth-check.
+  assert.equal(vFull.defaultSignal, true, "the full spike log must reject via GATE-1 (the terminal default/eval/expired tells), not only via §7 — pin the gate so a GATE-1 regression is caught: " + vFull.reason);
   // (2) POST-AUTH-ONLY slice — genuine-looking serve evidence, NO terminal tells → STILL fails via §7 honest-
   //     ceiling (backend-label / request-side-bind is not served-model proof; task #18).
   const postAuth = full.slice(full.indexOf("OAuth: authenticated successfully"));
