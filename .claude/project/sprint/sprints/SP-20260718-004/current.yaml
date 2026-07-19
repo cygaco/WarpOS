@@ -2,7 +2,7 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-004"
 title: "Phase 2 — Identity + host portability (explicit role-bindings precedence graph [dispatched=UNBOUND fail-closed, top-level=Alpha]; provider-neutral canonical instruction source + per-provider projections + drift-check; authority-pollution scan over the EFFECTIVE instruction graph; generic bootstrap; per-provider cwd/sandbox tests; operator-voice helm-only)"
 objective: "Phase 2 — Identity + host portability. PLAN minted + β plan->design DECIDE B/0.89 -> PARKED at the plan->design boundary (2026-07-18). Spine = DERIVED-NOT-SETTABLE (ED-225) primary; a fresh conductor executes design->build. Full plan: .claude/project/sprint/sprints/SP-20260718-004/plan.md."
-status: designing
+status: in_review
 created_at: "2026-07-19T01:07:07.383Z"
 updated_at: "2026-07-19T01:07:07.383Z"
 source_request: ""
@@ -74,10 +74,18 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
-  active_files: []
+  last_checkpoint: "gauntlet R4 (2026-07-19); branch sprint/SP-20260718-004-phase2 @ f52fa46e"
+  resume_command: "await α scope decision (ED-232 A vs B), then close gauntlet + release"
+  resume_summary: "Design+build DONE (A1/A2/G1/C/G2/D/F/E/I committed+green). Derived-not-settable SPINE + ED-231 RIDER-1 release-close gate signing gauntlet-CONFIRMED sound across 4 rounds. HALTED at gauntlet→release: reviewers expanded whole-ledger signing to the broader dispatch-liveness reader family (coverage-gate[blocking]/sprint-manager-consult/sprint-hook-coverage unsigned) + exposed the cross-session per-session-secret ceiling (capsule gate). Fix-cycle limit reached (3 fix rounds R1-R3). Escalated to β + α: Option A (consolidation now) vs B (scope to RIDER-1 done + priority follow-up ED-232). Not pushed/merged."
+  active_files:
+    - "scripts/dispatch/role-resolver.js"
+    - "scripts/dispatch/attest-signing.js"
+    - "scripts/dispatch/gauntlet-verify.js"
+    - "scripts/checks/authority-pollution-scan.js"
+    - "scripts/dispatch-claude.js"
+    - "scripts/dispatch-agent.js"
+    - "scripts/dispatch-review.js"
   dirty_state: false
-  blockers: []
-  safe_to_continue: true
+  blockers:
+    - "α scope+architecture decision (ED-232): sign the broader same-session reader family now (Option A consolidation) vs scope to RIDER-1 release-close gate [DONE] + track as priority follow-up (Option B); plus the cross-session-secret key-distribution ceiling"
+  safe_to_continue: false
