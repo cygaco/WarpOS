@@ -160,6 +160,23 @@ test("authenticated but a DIFFERENT display-name label served → FAILS (GATE 2 
   assert.equal(v.attested, false, "a different served label must never attest the requested model");
 });
 
+// ── ED-060 LAYER-3 (the attestation-side id-mapping): agy self-identifies the SERVED model by DISPLAY
+//    name ("backend: label=…"), so attesting the canonical SLUG FALSE-REDs a genuine authenticated serve.
+//    cert-attest#main maps slug→display (catalog.agyModelName) so the served-model comparison runs against
+//    the display name. This is the exact false-RED observed live 2026-07-19 (a real serve read as failure). ──
+test("layer-3: agy backend-label serve FALSE-REDs vs the SLUG, ATTESTS vs the display name (agyModelName)", () => {
+  const serve = 'ChainedAuth: authenticated via keyring\nOAuth: authenticated successfully\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nPROBE OK';
+  // THE DEFECT cert-attest#main must avoid: comparing agy's display-name serve label to the SLUG.
+  const bySlug = evaluateAttestation({ requestedModel: "gemini-3.1-pro-high", providerId: "antigravity", output: serve, exitOk: true, catalog });
+  assert.equal(bySlug.attested, false, "the slug never appears in agy's display-name serve label → false-RED (the layer-3 defect)");
+  // THE FIX: cert-attest#main resolves the slug→display via catalog.agyModelName before evaluateAttestation.
+  const real = require("../dispatch/catalog.js");
+  const display = real.agyModelName("gemini-3.1-pro-high");
+  assert.equal(display, "Gemini 3.1 Pro (High)", "resolver gives the display name");
+  const byDisplay = evaluateAttestation({ requestedModel: display, providerId: "antigravity", output: serve, exitOk: true, catalog });
+  assert.equal(byDisplay.attested, true, "the display name attests the genuine authenticated serve — layer-3 mapping closes ED-060");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

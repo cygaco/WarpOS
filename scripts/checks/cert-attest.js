@@ -384,6 +384,15 @@ function main(argv) {
     process.stderr.write(`${NAME}: cannot resolve a provider for model "${model}" (pass --provider) — is it in the catalog?\n`);
     return 2;
   }
+  // ED-060 slug→display (ATTESTATION layer — the layer-3 completion of the id-mapping fix). agy
+  // self-identifies the SERVED model in its output by DISPLAY name ("Gemini 3.1 Pro (High)"), NOT the
+  // catalog slug. So the served-model comparison (evaluateAttestation GATE-2) must run against the
+  // display name — otherwise a GENUINE authenticated serve of the contracted model FALSE-REDs, because
+  // the requested slug never appears in agy's serve label ("backend: label=…"; observed live 2026-07-19).
+  // Same single catalog resolver the two dispatch boundaries use; non-antigravity / unmapped ids pass
+  // through UNCHANGED. The probe --model arg is already display-translated by probeShape; this closes
+  // the third and last site (dispatch-arg providers.js + dispatch-arg cert-attest + THIS comparison).
+  const attestModel = providerId === "antigravity" ? catalog.agyModelName(model) : model;
   const shape = probeShape(providerId, model, providerId === "openai" ? effort : null);
   if (!shape) {
     process.stderr.write(`${NAME}: no probe shape for provider "${providerId}"\n`);
@@ -469,7 +478,7 @@ function main(argv) {
   // ledger record — this .ok is a process-exit signal, not a forgeable liveness claim.
   const exitOk = spawned.ok === true && spawned.exitCode === 0;
 
-  const verdict = evaluateAttestation({ requestedModel: model, providerId, output: combined, exitOk, catalog });
+  const verdict = evaluateAttestation({ requestedModel: attestModel, providerId, output: combined, exitOk, catalog });
 
   // Write the attestation artifact (walk-skipped runtime/). Full raw output retained for audit +
   // header-regex calibration on the first live fire.
@@ -478,6 +487,7 @@ function main(argv) {
   const artifact = {
     check: NAME,
     requested_model: model,
+    attested_model_id: attestModel, // ED-060: the (display-name) id agy's serve label was compared against; == requested_model for non-antigravity
     provider: providerId,
     effort: providerId === "openai" ? effort : null,
     attested: verdict.attested,
