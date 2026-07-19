@@ -63,6 +63,33 @@ test("FIXTURE (i): a dispatched worker asserting role:'President' STILL never re
   }
 });
 
+test("FIXTURE (i) — ENV VECTOR (β rider): a worker that setenv's WARPOS_BOUND_ROLE/WARPOS_ACTOR_KIND STILL resolves derived, env is inert", () => {
+  // β's design→build load-bearing rider: WARPOS_BOUND_ROLE/WARPOS_ACTOR_KIND are the TRANSPORT of the
+  // parent's pre-spawn decision (the worker's self-knowledge), never the AUTHORITY source. A worker OWNS its
+  // own env and can setenv them mid-life — deriveBinding must ignore that entirely (it reads {channel, role}).
+  const saved = { br: process.env.WARPOS_BOUND_ROLE, ak: process.env.WARPOS_ACTOR_KIND };
+  try {
+    process.env.WARPOS_BOUND_ROLE = "President";
+    process.env.WARPOS_ACTOR_KIND = "top_level_session";
+    const b = deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: RB, knownRoles: KNOWN });
+    assert.strictEqual(b.actor_kind, "dispatched_worker", "hostile env WARPOS_ACTOR_KIND must NOT override the channel-derived actor_kind");
+    assert.strictEqual(b.boundRole, "backend-builder", "hostile env WARPOS_BOUND_ROLE must NOT override the derived role");
+    // A President dispatch is still refused regardless of the hostile env.
+    assert.strictEqual(deriveBinding({ channel: "dispatch-claude", role: "President" }, { rb: RB, knownRoles: KNOWN }).ok, false);
+  } finally {
+    if (saved.br === undefined) delete process.env.WARPOS_BOUND_ROLE; else process.env.WARPOS_BOUND_ROLE = saved.br;
+    if (saved.ak === undefined) delete process.env.WARPOS_ACTOR_KIND; else process.env.WARPOS_ACTOR_KIND = saved.ak;
+  }
+});
+
+test("FIXTURE (i) — ENV-vector SOURCE GUARD: role-resolver.js never READS WARPOS_ACTOR_KIND/WARPOS_BOUND_ROLE as authority", () => {
+  // The invariant that makes the env-vector inert BY CONSTRUCTION: the resolver derives, it never re-reads the
+  // transport env vars. A future `if (process.env.WARPOS_ACTOR_KIND === 'top_level_session') allow()` would
+  // re-open the phantom-one-layer-up hole — this source guard catches it.
+  const src = require("node:fs").readFileSync(require("node:path").join(__dirname, "role-resolver.js"), "utf8");
+  assert.ok(!/process\.env\.WARPOS_(ACTOR_KIND|BOUND_ROLE)/.test(src), "role-resolver.js must not read the identity transport env vars as authority");
+});
+
 test("FIXTURE (i) — structural: deriveBinding's ONLY inputs are {channel, role}; a worker-set field cannot reach it", () => {
   // Even if a worker crams extra self-asserted authority fields into the call, they are ignored — the
   // function signature destructures {channel, role} and nothing else. This is the derived-not-settable

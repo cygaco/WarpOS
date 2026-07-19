@@ -29,6 +29,7 @@
  */
 
 const fs = require("fs");
+const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 const path = require("path");
 const { evaluate, readLedger } = require("../dispatch/coverage-gate");
 const { LEGACY_CUTOFF, cutoffFor, isLegacyDate } = require("../dispatch/legacy-cutoff");
@@ -66,8 +67,12 @@ function resolveExpected(expectedSource, runId, runRecs) {
   } else if (Array.isArray(expectedSource)) {
     external = expectedSource;
   }
-  // claimed = the legacy self-derive (distinct ok:true roles in this run).
-  const claimed = [...new Set(runRecs.filter((r) => r && r.ok === true && r.role).map((r) => r.role))];
+  // claimed = the legacy self-derive (distinct roles with a VERIFIED ok:true record in this run — a
+  // forged/unsigned record can't inject a phantom claimed role; SP-20260718-004 R4 same-session choke-point).
+  const _reqSig = process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0";
+  const claimed = [
+    ...new Set(runRecs.filter((r) => r && r.role && isVerifiedLivenessRecord(r, { requireSignature: _reqSig })).map((r) => r.role)),
+  ];
   const normExternal = Array.isArray(external)
     ? external.map((e) => (typeof e === "string" ? { role: e } : e)).filter((e) => e && e.role)
     : [];

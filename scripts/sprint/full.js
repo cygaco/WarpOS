@@ -37,6 +37,7 @@
 "use strict";
 
 const fs = require("fs");
+const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 const path = require("path");
 const crypto = require("crypto");
 const { spawnSync, execSync } = require("child_process");
@@ -906,10 +907,12 @@ function checkDesignWithoutRoster(sprintId) {
     let hasDesignRecord = false;
     if (hasLedger) {
       const lines = fs.readFileSync(completionsPath, "utf8").split(/\r?\n/).filter(Boolean);
+      const _reqSig = process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0";
       hasDesignRecord = lines.some((line) => {
         try {
           const rec = JSON.parse(line);
-          return rec.sprint === sprintId && rec.step === "design" && rec.ok === true;
+          // SP-20260718-004 R4 same-session choke-point: a VERIFIED ok:true record (not a forged one).
+          return rec.sprint === sprintId && rec.step === "design" && isVerifiedLivenessRecord(rec, { requireSignature: _reqSig });
         } catch { return false; }
       });
     }

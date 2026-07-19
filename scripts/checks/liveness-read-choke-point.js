@@ -1,0 +1,137 @@
+#!/usr/bin/env node
+"use strict";
+/**
+ * liveness-read-choke-point.js — the KILL-THE-SEAM structural guard for same-session dispatch-liveness reads
+ * (SP-20260718-004, gauntlet R4 close; β DIRECTIVE + α reconciliation). The recurrence-stopper.
+ *
+ * THE CLASS: the gauntlet found the SAME mistake-reachable false-green (a reader trusting a field-only ok:true
+ * dispatch-completion record) in reader after reader, round after round. Patching each instance recurred. This
+ * guard closes the CLASS: any SAME-SESSION file that READS the dispatch-completions ledger AND gates on an
+ * ok:true record MUST also verify a valid origin-proof signature — routed through the shared choke-point
+ * (scripts/dispatch/verified-liveness-read.js#isVerifiedLivenessRecord) OR calling attest-signing.verifyRecord
+ * directly. A file that reads + gates on ok:true but NEVER verifies is a re-opened hole → this guard FAILS it.
+ * So a NEW reader added later cannot silently re-open the class — it fails the guard until it verifies.
+ *
+ * CROSS-SESSION EXEMPTION (β teeth — structural, NOT a settable marker): signature verification requires the
+ * signer + verifier to share the per-session HMAC secret (ADR-0025). A reader of a FOREIGN-session ledger
+ * (a different repo/session that signed with a DIFFERENT secret) is UNVERIFIABLE BY CONSTRUCTION — forcing
+ * verification there is a false-RED (the R3 verifyTyped regression). Such readers are EXPLICITLY exempted by
+ * their STRUCTURAL property (they read an isolated/foreign-session ledger), named here with a reason, and
+ * tracked (ED-232 cross-session key-distribution). The exemption is a reviewed CODE allowlist, never a
+ * per-record settable field.
+ *
+ * Exit: 0 clean · 1 a same-session ledger reader gates on ok:true without verifying · 2 usage/internal.
+ */
+const fs = require("fs");
+const path = require("path");
+
+function resolveRoot() {
+  const anchor = path.resolve(__dirname, "..", "..");
+  if (fs.existsSync(path.join(anchor, ".claude"))) return anchor;
+  return process.env.CLAUDE_PROJECT_DIR || anchor;
+}
+const ROOT = resolveRoot();
+
+// Directories to scan (the code that could read the dispatch ledger). Tests + the verifier + the helper itself
+// are excluded (a test is not a live reader; attest-signing IS the verifier; the helper IS the choke-point).
+const SCAN_DIRS = ["scripts/dispatch", "scripts/checks", "scripts/sprint", "scripts/warpos", "scripts/events"];
+const EXCLUDE_BASENAMES = new Set([
+  "verified-liveness-read.js", // the choke-point itself
+  "attest-signing.js", // the verifier itself
+  "liveness-read-choke-point.js", // this guard
+]);
+
+// STRUCTURAL cross-session exemption: readers of a FOREIGN-session ledger, unverifiable by construction.
+// Each entry names WHY it is cross-session (the structural property), not a settable flag. Tracked: ED-232.
+const CROSS_SESSION_EXEMPT = Object.freeze({
+  "scripts/warpos/test-sealed-capsule-gate.js":
+    "verifyTyped reads an ISOLATED child repo's ledger (sealed-capsule gate spawns a foreign session that " +
+    "signs with its own per-session secret); unverifiable under the same-session HMAC model (ADR-0025). " +
+    "Cross-session key-distribution is the ED-232 priority follow-up.",
+});
+
+// A file READS the dispatch-completions ledger if it names it or the canonical read helpers.
+const LEDGER_READ = /dispatch-completions|WARPOS_COVERAGE_LEDGER|readCompletions|dispatchCompletionsFile/;
+// A file GATES on an ok:true liveness RECORD — a dereference of a record's `.ok` field (r.ok === true /
+// rec.ok !== true), the predicate the forgery targets. Deliberately NOT `ok: true` object-literal form:
+// that matches a function's own RETURN value ({ ok: true, ... }), a false positive (e.g. full.js status returns).
+const OK_PREDICATE = /\.ok\s*===\s*true|\.ok\s*!==\s*true/;
+// Verification is PRESENT if it references the shared choke-point or the verifier directly.
+const VERIFIES = /isVerifiedLivenessRecord|filterVerifiedLiveness|verified-liveness-read|verifyRecord/;
+
+function listJs(absDir) {
+  const out = [];
+  let entries;
+  try {
+    entries = fs.readdirSync(absDir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const e of entries) {
+    const abs = path.join(absDir, e.name);
+    if (e.isDirectory()) out.push(...listJs(abs));
+    else if (e.isFile() && e.name.endsWith(".js") && !e.name.endsWith(".test.js")) out.push(abs);
+  }
+  return out;
+}
+
+function scan(root = ROOT) {
+  const violations = [];
+  const exemptSeen = [];
+  for (const d of SCAN_DIRS) {
+    for (const abs of listJs(path.join(root, d))) {
+      if (EXCLUDE_BASENAMES.has(path.basename(abs))) continue;
+      const rel = path.relative(root, abs).split(path.sep).join("/");
+      let text;
+      try {
+        text = fs.readFileSync(abs, "utf8");
+      } catch {
+        continue;
+      }
+      if (!LEDGER_READ.test(text) || !OK_PREDICATE.test(text)) continue; // not a liveness reader
+      if (CROSS_SESSION_EXEMPT[rel]) {
+        exemptSeen.push(rel);
+        continue; // structurally cross-session — unverifiable by construction, tracked (ED-232)
+      }
+      if (!VERIFIES.test(text)) {
+        violations.push({
+          file: rel,
+          what: "reads the dispatch-completions ledger and gates on an ok:true record but NEVER verifies an origin-proof signature (isVerifiedLivenessRecord / verifyRecord) — a forged/unsigned record would read as liveness proof",
+        });
+      }
+    }
+  }
+  // Belt: a stale exemption entry for a file that no longer exists is itself a drift → flag it.
+  const staleExempt = Object.keys(CROSS_SESSION_EXEMPT).filter((f) => !fs.existsSync(path.join(root, f)));
+  return { violations, exemptSeen, staleExempt };
+}
+
+module.exports = { scan, LEDGER_READ, OK_PREDICATE, VERIFIES, CROSS_SESSION_EXEMPT };
+
+if (require.main === module) {
+  const json = process.argv.includes("--json");
+  let res;
+  try {
+    res = scan();
+  } catch (e) {
+    process.stderr.write(`liveness-read-choke-point: internal error (fail-closed): ${e.message}\n`);
+    process.exit(2);
+  }
+  const fail = res.violations.length > 0 || res.staleExempt.length > 0;
+  if (json) {
+    process.stdout.write(JSON.stringify(res, null, 2) + "\n");
+  } else if (!fail) {
+    process.stdout.write(
+      `OK   [liveness-read-choke-point] every same-session dispatch-liveness reader verifies origin-proof signatures` +
+        ` (${res.exemptSeen.length} cross-session reader(s) structurally exempt + tracked ED-232).\n`,
+    );
+  } else {
+    if (res.violations.length) {
+      process.stdout.write(`FAIL [liveness-read-choke-point] ${res.violations.length} same-session reader(s) trust unsigned ok:true records:\n`);
+      for (const v of res.violations) process.stdout.write(`  ${v.file}\n    ${v.what}\n`);
+      process.stdout.write("  Route the ok:true read through scripts/dispatch/verified-liveness-read.js#isVerifiedLivenessRecord (same-session), or add a STRUCTURAL cross-session exemption with a reason.\n");
+    }
+    for (const f of res.staleExempt) process.stdout.write(`  STALE cross-session exemption for a non-existent file: ${f}\n`);
+  }
+  process.exit(fail ? 1 : 0);
+}

@@ -126,6 +126,8 @@ function sha256File(p) {
  * (output_digest / artifacts). This closes the "backfillable, fakeable, blind to
  * whether the artifact appeared" hole — the precondition for flipping to blocking.
  */
+const { isVerifiedLivenessRecord } = require("./verified-liveness-read");
+
 function evaluate(input) {
   const {
     records = [],
@@ -133,7 +135,13 @@ function evaluate(input) {
     runId = null,
     schemaVersion = ARGV_SCHEMA_VERSION,
     verifyArtifacts = false,
+    // SP-20260718-004 gauntlet R4 (β DIRECTIVE): this BLOCKING same-session reader must not trust a
+    // field-only ok:true record — a valid origin-proof signature is required. Default TRUE (the CLI/live
+    // path); unit tests that inject unsigned fixture records opt out with requireSignature:false.
+    requireSignature = true,
   } = input || {};
+  // The trusted-liveness predicate every ok:true match below routes through (the shared choke-point).
+  const isLive = (r) => isVerifiedLivenessRecord(r, { requireSignature });
   const violations = [];
   const covered = [];
   const missing = [];
@@ -180,7 +188,7 @@ function evaluate(input) {
     const roleRecs = pool.filter(
       (r) =>
         r.role === role &&
-        r.ok === true &&
+        isLive(r) && // ok:true AND a valid origin-proof signature (same-session choke-point)
         isBackedRecord(r) &&
         (!exp.shape || r.shape === exp.shape) &&
         (!exp.plan_item_id || r.plan_item_id === exp.plan_item_id),
@@ -227,10 +235,12 @@ function evaluate(input) {
     covered.push({ role, dispatch_id: hit.dispatch_id, provider: hit.provider || null, shape: hit.shape || null, output_digest: hit.output_digest || null });
   }
 
-  // phantom-coverage guard: any ok:true record in the pool that is NOT backed.
+  // phantom-coverage guard: any ok:true record in the pool that is NOT backed OR (same-session) NOT signed.
   for (const r of pool) {
     if (r.ok === true && !isBackedRecord(r)) {
       violations.push(`a completion record (role=${r.role || "?"}) claims ok:true but lacks dispatch_id/cmdline_checksum — hand-authored phantom coverage row REJECTED.`);
+    } else if (r.ok === true && requireSignature && !isLive(r)) {
+      violations.push(`a completion record (role=${r.role || "?"}) claims ok:true and is field-backed but carries NO valid origin-proof signature — a forged/unsigned liveness record REJECTED (ED-231 same-session verification).`);
     }
   }
 

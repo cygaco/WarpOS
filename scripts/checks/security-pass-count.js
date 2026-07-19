@@ -20,6 +20,7 @@
 // Exit: 0 clean (or report-only runtime gaps) · 1 config-coherence break (or --strict runtime gaps)
 //       · 2 fail-closed (registry unreadable).
 const fs = require("fs");
+const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 const path = require("path");
 
 const NAME = "security-pass-count";
@@ -87,7 +88,11 @@ function evaluateRuntime(records, expectedCount) {
     if (!groups.has(key)) groups.set(key, { total: 0, okProviders: new Set() });
     const g = groups.get(key);
     g.total += 1;
-    if (r.ok === true && r.provider) g.okProviders.add(r.provider);
+    // SP-20260718-004 R4 (β DIRECTIVE): a PASS only counts if the ok:true record carries a valid
+    // origin-proof signature — a forged/unsigned record cannot inflate the pass count. Same-session
+    // choke-point; default-on (WARPOS_LIVENESS_REQUIRE_SIG=0 for the fixture tests).
+    if (isVerifiedLivenessRecord(r, { requireSignature: process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0" }) && r.provider)
+      g.okProviders.add(r.provider);
   }
   for (const [key, g] of groups) {
     // A group with ≥2 pass records is a multi-pass review; flag it when FEWER than expectedCount
