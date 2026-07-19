@@ -162,17 +162,24 @@ removes it:
 This makes the doc's promise verifiable at spawn, not assumed — and surfaces a regression loudly
 rather than silently falling back.
 
-### TEAMMATE STALL RULES (WG-6)
+### TEAMMATE STALL RULES (WG-6) — fire-and-poll
 
-A teammate-ε that launches background subprocesses and goes idle "waiting for returns" will wait
+> Canonical doctrine: `.claude/agents/_system/guides/teammate-stall-rules.md` (folded back here per
+> ED-071 / AC-17). That file is the source of record; this section is its ε-spec projection.
+
+A teammate-ε that launches background subprocesses and goes idle "waiting for returns" waits
 FOREVER — the harness re-wakes a teammate ONLY on an incoming `SendMessage`; a subprocess
-completing does NOT trigger a re-wake. The belief that "the harness re-wakes me" is FALSE.
-Observed as a 25-minute stall ×3 (WG-6). Enforcer: `scripts/checks/epsilon-liveness.js`.
+completing does NOT trigger a re-wake (an in-process `Agent(…)` return is a different lane). The
+belief that "the harness re-wakes me" is FALSE. Observed as 25-minute stalls ×3 (WG-6). Enforcer:
+`scripts/checks/epsilon-liveness.js`.
 
-1. **NEVER go idle while a background subprocess is outstanding.** There is no wake event; the wait is infinite.
-2. **Dispatch subprocesses BLOCKING/foreground** — bounded by `DISPATCH_BUILDER_TIMEOUT_MS`. Capture the return and write the completion record **in the same turn**.
-3. **Before any unavoidable idle point**, report concrete state to the team lead: what is outstanding, where evidence will land. The lead can watchdog and recover.
-4. **Lead's recovery:** idle ≠ dead — `SendMessage` wakes an idle teammate. No readiness ping after spawn ≈ reaped (RI-004-class) — re-spawn.
+The shape is NOT "block foreground vs idle forever" — it is **fire-and-poll**: fire the work, then
+actively POLL a durable signal in the SAME turn, so you never yield to an event that will not fire.
+
+1. **FIRE.** Launch the subprocess(es). Background fan-out is allowed PROVIDED you poll (below); for a single hard dependency a bounded foreground dispatch is the simplest correct choice.
+2. **POLL a durable signal, in-turn** — never `await` an inbox that won't wake. Poll the **signal board** (`scripts/teams/signal-board.js wait <topic> --timeout <s>`) for teammate rulings/verdicts (β, a Director), or the **completion ledger** (`gauntlet-verify` / `epsilon-liveness.js`) for dispatched-worker returns — absence of an `ok:true` well-formed record IS the death signal, not narration.
+3. **BOUND every poll, and don't declare death early.** A long dispatch is NOT dead before the **540s clamp + margin**; check for the late-landing artifact before writing a lane off (declared-reaped lanes have completed late — the artifact beats the narration). A death exactly AT the clamp is a *timeout* → re-dispatch smaller / larger-bound, never an identical retry.
+4. **Report state before any unavoidable idle point** — `SendMessage` the lead what is outstanding + where evidence lands. Idle ≠ dead: a `SendMessage` wakes an idle teammate; no readiness ping after spawn ≈ reaped (RI-004-class) → re-spawn.
 
 ---
 
