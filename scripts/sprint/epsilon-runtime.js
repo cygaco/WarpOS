@@ -367,7 +367,7 @@ function telemetry() {
 function recordAgentDispatch(
   agentPlan,
   sprintId,
-  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime", verdict } = {},
+  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime", verdict, shape = "in-process-agent" } = {},
 ) {
   // FAKE-GREEN GUARD: refuse to write a completion record without an EXPLICIT boolean
   // outcome from a real spawn. The prior `{ ok = true }` default let conductStep stamp
@@ -402,11 +402,15 @@ function recordAgentDispatch(
     stderr_bytes: 0,
     fallback: false,
     ok,
-    // SR-016 sweep: the in-process record carries its STRUCTURAL channel shape, exactly as the subprocess
-    // wrappers do (dispatch-agent → subprocess-cross-provider, dispatch-claude → subprocess-claude). This
-    // is the non-settable identity the panel hunter attestation keys on — a subprocess record (shape
-    // subprocess-claude) can never masquerade as the in-process hunter by setting a `via` label.
-    shape: "in-process-agent",
+    // SR-016 sweep: the record carries its STRUCTURAL channel shape, exactly as the subprocess wrappers do
+    // (dispatch-agent → subprocess-cross-provider, dispatch-claude → subprocess-claude). This is the
+    // non-settable identity the panel hunter attestation keys on. `shape` is WRITER-DETERMINED BY ROUTE
+    // (this internal function's two trusted call sites: the in-process path defaults to "in-process-agent";
+    // the CLAUDE_RAW `claude -p --agent` path passes "subprocess-claude" — CLAUDE-RAW-SHAPE-STAMP hunter LOW,
+    // channel-faithful). It is NOT settable from a dispatch payload — a subprocess record can never
+    // masquerade as the in-process hunter (isHunterRecord also requires role === security_claude_hunter,
+    // which no CLAUDE_RAW tool role carries).
+    shape,
     // T-303 (N8): run-context for §17.4 coverage-gate run-scoped filtering.
     // run_id from env (set by full.js or inherited — null when dispatched standalone).
     // phase_id derived from agentPlan.step (authoritative for in-process records;
@@ -658,7 +662,11 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   const r = run(bin, [...binArgs, "-p", "--agent", agentPlan.role], { ...common, input: prompt, timeout: rawBaseMs + PARENT_GRACE_MS });
   const out = interpretSpawn(r, agentPlan, /*recordedByCli=*/ false);
   if (out.spawned) {
-    recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt) });
+    // CLAUDE-RAW-SHAPE-STAMP (hunter LOW, channel-faithful): a `claude -p --agent` raw dispatch is a
+    // SUBPROCESS-claude channel, not in-process — stamp its true channel shape (the record can never be
+    // mistaken for the in-process hunter; role != security_claude_hunter + no evidence digest already
+    // exclude it — this is faithfulness/defense-in-depth, not a fix for an exploitable path).
+    recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt), shape: "subprocess-claude" });
     out.recorded = true;
   }
   return out;

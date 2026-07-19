@@ -188,6 +188,15 @@ function validatePanelManifest(opts = {}) {
   if (!p2 || p2.binding === true) errors.push(`panel-2family must exist as the non-binding degraded floor (binding:false)`);
   else if (!setEq(p2.required || [], nonAgyLaneIds)) errors.push(`panel-2family.required must be EXACTLY the non-agy lab set ${JSON.stringify(nonAgyLaneIds)} (got ${JSON.stringify(p2.required)}) — agy is optional (operator-owned), not required, in the degraded floor (SR-006)`);
 
+  // (6) hunter MIN-FAMILIES-UNVALIDATED (defense-in-depth): every profile's min_families must be >= 2. The
+  // required-set (5) + the per-lane coercion gate in panelStatus already force >= 2 DISTINCT observed
+  // families by construction today, but a mutated min_families:1 would pass validation and let panelStatus
+  // green a single-family panel — assert the floor here so a drifted manifest is a loud RED, not silent.
+  for (const [pn, prof] of Object.entries(manifest.profiles || {})) {
+    if (typeof prof.min_families !== "number" || prof.min_families < 2)
+      errors.push(`profile '${pn}' min_families must be a number >= 2 (got ${JSON.stringify(prof.min_families)}) — a security panel requires >= 2 provider families`);
+  }
+
   return { ok: errors.length === 0, errors, passes, lanes };
 }
 
@@ -257,7 +266,12 @@ function panelStatus(profile, lanes = [], opts = {}) {
     if (l.alive !== true) { blocked.push(laneId); laneStatus[laneId] = "dead"; continue; }
     const v = String(l.verdict || "").toLowerCase();
     if (v === "fail") { failed.push(laneId); laneStatus[laneId] = "fail"; continue; }
-    if (v === "error" || v === "") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }
+    // BE-CQ-001 (backend-reviewer HIGH, fail-closed ALLOWLIST): only an allowlisted PASS-class verdict
+    // (pass/warn) is alive-clean. "error"/"" AND any UNKNOWN verdict (a hallucinated/malformed value like
+    // "banana") → BLOCKED refused-or-malformed. The old branch enumerated only "error"/"" explicitly, so
+    // an unrecognized verdict fell through to alive-clean — a binding false-green (verified: panelStatus
+    // PASS on verdict="banana"). An unrecognized verdict can NEVER count as a passing lane.
+    if (v !== "pass" && v !== "warn") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }
     // ALIVE + CLEAN + ATTESTED on the CONTRACTED provider → counts toward diversity (β#1 observed).
     laneStatus[laneId] = "alive-clean";
     const fam = PANEL_PROVIDER_FAMILY[l.observedProvider] || l.observedProvider;

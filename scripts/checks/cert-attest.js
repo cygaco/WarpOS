@@ -35,6 +35,16 @@ const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 // re-implements a lane-identity check (the duplication was the SR-016/SR-017 root). Structural guard:
 // scripts/checks/provenance-invariants.js.
 const pv = require(path.join(__dirname, "..", "dispatch", "provenance-verifier"));
+// ORIGIN-PROOF (ED-231 / ADR-0025): the per-session HMAC verifier. attestLane requires a VALID signature on
+// every candidate record — a hand-authored record (never through the trusted writer) has no valid signature and
+// is rejected, closing the forged-record live false-green. Fail-CLOSED: an unloadable module → verifyRecord is a
+// stub that returns false (no record can attest), never a silent pass.
+let attestSigning;
+try {
+  attestSigning = require(path.join(__dirname, "..", "dispatch", "attest-signing"));
+} catch {
+  attestSigning = { verifyRecord: () => false };
+}
 
 function loadCatalog() {
   return require(path.join(ROOT, "scripts", "dispatch", "catalog.js"));
@@ -84,7 +94,21 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   const req = norm(requestedModel);
   if (!exitOk) return { attested: false, effective: null, reason: "dispatch did not exit cleanly (non-zero / reaped / empty)" };
   if (!out) return { attested: false, effective: null, reason: "empty CLI output — nothing to attest" };
-  const requestedSeen = out.includes(req);
+  // GATE 1 (QA-HG-001, fail-closed — LOUD defense-in-depth, NOT the sole gate): any NON-AUTHENTICATED /
+  // DEFAULT / FALLBACK / EVAL signal means the requested model did NOT genuinely serve. Observed LIVE
+  // (unauthenticated agy): "Model ID gemini-3.1-pro-high not in local config, defaulting to CCPA" /
+  // "Model resolved via default" / "not logged into Antigravity" / "Entering local chrome mode ... eval mode".
+  // A blocklist is a LOWER BOUND (a novel unauth phrase could dodge it) — so GATE 2 below is the real
+  // positive-proof requirement (β SHARP-1). This gate stays as the loud, named diagnostic.
+  const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|local-chrome-mode|eval-mode|authentication-failed|unauthorized)/;
+  if (NON_AUTH_SIGNAL.test(out))
+    return {
+      attested: false,
+      effective: null,
+      reason:
+        "served-model UNVERIFIABLE — output carries a default/unauthenticated/eval signal ('not in local config, defaulting' / 'resolved via default' / 'not logged in' / 'local chrome mode'): the requested id was echoed but did NOT serve → fail-closed (QA-HG-001 GATE 1)",
+      defaultSignal: true,
+    };
   // Any OTHER catalog model for this provider appearing in the output = a served-a-different-model tell.
   let otherSeen = null;
   try {
@@ -94,12 +118,44 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
       if (id !== req && out.includes(id)) { otherSeen = m.id; break; }
     }
   } catch { /* catalog optional for the pure core */ }
-  if (otherSeen && !requestedSeen)
-    return { attested: false, effective: otherSeen, reason: `CLI output names a DIFFERENT model "${otherSeen}" — the opts.model||default trap (served the default, not the requested -m)`, otherSeen };
-  if (requestedSeen)
-    return { attested: true, effective: requestedModel, reason: "CLI output self-identifies the requested model", requestedSeen: true };
-  // Neither the requested nor another known id found → inconclusive → FAIL-CLOSED (never a false green).
-  return { attested: false, effective: null, reason: "requested model id NOT found in CLI output — inconclusive (fail-closed); inspect the artifact + calibrate the header capture", requestedSeen: false, otherSeen };
+  // GATE 2 (POSITIVE proof — β SHARP-1: fail-closed on the ABSENCE of positive proof, INDEPENDENT of GATE 1's
+  // blocklist; the lead: "parse the SERVED/resolved model, never substring-match the request echo"). A bare
+  // occurrence of the requested id is NOT proof it SERVED — a CLI can ECHO the request ("Model ID <req> not in
+  // local config") without serving it. Require the id to appear in an AFFIRMATIVE served/resolved
+  // SELF-IDENTIFICATION: a served-marker token (model / serving / resolved / using / active / loaded) bound
+  // directly to the requested id — what a genuine self-id header ("model: <id>") or an authenticated agy log
+  // ("Model resolved: <id>") looks like, and what a request-echo ("Model ID <id> not in local config") does
+  // NOT satisfy (the "ID" + negation intervene). A provider that emits NO served self-id in verifiable output
+  // (agy stdout is "PROBE OK"; the served model lives only in the --log-file folded into `output`) can attest
+  // ONLY when that log AFFIRMATIVELY resolves the contracted model — an UNAUTHENTICATED agy never does, so agy
+  // §7 fails-closed here (the honest ceiling until an authenticated log names the contracted model resolved).
+  const reqEsc = req.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // The served marker must be a HEADER colon ("model: <id>") or a genuine SERVE VERB (serving/resolved/using/
+  // active/loaded) bound to the id — NOT the bare word "model", which also appears in a REQUEST echo
+  // ("Requested model <id>" / "Model ID <id>"). The colon/verb distinguishes a served self-id from an echo.
+  // ("resolved via default" is already GATE-1 fail-closed, so a matched "resolved" here is a genuine serve.)
+  // FURTHER (qa QA-HG-001 R2): a COLON-form REQUEST echo ("Requested model: <id>" / "submitting model: <id>")
+  // also carries a colon — reject a served-marker match that is in a REQUEST CONTEXT (preceded by a request/
+  // submit/input word). HONEST CEILING (documented, NOT claimed closed): output-parsing cannot defeat a CLI
+  // that SPOOFS a clean serve header with a novel request phrasing — that residual is undecidable-by-parsing
+  // (the R6-BE-002 class), and the REAL proof is an AUTHENTICATED-BACKEND response (for agy, the operator
+  // Antigravity login — ED-060). Since agy is operator-BLOCKED and its ACTUAL log fail-closes (GATE 1 + the
+  // "Model ID" non-colon echo), there is no LIVE false-green today; the ceiling is tracked, not a shipped hole.
+  const SERVED_MARKER = new RegExp(`(model[-\\s]*:[-\\s]*|(?:serving|resolved|using|active|loaded)[-:\\s]*)${reqEsc}`);
+  const REQUEST_CTX = /(request|requested|requesting|submit|submitting|sending|sent|input|prompt|queued|pending|asking|asked|echo)[-\s]*$/;
+  let servedSelfId = false;
+  const _m = SERVED_MARKER.exec(out);
+  if (_m) {
+    const before = out.slice(Math.max(0, _m.index - 16), _m.index);
+    servedSelfId = !REQUEST_CTX.test(before); // a marker in a request context is an echo, not a serve
+  }
+  if (otherSeen && !servedSelfId)
+    return { attested: false, effective: otherSeen, reason: `CLI output names a DIFFERENT model "${otherSeen}" and no affirmative served self-id of the requested model — the opts.model||default trap (served the default, not the requested -m)`, otherSeen };
+  if (servedSelfId)
+    return { attested: true, effective: requestedModel, reason: "CLI output affirmatively self-identifies the requested model as SERVED (positive proof; no default/unauth signal)", requestedSeen: true, servedSelfId: true };
+  // No affirmative served-model self-identification → INCONCLUSIVE → FAIL-CLOSED (β SHARP-1: absence of
+  // positive proof is a fail, not a pass — a bare request echo is not proof). agy unauthenticated lands here.
+  return { attested: false, effective: null, reason: "no AFFIRMATIVE served-model self-identification of the requested model — a bare request echo is NOT proof it served; inconclusive → fail-closed (QA-HG-001 GATE 2 / β SHARP-1 positive-proof). For agy this is the honest §7 ceiling until an authenticated log names the contracted model as resolved.", requestedSeen: out.includes(req), servedSelfId: false, otherSeen };
 }
 
 function providerForModel(catalog, model, explicit) {
@@ -175,6 +231,10 @@ function attestLane(lane, records, opts = {}) {
   const provenanceOk = (r) =>
     typeof r.code_sha === "string" && r.code_sha.length > 0 && (codeSha == null || r.code_sha === codeSha) && !!r.cmdline_checksum;
   const match = sameRun.find((r) => {
+    // ORIGIN-PROOF FIRST (ED-231 / ADR-0025): a valid per-session signature proves the record came from the
+    // trusted writer — a hand-authored/forged record has none → NOT attested. This is the ROOT close of the
+    // forged-record live false-green; the identity + provenance checks below are necessary-but-not-sufficient.
+    if (!attestSigning.verifyRecord(r)) return false;
     if (!pv.recordMatchesLane(r, contract, lane.provider)) return false; // IDENTITY (shape+role) from the module
     if (contract.isHunter) return (r.evidence_sha || r.output_digest) && provenanceOk(r);
     // A subprocess lane (cross-provider CLI, or the floor's subprocess-claude): the contracted executable

@@ -15,6 +15,8 @@ const assert = require("assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+// ED-231: isolate the origin-proof session secret to a temp file so the test never touches the real one.
+process.env.WARPOS_ATTEST_SECRET_FILE = path.join(os.tmpdir(), `attest-secret-recprov-${process.pid}-${Date.now()}`);
 const { recordCompletion } = require("../dispatch-agent");
 
 let passed = 0;
@@ -59,20 +61,34 @@ test("SR-013: recordCompletion persists a non-empty code_sha (git HEAD)", () => 
   });
 });
 
-// ── an explicit caller value still wins (backward-compatible, not clobbered). ──
-test("a caller-provided panel_run_id/code_sha is preserved (additive, non-clobbering)", () => {
+// ── ED-231 (α ruling — WRITER-AUTHORITATIVE, supersedes the pre-ED-231 caller-explicit-wins model that
+//    enshrined exactly what the forgery exploited): the writer's OWN derived provenance (env panel_run_id +
+//    own git HEAD code_sha) is authoritative. A caller value that CONFLICTS is OVERRIDDEN with the derived AND
+//    the record is written UNSIGNED + flagged provenance_mismatch (it can NEVER attest — fail-closed, visible).
+//    A clean record (no conflict) is SIGNED (origin-proof). β's forged-set fixtures in cert-attest-panel.test
+//    are the stronger replacement teeth for the retired caller-explicit-wins assertion. ──
+test("ED-231: a caller code_sha that CONFLICTS with the writer-derived HEAD → overridden + provenance_mismatch + UNSIGNED", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-ledger-"));
-  const saved = process.env.DISPATCH_LEDGER_DIR;
-  process.env.DISPATCH_LEDGER_DIR = dir;
+  const savedDir = process.env.DISPATCH_LEDGER_DIR, savedRun = process.env.WARPOS_PANEL_RUN_ID;
+  process.env.DISPATCH_LEDGER_DIR = dir; process.env.WARPOS_PANEL_RUN_ID = "panel-real";
   try {
-    recordCompletion({ role: "security-reviewer", provider: "openai", ok: true, panel_run_id: "explicit", code_sha: "explicit-sha" });
+    recordCompletion({ role: "security-reviewer", provider: "openai", ok: true, output_digest: "d", code_sha: "FORGED-SHA" });
     const rec = JSON.parse(fs.readFileSync(path.join(dir, "dispatch-completions.jsonl"), "utf8").trim().split("\n").pop());
-    assert.equal(rec.panel_run_id, "explicit");
-    assert.equal(rec.code_sha, "explicit-sha");
+    assert.notEqual(rec.code_sha, "FORGED-SHA", "a conflicting caller code_sha must be OVERRIDDEN by the writer-derived HEAD");
+    assert.equal(rec.provenance_mismatch, true, "a conflicting caller code_sha must flag provenance_mismatch");
+    assert.ok(!rec.attest_sig, "a provenance-mismatch record must be UNSIGNED (it can never attest)");
   } finally {
-    if (saved === undefined) delete process.env.DISPATCH_LEDGER_DIR; else process.env.DISPATCH_LEDGER_DIR = saved;
+    if (savedDir === undefined) delete process.env.DISPATCH_LEDGER_DIR; else process.env.DISPATCH_LEDGER_DIR = savedDir;
+    if (savedRun === undefined) delete process.env.WARPOS_PANEL_RUN_ID; else process.env.WARPOS_PANEL_RUN_ID = savedRun;
     try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ }
   }
+});
+test("ED-231: a clean record (no caller/derived conflict) is SIGNED (origin-proof attest_sig present)", () => {
+  withLedger({ WARPOS_PANEL_RUN_ID: "panel-real" }, (rec) => {
+    assert.equal(rec.panel_run_id, "panel-real", "the writer-derived panel_run_id is authoritative");
+    assert.ok(typeof rec.attest_sig === "string" && /^[0-9a-f]{64}$/i.test(rec.attest_sig), "a clean record must carry a valid-shaped origin-proof signature");
+    assert.ok(!rec.provenance_mismatch, "a clean record must NOT be flagged provenance_mismatch");
+  });
 });
 
 if (failures.length) {

@@ -180,8 +180,34 @@ test("QA-010: ANY non-module-absent loader error (syntax/parse) → fail-closed,
   assert.equal(panelLoaderFailClosed("frontend-reviewer", parseErr), true, "a real loader error is not the additive-absent case");
 });
 
+// ── BE-CQ-001 (backend-reviewer HIGH): mergeLanes fail-closes an UNKNOWN verdict — a hallucinated/malformed
+//    value ("banana") can NEVER merge to clean/pass. verdictOf allowlists the parsed verdict too. ──
+{
+  const dr = require("../dispatch-review");
+  test("BE-CQ-001: mergeLanes treats an unknown verdict ('banana') as NOT clean (merges to error)", () => {
+    const m = dr.mergeLanes("security-reviewer", [
+      { pass: "primary", provider: "antigravity", ok: true, verdict: "banana", laneId: "agy" },
+      { pass: "second_pass", provider: "openai", ok: true, verdict: "banana", laneId: "gpt" },
+    ]);
+    assert.equal(m.ok, false, "an unrecognized verdict must not merge to clean/pass");
+    assert.equal(m.mergedVerdict, "error", "an unrecognized verdict merges to error (fail-closed)");
+  });
+  test("BE-CQ-001 no over-block: two real passes still merge clean", () => {
+    const m = dr.mergeLanes("security-reviewer", [
+      { provider: "openai", ok: true, verdict: "pass", laneId: "gpt" },
+      { provider: "claude", ok: true, verdict: "pass", laneId: "claude" },
+    ]);
+    assert.equal(m.ok, true, "two clean passes must merge clean");
+  });
+  test("BE-CQ-001: verdictOf allowlists the parsed verdict (unknown → error)", () => {
+    assert.equal(dr.verdictOf({ parsed: { verdict: "banana" } }), "error", "an unknown parsed verdict must normalize to error");
+    assert.equal(dr.verdictOf({ parsed: { verdict: "PASS" } }), "pass", "a real pass verdict is preserved");
+    assert.equal(dr.verdictOf({ parsed: { verdict: "fail" } }), "fail", "a real fail verdict is preserved");
+  });
+}
+
 if (failures.length) {
   process.stderr.write(`FAIL [dispatch-review-panel-gate.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [dispatch-review-panel-gate.test] ${passed} passed (C1 masquerade blocks; R2-B validate-first fail-closed; R2-C ledger-bound, envelope != attestation)\n`);
+process.stdout.write(`OK   [dispatch-review-panel-gate.test] ${passed} passed (C1 masquerade blocks; R2-B validate-first fail-closed; R2-C ledger-bound; BE-CQ-001 verdict allowlist)\n`);

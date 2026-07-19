@@ -168,8 +168,35 @@ test("SR-006 negative control: the REAL manifest (exact sets) still validates ok
   assert.ok(out.ok, `real manifest must validate: ${(out.errors || []).join(" | ")}`);
 });
 
+// ── BE-CQ-001 (backend-reviewer HIGH, fail-closed allowlist): an UNKNOWN verdict is NEVER alive-clean. ──
+{
+  const pl2 = require("./panel-lanes");
+  const twoFam = { name: "panel-2family", required: ["gpt", "claude"], min_families: 2, binding: false };
+  const laneEvidence = (verdict) => [
+    { laneId: "gpt", contractedProvider: "openai", observedProvider: "openai", fallback: false, alive: true, verdict, hasEvidence: true },
+    { laneId: "claude", contractedProvider: "claude", observedProvider: "claude", fallback: false, alive: true, verdict, hasEvidence: true },
+  ];
+  test("BE-CQ-001: panelStatus treats an unknown verdict ('banana') as BLOCKED, never PASS", () => {
+    assert.notEqual(pl2.panelStatus(twoFam, laneEvidence("banana")).status, "PASS");
+  });
+  test("BE-CQ-001 no over-block: a clean pass 2-family panel still PASSes", () => {
+    assert.equal(pl2.panelStatus(twoFam, laneEvidence("pass")).status, "PASS");
+  });
+  // ── hunter MIN-FAMILIES-UNVALIDATED (defense-in-depth): validatePanelManifest asserts min_families >= 2. ──
+  test("min_families: a mutated profile with min_families:1 fails validation", () => {
+    const manifest = pl2.loadManifest();
+    manifest.profiles["panel-3lab"].min_families = 1;
+    const out = pl2.validatePanelManifest({ manifest });
+    assert.equal(out.ok, false, "min_families:1 must be rejected");
+    assert.ok(out.errors.some((e) => /min_families/.test(e)), "the error must name min_families");
+  });
+  test("min_families no over-block: the real manifest (min_families:2) still validates", () => {
+    assert.equal(pl2.validatePanelManifest().ok, true, "the shipped manifest must still validate clean");
+  });
+}
+
 if (failures.length) {
   process.stderr.write(`FAIL [panel-lanes.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [panel-lanes.test] ${passed} passed (single-source drift + CLI-only tooth incl. T1-B masquerade)\n`);
+process.stdout.write(`OK   [panel-lanes.test] ${passed} passed (single-source drift + CLI-only tooth + BE-CQ-001 verdict allowlist + min_families)\n`);

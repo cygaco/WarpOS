@@ -294,18 +294,35 @@ function recordCompletion(record) {
     PATHS.dispatchCompletionsFile,
     path.join(".claude", "runtime", "dispatch-completions.jsonl"),
   );
-  // SR-011/SR-013 (execution PROVENANCE): every completion record is bound to its run IDENTITY and its
-  // CODE at write-time — injected HERE, the single record-writer that every dispatch wrapper shares
-  // (dispatch-agent/dispatch-claude/dispatch-skill/epsilon-runtime), so NO call site can omit them:
-  //   panel_run_id — the id the panel runner MINTS and propagates to each child via WARPOS_PANEL_RUN_ID;
-  //                  proves SAME-RUN identity (not mere time-proximity — the SR-011 firing-window gap).
-  //   code_sha     — git HEAD the dispatch ran against; attestation reads THIS, never a caller-supplied
-  //                  SHA (SR-013). Additive + backward-compatible; an explicit record value still wins.
-  const enriched = {
-    panel_run_id: process.env.WARPOS_PANEL_RUN_ID || null,
-    code_sha: currentCodeSha() || null,
-    ...record,
-  };
+  // SR-011/SR-013 + ED-231 (execution PROVENANCE, WRITER-AUTHORITATIVE + ORIGIN-PROOF): every completion
+  // record is bound to its run IDENTITY + CODE at write-time — injected HERE, the single record-writer that
+  // every dispatch wrapper shares (dispatch-agent/dispatch-claude/dispatch-skill/epsilon-runtime), so NO call
+  // site can omit them. The WRITER derives them from its OWN sources (env panel_run_id + own git HEAD) and they
+  // are AUTHORITATIVE — a caller-supplied value that CONFLICTS is a forged-provenance attempt (or a real bug):
+  // the writer does NOT produce a valid SIGNED record for it (fail-closed, visible), never silently prefers one
+  // (α ED-231 ruling — supersedes the pre-ED-231 caller-explicit-wins model record-provenance.test enshrined).
+  const derivedRun = process.env.WARPOS_PANEL_RUN_ID || null;
+  const derivedSha = currentCodeSha() || null;
+  const callerRun = record.panel_run_id;
+  const callerSha = record.code_sha;
+  const runMismatch = callerRun != null && callerRun !== "" && derivedRun != null && callerRun !== derivedRun;
+  const shaMismatch = callerSha != null && callerSha !== "" && derivedSha != null && callerSha !== derivedSha;
+  const enriched = { ...record, panel_run_id: derivedRun, code_sha: derivedSha };
+  if (runMismatch || shaMismatch) {
+    // Refuse to SIGN a conflicting-provenance record — it can never attest. Written UNSIGNED + flagged (visible).
+    enriched.provenance_mismatch = true;
+    try { process.stderr.write(`[recordCompletion] provenance mismatch (caller panel_run_id/code_sha != writer-derived) — record written UNSIGNED, cannot attest (ED-231)\n`); } catch { /* noop */ }
+    appendJsonl(file, enriched);
+    return;
+  }
+  // ORIGIN-PROOF (ED-231 / ADR-0025): sign the canonical IDENTITY fields with the per-session secret. A
+  // hand-authored record (never through this writer) has no valid signature → cert-attest fails it closed.
+  // Fail-open on a signing error (unsigned → cannot attest, but never blocks the dispatch — telemetry stays
+  // non-blocking; the FAIL-CLOSED happens at VERIFY, not here).
+  try {
+    const sig = require("./dispatch/attest-signing").signRecord(enriched);
+    if (sig) enriched.attest_sig = sig;
+  } catch { /* signing module unavailable → unsigned → cert-attest fails it closed at verify */ }
   appendJsonl(file, enriched);
 }
 

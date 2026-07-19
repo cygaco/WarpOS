@@ -98,6 +98,40 @@ served-a-different-model trap (a different served model would appear in the log 
 
 `scripts/dispatch/safe-spawn.js` — `INJECT_META_AGY_PAYLOAD` (NUL-only, agy `-p` slot), `codePayloadValueFlags`
 on the agy policy, `assembledCmdlineLen` + `CMDLINE_MAX` (RIDER-1, both spawn paths), native-exe enforcement
-(existing) + `scripts/dispatch/safe-spawn.test.js` RIDER-1/RIDER-4 fixtures (bidirectional). `cert-attest.js`
-agy `--log-file` capture (served-model §7 conclusion). Debt closed: D6-ARGV-POLICY-003; ED-060 agy liveness
-PROVEN (a real `fallback:false` agy ledger record now exists).
+(existing) + `scripts/dispatch/safe-spawn.test.js` RIDER-1/RIDER-4 fixtures (bidirectional). Debt closed:
+D6-ARGV-POLICY-003 (the argv TRANSPORT carve-out — this stands).
+
+---
+
+## CORRECTION — 2026-07-18 (SP-20260718-003 gauntlet, qa-reviewer QA-HG-001 CRITICAL)
+
+**RETRACTED (this ADR's original claims, now proven FALSE):** "§7 served-model attestation CONCLUDES via agy
+`--log-file` capture (ATTESTED, gemini-3.1-pro-high)" and "ED-060 agy liveness PROVEN (a real `fallback:false`
+agy ledger record now exists)."
+
+**Why it was a FALSE-GREEN:** the §7 "conclusion" rested on `cert-attest.js#evaluateAttestation` doing
+`out.includes(requestedModel)` over the agy `--log-file`. The requested id appears in the log ONLY as the
+REQUEST that then defaulted — the actual live agy log reads:
+`Model ID gemini-3.1-pro-high not in local config, defaulting to CCPA` / `Model resolved via default` /
+`error getting token source: You are not logged into Antigravity.` / `Entering local chrome mode! This is
+WRONG unless you are running tests or in eval mode`. So agy is **UNAUTHENTICATED** and serves a **defaulted /
+local-eval model, NOT the contracted `gemini-3.1-pro-high`** — yet the substring check attested it. The
+gauntlet qa lane caught it (the 3-lab panel's purpose). Receipt: `runtime/cert-attest/agy-log-*.log`;
+reproduction in `scripts/checks/cert-attest.test.js` (QA-HG-001/002 + SHARP-1 teeth).
+
+**The honest state:** the agy TRANSPORT / spawn path WORKS (no reap, exit 0, output returned — the carve-out
++ `--log-file` capture are real and stand). But the **MODEL CONTRACT was never verified** — the `fallback:false`
+agy records are unauthenticated-default output, not the contracted lab. `ED-060 stays OPEN`; agy is DOWN
+(operator not logged into Antigravity); panel-3lab is `BLOCKED-ON-OPERATOR`. The operator must complete the
+Antigravity login and produce ONE genuine authenticated serve before ED-060 can close.
+
+**The FIX (QA-HG-001, this sprint):** `evaluateAttestation` now requires POSITIVE served-model proof (β SHARP-1,
+not a blocklist) — a header-colon `model: <id>` or a serve-verb `resolved: <id>` bound to the requested id;
+a bare request echo fails-closed — AND fails-closed loudly on any default/unauth/eval signal (GATE 1). The
+unauthenticated agy log now correctly returns `attested:false` (live negative control in the test).
+
+**COUPLING (panel-3lab GREEN criterion):** a genuinely GREEN panel-3lab requires, per cross-provider lane, BOTH
+(a) a live same-run record (attestPanelRun liveness/provenance/diversity) AND (b) a §7 served-model attestation
+(cert-attest) confirming the CONTRACTED model served. `attestPanelRun` alone checks (a) only — the served-model
+gap is tracked (ED-230). agy fails (b), so panel-3lab is BLOCKED regardless of (a). The earlier "panel-3lab
+attests GREEN" observation was liveness-only and is superseded by this coupling.
