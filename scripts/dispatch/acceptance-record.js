@@ -91,6 +91,28 @@ function resolveCommitSha(ref, opts = {}) {
   }
 }
 
+// R5-C2B (β-binding): result_commit MUST be an IMMUTABLE full commit SHA (never a mutable ref like
+// refs/heads/x that could be retargeted, never a short/abbreviated sha). 40 hex = git SHA-1 object name.
+const FULL_SHA_RE = /^[0-9a-f]{40}$/i;
+
+/**
+ * defaultIsAncestor(base, candidate, opts) -> boolean. TRUE only when `base` is an ancestor of `candidate`
+ * (the candidate was built ON the declared base) via a READ-ONLY `git merge-base --is-ancestor <base>
+ * <candidate>` (exit 0 = ancestor, exit 1 = not, other = error). R5-C2B: closes "a candidate commit
+ * unrelated to base_commit". FAIL-CLOSED — any non-zero-that-is-not-1, spawn error, or exception → false.
+ * Injectable in authorizesIntegration via opts.ancestryResolver for hermetic tests.
+ */
+function defaultIsAncestor(base, candidate, opts = {}) {
+  if (typeof base !== "string" || !base || typeof candidate !== "string" || !candidate) return false;
+  const cwd = opts.gitRoot || PROJECT_ROOT;
+  try {
+    const r = spawnSync("git", ["merge-base", "--is-ancestor", base, candidate], { cwd, encoding: "utf8", windowsHide: true });
+    return !!r && r.status === 0; // exit 0 = base IS an ancestor of candidate; anything else → not proven → false
+  } catch {
+    return false;
+  }
+}
+
 /**
  * verifyFencingToken(spId, token, {leaseRoot}) -> boolean. Consumes BE-4's conductor-lease.verifyToken
  * (SEC-4: an AcceptanceRecord minted under a superseded lease is refused, AC-7/AC-F10). Lazily required
@@ -200,7 +222,9 @@ function produceForTest(overrides = {}) {
     workorder,
     base_commit: "base-OK",
     result_tree_hash: "tree-OK",
-    result_commit: "cand-OK", // the candidate commit the accepted tree is recomputed from (okTree maps it to "tree-OK")
+    // R5-C2B: an IMMUTABLE full 40-hex commit SHA (never a mutable ref). A ref-agnostic test treeResolver maps
+    // it to "tree-OK"; ref-aware tests key on this exact value. ("c"*40 — a synthetic-but-well-formed SHA.)
+    result_commit: "cccccccccccccccccccccccccccccccccccccccc",
     target_ref: "refs/heads/integration",
     checker_digests: { lint: "digest-lint", tests: "digest-tests" },
     policy_digest: "policy-OK",
@@ -218,19 +242,24 @@ function produceForTest(overrides = {}) {
  *   (a) record.target_ref === targetRef                                          (F4 re-correlation)
  *   (b) record.terminal_state === "success" (in the 5-state enum)                (F2 bare envelope / F6 non-success)
  *   (c) FULL content-addressed identity present + non-empty: workorder_digest / base_commit /
- *       result_tree_hash / result_commit, AND checker_digests + evidence_digests are non-empty maps whose
- *       EVERY value is a non-empty digest string (C2-R3 — a {lint:""} map is a contentless proof)  (F11)
+ *       result_tree_hash, result_commit is an IMMUTABLE full 40-hex SHA (R5-C2B — never a mutable ref),
+ *       AND checker_digests + evidence_digests are non-empty maps whose EVERY value is a non-empty
+ *       digest string (C2-R3 — a {lint:""} map is a contentless proof)                            (F11)
  *   (d) opts.integrationHead is REQUIRED and record.base_commit === it           (F3 TOCTOU freshness)
  *   (e) opts.spId + opts.leaseRoot are REQUIRED and record.lease_fencing_token is CURRENT
  *       per conductor-lease.verifyToken                                          (F10 lease x acceptance)
- *   (f) trusted-verifier RECOMPUTE (MANDATORY, no opt-out): resolve the tree of the CANDIDATE/RESULT commit
- *       (opts.resultRef | opts.newHead | record.result_commit — NOT targetRef, whose tree is the pre-merge
- *       base, R3-REG-1) and it MUST === record.result_tree_hash                  (F11 forged/provider digest)
+ *   (f) trusted-verifier RECOMPUTE (MANDATORY, no opt-out): recompute the tree from the RECORD-BOUND
+ *       immutable candidate `record.result_commit` ONLY (R5-C2A — caller opts.resultRef/newHead may NOT
+ *       override; if supplied they must resolve to EXACTLY record.result_commit, exact-SHA equality — TREE
+ *       equality is insufficient) and it MUST === record.result_tree_hash        (R3-REG-1 / F11)
+ *   (g) ancestry: record.base_commit MUST be an ancestor of record.result_commit (R5-C2B — candidate was
+ *       built ON the declared base; blocks a same-tree commit unrelated to base)
  *
  * @param {object} record
  * @param {string} targetRef
  * @param {{integrationHead?:string, spId?:string, leaseRoot?:string, gitRoot?:string,
- *          resultRef?:string, newHead?:string, treeResolver?:function}} [opts]
+ *          resultRef?:string, newHead?:string, treeResolver?:function, commitResolver?:function,
+ *          ancestryResolver?:function}} [opts]
  */
 function authorizesIntegration(record, targetRef, opts = {}) {
   if (!record || typeof record !== "object") return false;
@@ -243,13 +272,14 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   //     irrelevant (F2/F6); an untyped ResultEnvelope has no terminal_state at all and fails here too.
   if (record.terminal_state !== "success" || !TERMINAL_STATES.includes(record.terminal_state)) return false;
 
-  // FULL content-addressed identity MANDATORY (SP-20260718-005 gauntlet R2/C2 + R3/C2): the trust anchor is the
-  // WHOLE verifier-bound identity, not just the tree. R1 required only tree/base/workorder present; R2 required
-  // the checker/policy/evidence digest MAPS non-empty; R3 (C2-R3) closes the residual — a non-empty MAP is NOT
-  // proof: {lint:""} / {ev:""} authorized a CONTENTLESS verifier claim. Every digest-map VALUE must itself be a
-  // non-empty digest string. result_commit (the recompute source, R3-REG-1) is part of the mandatory identity —
-  // a trusted record binds the candidate commit it was accepted from. Any missing/empty coordinate fails closed.
-  if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest || !record.result_commit) return false;
+  // FULL content-addressed identity MANDATORY (SP-20260718-005 gauntlet R2/C2 + R3/C2 + R5/C2B): the trust anchor
+  // is the WHOLE verifier-bound identity, not just the tree. R1 required only tree/base/workorder present; R2
+  // required the checker/policy/evidence digest MAPS non-empty; R3 (C2-R3) required every digest-map VALUE be a
+  // non-empty string; R5 (C2B) pins result_commit to an IMMUTABLE full 40-hex SHA — "mandatory only syntactically"
+  // (a mutable ref that could be retargeted) was insufficient. Any missing/empty/mis-typed coordinate fails closed.
+  if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest) return false;
+  // R5-C2B: result_commit MUST be an immutable full commit SHA — a ref name / short sha / empty fails closed.
+  if (!FULL_SHA_RE.test(String(record.result_commit || ""))) return false;
   // C2-R3: a digest MAP must be a non-empty object whose EVERY value is a non-empty digest string. Empty-string /
   // null / non-string values are a contentless proof — the exact bypass the gauntlet reproduced with {lint:""}.
   const _isDigestMap = (o) =>
@@ -273,31 +303,35 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   if (record.lease_fencing_token == null) return false;
   if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) return false;
 
-  // (f) trusted-verifier RECOMPUTE — MANDATORY, never optional (SP-20260718-005 gauntlet C2 + R3-REG-1).
-  //     The content-addressed trust anchor is only real if the verifier ALWAYS recomputes result_tree_hash from
-  //     the CANDIDATE/RESULT commit's ACTUAL git objects and it MATCHES. R3-REG-1: the prior recompute read the
-  //     tree of `targetRef` — but targetRef is the pre-merge DESTINATION, whose tree is the BASE tree (nothing is
-  //     merged yet), while result_tree_hash is the CANDIDATE's tree. So for ANY real non-empty integration the
-  //     two never matched and authorization ALWAYS returned false — a fail-closed AVAILABILITY defect that made
-  //     the primitive un-usable (and thus likely to be bypassed). The accepted result lives at the candidate
-  //     commit, NOT the destination ref, so we recompute from the immutable candidate:
-  //       opts.resultRef (explicit) → opts.newHead (the head the conductor is about to CAS into targetRef) →
-  //       record.result_commit (the record's own bound candidate).
-  //     Destination-remains-at-base is a SEPARATE concern (R3-REG-1 second clause): the freshness coordinate (d)
-  //     above binds base_commit to the caller's live integrationHead, and commitIntegration additionally resolves
-  //     the REAL liveHead of targetRef and requires it === base_commit before the git CAS. There is NO opt-out
-  //     flag (a boolean skip would re-introduce the settable bypass, cf. H4 trustedBridge). The ONLY variable is
-  //     the RESOLVER: real read-only git (default) in production, injected opts.treeResolver in tests. A record
-  //     whose candidate tree cannot be resolved OR does not match the claimed digest FAILS CLOSED.
-  const resultRef =
-    typeof opts.resultRef === "string" && opts.resultRef ? opts.resultRef
-      : typeof opts.newHead === "string" && opts.newHead ? opts.newHead
-        : typeof record.result_commit === "string" && record.result_commit ? record.result_commit
-          : null;
-  if (!resultRef) return false; // no bound candidate/result ref → cannot recompute the accepted tree → fail closed
+  // (f) EXACT-SHA override guard (R5-C2A, β-binding): the recompute source is the RECORD-BOUND immutable
+  //     candidate ONLY. A caller-supplied opts.resultRef/opts.newHead may NOT OUTRANK it (the R4 hole: caller
+  //     opts took precedence, so passing targetRef re-opened the destination recompute, and the CAS path
+  //     forwarded a DIFFERENT commit whose tree == result_tree_hash). If a caller DOES supply resultRef/newHead
+  //     it must resolve to EXACTLY record.result_commit — exact-SHA equality; TREE EQUALITY IS INSUFFICIENT
+  //     (the attack is a different commit with the same tree). A mismatched caller ref FAILS CLOSED here.
+  const resolveCommit = typeof opts.commitResolver === "function" ? opts.commitResolver : resolveCommitSha;
+  for (const callerRef of [opts.resultRef, opts.newHead]) {
+    if (callerRef != null && String(callerRef) !== "") {
+      const sha = resolveCommit(String(callerRef), opts);
+      if (!sha || String(sha).toLowerCase() !== String(record.result_commit).toLowerCase()) return false;
+    }
+  }
+
+  // (f') trusted-verifier RECOMPUTE — MANDATORY, never optional. Recompute result_tree_hash from the RECORD's
+  //     own immutable candidate commit (record.result_commit), NOT targetRef (R3-REG-1: targetRef is the
+  //     pre-merge DESTINATION whose tree is the base). The ONLY variable is the RESOLVER: real read-only git
+  //     (default), injected opts.treeResolver in tests. Candidate tree unresolvable OR mismatched → FAIL CLOSED.
   const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : resolveTreeHash;
-  const actualTree = resolveTree(resultRef, opts);
+  const actualTree = resolveTree(record.result_commit, opts);
   if (!actualTree || String(actualTree).toLowerCase() !== String(record.result_tree_hash).toLowerCase()) return false;
+
+  // (g) ANCESTRY (R5-C2B, β-binding): record.base_commit MUST be an ancestor of record.result_commit — the
+  //     candidate was built ON the declared base. Blocks a same-tree commit that is UNRELATED to base_commit
+  //     (a tree match alone does not prove the candidate descends from the base the record claims). Injectable
+  //     opts.ancestryResolver(base, candidate, opts) in tests; real read-only `git merge-base --is-ancestor`
+  //     by default. Fail-closed if the relationship cannot be confirmed.
+  const isAncestor = typeof opts.ancestryResolver === "function" ? opts.ancestryResolver : defaultIsAncestor;
+  if (isAncestor(record.base_commit, record.result_commit, opts) !== true) return false;
 
   return true;
 }
@@ -351,7 +385,15 @@ function commitIntegration(record, targetRef, opts = {}) {
     if (typeof opts.newHead !== "string" || !/^[0-9a-f]{7,40}$/i.test(opts.newHead)) {
       return { ok: false, reason: "missing-new-head-for-ref-update" };
     }
-    // C3/R2: the committed newHead MUST resolve to the ACCEPTED tree — the CAS can advance the ref only to a
+    // R5-C2A (β-binding): the CAS may advance the ref ONLY to the EXACT bound candidate — opts.newHead MUST
+    // equal record.result_commit (exact SHA). TREE equality is insufficient (the attack is a DIFFERENT commit
+    // whose tree == result_tree_hash — the newTree check below would pass it). Fail-closed on any mismatch.
+    // (authorizesIntegration's exact-SHA override guard already resolves opts.newHead against result_commit;
+    // this is the defense-in-depth check at the mutation itself.)
+    if (String(opts.newHead).toLowerCase() !== String(record.result_commit).toLowerCase()) {
+      return { ok: false, reason: "new-head-not-bound-candidate" };
+    }
+    // C3/R2: the committed newHead MUST also resolve to the ACCEPTED tree — the CAS can advance the ref only to a
     // commit whose tree === the record's recompute-accepted result_tree_hash. The gauntlet showed the CAS
     // never verified this, so it could update the ref to a commit OTHER than the accepted work. Fail-closed.
     const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : resolveTreeHash;
@@ -389,5 +431,6 @@ module.exports = {
   commitIntegration,
   resolveTreeHash,
   resolveCommitSha,
+  defaultIsAncestor,
   stableDigest,
 };

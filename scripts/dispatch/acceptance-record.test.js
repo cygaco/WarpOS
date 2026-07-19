@@ -89,7 +89,9 @@ function validCtx(tag) {
   const spId = "SP-" + String(tag).toUpperCase();
   const a = lease.acquire(spId, { root, sessionId: "sess-" + tag });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token });
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree };
+  // R5: recompute reads the record's immutable 40-hex result_commit (okTree is ref-agnostic → "tree-OK"), and
+  // ancestry is MANDATORY — inject a resolver that confirms base is an ancestor of the synthetic candidate.
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
   return { root, spId, token: a.token, record, opts };
 }
 
@@ -215,7 +217,7 @@ test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease toke
   const a1 = lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true }),
     true,
   );
 });
@@ -260,6 +262,7 @@ test("TEETH (C2-R3): the positive companion still authorizes — a map whose val
 // equals the CANDIDATE's result tree, so every real integration returned not-authorized (a fail-closed
 // availability defect). These teeth use a REF-AWARE resolver (the destination and the candidate resolve to
 // DIFFERENT trees) — the exact shape the unit suite's ref-agnostic okTree could never distinguish.
+const CAND_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // an immutable 40-hex candidate SHA (R5-C2B)
 function refAwareCtx(tag, { resultTree = "RESULT-TREE", claimTree = "RESULT-TREE" } = {}) {
   const root = tmpLeaseRoot(tag);
   const spId = "SP-" + String(tag).toUpperCase();
@@ -269,14 +272,15 @@ function refAwareCtx(tag, { resultTree = "RESULT-TREE", claimTree = "RESULT-TREE
     lease_fencing_token: a.token,
     base_commit: "base-OK",
     result_tree_hash: claimTree,   // what the record CLAIMS the accepted tree is
-    result_commit: "cand-OK",      // the candidate commit the accepted work lives at
+    result_commit: CAND_SHA,       // the immutable candidate commit the accepted work lives at (40-hex SHA)
   });
   const refAware = (ref) => {
-    if (ref === "cand-OK") return resultTree;                 // candidate → accepted result tree
+    if (ref === CAND_SHA) return resultTree;                  // candidate → accepted result tree
     if (ref === "refs/heads/integration") return "BASE-TREE"; // destination still at base → base tree
     return null;
   };
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: refAware };
+  // ancestry MANDATORY — base is an ancestor of the candidate in a real integration.
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: refAware, ancestryResolver: () => true };
   return { root, spId, token: a.token, record, opts };
 }
 
@@ -308,15 +312,102 @@ test("TEETH (R3-REG-1): full authorize-then-CAS DETERMINATION on the real-integr
   assert.strictEqual(result.receipt.committed_head, "base-OK");
 });
 
-test("TEETH (R3-REG-1): with NO bound candidate (no result_commit, no opts.resultRef/newHead) authorization FAILS CLOSED", () => {
-  // A record without any candidate the accepted tree can be recomputed FROM cannot be authorized — there is
-  // nothing to recompute against. Fail-closed (never fall back to recomputing the destination).
+test("TEETH (R3-REG-1): with NO bound candidate (empty result_commit) authorization FAILS CLOSED", () => {
+  // A record with no immutable candidate the accepted tree can be recomputed FROM cannot be authorized — the
+  // empty result_commit fails the immutable-SHA identity gate (R5-C2B). Fail-closed (never recompute the destination).
   const root = tmpLeaseRoot("r3reg1-nocand");
   const spId = "SP-R3REG1-NOCAND";
   const a = lease.acquire(spId, { root, sessionId: "sess-nocand" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token, result_commit: "" });
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree };
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
   assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), false);
+});
+
+// ── R5-C2A / R5-C2B (bounded-final, β-binding): record-bound candidate outranks caller opts; immutable-SHA + ancestry ──
+// R4 (qa+security): the R3-REG-1 fix let caller opts.resultRef/newHead OUTRANK the record-bound result_commit
+// (pass targetRef → recompute the base tree; the CAS forwards a DIFFERENT commit whose tree == result_tree_hash),
+// and result_commit was "mandatory only syntactically" (a mutable ref, no ancestry). R5 pins result_commit to an
+// immutable 40-hex SHA, recomputes from it ONLY, requires any caller ref to EXACT-SHA-match it (tree equality
+// insufficient), binds the CAS to the exact candidate, and enforces base-is-ancestor-of-candidate.
+
+test("TEETH (R5-C2A): a caller passing the DESTINATION targetRef via opts.resultRef does NOT authorize (exact-SHA guard, not a recompute override)", () => {
+  const { record, opts } = refAwareCtx("r5c2a-override");
+  // The attacker passes the destination ref as resultRef, hoping to recompute the base tree. It resolves to a
+  // base commit SHA that is NOT record.result_commit → the exact-SHA override guard BLOCKS (no precedence).
+  const attack = {
+    ...opts,
+    resultRef: "refs/heads/integration",
+    commitResolver: (ref) => (ref === "refs/heads/integration" ? "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" : null),
+  };
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", attack), false);
+});
+
+test("TEETH (R5-C2A): a caller passing a DIFFERENT SAME-TREE commit via opts.newHead does NOT authorize — exact-SHA equality, TREE equality is insufficient", () => {
+  const { record, opts } = refAwareCtx("r5c2a-sametree");
+  const OTHER = "dddddddddddddddddddddddddddddddddddddddd"; // a DIFFERENT commit whose tree ALSO == RESULT-TREE
+  const attack = {
+    ...opts,
+    newHead: OTHER,
+    commitResolver: (ref) => ref, // full SHA resolves to itself
+    treeResolver: (ref) => (ref === OTHER || ref === CAND_SHA ? "RESULT-TREE" : "BASE-TREE"),
+  };
+  // Even though OTHER's TREE matches result_tree_hash, OTHER !== record.result_commit → exact-SHA guard BLOCKS.
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", attack), false);
+});
+
+test("TEETH (R5-C2A): a caller ref that EXACTLY equals record.result_commit still authorizes (the guard rejects substitution, not use)", () => {
+  const { record, opts } = refAwareCtx("r5c2a-happy");
+  const ok = { ...opts, newHead: CAND_SHA, commitResolver: (ref) => ref };
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", ok), true);
+});
+
+test("TEETH (R5-C2A): commitIntegration performRefUpdate BLOCKS a newHead that is not the bound candidate (different same-tree commit)", () => {
+  const { record, opts } = refAwareCtx("r5c2a-cas");
+  const OTHER = "dddddddddddddddddddddddddddddddddddddddd";
+  const result = acc.commitIntegration(record, "refs/heads/integration", {
+    ...opts,
+    expectedHead: "base-OK",
+    liveHead: "base-OK",
+    performRefUpdate: true,
+    newHead: OTHER,
+    commitResolver: (ref) => ref,
+    treeResolver: (ref) => (ref === OTHER || ref === CAND_SHA ? "RESULT-TREE" : "BASE-TREE"),
+  });
+  assert.strictEqual(result.ok, false);
+  // Authorization's exact-SHA override guard rejects the substituted newHead first; new-head-not-bound-candidate
+  // is the CAS-level defense-in-depth backstop. Either way the ref cannot advance to a non-candidate commit.
+  assert.ok(["not-authorized", "new-head-not-bound-candidate"].includes(result.reason), result.reason);
+});
+
+test("TEETH (R5-C2B): a result_commit that is NOT an immutable 40-hex SHA (ref name / short sha / empty / non-hex / wrong length) does NOT authorize", () => {
+  const { record, opts } = validCtx("r5c2b-sha");
+  const badCommits = [
+    "refs/heads/candidate", // a mutable ref — retargetable
+    "abc1234",              // a short/abbreviated sha
+    "",                     // empty
+    "cccccccccccccccccccccccccccccccccccccccg", // 40 chars but non-hex 'g'
+    "cccccccccccccccccccccccccccccccccccccc",   // 38 hex (too short)
+    "ccccccccccccccccccccccccccccccccccccccccc", // 41 hex (too long)
+  ];
+  for (const bad of badCommits) {
+    const rec = Object.assign({}, record, { result_commit: bad });
+    assert.strictEqual(acc.authorizesIntegration(rec, "refs/heads/integration", opts), false, "non-SHA result_commit must fail closed: " + JSON.stringify(bad));
+  }
+});
+
+test("TEETH (R5-C2B): a candidate UNRELATED to base_commit (base is NOT an ancestor) does NOT authorize even with a valid tree recompute", () => {
+  const { record, opts } = refAwareCtx("r5c2b-ancestry");
+  const noAncestry = { ...opts, ancestryResolver: () => false }; // candidate does not descend from base
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", noAncestry), false);
+});
+
+test("defaultIsAncestor: real git — HEAD~1 IS an ancestor of HEAD; HEAD is NOT an ancestor of HEAD~1", () => {
+  const parent = acc.resolveCommitSha("HEAD~1");
+  const child = acc.resolveCommitSha("HEAD");
+  assert.ok(parent && child, "this repo must have at least 2 commits");
+  assert.strictEqual(acc.defaultIsAncestor(parent, child), true);
+  assert.strictEqual(acc.defaultIsAncestor(child, parent), false);
+  assert.strictEqual(acc.defaultIsAncestor("", child), false); // fail-closed on empty
 });
 
 test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't be resolved -> fails closed", () => {
@@ -410,6 +501,7 @@ test("commitIntegration never mutates git by default (no performRefUpdate opt-in
     expectedHead: "base-OK",
     liveHead: "base-OK",
     treeResolver: okTree,
+    ancestryResolver: () => true,
   });
   assert.strictEqual(result.ok, true, result.reason);
   // resolveCommitSha must still find nothing for this never-created ref (no side effect occurred).

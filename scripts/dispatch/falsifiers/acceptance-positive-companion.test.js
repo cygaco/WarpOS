@@ -29,7 +29,8 @@ test("AC-4 positive companion — a fully valid AcceptanceRecord DOES authorize 
     integrationHead: "base-OK", // === record.base_commit ("base-OK") — mandatory freshness coordinate
     spId,
     leaseRoot, // mandatory lease coordinates; token verified current
-    treeResolver: () => record.result_tree_hash, // mandatory recompute; honest tree matches
+    treeResolver: () => record.result_tree_hash, // mandatory recompute (from the record's immutable result_commit); honest tree matches
+    ancestryResolver: () => true, // R5-C2B: base IS an ancestor of the candidate (the honest golden-path relationship)
   });
   assert.strictEqual(
     authorized,
