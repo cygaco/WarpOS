@@ -718,11 +718,16 @@ function buildProviderArgv(providerName, model, reasoningArgs = [], opts = {}) {
     };
   }
   if (providerName === "antigravity") {
-    // agy (Antigravity CLI) — the SUNSET-gemini migration target (ED-060). BEST-KNOWN, UNPROVEN
-    // headless contract: `agy --model <id> --print-timeout <dur> -p '<prompt>'`. The prompt is the
-    // `-p` argv VALUE (agy has no stdin '-' positional), bounded + injection-checked + native-exe-only
-    // by safe-spawn's agy ARG_POLICY carve-out (#27). usesStdin:false — the prompt rides -p, not stdin.
-    return { toolId: "agy", argv: ["--model", model, "--print-timeout", "90s", "-p", opts.prompt || ""], usesStdin: false };
+    // agy (Antigravity CLI) — the SUNSET-gemini migration target (ED-060). Headless contract:
+    // `agy --model <display-name> --print-timeout <dur> -p '<prompt>'`. The prompt is the `-p` argv
+    // VALUE (agy has no stdin '-' positional), bounded + injection-checked + native-exe-only by
+    // safe-spawn's agy ARG_POLICY carve-out (#27). usesStdin:false — the prompt rides -p, not stdin.
+    // ED-060 slug→display: agy's `--model` resolves the DISPLAY name, not the catalog slug (a slug
+    // silently defaults to CCPA → serves the WRONG model). Translate at THIS boundary via the ONE
+    // catalog resolver (lazy require avoids a load-time cycle; the SAME resolver cert-attest#probeShape
+    // uses — no second copy of the mapping).
+    const agyModel = require("../../dispatch/catalog").agyModelName(model);
+    return { toolId: "agy", argv: ["--model", agyModel, "--print-timeout", "90s", "-p", opts.prompt || ""], usesStdin: false };
   }
   // A manifest-overridden provider with a custom cfg.syntax has no ARG_POLICY entry in the safety
   // kernel → fail CLOSED rather than spawn an unvetted shell string.

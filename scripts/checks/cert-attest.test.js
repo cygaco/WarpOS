@@ -80,11 +80,18 @@ test("providerForModel resolves from the real catalog", () => {
   assert.equal(providerForModel(real, "claude-fable-5"), "claude");
   assert.equal(providerForModel(real, "no-such-model-xyz"), null);
 });
-test("probeShape: openai=codex stdin, antigravity=agy prompt-arg", () => {
+test("probeShape: openai=codex stdin, antigravity=agy prompt-arg + slug→display (AC-4, ED-060)", () => {
   const o = probeShape("openai", "gpt-5.6-sol", "low");
   assert.ok(o.toolId === "codex" && o.argv.includes("-m") && o.argv.includes("gpt-5.6-sol") && o.stdin === true);
   const a = probeShape("antigravity", "gemini-3.1-pro-high", null);
-  assert.ok(a.toolId === "agy" && a.argv.includes("--model") && a.stdin === false);
+  assert.ok(a.toolId === "agy" && a.stdin === false);
+  // AC-4: the probe MUST translate the canonical slug → agy's display name via the SAME catalog
+  // resolver buildProviderArgv uses — a raw slug makes agy silently default (defeating the very
+  // attestation this probe performs).
+  const mIdx = a.argv.indexOf("--model");
+  assert.ok(mIdx >= 0, "--model present");
+  assert.equal(a.argv[mIdx + 1], "Gemini 3.1 Pro (High)", "cert-attest probe must send agy the DISPLAY name");
+  assert.ok(!a.argv.includes("gemini-3.1-pro-high"), "the raw slug must NEVER reach agy --model (ED-060)");
 });
 
 // ── QA-HG-001 (CRITICAL fail-closed) + QA-HG-002 (negative control): a DEFAULT/UNAUTHENTICATED/EVAL-MODE

@@ -37,17 +37,37 @@ test("antigravity is google-family + fallback is cross-family openai", () => {
 });
 
 // ── the agy argv shape — the -p carries the prompt (usesStdin:false), passes safe-spawn's policy. ──
-test("buildProviderArgv(antigravity) → agy -p prompt-in-argv, usesStdin false", () => {
+test("buildProviderArgv(antigravity) → agy --model translates slug→display (ED-060), -p prompt-in-argv, usesStdin false", () => {
   const built = buildProviderArgv("antigravity", "gemini-3.1-pro-high", [], { prompt: "review this diff\nfor OWASP issues" });
   assert.ok(!built.fail, "antigravity branch must exist (not fail-closed)");
   assert.equal(built.toolId, "agy");
   assert.equal(built.usesStdin, false);
-  assert.ok(built.argv.includes("--model") && built.argv.includes("gemini-3.1-pro-high"));
+  // ED-060 slug→display: the canonical slug MUST be translated to agy's DISPLAY name at this boundary
+  // — a raw slug makes agy silently default to CCPA ("not in local config, defaulting"), serving the
+  // WRONG model. This is the exact defect the sprint closes.
+  const mIdx = built.argv.indexOf("--model");
+  assert.ok(mIdx >= 0, "--model flag present");
+  assert.equal(built.argv[mIdx + 1], "Gemini 3.1 Pro (High)", "agy --model must carry the DISPLAY name, not the slug");
+  assert.ok(!built.argv.includes("gemini-3.1-pro-high"), "the raw slug must NEVER reach agy --model (ED-060)");
   const pIdx = built.argv.indexOf("-p");
   assert.ok(pIdx >= 0 && built.argv[pIdx + 1].includes("OWASP"), "prompt must be the -p argv value");
-  // The single-source seam: this argv must PASS safe-spawn's agy ARG_POLICY (multi-line -p carve-out).
+  // The single-source seam: this argv must PASS safe-spawn's agy ARG_POLICY (display-name --model via
+  // AGY_MODEL_DISPLAY + the multi-line -p carve-out).
   const check = assertArgs("agy", built.argv);
   assert.ok(check.ok, `agy argv rejected by safe-spawn policy: ${(check.violations || []).join("; ")}`);
+});
+
+// ── ED-060 slug→display resolver (catalog single-source; AC-1,2) ──
+test("catalog.agyModelName: slug→display for antigravity, UNCHANGED otherwise", () => {
+  const catalog = require("../../dispatch/catalog");
+  // AC-1: the agy display name is single-sourced on the antigravity model entry.
+  const m = catalog.getModel("antigravity", "gemini-3.1-pro-high");
+  assert.ok(m, "antigravity model entry present");
+  assert.equal(m.agyModelName, "Gemini 3.1 Pro (High)", "agyModelName field present + exact display name");
+  // AC-2: resolver maps the canonical slug → display, leaves non-antigravity / unmapped ids UNCHANGED.
+  assert.equal(catalog.agyModelName("gemini-3.1-pro-high"), "Gemini 3.1 Pro (High)");
+  assert.equal(catalog.agyModelName("gpt-5.6-sol"), "gpt-5.6-sol", "non-antigravity id unchanged (zero blast radius)");
+  assert.equal(catalog.agyModelName("some-unmapped-id"), "some-unmapped-id", "unmapped id unchanged");
 });
 
 // ── openai/gemini branches unchanged (behavior-neutral extraction). ──

@@ -66,7 +66,11 @@ function probeShape(providerId, model, effort) {
   }
   if (providerId === "antigravity") {
     // Prompt is the ARGUMENT to -p (no stdin); requires the agy ARG_POLICY in safe-spawn (task #27).
-    return { toolId: "agy", argv: ["--model", model, "--print-timeout", "90s", "-p", PROBE_PROMPT], stdin: false };
+    // ED-060 slug→display: agy's `--model` resolves the DISPLAY name, not the catalog slug (a slug
+    // silently defaults to CCPA → serves the WRONG model, defeating this very attestation). Translate
+    // via the ONE catalog resolver (the SAME buildProviderArgv uses) so a raw slug never reaches agy.
+    const agyModel = loadCatalog().agyModelName(model);
+    return { toolId: "agy", argv: ["--model", agyModel, "--print-timeout", "90s", "-p", PROBE_PROMPT], stdin: false };
   }
   if (providerId === "claude") {
     return { toolId: "claude", argv: ["-p", "--model", model], stdin: true };
