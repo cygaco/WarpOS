@@ -209,11 +209,12 @@ test("TEETH (C1/R2): a DEAD owner's mutation lock IS reclaimed (safe crashed-hol
   const spId = "SP-C1R2-DEAD";
   fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
   const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
-  // Stamp with a pid that does not exist (dead), fresh mtime — mtime-only would have WAITED; owner-liveness reclaims.
-  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now() }) + "\n");
+  // Stamp with a pid that does not exist (dead) + an immutable nonce (the R5 stamp shape) — a proven-dead,
+  // nonce-identified owner is reclaimed via the atomic election so the mutator can proceed.
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now(), nonce: "deadgen0001" }) + "\n");
   let ran = false;
   const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true, v: 42 }; }, { maxWaitMs: 200 });
-  assert.strictEqual(ran, true, "a dead owner's lock must be reclaimed so the mutator can proceed");
+  assert.strictEqual(ran, true, "a proven-dead, nonce-identified owner's lock must be reclaimed so the mutator can proceed");
   assert.deepStrictEqual(res, { ok: true, v: 42 });
 });
 
@@ -271,4 +272,112 @@ test("TEETH (C1/R3): a stamp with NO finite pid (identity-less) ancient mutation
   assert.strictEqual(res.ok, false);
   assert.strictEqual(res.reason, "mutation-contended");
   assert.ok(fs.existsSync(mlp), "the identity-less lock must survive");
+});
+
+// ── C1/R5 (bounded-final, β-authorized): whole-lifecycle generation fencing + atomic election + proven-dead ──
+// R4 (backend+qa) found the R3 fix still had: (A1) an ABA race — a non-atomic read-then-unlink-by-pathname
+// reclaim, where a stale reclaimer could delete the winner's fresh replacement; and (A2) PID-death not proven
+// — invalid finite pids (0/-1/1.5/out-of-range) and non-ESRCH errors treated as dead. R5 fences the WHOLE
+// lifecycle by an immutable per-lock nonce (link-with-content publish, atomic nonce-keyed election reclaim,
+// content-fenced cleanup) and gates reclaim on pidProvenDead (positive safe-int + ESRCH only).
+
+test("TEETH (C1/R5 ABA): a stale reclaimer holding the OLD dead decision cannot unlink the winner's LIVE replacement nor enter its callback", () => {
+  const root = tmpRoot("c1r5-aba");
+  const spId = "SP-C1R5-ABA";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  const deadNonce = "deadgenABA01";
+  // A dead generation (proven-dead pid + nonce) that BOTH contenders A and B observed.
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now(), nonce: deadNonce }) + "\n");
+  let checked = false;
+  const res = lease._withMutationLock(spId, root, () => {
+    // A reclaimed the dead lock and now holds its OWN live replacement.
+    const aOwner = JSON.parse(fs.readFileSync(mlp, "utf8").trim());
+    assert.strictEqual(aOwner.pid, process.pid, "A (this process) now holds the reclaimed lock");
+    assert.ok(aOwner.nonce && aOwner.nonce !== deadNonce, "A's generation is a NEW nonce, not the dead one");
+    // Stale contender B, still holding the OLD dead decision, tries to retire the dead generation — but the
+    // lock is now A's LIVE replacement. The non-destructive election + re-verify must leave A's lock intact.
+    lease._reclaimDeadGeneration(mlp, deadNonce, 999999999);
+    assert.ok(fs.existsSync(mlp), "A's live lock must survive B's stale reclaim attempt");
+    assert.strictEqual(JSON.parse(fs.readFileSync(mlp, "utf8").trim()).nonce, aOwner.nonce, "A's generation intact");
+    // And B cannot ACQUIRE while A holds → fails-contended → cannot enter its callback.
+    let bRan = false;
+    const bRes = lease._withMutationLock(spId, root, () => { bRan = true; return { ok: true }; }, { maxWaitMs: 30 });
+    assert.strictEqual(bRan, false, "B must NOT enter its callback while A holds");
+    assert.strictEqual(bRes.reason, "mutation-contended");
+    checked = true;
+    return { ok: true };
+  }, { maxWaitMs: 300 });
+  assert.strictEqual(res.ok, true);
+  assert.ok(checked, "the in-hold ABA assertions ran");
+  assert.ok(!fs.existsSync(mlp), "A's content-fenced cleanup removed its OWN generation on release");
+});
+
+test("TEETH (C1/R5 fence): unlinkIfNonce removes ONLY our generation — cleanup cannot unlink another holder's replacement", () => {
+  const root = tmpRoot("c1r5-fence");
+  const spId = "SP-C1R5-FENCE";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  fs.writeFileSync(mlp, JSON.stringify({ pid: process.pid, ts: Date.now(), nonce: "genA" }) + "\n");
+  lease._unlinkIfNonce(mlp, "genB-different"); // a DIFFERENT generation's cleanup must not touch genA
+  assert.ok(fs.existsSync(mlp), "content-fenced cleanup on a different nonce must NOT remove the lock");
+  lease._unlinkIfNonce(mlp, "genA"); // our own generation
+  assert.ok(!fs.existsSync(mlp), "content-fenced cleanup on our own nonce removes it");
+});
+
+test("TEETH (C1/R5 election): only ONE contender retires a dead generation — a pre-existing reap link makes a 2nd contender lose without removing the lock", () => {
+  const root = tmpRoot("c1r5-elect");
+  const spId = "SP-C1R5-ELECT";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  const deadNonce = "deadElect01";
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now(), nonce: deadNonce }) + "\n");
+  fs.linkSync(mlp, `${mlp}.${deadNonce}.reap`); // simulate contender A having ALREADY won this election
+  const won = lease._reclaimDeadGeneration(mlp, deadNonce, 999999999);
+  assert.strictEqual(won, false, "the 2nd contender must LOSE the election (EEXIST on the reap link)");
+  assert.ok(fs.existsSync(mlp), "the loser must not remove the dead lock — retirement belongs to the election winner");
+});
+
+test("TEETH (C1/R5): a PROVEN-DEAD owner WITHOUT a nonce is NOT reclaimed (the election needs a generation id → contended/manual-recovery)", () => {
+  const root = tmpRoot("c1r5-nononce");
+  const spId = "SP-C1R5-NONONCE";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now() }) + "\n"); // dead pid, NO nonce
+  const old = Date.now() - (24 * 60 * 60 * 1000);
+  fs.utimesSync(mlp, new Date(old), new Date(old));
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+  assert.strictEqual(ran, false, "a dead but nonce-less lock cannot be generation-elected → contended");
+  assert.strictEqual(res.reason, "mutation-contended");
+  assert.ok(fs.existsSync(mlp), "the nonce-less lock must survive (fail-closed)");
+});
+
+for (const badPid of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, "1234", NaN]) {
+  test(`TEETH (C1/R5 pid): an ancient lock stamped with an INVALID pid (${String(badPid)}) is NEVER reclaimed`, () => {
+    const tag = "c1r5-pid-" + String(badPid).replace(/[^a-z0-9]/gi, "");
+    const root = tmpRoot(tag);
+    const spId = "SP-C1R5-PID";
+    fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+    const mlp = lease._mutationLockPath(spId, root);
+    fs.writeFileSync(mlp, JSON.stringify({ pid: badPid, ts: Date.now(), nonce: "genPID" }) + "\n");
+    const old = Date.now() - (24 * 60 * 60 * 1000);
+    fs.utimesSync(mlp, new Date(old), new Date(old));
+    let ran = false;
+    const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+    assert.strictEqual(ran, false, `pid ${String(badPid)} is not PROVEN dead → unidentifiable → contended`);
+    assert.strictEqual(res.reason, "mutation-contended");
+    assert.ok(fs.existsSync(mlp), "the lock must survive an invalid-pid stamp");
+  });
+}
+
+test("pidProvenDead: TRUE only for a positive safe-integer pid that is ESRCH-absent; every other case is NOT proven dead", () => {
+  assert.strictEqual(lease.pidProvenDead(process.pid), false, "our own live pid is not proven dead");
+  assert.strictEqual(lease.pidProvenDead(0), false);
+  assert.strictEqual(lease.pidProvenDead(-1), false);
+  assert.strictEqual(lease.pidProvenDead(1.5), false);
+  assert.strictEqual(lease.pidProvenDead(Number.MAX_SAFE_INTEGER + 1), false);
+  assert.strictEqual(lease.pidProvenDead("1234"), false);
+  assert.strictEqual(lease.pidProvenDead(NaN), false);
+  assert.strictEqual(lease.pidProvenDead(999999999), true, "a positive safe-int pid with no such process (ESRCH) is proven dead");
 });

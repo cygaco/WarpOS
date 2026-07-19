@@ -26,6 +26,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 
 // CWD-independent anchor (mirrors concurrency-lock.js's PROJECT_ROOT reasoning —
 // a worktree-cwd dispatch must not get its own separate lease pool).
@@ -35,15 +36,25 @@ const DEFAULT_ROOT = path.join(PROJECT_ROOT, ".claude", "runtime");
 // Mirrors concurrency-lock.js's crash-recovery window.
 const STALE_AFTER_MS = 20 * 60 * 1000;
 
-// SP-20260718-005 gauntlet C1 fix (R3-hardened): a per-SP MUTATION lock serializes release/renew/reclaim so
-// their read-check-mutate is atomic against each other. Reclaim keys on OWNER LIVENESS ONLY — a PARSEABLE
-// owner stamp whose pid is provably DEAD. An UNIDENTIFIABLE lock (empty / torn / unparseable stamp / no
-// finite pid) is NEVER mtime-reclaimed: a live holder paused in the window between openSync() and its PID
-// stamp is INDISTINGUISHABLE from a crashed holder by mtime, so mtime-reclaiming it re-opens the exact TOCTOU
-// the lock exists to close (the reclaimer unlinks a live owner's lock; the paused owner's `finally` then
-// unlinks the reclaimer's). An unidentifiable lock is therefore treated as contended / manual-recovery-
-// required — fail-CLOSED, never a silent auto-reclaim. (This is why there is no mtime-staleness constant for
-// the mutex any more: R3 removed the mtime-reclaim path for unidentifiable locks entirely.)
+// SP-20260718-005 gauntlet C1 (R3→R5-hardened): a per-SP MUTATION lock serializes release/renew/reclaim so
+// their read-check-mutate is atomic against each other. The WHOLE lifecycle is GENERATION-FENCED by an
+// immutable per-lock `nonce` (R5, β-binding):
+//   - PUBLISH is link-with-content (write a stamped temp, then fs.linkSync(tmp, lp) as the O_EXCL create): lp
+//     is NEVER visible in an un-stamped state, so there is no empty pre-stamp window and every visible lock is
+//     identifiable the instant it exists.
+//   - RECLAIM of a crashed holder fires ONLY for a PARSEABLE owner whose pid is PROVEN DEAD (pidProvenDead:
+//     positive safe-integer AND process.kill→ESRCH — never an invalid pid, never a non-ESRCH error), and even
+//     then ONLY via an ATOMIC ELECTION keyed by the dead owner's nonce (fs.linkSync to a nonce-derived reap
+//     path): exactly one contender retires a given dead generation; it re-verifies the linked inode is STILL
+//     that dead generation before removing it, so it can never destroy a LIVE replacement (closes the R4 ABA
+//     read-then-unlink-by-pathname race).
+//   - CLEANUP (the finally + any abort) is content-fenced via unlinkIfNonce: it removes lp ONLY if lp still
+//     holds OUR generation, so cleanup is STRUCTURALLY unable to unlink another holder's replacement.
+// An UNIDENTIFIABLE lock (empty / torn / unparseable / non-positive-safe-int pid) is NEVER reclaimed —
+// contended / manual-recovery-required (fail-CLOSED). Residual (tracked, fail-closed): a reclaimer crash in
+// the microsecond window between the election link and its cleanup leaks a reap link → that generation becomes
+// manual-recovery-required; and link-with-content assumes same-volume hardlink support (NTFS/POSIX local — a
+// non-supporting FS surfaces the link error loudly rather than degrading silently).
 const MUTATION_LOCK_WAIT_MS = 5 * 1000; // total spin budget waiting for a contended mutation lock
 
 function mutationLockPath(spId, root) {
@@ -51,70 +62,111 @@ function mutationLockPath(spId, root) {
 }
 
 /**
- * withMutationLock(spId, root, fn) — run fn() while holding an O_EXCL per-SP mutation lock, so
- * release/renew/reclaim never interleave their read-check-mutate. Reclaims ONLY a lock whose PARSEABLE
- * owner pid is provably DEAD (a crashed holder). An UNIDENTIFIABLE lock (empty/torn/unparseable stamp) is
- * NEVER reclaimed — treated as contended/manual-recovery (C1/R3, see the constant comment above). Returns
+ * withMutationLock(spId, root, fn) — run fn() while holding a generation-fenced per-SP mutation lock, so
+ * release/renew/reclaim never interleave their read-check-mutate. Reclaims ONLY a PROVEN-DEAD, nonce-
+ * identified owner via an atomic election; an unidentifiable lock is contended/manual-recovery. Returns
  * fn()'s value, or { ok:false, reason:"mutation-contended" } if the lock can't be taken within the budget.
  */
 function withMutationLock(spId, root, fn, opts = {}) {
   ensureDir(leaseRoot(root));
   const lp = mutationLockPath(spId, root);
   const deadline = Date.now() + (Number.isFinite(opts.maxWaitMs) ? opts.maxWaitMs : MUTATION_LOCK_WAIT_MS);
-  let fd = null;
+  const ourNonce = crypto.randomBytes(12).toString("hex");
+  const tmp = `${lp}.${ourNonce}.tmp`;
+  let prepared = false;
   for (;;) {
-    // Try to WIN the lock via O_EXCL create.
-    try {
-      fd = fs.openSync(lp, "wx");
-    } catch (e) {
-      if (!e || e.code !== "EEXIST") throw e;
-      // Held by someone. Decide reclaim by OWNER LIVENESS ONLY — NEVER by mtime (C1/R3 gauntlet). Only a
-      // PARSEABLE owner whose pid is provably DEAD is reclaimed. An unidentifiable lock (empty / torn /
-      // unparseable / no finite pid) is a live pre-stamp holder JUST AS MUCH as a crash — mtime cannot tell
-      // them apart — so it is treated as contended (wait or fail-contended), never mtime-reclaimed.
-      let ownerDead = false;
+    // (1) Stage our STAMPED lock content in a private temp so, when it becomes visible at lp, it is ALREADY
+    //     identifiable (no empty pre-stamp window; C1/R3+R5). The stamp carries an immutable nonce.
+    if (!prepared) {
       try {
-        const raw = fs.readFileSync(lp, "utf8").trim();
-        const owner = raw ? JSON.parse(raw) : null;
-        if (owner && Number.isFinite(owner.pid)) {
-          ownerDead = !pidAlive(owner.pid); // the load-bearing check: dead pid, never stale mtime
-        } else {
-          ownerDead = false; // unidentifiable → NOT reclaimable (contended/manual-recovery), never mtime
-        }
-      } catch (readErr) {
-        if (readErr && readErr.code === "ENOENT") continue; // lock vanished between open and read — retry create
-        ownerDead = false; // unreadable owner → cannot identify → do NOT reclaim (fail-closed)
-      }
-      if (ownerDead) {
-        try { fs.unlinkSync(lp); } catch {}
+        fs.writeFileSync(tmp, JSON.stringify({ pid: process.pid, ts: Date.now(), nonce: ourNonce }) + "\n");
+        prepared = true;
+      } catch {
+        if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
+        const s = Date.now() + 2; while (Date.now() < s) { /* brief spin */ }
         continue;
       }
-      if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
-      // Tiny synchronous spin — a lease mutation completes in microseconds; contention is rare + brief.
-      const spinUntil = Date.now() + 2;
-      while (Date.now() < spinUntil) { /* busy-wait 2ms */ }
-      continue;
     }
-    // We WON the create. Stamp the OWNER identity so a contender can identify us as a LIVE holder (the reclaim
-    // decision keys on this pid). If the stamp write fails we must NOT hold an UNIDENTIFIABLE live lock — a
-    // contender could never reclaim it, and if we then crash it would block forever — so release our own lock
-    // and retry rather than proceed unstamped (fail-closed on our own side too).
+    // (2) PUBLISH atomically: fs.linkSync is an O_EXCL create-with-content (EEXIST if lp already held). On
+    //     success lp exists ALREADY stamped with ourNonce — never empty.
     try {
-      fs.writeSync(fd, JSON.stringify({ pid: process.pid, ts: Date.now() }) + "\n");
-    } catch {
-      try { fs.closeSync(fd); } catch {}
-      try { fs.unlinkSync(lp); } catch {}
-      fd = null;
-      if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
+      fs.linkSync(tmp, lp);
+      try { fs.unlinkSync(tmp); } catch {} // drop the temp name; lp (same inode) survives as the lock
+      break; // WE HOLD lp
+    } catch (e) {
+      if (!e || e.code !== "EEXIST") {
+        // A real FS failure (e.g. hardlinks unsupported) — surface loudly, never silently degrade. Clean the temp.
+        try { fs.unlinkSync(tmp); } catch {}
+        throw e;
+      }
+      // (3) Held by someone. Reclaim ONLY a PROVEN-DEAD, nonce-identified owner, via an atomic election.
+      let owner = null;
+      try {
+        const raw = fs.readFileSync(lp, "utf8").trim();
+        owner = raw ? JSON.parse(raw) : null;
+      } catch (readErr) {
+        if (readErr && readErr.code === "ENOENT") continue; // vanished between publish-attempt and read — retry
+        owner = null; // unreadable → unidentifiable → contended
+      }
+      if (owner && typeof owner.nonce === "string" && owner.nonce && pidProvenDead(owner.pid)) {
+        if (reclaimDeadGeneration(lp, owner.nonce, owner.pid)) continue; // retired the dead lock → retry publish
+      }
+      // contended: alive/unidentifiable owner, or lost/failed election
+      if (Date.now() > deadline) { try { fs.unlinkSync(tmp); } catch {} return { ok: false, reason: "mutation-contended" }; }
+      const s = Date.now() + 2; while (Date.now() < s) { /* busy-wait 2ms — contention is rare + brief */ }
       continue;
     }
-    break;
   }
   try {
     return fn();
   } finally {
-    try { fs.closeSync(fd); } catch {}
-    try { fs.unlinkSync(lp); } catch {}
+    // Content-fenced cleanup: remove lp ONLY if it STILL holds OUR generation. Structurally cannot unlink
+    // another holder's replacement (β-binding whole-lifecycle fence).
+    unlinkIfNonce(lp, ourNonce);
+  }
+}
+
+/**
+ * Atomic reclaim election for a PROVEN-DEAD generation, keyed by the dead owner's immutable nonce. Returns
+ * true iff this contender retired the dead lock (lp is now free to re-publish). NON-DESTRUCTIVE: it links
+ * (never MOVES) the dead inode to a nonce-derived reap path — fs.linkSync is O_EXCL, so exactly one contender
+ * wins retiring THIS dead generation; the winner RE-VERIFIES the linked inode is still that dead generation
+ * (same nonce, still proven dead) BEFORE removing lp, so a live replacement created in the meantime is left
+ * intact (closes the R4 ABA). A loser (EEXIST) or an already-retired lock (ENOENT) simply falls through.
+ */
+function reclaimDeadGeneration(lp, deadNonce, deadPid) {
+  const reap = `${lp}.${deadNonce}.reap`;
+  try {
+    fs.linkSync(lp, reap); // O_EXCL election: exactly one contender wins retiring this dead generation
+  } catch {
+    return false; // EEXIST (already elected) / ENOENT (already retired) / unsupported → contended
+  }
+  try {
+    const raw = fs.readFileSync(reap, "utf8").trim(); // same inode as lp
+    const o = raw ? JSON.parse(raw) : null;
+    if (o && o.nonce === deadNonce && pidProvenDead(o.pid)) {
+      try { fs.unlinkSync(lp); } catch {} // retire the dead-lock name (election-held; still proven dead)
+    }
+    // else: lp is no longer the dead generation (a live replacement appeared) — leave it INTACT.
+  } catch {
+    /* reap unreadable — fall through to clean the reap link */
+  }
+  try { fs.unlinkSync(reap); } catch {} // always clean the reap link
+  return true;
+}
+
+/**
+ * Remove `lp` ONLY if it still holds the given generation nonce. The structural cleanup fence: it cannot
+ * unlink a lock of a DIFFERENT generation (another holder's replacement). Best-effort; absent/unreadable/
+ * mismatched → left untouched.
+ */
+function unlinkIfNonce(lp, nonce) {
+  try {
+    const raw = fs.readFileSync(lp, "utf8").trim();
+    const owner = raw ? JSON.parse(raw) : null;
+    if (owner && owner.nonce === nonce) fs.unlinkSync(lp);
+  } catch {
+    /* gone / unreadable → nothing to clean */
   }
 }
 
@@ -141,6 +193,24 @@ function pidAlive(pid) {
     // (treat as alive — better to leave the lease than wrongly reclaim it).
     if (e && e.code === "EPERM") return true;
     return false;
+  }
+}
+
+/**
+ * pidProvenDead(pid) -> boolean. TRUE only when the pid is PROVEN absent: a positive safe-integer AND
+ * process.kill(pid,0) throws with code ESRCH (no such process). EVERYTHING else is NOT proof of death and
+ * returns false — an invalid pid (0, negative, fractional, non-safe-integer), an EPERM (alive, no signal
+ * rights), any other error, or a live process. This is the ONLY gate for a liveness-based reclaim (mutation
+ * lock + lease reclaim): a non-proven pid must be treated as unidentifiable/contended, never reclaimed
+ * (SP-20260718-005 R4/R5 — backend+qa: invalid finite pids and non-ESRCH errors were wrongly treated as dead).
+ */
+function pidProvenDead(pid) {
+  if (!Number.isSafeInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return false; // alive
+  } catch (e) {
+    return !!(e && e.code === "ESRCH"); // proven dead ONLY on ESRCH
   }
 }
 
@@ -283,7 +353,9 @@ function reclaim(spId, opts = {}) {
     const lp = leasePath(spId, root);
     const holder = readHolder(spId, root);
     if (holder) {
-      const dead = !pidAlive(holder.pid);
+      // R5 (fix-all-sites): a lease is "dead" ONLY when its pid is PROVEN dead (positive safe-int + ESRCH) —
+      // an invalid pid / non-ESRCH error is NOT proof of death (else it stays via the stale-past-TTL path).
+      const dead = pidProvenDead(holder.pid);
       const stale = Date.now() - (holder.renewed_at || holder.acquired_at || 0) > STALE_AFTER_MS;
       if (!dead && !stale) {
         return { ok: false, reason: "lease-active", token: holder.token, holder };
@@ -353,8 +425,12 @@ module.exports = {
   verifyToken,
   status,
   pidAlive,
+  pidProvenDead,
   STALE_AFTER_MS,
   DEFAULT_ROOT,
-  // exported for the C1 mutation-lock teeth test (serialization guarantee)
+  // exported for the C1 mutation-lock teeth tests (serialization + R5 election/fence guarantees)
   _withMutationLock: withMutationLock,
+  _reclaimDeadGeneration: reclaimDeadGeneration,
+  _unlinkIfNonce: unlinkIfNonce,
+  _mutationLockPath: mutationLockPath,
 };
