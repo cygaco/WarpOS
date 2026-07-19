@@ -91,9 +91,32 @@ function resolveCommitSha(ref, opts = {}) {
   }
 }
 
-// R5-C2B (β-binding): result_commit MUST be an IMMUTABLE full commit SHA (never a mutable ref like
-// refs/heads/x that could be retargeted, never a short/abbreviated sha). 40 hex = git SHA-1 object name.
+// ED-238 (β design-lock 0.90): a commit-identity field MUST be an IMMUTABLE full 40-hex commit SHA — never a
+// mutable ref (refs/heads/x, retargetable), never a short/abbreviated sha. 40 hex = git SHA-1 object name.
 const FULL_SHA_RE = /^[0-9a-f]{40}$/i;
+
+/**
+ * validateCommitIdentity(record) -> boolean. The ONE commit-identity schema gate (ED-238): EVERY commit-
+ * identity field on the record is an immutable full 40-hex SHA. R5 pinned only result_commit inline in authz
+ * (a single field-by-field regex) while base_commit stayed any truthy string — a mutable base reopened
+ * stale-base authorization (the occurrence-3 leak). authorizesIntegration routes ALL commit-identity fields
+ * through THIS validator; there is NO inline field-by-field commit-SHA regex left in the authz body.
+ * (result_tree_hash / workorder_digest are DIGESTS, not commit SHAs — validated separately by presence.)
+ */
+function validateCommitIdentity(record) {
+  return (
+    !!record &&
+    typeof record === "object" &&
+    FULL_SHA_RE.test(String(record.base_commit || "")) &&
+    FULL_SHA_RE.test(String(record.result_commit || ""))
+  );
+}
+
+/** isFullSha(x) -> boolean. A head-coordinate (integrationHead/expectedHead/liveHead/newHead) must be an
+ *  immutable full 40-hex SHA (ED-238 head-coord re-binding) — the equality chain then forces it === base. */
+function isFullSha(x) {
+  return typeof x === "string" && FULL_SHA_RE.test(x);
+}
 
 /**
  * defaultIsAncestor(base, candidate, opts) -> boolean. TRUE only when `base` is an ancestor of `candidate`
@@ -203,6 +226,10 @@ function produce(input = {}) {
  * exercises the NON-recompute structural path (target/terminal/freshness/lease), same as the reject
  * falsifiers do.
  */
+// ED-238: positive fixtures use IMMUTABLE full 40-hex SHAs for BOTH commit-identity fields (β's explicit add —
+// a mutable "base-OK" base_commit was the occurrence-3 leak). base_commit === the head coords in the golden path.
+const TEST_BASE_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+const TEST_CAND_SHA = "cccccccccccccccccccccccccccccccccccccccc";
 function produceForTest(overrides = {}) {
   const workorder = {
     schema_version: "workorder-min/v1",
@@ -210,7 +237,7 @@ function produceForTest(overrides = {}) {
     role: "backend-builder",
     provider: "claude",
     model: "opus",
-    base_commit: "base-OK",
+    base_commit: TEST_BASE_SHA,
     result_tree_hash: "tree-OK",
     allowed_capabilities: ["build"],
     allowed_paths: ["scripts/"],
@@ -220,11 +247,11 @@ function produceForTest(overrides = {}) {
   };
   const base = produce({
     workorder,
-    base_commit: "base-OK",
+    base_commit: TEST_BASE_SHA, // immutable full SHA (ED-238) — the head coords === this in the golden path
     result_tree_hash: "tree-OK",
-    // R5-C2B: an IMMUTABLE full 40-hex commit SHA (never a mutable ref). A ref-agnostic test treeResolver maps
-    // it to "tree-OK"; ref-aware tests key on this exact value. ("c"*40 — a synthetic-but-well-formed SHA.)
-    result_commit: "cccccccccccccccccccccccccccccccccccccccc",
+    // ED-238: an IMMUTABLE full 40-hex candidate SHA. A ref-agnostic test treeResolver maps it to "tree-OK";
+    // ref-aware tests key on this exact value.
+    result_commit: TEST_CAND_SHA,
     target_ref: "refs/heads/integration",
     checker_digests: { lint: "digest-lint", tests: "digest-tests" },
     policy_digest: "policy-OK",
@@ -277,9 +304,10 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   // required the checker/policy/evidence digest MAPS non-empty; R3 (C2-R3) required every digest-map VALUE be a
   // non-empty string; R5 (C2B) pins result_commit to an IMMUTABLE full 40-hex SHA — "mandatory only syntactically"
   // (a mutable ref that could be retargeted) was insufficient. Any missing/empty/mis-typed coordinate fails closed.
-  if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest) return false;
-  // R5-C2B: result_commit MUST be an immutable full commit SHA — a ref name / short sha / empty fails closed.
-  if (!FULL_SHA_RE.test(String(record.result_commit || ""))) return false;
+  if (!record.result_tree_hash || !record.workorder_digest) return false; // digest presence (non-commit fields)
+  // ED-238: EVERY commit-identity field (base_commit + result_commit) routes through the ONE validator — an
+  // immutable full 40-hex SHA by construction. No inline field-by-field commit-SHA regex remains in this body.
+  if (!validateCommitIdentity(record)) return false;
   // C2-R3: a digest MAP must be a non-empty object whose EVERY value is a non-empty digest string. Empty-string /
   // null / non-string values are a contentless proof — the exact bypass the gauntlet reproduced with {lint:""}.
   const _isDigestMap = (o) =>
@@ -290,10 +318,11 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   if (typeof record.policy_digest !== "string" || !record.policy_digest.trim()) return false;
   if (!_isDigestMap(record.evidence_digests)) return false; // the evidence proof (every value a non-empty digest)
 
-  // (d) freshness MANDATORY (R2/C2): the caller MUST supply the live integration head and the record's base
-  //     MUST match it — the prior `if (opts.integrationHead != null)` opt-in let a caller SKIP the check->
-  //     merge TOCTOU guard by simply omitting the coordinate (fail-open). No opt-out: absent head → BLOCK.
-  if (opts.integrationHead == null || String(opts.integrationHead) === "") return false;
+  // (d) freshness MANDATORY (R2/C2) + head-coord SHA re-binding (ED-238): the caller MUST supply the live
+  //     integration head, it MUST be an immutable full SHA, and the record's base MUST === it. base_commit is
+  //     now a validated SHA (above), so this equality is a SHA-equality — a mutable/non-SHA integrationHead
+  //     (that a retargeted base could match by spelling) fails the SHA gate first. No opt-out: absent → BLOCK.
+  if (!isFullSha(opts.integrationHead)) return false;
   if (record.base_commit !== opts.integrationHead) return false;
 
   // (e) lease-fencing MANDATORY (R2/C2, SEC-4): the caller MUST supply the lease coordinates AND the record
@@ -352,10 +381,10 @@ function commitIntegration(record, targetRef, opts = {}) {
   if (record.target_ref !== targetRef) return { ok: false, reason: "target-mismatch" };
   if (opts.expectedHead == null) return { ok: false, reason: "missing-expected-head" };
 
-  // C3/R2: BIND the CAS to the accepted content — expectedHead (the head validation observed) MUST be the
-  // record's base_commit. The gauntlet showed a stale-base record with matching expected/live heads passed:
-  // commitIntegration never tied the head it was committing against to the base the record was built on, so
-  // a record for base A could authorize a merge whose expectedHead was B. No opt-out: mismatch → BLOCK.
+  // C3/R2 + ED-238 head-coord re-binding: BIND the CAS to the accepted content — expectedHead (the head
+  // validation observed) MUST be an immutable full SHA AND MUST === the record's base_commit (itself a
+  // validated SHA), so a stale/mutable base cannot authorize a merge whose expectedHead was a different head.
+  if (!isFullSha(opts.expectedHead)) return { ok: false, reason: "expected-head-not-sha" };
   if (opts.expectedHead !== record.base_commit) return { ok: false, reason: "expected-head-base-mismatch" };
 
   if (opts.spId != null && opts.leaseRoot != null) {
@@ -364,35 +393,32 @@ function commitIntegration(record, targetRef, opts = {}) {
     }
   }
 
-  // SP-20260718-005 gauntlet C3 fix: the CAS ref-update MUST NOT proceed on target-match + head-CAS alone.
-  // The prior split (pre-merge authorizesIntegration vs post-merge commitIntegration) let a caller reach the
-  // ref mutation by calling commitIntegration DIRECTLY, with no terminal-state / content-recompute /
-  // provenance check — a record carrying only a matching target_ref returned {ok:true} and, with
-  // performRefUpdate, mutated the ref. commitIntegration now RE-VERIFIES full authorization
-  // (authorizesIntegration: terminal-state + MANDATORY content-addressed recompute + freshness + lease
-  // fencing) as a precondition — defense-in-depth over the split, fail-closed if authorization does not hold.
-  // (Ordered AFTER the explicit lease check so a superseded lease keeps its specific reason.)
-  // authorizesIntegration now REQUIRES the freshness coordinate (R2/C2) — supply integrationHead from the
-  // validated expectedHead (which === base_commit above) so the mandatory freshness check has its input.
-  const authzOpts = { ...opts, integrationHead: opts.integrationHead != null ? opts.integrationHead : opts.expectedHead };
+  // ED-238 CAS REACHABILITY (β add 1 — dead-gate/BC-16 close): for the real-mutation path, validate newHead as a
+  // full SHA AND bind it to the EXACT candidate BEFORE the nested authz call — and DO NOT forward newHead into
+  // authz's override guard (stripped below), so THIS is the SOLE reachable authority for the newHead↔candidate
+  // binding. The R5 order let authz reject a mismatched newHead first (→ not-authorized), so the old CAS guard
+  // was a DEAD gate deletable without failing any test. A mismatch here returns EXACTLY new-head-not-bound-candidate.
+  if (opts.performRefUpdate === true) {
+    if (!isFullSha(opts.newHead)) return { ok: false, reason: "missing-new-head-for-ref-update" };
+    if (String(opts.newHead).toLowerCase() !== String(record.result_commit).toLowerCase()) {
+      return { ok: false, reason: "new-head-not-bound-candidate" };
+    }
+  }
+
+  // Re-verify FULL authorization (defense-in-depth over the pre/post-merge split). newHead is STRIPPED from
+  // authzOpts — it is validated + candidate-bound above, and must NOT also be checked by authz's override guard
+  // (that redundancy is exactly what made the CAS guard unreachable). integrationHead defaults to the validated
+  // expectedHead (=== base_commit above) so the mandatory freshness check has its input.
+  const authzOpts = { ...opts, newHead: undefined, integrationHead: opts.integrationHead != null ? opts.integrationHead : opts.expectedHead };
   if (!authorizesIntegration(record, targetRef, authzOpts)) return { ok: false, reason: "not-authorized" };
 
   const liveHead = opts.liveHead !== undefined ? opts.liveHead : resolveCommitSha(targetRef, opts);
   if (liveHead == null) return { ok: false, reason: "unresolvable-live-head" };
+  if (!isFullSha(liveHead)) return { ok: false, reason: "live-head-not-sha" }; // ED-238 head-coord re-binding
   if (liveHead !== opts.expectedHead) return { ok: false, reason: "validation-to-merge-race" };
 
   if (opts.performRefUpdate === true) {
-    if (typeof opts.newHead !== "string" || !/^[0-9a-f]{7,40}$/i.test(opts.newHead)) {
-      return { ok: false, reason: "missing-new-head-for-ref-update" };
-    }
-    // R5-C2A (β-binding): the CAS may advance the ref ONLY to the EXACT bound candidate — opts.newHead MUST
-    // equal record.result_commit (exact SHA). TREE equality is insufficient (the attack is a DIFFERENT commit
-    // whose tree == result_tree_hash — the newTree check below would pass it). Fail-closed on any mismatch.
-    // (authorizesIntegration's exact-SHA override guard already resolves opts.newHead against result_commit;
-    // this is the defense-in-depth check at the mutation itself.)
-    if (String(opts.newHead).toLowerCase() !== String(record.result_commit).toLowerCase()) {
-      return { ok: false, reason: "new-head-not-bound-candidate" };
-    }
+    // newHead already validated (full SHA) + candidate-bound (=== record.result_commit) above.
     // C3/R2: the committed newHead MUST also resolve to the ACCEPTED tree — the CAS can advance the ref only to a
     // commit whose tree === the record's recompute-accepted result_tree_hash. The gauntlet showed the CAS
     // never verified this, so it could update the ref to a commit OTHER than the accepted work. Fail-closed.
@@ -432,5 +458,9 @@ module.exports = {
   resolveTreeHash,
   resolveCommitSha,
   defaultIsAncestor,
+  validateCommitIdentity,
   stableDigest,
+  // exported for ED-238 tests (immutable full-SHA fixtures — reference, don't re-hardcode/drift)
+  TEST_BASE_SHA,
+  TEST_CAND_SHA,
 };

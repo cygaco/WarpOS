@@ -26,11 +26,11 @@ test("AC-4 positive companion — a fully valid AcceptanceRecord DOES authorize 
   // produceForTest already carries the full checker/policy/evidence identity; add the current lease token.
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: held.token });
   const authorized = acc.authorizesIntegration(record, "refs/heads/integration", {
-    integrationHead: "base-OK", // === record.base_commit ("base-OK") — mandatory freshness coordinate
+    integrationHead: record.base_commit, // === the record's immutable full-SHA base (ED-238 head-coord) — mandatory freshness coordinate
     spId,
     leaseRoot, // mandatory lease coordinates; token verified current
     treeResolver: () => record.result_tree_hash, // mandatory recompute (from the record's immutable result_commit); honest tree matches
-    ancestryResolver: () => true, // R5-C2B: base IS an ancestor of the candidate (the honest golden-path relationship)
+    ancestryResolver: () => true, // base IS an ancestor of the candidate (the honest golden-path relationship)
   });
   assert.strictEqual(
     authorized,

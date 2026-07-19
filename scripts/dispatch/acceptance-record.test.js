@@ -79,9 +79,13 @@ test("produceForTest() yields a record acceptable to the golden path (positive c
 // treeResolver that returns the honest synthetic tree ("tree-OK") — the analog of production's real
 // read-only git resolving the target ref's actual tree and it MATCHING the record's claimed digest.
 const okTree = () => "tree-OK";
+// ED-238: the immutable full-SHA base_commit produceForTest binds; the golden-path head coords === this.
+const BASE = acc.TEST_BASE_SHA;
+// A DIFFERENT immutable full SHA (!= BASE / != candidate) for mismatch/race/substitution teeth.
+const OTHER_SHA = "dddddddddddddddddddddddddddddddddddddddd";
 
 // SP-20260718-005 gauntlet R2/C2: authorizesIntegration now requires the FULL mandatory context — a live
-// integrationHead (=== the record's base "base-OK"), REAL lease coordinates + a current fencing token on the
+// integrationHead (=== the record's base BASE), REAL lease coordinates + a current fencing token on the
 // record, plus the injected tree resolver. This helper mints a valid lease and returns a fully-valid record
 // + the opts that authorize it (the production shape). Happy paths must pass through it.
 function validCtx(tag) {
@@ -91,7 +95,7 @@ function validCtx(tag) {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token });
   // R5: recompute reads the record's immutable 40-hex result_commit (okTree is ref-agnostic → "tree-OK"), and
   // ancestry is MANDATORY — inject a resolver that confirms base is an ancestor of the synthetic candidate.
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
+  const opts = { integrationHead: BASE, spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
   return { root, spId, token: a.token, record, opts };
 }
 
@@ -172,9 +176,10 @@ for (const missing of ["result_tree_hash", "base_commit", "workorder_digest"]) {
 }
 
 test("ADVERSARIAL: stale base against a supplied integrationHead blocks (TOCTOU)", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/integration", base_commit: "old-base" });
+  // Both are valid immutable SHAs (identity passes) but the record's base is STALE against the live head.
+  const record = acc.produceForTest({ target_ref: "refs/heads/integration", base_commit: OTHER_SHA });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "new-head" }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: BASE }), // live head != the record's stale base
     false,
   );
 });
@@ -217,7 +222,7 @@ test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease toke
   const a1 = lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: BASE, spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true }),
     true,
   );
 });
@@ -270,7 +275,7 @@ function refAwareCtx(tag, { resultTree = "RESULT-TREE", claimTree = "RESULT-TREE
   const record = acc.produceForTest({
     target_ref: "refs/heads/integration",
     lease_fencing_token: a.token,
-    base_commit: "base-OK",
+    base_commit: BASE,
     result_tree_hash: claimTree,   // what the record CLAIMS the accepted tree is
     result_commit: CAND_SHA,       // the immutable candidate commit the accepted work lives at (40-hex SHA)
   });
@@ -280,7 +285,7 @@ function refAwareCtx(tag, { resultTree = "RESULT-TREE", claimTree = "RESULT-TREE
     return null;
   };
   // ancestry MANDATORY — base is an ancestor of the candidate in a real integration.
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: refAware, ancestryResolver: () => true };
+  const opts = { integrationHead: BASE, spId, leaseRoot: root, treeResolver: refAware, ancestryResolver: () => true };
   return { root, spId, token: a.token, record, opts };
 }
 
@@ -304,12 +309,12 @@ test("TEETH (R3-REG-1): full authorize-then-CAS DETERMINATION on the real-integr
   const { record, opts } = refAwareCtx("r3reg1-cas");
   const result = acc.commitIntegration(record, "refs/heads/integration", {
     ...opts,
-    expectedHead: "base-OK", // the validated destination head === base
-    liveHead: "base-OK",     // destination still at base at CAS time (F12: unmoved since validation)
+    expectedHead: BASE, // the validated destination head === base
+    liveHead: BASE,     // destination still at base at CAS time (F12: unmoved since validation)
     // no performRefUpdate → pure CAS DETERMINATION, no real git write
   });
   assert.strictEqual(result.ok, true, result.reason);
-  assert.strictEqual(result.receipt.committed_head, "base-OK");
+  assert.strictEqual(result.receipt.committed_head, BASE);
 });
 
 test("TEETH (R3-REG-1): with NO bound candidate (empty result_commit) authorization FAILS CLOSED", () => {
@@ -319,7 +324,7 @@ test("TEETH (R3-REG-1): with NO bound candidate (empty result_commit) authorizat
   const spId = "SP-R3REG1-NOCAND";
   const a = lease.acquire(spId, { root, sessionId: "sess-nocand" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token, result_commit: "" });
-  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
+  const opts = { integrationHead: BASE, spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
   assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), false);
 });
 
@@ -361,22 +366,23 @@ test("TEETH (R5-C2A): a caller ref that EXACTLY equals record.result_commit stil
   assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", ok), true);
 });
 
-test("TEETH (R5-C2A): commitIntegration performRefUpdate BLOCKS a newHead that is not the bound candidate (different same-tree commit)", () => {
+test("TEETH (ED-238 CAS-reachability): commitIntegration performRefUpdate BLOCKS a DIFFERENT same-tree newHead with EXACTLY new-head-not-bound-candidate (the guard is independently reachable — deleting it would fail this test)", () => {
   const { record, opts } = refAwareCtx("r5c2a-cas");
-  const OTHER = "dddddddddddddddddddddddddddddddddddddddd";
+  // A DIFFERENT full-SHA commit whose TREE also == the accepted result tree — the same-tree-substitution attack.
   const result = acc.commitIntegration(record, "refs/heads/integration", {
     ...opts,
-    expectedHead: "base-OK",
-    liveHead: "base-OK",
+    expectedHead: BASE,
+    liveHead: BASE,
     performRefUpdate: true,
-    newHead: OTHER,
+    newHead: OTHER_SHA, // != record.result_commit (CAND_SHA)
     commitResolver: (ref) => ref,
-    treeResolver: (ref) => (ref === OTHER || ref === CAND_SHA ? "RESULT-TREE" : "BASE-TREE"),
+    treeResolver: (ref) => (ref === OTHER_SHA || ref === CAND_SHA ? "RESULT-TREE" : "BASE-TREE"),
   });
   assert.strictEqual(result.ok, false);
-  // Authorization's exact-SHA override guard rejects the substituted newHead first; new-head-not-bound-candidate
-  // is the CAS-level defense-in-depth backstop. Either way the ref cannot advance to a non-candidate commit.
-  assert.ok(["not-authorized", "new-head-not-bound-candidate"].includes(result.reason), result.reason);
+  // EXACT reason (β add 1): the newHead↔candidate binding is checked BEFORE the nested authz, and newHead is
+  // stripped from authzOpts, so THIS guard is the sole reachable authority. It is NOT an OR of two rejections:
+  // deleting the guard lets the same-tree substitute pass the tree check + mutate the ref → this assert fails.
+  assert.strictEqual(result.reason, "new-head-not-bound-candidate");
 });
 
 test("TEETH (R5-C2B): a result_commit that is NOT an immutable 40-hex SHA (ref name / short sha / empty / non-hex / wrong length) does NOT authorize", () => {
@@ -410,6 +416,55 @@ test("defaultIsAncestor: real git — HEAD~1 IS an ancestor of HEAD; HEAD is NOT
   assert.strictEqual(acc.defaultIsAncestor("", child), false); // fail-closed on empty
 });
 
+// ── ED-238 (mechanism unit, β design-lock 0.90): the ONE commit-identity validator + head-coord SHA re-binding ──
+// The occurrence-3 leak was base_commit staying "mandatory only syntactically" (any truthy string) while only
+// result_commit was SHA-pinned — a mutable base reopened stale-base auth. R5 pinned result_commit field-by-field
+// inline; ED-238 routes EVERY commit-identity field through validateCommitIdentity + SHA-gates the head coords.
+
+test("validateCommitIdentity: TRUE only when BOTH base_commit AND result_commit are immutable full 40-hex SHAs", () => {
+  const ok = { base_commit: acc.TEST_BASE_SHA, result_commit: acc.TEST_CAND_SHA };
+  assert.strictEqual(acc.validateCommitIdentity(ok), true);
+  for (const bad of [
+    { base_commit: "refs/heads/x", result_commit: acc.TEST_CAND_SHA }, // mutable ref base
+    { base_commit: "abc1234", result_commit: acc.TEST_CAND_SHA },       // short base
+    { base_commit: "", result_commit: acc.TEST_CAND_SHA },              // empty base
+    { base_commit: acc.TEST_BASE_SHA, result_commit: "refs/heads/y" },  // mutable ref candidate
+    { base_commit: "g".repeat(40), result_commit: acc.TEST_CAND_SHA },  // 40 non-hex
+    { base_commit: acc.TEST_BASE_SHA, result_commit: "c".repeat(41) },  // 41 hex
+    null, undefined, "not-an-object",
+  ]) {
+    assert.strictEqual(acc.validateCommitIdentity(bad), false, "must reject: " + JSON.stringify(bad));
+  }
+});
+
+test("TEETH (ED-238): a MUTABLE / malformed base_commit does NOT authorize — routed through the ONE validator", () => {
+  const { record, opts } = validCtx("ed238-base");
+  for (const bad of ["refs/heads/integration", "abc1234", "", "b".repeat(39), "b".repeat(41), "g".repeat(40)]) {
+    const rec = Object.assign({}, record, { base_commit: bad });
+    // integrationHead must still === base_commit, so pass the bad value as the head too — the SHA gate on the
+    // record's base_commit (via the validator) blocks it regardless.
+    const o = Object.assign({}, opts, { integrationHead: bad });
+    assert.strictEqual(acc.authorizesIntegration(rec, "refs/heads/integration", o), false, "mutable/malformed base must fail closed: " + JSON.stringify(bad));
+  }
+});
+
+test("TEETH (ED-238 head-coord): a non-SHA integrationHead does NOT authorize even if it string-equals a (would-be) base", () => {
+  const { record, opts } = validCtx("ed238-inthead");
+  // A caller supplies a mutable head that spelling-matches nothing valid — the head-coord SHA gate blocks it.
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", Object.assign({}, opts, { integrationHead: "refs/heads/integration" })), false);
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", Object.assign({}, opts, { integrationHead: "b".repeat(39) })), false);
+});
+
+test("TEETH (ED-238 head-coord): commitIntegration BLOCKS a non-SHA expectedHead / liveHead", () => {
+  const { record, opts } = validCtx("ed238-commithead");
+  const bad1 = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "refs/heads/integration", liveHead: BASE });
+  assert.strictEqual(bad1.ok, false);
+  assert.strictEqual(bad1.reason, "expected-head-not-sha");
+  const bad2 = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: BASE, liveHead: "refs/heads/integration" });
+  assert.strictEqual(bad2.ok, false);
+  assert.strictEqual(bad2.reason, "live-head-not-sha");
+});
+
 test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't be resolved -> fails closed", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: 1 });
   // No lease was ever acquired at this root — verifyToken has nothing to confirm against -> false.
@@ -423,22 +478,22 @@ test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't 
 // ── commitIntegration() — the post-merge CAS receipt, split from pre-merge authorization ──────────────
 test("HAPPY: commitIntegration succeeds when the live head matches the validated head (bound to base_commit)", () => {
   const { record, opts } = validCtx("commit-happy");
-  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "base-OK", liveHead: "base-OK" });
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: BASE, liveHead: BASE });
   assert.strictEqual(result.ok, true, result.reason);
   assert.strictEqual(result.receipt.target_ref, "refs/heads/integration");
-  assert.strictEqual(result.receipt.committed_head, "base-OK");
+  assert.strictEqual(result.receipt.committed_head, BASE);
 });
 
 test("ADVERSARIAL (R2/C3): commitIntegration blocks when expectedHead !== the record's base_commit (CAS not bound to accepted base)", () => {
   const { record, opts } = validCtx("commit-basebind");
-  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "SOME-OTHER-HEAD", liveHead: "SOME-OTHER-HEAD" });
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: OTHER_SHA, liveHead: OTHER_SHA });
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, "expected-head-base-mismatch");
 });
 
 test("ADVERSARIAL: commitIntegration blocks when the live head moved since validation (F12 CAS race)", () => {
   const { record, opts } = validCtx("commit-race");
-  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "base-OK", liveHead: "H2" });
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: BASE, liveHead: OTHER_SHA });
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, "validation-to-merge-race");
 });
@@ -465,8 +520,8 @@ test("ADVERSARIAL: commitIntegration honors the lease-fencing seam too (a supers
   lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   const result = acc.commitIntegration(record, "refs/heads/integration", {
-    expectedHead: "base-OK",
-    liveHead: "base-OK",
+    expectedHead: BASE,
+    liveHead: BASE,
     spId,
     leaseRoot: root,
   });
@@ -481,8 +536,9 @@ test("TEETH (C3 fix): commitIntegration BLOCKS a forged-tree record even with ma
   const forged = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: token, result_tree_hash: "f".repeat(40) });
   const result = acc.commitIntegration(forged, "refs/heads/integration", {
     ...opts,
-    expectedHead: "base-OK",
-    liveHead: "base-OK",
+    expectedHead: BASE,
+    liveHead: BASE,
+    newHead: acc.TEST_CAND_SHA, // === result_commit → passes the CAS candidate-binding, so authz gets to gate the forged tree
     performRefUpdate: true, // even asking for the real mutation, authorization gates it first
   });
   assert.strictEqual(result.ok, false);
@@ -495,11 +551,11 @@ test("commitIntegration never mutates git by default (no performRefUpdate opt-in
   const a = lease.acquire(spId, { root, sessionId: "sess-noop" });
   const record = acc.produceForTest({ target_ref: "refs/heads/acc-record-noop-test-ref", lease_fencing_token: a.token });
   const result = acc.commitIntegration(record, "refs/heads/acc-record-noop-test-ref", {
-    integrationHead: "base-OK",
+    integrationHead: BASE,
     spId,
     leaseRoot: root,
-    expectedHead: "base-OK",
-    liveHead: "base-OK",
+    expectedHead: BASE,
+    liveHead: BASE,
     treeResolver: okTree,
     ancestryResolver: () => true,
   });
@@ -519,15 +575,15 @@ test("H5 falsifier: a no-op-lexical-choke-point bypass is defeated IN-PRIMITIVE 
   const bareEnvelope = { success: true, target_ref: "refs/heads/integration", terminal_state: "success" };
   // (the no-op the attacker would use to fool the lexical scan: `authorizesIntegration(bareEnvelope, ref); // ignored`)
   const runtime = acc.commitIntegration(bareEnvelope, "refs/heads/integration", {
-    expectedHead: "base-OK",
-    liveHead: "base-OK",
+    expectedHead: BASE,
+    liveHead: BASE,
     treeResolver: okTree,
     performRefUpdate: true,
   });
   assert.strictEqual(runtime.ok, false, "the mutation primitive must refuse an under-authorized record even if the lexical guard was fooled");
   // and authorizesIntegration itself refuses the bare envelope (no full content-addressed identity / lease).
   assert.strictEqual(
-    acc.authorizesIntegration(bareEnvelope, "refs/heads/integration", { integrationHead: "base-OK", treeResolver: okTree }),
+    acc.authorizesIntegration(bareEnvelope, "refs/heads/integration", { integrationHead: BASE, treeResolver: okTree }),
     false,
   );
 });
