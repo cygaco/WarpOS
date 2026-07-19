@@ -37,11 +37,30 @@ function baseWorkOrder(overrides = {}) {
 }
 
 // ── Phase-2 backward-compatibility: NO WorkOrder presented → channel-asserted, UNCHANGED ──────────
-test("Phase-2 UNCHANGED: no `workorder` presented → validated_workorder_or_cli_binding is channel-asserted true", () => {
+test("C4 un-conflate: no `workorder` presented → binding_source is 'cli-channel', NEVER masquerading as validator-passed", () => {
   const b = deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: RB, knownRoles: KNOWN });
   assert.strictEqual(b.ok, true);
   assert.strictEqual(b.boundRole, "backend-builder");
-  assert.match(b.reason, /channel-asserted argv role/);
+  assert.strictEqual(b.binding_source, "cli-channel", "a channel default must never claim workorder-validated");
+  assert.match(b.reason, /channel-derived argv role/);
+});
+
+test("C4 un-conflate teeth: a validated WorkOrder yields binding_source 'workorder-validated' — machine-distinct from the cli-channel default (AC-3 honestly satisfied)", () => {
+  const wo = issueWorkOrder(baseWorkOrder(), { secret: SECRET });
+  const validated = deriveBinding(
+    { channel: "dispatch-claude", role: "backend-builder", workorder: wo },
+    { rb: RB, knownRoles: KNOWN, workorderOpts: { secret: SECRET } },
+  );
+  assert.strictEqual(validated.binding_source, "workorder-validated");
+  const channelDefault = deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: RB, knownRoles: KNOWN });
+  assert.notStrictEqual(validated.binding_source, channelDefault.binding_source, "the two provenances must be distinguishable");
+});
+
+test("C4 derive-not-settable falsifier: an unknown/absent channel CANNOT yield a cli-channel binding — it fail-closes with NO binding_source (the value is derived from the trusted channel, never caller-supplied)", () => {
+  const fake = deriveBinding({ channel: "not-a-real-channel", role: "backend-builder" }, { rb: RB, knownRoles: KNOWN });
+  assert.strictEqual(fake.ok, false);
+  assert.strictEqual(fake.failClosed, true);
+  assert.strictEqual(fake.binding_source, undefined, "no binding_source is emitted on a fail-closed path — a caller cannot manufacture 'cli-channel'");
 });
 
 // ── ED-218 ACTIVE: a WorkOrder IS presented ─────────────────────────────────────────────────────

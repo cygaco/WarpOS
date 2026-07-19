@@ -363,6 +363,16 @@ function deriveBinding({ channel, role, workorder } = {}, opts = {}) {
     // identically to "not presented" (the unbound path, worker_default_when_unbound governs = BLOCK).
     let validatedWorkorderOrCli = true;
     let workorderFailReason = null;
+    // SP-20260718-005 gauntlet C4 (in-scope, lead ruling 4ad5f435): UN-CONFLATE the binding provenance.
+    // The single boolean made "the ED-218 validator PASSED" and "defaulted because nothing was presented"
+    // indistinguishable — a record could claim validator-passed when it was only a channel default. A
+    // machine-readable `binding_source` splits them so the AC-3 "TRUE only when this validator passed" is
+    // satisfied HONESTLY by the validator-specific value, never the channel default.
+    //   - "workorder-validated" : a WorkOrder was presented AND passed workorder-validator#validate.
+    //   - "cli-channel"         : no WorkOrder presented; bound via the channel-derived argv role.
+    // The live-dispatch WIRING (present a WorkOrder on every dispatch + flip absent→BLOCK) is the named
+    // Phase-4 / ED-215 dependency (deferred; see retro + tracker) — NOT forced into this fix cycle.
+    let bindingSource;
     if (workorder !== undefined && workorder !== null) {
       try {
         const validateWorkOrder = opts.workorderValidate || require("./workorder-validator").validate;
@@ -373,6 +383,13 @@ function deriveBinding({ channel, role, workorder } = {}, opts = {}) {
         validatedWorkorderOrCli = false;
         workorderFailReason = `workorder-validator unavailable (fail-closed): ${e.message}`;
       }
+      bindingSource = "workorder-validated"; // only set on the success path below (a fail returns fail-closed)
+    } else {
+      // C4 (2), lead ruling: the cli-channel value is DERIVED writer-side from the NON-SETTABLE trusted
+      // channel (actor_kind === "dispatched_worker" came from actorKindForChannel(channel); an unknown/
+      // absent channel already fail-closed above). It is NEVER read from caller-supplied WorkOrder/body
+      // input — a caller cannot manufacture a "cli-channel" binding without a real dispatch channel.
+      bindingSource = "cli-channel";
     }
 
     // Resolve through the SAME fixture-proven graph the conformance fixtures prove.
@@ -392,10 +409,13 @@ function deriveBinding({ channel, role, workorder } = {}, opts = {}) {
       boundRole: role,
       ok: true,
       failClosed: false,
+      // C4 (1): the HONEST provenance label — a consumer asserting "the ED-218 validator passed" checks
+      // binding_source === "workorder-validated", never the conflated boolean. Derived here, not settable.
+      binding_source: bindingSource,
       reason:
-        workorder !== undefined && workorder !== null
-          ? "bound via validated_workorder_or_cli (ED-218 ACTIVE: WorkOrder schema + same-session provenance validated); derived-not-settable, ambient text inert (CORE-3)"
-          : "bound via validated_workorder_or_cli (channel-asserted argv role); derived-not-settable, ambient text inert (CORE-3)",
+        bindingSource === "workorder-validated"
+          ? "bound via workorder-validated (ED-218 ACTIVE: WorkOrder schema + same-session provenance validated); derived-not-settable, ambient text inert (CORE-3)"
+          : "bound via cli-channel (channel-derived argv role; no WorkOrder presented — Phase-4/ED-215 will wire WorkOrder presentation + flip absent→BLOCK); derived-not-settable, ambient text inert (CORE-3)",
     };
   }
 
