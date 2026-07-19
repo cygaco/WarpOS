@@ -583,6 +583,35 @@ if (!role || !promptArg) {
   process.exit(2);
 }
 
+// ── Derived role binding (SP-20260718-004 Phase 2, G2.1/ED-216; CORE-1) ──────────
+// The CHANNEL (this cross-provider bridge) derives actor_kind=dispatched_worker PRE-SPAWN — a
+// cross-provider reviewer/consult is NEVER President, regardless of any ambient AGENTS.md/router text
+// it slurps from cwd. HARD-REFUSE the President-leak class fail-closed; stamp the derived binding on
+// the env so downstream records/children inherit it. Non-leak ok:false (unknown role / corrupt
+// control) still stamps dispatched_worker and warns — additive, non-breaking.
+try {
+  const { deriveBinding } = require("./dispatch/role-resolver");
+  const __b = deriveBinding({ channel: "dispatch-agent", role });
+  process.env.WARPOS_ACTOR_KIND = __b.actor_kind || "dispatched_worker";
+  if (__b.ok && __b.boundRole) process.env.WARPOS_BOUND_ROLE = __b.boundRole;
+  // Fail-CLOSED on any TRUSTED-KERNEL INTEGRITY failure (gauntlet R1 SR-ID-001/BE-CQ-001/002): corrupt/
+  // unreadable control, ED-220 value failure, unknown channel, President-identity role, bogus top-level
+  // default → failClosed:true → REFUSE. A benign unrecognized role (failClosed:false) proceeds stamped
+  // dispatched_worker (never President), keeping generic/consult roles working.
+  if (!__b.ok && __b.failClosed) {
+    console.error(
+      JSON.stringify({ ok: false, error: `role-binding REFUSED (fail-closed, CORE-1): ${__b.reason}` }),
+    );
+    process.exit(2);
+  } else if (!__b.ok) {
+    process.stderr.write(`[dispatch-agent] role-binding advisory (benign, not President-leak): ${__b.reason}\n`);
+  }
+} catch (e) {
+  // A MISSING/broken identity resolver fails CLOSED (SR-ID-001): the trusted binding step cannot run → refuse.
+  console.error(JSON.stringify({ ok: false, error: `role-resolver unavailable — REFUSING dispatch (fail-closed): ${e.message}` }));
+  process.exit(2);
+}
+
 // Load the prompt
 let prompt = "";
 if (promptArg === "-") {

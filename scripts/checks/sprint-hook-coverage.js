@@ -28,6 +28,7 @@ const fs = require("fs");
 const path = require("path");
 const { PATHS } = require("../hooks/lib/paths");
 const hookPoints = require("../sprint/hook-points");
+const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -138,14 +139,18 @@ function parseTs(v) {
 //     OUTSIDE the window does NOT correlate (defense-in-depth, redteam case).
 // `sprintId` is optional: when absent (legacy callers), behavior is the original
 // time-window-only correlation.
-function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs, sprintId) {
+function hasBackingDispatchRecord(dispatchRecords, role, minTsMs, maxTsMs, sprintId, opts = {}) {
+  // SP-20260718-004 gauntlet R4 (β DIRECTIVE): route the ok:true backing check through the SAME-SESSION
+  // liveness choke-point so a forged/unsigned record cannot back a hook-coverage claim. Default TRUE (live);
+  // tests injecting unsigned fixture records pass opts.requireSignature:false.
+  const requireSignature = opts.requireSignature !== false;
   if (!Array.isArray(dispatchRecords) || dispatchRecords.length === 0) return false;
   // Defense-in-depth (claude qa lane 2026-06-10): no parseable sprint window →
   // no record can be correlated → fail closed (mirror of sprint-manager-consult).
   if (minTsMs === null && maxTsMs === null) return false;
   const wantSprint = sprintId !== undefined && sprintId !== null ? String(sprintId).trim() : null;
   return dispatchRecords.some((rec) => {
-    if (!rec || rec.ok !== true) return false;
+    if (!isVerifiedLivenessRecord(rec, { requireSignature })) return false; // ok:true AND valid origin-proof sig
     if (typeof rec.role !== "string" || rec.role.trim() !== role) return false;
     // R-5: sprint_id narrows. A record STAMPED for a sprint (a non-empty string id)
     // must match — a different stamped id never correlates. A record with NO stamp

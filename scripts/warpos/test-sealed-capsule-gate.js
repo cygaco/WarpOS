@@ -528,6 +528,14 @@ function verifyTyped(o) {
     until: o.window && o.window.until,
     completionsFile: o.ledgerPath, // undefined → gauntlet-verify defaults to canonical paths.dispatchCompletionsFile
     records: o.records,
+    // SP-20260718-004 gauntlet R4 (SR-R4-002): the sealed-capsule gate spawns an ISOLATED child in a
+    // different repo/session with WARPOS_* env scrubbed, so the child signs its records with its OWN
+    // per-session HMAC secret while THIS (canonical) parent would verify with a DIFFERENT secret →
+    // guaranteed false-RED. This is the per-session-secret CROSS-SESSION ceiling named in ADR-0025:
+    // signature verification is a SAME-SESSION property; a cross-repo liveness read cannot verify without a
+    // shared signing-key/key-distribution mechanism (an architecture decision beyond this sprint — tracked
+    // follow-up ED). So verifyTyped does NOT require signatures by default; a SAME-SESSION caller may opt in.
+    requireSignature: o.requireSignature === true,
   });
 }
 
@@ -785,9 +793,11 @@ function runSelfTests() {
     const records = [
       { role: "reviewer", ok: true, provider: "openai", completed_at: new Date(now).toISOString() },
     ];
-    const r = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer"], records });
+    // requireSignature:false — this case tests the SHAPE logic on unsigned fixture records (the live gate's
+    // signature requirement is exercised by the gauntlet-verify-signing suite, not here).
+    const r = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer"], records, requireSignature: false });
     assert(r.ok, "well-formed record should satisfy: " + JSON.stringify(r.missingRoles));
-    const r2 = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer", "qa"], records });
+    const r2 = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer", "qa"], records, requireSignature: false });
     assert(!r2.ok, "missing qa record should fail");
   });
 

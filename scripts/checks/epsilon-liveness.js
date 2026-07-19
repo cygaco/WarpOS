@@ -30,6 +30,7 @@
  */
 
 const fs = require("fs");
+const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 const path = require("path");
 const crypto = require("crypto");
 
@@ -119,15 +120,22 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
     }
     const ageMins = Math.round((nowMs - ef.mtimeMs) / 60000);
 
-    // Primary: sha256-based match — the ledger records evidence_sha for in-process spawns.
-    const shaMatch = records.find((r) => r.evidence_sha === ef.sha256 && r.ok === true);
+    // Primary: sha256-based match — the ledger records evidence_sha for in-process spawns. The matching
+    // record must be a VERIFIED liveness record (SP-20260718-004 R4 same-session choke-point) — a forged
+    // ok:true record can't hide a stall. Default-on (WARPOS_LIVENESS_REQUIRE_SIG=0 for the fixture tests).
+    const _reqSig = process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0";
+    const shaMatch = records.find(
+      (r) => r.evidence_sha === ef.sha256 && isVerifiedLivenessRecord(r, { requireSignature: _reqSig }),
+    );
     if (shaMatch) continue;
 
     // Fallback: filename-based match.  Evidence filenames follow the convention
     // <sprint_id>-<step>-<role>.return.txt (epsilon-runtime record-inprocess pattern).
     const basename = path.basename(ef.path, ".return.txt");
     const filenameMatch = records.find((r) => {
-      if (!r.ok) return false;
+      // SP-20260718-004 R6 (SR-R6-001): the filename-fallback backing record must ALSO be a VERIFIED
+      // liveness record (the sha256 primary above already is) — a forged/unsigned record can't hide a stall.
+      if (!isVerifiedLivenessRecord(r, { requireSignature: _reqSig })) return false;
       if (!r.sprint_id || !r.step || !r.role) return false;
       return basename === `${r.sprint_id}-${r.step}-${r.role}`;
     });

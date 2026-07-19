@@ -1,0 +1,8 @@
+{
+  "role": "quality-lead",
+  "step": "design",
+  "sprint": "SP-20260718-004",
+  "verdict": "advise",
+  "confidence": "high on plan shape; medium on effective-graph completeness (bounded by two named ceilings by design)",
+  "envelope": "Design INCOMPLETE without the fixture set + standing enforcer; guarantee STRUCTURAL, scan honest-scoped defense-in-depth. Ship-gate = both REQUIRED-PRESENT fixtures green + standing enforcer wired non-zero + 2-family gauntlet PASS. Fixtures: (i) derived-not-settable NEGATIVE, (ii) default-binding PLANT (paraphrase not bare string); ADDITIONAL negatives (iii) category-error BLOCK, (iv) forged UNSIGNED ok:true must NOT pass release gate (ED-231 RIDER-1 mistake-class priority), (v) same-user FAIL->PASS verdict-flip invalidates sig (RIDER-2), (vi) authority-paraphrase slip logged as KNOWN-MISS lower bound not a pass, (vii) ED-220 value BLOCK. Standing enforcer scripts/checks/authority-pollution-scan.js wired scan:full/CI exit-non-zero, self-detects re-introduction, DERIVE surface list from harness assembly (hand-list = labelled lower bound). Gauntlet attacks the MECHANISM: Claude lane settable-field spoof/paraphrase-slip/category-error; GPT lane forged-record/precedence-totality-holes/projection-drift+router-slurp. Honest-scope residuals named: R6 scan ceiling, same-user FS-forgery ceiling (ADR-0025), ED-228 Phase-3, effective-graph lower bound (P-057). NO-SHIP: either required fixture absent/failing OR any binding worker FAIL OR enforcer not wired non-zero."
+}

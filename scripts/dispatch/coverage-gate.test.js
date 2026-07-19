@@ -11,8 +11,13 @@
  */
 
 const { harness } = require("../checks/lib/fixture-harness");
-const { evaluate, parseExpect } = require("./coverage-gate");
+const { evaluate: _evaluateRaw, parseExpect } = require("./coverage-gate");
 const { ARGV_SCHEMA_VERSION } = require("./dispatch-contract");
+const { signRecord } = require("./attest-signing");
+// These fixture cases test the COVERAGE/backing logic on unsigned synthetic records, so they opt out of the
+// SP-20260718-004 signature requirement (default requireSignature:false); the signature gate itself is
+// exercised by the dedicated "R4 signed-gate" case below (and the gauntlet-verify-signing suite).
+const evaluate = (o) => _evaluateRaw({ requireSignature: false, ...o });
 
 const h = harness("coverage-gate");
 
@@ -194,6 +199,25 @@ h.violation(
         }),
       ],
       expected: [{ role: "security-reviewer" }],
+    })
+);
+
+// ── SP-20260718-004 gauntlet R4: coverage-gate is a same-session choke-point reader — on the live path
+//    (requireSignature default true) it REQUIRES a valid origin-proof signature, so a forged/unsigned
+//    ok:true record cannot prove a role ran. ──
+h.pass("R4 signed-gate: a validly SIGNED backed ok:true record satisfies coverage under requireSignature", () => {
+  const r = rec({ role: "security-reviewer" });
+  r.attest_sig = signRecord(r);
+  return _evaluateRaw({ runId: RUN, records: [r], expected: [{ role: "security-reviewer" }], requireSignature: true });
+});
+h.violation(
+  "R4 signed-gate: an UNSIGNED field-only ok:true record is REJECTED under requireSignature (forged liveness)",
+  () =>
+    _evaluateRaw({
+      runId: RUN,
+      records: [rec({ role: "security-reviewer" })],
+      expected: [{ role: "security-reviewer" }],
+      requireSignature: true,
     })
 );
 

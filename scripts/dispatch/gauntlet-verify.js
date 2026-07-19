@@ -80,6 +80,12 @@ const fs = require("fs");
 const path = require("path");
 const { PATHS } = require("../hooks/lib/paths");
 const { normalizeRole } = require("../hooks/lib/role-aliases");
+// ED-231 whole-ledger signing (SP-20260718-004 Phase 2, β RIDER-1 — MISTAKE-CLASS priority): the
+// liveness reader must not trust a FIELD-ONLY ok:true record. A forged UNSIGNED record has the right
+// fields but no valid origin-proof signature (attest-signing.js / ADR-0025). verifyRecord is the SAME
+// verifier cert-attest uses on the binding surface — extending it here closes the same mistake class
+// one reader over (a hand-authored ok:true liveness record fooling the release gate).
+const { verifyRecord } = require("./attest-signing");
 
 // ── FIX1: Future-timestamp clamp constant ─────────────────
 // A legitimate completion record cannot be from the future. A small skew
@@ -146,6 +152,8 @@ function recordCompletedMs(rec) {
 function isWellFormedOkRecord(rec) {
   if (!rec || typeof rec !== "object") return false;
   if (typeof rec.role !== "string" || !rec.role.trim()) return false;
+  // liveness-verified: shape-only typed-success predicate; origin-proof SIGNATURE verification is applied in
+  // verifyGauntlet (the sigOk/requireSignature gate) before a record counts as "ran" — not trusted here.
   if (rec.ok !== true) return false;
   if (typeof rec.provider !== "string" || !rec.provider.trim()) return false;
   // Must have at least one parseable timestamp (even when no window is specified,
@@ -269,6 +277,13 @@ function verifyGauntlet(args = {}) {
   const sprintId = args.sprintId ? String(args.sprintId).trim() : null;
   const allowFailed = !!args.allowFailed;
   const strictFallback = !!args.strictFallback;
+  // ED-231 whole-ledger signing (β RIDER-1). When true, an ok:true WELL-FORMED record must ALSO carry
+  // a valid origin-proof signature (attest-signing.verifyRecord) or it is demoted to "unsigned"
+  // (fail-closed) — a forged unsigned liveness record can no longer read as "ran". Default FALSE in
+  // this programmatic API (preserves the shape-focused unit tests, which construct unsigned records);
+  // the CLI — the actual release/WG-19 gate — defaults it TRUE (env WARPOS_GAUNTLET_REQUIRE_SIG=0 to
+  // disable). Any programmatic caller reading liveness across a trust boundary MUST pass true.
+  const requireSignature = args.requireSignature === true;
 
   const rolesIn = Array.isArray(args.roles) ? args.roles : [];
   // Normalize legacy names (evaluator→reviewer, auditor→learner) and de-dupe
@@ -465,9 +480,19 @@ function verifyGauntlet(args = {}) {
       // Typed-success (BC-16): ok:true records are only counted as "ran" or
       // "fell-back" when they pass isWellFormedOkRecord(). Records that are
       // ok:true but malformed/ill-typed are demoted to "ill-typed".
-      const okRec = recs.find((r) => r.ok === true && !r.fallback && isWellFormedOkRecord(r));
-      const fbRec = recs.find((r) => r.ok === true && r.fallback && isWellFormedOkRecord(r));
+      // ED-231 (β RIDER-1): when requireSignature, an ok:true well-formed record ALSO needs a valid
+      // origin-proof signature. sigOk gates the "ran"/"fell-back" success paths; an ok:true well-formed
+      // record that fails verifyRecord is a forged/unsigned liveness record → the "unsigned" fail-closed
+      // status below. When requireSignature is false, sigOk is a no-op (preserves legacy behavior).
+      const sigOk = (r) => !requireSignature || verifyRecord(r);
+      const okRec = recs.find((r) => r.ok === true && !r.fallback && isWellFormedOkRecord(r) && sigOk(r));
+      const fbRec = recs.find((r) => r.ok === true && r.fallback && isWellFormedOkRecord(r) && sigOk(r));
       const illTypedRec = recs.find((r) => r.ok === true && !isWellFormedOkRecord(r));
+      // A well-formed ok:true record that FAILS signature verification (only reachable when
+      // requireSignature): the forged/unsigned liveness record the release gate must never trust.
+      const unsignedRec = requireSignature
+        ? recs.find((r) => r.ok === true && isWellFormedOkRecord(r) && !verifyRecord(r))
+        : null;
       const failRec = recs.find((r) => r.ok !== true);
 
       if (okRec) {
@@ -478,6 +503,13 @@ function verifyGauntlet(args = {}) {
         status = "fell-back";
         record = fbRec;
         wellFormed = true;
+      } else if (unsignedRec) {
+        // ok:true + well-formed but NO valid origin-proof signature → forged/unsigned liveness record.
+        // Fail-closed (ED-231 whole-ledger signing, β RIDER-1); taints the ledger like ill-typed.
+        status = "unsigned";
+        record = unsignedRec;
+        wellFormed = false;
+        illTypedTaint = true;
       } else if (illTypedRec) {
         // ok:true exists but fails the typed-success shape check → ill-typed
         status = "ill-typed";
@@ -577,6 +609,9 @@ if (require.main === module) {
           "  --allow-failed      Accepted for backward compat; no longer greens a pure-failed role (BC-16 FIX3).",
           "                      A role whose only record is ok:false is never satisfied regardless of this flag.",
           "  --strict-fallback   Fail when any role only fell back to Claude (default: fell-back counts as ran).",
+          "  --no-require-sig    Disable origin-proof signature verification (ED-231). Default is ON — a",
+          "                      forged UNSIGNED ok:true record is fail-closed as 'unsigned'. Escape for",
+          "                      transition/debug only; also WARPOS_GAUNTLET_REQUIRE_SIG=0.",
         ].join("\n") + "\n",
       );
       process.exit(0);
@@ -591,6 +626,12 @@ if (require.main === module) {
     const jsonMode = argv.includes("--json");
     const allowFailed = argv.includes("--allow-failed");
     const strictFallback = argv.includes("--strict-fallback");
+    // ED-231 whole-ledger signing (β RIDER-1, MISTAKE-CLASS priority): the CLI IS the release/WG-19
+    // liveness gate, so it requires origin-proof signatures BY DEFAULT — a forged unsigned ok:true
+    // record can never green a lane here. Opt out with --no-require-sig or WARPOS_GAUNTLET_REQUIRE_SIG=0
+    // (a named, deliberate escape for a transition/debug, never a silent default).
+    const requireSignature =
+      !argv.includes("--no-require-sig") && process.env.WARPOS_GAUNTLET_REQUIRE_SIG !== "0";
 
     if (!rolesArg || rolesArg === true) {
       process.stderr.write(
@@ -646,6 +687,7 @@ if (require.main === module) {
         completionsFile && completionsFile !== true ? completionsFile : undefined,
       allowFailed,
       strictFallback,
+      requireSignature,
     });
 
     if (jsonMode) {
@@ -685,7 +727,9 @@ if (require.main === module) {
                 ? "xx"
                 : r.status === "ill-typed"
                   ? "~~" // ill-typed: ok:true but missing required fields (BC-16)
-                  : "!!"; // no-record
+                  : r.status === "unsigned"
+                    ? "$$" // unsigned: ok:true well-formed but no valid origin-proof sig (ED-231)
+                    : "!!"; // no-record
         const role = String(r.role).padEnd(12);
         const status = String(r.status).padEnd(10);
         let detail = "";
@@ -693,6 +737,9 @@ if (require.main === module) {
           const provider = r.record.provider || "(missing)";
           const ts = r.record.completed_at || r.record.started_at || "(no timestamp)";
           detail = `ok:true but ILL-TYPED — provider=${provider}, ts=${ts} — NOT a valid success (BC-16)`;
+        } else if (r.status === "unsigned" && r.record) {
+          const provider = r.record.provider || "?";
+          detail = `ok:true well-formed but UNSIGNED/forged — no valid origin-proof signature (provider=${provider}) — NOT trusted (ED-231, fail-closed)`;
         } else if (r.record) {
           const provider = r.record.provider || "?";
           const model = r.record.model || "?";

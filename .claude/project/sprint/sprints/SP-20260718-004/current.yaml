@@ -2,13 +2,13 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-004"
 title: "Phase 2 — Identity + host portability (explicit role-bindings precedence graph [dispatched=UNBOUND fail-closed, top-level=Alpha]; provider-neutral canonical instruction source + per-provider projections + drift-check; authority-pollution scan over the EFFECTIVE instruction graph; generic bootstrap; per-provider cwd/sandbox tests; operator-voice helm-only)"
 objective: "Phase 2 — Identity + host portability. PLAN minted + β plan->design DECIDE B/0.89 -> PARKED at the plan->design boundary (2026-07-18). Spine = DERIVED-NOT-SETTABLE (ED-225) primary; a fresh conductor executes design->build. Full plan: .claude/project/sprint/sprints/SP-20260718-004/plan.md."
-status: planning
+status: in_review
 created_at: "2026-07-19T01:07:07.383Z"
 updated_at: "2026-07-19T01:07:07.383Z"
 source_request: ""
 interpreted_intent: ""
 plan_contract: null
-risk_level: low
+risk_level: high
 approval_state: none_required
 current_phase: idle
 recommended_mode: no_recommendation
@@ -38,14 +38,14 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
+  prd: ".claude/project/sprint/requirements/SP-20260718-004/build_spec.md"
   high_level_stories: null
   granular_stories: null
   copy: null
   inputs: null
   trace: null
-  acceptance_criteria: null
-  qa_plan: null
+  acceptance_criteria: ".claude/project/sprint/requirements/SP-20260718-004/acceptance-criteria.md"
+  qa_plan: ".claude/project/sprint/requirements/SP-20260718-004/qa-plan.md"
   redteam_plan: null
   release_plan: null
 checks:
@@ -74,10 +74,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: "R6 TERMINAL (α-ruled) — design→build→gauntlet COMPLETE; branch sprint/SP-20260718-004-phase2 pushed @ a815ea52"
+  resume_command: "α reviews + merges the branch to main; then β release→retro + retro"
+  resume_summary: "COMPLETE + handed to α for merge. Derived-not-settable spine LIVE; every concrete same-session ledger reader verifies signatures through the verifiedLivenessRead choke-point + the kill-the-seam structural guard (scan:full BLOCKING, per-read/all-scripts/comment-aware); authority-pollution scan + fixtures; worktree President-leak close; operator-voice helm-only; ED-220; ED-231 RIDER-1+2; ADR-0026 (ED-221 OPEN_ADR). 6 cross-provider gauntlet rounds + the β/α-directed consolidation; α fired the R6 TERMINAL. Named residuals tracked ED-232 (guard regex→AST completeness [ED-229 class] + cross-session key-distribution + correlation-selector signing) — defense-in-depth, not live holes. Full regression green; framework manifest regenerated; shipping/_warpos manifest ED-226-blocked (honest). NOT merged (α's)."
   active_files: []
   dirty_state: false
-  blockers: []
+  blockers:
+    - "α merge (reserved to α per operator grant) — branch sprint/SP-20260718-004-phase2 pushed, review + merge to main"
   safe_to_continue: true

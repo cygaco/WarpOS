@@ -252,6 +252,7 @@ async function main() {
       sprintId: process.env.WARPOS_SPRINT_ID || null,
       sinceMs: runnerStartMs,
       panelRunId,
+      requireSignature: true, // live path: a lane record must carry a valid origin-proof sig (SR-R2-002)
     });
     merged.panel = panelGate;
     if (!panelGate.floor_pass) {
@@ -331,6 +332,12 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
   const sinceMs = ctx.sinceMs || 0;
   const panelRunId = ctx.panelRunId || process.env.WARPOS_PANEL_RUN_ID || null;
   const readLedger = ctx.readLedger || defaultReadLedger;
+  // SP-20260718-004 gauntlet R2 (SR-R2-002): a panel LANE record must also carry a valid origin-proof
+  // signature — this liveness reader previously trusted field-only records, so a forged/edited record could
+  // corroborate a lane. requireSignature default OFF in the programmatic API (preserves the panel-gate test
+  // suite, which constructs unsigned fixtures); the LIVE dispatch-review call sets it TRUE.
+  const requireSignature = ctx.requireSignature === true;
+  const { verifyRecord } = require("./dispatch/attest-signing");
   // SR-011: correlate by RUN IDENTITY (panel_run_id) — not the firing-time window (a concurrent same-sprint
   // run could fall in the same window). The window remains a secondary narrow. If a panel_run_id was minted,
   // a record MUST carry the matching one to corroborate a lane.
@@ -354,6 +361,7 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
       const rec = records.find((r) => {
         if (!pv.recordMatchesLane(r, contract, l.observedProvider)) return false; // IDENTITY from the module
         if (!(r.ok === true && r.fallback === false)) return false;
+        if (requireSignature && !verifyRecord(r)) return false; // SR-R2-002: valid origin-proof sig required on the live path
         // The in-process hunter's proof is its evidence digest (no CLI cmdline); a subprocess/CLI lane needs
         // real output + a real invocation (cmdline_checksum) on the contracted executable (tool_id).
         if (contract.isHunter) return !!r.output_digest || !!r.evidence_sha;

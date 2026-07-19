@@ -1,0 +1,43 @@
+===== SPRINT CONTEXT — SP-20260718-004 Phase 2: Identity + host portability =====
+
+You are reviewing a Claude-authored change to WarpOS (an autonomous AI-company framework). The change makes
+WarpOS's IDENTITY + AUTHORITY provider-portable and un-forgeable. Max risk = HIGH: the irreversible failure is
+an authority/identity FALSE-GREEN (a dispatched worker silently acting as President, or ambient text
+retro-granting merge/approval authority, or a forged liveness record fooling the release gate).
+
+THE SPINE (structural, binding): a worker's identity (actor_kind + role) is DERIVED from the dispatch CHANNEL +
+contract, NEVER a client-settable field. The role resolver runs PRE-SPAWN in the trusted parent (the dispatch
+bridge), so a worker cannot forge its actor_kind. Ambient text (worktree CLAUDE.md, handoff, AGENTS.md) is INPUT
+the worker reads, NEVER the authority for its binding. The precedence graph:
+  explicit_user -> validated_workorder_or_cli -> explicit_top_level_helm -> UNBOUND(FAIL_CLOSED).
+A dispatched_worker is bindable ONLY via validated_workorder_or_cli; it NEVER defaults to President (alex-alpha).
+The top-level human session defaults to alex-alpha ONLY via an explicit helm binding, never via ambient prose.
+
+WHAT CHANGED (the units under review):
+- A1 scripts/dispatch/role-resolver.js: the LIVE derived-not-settable resolver (deriveBinding({channel,role})).
+  Extracts the fixture-proven role-binding evaluator + loaders OUT of conformance-matrix.js into this shared lib
+  both import. Adds ED-220 value-validation (validateRoleBindingValues).
+- A2 dispatch-claude.js + dispatch-agent.js: call deriveBinding PRE-SPAWN, stamp WARPOS_ACTOR_KIND/
+  WARPOS_BOUND_ROLE on the child env, HARD-REFUSE the President-leak class (exit 2).
+- D dispatch-claude.js: prepends a worker-identity OVERRIDE to the dispatched prompt (neutralizes the ambient
+  worktree CLAUDE.md "You are Alex — the President" for a dispatched worker).
+- G1 gauntlet-verify.js: requireSignature — an ok:true well-formed record must ALSO carry a valid origin-proof
+  HMAC signature (attest-signing.verifyRecord) or it demotes to a fail-closed "unsigned" status. Default OFF in
+  the programmatic API (legacy shape tests), default ON in the CLI (the release gate).
+- G2 attest-signing.js: adds `verdict` to SIGNED_FIELDS so a post-hoc FAIL->PASS verdict flip invalidates the sig.
+- C scripts/checks/authority-pollution-scan.js: STANDING scan (exit 1) over NEUTRAL surfaces (AGENTS.md/GEMINI.md/
+  non-root CLAUDE.md; root CLAUDE.md helm projection exempt) for identity/default-binding/authority/operator-voice.
+
+ACCEPTANCE CRITERIA (the gates): G2.1 binding precedence (unbound worker fail-closed; planted repo-prose cannot
+bind); G2.3 authority-pollution scan zero ambient authority; G2.4 President-leak closed in worktree; G2.6
+operator-voice helm-only; ED-220 binding VALUE validation; ED-231 whole-ledger signing + sign-the-verdict.
+
+HONEST-SCOPE CLAIMS THE AUTHORS MADE (verify these are NOT overclaimed):
+- The authority-pollution scan is a DETECTOR at a completeness ceiling (word/pattern match = LOWER BOUND;
+  paraphrase can slip). The STRUCTURE (derived-not-settable) is the guarantee; the scan is defense-in-depth.
+- attest-signing has a SAME-USER FS-forgery ceiling: a same-user adversary can read the gitignored secret +
+  re-sign. Forgery is converted mistake-reachable -> requires-deliberate-intent, NOT eliminated.
+- Phase-2 SCOPE LINE: the resolver DERIVES + fail-closes; the ACTIVE validated_workorder_or_cli provenance
+  validator (WorkOrder schema + authority check) is ED-218/Phase-3 and is deliberately NOT built here.
+
+===== END CONTEXT =====
