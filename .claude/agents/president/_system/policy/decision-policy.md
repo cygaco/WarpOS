@@ -89,6 +89,12 @@ Always escalate, even if a decision otherwise reads as Class A or B. These exist
 
 When in doubt about whether a decision crosses one of these lines, **escalate**. The cost of an unnecessary ESCALATE is seconds. The cost of a wrong DECIDE on a red line is hours or worse.
 
+### Build-the-seam on a missing dependency — NOT an escalation (operator-ruled standing opener, DP-gap #42, /beta:integrate 2026-07-19)
+
+A **missing external credential / account / service is NOT an escalation and NOT a stop.** The operator's standing resume opener declares: *"If you need me to signup for an account or provide a key, build the seam and continue working."* So on a missing dependency, β directs **building the interface seam** (interface + adapter + deferred-credential/stub path) and **continuing the run**; the actual signup/purchase stays **operator-owned** and is surfaced as a **non-blocking deferred lastmile item**, never a mid-run halt.
+
+This does **not** touch the never-allowed hard ceiling: **building the seam is not signing up.** "Sign up for services / make purchases" remains operator-only (`CLAUDE.md` § Autonomy), and the "service signups / spend ≥ $5" red line above stands unchanged — this clause only forbids treating the *absence* of a credential/account as a reason to halt. It **removes an escalation path; it adds no authority.** Composes with `CLAUDE.md` "Never escalate" + the `project_dev_setup_guide_day_zero` intentional-lastmile posture; distinct from DP-gap #34 (autonomous-run authorization) and DP-gap #40 (scoped in-loop exceptions) — this pins the *missing-dependency* case specifically.
+
 ---
 
 ## Scoring rubric (Class B)
