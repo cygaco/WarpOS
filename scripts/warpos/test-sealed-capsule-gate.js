@@ -528,6 +528,10 @@ function verifyTyped(o) {
     until: o.window && o.window.until,
     completionsFile: o.ledgerPath, // undefined → gauntlet-verify defaults to canonical paths.dispatchCompletionsFile
     records: o.records,
+    // SP-20260718-004 gauntlet R3 (SR-R3-001): this is a LIVE typed-success gate — require a valid
+    // origin-proof signature so a forged UNSIGNED ok:true record can't satisfy it. Default TRUE; unit
+    // tests that inject unsigned fixture records opt out with requireSignature:false.
+    requireSignature: o.requireSignature !== false,
   });
 }
 
@@ -785,9 +789,11 @@ function runSelfTests() {
     const records = [
       { role: "reviewer", ok: true, provider: "openai", completed_at: new Date(now).toISOString() },
     ];
-    const r = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer"], records });
+    // requireSignature:false — this case tests the SHAPE logic on unsigned fixture records (the live gate's
+    // signature requirement is exercised by the gauntlet-verify-signing suite, not here).
+    const r = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer"], records, requireSignature: false });
     assert(r.ok, "well-formed record should satisfy: " + JSON.stringify(r.missingRoles));
-    const r2 = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer", "qa"], records });
+    const r2 = verifyTyped({ window: { since: now - 1000, until: now + 1000 }, roles: ["reviewer", "qa"], records, requireSignature: false });
     assert(!r2.ok, "missing qa record should fail");
   });
 

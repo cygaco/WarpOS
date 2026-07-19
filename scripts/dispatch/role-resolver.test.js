@@ -134,11 +134,23 @@ test("SR-ID-002 (robust President-alias): aliases that dodge the exact-string li
 });
 
 test("isPresidentIdentity does NOT false-positive on legit roles that merely contain 'alpha'", () => {
-  for (const ok of ["backend-builder", "security-reviewer", "alpha-tester", "qa-reviewer", "product-lead"]) {
+  for (const ok of ["backend-builder", "security-reviewer", "alpha-tester", "qa-reviewer", "product-lead", "alexa-connector", "alexander"]) {
     assert.strictEqual(isPresidentIdentity(ok), false, `'${ok}' must not be a President identity`);
   }
   for (const pres of ["alpha", "alex-alpha", "alex_alpha", "president", "president-worker"]) {
     assert.strictEqual(isPresidentIdentity(pres), true, `'${pres}' must be a President identity`);
+  }
+});
+
+test("BE-R3-001: bare 'Alex' (the President's name) and the Greek call-sign 'α' are President identities", () => {
+  for (const alias of ["Alex", "alex", "ALEX", "α", "Α", " α "]) {
+    assert.strictEqual(isPresidentIdentity(alias), true, `'${alias}' must be recognized as the President identity`);
+  }
+  // And a dispatched worker asking to bind them is refused fail-closed.
+  for (const alias of ["Alex", "α"]) {
+    const b = deriveBinding({ channel: "dispatch-claude", role: alias }, { rb: RB, knownRoles: KNOWN });
+    assert.strictEqual(b.ok, false, `'${alias}' must be refused`);
+    assert.strictEqual(b.failClosed, true);
   }
 });
 

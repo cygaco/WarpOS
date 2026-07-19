@@ -54,8 +54,14 @@ const TOP_LEVEL_ONLY_ROLES = Object.freeze(["alex-alpha", "alpha", "president"])
  */
 function isPresidentIdentity(role) {
   if (!role || typeof role !== "string") return false;
-  const norm = role.toLowerCase().replace(/[^a-z]/g, "");
-  return norm === "alpha" || norm.includes("alexalpha") || norm.includes("president");
+  // Map the Greek alpha call-signs (α U+03B1 / Α U+0391 — the President face SYMBOL) to "alpha" BEFORE
+  // stripping non-ascii, so "α" is recognized (gauntlet R3 BE-R3-001).
+  const mapped = role.replace(/[αΑ]/g, "alpha");
+  const norm = mapped.toLowerCase().replace(/[^a-z]/g, "");
+  // "alex" (the President's bare NAME) and "alpha" (the face) are exact-matched so legit compounds like
+  // "alexa-connector"/"alpha-tester" don't false-positive; "alexalpha"/"president" match as substrings
+  // (every combined/titled alias). BE-R3-001: bare "Alex" and "α" were the misses an exact-list leaked.
+  return norm === "alpha" || norm === "alex" || norm.includes("alexalpha") || norm.includes("president");
 }
 
 // The EXACT canonical President role ids. isPresidentIdentity (above) is PERMISSIVE — right for BLOCKING a

@@ -63,6 +63,8 @@ const SIGNED_FIELDS = Object.freeze([
   "verdict", // ED-231 RIDER-2
   "ok", // gauntlet R2 SR-R2-001 (CRIT) — the liveness "ran" bit the gates read
   "fallback", // gauntlet R2 SR-R2-001 — ran-vs-fell-back classification
+  "sprint_id", // gauntlet R3 SR-R3-002 — the sprint-correlation field gauntlet-verify filters on
+  "started_at", // gauntlet R3 SR-R3-002 — window-membership fallback (completed_at ?? started_at); un-signed → replayable
 ]);
 
 let _cachedSecret;

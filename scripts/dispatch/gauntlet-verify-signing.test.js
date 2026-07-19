@@ -127,6 +127,18 @@ test("SR-R2-001: flipping a signed record's fallback bit invalidates the signatu
   assert.strictEqual(verifyRecord(r), false);
 });
 
+test("SR-R3-002: flipping a signed record's sprint_id (correlation) invalidates the signature", () => {
+  const r = signed({ sprint_id: "SP-A" });
+  r.sprint_id = "SP-B"; // replay a signed record into a different sprint's correlation
+  assert.strictEqual(verifyRecord(r), false, "sprint_id must be signed (no cross-sprint replay of a signed record)");
+});
+
+test("SR-R3-002: flipping a signed record's started_at (window) invalidates the signature", () => {
+  const r = signed({ started_at: "2026-01-01T00:00:00.000Z" });
+  r.started_at = "2030-01-01T00:00:00.000Z"; // shift window membership
+  assert.strictEqual(verifyRecord(r), false);
+});
+
 test("a FORGED record with NO valid signature is still rejected (mistake-class intact)", () => {
   const r = wellFormed({ attest_sig: "a".repeat(64) });
   assert.strictEqual(verifyRecord(r), false);
