@@ -25,10 +25,10 @@ test("AC-F1 forged/unsigned WorkOrder MUST-BLOCK role resolution", (t) => {
     // NO valid attest signature — hand-authored
   };
   const res = validate(forged);
-  const okFlag = res && (res.ok === true || res.valid === true);
-  assert.notStrictEqual(
-    okFlag,
-    true,
-    "MUST-BLOCK: an unsigned/forged WorkOrder must fail active validation (schema+authority), never resolve a role",
-  );
+  // POSITIVE block (quality-lead): a clean STRUCTURED rejection, not merely "not true". A validator that
+  // throws / returns undefined / null / {} must NOT count as a pass — MUST-BLOCK requires res.ok === false
+  // AND a non-empty reason (why it failed schema/authority). A throw here is a RED that build must fix to a
+  // clean rejection, not a crash.
+  assert.strictEqual(res && res.ok, false, "MUST-BLOCK: forged/unsigned WorkOrder must return a structured rejection {ok:false}, not a pass/crash");
+  assert.ok(res.reason && String(res.reason).length > 0, "MUST-BLOCK: the rejection must carry a reason (schema/authority failure)");
 });

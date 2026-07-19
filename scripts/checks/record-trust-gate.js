@@ -124,6 +124,15 @@ function evaluate(manifest, opts = {}) {
       if (!r.ok) violations.push(`${id}: falsifier ${fx} -> ${r.reason}`);
     }
 
+    // 3b. POSITIVE COMPANIONS (quality-lead) — a reject-everything stub can pass a whole reject-only falsifier
+    // set while authorizing nothing. A surface that declares positive_companions must have them PRESENT (a
+    // happy-path test that a valid record DOES authorize) so constant-false fails. Existence-only (no MUST-BLOCK).
+    const companions = Array.isArray(s.positive_companions) ? s.positive_companions : [];
+    for (const pc of companions) {
+      if (!fs.existsSync(path.join(ROOT, pc)))
+        violations.push(`${id}: positive_companion ${pc} -> MISSING (a reject-everything stub would false-green without it)`);
+    }
+
     // 4. NEW-SURFACE COVERAGE — a new irreversible-gating surface must carry >=1 falsifier.
     if (s.new_in_phase3 === true && fixtures.length === 0)
       violations.push(`${id}: NEW record-trust surface with ZERO falsifier fixtures (SHARP-3 coverage gap)`);

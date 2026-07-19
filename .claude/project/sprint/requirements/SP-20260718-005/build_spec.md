@@ -25,7 +25,7 @@
 
 **BE-1 · WorkOrder min schema + validator.** `.claude/schemas/workorder-min.schema.json` + `scripts/dispatch/workorder-schema.js` (validate()). Fields: `schema_version`, `correlation_id`, effective `{role,provider,model}`, `base_commit` (immutable) + `result_tree_hash`, `allowed_capabilities[]` + `allowed_paths[]`, `retry_lineage[]`, `evidence_refs[]`, `terminal_state` ∈ {success,partial,blocked,failed,cancelled}, `failure_reason` ∈ the CLASS taxonomy {timeout,quota_exhausted,provider_unavailable,model_unavailable,auth_missing,worktree_base_stale}. (AC-1)
 
-**BE-2 · started-row + quota, wired into ALL writers as ONE change.** ED-069 `started_at`-row (a started-but-uncompleted dispatch is visible) + ED-070 `quota` field, added to `dispatch-record-fields.js` (pure) and threaded through the SINGLE `recordCompletion` sink so `dispatch-agent` / `dispatch-claude` / `dispatch-skill` / `epsilon-runtime` all carry them. Grep every write site; a writer bypassing `recordCompletion` re-opens the class. Existing dispatch regression stays green. (AC-9)
+**BE-2 · started-row + quota, wired into ALL writers as ONE change.** ED-069 `started_at`-row (a started-but-uncompleted dispatch is visible) + ED-070 `quota` field, added to `dispatch-record-fields.js` (pure) and threaded through the SINGLE `recordCompletion` sink so `dispatch-agent` / `dispatch-claude` / `dispatch-skill` / `epsilon-runtime` all carry them. **STRUCTURAL enforcer (quality-lead — a manual grep is not an enforcer):** `scripts/checks/all-writers-route-recordCompletion.js` scans the dispatch writers and FAILS any that emit a completion record without routing through `recordCompletion` (the lib-only-fix-bypassing-caller trap; mirror the liveness-read-choke-point scan shape — scan `scripts/`, exclude the sink + tests, flag a raw record-write that isn't the sink). Existing dispatch regression stays green. (AC-9)
 
 **BE-3 · `workorder_digest` into SIGNED_FIELDS.** Add to `attest-signing.js#SIGNED_FIELDS` (position deliberate; signer+verifier byte-agree). A digest swap invalidates the signature. (AC-12)
 
@@ -45,7 +45,7 @@
 
 **SEC-2 · AcceptanceRecord (falsifier-resistant, cross-session).** `scripts/dispatch/acceptance-record.js`: `produce(...)` binds WorkOrder digest + exact base/tree/**target** ref + checker/policy digests + evidence digests + effective route/fallback + integration receipt; `authorizesIntegration(record, target)` returns true ONLY for a content-valid record whose target ref MATCHES the integration target AND whose WorkOrder terminal_state === "success". A provider `success` alone → false. (AC-4)
 
-**SEC-3 · acceptance-read choke-point (structural guard).** `scripts/checks/acceptance-read-choke-point.js`: fails ANY integrator that authorizes a merge on a ResultEnvelope `success` without routing through `acceptance-record.authorizesIntegration` — the cross-session analog of `liveness-read-choke-point.js`. Cross-session readers exempt STRUCTURALLY (by the property "reads a foreign-session ledger"), never a settable marker. (AC-5)
+**SEC-3 · acceptance-read choke-point (structural guard).** `scripts/checks/acceptance-read-choke-point.js`: fails ANY integrator that authorizes a merge on a ResultEnvelope `success` without routing through `acceptance-record.authorizesIntegration` — the cross-session analog of `liveness-read-choke-point.js` (SAME scan shape: `scan(root)` → `{violations:[{file,line,what}]}`, exclude the choke-point + tests, structural cross-session exemption by property never a settable marker). **Self-test:** the AC-F9 bypass falsifier scans the seeded `runtime/record-trust-falsifiers/bypass/` root and asserts the guard flags `unrouted-integrator.js` — a NEW un-routed reader is caught (the SP-004 6-round class, front-loaded). (AC-5, AC-F9)
 
 **SEC-4 · fencing-token verification at integration + lease writes.** Consume BE-4's `verifyToken`: an AcceptanceRecord/integration produced under a superseded lease is REFUSED. (AC-7, ties AC-F5)
 
@@ -55,6 +55,11 @@
 - **ED-071 fold-back:** `teammate-stall-rules.md` → `epsilon.md` + `agent-dispatch-guide.md` (AC-17). ε authors directly (dev-tooling docs).
 - **AC-15 tracker-fidelity probe** into `/scan:full` — backend-builder if code; ε wires the scan hook.
 - **AC-16 G0.3/ED-214 binding flip** — LAST, gated on AC-1..15 all green (never flip a default red).
+
+## Gauntlet exit gates (build must satisfy — quality-lead hardening)
+- **Falsifier-liveness** `scripts/checks/falsifier-liveness.js`: runs the falsifier suite and asserts `skipped === 0` (every MUST-BLOCK actually EXECUTED — a skip-when-mis-wired module is a fail-open) AND the positive companion passes (a valid record DOES authorize — a reject-everything stub fails here). (AC-18)
+- **record-trust-gate `--built`**: all named choke-point modules exist (workorder-validator, acceptance-record, conductor-lease, do-not-reopen). Currently flags 4 unbuilt — build turns it green.
+- **The gauntlet-verify telemetry gate (WG-19)** over the registry-resolved reviewer roles: any required role `no-record` = HALT.
 
 ## Build ordering (waves)
 1. **Wave 1 (BE core):** BE-1, BE-2, BE-3 — the schema + wiring + signing (the frozen seam).

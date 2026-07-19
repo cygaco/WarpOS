@@ -74,8 +74,14 @@
         "scripts/dispatch/falsifiers/self-asserted-success.falsifier.test.js",
         "scripts/dispatch/falsifiers/stale-base.falsifier.test.js",
         "scripts/dispatch/falsifiers/target-mismatch.falsifier.test.js",
-        "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js"
-      ]
+        "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js",
+        "scripts/dispatch/falsifiers/acceptance-choke-point-bypass.falsifier.test.js",
+        "scripts/dispatch/falsifiers/lease-x-acceptance.falsifier.test.js"
+      ],
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/acceptance-positive-companion.test.js"
+      ],
+      "_positive_companions_note": "quality-lead: a reject-everything stub (authorizesIntegration=()=>false) passes the 4 reject falsifiers while authorizing nothing. The positive companion (a fully-valid record DOES authorize) makes the stub FAIL — so the falsifier corpus is not satisfiable by constant-false."
     },
     {
       "id": "conductor-lease-at-acquire",

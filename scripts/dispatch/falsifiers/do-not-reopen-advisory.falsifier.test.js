@@ -24,10 +24,10 @@ test("AC-F8 reversing a settled disposition without supersession MUST-BLOCK", (t
     true,
     "the disposition must read as SETTLED on resume (surfaced, not silently reopenable)",
   );
-  // A reversal attempt that is NOT an explicit supersession must be refused.
-  const reversed = dnr.tryReopen
-    ? dnr.tryReopen(spId, decisionId, { supersede: false }, opts)
-    : { ok: false };
+  // The reopen API MUST exist (quality-lead: `dnr.tryReopen ? ... : {ok:false}` trivially PASSES if the API is
+  // absent — a build that omits reopen would false-green). Require it present, THEN assert the block.
+  assert.strictEqual(typeof dnr.tryReopen, "function", "MUST-BLOCK: do-not-reopen must expose tryReopen() — an absent reopen API is a fail-open");
+  const reversed = dnr.tryReopen(spId, decisionId, { supersede: false }, opts);
   assert.strictEqual(
     reversed.ok,
     false,
