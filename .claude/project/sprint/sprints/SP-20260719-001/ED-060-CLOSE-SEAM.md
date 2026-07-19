@@ -14,8 +14,21 @@ prove the served model, so cert-attest cannot close ED-060 — a real authentica
 ## Operator step (the ONE thing only the operator can do)
 
 Open the **Antigravity** app (or run the Antigravity CLI login) and **sign in** as
-`operator@example.com`. This refreshes the expired keyring token so `agy` serves the account's
-configured model instead of defaulting to CCPA.
+`operator@example.com` — and mint a **genuinely VALID token**, not just a stored credential that
+LOOKS signed-in.
+
+**IMPORTANT (operator-verified 2026-07-19):** today's stored keyring credential authenticates **IN NAME
+ONLY** — the stored-token metadata reads signed-in, but every agy API call fails. All **nine** preserved
+morning logs (`runtime/cert-attest/agy-log-*.log`) show the SAME deceptive coexistence: 1× `ChainedAuth:
+authenticated` + 1× `OAuth: authenticated successfully as <email>` alongside **20–32×** `not logged into
+Antigravity` + `defaulting to CCPA` + `local chrome mode`. So a plain re-login may NOT be enough — the
+sign-in likely needs a **REDO** that mints a valid token.
+
+**Post-login verification (BEFORE the close dispatch):** run `agy` once and confirm the log has **ZERO**
+`not logged into Antigravity` lines AND resolves the **NON-default (contracted)** model. If either fails,
+redo the sign-in. Only then attempt the close dispatch. (This is exactly why the deceptive-transcript
+fixture, `runtime/cert-attest/fixtures/agy-full-transcript-false-green.txt`, models the UNIVERSAL case, not
+an edge — every real morning run carried the fake auth line alongside the unauth tells.)
 
 ## The ED-060 close record — what it proves, and why it's not client-echoable (β B/0.90 rider — LOAD-BEARING)
 
