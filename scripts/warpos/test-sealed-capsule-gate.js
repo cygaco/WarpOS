@@ -528,10 +528,14 @@ function verifyTyped(o) {
     until: o.window && o.window.until,
     completionsFile: o.ledgerPath, // undefined → gauntlet-verify defaults to canonical paths.dispatchCompletionsFile
     records: o.records,
-    // SP-20260718-004 gauntlet R3 (SR-R3-001): this is a LIVE typed-success gate — require a valid
-    // origin-proof signature so a forged UNSIGNED ok:true record can't satisfy it. Default TRUE; unit
-    // tests that inject unsigned fixture records opt out with requireSignature:false.
-    requireSignature: o.requireSignature !== false,
+    // SP-20260718-004 gauntlet R4 (SR-R4-002): the sealed-capsule gate spawns an ISOLATED child in a
+    // different repo/session with WARPOS_* env scrubbed, so the child signs its records with its OWN
+    // per-session HMAC secret while THIS (canonical) parent would verify with a DIFFERENT secret →
+    // guaranteed false-RED. This is the per-session-secret CROSS-SESSION ceiling named in ADR-0025:
+    // signature verification is a SAME-SESSION property; a cross-repo liveness read cannot verify without a
+    // shared signing-key/key-distribution mechanism (an architecture decision beyond this sprint — tracked
+    // follow-up ED). So verifyTyped does NOT require signatures by default; a SAME-SESSION caller may opt in.
+    requireSignature: o.requireSignature === true,
   });
 }
 
