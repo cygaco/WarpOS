@@ -353,6 +353,15 @@ test("G2.4/CORE-1: dispatching the President role via dispatch-claude is refused
   assert(comps.length === 0, "no completion record for a refused President dispatch");
 });
 
+// ── 17. Gauntlet R1 SR-ID-002: a President ALIAS via the bridge is refused fail-closed ───
+test("SR-ID-002: dispatching a President ALIAS ('alex_alpha') via dispatch-claude is refused (exit 2)", () => {
+  const ledger = path.join(scratch, "l17");
+  const res = runWrapper({ fake: fakeHappy, ledgerDir: ledger, role: "alex_alpha", iso: "none" });
+  assert(res.status === 2, `expected exit 2 (fail-closed refusal for a President alias), got ${res.status}`);
+  assert(/REFUSED|President-identity/i.test(res.stderr || ""), "expected a CORE-1 President-identity refusal");
+  assert(readLedger(ledger, "dispatch-completions.jsonl").length === 0, "no record for a refused alias dispatch");
+});
+
 // ── Summary ─────────────────────────────────────────────────
 console.log(`\ndispatch-claude.test.js — ${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

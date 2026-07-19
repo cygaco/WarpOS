@@ -329,7 +329,11 @@ let __binding = { actor_kind: "dispatched_worker", boundRole: null, ok: false, r
 try {
   const { deriveBinding } = require("./dispatch/role-resolver");
   __binding = deriveBinding({ channel: "dispatch-claude", role });
-  if (!__binding.ok && /President-leak|top_level_session-only|category error/i.test(__binding.reason || "")) {
+  // Fail-CLOSED on any TRUSTED-KERNEL INTEGRITY failure (gauntlet R1 SR-ID-001/BE-CQ-001/002): a corrupt/
+  // unreadable role-binding control, an ED-220 value failure, an unknown channel, a President-identity
+  // role, or a bogus top-level default all set failClosed:true → REFUSE (never launch an unbound worker).
+  // A BENIGN unrecognized role (failClosed:false) proceeds stamped dispatched_worker (never President).
+  if (!__binding.ok && __binding.failClosed) {
     process.stderr.write(`[dispatch-claude] role-binding REFUSED (fail-closed, CORE-1): ${__binding.reason}\n`);
     process.exit(2);
   }
@@ -345,7 +349,10 @@ try {
       promptStr;
   }
 } catch (e) {
-  process.stderr.write(`[dispatch-claude] role-resolver unavailable (proceeding; worker stamped dispatched_worker): ${e.message}\n`);
+  // A MISSING/broken identity resolver in a HIGH-risk identity system fails CLOSED (gauntlet R1 SR-ID-001):
+  // the trusted binding step cannot run, so REFUSE rather than spawn an unvalidated worker.
+  process.stderr.write(`[dispatch-claude] role-resolver unavailable — REFUSING dispatch (fail-closed): ${e.message}\n`);
+  process.exit(2);
 }
 
 const promptBuf = Buffer.from(promptStr, "utf8");

@@ -16,6 +16,7 @@ const {
   loadRoleBinding,
   defaultKernelDir,
   actorKindForChannel,
+  isPresidentIdentity,
 } = require("./role-resolver");
 
 // The REAL Phase-0 control graph (fixture-proven), loaded once. Injected into deriveBinding so the
@@ -119,4 +120,54 @@ test("ED-220: top_level_default_binding_source must be helm_only", () => {
 test("a structurally-corrupt control → deriveBinding fails closed, never a permissive default", () => {
   const b = deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: { garbage: true }, knownRoles: KNOWN });
   assert.strictEqual(b.ok, false);
+  assert.strictEqual(b.failClosed, true, "a corrupt control must fail CLOSED (the bridge refuses)");
+});
+
+// ── Gauntlet R1 fixes ─────────────────────────────────────────────────────────────────────────────
+test("SR-ID-002 (robust President-alias): aliases that dodge the exact-string list are STILL blocked", () => {
+  for (const alias of ["alex_alpha", "alexAlpha", "ALEX-ALPHA", "president-worker", "President_Worker", "alpha"]) {
+    const b = deriveBinding({ channel: "dispatch-claude", role: alias }, { rb: RB, knownRoles: KNOWN });
+    assert.strictEqual(b.ok, false, `alias '${alias}' must be refused`);
+    assert.strictEqual(b.failClosed, true, `alias '${alias}' must fail CLOSED`);
+    assert.strictEqual(b.boundRole, null);
+  }
+});
+
+test("isPresidentIdentity does NOT false-positive on legit roles that merely contain 'alpha'", () => {
+  for (const ok of ["backend-builder", "security-reviewer", "alpha-tester", "qa-reviewer", "product-lead"]) {
+    assert.strictEqual(isPresidentIdentity(ok), false, `'${ok}' must not be a President identity`);
+  }
+  for (const pres of ["alpha", "alex-alpha", "alex_alpha", "president", "president-worker"]) {
+    assert.strictEqual(isPresidentIdentity(pres), true, `'${pres}' must be a President identity`);
+  }
+});
+
+test("SR-ID-001 failClosed taxonomy: integrity failures fail-CLOSED; a benign unknown role does NOT", () => {
+  // corrupt control → failClosed
+  assert.strictEqual(deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: { bad: 1 }, knownRoles: KNOWN }).failClosed, true);
+  // value failure → failClosed
+  assert.strictEqual(deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: { ...RB, worker_default_when_unbound: "PASS" }, knownRoles: KNOWN }).failClosed, true);
+  // unknown channel → failClosed
+  assert.strictEqual(deriveBinding({ channel: "not-a-bridge", role: "backend-builder" }, { rb: RB, knownRoles: KNOWN }).failClosed, true);
+  // benign unknown role (registry loaded, role absent) → ok:false but failClosed:false (bridge proceeds)
+  const benign = deriveBinding({ channel: "dispatch-claude", role: "some-generic-role" }, { rb: RB, knownRoles: KNOWN });
+  assert.strictEqual(benign.ok, false);
+  assert.strictEqual(benign.failClosed, false, "a benign unrecognized role must NOT fail-closed (keeps generic roles working)");
+});
+
+test("SR-ID-002 (registry unavailable): knownRoles:null still blocks aliases, proceeds benignly for others", () => {
+  // Registry unavailable — the alias gate still closes escalation.
+  assert.strictEqual(deriveBinding({ channel: "dispatch-claude", role: "alex_alpha" }, { rb: RB, knownRoles: null }).failClosed, true);
+  // A non-alias unknown role proceeds (ok:true — the known-role check is degraded, but no escalation possible).
+  const b = deriveBinding({ channel: "dispatch-claude", role: "some-worker" }, { rb: RB, knownRoles: null });
+  assert.strictEqual(b.ok, true, "with the registry down, a non-President role binds as dispatched_worker (no brick)");
+  assert.strictEqual(b.actor_kind, "dispatched_worker");
+});
+
+test("ED220-TOPLEVEL-DEFAULT-HOLLOW: a bogus top_level_human_default is BLOCKED (not silently bound)", () => {
+  const bogus = { ...RB, top_level_human_default: "made-up-super-role" };
+  const b = deriveBinding({ channel: "session-bootstrap" }, { rb: bogus, knownRoles: KNOWN });
+  assert.strictEqual(b.ok, false);
+  assert.strictEqual(b.failClosed, true);
+  assert.match(b.reason, /not the recognized President identity|bogus top-level/i);
 });

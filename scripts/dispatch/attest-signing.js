@@ -58,6 +58,14 @@ const SIGNED_FIELDS = Object.freeze([
   "verdict", // ED-231 RIDER-2 (SP-20260718-004): a post-hoc verdict flip invalidates the signature.
 ]);
 
+// LEGACY field set (pre-verdict, ADR-0025 shape). verifyRecord accepts a signature over EITHER set so a
+// record signed BEFORE the verdict was added (its sig covers the legacy fields) still verifies — closing
+// the transition false-RED the qa lane flagged (SIGNED-FIELDS-NO-VERSION-BACKCOMPAT). This does NOT weaken
+// the mistake-class close: a FORGED record has no valid signature over EITHER set, so it is still rejected.
+// A current-signed record (sig over verdict) still fails on a verdict flip (the legacy set can't match a
+// sig that was computed over the verdict), so RIDER-2's flip-detection holds for records signed going forward.
+const LEGACY_SIGNED_FIELDS = Object.freeze(SIGNED_FIELDS.filter((f) => f !== "verdict"));
+
 let _cachedSecret;
 /** The per-session HMAC secret — read from the gitignored file, created (0600-ish) on first use. Cached
  *  per-process. Same-user-readable by construction (the named ceiling). Returns a Buffer. */
@@ -81,9 +89,10 @@ function sessionSecret() {
   }
 }
 
-/** The deterministic canonical string a record's signature covers. Missing fields → empty (stable). PURE. */
-function canonicalIdentityString(record) {
-  return SIGNED_FIELDS.map((f) => `${f}=${record && record[f] != null ? String(record[f]) : ""}`).join("\x1f");
+/** The deterministic canonical string a record's signature covers, over `fields` (default = the current
+ *  SIGNED_FIELDS). Missing fields → empty (stable). PURE. */
+function canonicalIdentityString(record, fields = SIGNED_FIELDS) {
+  return fields.map((f) => `${f}=${record && record[f] != null ? String(record[f]) : ""}`).join("\x1f");
 }
 
 /** HMAC-SHA256(secret, canonicalIdentityString(record)) → hex, or null if the secret is unavailable
@@ -93,19 +102,29 @@ function signRecord(record, secret = sessionSecret()) {
   return crypto.createHmac("sha256", secret).update(canonicalIdentityString(record)).digest("hex");
 }
 
-/** Verify record.attest_sig over its canonical identity fields. FAIL-CLOSED: no secret, no/short sig, or a
- *  mismatch → false. Timing-safe compare. Injectable secret for the bite-test. */
+/** Verify record.attest_sig over its canonical identity fields — accepting a signature over the CURRENT
+ *  field set OR the LEGACY (pre-verdict) set (backward-compat, qa SIGNED-FIELDS finding). FAIL-CLOSED: no
+ *  secret, no/short sig, or a mismatch against BOTH sets → false. Timing-safe compare. A forged record
+ *  matches NEITHER set → rejected (the mistake-class close is preserved). Injectable secret for the bite-test. */
 function verifyRecord(record, secret = sessionSecret()) {
   if (!secret || !record) return false;
   const sig = record.attest_sig;
   if (typeof sig !== "string" || !/^[0-9a-f]{64}$/i.test(sig)) return false; // absent/malformed → fail-closed
-  const expected = signRecord(record, secret);
-  if (!expected) return false;
+  let sigBuf;
   try {
-    return crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"));
+    sigBuf = Buffer.from(sig, "hex");
   } catch {
     return false;
   }
+  for (const fields of [SIGNED_FIELDS, LEGACY_SIGNED_FIELDS]) {
+    const expected = crypto.createHmac("sha256", secret).update(canonicalIdentityString(record, fields)).digest("hex");
+    try {
+      if (crypto.timingSafeEqual(sigBuf, Buffer.from(expected, "hex"))) return true;
+    } catch {
+      /* length mismatch — try the next field set */
+    }
+  }
+  return false;
 }
 
 module.exports = { sessionSecret, canonicalIdentityString, signRecord, verifyRecord, SIGNED_FIELDS, SECRET_FILE };

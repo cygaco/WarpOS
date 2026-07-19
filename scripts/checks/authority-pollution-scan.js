@@ -21,10 +21,14 @@
  *   - a non-root CLAUDE.md (a worktree/stale copy a dispatched Claude worker auto-loads — the G2.4
  *     President-leak surface; the canonical ROOT CLAUDE.md is EXEMPT — it is the Claude helm's trusted
  *     explicit_top_level_helm projection for the top-level session, R4-3, never a neutral surface).
- * Deriving this list from how the harness assembles a worker's effective context (rather than hand-
- * listing) is the completeness upgrade; where a hand-list remains it is named a lower bound here.
- * Role-specific projections (.claude/agents/**, the root CLAUDE.md helm binding) are NOT neutral
- * surfaces — each is scoped to one role's own identity — and are intentionally out of scope.
+ * IMPLEMENTATION IS A HAND-LIST, LABELLED (honest scope — gauntlet R1 BE-CQ-004): collectSurfaces
+ * recursively scans a FIXED BASENAME SET (AGENTS.md / GEMINI.md / non-root CLAUDE.md) with skip rules — it
+ * does NOT inspect provider harness configuration or an effective-context graph. That basename list is a
+ * LOWER BOUND (P-057). Deriving the surface set from how the harness ACTUALLY assembles a worker's context
+ * (imports/@includes, agent-spec loads, shims, generated projections, handoff prompts) is the completeness
+ * upgrade this scan does NOT yet do — tracked debt, not a delivered property. Role-specific projections
+ * (.claude/agents/**, the root CLAUDE.md helm binding) are NOT neutral surfaces — each is scoped to one
+ * role's own identity — and are intentionally out of scope.
  *
  * Exit: 0 clean · 1 a neutral surface asserts identity/default-binding/authority · 2 usage/internal.
  * Wired into /scan:full + CI; self-detecting on RE-INTRODUCTION (a new worktree CLAUDE.md / neutral

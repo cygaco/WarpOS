@@ -594,17 +594,22 @@ try {
   const __b = deriveBinding({ channel: "dispatch-agent", role });
   process.env.WARPOS_ACTOR_KIND = __b.actor_kind || "dispatched_worker";
   if (__b.ok && __b.boundRole) process.env.WARPOS_BOUND_ROLE = __b.boundRole;
-  if (!__b.ok && /President-leak|top_level_session-only|category error/i.test(__b.reason || "")) {
+  // Fail-CLOSED on any TRUSTED-KERNEL INTEGRITY failure (gauntlet R1 SR-ID-001/BE-CQ-001/002): corrupt/
+  // unreadable control, ED-220 value failure, unknown channel, President-identity role, bogus top-level
+  // default → failClosed:true → REFUSE. A benign unrecognized role (failClosed:false) proceeds stamped
+  // dispatched_worker (never President), keeping generic/consult roles working.
+  if (!__b.ok && __b.failClosed) {
     console.error(
       JSON.stringify({ ok: false, error: `role-binding REFUSED (fail-closed, CORE-1): ${__b.reason}` }),
     );
     process.exit(2);
   } else if (!__b.ok) {
-    process.stderr.write(`[dispatch-agent] role-binding advisory (not President-leak): ${__b.reason}\n`);
+    process.stderr.write(`[dispatch-agent] role-binding advisory (benign, not President-leak): ${__b.reason}\n`);
   }
 } catch (e) {
-  process.env.WARPOS_ACTOR_KIND = process.env.WARPOS_ACTOR_KIND || "dispatched_worker";
-  process.stderr.write(`[dispatch-agent] role-resolver unavailable (stamping dispatched_worker): ${e.message}\n`);
+  // A MISSING/broken identity resolver fails CLOSED (SR-ID-001): the trusted binding step cannot run → refuse.
+  console.error(JSON.stringify({ ok: false, error: `role-resolver unavailable — REFUSING dispatch (fail-closed): ${e.message}` }));
+  process.exit(2);
 }
 
 // Load the prompt

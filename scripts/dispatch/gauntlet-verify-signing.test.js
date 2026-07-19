@@ -17,10 +17,11 @@ process.env.WARPOS_ATTEST_SECRET_FILE = path.join(
   `gv-signing-secret-${Date.now()}-${Math.random().toString(36).slice(2)}`,
 );
 
+const crypto = require("node:crypto");
 const { test } = require("node:test");
 const assert = require("node:assert");
 const { verifyGauntlet } = require("./gauntlet-verify");
-const { signRecord } = require("./attest-signing");
+const { signRecord, verifyRecord, sessionSecret, canonicalIdentityString, SIGNED_FIELDS } = require("./attest-signing");
 
 const NOW = new Date();
 const SINCE = NOW.getTime() - 60_000;
@@ -100,6 +101,23 @@ test("ED-231 RIDER-2 (sign-the-verdict): flipping a signed record's verdict FAIL
   const res = verifyGauntlet({ roles: ["security-reviewer"], since: SINCE, requireSignature: true, records: [r] });
   assert.strictEqual(res.ok, false, "a tampered verdict must invalidate the origin-proof signature");
   assert.strictEqual(res.roles[0].status, "unsigned");
+});
+
+test("qa SIGNED-FIELDS backward-compat: a record signed with the LEGACY (pre-verdict) field set still verifies", () => {
+  // Simulate a record signed BEFORE `verdict` was added to SIGNED_FIELDS: HMAC over the legacy fields.
+  const secret = sessionSecret();
+  const legacyFields = SIGNED_FIELDS.filter((f) => f !== "verdict");
+  const r = wellFormed({ verdict: "pass" });
+  r.attest_sig = crypto.createHmac("sha256", secret).update(canonicalIdentityString(r, legacyFields)).digest("hex");
+  assert.strictEqual(verifyRecord(r), true, "a legacy-signed record must still verify (no transition false-RED)");
+  // And it still passes the gauntlet liveness gate under requireSignature.
+  const res = verifyGauntlet({ roles: ["security-reviewer"], since: SINCE, requireSignature: true, records: [r] });
+  assert.strictEqual(res.ok, true);
+});
+
+test("a FORGED record with NO valid signature over EITHER field set is still rejected (mistake-class intact)", () => {
+  const r = wellFormed({ attest_sig: "a".repeat(64) });
+  assert.strictEqual(verifyRecord(r), false);
 });
 
 // Clean up the temp secret file.

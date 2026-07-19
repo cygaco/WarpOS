@@ -37,11 +37,26 @@ const path = require("path");
 const DISPATCH_CHANNELS = Object.freeze(["dispatch-claude", "dispatch-agent"]);
 const TOP_LEVEL_CHANNELS = Object.freeze(["session-bootstrap", "helm"]);
 
-// A dispatched worker may NEVER bind to a top_level_session-only (President/Alpha) role — a dispatch
-// bridge asked to bind one is a CATEGORY ERROR. This is the structural close of the worktree
-// President-leak (G2.4): even if a worktree CLAUDE.md says "You are Alex — the President", the worker's
-// DERIVED role is its dispatched role, never alex-alpha.
-const TOP_LEVEL_ONLY_ROLES = Object.freeze(["alex-alpha", "alpha", "president"]);
+// A dispatched worker may NEVER bind to the President identity — a dispatch bridge asked to bind one is a
+// CATEGORY ERROR. This is the structural close of the worktree President-leak (G2.4). Detection is
+// ROBUST (isPresidentIdentity below), not an exact-string denylist: gauntlet round 1 (SR-ID-002) proved
+// an exact list leaks aliases (alex_alpha / alexAlpha / president-worker) that dodge the literals.
+const TOP_LEVEL_ONLY_ROLES = Object.freeze(["alex-alpha", "alpha", "president"]); // reference literals only
+
+/**
+ * Robust President-identity detection (SR-ID-002). Normalizes away separators / case / digits so ALL of
+ * "alex-alpha", "alex_alpha", "alexAlpha", "ALPHA", "president", "president-worker" are recognized as the
+ * President identity — the class an exact-string denylist leaks. A dispatched worker binding to ANY of
+ * these is the escalation the derived-not-settable spine exists to close; the top-level human default
+ * MUST be one of these (a bogus top_level_human_default is refused — ED220-TOPLEVEL-DEFAULT-HOLLOW).
+ * Deliberately does NOT match roles that merely CONTAIN "alpha" as a substring (e.g. "alpha-tester" →
+ * "alphatester" ≠ "alpha") — only the President identity itself.
+ */
+function isPresidentIdentity(role) {
+  if (!role || typeof role !== "string") return false;
+  const norm = role.toLowerCase().replace(/[^a-z]/g, "");
+  return norm === "alpha" || norm.includes("alexalpha") || norm.includes("president");
+}
 
 function actorKindForChannel(channel) {
   if (DISPATCH_CHANNELS.includes(channel)) return "dispatched_worker";
@@ -49,20 +64,33 @@ function actorKindForChannel(channel) {
   return null; // unknown/absent channel → unresolvable → fail-closed (never a permissive default)
 }
 
+/**
+ * The trusted binding-control kernel dir. Anchored to THIS script's canonical root FIRST (SR-ID-003 /
+ * the dispatch-contract precedent) so a stale or hostile `CLAUDE_PROJECT_DIR` cannot point the trusted
+ * role-binding.json at a different checkout. Env is consulted ONLY as a fallback when the anchored
+ * control is genuinely absent (and even then must itself contain a real role-binding.json).
+ */
 function defaultKernelDir() {
-  const root = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
-  return path.join(root, ".claude", "kernel");
+  const anchored = path.resolve(__dirname, "..", "..");
+  if (fs.existsSync(path.join(anchored, ".claude", "kernel", "role-binding.json")))
+    return path.join(anchored, ".claude", "kernel");
+  const envRoot = process.env.CLAUDE_PROJECT_DIR;
+  if (envRoot && fs.existsSync(path.join(envRoot, ".claude", "kernel", "role-binding.json")))
+    return path.join(envRoot, ".claude", "kernel");
+  return path.join(anchored, ".claude", "kernel"); // fail-closed target (loadRoleBinding throws if absent)
 }
 
 /** Known role-registry ids (for ED-220 value-validation of a dispatched worker's bound role). Returns
- *  [] on any registry failure — the known-role check then fails OPEN (the derived-not-settable core
- *  guarantee holds regardless; a registry outage must not brick all dispatch). */
+ *  NULL on any registry failure (SR-ID-002 fix — distinct from a loaded-but-absent role): a null signals
+ *  the registry is UNAVAILABLE, so deriveBinding degrades the known-role check to the robust President-
+ *  identity check (which still closes escalation) instead of silently disabling all value-validation. */
 function defaultKnownRoles() {
   try {
     const rr = require("./registry-roles");
-    return rr.roleIds();
+    const ids = rr.roleIds();
+    return Array.isArray(ids) && ids.length ? ids : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -234,15 +262,19 @@ function validateRoleBindingValues(rb) {
  * @param {object} [opts] { rb, kernelDir, knownRoles } injectable seams for the bite-test
  */
 function deriveBinding({ channel, role } = {}, opts = {}) {
+  // `failClosed` (gauntlet round 1, SR-ID-001/BE-CQ-001/002): a `failClosed:true` ok:false is a
+  // TRUSTED-KERNEL INTEGRITY failure — the bridge MUST refuse the spawn (never launch an unbound worker).
+  // A `failClosed:false` ok:false is a BENIGN non-escalation signal (an unrecognized non-President role):
+  // the bridge proceeds stamping dispatched_worker (never President), keeping generic/test roles working.
   let rb;
   try {
     rb = opts.rb || loadRoleBinding(opts.kernelDir || defaultKernelDir());
   } catch (e) {
-    return { actor_kind: null, boundRole: null, ok: false, reason: `role-binding control unreadable/invalid (fail-closed): ${e.message}` };
+    return { actor_kind: null, boundRole: null, ok: false, failClosed: true, reason: `role-binding control unreadable/invalid (fail-closed): ${e.message}` };
   }
   const vv = validateRoleBindingValues(rb);
   if (!vv.ok)
-    return { actor_kind: null, boundRole: null, ok: false, reason: `role-binding VALUE invalid (ED-220, fail-closed): ${vv.errors.join("; ")}` };
+    return { actor_kind: null, boundRole: null, ok: false, failClosed: true, reason: `role-binding VALUE invalid (ED-220, fail-closed): ${vv.errors.join("; ")}` };
 
   const actor_kind = actorKindForChannel(channel);
   if (!actor_kind)
@@ -250,10 +282,12 @@ function deriveBinding({ channel, role } = {}, opts = {}) {
       actor_kind: null,
       boundRole: null,
       ok: false,
+      failClosed: true,
       reason: `unknown/absent dispatch channel ${JSON.stringify(channel)} — no actor_kind derivable (fail-closed; ambient text can never supply one)`,
     };
 
-  const knownRoles = opts.knownRoles || defaultKnownRoles();
+  // knownRoles: an explicit opts value (array or null) wins; else the registry. NULL = registry UNAVAILABLE.
+  const knownRoles = opts.knownRoles !== undefined ? opts.knownRoles : defaultKnownRoles();
 
   if (actor_kind === "dispatched_worker") {
     // The trusted bridge asserts the argv role via validated_workorder_or_cli (Phase-2 channel-asserted;
@@ -263,32 +297,41 @@ function deriveBinding({ channel, role } = {}, opts = {}) {
         actor_kind,
         boundRole: null,
         ok: false,
+        failClosed: true,
         reason: "dispatched worker with no channel-asserted role — UNBOUND, fail-closed (CORE-1); never defaults to President",
       };
-    // ED-220 value-gate: a dispatched worker may NEVER bind to a top_level_session-only role (the
-    // worktree President-leak close). This holds regardless of any ambient "You are Alex" text.
-    if (TOP_LEVEL_ONLY_ROLES.includes(String(role).toLowerCase()))
+    // ROBUST President-identity gate (SR-ID-002): a dispatched worker may NEVER bind to the President
+    // identity or any alias of it — fail-CLOSED, and independent of registry state (the escalation vector).
+    if (isPresidentIdentity(role))
       return {
         actor_kind,
         boundRole: null,
         ok: false,
-        reason: `dispatched worker asked to bind top_level_session-only role '${role}' — category error, BLOCK (worktree President-leak close, CORE-1)`,
+        failClosed: true,
+        reason: `dispatched worker asked to bind President-identity role '${role}' — category error, BLOCK (worktree President-leak close, CORE-1)`,
       };
-    if (knownRoles && knownRoles.length && !knownRoles.includes(role))
+    // ED-220 known-role value check. knownRoles===null → registry UNAVAILABLE: the President-identity gate
+    // above ALREADY closes escalation, so proceed as a benign dispatched_worker rather than brick dispatch
+    // on a registry outage (SR-ID-002 — the fail-open was the SKIPPED escalation check, now covered above).
+    // A loaded registry that lacks the role → BENIGN unknown (failClosed:false): the bridge proceeds
+    // stamping dispatched_worker (never President) — caller-hygiene, not a security refusal.
+    if (Array.isArray(knownRoles) && knownRoles.length && !knownRoles.includes(role))
       return {
         actor_kind,
         boundRole: null,
         ok: false,
-        reason: `bound role '${role}' is not a known role-registry id (ED-220 value-validation, fail-closed)`,
+        failClosed: false,
+        reason: `bound role '${role}' is not a known role-registry id (ED-220; benign — dispatched_worker, never President)`,
       };
     // Resolve through the SAME fixture-proven graph the conformance fixtures prove.
     const out = evaluateRoleBinding({ actor_kind, validated_workorder_or_cli_binding: true }, rb);
     if (out.outcome !== "PASS")
-      return { actor_kind, boundRole: null, ok: false, reason: `precedence graph did not resolve dispatched worker: ${out.reason}` };
+      return { actor_kind, boundRole: null, ok: false, failClosed: true, reason: `precedence graph did not resolve dispatched worker: ${out.reason}` };
     return {
       actor_kind,
       boundRole: role,
       ok: true,
+      failClosed: false,
       reason: "bound via validated_workorder_or_cli (channel-asserted argv role); derived-not-settable, ambient text inert (CORE-3)",
     };
   }
@@ -296,15 +339,24 @@ function deriveBinding({ channel, role } = {}, opts = {}) {
   // top_level_session — the operator's own session, bound ONLY via explicit_top_level_helm (helm_only).
   const out = evaluateRoleBinding({ attempted_binding_source: "explicit_top_level_helm" }, rb);
   if (out.outcome !== "PASS")
-    return { actor_kind, boundRole: null, ok: false, reason: `top-level helm binding did not resolve: ${out.reason}` };
-  // top_level_human_default is the President-face identifier (role-binding.json), validated as a
-  // non-empty string by validateRoleBindingValues above. It is intentionally NOT required to be a
-  // roleIds() row (the President face is not a dispatch role); the dispatched-worker path IS registry-checked.
+    return { actor_kind, boundRole: null, ok: false, failClosed: true, reason: `top-level helm binding did not resolve: ${out.reason}` };
+  // ED220-TOPLEVEL-DEFAULT-HOLLOW (gauntlet round 1, qa): validate the VALUE, not just presence. The ONLY
+  // legitimate top-level human default is the President identity — a tampered/bogus top_level_human_default
+  // must BLOCK (fail-closed), never silently bind a made-up top-level role.
+  if (!isPresidentIdentity(rb.top_level_human_default))
+    return {
+      actor_kind,
+      boundRole: null,
+      ok: false,
+      failClosed: true,
+      reason: `top_level_human_default '${rb.top_level_human_default}' is not the recognized President identity — refusing a bogus top-level binding (ED-220, fail-closed)`,
+    };
   return {
     actor_kind,
     boundRole: rb.top_level_human_default,
     ok: true,
-    reason: "top-level human-facing session bound to the helm default (helm_only); ambient prose inert (CORE-3)",
+    failClosed: false,
+    reason: "top-level human-facing session bound to the President helm default (helm_only); ambient prose inert (CORE-3)",
   };
 }
 
@@ -312,8 +364,10 @@ module.exports = {
   DISPATCH_CHANNELS,
   TOP_LEVEL_CHANNELS,
   TOP_LEVEL_ONLY_ROLES,
+  isPresidentIdentity,
   actorKindForChannel,
   defaultKernelDir,
+  defaultKnownRoles,
   validateRoleBinding,
   loadRoleBinding,
   evaluateRoleBinding,
