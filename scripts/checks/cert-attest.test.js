@@ -249,8 +249,43 @@ test("FULL-transcript false-green fixture (deceptive auth + fake backend-label +
   assert.equal(v.attested, false, "the FULL false-green transcript must fail-closed — restoring any client-line trust (old slice / GATE-2 label-trust) would flip this to true: " + v.reason);
 });
 
+// ── ADR-0027 RIDER-2 TEETH-CHECK (task #18 convergent CRITICAL — backend-label is NOT proof): the 22:16Z
+//    same-user safe-spawn SPIKE produced a GENUINE authenticated round-trip (keyring auto-refreshed the
+//    expired token, ChainedAuth+OAuth succeeded, the CORRECT display label bound to the backend, 2 real
+//    streamGenerateContent calls to daily-cloudcode-pa.googleapis.com). The CANONICAL cert-attest returned
+//    attested:true for this exact run (artifact gemini-3.1-pro-(high)-2026-07-19T22-16-11-295Z.json). The
+//    HARDENED gate must REJECT it — proof the gate is not a rubber-stamp (ADR-0027 rider 2). Two teeth:
+//    (1) the FULL spike log fails (GATE-1 catches the coexisting pre-auth default/eval/expired tells); and
+//    (2) the POST-AUTH-ONLY slice — the genuine-looking serve evidence with NO terminal tells, the CORRECT
+//    backend-label, and the real round-trip — STILL fails via §7 honest-ceiling, because agy's backend-label
+//    is a REQUEST-SIDE bind / client echo, never a response-side served-model receipt (the standing R6-BE-002
+//    / ED-215 ceiling). ED-060 closes ONLY via a real authenticated dispatch-agent record + account-config
+//    served-model identity — never this log. ──
+test("ADR-0027 rider-2 teeth-check: the REAL 22:16 spike log (canonical=attested:true) → FAILS the hardened gate, SHA-pinned", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const crypto = require("crypto");
+  const fixturePath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "fixtures", "agy-spike-22-16-false-green.txt");
+  const bytes = fs.readFileSync(fixturePath);
+  const sha = crypto.createHash("sha256").update(bytes).digest("hex");
+  assert.equal(sha, "1c5136bb60d00a5b55ba9ffb0cbb935a53e83b6c45e3f55e6fa0a6f5931e2726", "spike fixture SHA-256 pinned — it must not drift (the real 22:16 authenticated-round-trip log)");
+  const full = bytes.toString("utf8");
+  // Sanity: the fixture really carries the GENUINE-serve markers a naive gate would trust as proof.
+  assert.ok(/OAuth: authenticated successfully/.test(full) && /Propagating selected model override to backend: label="Gemini 3\.1 Pro \(High\)"/.test(full) && /streamGenerateContent/.test(full), "fixture carries auth-success + correct backend-label + real round-trip (else it can't be a teeth-check)");
+  // (1) The FULL spike log → attested:false (GATE-1 catches the coexisting pre-auth default/eval/expired tells).
+  const vFull = evaluateAttestation({ requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity", output: full, exitOk: true, catalog });
+  assert.equal(vFull.attested, false, "the real 22:16 spike log must fail-closed on the hardened gate (canonical returned attested:true — that is the false-green this closes): " + vFull.reason);
+  // (2) POST-AUTH-ONLY slice — genuine-looking serve evidence, NO terminal tells → STILL fails via §7 honest-
+  //     ceiling (backend-label / request-side-bind is not served-model proof; task #18).
+  const postAuth = full.slice(full.indexOf("OAuth: authenticated successfully"));
+  assert.ok(!/resolved via default|expired=true|eval mode|local chrome|not logged in/i.test(postAuth), "the post-auth slice must carry NO terminal tells (else it is a GATE-1 test, not a §7 test)");
+  const vPost = evaluateAttestation({ requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity", output: postAuth, exitOk: true, catalog });
+  assert.equal(vPost.attested, false, "the genuine-looking post-auth serve evidence (correct backend-label + real round-trip) must STILL not attest — agy's backend-label is a request-side bind, never served-model proof: " + vPost.reason);
+  assert.equal(vPost.honestCeiling, true, "the reason must be the §7 honest-ceiling (no agy log line is served-model proof), not a GATE-1 terminal tell");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 + 19-11 negative fixture + run-window attribution)\n`);
+process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 + 19-11 negative fixture + run-window attribution + ADR-0027 rider-2 spike teeth-check)\n`);

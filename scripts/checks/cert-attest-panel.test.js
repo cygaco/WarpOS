@@ -47,12 +47,49 @@ const claudeHunterOk = rec({ role: "security_claude_hunter", provider: "claude",
 // The panel-2family FLOOR's claude lane = a subprocess-claude security review (α option B; SR-018/QA-017).
 const claudeFloorOk = rec({ role: "security-reviewer", provider: "claude", tool_id: "claude", shape: "subprocess-claude", output_digest: "d-fl", cmdline_checksum: "c-fl" });
 
-// ── POSITIVE: full same-run 3-lab WITH code_sha → attested. ──
-test("full same-run 3-lab (gpt+agy CLI + claude hunter in-process) + code_sha → attested", () => {
+// ── R2-CRITICAL-01 (β RIDER-1 "same class, DIFFERENT reader"): the panel-3lab BINDING is BLOCKED while agy
+//    is down. attestLane hard-fails the antigravity lane (§7 honest-ceiling at the panel reader): a VALID
+//    signed same-run agy record proves a dispatch ran but NOT a trustworthy served model (agy's only serve
+//    marker is the client-side backend-label echo, never trusted). So the agy lane fails-closed → the
+//    panel-3lab attestation FAILS. The ED-230 served-model predicate later REPLACES this interim hard-fail;
+//    until then agy=down ⇒ no 3-lab green (correct + consistent with support-matrix agy=down). This is the
+//    former "3-lab positive" fixture, FLIPPED — the load-bearing park-state ripple. ──
+test("R2-CRITICAL-01: panel-3lab with a VALID signed agy record → BLOCKED (agy lane fail-closed at the panel reader)", () => {
   const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  assert.equal(out.ok, false, "panel-3lab must NOT attest while the agy lane is present — agy is un-attestable from a record (§7 at the panel reader)");
+  const agyLane = out.lanes.find((l) => l.laneId === "agy");
+  assert.ok(agyLane && !agyLane.attested, "the agy lane must be unattested");
+  assert.ok(/HONEST-CEILING|antigravity lane cannot be attested|panel reader|R2-CRITICAL-01/i.test(agyLane.reason), agyLane.reason);
+  // the block is agy-SPECIFIC: the other two lanes still attest individually (not a blanket panel break).
+  assert.ok(out.lanes.find((l) => l.laneId === "gpt" && l.attested), "gpt lane still attests");
+  assert.ok(out.lanes.find((l) => l.laneId === "claude" && l.attested), "claude hunter lane still attests");
+});
+
+// NEGATIVE (must remain UNATTESTED): a signed UNAUTHENTICATED-default agy record. The hard-fail is
+// provider-level, so even a would-be "valid" agy record whose serve was the CCPA default cannot attest —
+// models the unauth-default serve that once false-greened (the 19-11 / 07-18 / 22:16 class).
+const agyUnauthDefault = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-unauth", cmdline_checksum: "c-unauth", served_default: true, attested_model_id: "CCPA" });
+test("R2-CRITICAL-01 neg: signed UNAUTH-default agy record → agy lane still unattested (provider-level fail-closed)", () => {
+  const out = attestLane(LANES.agy, [agyUnauthDefault], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "a signed unauth-default agy record must not attest the panel lane");
+  assert.ok(/HONEST-CEILING|panel reader/i.test(out.reason), out.reason);
+});
+
+// NEGATIVE (must remain UNATTESTED): a NON-CATALOG agy model record. agy exposes non-Google models too; a
+// record naming a non-contracted model must not attest — the hard-fail closes this at the panel reader
+// regardless of model id (defense-in-depth vs the Axis-5 spawn-time refusal in evaluateAttestation).
+const agyNonCatalog = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-nc", cmdline_checksum: "c-nc", attested_model_id: "Claude Sonnet 4.6 (Thinking)" });
+test("R2-CRITICAL-01 neg: non-catalog agy model record → agy lane unattested", () => {
+  const out = attestLane(LANES.agy, [agyNonCatalog], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "a non-catalog agy model record must not attest the panel lane");
+});
+
+// The panel-2family FLOOR (gpt + claude, agy OPTIONAL) is UNAFFECTED by the agy hard-fail — it never
+// requires the agy lane, so the floor still attests. (Regression guard for the fixture flip: the flip must
+// block ONLY the 3-lab binding, never the floor.) ──
+test("R2-CRITICAL-01: panel-2family FLOOR still attests (agy hard-fail does not touch the non-agy floor)", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeFloorOk] });
   assert.ok(out.ok, out.reason);
-  assert.ok(out.evidence_digest && out.invocation_digests.length === 3);
-  assert.equal(out.code_sha, SHA);
 });
 
 // ── QA-017/SR-018 (α choke-point false-RED fix): the panel-2family FLOOR attests with a subprocess-claude
@@ -79,9 +116,11 @@ test("SR-017: sanctioned_lane_id=hunter but shape FORGED-ABSENT (subprocess-clau
   assert.equal(out.attested, false, "a subprocess-claude record can never be the in-process hunter (shape is writer-stamped)");
 });
 
-// ── SR-004/QA-003: code_sha ABSENT → NOT ok even when every lane attests (AC-14 binding). ──
+// ── SR-004/QA-003: code_sha ABSENT → NOT ok even when every lane attests (AC-14 binding). Uses the
+//    panel-2family FLOOR (gpt + claude) so code_sha is the SOLE not-ok reason — the agy lane is now
+//    un-attestable by construction (R2-CRITICAL-01) and would otherwise mask the code_sha check. ──
 test("SR-004: every lane attested but code_sha absent → NOT ok", () => {
-  const out = attestPanelRun({ runId: R, sprintId: S, /* codeSha omitted */ profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  const out = attestPanelRun({ runId: R, sprintId: S, /* codeSha omitted */ profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeFloorOk] });
   assert.equal(out.ok, false, "a binding attestation must bind to a code SHA");
   assert.ok(/code_sha/.test(out.reason), out.reason);
 });
@@ -262,8 +301,11 @@ test("ED-231: a single hand-authored hunter record (right fields, no sig) does N
   const out = attestLane(LANES.claude, [forgedHunter], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
   assert.equal(out.attested, false, "an unsigned hunter record is a forgery — the in-process lane must reject it");
 });
-test("ED-231 no over-block: a REAL SIGNED 3-lab set STILL attests (origin-proof is not a blanket block)", () => {
-  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+test("ED-231 no over-block: a REAL SIGNED panel-2family floor STILL attests (origin-proof is not a blanket block)", () => {
+  // The 3-lab BINDING is now agy-blocked by construction (R2-CRITICAL-01), so the no-over-block property is
+  // proven on the panel-2family FLOOR: properly signed gpt + claude records STILL attest (origin-proof
+  // rejects forgeries, NOT valid signed records).
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-2family" }, lanes: [LANES.gpt, LANES.claude], records: [gptOk, claudeFloorOk] });
   assert.ok(out.ok, `a properly signed set must still attest: ${out.reason}`);
 });
 test("ED-231: tampering a SIGNED field (role) after signing invalidates the signature → not attested", () => {

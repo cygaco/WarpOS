@@ -283,6 +283,26 @@ function attestLane(lane, records, opts = {}) {
   // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
   const { runId = null, sprintId = null, codeSha = null, profileName = "panel-2family" } =
     typeof opts === "string" ? {} : opts || {};
+  // §7 HONEST-CEILING AT THE PANEL READER (R2-CRITICAL-01 — β RIDER-1 "same class, DIFFERENT reader"):
+  // the antigravity lane CANNOT be attested from a ledger record. A signed same-run agy completion record
+  // proves a dispatch RAN, but agy emits NO trustworthy server-origin served-model receipt — its only serve
+  // marker is the CLIENT-SIDE "backend: label" echo, the exact thing evaluateAttestation §7 refuses to trust
+  // (the 19-11 + 07-18 + the 22:16 spike false-greens all carried the correct display label while the served
+  // model was the CCPA default). Attesting the agy PANEL lane from a record here would RELOCATE the removed
+  // §7 echo-trust to this sibling reader — the precise ADR-0025 RIDER-1 mistake class (same disease, new
+  // reader). TRUST-REMOVAL, fail-closed BY CONSTRUCTION: the agy lane is un-attestable until an independently
+  // trustworthy server-origin served-model proof exists (the deferred ED-230 served-model predicate REPLACES
+  // this interim hard-fail; ADR-0027 rider 3). Consequence (correct + consistent with support-matrix
+  // agy=down): the panel-3lab BINDING can never attest while agy is down — the honest floor, never GREEN.
+  if (lane && lane.provider === "antigravity") {
+    return {
+      laneId: lane.laneId,
+      attested: false,
+      reason:
+        "§7 HONEST-CEILING at the panel reader (R2-CRITICAL-01): the antigravity lane cannot be attested from a ledger record — agy emits no trustworthy server-origin served-model receipt (only the client-side 'backend: label' echo, which §7 refuses to trust). Fail-closed by construction until the ED-230 served-model predicate lands (ADR-0027 rider 3). panel-3lab BINDING cannot attest while agy is down.",
+      honestCeiling: true,
+    };
+  }
   // IDENTITY via the SINGLE choke-point (α round-6): the claude lane's contract is PROFILE-AWARE
   // (2family FLOOR → subprocess-claude/security-reviewer; 3lab BINDING → the in-process hunter), and the
   // hunter is identified by WRITER-STAMPED shape+role ONLY (no settable via/record_via/sanctioned_lane_id).
