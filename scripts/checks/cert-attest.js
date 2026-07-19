@@ -125,26 +125,31 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   const req = norm(requestedModel);
   if (!exitOk) return { attested: false, effective: null, reason: "dispatch did not exit cleanly (non-zero / reaped / empty)" };
   if (!out) return { attested: false, effective: null, reason: "empty CLI output — nothing to attest" };
-  // GATE 1 (α/β ruling 2026-07-19 — THE FALSE-GREEN FIX, non-sliceable): any TERMINAL unauthenticated /
-  // default / eval signal in THIS RUN's output means agy served the account DEFAULT (CCPA), NOT the
-  // contracted model → fail-closed, NON-NEGOTIABLE. The prior ORDER-AWARE slice (evaluate only the suffix
-  // after the last "ChainedAuth: authenticated" line) was UNSOUND and produced a LIVE false-green (the
-  // 19-11-56Z artifact — third recurrence of never-claim-live-from-transport). ROOT CAUSE: agy emits a
-  // DECEPTIVE auth-shaped line ("ChainedAuth: authenticated via keyring") AND a client-side
-  // "Propagating … backend: label=<display>" echo EVEN WHEN UNAUTHENTICATED (keyring token expired=true),
-  // so an auth-shaped line does NOT prove genuine auth and MUST NOT license slicing away the real unauth
-  // tells. A GENUINE authenticated run has a CLEAN log (valid token → none of these signals); the tells
-  // appear ONLY when the token is missing/expired. So ANY of these, ANYWHERE in the run-attributed output,
-  // fails closed — a false-RED (re-probe is safe) is always preferred over a false-GREEN (blessing an
-  // unauth serve of a REQUIRED security lane). The backend-label serve marker in GATE 2 counts ONLY when
-  // GATE 1 is clean. ADR-0025 amendment: AUTH_LINE-match != genuine auth; terminal unauth signals are not sliceable.
-  const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|not-logged-into|local-chrome-mode|eval-mode|authentication-failed|unauthorized|expired=true)/;
+  // GATE 1 (α/β ruling 2026-07-19, NARROWED per β DIRECTIVE 0.87 — assumption-robust false-green fix):
+  // hard-fail ONLY on UNAMBIGUOUS TERMINAL / keyring tells that CANNOT appear in a valid-token serve of the
+  // contracted model, regardless of the (UNVERIFIED) question of whether a genuine authed run carries
+  // transient startup unauth lines. The prior blanket non-sliceable set INCLUDED the AMBIGUOUS transients
+  // (not-logged-in / defaulting-to / not-in-local-config) — those risk a STRUCTURAL false-RED: agy's
+  // async-auth STARTUP may legitimately emit them before auth completes, so hard-failing them could make a
+  // REQUIRED lane PERMANENTLY un-attestable (ED-060 stuck forever). No genuine authed serve has EVER been
+  // confirmed (the 07-18-13-003Z artifact once believed genuine is ALSO an unauth false-green — its bytes
+  // carry eval-mode + resolved-via-default), so betting GATE-1 on "genuine = clean log" (or its negation) is
+  // unsound either way. The terminal tells below each INDEPENDENTLY catch BOTH observed false-greens
+  // (19-11-56Z AND 07-18-13-003Z both carry eval-mode + resolved-via-default): eval/local-chrome = the
+  // unauth-fallback mode; resolved-via-default/fallback = it served the DEFAULT not the contracted model;
+  // keyring expired=true; auth-failed / unauthorized. The ambiguous transients are carried by GATE-2 (an
+  // unauth serve's backend-label names the DEFAULT, not the contracted id → fails / otherSeen) + the
+  // pid/time-window attribution (strips the cross-run deceptive backend-label). {narrowed terminal tells +
+  // GATE-2 positive proof + attribution} closes the false-green with NO false-RED risk. ADR-0025 amendment:
+  // AUTH_LINE-match != genuine auth; "genuine authed run = clean log" is an OPEN assumption resolved against
+  // the FIRST real authed serve post-login — NOT enshrined as fact.
+  const NON_AUTH_SIGNAL = /(resolved-via-default|resolved-via-fallback|local-chrome-mode|eval-mode|authentication-failed|unauthorized|expired=true)/;
   if (NON_AUTH_SIGNAL.test(out))
     return {
       attested: false,
       effective: null,
       reason:
-        "served-model UNVERIFIABLE — THIS run's output carries a TERMINAL default/unauthenticated/eval signal ('not in local config, defaulting to CCPA' / 'resolved via default' / 'not logged into Antigravity' / 'local chrome mode … eval mode' / keyring expired=true): agy served the DEFAULT, not the contracted model → fail-closed, NON-sliceable (α/β ruling 2026-07-19). An auth-shaped 'ChainedAuth: authenticated' line does NOT license ignoring these — agy emits it while unauthenticated.",
+        "served-model UNVERIFIABLE — THIS run's output carries an UNAMBIGUOUS TERMINAL default/eval/keyring signal ('resolved via default' / 'local chrome mode … eval mode' / keyring expired=true / auth-failed): agy served the DEFAULT, not the contracted model → fail-closed (α/β narrowed ruling 2026-07-19). Ambiguous startup transients (not-logged-in / defaulting) are NOT hard-failed here — they are carried by GATE-2 (default backend-label) + pid/time-window attribution — so a genuine authed serve is not false-RED'd.",
       defaultSignal: true,
     };
   // Any OTHER catalog model for this provider appearing in the output = a served-a-different-model tell.
