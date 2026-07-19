@@ -1,0 +1,23 @@
+===== GAUNTLET ROUND 5 — CONFIRM the same-session reader consolidation (β-directed confirm pass) =====
+This is a CONFIRM pass on a β/α-RULED disposition, not an open-ended hunt. The recurring "unsigned ok:true
+ledger reader" class was closed STRUCTURALLY (β DIRECTIVE + α reconcile):
+- NEW: scripts/dispatch/verified-liveness-read.js is the SINGLE same-session choke-point (ok:true AND a valid
+  origin-proof signature). ALL same-session ok:true dispatch-ledger readers now route through it: coverage-gate
+  [BLOCKING], sprint-manager-consult, sprint-hook-coverage, security-pass-count, coverage-gate-scan,
+  epsilon-liveness, full.js (+ gauntlet-verify & applyPanelGate already verify).
+- NEW: scripts/checks/liveness-read-choke-point.js is a STRUCTURAL kill-the-seam guard (scan:full BLOCKING):
+  any same-session file reading dispatch-completions + gating on a record's .ok without verifying FAILS the
+  guard. A NEW reader cannot silently re-open the class.
+- RULED HONEST CEILING (do NOT re-raise as a fix): the CROSS-SESSION sealed-capsule gate (verifyTyped) reads a
+  FOREIGN-session ledger signed with a DIFFERENT per-session secret (ADR-0025) — unverifiable BY CONSTRUCTION.
+  It is STRUCTURALLY exempted in the guard with a named reason + tracked as priority ED-232 (cross-session
+  key-distribution = its own α-routed ADR). The R3 attempt to force verification there was a false-RED and was
+  correctly REVERTED. This is a named architectural ceiling, α/β-ruled, NOT an in-scope hole.
+
+CONFIRM: (1) is every SAME-SESSION reader now verifying (route through the choke-point OR verifyRecord)? (2) does
+the structural guard actually catch a new unverified same-session reader (is the exemption structural, not a
+settable marker)? (3) is the ENV-vector closed — a worker that setenv's WARPOS_BOUND_ROLE/WARPOS_ACTOR_KIND still
+resolves derived (role-resolver reads {channel,role}, never those env vars as authority)?
+If you find a NEW SAME-SESSION reader the guard missed, that is a real finding. If you push the CROSS-SESSION
+ceiling, that is the α/β-ruled honest ceiling (ED-232), not a fix. Return the SAME strict JSON verdict.
+Below is the round-1 directive, then CONTEXT, then the UPDATED DIFF.

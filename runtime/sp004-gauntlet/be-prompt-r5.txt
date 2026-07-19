@@ -1,3 +1,77 @@
+===== GAUNTLET ROUND 5 — CONFIRM the same-session reader consolidation (β-directed confirm pass) =====
+This is a CONFIRM pass on a β/α-RULED disposition, not an open-ended hunt. The recurring "unsigned ok:true
+ledger reader" class was closed STRUCTURALLY (β DIRECTIVE + α reconcile):
+- NEW: scripts/dispatch/verified-liveness-read.js is the SINGLE same-session choke-point (ok:true AND a valid
+  origin-proof signature). ALL same-session ok:true dispatch-ledger readers now route through it: coverage-gate
+  [BLOCKING], sprint-manager-consult, sprint-hook-coverage, security-pass-count, coverage-gate-scan,
+  epsilon-liveness, full.js (+ gauntlet-verify & applyPanelGate already verify).
+- NEW: scripts/checks/liveness-read-choke-point.js is a STRUCTURAL kill-the-seam guard (scan:full BLOCKING):
+  any same-session file reading dispatch-completions + gating on a record's .ok without verifying FAILS the
+  guard. A NEW reader cannot silently re-open the class.
+- RULED HONEST CEILING (do NOT re-raise as a fix): the CROSS-SESSION sealed-capsule gate (verifyTyped) reads a
+  FOREIGN-session ledger signed with a DIFFERENT per-session secret (ADR-0025) — unverifiable BY CONSTRUCTION.
+  It is STRUCTURALLY exempted in the guard with a named reason + tracked as priority ED-232 (cross-session
+  key-distribution = its own α-routed ADR). The R3 attempt to force verification there was a false-RED and was
+  correctly REVERTED. This is a named architectural ceiling, α/β-ruled, NOT an in-scope hole.
+
+CONFIRM: (1) is every SAME-SESSION reader now verifying (route through the choke-point OR verifyRecord)? (2) does
+the structural guard actually catch a new unverified same-session reader (is the exemption structural, not a
+settable marker)? (3) is the ENV-vector closed — a worker that setenv's WARPOS_BOUND_ROLE/WARPOS_ACTOR_KIND still
+resolves derived (role-resolver reads {channel,role}, never those env vars as authority)?
+If you find a NEW SAME-SESSION reader the guard missed, that is a real finding. If you push the CROSS-SESSION
+ceiling, that is the α/β-ruled honest ceiling (ED-232), not a fix. Return the SAME strict JSON verdict.
+Below is the round-1 directive, then CONTEXT, then the UPDATED DIFF.
+You are the BACKEND-REVIEWER (code quality) for a HIGH-risk identity change. Produce a BINDING verdict. Check
+code quality only (functional/traceability are QA's scope): correctness of the new logic, error handling,
+fail-closed vs fail-open discipline, regex correctness (ReDoS, false-positive/negative), the conformance-matrix
+extraction hygiene (no dangling refs, exports preserved), naming/dead-code, and whether the gauntlet-verify
+"unsigned" status is wired correctly into satisfied/missingRoles/taint. Flag any place a comment CLAIMS a
+property the code does not deliver.
+Return STRICT JSON only: {"verdict":"pass"|"fail","findings":[{"severity":"crit"|"high"|"med"|"low","id":"...","file":"...","what":"...","why":"..."}],"summary":"..."}
+Verdict = fail on any real crit/high code-quality defect. Below is the CONTEXT then the DIFF.
+===== SPRINT CONTEXT — SP-20260718-004 Phase 2: Identity + host portability =====
+
+You are reviewing a Claude-authored change to WarpOS (an autonomous AI-company framework). The change makes
+WarpOS's IDENTITY + AUTHORITY provider-portable and un-forgeable. Max risk = HIGH: the irreversible failure is
+an authority/identity FALSE-GREEN (a dispatched worker silently acting as President, or ambient text
+retro-granting merge/approval authority, or a forged liveness record fooling the release gate).
+
+THE SPINE (structural, binding): a worker's identity (actor_kind + role) is DERIVED from the dispatch CHANNEL +
+contract, NEVER a client-settable field. The role resolver runs PRE-SPAWN in the trusted parent (the dispatch
+bridge), so a worker cannot forge its actor_kind. Ambient text (worktree CLAUDE.md, handoff, AGENTS.md) is INPUT
+the worker reads, NEVER the authority for its binding. The precedence graph:
+  explicit_user -> validated_workorder_or_cli -> explicit_top_level_helm -> UNBOUND(FAIL_CLOSED).
+A dispatched_worker is bindable ONLY via validated_workorder_or_cli; it NEVER defaults to President (alex-alpha).
+The top-level human session defaults to alex-alpha ONLY via an explicit helm binding, never via ambient prose.
+
+WHAT CHANGED (the units under review):
+- A1 scripts/dispatch/role-resolver.js: the LIVE derived-not-settable resolver (deriveBinding({channel,role})).
+  Extracts the fixture-proven role-binding evaluator + loaders OUT of conformance-matrix.js into this shared lib
+  both import. Adds ED-220 value-validation (validateRoleBindingValues).
+- A2 dispatch-claude.js + dispatch-agent.js: call deriveBinding PRE-SPAWN, stamp WARPOS_ACTOR_KIND/
+  WARPOS_BOUND_ROLE on the child env, HARD-REFUSE the President-leak class (exit 2).
+- D dispatch-claude.js: prepends a worker-identity OVERRIDE to the dispatched prompt (neutralizes the ambient
+  worktree CLAUDE.md "You are Alex — the President" for a dispatched worker).
+- G1 gauntlet-verify.js: requireSignature — an ok:true well-formed record must ALSO carry a valid origin-proof
+  HMAC signature (attest-signing.verifyRecord) or it demotes to a fail-closed "unsigned" status. Default OFF in
+  the programmatic API (legacy shape tests), default ON in the CLI (the release gate).
+- G2 attest-signing.js: adds `verdict` to SIGNED_FIELDS so a post-hoc FAIL->PASS verdict flip invalidates the sig.
+- C scripts/checks/authority-pollution-scan.js: STANDING scan (exit 1) over NEUTRAL surfaces (AGENTS.md/GEMINI.md/
+  non-root CLAUDE.md; root CLAUDE.md helm projection exempt) for identity/default-binding/authority/operator-voice.
+
+ACCEPTANCE CRITERIA (the gates): G2.1 binding precedence (unbound worker fail-closed; planted repo-prose cannot
+bind); G2.3 authority-pollution scan zero ambient authority; G2.4 President-leak closed in worktree; G2.6
+operator-voice helm-only; ED-220 binding VALUE validation; ED-231 whole-ledger signing + sign-the-verdict.
+
+HONEST-SCOPE CLAIMS THE AUTHORS MADE (verify these are NOT overclaimed):
+- The authority-pollution scan is a DETECTOR at a completeness ceiling (word/pattern match = LOWER BOUND;
+  paraphrase can slip). The STRUCTURE (derived-not-settable) is the guarantee; the scan is defense-in-depth.
+- attest-signing has a SAME-USER FS-forgery ceiling: a same-user adversary can read the gitignored secret +
+  re-sign. Forgery is converted mistake-reachable -> requires-deliberate-intent, NOT eliminated.
+- Phase-2 SCOPE LINE: the resolver DERIVES + fail-closes; the ACTIVE validated_workorder_or_cli provenance
+  validator (WorkOrder schema + authority check) is ED-218/Phase-3 and is deliberately NOT built here.
+
+===== END CONTEXT =====
 diff --git a/scripts/checks/authority-pollution-scan.js b/scripts/checks/authority-pollution-scan.js
 new file mode 100644
 index 00000000..e16e2eee
