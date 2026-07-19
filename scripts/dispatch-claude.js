@@ -58,6 +58,10 @@ const { spawnSync } = require("child_process");
 const {
   recordCompletion,
   recordDeath,
+  // BE-2 (SP-20260718-005 / ED-069): write-ahead started-row wrapper — writes
+  // to the EXACT SAME canonical ledger recordCompletion does (no second copy
+  // of the path/write logic in this file).
+  recordDispatchStart,
   makeDispatchId,
   cmdlineChecksum,
   AGENT_ROOT,
@@ -579,6 +583,20 @@ try {
 } catch {
   /* fail-open — the resolver consult never crashes a working dispatch */
 }
+
+// ED-069 (BE-2): write-ahead started-row, AFTER every pre-spawn gate above has
+// passed (contract/shape-door) and BEFORE the actual claude spawn below — the
+// exact window a reap/timeout/kill leaves with zero evidence today (the
+// RI-004/ED-018 class this wrapper otherwise guards against only at the
+// COMPLETION end). Same canonical ledger recordCompletion writes to.
+recordDispatchStart({
+  role,
+  provider: PROVIDER,
+  model: model || null,
+  dispatch_id: dispatchId,
+  started_at: startedAt,
+  sprint_id: runContext().sprint_id,
+});
 
 // ── Spawn: production → the safety kernel; test-seam → direct ─
 // PRODUCTION (no DISPATCH_CLAUDE_BIN): route through safeSpawnSync — the model
