@@ -1,5 +1,10 @@
 # ED-060 close seam — one-command post-login closure
 
+> **⛔ BRANCH PARKED (committed-unmerged) — 2026-07-19, per lead's standing option.** Gauntlet R2 FAILed
+> with a valid CRITICAL (see **PARK STATE / NEXT-SESSION PICKUP** at the bottom). The id-mapping + the agy
+> §7 honest-ceiling fix are committed and locally green; the branch is NOT merged. Next session resumes
+> from the PARK STATE section. agy stays UNAUTHENTICATED / support-matrix `down` / ED-060 + ED-230 OPEN.
+
 **Status: BLOCKED-ON-OPERATOR.** agy (Antigravity) is UNAUTHENTICATED — the keyring token is expired,
 so agy serves the account DEFAULT (CCPA), not the contracted `gemini-3.1-pro-high`. The id-mapping fix
 (a), the GATE-1 narrowed hardening, and the agy §7 honest-ceiling fail-closed ship now. The live ED-060
@@ -104,3 +109,49 @@ structurally closed: the label is never proof.
    post-login with the dispatch-guide neutral-framing + a bounded ≤3 retry. If it persistently refuses
    security framing when authenticated, that's a real capability finding — keep the security lane down,
    consult the lead on a scoped flip.
+4. **INT-003 (safe-spawn raw-slug at agy `--model`) — PRE-CLOSE requirement (gauntlet R1, lead-routed to my
+   domain).** `scripts/dispatch/safe-spawn.js` ARG_POLICY.agy still accepts a raw catalog slug at `--model`
+   (the TOKEN branch bypasses `catalog.js#resolveModelAlias`). Latent while agy is down; NOT this sprint
+   (R2-locked, no scope creep). **Before the (b) close dispatch:** route safe-spawn's agy `--model` TOKEN
+   branch through `resolveModelAlias` + reject non-catalog agy models + add a regression test. (My domain:
+   agy model-resolution single-source + its caller-migration state.)
+
+---
+
+## PARK STATE / NEXT-SESSION PICKUP (2026-07-19)
+
+**Branch:** `sprint/SP-20260719-001-agy-idmap` (off main@5810f60d), committed-unmerged, ~11 commits.
+Worktree: `.claude/runtime/worktrees/SP-20260719-001`. Do NOT merge until the R2/R3 fix lands + gauntlet green.
+
+### DONE + locally green (verified — don't redo)
+- (a) 3-layer slug→display id-mapping (both `--model` dispatch args + cert-attest served-model comparison).
+- GATE-1 narrowed to the unambiguous terminal tells (β 0.87); log-attribution by run time-window.
+- **agy §7 HONEST-CEILING FAIL-CLOSED** in `evaluateAttestation` (α+β ratified) — agy never attests from its
+  log (client-echo never trusted). The novel-unauth-phrase attack → attested:false (verified).
+- Both real artifacts (07-18 + 19-11) fail-closed; SHA-pinned full deceptive-transcript negative fixture.
+- Non-contracted agy model refused before spawn (Axis-5).
+- cert-attest 22/22, cert-attest-panel 32/32 (but see the R2 gap below), providers-antigravity 8/8, panel-lanes 18/18.
+- qa R2 VERIFIED: direct agy evaluateAttestation unconditional-false; deceptive fixture fails closed; CLI
+  rejects non-contracted model; NO false-RED on openai/claude paths.
+
+### THE R2 FAIL — the one remaining fix (binding CRITICAL, qa lane gpt-5.6-terra, verdict fail)
+**R2-CRITICAL-01 — the §7 fix is INCOMPLETE at the SIBLING reader (β RIDER-1 "same class, different reader"):**
+`attestLane` (cert-attest.js ~L282) still attests the agy PANEL lane from any valid signed `antigravity`/`agy`
+completion record with an `output_digest` — it does NOT invoke §7 or verify a contracted/served model. So a
+signed UNAUTHENTICATED-default or NON-CATALOG agy dispatch record can make `attestPanelRun` true. The existing
+panel POSITIVE fixture encodes this at `cert-attest-panel.test.js:50-56` (the 3-lab positive attests WITH `agyOk`).
+- **FIX (trust-removal, safe):** hard-fail `lane.provider === "antigravity"` in `attestLane` — the agy lane
+  CANNOT be attested from a ledger record until an independently trustworthy server-origin served-model proof
+  exists (the same §7 principle at the panel reader; the served-model proof is the deferred ED-230). Consequence
+  (correct + consistent with support-matrix agy=down): **panel-3lab BINDING can never attest while agy is down.**
+- **FIXTURE RIPPLE:** flip the `cert-attest-panel.test.js:50-56` 3-lab positive → panel-3lab is BLOCKED (agy lane
+  fails-closed); the panel-2family FLOOR (gpt+claude, agy optional) is UNAFFECTED (keep its positive). Add
+  signed unauthenticated + non-catalog agy panel fixtures that MUST remain UNATTESTED.
+- Wire this into the ED-230 B-DEFER seed too (its served-model predicate replaces the interim hard-fail).
+
+### ALSO to re-run
+- **Security lane R2 did NOT verdict** — the codex CLI errored: `failed to load models cache: missing field
+  supports_reasoning_summaries` (codex v0.144.5 cache-load issue, NOT a code finding). Re-run the security lane
+  next session (`dispatch-agent.js security-reviewer runtime/sp719-gauntlet/sec-review-r2-prompt.txt --provider
+  openai --model gpt-5.6-terra`); if the cache error persists, refresh the codex models cache first.
+- After the attestLane fix + fixture flips: re-run BOTH lanes (R3). Merge only on R3-green + lead sequencing.
