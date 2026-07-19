@@ -74,18 +74,27 @@
   *verified_by:* the bidirectional layer-3 test (slug false-REDs vs agy's display-name serve label;
   display name attests) + the live re-probe artifact (canonical slug → attested:true, 19-11-56Z).
 
-## Findings & residuals (as-built, 2026-07-19)
+## Findings & residuals (as-built, 2026-07-19 — CORRECTED after the α/β false-green block)
 
-1. **agy auth is LIVE** (proven this session): keyring re-auth (operator@example.com) + backend
-   serve of the contracted model. An earlier "auth dead" read was a self-inflicted cert-attest false-RED
-   (the layer-3 defect), retracted and fixed. The cert-attest record-trust choke-point (GATE-1 order-aware
-   + GATE-2 positive-proof) is SOUND — it correctly refused until the comparison target was right.
-2. **ED-060 close mechanism**: `ed060-sunset.js` resolves on `agyLive(support-matrix.status)`, not on a
-   ledger record. So (c) = the support-matrix flip (evidence_ref = the committed cert-attest artifact).
-3. **RESIDUAL — agy review-workload timeout (gates panel-3lab / ED-230, NOT ED-060 serve-liveness):** a
-   real agy security REVIEW (18KB prompt) TIMES OUT at agy's hardcoded `--print-timeout 90s` (thinking-
-   always-on; possibly compounded by the ~2/3 security-framing refusal) → no `fallback:false` review
-   record. So agy serve-liveness is proven but agy is NOT yet usable for real REVIEW workloads. Disposition
-   (A/B/C: honest-serve-only flip / print-timeout bump + real review record / defer) is operator-owned —
-   surfaced to lead + β. A support-matrix flip must NOT over-claim a working review lane (false-green a
-   kernel gate).
+1. **agy auth is DEAD (blocked-on-operator).** The keyring token is EXPIRED; agy is unauthenticated and
+   serves the account DEFAULT (CCPA). My mid-sprint "auth is LIVE / ED-060 serve-proven" claim was WRONG —
+   the 19-11-56Z `attested:true` was a **LIVE FALSE-GREEN** (α/β-caught, self-verified). The original 19:01
+   "auth dead" read was CORRECT; I wrongly retracted it by trusting agy's DECEPTIVE transport lines. THE
+   `19-11-56Z` ARTIFACT IS THE CANONICAL NEGATIVE FIXTURE — never delete it (third-recurrence exemplar).
+2. **Root cause (the security fix, committed f82f0ad5):** agy emits a DECEPTIVE "ChainedAuth: authenticated"
+   line + a client-side "Propagating…backend: label=<display>" echo EVEN WHEN UNAUTHENTICATED. The prior
+   order-aware GATE-1 slice discarded the real unauth tells behind the fake auth line; GATE-2 matched the
+   display echo. FIX: GATE-1 is NON-sliceable — any same-run terminal unauth/default/eval signal =
+   attested:false, regardless of any later auth-shaped line. A genuine authenticated run (clean log) still
+   attests (verified: 20/20 incl. the 19-11 negative fixture; live re-probe 19-33-36Z → attested:false).
+   ADR-0025 amendment candidate: AUTH_LINE-match ≠ genuine auth; terminal unauth signals are not sliceable.
+3. **ED-060 close condition (unchanged, blocked-on-operator):** closes ONLY when the operator completes the
+   real Antigravity login AND a genuine authenticated serve attests (a cert-attest artifact with a positive
+   backend-label serve of the display name AND FREE of not-logged-in / defaulting-to-CCPA / eval-mode). The
+   flip's primary evidence_ref is a REAL `dispatch-agent.js` `fallback:false` ledger record (production route),
+   cert-attest as supporting evidence. support-matrix STAYS down/proven:false; ED-060/ED-230 stay OPEN.
+4. **Second residual — agy review-workload timeout (gates panel-3lab / ED-230):** a real agy security REVIEW
+   (18KB prompt) TIMES OUT at agy's hardcoded `--print-timeout 90s`. Independent of auth, this blocks a real
+   agy review-lane record. Disposition (print-timeout bump vs defer) is operator-owned.
+5. **AC-8/AC-10/AC-11 live-positive paths are BLOCKED-ON-OPERATOR** — code + negative/signed-positive fixtures
+   land this sprint; the live authed positive is proven post-login via the one-command re-probe seam.
