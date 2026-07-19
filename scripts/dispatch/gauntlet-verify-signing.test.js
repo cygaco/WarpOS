@@ -92,6 +92,16 @@ test("requireSignature:true — a signed record whose IDENTITY field was tampere
   assert.strictEqual(res.roles[0].status, "unsigned");
 });
 
+test("ED-231 RIDER-2 (sign-the-verdict): flipping a signed record's verdict FAIL→PASS invalidates the sig", () => {
+  // A real signed record with verdict:fail; a same-user adversary flips it to pass. Because `verdict`
+  // is now a SIGNED field, the flip no longer matches the signature → the record is rejected as unsigned.
+  const r = signed({ verdict: "fail" });
+  r.verdict = "pass"; // post-hoc flip of a signed record
+  const res = verifyGauntlet({ roles: ["security-reviewer"], since: SINCE, requireSignature: true, records: [r] });
+  assert.strictEqual(res.ok, false, "a tampered verdict must invalidate the origin-proof signature");
+  assert.strictEqual(res.roles[0].status, "unsigned");
+});
+
 // Clean up the temp secret file.
 test("cleanup", () => {
   try { fs.unlinkSync(process.env.WARPOS_ATTEST_SECRET_FILE); } catch { /* ignore */ }

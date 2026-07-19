@@ -36,9 +36,14 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..
 const SECRET_FILE =
   process.env.WARPOS_ATTEST_SECRET_FILE || path.join(ROOT, ".claude", "runtime", ".attest-session-secret");
 
-// The CANONICAL identity fields the signature covers — the fields the attestation keys its trust on. Order is
-// FIXED (signer + verifier must agree byte-for-byte). A field the attestor does NOT trust (e.g. a review verdict,
-// stdout_bytes) is deliberately EXCLUDED — the signature binds IDENTITY + PROVENANCE, not the review outcome.
+// The CANONICAL fields the signature covers — the fields the attestation keys its trust on. Order is
+// FIXED (signer + verifier must agree byte-for-byte). Binds IDENTITY + PROVENANCE.
+// SP-20260718-004 Phase 2 (ED-231 RIDER-2 — sign-the-verdict): `verdict` is now INCLUDED. ADR-0025
+// originally EXCLUDED it (the sig proved the lane RAN with real origin, not what it FOUND), leaving a
+// same-user FAIL→PASS flip of a real signed record un-detected (BE-CQ-001's allowlist catches
+// malformed/unknown values but NOT a valid-but-tampered flip). Signing the verdict closes that within
+// the same account ceiling: flipping a signed verdict now invalidates the signature. Records with no
+// verdict field sign/verify with the empty value consistently (backward-compatible for non-review records).
 const SIGNED_FIELDS = Object.freeze([
   "role",
   "shape",
@@ -50,6 +55,7 @@ const SIGNED_FIELDS = Object.freeze([
   "evidence_sha",
   "cmdline_checksum",
   "completed_at",
+  "verdict", // ED-231 RIDER-2 (SP-20260718-004): a post-hoc verdict flip invalidates the signature.
 ]);
 
 let _cachedSecret;
