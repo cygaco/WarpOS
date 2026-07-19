@@ -98,32 +98,26 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   const req = norm(requestedModel);
   if (!exitOk) return { attested: false, effective: null, reason: "dispatch did not exit cleanly (non-zero / reaped / empty)" };
   if (!out) return { attested: false, effective: null, reason: "empty CLI output — nothing to attest" };
-  // GATE 1 (QA-HG-001, fail-closed — LOUD defense-in-depth, NOT the sole gate): any NON-AUTHENTICATED /
-  // DEFAULT / FALLBACK / EVAL signal means the requested model did NOT genuinely serve. Observed LIVE
-  // (unauthenticated agy): "Model ID gemini-3.1-pro-high not in local config, defaulting to CCPA" /
-  // "Model resolved via default" / "not logged into Antigravity" / "Entering local chrome mode ... eval mode".
-  // A blocklist is a LOWER BOUND (a novel unauth phrase could dodge it) — so GATE 2 below is the real
-  // positive-proof requirement (β SHARP-1). This gate stays as the loud, named diagnostic.
-  const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|local-chrome-mode|eval-mode|authentication-failed|unauthorized)/;
-  // 2026-07-19 ORDER-AWARENESS (authenticated-agy calibration): agy's keyring auth completes
-  // ASYNCHRONOUSLY after process start, so a genuine authenticated run's log ALWAYS carries
-  // transient "not logged in"/"defaulting" lines BEFORE "ChainedAuth: authenticated via keyring" /
-  // "OAuth: authenticated successfully". Rule: if an AFFIRMATIVE auth line exists, GATE 1 evaluates
-  // only the SUFFIX AFTER the LAST auth line (pre-auth signals = the known startup transient); any
-  // unauth/default signal AFTER final auth is REAL and still fails. With NO auth line, the whole
-  // output is evaluated exactly as before (fail-closed unchanged — this never weakens GATE 2's
-  // positive-proof requirement, which remains mandatory).
-  const AUTH_LINE = /(authenticated-via-keyring|oauth:-authenticated-successfully|chainedauth:-authenticated)/g;
-  let gate1Scope = out;
-  let lastAuthIdx = -1;
-  for (let m; (m = AUTH_LINE.exec(out)); ) lastAuthIdx = m.index + m[0].length;
-  if (lastAuthIdx >= 0) gate1Scope = out.slice(lastAuthIdx);
-  if (NON_AUTH_SIGNAL.test(gate1Scope))
+  // GATE 1 (α/β ruling 2026-07-19 — THE FALSE-GREEN FIX, non-sliceable): any TERMINAL unauthenticated /
+  // default / eval signal in THIS RUN's output means agy served the account DEFAULT (CCPA), NOT the
+  // contracted model → fail-closed, NON-NEGOTIABLE. The prior ORDER-AWARE slice (evaluate only the suffix
+  // after the last "ChainedAuth: authenticated" line) was UNSOUND and produced a LIVE false-green (the
+  // 19-11-56Z artifact — third recurrence of never-claim-live-from-transport). ROOT CAUSE: agy emits a
+  // DECEPTIVE auth-shaped line ("ChainedAuth: authenticated via keyring") AND a client-side
+  // "Propagating … backend: label=<display>" echo EVEN WHEN UNAUTHENTICATED (keyring token expired=true),
+  // so an auth-shaped line does NOT prove genuine auth and MUST NOT license slicing away the real unauth
+  // tells. A GENUINE authenticated run has a CLEAN log (valid token → none of these signals); the tells
+  // appear ONLY when the token is missing/expired. So ANY of these, ANYWHERE in the run-attributed output,
+  // fails closed — a false-RED (re-probe is safe) is always preferred over a false-GREEN (blessing an
+  // unauth serve of a REQUIRED security lane). The backend-label serve marker in GATE 2 counts ONLY when
+  // GATE 1 is clean. ADR-0025 amendment: AUTH_LINE-match != genuine auth; terminal unauth signals are not sliceable.
+  const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|not-logged-into|local-chrome-mode|eval-mode|authentication-failed|unauthorized|expired=true)/;
+  if (NON_AUTH_SIGNAL.test(out))
     return {
       attested: false,
       effective: null,
       reason:
-        "served-model UNVERIFIABLE — output carries a default/unauthenticated/eval signal ('not in local config, defaulting' / 'resolved via default' / 'not logged in' / 'local chrome mode'): the requested id was echoed but did NOT serve → fail-closed (QA-HG-001 GATE 1)",
+        "served-model UNVERIFIABLE — THIS run's output carries a TERMINAL default/unauthenticated/eval signal ('not in local config, defaulting to CCPA' / 'resolved via default' / 'not logged into Antigravity' / 'local chrome mode … eval mode' / keyring expired=true): agy served the DEFAULT, not the contracted model → fail-closed, NON-sliceable (α/β ruling 2026-07-19). An auth-shaped 'ChainedAuth: authenticated' line does NOT license ignoring these — agy emits it while unauthenticated.",
       defaultSignal: true,
     };
   // Any OTHER catalog model for this provider appearing in the output = a served-a-different-model tell.

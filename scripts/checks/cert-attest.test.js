@@ -133,15 +133,27 @@ test("positive-proof calibratable: an AUTHENTICATED agy serve ('Model resolved: 
   assert.equal(v.attested, true, "a genuine served self-id ('resolved: <id>') must attest — the fix is not an agy-hardcoded fail");
 });
 
-// ── 2026-07-19 authenticated-agy calibration: order-aware GATE 1 + the backend-label serve form ──
-const AGY_TRANSIENT = 'error getting token source: You are not logged into Antigravity.\nModel ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA\nModel resolved via default';
-test("agy startup TRANSIENT (unauth lines) followed by auth + backend-label serve → ATTESTS (order-aware GATE 1)", () => {
+// ── 2026-07-19 α/β RULING (the false-green fix): the "order-aware slice" was UNSOUND. agy emits a
+//    DECEPTIVE "ChainedAuth: authenticated" line + a backend-label echo EVEN WHEN UNAUTHENTICATED, so
+//    unauth signals ("not logged into Antigravity" / "defaulting to CCPA" / eval-mode) are NON-SLICEABLE:
+//    their presence ANYWHERE = attested:false, regardless of any later auth-shaped line. ──
+const AGY_UNAUTH_WITH_FAKE_AUTH = 'error getting token source: You are not logged into Antigravity.\nModel ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA\nModel resolved via default';
+test("agy unauth signals + a DECEPTIVE auth line + backend-label echo → FAIL non-sliceable (the 19-11 false-green class)", () => {
   const v = evaluateAttestation({
     requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
-    output: AGY_TRANSIENT + '\nChainedAuth: authenticated via keyring\nOAuth: authenticated successfully as user@x\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nSERVING-CHECK-OK',
+    output: AGY_UNAUTH_WITH_FAKE_AUTH + '\nChainedAuth: authenticated via keyring\nOAuth: authenticated successfully as user@x\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nSERVING-CHECK-OK',
     exitOk: true, catalog,
   });
-  assert.equal(v.attested, true, "pre-auth transient must not fail an authenticated run with a genuine backend-label serve: " + v.reason);
+  assert.equal(v.attested, false, "unauth signals present → fail-closed even with a later auth line + backend-label (agy emits BOTH while unauthenticated): " + v.reason);
+  assert.equal(v.defaultSignal, true, "GATE 1 must fire NON-sliceable on the terminal unauth signal");
+});
+test("GENUINE authenticated run — CLEAN log (auth + backend-label serve, NO unauth signal) → ATTESTS (no over-block)", () => {
+  const v = evaluateAttestation({
+    requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
+    output: 'ChainedAuth: authenticated via keyring\nOAuth: authenticated successfully as user@x\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nSERVING-CHECK-OK',
+    exitOk: true, catalog,
+  });
+  assert.equal(v.attested, true, "a clean authenticated run (no unauth tell) with a genuine backend-label serve must still attest: " + v.reason);
 });
 test("unauth signal AFTER the last auth line → still FAILS (order-awareness cuts one way only)", () => {
   const v = evaluateAttestation({
@@ -177,8 +189,31 @@ test("layer-3: agy backend-label serve FALSE-REDs vs the SLUG, ATTESTS vs the di
   assert.equal(byDisplay.attested, true, "the display name attests the genuine authenticated serve — layer-3 mapping closes ED-060");
 });
 
+// ── CANONICAL NEGATIVE FIXTURE (α/β ruling directive #1): the committed 19-11-56Z artifact is a REAL
+//    live false-green (attested:true on an UNAUTHENTICATED agy run). cert-attest MUST now fail-closed on
+//    its exact output. This is the third-recurrence regression exemplar — the "18/18 green" that lacked
+//    exactly this negative fixture. Never delete the artifact; this test binds to it. ──
+test("NEGATIVE FIXTURE: the committed 19-11-56Z false-green output now FAILS closed (GATE 1 non-sliceable)", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const artifactPath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "gemini-3.1-pro-high-2026-07-19T19-11-56-343Z.json");
+  const art = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+  // Re-evaluate the SAME cli_output the artifact recorded (head carries the terminal unauth signals).
+  const v = evaluateAttestation({
+    requestedModel: art.attested_model_id || "Gemini 3.1 Pro (High)",
+    providerId: "antigravity",
+    output: art.cli_output_head,
+    exitOk: true,
+    catalog,
+  });
+  assert.equal(v.attested, false, "the recorded false-green output MUST now fail-closed (it carries 'not logged into Antigravity' + 'defaulting to CCPA' + eval-mode): " + v.reason);
+  assert.equal(v.defaultSignal, true, "GATE 1 must be the fail reason on the real unauth artifact");
+  // Guard the exemplar: the artifact itself is the frozen record of the DEFECT (attested:true) — never mutate it.
+  assert.equal(art.attested, true, "the 19-11 artifact stays the frozen false-green exemplar (attested:true as recorded); the FIX is that evaluateAttestation now refuses this output");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 default/unauth fail-closed)\n`);
+process.stdout.write(`OK   [cert-attest.test] ${passed} passed (incl. QA-HG-001/002 + the 19-11 non-sliceable negative fixture)\n`);
