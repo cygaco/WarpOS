@@ -56,6 +56,8 @@ Dispatch author-consults as registry conditions fire: `product-lead` (always), `
 
 Most author-consults carry `tools: [Read, Grep, Glob]` only — a structural guarantee they cannot dispatch (enforced by `scripts/checks/consult-roster-no-dispatch.js`: no consult-summonable role's spec may list Bash/Agent). The ONE documented exception is `quality-lead`, which retains `Agent` (not Bash) for its sanctioned one-hop fan-out to leaf reviewers (qa-reviewer/design-quality/visual-review/test-runner) when it gathers gauntlet evidence — bounded by the `dispatch-route-guard` in-process build-chain block (it cannot Agent-spawn a builder). Its remaining residual — a reviewer it summons could itself Bash-dispatch the build chain (reviewers carry Bash to run checks) — is tracked as ED-065 (the precise one-hop-reviewer-only assertion). ε remains the sole builder-dispatcher.
 
+**Record-trust gate (design-phase, BLOCKING).** For any unit where a reader trusts a record/field to gate an irreversible action (dispatch, integration acceptance, merge/close, lease), apply the design-phase record-trust gate BEFORE build: name the single choke-point + a structural guard that fails un-routed readers, partition the surface same-vs-cross-session, and ship adversarial fail-open falsifier fixtures as required-present. Doctrine + the reusable checklist: `.claude/project/reference/record-trust-gate.md` (enforced as the SP-20260718-005 design→build exit). This front-loads what SP-002/003/004 spent multi-round gauntlets discovering.
+
 Call β at the design→build boundary.
 
 ### 3. build

@@ -109,3 +109,37 @@ rewrite back into the frozen `epsilon.md` TEAMMATE STALL RULES section and the
 to be applied once `sprint/SP-20260716-001-dispatch` merges — nothing yet
 detects that the frozen doctrine still reads the old blunt "never go idle" form
 instead of this pattern.
+
+## Coordination cadence & handoff (session 2026-07-18/19 lessons)
+
+Three behavioral rules that extend fire-and-poll — cheap levers that the not-yet-landed
+structural fixes (the Phase-3 awaited-dispatch watchdog, the ED-228 conductor lease) do
+not yet cover. Doctrine only; artifact-first re-wake (above) stays the method — never reap
+on silence.
+
+**Adaptive watchdog cadence — retune after the SECOND stall of a class.** A fixed 20-min
+poll interval ate ~1.5–2h of dead wait across 9+ dropped re-wakes before it was tightened
+to 6 min. A recurring stall class costs `interval/2 × occurrences`; match the cadence to the
+actual work-unit duration (reviewer lanes run 2–9 min → a 6-min probe, not 20). The trigger
+is the second stall of the same class in a session — one stall is noise, two is a cadence
+signal. (Learning #125, 2026-07-18/19; sharpens F1 wake-notification-seam.)
+
+**Receipt-confirmation for load-bearing orders — batching guarantees delivery-on-next-yield,
+NOT delivery-before-a-relief.** Inbox batching (`[[project_teammate_inbox_batches_not_drops]]`)
+delivers on the recipient's next yield and loses nothing — but an idle/relieved/committed
+teammate never yields, so a verdict can land after its consumer is gone. For a load-bearing
+order or verdict: confirm receipt explicitly ("confirm WO2 received") or watch for the
+acting-on-it signal. When a verdict lands AFTER its consumer was relieved or committed, the
+**orchestrator** owns folding it durably into the tracked plan (the ED-221 durability lesson,
+applied live). (Learning #129, 2026-07-18/19.)
+
+**Conductor-relief protocol (behavioral spec for the ED-228 lease).** Relieving an in-flight
+conductor cleanly, three times this session with zero collisions (vs the 2026-07-18 morning
+conductor-collision), took: (1) relieve with **explicit terms** — a no-fire order + read-only
+reference + a **named** successor; (2) spawn the fresh conductor; (3) forward the predecessor's
+load-bearing notes. Honor a conductor's own **context-depth self-report immediately** — a deep-context
+flag is the cheapest collision predictor. This is the behavioral spec the durable mechanism must
+encode: a lease/claim-file on an atomic-FS primitive (O_EXCL / atomic rename + a monotonic fencing
+token), NOT a start-time guard, which is insufficient
+(`[[project_settable_label_identity_and_conductor_lease]]`). Mechanism tracked as **ED-228**.
+(Learning #126, 2026-07-18/19.)

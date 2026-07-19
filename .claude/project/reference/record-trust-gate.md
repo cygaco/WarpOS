@@ -1,0 +1,76 @@
+# Record-Trust Gate — design-phase doctrine for records that gate irreversible actions
+
+> Promoted 2026-07-18/19 from learning #130 (threshold crossed: the structural guard was
+> DISCOVERED by the gauntlet, not designed up-front, 3× across SP-002/003/004). The gate
+> itself is DESIGNED and wired as a blocking design→build exit in
+> `.claude/project/sprint/sprints/SP-20260718-005/plan.md` (SHARP-1..3). This doc is the
+> reusable doctrine a FUTURE sprint's design phase reads; ε points here at the design→build
+> boundary. Doctrine + pointers only — the enforcement home is the SP-005 plan's binding gate,
+> not a new hook (see the Enforcer section).
+
+## The pattern this closes
+
+Any feature where a **reader trusts a record or field to gate an irreversible action**
+(dispatch, integration acceptance, merge/close, lease acquisition) is a record-trust surface.
+Three sprints in a row (SP-002/003/004) spent **multi-round gauntlets discovering** the choke-point
+and the kill-the-seam guard that the DESIGN should have named — SP-004 alone spent 6 rounds finding
+readers (the `scripts/` root, sibling paths) that the round-by-round hunt hadn't reached. The
+threshold is crossed: this is now a **binding design-phase gate**, not a gauntlet discovery.
+
+## The gate (apply at DESIGN, before build)
+
+For every path where a reader trusts a record/field to gate an irreversible action:
+
+1. **Name the SINGLE choke-point** + a **STRUCTURAL guard that FAILS any new, un-routed reader**
+   (the verified-liveness-read / provenance-verifier pattern —
+   `scripts/dispatch/provenance-verifier.js`, `scripts/checks/liveness-read-choke-point.js`).
+2. **Enumerate + PARTITION the whole surface by session-scope (SP-005 SHARP-1).** SAME-SESSION
+   artifacts (WorkOrder/dispatch validators) can use per-session HMAC. CROSS-SESSION artifacts
+   (AcceptanceRecord, the lease/fencing-token, the do-not-reopen ledger) CANNOT — per-session HMAC
+   can't verify another session's claim (the R3 cross-session false-RED). Cross-session artifacts use
+   the ED-232 mechanism OR an atomic-FS primitive (leases: O_EXCL / atomic rename + a monotonic
+   fencing token), NEVER per-session signing.
+3. **Ship adversarial fail-open FALSIFIER fixtures BEFORE build** — forged / unsigned / stale-base /
+   self-asserted-success records MUST block, as REQUIRED-PRESENT named test files.
+4. **The gate needs a NAMED ENFORCER (SP-005 SHARP-3) — else it is a hollow ladder rung.** Wire it
+   into the design→build EXIT as a BLOCKING checklist: each enumerated path names its choke-point AND
+   its required-present falsifier fixtures EXIST and fail-closed. A missing falsifier BLOCKS build-entry.
+
+## Companion doctrine (same session, same failure family)
+
+**Record-forgery is MISTAKE-class, not attacker-only — check the company's OWN incident history
+before dispositioning a trust gap (learning #123).** The 2026-06 faked-ε (plausible `ok:true`
+records, no spawn — `[[feedback_never_claim_done_without_proof]]`) made record-forgery
+*mistake-reachable*, which set the fix bar: ED-231 HMAC origin-proof became MANDATORY, not
+dispositionable. **Rule:** a mistake-reachable false-green MUST close; an attacker-only-within-a-NAMED-ceiling
+gap may be dispositioned honestly (the same-UID filesystem ceiling is named honestly — no local scheme
+beats an adversary who edits the attestor).
+
+**False-REDs get the SAME honesty treatment as false-greens (learning #131).** An enforcer that reds
+correct behavior erodes trust in the gate exactly like a green on broken behavior — both are accuracy
+failures. Fix the CLAIM/mechanism; never tolerate "red but we know it's fine." Cross-session exemptions
+must be **CODE-allowlisted with a structural reason + a stale-exemption self-policing belt**, NEVER a
+settable per-record marker (a content-refusal rider can silently drop real reviews — a security hole).
+Prefer structural binds over content refusal. Landed in `scripts/checks/liveness-read-choke-point.js`.
+
+**Pre-declare the terminal condition BEFORE the final gauntlet round fires (learning #128).** Declare
+it up front: PASS → proceed; prose-only findings → one-pass fix + close under the honest ceiling; new
+substance → a real fix cycle. This ends adversarial convergence loops honestly — preventing both the
+grind (R7s chasing undecidable completeness) and the shortcut (closing over real findings). Prose-completeness
+is as undecidable as detector-completeness; "substance-proven-closed + claims-honest-to-scan" is a legitimate
+binding-clear. Used 3× this session (SP-003 gpt#5, SP-004 R6, SP-003 park terminal).
+
+## Related — the regex-guard ceiling
+
+The structural guards above are today regex-based and share an undecidable residual (broadening the
+regex traded 26 false positives in SP-004). The cross-cutting fix — a shared AST/dataflow guard lib
+(acorn/babel) vs per-sprint re-derivation — is tracked as **enforcement debt** (learning #134), an
+α-ruled OPEN_ADR when a Phase touches it. Deferred defense-in-depth, not urgent.
+
+## Enforcer
+
+The gate's enforcement home is **already designed**: the SP-20260718-005 plan's design→build EXIT
+checklist (SHARP-3). This doc does NOT add a new hook — it is the reusable doctrine pointer. The
+open work is verifying the gate actually FIRES at SP-005 design (per learning #130's own note) and,
+longer term, generalizing the SP-005 blocking checklist into a mode-agnostic design-phase enforcer so
+every sprint's design→build exit runs it — tracked as enforcement debt.

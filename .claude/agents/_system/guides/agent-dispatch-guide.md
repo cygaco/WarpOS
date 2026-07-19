@@ -185,6 +185,27 @@ code 41 (key not injected into child env) and gemini "untrusted directory"
 (`GEMINI_CLI_TRUST_WORKSPACE` missing). Both resolve with zero external env
 setup — the key in `~/.gemini/.env` is enough.
 
+**Served-model evidence — a lane is LIVE only when the SERVED model is positively
+verified (fail-closed on auth-error markers).** Transport success NEVER proves the
+model contract: exit 0 + plausible free-text output are BOTH forgeable by a defaulted
+or unauthenticated CLI serving a local/eval model. The 2026-07-18 agy "PROVEN LIVE" was
+**retracted mid-session** — the attest had matched the request-echo in the log, not the
+served model. Rule: verify the resolved/served-model evidence line positively, and
+fail-closed when the log carries auth-error markers. This is the provider-lane twin of the
+completion-record false-green (§13 / `[[record-trust-gate]]`). Enforcer landed —
+`scripts/checks/cert-attest.js` (positive served-model proof + unauth blocklist + negative
+fixtures from real captured log lines); a 2-family gauntlet binding (GPT+Claude) holds until
+a real `fallback:false` attested agy record exists. (Learning #124, 2026-07-18/19.)
+
+**agy code payloads go argv-with-guards, not stdin.** agy CLI 1.1.4 has NO stdin /
+`--prompt-file` (help-verified), so a code-review payload must ride argv. The `safe-spawn`
+value-slot allowlist was carve-out-expanded to permit code-review chars for **that ONE
+tool / ONE slot** (shared `INJECT_META`/denylist untouched, NUL universal, `shell:false`).
+Positive-scope one-tool-one-slot beats blocking, which would strand the panel-3lab FULL shape;
+`shell:false` makes shell-injection structurally absent, so an argv slot with a per-tool char
+allowlist is safe. Keep the carve-out narrow + its riders binding —
+`scripts/dispatch/safe-spawn.js` (#27). (Learning #133, 2026-07-18/19.)
+
 ---
 
 ## §5 — Concurrency caps
