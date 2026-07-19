@@ -169,5 +169,19 @@ test("ED220-TOPLEVEL-DEFAULT-HOLLOW: a bogus top_level_human_default is BLOCKED 
   const b = deriveBinding({ channel: "session-bootstrap" }, { rb: bogus, knownRoles: KNOWN });
   assert.strictEqual(b.ok, false);
   assert.strictEqual(b.failClosed, true);
-  assert.match(b.reason, /not the recognized President identity|bogus top-level/i);
+  assert.match(b.reason, /canonical President identity|VALUE invalid/i);
+});
+
+test("BE-R2-001: an invented 'president-shaped' top-level default (president-worker) is REJECTED, not accepted", () => {
+  const bogus = { ...RB, top_level_human_default: "president-worker" };
+  const b = deriveBinding({ channel: "session-bootstrap" }, { rb: bogus, knownRoles: KNOWN });
+  assert.strictEqual(b.ok, false, "a permissive president-substring value must not be a valid top-level default");
+  assert.strictEqual(b.failClosed, true);
+});
+
+test("R2-ED220-DISPATCH-OPEN: a bogus top_level_human_default also fail-closes a DISPATCHED worker (global control failure)", () => {
+  const bogus = { ...RB, top_level_human_default: "made-up" };
+  const b = deriveBinding({ channel: "dispatch-claude", role: "backend-builder" }, { rb: bogus, knownRoles: KNOWN });
+  assert.strictEqual(b.ok, false, "a corrupt control value must fail-close ALL actors, not just top-level");
+  assert.strictEqual(b.failClosed, true);
 });

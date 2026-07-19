@@ -206,6 +206,19 @@ test("QA-010: ANY non-module-absent loader error (syntax/parse) → fail-closed,
   });
 }
 
+// ── SR-R2-002 (SP-20260718-004 gauntlet R2): the LIVE path requires a valid origin-proof signature on
+//    each corroborating lane record — a forged/unsigned record cannot corroborate a lane. ──
+const { signRecord } = require("./attest-signing");
+test("SR-R2-002: requireSignature blocks the floor when lane records are UNSIGNED", () => {
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { ...ctxClean, requireSignature: true });
+  assert.equal(g.floor_pass, false, "unsigned lane records must NOT corroborate the floor under requireSignature");
+});
+test("SR-R2-002: requireSignature PASSES the floor when the SAME lane records are validly SIGNED", () => {
+  const signedLedger = ledgerClean.map((r) => ({ ...r, attest_sig: signRecord(r) }));
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => signedLedger, sinceMs: 0, panelRunId: PRID, requireSignature: true });
+  assert.equal(g.floor_pass, true, "validly-signed lane records must corroborate the floor");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [dispatch-review-panel-gate.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

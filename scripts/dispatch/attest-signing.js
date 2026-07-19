@@ -36,14 +36,19 @@ const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..
 const SECRET_FILE =
   process.env.WARPOS_ATTEST_SECRET_FILE || path.join(ROOT, ".claude", "runtime", ".attest-session-secret");
 
-// The CANONICAL fields the signature covers — the fields the attestation keys its trust on. Order is
-// FIXED (signer + verifier must agree byte-for-byte). Binds IDENTITY + PROVENANCE.
-// SP-20260718-004 Phase 2 (ED-231 RIDER-2 — sign-the-verdict): `verdict` is now INCLUDED. ADR-0025
-// originally EXCLUDED it (the sig proved the lane RAN with real origin, not what it FOUND), leaving a
-// same-user FAIL→PASS flip of a real signed record un-detected (BE-CQ-001's allowlist catches
-// malformed/unknown values but NOT a valid-but-tampered flip). Signing the verdict closes that within
-// the same account ceiling: flipping a signed verdict now invalidates the signature. Records with no
-// verdict field sign/verify with the empty value consistently (backward-compatible for non-review records).
+// The CANONICAL fields the signature covers — the fields the attestation AND the liveness readers key their
+// trust on. Order is FIXED (signer + verifier must agree byte-for-byte). Binds IDENTITY + PROVENANCE + the
+// TRUSTED DECISION FIELDS. SP-20260718-004 Phase 2:
+//   - `verdict` (ED-231 RIDER-2): a post-hoc FAIL→PASS verdict flip invalidates the signature.
+//   - `ok` + `fallback` (gauntlet R2 SR-R2-001, CRIT): the liveness readers (gauntlet-verify / dispatch-review
+//     applyPanelGate) decide "ran" from `ok:true` (+ `fallback` for ran-vs-fell-back). Omitting them let a
+//     signed FAIL/fallback record be edited into a passing record without invalidating the sig — the exact
+//     forgery class this signing exists to close, on the fields the gate actually reads. They are now signed.
+// A record with a field absent signs/verifies with the empty string for it consistently. NO legacy/multi-set
+// fallback: a record signed under an OLDER field set simply fails verification and is treated as unsigned
+// (fail-CLOSED — a false-RED, never a false-green). gauntlet-verify's time WINDOW scopes the reader to fresh
+// records (signed under this set), so the transition is fail-safe, not a live gap. (Removing the earlier
+// legacy fallback closes gauntlet R2 SR-R2-003/BE-R2-002: that fallback kept `verdict` mutable for old records.)
 const SIGNED_FIELDS = Object.freeze([
   "role",
   "shape",
@@ -55,16 +60,10 @@ const SIGNED_FIELDS = Object.freeze([
   "evidence_sha",
   "cmdline_checksum",
   "completed_at",
-  "verdict", // ED-231 RIDER-2 (SP-20260718-004): a post-hoc verdict flip invalidates the signature.
+  "verdict", // ED-231 RIDER-2
+  "ok", // gauntlet R2 SR-R2-001 (CRIT) — the liveness "ran" bit the gates read
+  "fallback", // gauntlet R2 SR-R2-001 — ran-vs-fell-back classification
 ]);
-
-// LEGACY field set (pre-verdict, ADR-0025 shape). verifyRecord accepts a signature over EITHER set so a
-// record signed BEFORE the verdict was added (its sig covers the legacy fields) still verifies — closing
-// the transition false-RED the qa lane flagged (SIGNED-FIELDS-NO-VERSION-BACKCOMPAT). This does NOT weaken
-// the mistake-class close: a FORGED record has no valid signature over EITHER set, so it is still rejected.
-// A current-signed record (sig over verdict) still fails on a verdict flip (the legacy set can't match a
-// sig that was computed over the verdict), so RIDER-2's flip-detection holds for records signed going forward.
-const LEGACY_SIGNED_FIELDS = Object.freeze(SIGNED_FIELDS.filter((f) => f !== "verdict"));
 
 let _cachedSecret;
 /** The per-session HMAC secret — read from the gitignored file, created (0600-ish) on first use. Cached
@@ -102,29 +101,23 @@ function signRecord(record, secret = sessionSecret()) {
   return crypto.createHmac("sha256", secret).update(canonicalIdentityString(record)).digest("hex");
 }
 
-/** Verify record.attest_sig over its canonical identity fields — accepting a signature over the CURRENT
- *  field set OR the LEGACY (pre-verdict) set (backward-compat, qa SIGNED-FIELDS finding). FAIL-CLOSED: no
- *  secret, no/short sig, or a mismatch against BOTH sets → false. Timing-safe compare. A forged record
- *  matches NEITHER set → rejected (the mistake-class close is preserved). Injectable secret for the bite-test. */
+/** Verify record.attest_sig over the CURRENT canonical field set (identity + provenance + verdict + ok +
+ *  fallback). FAIL-CLOSED: no secret, no/short sig, or a mismatch → false. Timing-safe compare. NO legacy/
+ *  multi-set fallback (gauntlet R2 SR-R2-003/BE-R2-002/R2-SIGNED-FIELDS-LEGACY): a record signed under an
+ *  older field set fails here and is treated as unsigned (fail-CLOSED — a false-RED, never a false-green),
+ *  which is why a verdict/ok/fallback flip on ANY signed record now invalidates the signature. Injectable
+ *  secret for the bite-test. */
 function verifyRecord(record, secret = sessionSecret()) {
   if (!secret || !record) return false;
   const sig = record.attest_sig;
   if (typeof sig !== "string" || !/^[0-9a-f]{64}$/i.test(sig)) return false; // absent/malformed → fail-closed
-  let sigBuf;
+  const expected = signRecord(record, secret);
+  if (!expected) return false;
   try {
-    sigBuf = Buffer.from(sig, "hex");
+    return crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"));
   } catch {
     return false;
   }
-  for (const fields of [SIGNED_FIELDS, LEGACY_SIGNED_FIELDS]) {
-    const expected = crypto.createHmac("sha256", secret).update(canonicalIdentityString(record, fields)).digest("hex");
-    try {
-      if (crypto.timingSafeEqual(sigBuf, Buffer.from(expected, "hex"))) return true;
-    } catch {
-      /* length mismatch — try the next field set */
-    }
-  }
-  return false;
 }
 
 module.exports = { sessionSecret, canonicalIdentityString, signRecord, verifyRecord, SIGNED_FIELDS, SECRET_FILE };

@@ -58,6 +58,18 @@ function isPresidentIdentity(role) {
   return norm === "alpha" || norm.includes("alexalpha") || norm.includes("president");
 }
 
+// The EXACT canonical President role ids. isPresidentIdentity (above) is PERMISSIVE — right for BLOCKING a
+// dispatched worker (catch every alias). But VALIDATING the top-level default is the opposite problem: the
+// default must be the EXACT President identity, not merely something "president-shaped". Gauntlet R2 BE-R2-001
+// proved the permissive check accepts invented ids like "president-worker" as a valid top-level default. This
+// STRICT check (exact, normalized) is what validateRoleBindingValues uses for top_level_human_default.
+const CANONICAL_PRESIDENT_ROLES = Object.freeze(["alex-alpha", "alpha"]);
+function isCanonicalPresidentRole(role) {
+  if (!role || typeof role !== "string") return false;
+  const norm = role.toLowerCase().replace(/[^a-z]/g, "");
+  return norm === "alexalpha" || norm === "alpha";
+}
+
 function actorKindForChannel(channel) {
   if (DISPATCH_CHANNELS.includes(channel)) return "dispatched_worker";
   if (TOP_LEVEL_CHANNELS.includes(channel)) return "top_level_session";
@@ -228,8 +240,14 @@ function validateRoleBindingValues(rb) {
     );
   if (rb.top_level_default_binding_source !== "helm_only")
     errors.push(`top_level_default_binding_source must be "helm_only" (got ${JSON.stringify(rb.top_level_default_binding_source)})`);
-  if (typeof rb.top_level_human_default !== "string" || !rb.top_level_human_default)
-    errors.push("top_level_human_default must be a non-empty role id");
+  // ED-220 + gauntlet R2 (BE-R2-001 / R2-ED220-...-DISPATCH-OPEN): the top-level default must be the EXACT
+  // canonical President identity. A bogus/invented value is a GLOBAL trusted-kernel control-integrity failure
+  // (caught here so EVERY deriveBinding — dispatched worker OR top-level — fail-closes on a corrupt control),
+  // not merely a top-level-branch reject that leaves dispatched workers binding ok:true against a bad control.
+  if (!isCanonicalPresidentRole(rb.top_level_human_default))
+    errors.push(
+      `top_level_human_default ${JSON.stringify(rb.top_level_human_default)} is not the canonical President identity (a bogus/invented top-level default is a control-integrity failure)`,
+    );
   // order ↔ sources totality: every ordered source except UNBOUND has a sources entry.
   for (const o of rb.order || []) {
     if (o === "UNBOUND") continue;
@@ -343,13 +361,15 @@ function deriveBinding({ channel, role } = {}, opts = {}) {
   // ED220-TOPLEVEL-DEFAULT-HOLLOW (gauntlet round 1, qa): validate the VALUE, not just presence. The ONLY
   // legitimate top-level human default is the President identity — a tampered/bogus top_level_human_default
   // must BLOCK (fail-closed), never silently bind a made-up top-level role.
-  if (!isPresidentIdentity(rb.top_level_human_default))
+  // Belt (redundant with validateRoleBindingValues' global check above, now STRICT): the top-level default
+  // must be the EXACT canonical President identity — never a merely "president-shaped" invented id (BE-R2-001).
+  if (!isCanonicalPresidentRole(rb.top_level_human_default))
     return {
       actor_kind,
       boundRole: null,
       ok: false,
       failClosed: true,
-      reason: `top_level_human_default '${rb.top_level_human_default}' is not the recognized President identity — refusing a bogus top-level binding (ED-220, fail-closed)`,
+      reason: `top_level_human_default '${rb.top_level_human_default}' is not the canonical President identity — refusing a bogus top-level binding (ED-220, fail-closed)`,
     };
   return {
     actor_kind,
@@ -364,7 +384,9 @@ module.exports = {
   DISPATCH_CHANNELS,
   TOP_LEVEL_CHANNELS,
   TOP_LEVEL_ONLY_ROLES,
+  CANONICAL_PRESIDENT_ROLES,
   isPresidentIdentity,
+  isCanonicalPresidentRole,
   actorKindForChannel,
   defaultKernelDir,
   defaultKnownRoles,
