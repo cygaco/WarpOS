@@ -5,18 +5,30 @@
 > §7 honest-ceiling fix are committed and locally green; the branch is NOT merged. Next session resumes
 > from the PARK STATE section. agy stays UNAUTHENTICATED / support-matrix `down` / ED-060 + ED-230 OPEN.
 
-> **🚨 CRITICAL UPDATE (lead cross-lane research, 2026-07-19) — THE POST-LOGIN "ONE-COMMAND CLOSE" BELOW IS
-> INVALID AS WRITTEN.** agy headless auth is an **UPSTREAM agy BUG, not our defect**: the subprocess CANNOT
-> read the keyring credential (GitHub agy #479 file-token write-only + #88 Windows not-persisted), and
-> API-key env-var auth is OPEN/UNSUPPORTED (staff `rodydavis` 2026-06-29 "not supported currently"). So a
-> fresh operator login will NOT fix the subprocess-can't-read-keyring gap — this is exactly the
-> "authenticates IN NAME ONLY" pattern (token metadata present, every API call fails). **ED-060 reframes
-> from "operator logs in → one command" to an ADR DECISION: agy SDK-exception (a non-CLI authenticated
-> transport) vs accept-agy-down (drop the agy lane / panel-3lab stays a 2-family floor).** Full research:
-> `runtime/cert-attest/agy-auth-research-20260719.md`. The §7 honest-ceiling + attestLane hard-fail SHIP
-> REGARDLESS (they are correct independent of how auth is eventually solved). The operator-step + close
-> sequence below are SUPERSEDED by this finding — treat them as the shape-of-a-close IF auth is ever solved,
-> not an actionable next step.
+> **✅ GOVERNING RULING — ADR-0027 (2026-07-19, accepted) SUPERSEDES the prior "🚨 CRITICAL UPDATE / post-login
+> close INVALID" framing.** The upstream-auth-WALL claim is REFUTED: same-user safe-spawn subprocess auth is
+> PROVEN (two authed runs 2026-07-19 — the 12:38 EVIDENCE run + the 22:16Z SPIKE, both authenticated as the
+> operator and completed a real Google backend round-trip through `safeSpawnSync`, `shell:false`). GitHub
+> #479 is a Linux-container-without-keyring mode, NOT native Windows; a same-user subprocess CAN read the
+> per-user keyring. **Strategy = B (same-user spawn transport); the Antigravity SDK/API exception is dead.**
+> So a fresh operator login DOES fix the close — the post-login close sequence below is ACTIONABLE under
+> ADR-0027, NOT superseded. The four β riders are BINDING (never cite the spike's `attested:true`; the
+> panel-2family floor holds until Lane-2 merges; ED-060 closes ONLY per rider 3 — real dispatch-agent.js
+> serve, keyring VALID not `expired=true`, no terminal tells, `fallback:false` record, served-model from the
+> operator ACCOUNT CONFIG, never a backend-label name-match). The §7 honest-ceiling + attestLane hard-fail
+> ship REGARDLESS (they are correct independent of auth) — R2-CRITICAL-01 is now FIXED (attestLane hard-fails
+> antigravity; commit cb050a74).
+>
+> **ED-060 CLOSE STATUS (Epsilon2, 2026-07-19 ~22:48Z) — BLOCKED-ON-OPERATOR (expired keyring), close NOT
+> forced.** The ONLY blocker is an EXPIRED credential, exactly the availability seam ADR-0027 rider 3 / risk 3
+> anticipates — NOT the upstream auth-wall. Concrete evidence (read-only, this session):
+> `~/.gemini/oauth_creds.json` `expiry_date = 2026-07-17T23:02:34Z` → **expired ~2 days ago**; the latest
+> cli.log (22:16Z spike) carries `keyring ... expired=true` (it auto-refreshed + authenticated in that run,
+> but the log state does NOT meet rider 3's "keyring VALID / no terminal tell" bar — it carries `not logged
+> into Antigravity` + `local chrome mode` + `resolved via default`). Per the lead's directive #5 ("if the
+> keyring shows expired/invalid, do NOT force it — build/document the operator re-login seam and continue"),
+> NO real agy close dispatch was forced (a metered serve would carry `expired=true` and correctly FAIL the
+> hardened gate — the keyring read is conclusive). The operator re-login seam is documented immediately below.
 
 **Status: BLOCKED-ON-OPERATOR.** agy (Antigravity) is UNAUTHENTICATED — the keyring token is expired,
 so agy serves the account DEFAULT (CCPA), not the contracted `gemini-3.1-pro-high`. The id-mapping fix
