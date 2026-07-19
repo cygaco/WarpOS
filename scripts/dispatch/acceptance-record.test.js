@@ -220,6 +220,105 @@ test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease toke
   );
 });
 
+// ── C2-R3 (gauntlet round 3): digest-map VALUES must be non-empty digest strings, not just non-empty maps ──
+// The R3 finding: checker_digests/evidence_digests only required a non-empty OBJECT, so {lint:""} / {ev:""}
+// authorized a CONTENTLESS verifier claim (the "checkers ran" proof was empty). Every VALUE must be a
+// non-empty digest string.
+test("TEETH (C2-R3): a digest MAP with an empty / whitespace / null / non-string VALUE does NOT authorize", () => {
+  const { record, opts } = validCtx("c2r3");
+  const badMaps = [
+    { checker_digests: { lint: "" } },
+    { checker_digests: { lint: "   " } },
+    { checker_digests: { lint: null } },
+    { checker_digests: { lint: 123 } },
+    { checker_digests: { lint: {} } },
+    { checker_digests: { lint: "digest-ok", tests: "" } }, // one good, one empty — EVERY value must be non-empty
+    { evidence_digests: { ev: "" } },
+    { evidence_digests: { ev: null } },
+    { evidence_digests: { ev: 0 } },
+    { evidence_digests: { ev: "digest-ok", ev2: "  " } },
+  ];
+  for (const bad of badMaps) {
+    const rec = Object.assign({}, record, bad);
+    assert.strictEqual(
+      acc.authorizesIntegration(rec, "refs/heads/integration", opts),
+      false,
+      "a contentless digest value must fail closed: " + JSON.stringify(bad),
+    );
+  }
+});
+
+test("TEETH (C2-R3): the positive companion still authorizes — a map whose values are ALL non-empty digest strings", () => {
+  const { record, opts } = validCtx("c2r3-pos");
+  // sanity: produceForTest's maps ({lint:'digest-lint',tests:'digest-tests'} / {ev-1:'digest-ev-1'}) pass.
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), true);
+});
+
+// ── R3-REG-1 (gauntlet round 3): recompute reads the CANDIDATE commit's tree, NOT the destination's base tree ──
+// The R3 regression: authorization recomputed result_tree_hash from targetRef — the pre-merge DESTINATION, whose
+// tree is the BASE tree (nothing merged yet). For any real non-empty integration the destination tree never
+// equals the CANDIDATE's result tree, so every real integration returned not-authorized (a fail-closed
+// availability defect). These teeth use a REF-AWARE resolver (the destination and the candidate resolve to
+// DIFFERENT trees) — the exact shape the unit suite's ref-agnostic okTree could never distinguish.
+function refAwareCtx(tag, { resultTree = "RESULT-TREE", claimTree = "RESULT-TREE" } = {}) {
+  const root = tmpLeaseRoot(tag);
+  const spId = "SP-" + String(tag).toUpperCase();
+  const a = lease.acquire(spId, { root, sessionId: "sess-" + tag });
+  const record = acc.produceForTest({
+    target_ref: "refs/heads/integration",
+    lease_fencing_token: a.token,
+    base_commit: "base-OK",
+    result_tree_hash: claimTree,   // what the record CLAIMS the accepted tree is
+    result_commit: "cand-OK",      // the candidate commit the accepted work lives at
+  });
+  const refAware = (ref) => {
+    if (ref === "cand-OK") return resultTree;                 // candidate → accepted result tree
+    if (ref === "refs/heads/integration") return "BASE-TREE"; // destination still at base → base tree
+    return null;
+  };
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: refAware };
+  return { root, spId, token: a.token, record, opts };
+}
+
+test("TEETH (R3-REG-1): a REAL integration AUTHORIZES — recompute reads the CANDIDATE commit's tree, not the destination's base tree", () => {
+  const { record, opts } = refAwareCtx("r3reg1-real"); // claimTree === resultTree === "RESULT-TREE"
+  // With the fix (recompute from the candidate "cand-OK" → "RESULT-TREE" === the claimed "RESULT-TREE") this
+  // AUTHORIZES. The OLD code recomputed from targetRef → "BASE-TREE" != "RESULT-TREE" and returned false — the
+  // exact availability defect the security reviewer traced ("simulated pre-merge trace returned not-authorized").
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), true);
+});
+
+test("TEETH (R3-REG-1): a record whose result_tree_hash matches only the DESTINATION base tree does NOT authorize", () => {
+  // The record CLAIMS the destination's BASE-TREE as its result. Recompute reads the CANDIDATE ("RESULT-TREE"),
+  // which != the claimed "BASE-TREE" → BLOCK. This proves the recompute source is the candidate, not the
+  // destination — a record can no longer authorize by matching the pre-merge destination tree.
+  const { record, opts } = refAwareCtx("r3reg1-destmatch", { resultTree: "RESULT-TREE", claimTree: "BASE-TREE" });
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), false);
+});
+
+test("TEETH (R3-REG-1): full authorize-then-CAS DETERMINATION on the real-integration shape returns ok (end-to-end, no real git mutation)", () => {
+  const { record, opts } = refAwareCtx("r3reg1-cas");
+  const result = acc.commitIntegration(record, "refs/heads/integration", {
+    ...opts,
+    expectedHead: "base-OK", // the validated destination head === base
+    liveHead: "base-OK",     // destination still at base at CAS time (F12: unmoved since validation)
+    // no performRefUpdate → pure CAS DETERMINATION, no real git write
+  });
+  assert.strictEqual(result.ok, true, result.reason);
+  assert.strictEqual(result.receipt.committed_head, "base-OK");
+});
+
+test("TEETH (R3-REG-1): with NO bound candidate (no result_commit, no opts.resultRef/newHead) authorization FAILS CLOSED", () => {
+  // A record without any candidate the accepted tree can be recomputed FROM cannot be authorized — there is
+  // nothing to recompute against. Fail-closed (never fall back to recomputing the destination).
+  const root = tmpLeaseRoot("r3reg1-nocand");
+  const spId = "SP-R3REG1-NOCAND";
+  const a = lease.acquire(spId, { root, sessionId: "sess-nocand" });
+  const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token, result_commit: "" });
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree };
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), false);
+});
+
 test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't be resolved -> fails closed", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: 1 });
   // No lease was ever acquired at this root — verifyToken has nothing to confirm against -> false.

@@ -122,6 +122,11 @@ function verifyFencingToken(spId, token, leaseRoot) {
  * @param {object|string} [input.workorder] the validated WorkOrder object (or a pre-computed digest string)
  * @param {string} input.base_commit        immutable base the work was built from
  * @param {string} input.result_tree_hash   the CLAIMED result-tree hash (recomputed + verified at authz time)
+ * @param {string} [input.result_commit]    the candidate/result commit ref holding the accepted work — the
+ *                                           IMMUTABLE result the verifier recomputes result_tree_hash FROM at
+ *                                           authz time (R3-REG-1: NOT the destination target_ref, whose tree is
+ *                                           the pre-merge base). Bound on the record so authorization is
+ *                                           self-contained (no dependency on the caller passing the right head).
  * @param {string} input.target_ref         the ref this record authorizes integration INTO
  * @param {object} [input.checker_digests]  {checkerName: digest}
  * @param {string} [input.policy_digest]
@@ -149,6 +154,10 @@ function produce(input = {}) {
     workorder_digest,
     base_commit: input.base_commit || "",
     result_tree_hash: input.result_tree_hash || "",
+    // R3-REG-1: the candidate/result commit the accepted tree is recomputed FROM at authz time (the immutable
+    // result ref, NOT the destination target_ref). Empty when the verifier did not bind one — authorization
+    // then requires the caller to supply opts.resultRef|opts.newHead, else it fails closed.
+    result_commit: input.result_commit || "",
     target_ref: input.target_ref || "",
     terminal_state,
     checker_digests: input.checker_digests && typeof input.checker_digests === "object" ? input.checker_digests : {},
@@ -191,6 +200,7 @@ function produceForTest(overrides = {}) {
     workorder,
     base_commit: "base-OK",
     result_tree_hash: "tree-OK",
+    result_commit: "cand-OK", // the candidate commit the accepted tree is recomputed from (okTree maps it to "tree-OK")
     target_ref: "refs/heads/integration",
     checker_digests: { lint: "digest-lint", tests: "digest-tests" },
     policy_digest: "policy-OK",
@@ -204,19 +214,23 @@ function produceForTest(overrides = {}) {
 
 /**
  * authorizesIntegration(record, targetRef, opts) -> boolean. The CHOKE-POINT decision. TRUE only when
- * ALL hold:
- *   (a) record.target_ref === targetRef                      (F4 re-correlation)
- *   (b) record.terminal_state === "success"                  (F2 bare envelope / F6 non-success)
- *   (c) the record carries its content-addressed identity (workorder_digest/base_commit/result_tree_hash
- *       all present) AND, when `opts.recompute` is set, the verifier RECOMPUTES result_tree_hash from the
- *       ACTUAL target ref's real git objects and it MATCHES (F11 forged/provider-authored digest)
- *   (d) when `opts.integrationHead` is given, the base is NOT stale against it                (F3 TOCTOU)
- *   (e) when `opts.spId` + `opts.leaseRoot` are given, `record.lease_fencing_token` is CURRENT per
- *       conductor-lease.verifyToken (F10 lease x acceptance composition)
+ * ALL hold (every coordinate is MANDATORY — the R2/C2 fix removed the opt-in skips that were fail-open):
+ *   (a) record.target_ref === targetRef                                          (F4 re-correlation)
+ *   (b) record.terminal_state === "success" (in the 5-state enum)                (F2 bare envelope / F6 non-success)
+ *   (c) FULL content-addressed identity present + non-empty: workorder_digest / base_commit /
+ *       result_tree_hash / result_commit, AND checker_digests + evidence_digests are non-empty maps whose
+ *       EVERY value is a non-empty digest string (C2-R3 — a {lint:""} map is a contentless proof)  (F11)
+ *   (d) opts.integrationHead is REQUIRED and record.base_commit === it           (F3 TOCTOU freshness)
+ *   (e) opts.spId + opts.leaseRoot are REQUIRED and record.lease_fencing_token is CURRENT
+ *       per conductor-lease.verifyToken                                          (F10 lease x acceptance)
+ *   (f) trusted-verifier RECOMPUTE (MANDATORY, no opt-out): resolve the tree of the CANDIDATE/RESULT commit
+ *       (opts.resultRef | opts.newHead | record.result_commit — NOT targetRef, whose tree is the pre-merge
+ *       base, R3-REG-1) and it MUST === record.result_tree_hash                  (F11 forged/provider digest)
  *
  * @param {object} record
  * @param {string} targetRef
- * @param {{recompute?:boolean, integrationHead?:string, spId?:string, leaseRoot?:string, gitRoot?:string}} [opts]
+ * @param {{integrationHead?:string, spId?:string, leaseRoot?:string, gitRoot?:string,
+ *          resultRef?:string, newHead?:string, treeResolver?:function}} [opts]
  */
 function authorizesIntegration(record, targetRef, opts = {}) {
   if (!record || typeof record !== "object") return false;
@@ -229,16 +243,22 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   //     irrelevant (F2/F6); an untyped ResultEnvelope has no terminal_state at all and fails here too.
   if (record.terminal_state !== "success" || !TERMINAL_STATES.includes(record.terminal_state)) return false;
 
-  // FULL content-addressed identity MANDATORY (SP-20260718-005 gauntlet R2/C2): the trust anchor is the
-  // WHOLE verifier-bound identity, not just the tree. R1 required only tree/base/workorder present; the
-  // gauntlet showed the checker/policy/evidence digests (the verifier's proof the checkers actually ran)
-  // were never required — a record could omit them and still authorize. A trusted AcceptanceRecord MUST
-  // carry all of them, non-empty, or it fails closed.
-  if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest) return false;
-  const _nonEmptyObj = (o) => o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length > 0;
-  if (!_nonEmptyObj(record.checker_digests)) return false; // the checkers-ran proof
+  // FULL content-addressed identity MANDATORY (SP-20260718-005 gauntlet R2/C2 + R3/C2): the trust anchor is the
+  // WHOLE verifier-bound identity, not just the tree. R1 required only tree/base/workorder present; R2 required
+  // the checker/policy/evidence digest MAPS non-empty; R3 (C2-R3) closes the residual — a non-empty MAP is NOT
+  // proof: {lint:""} / {ev:""} authorized a CONTENTLESS verifier claim. Every digest-map VALUE must itself be a
+  // non-empty digest string. result_commit (the recompute source, R3-REG-1) is part of the mandatory identity —
+  // a trusted record binds the candidate commit it was accepted from. Any missing/empty coordinate fails closed.
+  if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest || !record.result_commit) return false;
+  // C2-R3: a digest MAP must be a non-empty object whose EVERY value is a non-empty digest string. Empty-string /
+  // null / non-string values are a contentless proof — the exact bypass the gauntlet reproduced with {lint:""}.
+  const _isDigestMap = (o) =>
+    o && typeof o === "object" && !Array.isArray(o) &&
+    Object.keys(o).length > 0 &&
+    Object.values(o).every((v) => typeof v === "string" && v.trim().length > 0);
+  if (!_isDigestMap(record.checker_digests)) return false; // the checkers-ran proof (every value a non-empty digest)
   if (typeof record.policy_digest !== "string" || !record.policy_digest.trim()) return false;
-  if (!_nonEmptyObj(record.evidence_digests)) return false; // the evidence proof
+  if (!_isDigestMap(record.evidence_digests)) return false; // the evidence proof (every value a non-empty digest)
 
   // (d) freshness MANDATORY (R2/C2): the caller MUST supply the live integration head and the record's base
   //     MUST match it — the prior `if (opts.integrationHead != null)` opt-in let a caller SKIP the check->
@@ -253,17 +273,30 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   if (record.lease_fencing_token == null) return false;
   if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) return false;
 
-  // (c) trusted-verifier RECOMPUTE — MANDATORY, never optional (SP-20260718-005 gauntlet C2 fix).
-  //     The content-addressed trust anchor is only real if the verifier ALWAYS recomputes result_tree_hash
-  //     from the target ref's ACTUAL git objects and it MATCHES. The prior `if (opts.recompute)` opt-in was
-  //     a FAIL-OPEN: a caller that omitted `recompute` blessed a forged/provider-authored record (the
-  //     SP-003 attestation-writer-origin recurrence class — a security check that only fires when asked).
-  //     There is NO opt-out flag (a boolean skip would just re-introduce the settable bypass, cf. H4
-  //     trustedBridge). The ONLY variable is the RESOLVER: real read-only git (default) in production, an
-  //     injected `opts.treeResolver(ref, opts) -> hash|null` in tests. A record whose tree cannot be
-  //     resolved OR whose recomputed tree does not match the claimed digest FAILS CLOSED.
+  // (f) trusted-verifier RECOMPUTE — MANDATORY, never optional (SP-20260718-005 gauntlet C2 + R3-REG-1).
+  //     The content-addressed trust anchor is only real if the verifier ALWAYS recomputes result_tree_hash from
+  //     the CANDIDATE/RESULT commit's ACTUAL git objects and it MATCHES. R3-REG-1: the prior recompute read the
+  //     tree of `targetRef` — but targetRef is the pre-merge DESTINATION, whose tree is the BASE tree (nothing is
+  //     merged yet), while result_tree_hash is the CANDIDATE's tree. So for ANY real non-empty integration the
+  //     two never matched and authorization ALWAYS returned false — a fail-closed AVAILABILITY defect that made
+  //     the primitive un-usable (and thus likely to be bypassed). The accepted result lives at the candidate
+  //     commit, NOT the destination ref, so we recompute from the immutable candidate:
+  //       opts.resultRef (explicit) → opts.newHead (the head the conductor is about to CAS into targetRef) →
+  //       record.result_commit (the record's own bound candidate).
+  //     Destination-remains-at-base is a SEPARATE concern (R3-REG-1 second clause): the freshness coordinate (d)
+  //     above binds base_commit to the caller's live integrationHead, and commitIntegration additionally resolves
+  //     the REAL liveHead of targetRef and requires it === base_commit before the git CAS. There is NO opt-out
+  //     flag (a boolean skip would re-introduce the settable bypass, cf. H4 trustedBridge). The ONLY variable is
+  //     the RESOLVER: real read-only git (default) in production, injected opts.treeResolver in tests. A record
+  //     whose candidate tree cannot be resolved OR does not match the claimed digest FAILS CLOSED.
+  const resultRef =
+    typeof opts.resultRef === "string" && opts.resultRef ? opts.resultRef
+      : typeof opts.newHead === "string" && opts.newHead ? opts.newHead
+        : typeof record.result_commit === "string" && record.result_commit ? record.result_commit
+          : null;
+  if (!resultRef) return false; // no bound candidate/result ref → cannot recompute the accepted tree → fail closed
   const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : resolveTreeHash;
-  const actualTree = resolveTree(targetRef, opts);
+  const actualTree = resolveTree(resultRef, opts);
   if (!actualTree || String(actualTree).toLowerCase() !== String(record.result_tree_hash).toLowerCase()) return false;
 
   return true;
