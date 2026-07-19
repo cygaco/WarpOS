@@ -48,3 +48,20 @@ The pattern worth keeping (β): the code-grounded review was possible because th
 
 ## PARK
 **STATE: to be PARKED at the plan→design boundary.** β plan→design consult sent; a FRESH conductor consumes the verdict (no re-consult unless a NEW irreversible risk surfaces) and executes design→build. Seeded EDs: ED-218, ED-069/070/071, ED-228, ED-232, ED-221 (Option-2), ED-214 (G0.3 binding flip), ED-215 (Phase-4 dependency). Prior-phase close: SP-20260718-004 (Phase 2) COMPLETE + MERGED @ e768e5c6 (2026-07-19); retro at `.claude/project/sprint/sprints/SP-20260718-004/retro.md`.
+
+## β PLAN→DESIGN VERDICT (rendered 2026-07-19 ~04:32Z, folded by α — the park is verdict-COMPLETE; consume, do NOT re-consult unless a NEW irreversible risk surfaces at design)
+
+**DECIDE B / 0.89 — PROCEED to design. OPEN_ADR: true. FORWARD-LOADED.** The record-trust gate is WELL-FORMED. β re-litigates no do-not-reopen item; ED-228-in-Phase-3 confirmed. Load-bearing deltas (BINDING at design):
+
+**TWO GATE-GAPS to close BEFORE design-lock (the aspirational-vs-enforced trap):**
+- **GAP-1 — AcceptanceRecord needs its OWN numbered binding exit gate** (it is the sprint's HIGHEST-risk mechanism: a provider `success` NEVER authorizes integration). Gate shape: self-asserted-success BLOCKS; only a trusted AcceptanceRecord (WorkOrder digest + exact base/tree/TARGET ref + checker/policy/evidence digests) authorizes; + a target-mismatch falsifier. A falsifier bullet alone is not a gate.
+- **GAP-2 — F1 wake-notification (PRIORITY) needs an exit gate**: a no-dropped-re-wake fixture (process-absence is NOT the signal; ties to G3.8 reaper-ranking).
+
+**THREE SHARPENINGS to the record-trust gate:**
+1. COMPLETE + PARTITION the trust-surface enumeration: same-session (HMAC works: WorkOrder/dispatch validators) vs cross-session (HMAC does NOT — the R3 false-RED class: AcceptanceRecord, lease/fencing-token, do-not-reopen ledger). STRUCTURAL partition, never a settable marker.
+2. ADD three required-present falsifiers: re-correlation/target-mismatch; stale/superseded-lease; non-success-terminal-recorded-as-success.
+3. The gate itself needs a NAMED ENFORCER wired into the design-EXIT (a missing falsifier BLOCKS build-entry) — else it is a hollow ladder rung.
+
+**CROSS-SESSION LEASE CATCH (ED-228):** build the conductor-lease on an ATOMIC-FS primitive (O_EXCL / atomic-rename + monotonic fencing token), NOT per-session signing; REUSE the Phase-2 derived-not-settable machinery for conductor-authority (β plan-lock rider — no parallel mechanism).
+
+**MINOR:** gate the G0.3/ED-214 binding flip on ALL conformance fixtures GREEN first (flipping a default reds everything that passed report-only).
