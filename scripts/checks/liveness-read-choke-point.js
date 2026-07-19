@@ -32,9 +32,10 @@ function resolveRoot() {
 }
 const ROOT = resolveRoot();
 
-// Directories to scan (the code that could read the dispatch ledger). Tests + the verifier + the helper itself
-// are excluded (a test is not a live reader; attest-signing IS the verifier; the helper IS the choke-point).
-const SCAN_DIRS = ["scripts/dispatch", "scripts/checks", "scripts/sprint", "scripts/warpos", "scripts/events"];
+// Scan ALL of scripts/ (gauntlet R5 SR-R5-001: a same-session reader in scripts/ ROOT — skills-test.js — was
+// missed by a fixed sub-dir list). Tests + the verifier + the helper itself are excluded (a test is not a live
+// reader; attest-signing IS the verifier; the helper IS the choke-point).
+const SCAN_DIRS = ["scripts"];
 const EXCLUDE_BASENAMES = new Set([
   "verified-liveness-read.js", // the choke-point itself
   "attest-signing.js", // the verifier itself
@@ -58,6 +59,13 @@ const LEDGER_READ = /dispatch-completions|WARPOS_COVERAGE_LEDGER|readCompletions
 const OK_PREDICATE = /\.ok\s*===\s*true|\.ok\s*!==\s*true/;
 // Verification is PRESENT if it references the shared choke-point or the verifier directly.
 const VERIFIES = /isVerifiedLivenessRecord|filterVerifiedLiveness|verified-liveness-read|verifyRecord/;
+// A raw ok-predicate is checked PER-READ against a window (gauntlet R5 SR-R5-002: a per-FILE token check
+// false-negatives when verifyRecord appears once but a raw ok:true read is elsewhere). Each raw record-.ok
+// predicate must have a verifier within ±WINDOW lines. A LEGIT shape-only check whose signature verification
+// lives in its caller (e.g. isWellFormedOkRecord) annotates itself with a `liveness-verified:` code pragma —
+// a reviewed CODE-LINE annotation (NOT a settable per-record field, β teeth #1).
+const WINDOW = 12;
+const PRAGMA = /liveness-verified:/;
 
 function listJs(absDir) {
   const out = [];
@@ -88,16 +96,28 @@ function scan(root = ROOT) {
       } catch {
         continue;
       }
-      if (!LEDGER_READ.test(text) || !OK_PREDICATE.test(text)) continue; // not a liveness reader
+      if (!LEDGER_READ.test(text)) continue; // does not read the dispatch-completions ledger
+      const lines = text.split(/\r?\n/);
+      const okLines = [];
+      for (let i = 0; i < lines.length; i++) if (OK_PREDICATE.test(lines[i])) okLines.push(i);
+      if (okLines.length === 0) continue; // reads the ledger but never gates on a record's .ok (not a liveness gate)
       if (CROSS_SESSION_EXEMPT[rel]) {
         exemptSeen.push(rel);
         continue; // structurally cross-session — unverifiable by construction, tracked (ED-232)
       }
-      if (!VERIFIES.test(text)) {
-        violations.push({
-          file: rel,
-          what: "reads the dispatch-completions ledger and gates on an ok:true record but NEVER verifies an origin-proof signature (isVerifiedLivenessRecord / verifyRecord) — a forged/unsigned record would read as liveness proof",
-        });
+      // PER-READ (R5 SR-R5-002): each raw record-.ok predicate must have verification (or a reviewed pragma)
+      // within ±WINDOW lines — a verifyRecord token elsewhere in the file no longer suppresses an unverified read.
+      for (const i of okLines) {
+        const from = Math.max(0, i - WINDOW);
+        const to = Math.min(lines.length, i + WINDOW + 1);
+        const win = lines.slice(from, to).join("\n");
+        if (!VERIFIES.test(win) && !PRAGMA.test(win)) {
+          violations.push({
+            file: rel,
+            line: i + 1,
+            what: `an ok:true ledger predicate (\`${lines[i].trim().slice(0, 80)}\`) with NO origin-proof verification within ±${WINDOW} lines — route it through isVerifiedLivenessRecord or verify with attest-signing.verifyRecord (or annotate a reviewed shape-only check with a \`liveness-verified:\` pragma)`,
+          });
+        }
       }
     }
   }
@@ -128,7 +148,7 @@ if (require.main === module) {
   } else {
     if (res.violations.length) {
       process.stdout.write(`FAIL [liveness-read-choke-point] ${res.violations.length} same-session reader(s) trust unsigned ok:true records:\n`);
-      for (const v of res.violations) process.stdout.write(`  ${v.file}\n    ${v.what}\n`);
+      for (const v of res.violations) process.stdout.write(`  ${v.file}${v.line ? ":" + v.line : ""}\n    ${v.what}\n`);
       process.stdout.write("  Route the ok:true read through scripts/dispatch/verified-liveness-read.js#isVerifiedLivenessRecord (same-session), or add a STRUCTURAL cross-session exemption with a reason.\n");
     }
     for (const f of res.staleExempt) process.stdout.write(`  STALE cross-session exemption for a non-existent file: ${f}\n`);

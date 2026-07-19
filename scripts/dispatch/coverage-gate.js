@@ -236,6 +236,9 @@ function evaluate(input) {
   }
 
   // phantom-coverage guard: any ok:true record in the pool that is NOT backed OR (same-session) NOT signed.
+  // liveness-verified: this block REJECTS untrustworthy records (unbacked, or ok:true without a valid signature
+  // via isLive = isVerifiedLivenessRecord) — it never TRUSTS an unsigned record as liveness; the trust path is
+  // the roleRecs filter above, which routes through isLive.
   for (const r of pool) {
     if (r.ok === true && !isBackedRecord(r)) {
       violations.push(`a completion record (role=${r.role || "?"}) claims ok:true but lacks dispatch_id/cmdline_checksum — hand-authored phantom coverage row REJECTED.`);

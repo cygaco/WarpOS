@@ -402,6 +402,8 @@ function main(argv) {
   let agyLog = "";
   if (agyLogPath) { try { agyLog = fs.readFileSync(agyLogPath, "utf8"); } catch { /* agy wrote no log */ } }
   const combined = `${stdout}\n${stderr}\n${agyLog}`; // the served model id may land on stdout/stderr OR the CLI log
+  // liveness-verified: `spawned` is a SUBPROCESS spawn result (carries .exitCode), NOT a dispatch-completion
+  // ledger record — this .ok is a process-exit signal, not a forgeable liveness claim.
   const exitOk = spawned.ok === true && spawned.exitCode === 0;
 
   const verdict = evaluateAttestation({ requestedModel: model, providerId, output: combined, exitOk, catalog });

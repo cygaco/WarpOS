@@ -152,6 +152,8 @@ function recordCompletedMs(rec) {
 function isWellFormedOkRecord(rec) {
   if (!rec || typeof rec !== "object") return false;
   if (typeof rec.role !== "string" || !rec.role.trim()) return false;
+  // liveness-verified: shape-only typed-success predicate; origin-proof SIGNATURE verification is applied in
+  // verifyGauntlet (the sigOk/requireSignature gate) before a record counts as "ran" — not trusted here.
   if (rec.ok !== true) return false;
   if (typeof rec.provider !== "string" || !rec.provider.trim()) return false;
   // Must have at least one parseable timestamp (even when no window is specified,
