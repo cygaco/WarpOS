@@ -44,16 +44,28 @@ const CROSS_SESSION_EXEMPT = Object.freeze({});
 // mirrors liveness-read-choke-point's LEDGER_READ pre-filter (narrows the scan, keeps false positives
 // bounded on files that merely mention `.success` for unrelated reasons, e.g. HTTP/test-result shapes).
 const MERGE_HINT = /merge|integrat/i;
-// A `.success` TRUTHY/NEGATED comparison — the canonical form a ResultEnvelope gate takes (mirrors the
-// liveness guard's OK_PREDICATE scoping rationale: a regex can't safely distinguish every equivalent form
-// without dataflow, so this is a bounded structural DETECTOR, defense-in-depth — see ED-229 precedent).
-const SUCCESS_PREDICATE = /\.success\s*===\s*true|\.success\s*!==\s*true/;
+// H2 precision: a success predicate is only a real INTEGRATION gate if an actual merge/integrate ACTION
+// sits near it (within the window). File-level MERGE_HINT alone + the broadened bare-truthy `.success`
+// form false-positived on incidental `.success` (a filter callback, an object literal, a smoke-test
+// conditional) in files that merely MENTION merge. Requiring an action call in the window scopes the flag
+// to genuine integrators (e.g. the F9 unrouted-integrator's `mergeInto(ref)`), not incidental references.
+const MERGE_ACTION = /\b(?:merge|mergeInto|integrate|commitIntegration|performRefUpdate)\s*\(|git[\s"'`]+merge\b|update-ref/i;
+// A `.success` gate — the form a ResultEnvelope merge-gate takes. SP-20260718-005 gauntlet H2 BROADENED
+// the prior `=== true` / `!== true` only form (which missed `if (envelope.success)`, `envelope['success']`,
+// and negation) to also catch: (i) bare-truthy `.success` NOT followed by `=`/`!` (an assignment or a
+// comparison already handled), (ii) bracket access `['success']` / `["success"]`. A regex still can't
+// resolve DESTRUCTURED `const {success}=env; if(success)` without dataflow — that is the acknowledged
+// AST ceiling (ED-229 class), named-not-grinding: a bounded structural DETECTOR, defense-in-depth on top
+// of the structural exemption mechanism, never the sole guarantee.
+const SUCCESS_PREDICATE = /\.success\s*===\s*true|\.success\s*!==\s*true|\.success\b(?!\s*[=!])|\[\s*["']success["']\s*\]/;
 // Verification is PRESENT if the window references the trusted choke-point.
 const VERIFIES = /authorizesIntegration|acceptance-record(\.js)?/;
 const WINDOW = 12;
-// A reviewed CODE-LINE annotation for a legit shape-only check whose real verification lives in its
-// caller (mirrors liveness guard's `liveness-verified:` pragma) — NOT a settable per-record field.
-const PRAGMA = /acceptance-verified:/;
+// SP-20260718-005 gauntlet H2: the former `acceptance-verified:` comment PRAGMA was REMOVED — a code
+// comment is a SETTABLE annotation (anyone can add it to suppress the guard, proving no real routing).
+// A merge-gating `.success` predicate MUST route through the choke-point within the window; a genuine
+// shape-only check whose verification lives elsewhere uses the STRUCTURAL cross-session exemption
+// (CROSS_SESSION_EXEMPT, reason-tagged + stale-detected), never a comment.
 
 function stripComments(s) {
   return s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
@@ -101,11 +113,16 @@ function scan(root = ROOT) {
         const from = Math.max(0, i - WINDOW);
         const to = Math.min(lines.length, i + WINDOW + 1);
         const win = lines.slice(from, to).join("\n");
-        if (!VERIFIES.test(stripComments(win)) && !PRAGMA.test(win)) {
+        const winClean = stripComments(win);
+        // H2 precision gate: only flag a success predicate that sits near an actual merge/integrate ACTION
+        // — an incidental `.success` (filter/object-literal/smoke conditional) in a merge-mentioning file
+        // is not an integration gate and must not trip the broadened detector.
+        if (!MERGE_ACTION.test(winClean)) continue;
+        if (!VERIFIES.test(winClean)) {
           violations.push({
             file: rel,
             line: i + 1,
-            what: `a ResultEnvelope success predicate (\`${lines[i].trim().slice(0, 80)}\`) authorizing a merge with NO acceptance-record routing within ±${WINDOW} lines — route it through acceptance-record.js#authorizesIntegration (or annotate a reviewed shape-only check with an \`acceptance-verified:\` pragma)`,
+            what: `a ResultEnvelope success predicate (\`${lines[i].trim().slice(0, 80)}\`) authorizing a merge with NO acceptance-record routing within ±${WINDOW} lines — route it through acceptance-record.js#authorizesIntegration, or add a reason-tagged STRUCTURAL cross-session exemption (never a code comment, H2 fix)`,
           });
         }
       }

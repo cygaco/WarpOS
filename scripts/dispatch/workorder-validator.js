@@ -17,12 +17,12 @@
  *       workOrderDigest() over the IMMUTABLE identity fields) — NOT a parallel signing mechanism, the
  *       SAME trust anchor the completion-record signer uses (attest-signing SIGNED_FIELDS now carries
  *       `workorder_digest`, BE-3). A hand-authored / unsigned / self-asserted WorkOrder (no attest_sig,
- *       or a forged one) has NO valid provenance -> {ok:false}. The ONLY other accepted proof is
- *       `opts.trustedBridge === true` — an OPTS-LEVEL flag the CALLER sets, NEVER a field the WorkOrder
- *       object itself carries (so a forged/hand-authored WorkOrder JSON blob can never self-assert this;
- *       only the trusted in-process dispatch bridge constructing the WorkOrder THIS call can set it —
- *       reusing role-resolver's derived-not-settable discipline: authority lives in the CALL SHAPE, never
- *       a body field. See role-resolver.js header for the doctrine this mirrors).
+ *       or a forged one) has NO valid provenance -> {ok:false}. There is EXACTLY ONE accepted proof: a
+ *       valid same-session HMAC signature. (SP-20260718-005 gauntlet H4: the former `opts.trustedBridge
+ *       === true` OR-branch was REMOVED — a bare caller-settable boolean that short-circuited the
+ *       signature was the SP-003/004 "settable authority" recurrence class. A trusted in-process bridge
+ *       that constructs a WorkOrder must SIGN it via `issueWorkOrder()` — the signature is the provenance,
+ *       and it is not settable by a forged record. No opts-boolean bypass remains.)
  *
  *   (c) WG-10 PROMPT-SIZE FLOOR (the BELT) — a redundant, INDEPENDENT hollow-input defense (the
  *       ~215-byte hollow-stub class documented at scripts/sprint/epsilon-runtime.js WG-10). Evaluated
@@ -120,12 +120,13 @@ function issueWorkOrder(workorder, opts = {}) {
  * every branch: no secret, no/malformed signature, or a mismatch all resolve {ok:false}.
  */
 function verifyProvenance(workorder, opts = {}) {
-  // The trusted-bridge OR-branch: an opts-only assertion (never a WorkOrder field) that THIS caller, in
-  // THIS process, constructed the WorkOrder being validated right now. A forged/hand-authored WorkOrder
-  // handed to a DIFFERENT caller can never set this itself — it is not read from `workorder` at all.
-  if (opts && opts.trustedBridge === true) {
-    return { ok: true, reason: "asserted by the trusted dispatch bridge (in-process, same-call construction; opts-only, not workorder-settable)" };
-  }
+  // SP-20260718-005 gauntlet H4 fix: the `opts.trustedBridge === true` OR-branch was a SETTABLE authority
+  // switch — a bare caller-provided boolean that short-circuited the signature check and accepted a
+  // schema-valid UNSIGNED WorkOrder (the SP-003/004 "caller-provided boolean substitutes for provenance"
+  // recurrence class). It is REMOVED. A trusted in-process bridge that constructs a WorkOrder must SIGN it
+  // (issueWorkOrder(), which stamps the same-session HMAC) — the signature IS the provenance proof, and it
+  // is not settable by a forged record. There is now exactly ONE authority path: a valid same-session
+  // signature. No opts-boolean bypass.
   const secret = opts && opts.secret !== undefined ? opts.secret : attestSigning.sessionSecret();
   if (!secret) {
     return { ok: false, reason: "no same-session HMAC secret available (fail-closed — cannot verify any provenance)" };

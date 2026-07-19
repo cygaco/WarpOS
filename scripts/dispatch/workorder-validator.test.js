@@ -117,15 +117,22 @@ test("valid-signed-pass: mutating a NON-digest field (terminal_state) does NOT b
   assert.strictEqual(res.ok, true, res.reason);
 });
 
-test("trustedBridge OR-branch: opts.trustedBridge:true accepts an in-process-constructed WorkOrder with NO attest_sig", () => {
+test("H4 fix: opts.trustedBridge:true NO LONGER bypasses the signature — an unsigned WorkOrder still FAILS (the settable-authority switch is removed)", () => {
   const wo = baseWorkOrder(); // no attest_sig
   const res = validate(wo, { trustedBridge: true, secret: SECRET });
+  assert.strictEqual(res.ok, false, "trustedBridge must no longer accept an unsigned WorkOrder");
+  assert.match(res.reason, /authority\/provenance check failed/);
+});
+
+test("H4 fix: a trusted in-process bridge authorizes by SIGNING (issueWorkOrder), not a settable flag — the signed WorkOrder passes", () => {
+  const wo = signedWorkOrder(); // the bridge stamps the same-session HMAC (the real provenance proof)
+  const res = validate(wo, { secret: SECRET });
   assert.strictEqual(res.ok, true, res.reason);
 });
 
-test("trustedBridge is OPTS-ONLY: a WorkOrder that sets its OWN 'trustedBridge' field is IGNORED (still unsigned-fail)", () => {
-  const wo = baseWorkOrder({ trustedBridge: true }); // self-asserted on the BODY, not opts
-  const res = validate(wo, { secret: SECRET }); // caller did NOT set opts.trustedBridge
+test("H4: no WorkOrder BODY field grants authority — a self-asserted 'trustedBridge' on the body is ignored (still unsigned-fail)", () => {
+  const wo = baseWorkOrder({ trustedBridge: true }); // self-asserted on the BODY
+  const res = validate(wo, { secret: SECRET });
   assert.strictEqual(res.ok, false);
   assert.match(res.reason, /authority\/provenance check failed/);
 });

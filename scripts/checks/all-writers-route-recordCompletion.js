@@ -52,8 +52,16 @@ const EXCLUDE_BASENAMES = new Set([
 // A file is even CONSIDERED only if it references the ledger by name/constant.
 const LEDGER_REF = /dispatch-completions|dispatchCompletionsFile/;
 
-// Raw fs write calls. Captures the TARGET argument (first arg) for correlation.
-const RAW_WRITE_CALL = /\b(?:fs\.)?(?:appendFileSync|writeFileSync)\s*\(\s*([A-Za-z_$][\w.$]*|["'`][^"'`]*["'`])/g;
+// Raw fs write calls — SP-20260718-005 gauntlet H3 BROADENED. The prior form matched only the SYNC
+// direct calls (`appendFileSync`/`writeFileSync`) and captured only the LEADING first-arg token, so two
+// bypasses slipped: (1) `fs.promises.appendFile(...)` (the ASYNC form — a different method name), and
+// (2) `fs.appendFileSync(path.resolve(PATHS.dispatchCompletionsFile), row)` (the ledger ref NESTED inside
+// a path.resolve/join expression, so the captured leading token was `path.resolve`, not the ledger). Now:
+// (a) match sync AND async appendFile/writeFile, with an optional `fs.` / `fs.promises.` / `fsp.` prefix;
+// (b) capture the whole first-argument REGION (up to the first `)` or newline) so a nested ledger ref is
+// visible to LEDGER_REF. Deep multi-line / variable-indirection first-args remain the AST ceiling (named,
+// not ground): the leading-identifier correlation below still resolves the common assigned-var case.
+const RAW_WRITE_CALL = /\b(?:fs\.)?(?:promises\.|fsp\.)?(?:appendFile|writeFile)(?:Sync)?\s*\(\s*([^)\n]*)/g;
 
 function listJs(absDir) {
   const out = [];
@@ -104,18 +112,25 @@ function scan(root = ROOT) {
         RAW_WRITE_CALL.lastIndex = 0;
         let m;
         while ((m = RAW_WRITE_CALL.exec(lines[i]))) {
-          const target = m[1];
+          const argRegion = m[1] || "";
           let bypasses = false;
           let reason = "";
-          if (LEDGER_REF.test(target)) {
+          if (LEDGER_REF.test(argRegion)) {
+            // The first-arg EXPRESSION references the ledger — directly, or nested inside a
+            // path.resolve/join, or via an async fs.promises write. All are direct bypasses.
             bypasses = true;
-            reason = `writes directly to the ledger target \`${target}\``;
-          } else if (/^[A-Za-z_$][\w$]*$/.test(target)) {
-            // plain identifier — correlate via its nearest preceding assignment
-            const assign = findAssignment(lines, target, i);
-            if (assign && LEDGER_REF.test(assign)) {
-              bypasses = true;
-              reason = `writes to \`${target}\`, which is assigned from the ledger path a few lines above`;
+            reason = `writes to a target whose first-arg expression references the ledger (\`${argRegion.trim().slice(0, 60)}\`) — direct, nested (path.resolve/join), or async (fs.promises) form`;
+          } else {
+            // A lone identifier as the first arg (possibly followed by a comma) — correlate via its
+            // nearest preceding assignment (the assigned-var case).
+            const leadMatch = argRegion.match(/^\s*([A-Za-z_$][\w$]*)\s*(?:,|$)/);
+            const lead = leadMatch && leadMatch[1];
+            if (lead) {
+              const assign = findAssignment(lines, lead, i);
+              if (assign && LEDGER_REF.test(assign)) {
+                bypasses = true;
+                reason = `writes to \`${lead}\`, which is assigned from the ledger path a few lines above`;
+              }
             }
           }
           if (bypasses) {

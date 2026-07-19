@@ -148,3 +148,26 @@ test("CLI: the exported scan() the CLI calls is the same function exercised by t
   const res = mod.scan(dir);
   assert.strictEqual(res.violations.length > 0, true);
 });
+
+// ── H3 (SP-20260718-005 gauntlet): the broadened detector catches the two flagged bypass forms ──────
+test("H3 fix: a NESTED ledger ref inside path.resolve(...) is caught (was invisible to the leading-token capture)", () => {
+  const dir = tmpFixtureRoot("h3-nested");
+  write(
+    dir,
+    path.join("scripts", "dispatch", "nested-bypass.js"),
+    `"use strict";\nconst fs = require("fs");\nconst path = require("path");\nconst { PATHS } = require("./lib/paths");\nfunction emit(rec) {\n  fs.appendFileSync(path.resolve(PATHS.dispatchCompletionsFile), JSON.stringify(rec));\n}\nmodule.exports = { emit };\n`,
+  );
+  const res = scan(dir);
+  assert.ok(res.violations.some((v) => /nested-bypass\.js/.test(v.file)), "path.resolve(PATHS.dispatchCompletionsFile) must be flagged");
+});
+
+test("H3 fix: an ASYNC fs.promises.appendFile to the ledger is caught (was a different method name)", () => {
+  const dir = tmpFixtureRoot("h3-async");
+  write(
+    dir,
+    path.join("scripts", "dispatch", "async-bypass.js"),
+    `"use strict";\nconst fsp = require("fs").promises;\nconst { PATHS } = require("./lib/paths");\nasync function emit(rec) {\n  await fsp.appendFile(PATHS.dispatchCompletionsFile, JSON.stringify(rec));\n}\nmodule.exports = { emit };\n`,
+  );
+  const res = scan(dir);
+  assert.ok(res.violations.some((v) => /async-bypass\.js/.test(v.file)), "fs.promises.appendFile to the ledger must be flagged");
+});

@@ -71,15 +71,35 @@ test("HAPPY: an integrator that routes through acceptance-record.authorizesInteg
   assert.strictEqual(res.violations.some((v) => /routed-integrator\.js/.test(v.file)), false);
 });
 
-test("HAPPY: a reviewed acceptance-verified: pragma suppresses a shape-only check whose verification lives in the caller", () => {
-  const dir = tmpFixtureRoot("pragma");
+test("H2 fix: a comment pragma NO LONGER suppresses — a real merge gate on .success with only an `acceptance-verified:` comment (no routing) is FLAGGED", () => {
+  const dir = tmpFixtureRoot("pragma-removed");
   write(
     dir,
-    path.join("scripts", "dispatch", "shape-only-check.js"),
-    `"use strict";\n// acceptance-verified: caller (integrate-orchestrator.js) routes through authorizesIntegration before calling this\nfunction isWellFormed(envelope) {\n  return envelope.success === true && typeof envelope.provider === "string";\n}\nfunction mergeAfterOrchestration(ref) { return true; }\nmodule.exports = { isWellFormed, mergeAfterOrchestration };\n`,
+    path.join("scripts", "dispatch", "pragma-only-integrator.js"),
+    `"use strict";\n// acceptance-verified: trust me, the caller checked\nfunction integrate(envelope, ref) {\n  if (envelope.success === true) {\n    return mergeInto(ref);\n  }\n  return false;\n}\nfunction mergeInto(_r) { return true; }\nmodule.exports = { integrate };\n`,
   );
   const res = scan(dir);
-  assert.strictEqual(res.violations.length, 0);
+  assert.ok(
+    res.violations.some((v) => /pragma-only-integrator\.js/.test(v.file)),
+    "the settable comment pragma must no longer suppress a real un-routed merge gate (H2 fix)",
+  );
+});
+
+test("H2 fix: the broadened detector catches `if (envelope.success)` and `envelope['success']` when a merge action is near", () => {
+  const dir = tmpFixtureRoot("broadened");
+  write(
+    dir,
+    path.join("scripts", "dispatch", "bare-truthy-integrator.js"),
+    `"use strict";\nfunction integrate(envelope, ref) {\n  if (envelope.success) {\n    return mergeInto(ref);\n  }\n}\nfunction mergeInto(_r) { return true; }\nmodule.exports = { integrate };\n`,
+  );
+  write(
+    dir,
+    path.join("scripts", "dispatch", "bracket-integrator.js"),
+    `"use strict";\nfunction integrate(envelope, ref) {\n  if (envelope['success']) {\n    return mergeInto(ref);\n  }\n}\nfunction mergeInto(_r) { return true; }\nmodule.exports = { integrate };\n`,
+  );
+  const res = scan(dir);
+  assert.ok(res.violations.some((v) => /bare-truthy-integrator/.test(v.file)), "if (envelope.success) must be caught");
+  assert.ok(res.violations.some((v) => /bracket-integrator/.test(v.file)), "envelope['success'] must be caught");
 });
 
 // ── pre-filters: files that never plausibly merge, or never gate on .success, are out of scope ────────
