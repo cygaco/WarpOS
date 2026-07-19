@@ -289,6 +289,26 @@ test("ADR-0027 rider-2 teeth-check: the REAL 22:16 spike log (canonical=attested
   assert.equal(vPost.honestCeiling, true, "the reason must be the §7 honest-ceiling (no agy log line is served-model proof), not a GATE-1 terminal tell");
 });
 
+// ── R3-MEDIUM-03 (provenance VERIFICATION, not just a fixture assertion): the prior test's "canonical returned
+//    attested:true" claim was a COMMENT, unverified in-worktree. Commit the REAL 22:16 canonical verdict
+//    artifact and PROVE the claim from it: (a) the artifact itself recorded attested:true (the frozen canonical
+//    false-green exemplar — never mutate it), AND (b) the hardened gate re-evaluates the artifact's OWN
+//    recorded cli_output_head → attested:false via GATE-1. So the historical-provenance claim is machine-checked
+//    against the committed artifact, not merely asserted in prose (mirrors the 19-11 negative-fixture test). ──
+test("R3-MEDIUM-03: the committed 22:16 CANONICAL artifact recorded attested:true, but the hardened gate rejects its recorded output", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const artifactPath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "fixtures", "agy-spike-22-16-canonical-artifact.json");
+  const art = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+  // (a) provenance VERIFIED: the canonical run DID green this exact serve (the false-green this sprint closes).
+  assert.equal(art.attested, true, "the committed 22:16 artifact is the frozen canonical false-green exemplar (attested:true as recorded) — the historical-provenance claim, now machine-checked not just commented");
+  assert.equal(art.provider, "antigravity", "the artifact is an antigravity verdict");
+  // (b) the HARDENED gate rejects the artifact's OWN recorded cli_output_head (the exact bytes canonical greened).
+  const v = evaluateAttestation({ requestedModel: art.requested_model || "Gemini 3.1 Pro (High)", providerId: "antigravity", output: art.cli_output_head, exitOk: true, catalog });
+  assert.equal(v.attested, false, "the hardened gate must reject the EXACT recorded output that canonical attested:true'd: " + v.reason);
+  assert.equal(v.defaultSignal, true, "the recorded head carries the terminal default/eval tells → GATE-1 rejects it (pin the gate)");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);

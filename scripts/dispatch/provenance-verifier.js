@@ -98,6 +98,24 @@ function recordMatchesLane(r, contract, provider) {
   return r.provider === provider && r.shape === contract.shape && r.role === contract.role;
 }
 
+// (4) THE served-model attestability predicate — the SINGLE choke-point for "can a ledger record establish a
+// SERVED-MODEL attestation for this provider's lane?" Returns TRUE when it CANNOT (the honest-ceiling
+// fail-close). antigravity (agy) is the sole such provider today: agy emits NO trustworthy server-origin
+// served-model receipt — its only serve marker is the CLIENT-SIDE "backend: label" echo, which it emits even
+// while UNAUTHENTICATED (the 19-11 / 07-18 / 22:16 false-greens all carried the correct display label while
+// serving the CCPA default). So NO agy ledger record proves the served model → any reader that gates a
+// served-model verdict on an agy record MUST fail-CLOSED. This predicate is the ROOT that both served-model
+// readers call — attestLane (cert-attest, the attestPanelRun reader) AND buildObserved (dispatch-review, the
+// panelStatus BINDING reader) — so a THIRD reader cannot reintroduce the class. (R3-CRITICAL-02 was exactly a
+// second reader trusting an agy record that attestLane already refused; consolidating here closes the class
+// rather than patching the next instance.) The genuine close is a real authenticated dispatch-agent serve with
+// a server-origin served-model identity (ED-060 / ED-230), never a log line — when that lands, this predicate
+// is refined to check for THAT receipt, not loosened. NON-antigravity providers (openai/claude) self-identify
+// the served model in a TRUSTWORTHY CLI header → attestable, returns false.
+function servedModelUnverifiableFromRecord(provider) {
+  return provider === "antigravity";
+}
+
 const { readGitHead } = require("./git-head");
 
 module.exports = {
@@ -113,5 +131,6 @@ module.exports = {
   claudeLaneContract,
   laneContract,
   recordMatchesLane,
+  servedModelUnverifiableFromRecord,
   readGitHead,
 };

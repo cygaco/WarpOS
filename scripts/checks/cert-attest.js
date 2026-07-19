@@ -284,17 +284,17 @@ function attestLane(lane, records, opts = {}) {
   const { runId = null, sprintId = null, codeSha = null, profileName = "panel-2family" } =
     typeof opts === "string" ? {} : opts || {};
   // §7 HONEST-CEILING AT THE PANEL READER (R2-CRITICAL-01 — β RIDER-1 "same class, DIFFERENT reader"):
-  // the antigravity lane CANNOT be attested from a ledger record. A signed same-run agy completion record
-  // proves a dispatch RAN, but agy emits NO trustworthy server-origin served-model receipt — its only serve
-  // marker is the CLIENT-SIDE "backend: label" echo, the exact thing evaluateAttestation §7 refuses to trust
-  // (the 19-11 + 07-18 + the 22:16 spike false-greens all carried the correct display label while the served
-  // model was the CCPA default). Attesting the agy PANEL lane from a record here would RELOCATE the removed
-  // §7 echo-trust to this sibling reader — the precise ADR-0025 RIDER-1 mistake class (same disease, new
-  // reader). TRUST-REMOVAL, fail-closed BY CONSTRUCTION: the agy lane is un-attestable until an independently
-  // trustworthy server-origin served-model proof exists (the deferred ED-230 served-model predicate REPLACES
-  // this interim hard-fail; ADR-0027 rider 3). Consequence (correct + consistent with support-matrix
-  // agy=down): the panel-3lab BINDING can never attest while agy is down — the honest floor, never GREEN.
-  if (lane && lane.provider === "antigravity") {
+  // a lane whose provider cannot be served-model-verified from a ledger record CANNOT be attested here. The
+  // predicate is the SINGLE choke-point (pv.servedModelUnverifiableFromRecord) that dispatch-review's
+  // buildObserved ALSO calls — so this reader and the panelStatus BINDING reader fail-close on the SAME root,
+  // and a third reader cannot reintroduce the class (R3-CRITICAL-02). For agy: a signed record proves a
+  // dispatch RAN, but agy emits NO trustworthy server-origin served-model receipt (only the CLIENT-SIDE
+  // "backend: label" echo that §7 refuses to trust — the 19-11 / 07-18 / 22:16 false-greens all carried the
+  // correct display label while serving the CCPA default). TRUST-REMOVAL, fail-closed BY CONSTRUCTION until an
+  // independently trustworthy server-origin served-model proof exists (the deferred ED-230 predicate REPLACES
+  // this; ADR-0027 rider 3). Consequence (consistent with support-matrix agy=down): panel-3lab BINDING can
+  // never attest while agy is down — the honest floor, never GREEN.
+  if (lane && pv.servedModelUnverifiableFromRecord(lane.provider)) {
     return {
       laneId: lane.laneId,
       attested: false,

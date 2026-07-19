@@ -219,6 +219,31 @@ test("SR-R2-002: requireSignature PASSES the floor when the SAME lane records ar
   assert.equal(g.floor_pass, true, "validly-signed lane records must corroborate the floor");
 });
 
+// ── R3-CRITICAL-02 (the sibling served-model reader): applyPanelGate/buildObserved counted a corroborated agy
+//    record as an alive-clean lane and fed panelStatus → panel-3lab BINDING returned PASS, BYPASSING the
+//    attestLane hard-fail (attestLane closed attestPanelRun, not THIS panelStatus path). FIX: buildObserved
+//    fail-closes the served-model-unverifiable lane (agy) via the SINGLE choke-point
+//    pv.servedModelUnverifiableFromRecord — the SAME predicate attestLane uses — so both readers fail-close on
+//    ONE root. Even a fully-corroborated agy record (fallback:false, output_digest, tool_id:agy, panel_run_id,
+//    AND served_default:true / attested_model_id=the CONTRACTED name) can never green the binding. ──
+const agyLive = lane({ laneId: "agy", provider: "antigravity", observedProvider: "antigravity", fallback: false, ok: true, verdict: "pass" });
+const agyRecordCorroborated = { role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", ok: true, fallback: false, output_digest: "d-agy", cmdline_checksum: "c-agy", panel_run_id: PRID, completed_at: now(), served_default: true, attested_model_id: "Gemini 3.1 Pro (High)" };
+test("R3-CRITICAL-02: a fully-corroborated agy record does NOT green the panel-3lab BINDING (served-model fail-close)", () => {
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyLive], { readLedger: () => [...ledgerClean, hunterRec, agyRecordCorroborated], sinceMs: 0, panelRunId: PRID });
+  assert.notEqual(g.binding.status, "PASS", `a corroborated agy record must NOT green the binding — agy has no server-origin served-model receipt: ${g.binding.reason}`);
+  assert.equal(g.binding.status, "BLOCKED-ON-OPERATOR", `agy is fail-closed (served-model unverifiable) so the binding blocks ONLY on agy (gpt+claude+hunter are clean): ${g.binding.reason}`);
+  assert.ok(/agy/.test(g.binding.reason), `the block must name the agy lane: ${g.binding.reason}`);
+  // NOT over-blocking: the FLOOR still passes (agy is not a required floor lane) — the fail-close is
+  // binding-specific, exactly like the attestLane hard-fail.
+  assert.equal(g.floor_pass, true, `the served-model fail-close must not touch the non-agy floor: ${g.floor.reason}`);
+});
+test("R3-CRITICAL-02: even a VALIDLY-SIGNED agy record on the LIVE path (requireSignature) does NOT green the BINDING", () => {
+  const signedLedger = [...ledgerClean, hunterRec, agyRecordCorroborated].map((r) => ({ ...r, attest_sig: signRecord(r) }));
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyLive], { readLedger: () => signedLedger, sinceMs: 0, panelRunId: PRID, requireSignature: true });
+  assert.notEqual(g.binding.status, "PASS", `a valid signature proves ORIGIN, not the served model — the agy lane must still fail-close: ${g.binding.reason}`);
+  assert.equal(g.binding.status, "BLOCKED-ON-OPERATOR", `served-model fail-close holds on the live signed path: ${g.binding.reason}`);
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [dispatch-review-panel-gate.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
