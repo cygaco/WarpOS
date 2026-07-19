@@ -61,7 +61,13 @@ const LEDGER_REF = /dispatch-completions|dispatchCompletionsFile/;
 // (b) capture the whole first-argument REGION (up to the first `)` or newline) so a nested ledger ref is
 // visible to LEDGER_REF. Deep multi-line / variable-indirection first-args remain the AST ceiling (named,
 // not ground): the leading-identifier correlation below still resolves the common assigned-var case.
-const RAW_WRITE_CALL = /\b(?:fs\.)?(?:promises\.|fsp\.)?(?:appendFile|writeFile)(?:Sync)?\s*\(\s*([^)\n]*)/g;
+//
+// R2 refinement (gauntlet round 2): the fs NAMESPACE is now REQUIRED (fs. / fs.promises. / fsp.), not
+// optional — the earlier optional `(?:fs\.)?` false-positived on bare application functions named
+// appendFile()/writeFile() that have nothing to do with fs. Also adds createWriteStream (another raw sink).
+// A DESTRUCTURED import (`const {appendFile}=require("fs"); appendFile(ledger,…)`) is the acknowledged AST
+// ceiling — a bare-call detector would re-introduce the false-positive class, so it is named, not ground.
+const RAW_WRITE_CALL = /\b(?:fs\.(?:promises\.)?|fsp\.)(?:appendFile|writeFile|createWriteStream)(?:Sync)?\s*\(\s*([^)\n]*)/g;
 
 function listJs(absDir) {
   const out = [];

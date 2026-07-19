@@ -171,3 +171,26 @@ test("H3 fix: an ASYNC fs.promises.appendFile to the ledger is caught (was a dif
   const res = scan(dir);
   assert.ok(res.violations.some((v) => /async-bypass\.js/.test(v.file)), "fs.promises.appendFile to the ledger must be flagged");
 });
+
+// ── H3/R2 (gauntlet round 2): fs-namespace required (no bare-function false-positive) + createWriteStream ──
+test("H3/R2: a bare appendFile(...) application function (no fs namespace) is NOT flagged (false-positive fixed)", () => {
+  const dir = tmpFixtureRoot("h3r2-bare");
+  write(
+    dir,
+    path.join("scripts", "dispatch", "unrelated-appendfile.js"),
+    `"use strict";\n// references the ledger name so the file IS scanned, but the write is to an fs-less app fn\nconst LEDGER = "dispatch-completions";\nfunction appendFile(buf, row) { buf.rows.push(row); return buf; }\nfunction use(b) { return appendFile(b, LEDGER); }\nmodule.exports = { appendFile, use };\n`,
+  );
+  const res = scan(dir);
+  assert.strictEqual(res.violations.some((v) => /unrelated-appendfile\.js/.test(v.file)), false, "a bare appendFile() app fn must NOT trip the guard");
+});
+
+test("H3/R2: fs.createWriteStream(ledger) is caught (another raw sink)", () => {
+  const dir = tmpFixtureRoot("h3r2-cws");
+  write(
+    dir,
+    path.join("scripts", "dispatch", "cws-bypass.js"),
+    `"use strict";\nconst fs = require("fs");\nconst { PATHS } = require("./lib/paths");\nfunction emit() {\n  const s = fs.createWriteStream(PATHS.dispatchCompletionsFile, { flags: "a" });\n  s.write("x");\n}\nmodule.exports = { emit };\n`,
+  );
+  const res = scan(dir);
+  assert.ok(res.violations.some((v) => /cws-bypass\.js/.test(v.file)), "fs.createWriteStream to the ledger must be flagged");
+});

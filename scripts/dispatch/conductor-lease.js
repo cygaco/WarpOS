@@ -60,18 +60,33 @@ function withMutationLock(spId, root, fn, opts = {}) {
   for (;;) {
     try {
       fd = fs.openSync(lp, "wx");
+      // C1/R2 fix: stamp the OWNER identity so a contender can tell a LIVE holder from a CRASHED one — the
+      // reclaim decision keys on the owner's liveness, never on mtime alone (mtime-only wrongly unlinked a
+      // live-but-paused mutator's lock, re-opening the exact TOCTOU the lock exists to close).
+      try { fs.writeSync(fd, JSON.stringify({ pid: process.pid, ts: Date.now() }) + "\n"); } catch { /* stamp best-effort */ }
       break;
     } catch (e) {
       if (!e || e.code !== "EEXIST") throw e;
-      // Held — reclaim it if the holder crashed (mtime past the stale window), else spin briefly.
+      // Held — reclaim ONLY if the owner is DEAD (a crashed holder). A live holder (paused past the TTL) is
+      // NEVER reclaimed; the contender waits or fails-contended, so it can never unlink a live owner's lock.
+      let ownerDead = false;
       try {
-        const st = fs.statSync(lp);
-        if (Date.now() - st.mtimeMs > MUTATION_LOCK_STALE_MS) {
-          fs.unlinkSync(lp);
-          continue;
+        const raw = fs.readFileSync(lp, "utf8").trim();
+        const owner = raw ? JSON.parse(raw) : null;
+        if (owner && Number.isFinite(owner.pid)) {
+          ownerDead = !pidAlive(owner.pid); // the load-bearing check: dead pid, not stale mtime
+        } else {
+          // Missing/torn owner stamp (a crash mid-write) — fall back to mtime staleness only for THIS
+          // unidentifiable lock (a genuinely-crashed holder), still bounded.
+          const st = fs.statSync(lp);
+          ownerDead = Date.now() - st.mtimeMs > MUTATION_LOCK_STALE_MS;
         }
       } catch {
-        continue; // lock vanished between open and stat — retry the create
+        continue; // lock vanished between open and read — retry the create
+      }
+      if (ownerDead) {
+        try { fs.unlinkSync(lp); } catch {}
+        continue;
       }
       if (Date.now() > deadline) return { ok: false, reason: "mutation-contended" };
       // Tiny synchronous spin — a lease mutation completes in microseconds; contention is rare + brief.

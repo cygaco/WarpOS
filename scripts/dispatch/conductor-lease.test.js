@@ -185,3 +185,34 @@ test("TEETH (C1): a superseded holder's release CANNOT delete the current lease 
   // B's lease + token survive intact.
   assert.strictEqual(lease.verifyToken(spId, b.token, { root }), true);
 });
+
+// ── C1/R2 (gauntlet round 2): mutation-lock reclaim keys on OWNER LIVENESS, never mtime alone ─────────
+test("TEETH (C1/R2): a LIVE owner's mutation lock is NOT reclaimed — a contender fails-contended, never unlinks it", () => {
+  const root = tmpRoot("c1r2-live");
+  const spId = "SP-C1R2-LIVE";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
+  // Stamp the lock with a LIVE pid (our own) + backdate its mtime WAY past the stale window.
+  fs.writeFileSync(mlp, JSON.stringify({ pid: process.pid, ts: Date.now() - (lease.STALE_AFTER_MS + 60000) }) + "\n");
+  const old = Date.now() - (24 * 60 * 60 * 1000);
+  fs.utimesSync(mlp, new Date(old), new Date(old)); // ancient mtime — mtime-only would have reclaimed it
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 40 });
+  assert.strictEqual(ran, false, "must NOT reclaim a live owner's lock even though its mtime is ancient");
+  assert.strictEqual(res.ok, false);
+  assert.strictEqual(res.reason, "mutation-contended");
+  assert.ok(fs.existsSync(mlp), "the live owner's lock must survive");
+});
+
+test("TEETH (C1/R2): a DEAD owner's mutation lock IS reclaimed (safe crashed-holder recovery)", () => {
+  const root = tmpRoot("c1r2-dead");
+  const spId = "SP-C1R2-DEAD";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = path.join(root, "conductor-leases", `${spId}.mutation.lock`);
+  // Stamp with a pid that does not exist (dead), fresh mtime — mtime-only would have WAITED; owner-liveness reclaims.
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now() }) + "\n");
+  let ran = false;
+  const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true, v: 42 }; }, { maxWaitMs: 200 });
+  assert.strictEqual(ran, true, "a dead owner's lock must be reclaimed so the mutator can proceed");
+  assert.deepStrictEqual(res, { ok: true, v: 42 });
+});
