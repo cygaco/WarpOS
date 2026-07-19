@@ -67,3 +67,25 @@
 - **AC-16** — Non-antigravity dispatch (openai/gemini/claude) argv is byte-identical to pre-change
   (the mapping is antigravity-only).
   *verified_by:* unit test diffs buildProviderArgv output for openai/gemini pre/post.
+- **AC-17** (added as-built — the layer-3 discovery) — cert-attest attests the canonical antigravity
+  SLUG (`gemini-3.1-pro-high`), not only the display name: `cert-attest#main` maps slug→display via
+  `catalog.agyModelName` before the served-model comparison, so a GENUINE authenticated serve does not
+  FALSE-RED. The id-mapping therefore has THREE sites (both `--model` args + this comparison), not two.
+  *verified_by:* the bidirectional layer-3 test (slug false-REDs vs agy's display-name serve label;
+  display name attests) + the live re-probe artifact (canonical slug → attested:true, 19-11-56Z).
+
+## Findings & residuals (as-built, 2026-07-19)
+
+1. **agy auth is LIVE** (proven this session): keyring re-auth (operator@example.com) + backend
+   serve of the contracted model. An earlier "auth dead" read was a self-inflicted cert-attest false-RED
+   (the layer-3 defect), retracted and fixed. The cert-attest record-trust choke-point (GATE-1 order-aware
+   + GATE-2 positive-proof) is SOUND — it correctly refused until the comparison target was right.
+2. **ED-060 close mechanism**: `ed060-sunset.js` resolves on `agyLive(support-matrix.status)`, not on a
+   ledger record. So (c) = the support-matrix flip (evidence_ref = the committed cert-attest artifact).
+3. **RESIDUAL — agy review-workload timeout (gates panel-3lab / ED-230, NOT ED-060 serve-liveness):** a
+   real agy security REVIEW (18KB prompt) TIMES OUT at agy's hardcoded `--print-timeout 90s` (thinking-
+   always-on; possibly compounded by the ~2/3 security-framing refusal) → no `fallback:false` review
+   record. So agy serve-liveness is proven but agy is NOT yet usable for real REVIEW workloads. Disposition
+   (A/B/C: honest-serve-only flip / print-timeout bump + real review record / defer) is operator-owned —
+   surfaced to lead + β. A support-matrix flip must NOT over-claim a working review lane (false-green a
+   kernel gate).
