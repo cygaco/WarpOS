@@ -22,11 +22,15 @@
  * green is this extraction's regression guard. The graph itself is role-binding.json; this module
  * never re-derives it.
  *
- * SCOPE LINE (Phase-2 vs Phase-3 — held): this resolver DERIVES + SCOPES + FAIL-CLOSES. The ACTIVE
- * `validated_workorder_or_cli` provenance validator (WorkOrder schema + authority check performed by
- * the trusted bridge) is ED-218 / Phase-3 — NOT built here. In Phase 2, "validated" = the trusted
- * bridge ASSERTS the channel/argv role; a dispatched worker presenting a top_level_session-only
- * source is a category-error BLOCK (role-binding.json N-5).
+ * SCOPE LINE (Phase-2 vs Phase-3): this resolver DERIVES + SCOPES + FAIL-CLOSES. ED-218 ACTIVE (SP-
+ * 20260718-005 Phase 3, SEC-1): `deriveBinding` now takes an OPTIONAL `workorder`. When ABSENT (every
+ * Phase-2 call site + every pre-Phase-3 fixture/test — the default), `validated_workorder_or_cli_binding`
+ * is channel-asserted `true`, UNCHANGED byte-for-byte from Phase 2 (backward-compatible by construction).
+ * When a WorkOrder IS presented, the flag is TRUE ONLY when `scripts/dispatch/workorder-validator.js#validate`
+ * PASSES (schema + same-session authority/provenance) — a self-asserted/unvalidated WorkOrder resolves
+ * through the SAME "unbound" precedence-graph path a missing role does (worker_default_when_unbound
+ * governs, i.e. BLOCK under FAIL_CLOSED). A dispatched worker presenting a top_level_session-only source
+ * is a category-error BLOCK regardless (role-binding.json N-5).
  */
 const fs = require("fs");
 const path = require("path");
@@ -282,10 +286,14 @@ function validateRoleBindingValues(rb) {
  * must be REFUSED (never spawn an unbound worker as President). NOTHING the worker can write is ever
  * read here — that IS the derived-not-settable guarantee. PURE given its seams (opts.rb / opts.knownRoles).
  *
- * @param {{channel:string, role?:string}} spawn  channel ∈ DISPATCH_CHANNELS ∪ TOP_LEVEL_CHANNELS
- * @param {object} [opts] { rb, kernelDir, knownRoles } injectable seams for the bite-test
+ * @param {{channel:string, role?:string, workorder?:object}} spawn  channel ∈ DISPATCH_CHANNELS ∪
+ *   TOP_LEVEL_CHANNELS; `workorder` is OPTIONAL (ED-218 ACTIVE, SP-20260718-005 SEC-1) — absent means
+ *   Phase-2 channel-asserted behavior, unchanged.
+ * @param {object} [opts] { rb, kernelDir, knownRoles, workorderValidate, workorderOpts } injectable
+ *   seams for the bite-test. `workorderValidate` overrides the default `workorder-validator#validate`
+ *   (mirrors the `rb`/`knownRoles` injection pattern already used here).
  */
-function deriveBinding({ channel, role } = {}, opts = {}) {
+function deriveBinding({ channel, role, workorder } = {}, opts = {}) {
   // `failClosed` (gauntlet round 1, SR-ID-001/BE-CQ-001/002): a `failClosed:true` ok:false is a
   // TRUSTED-KERNEL INTEGRITY failure — the bridge MUST refuse the spawn (never launch an unbound worker).
   // A `failClosed:false` ok:false is a BENIGN non-escalation signal (an unrecognized non-President role):
@@ -347,16 +355,47 @@ function deriveBinding({ channel, role } = {}, opts = {}) {
         failClosed: false,
         reason: `bound role '${role}' is not a known role-registry id (ED-220; benign — dispatched_worker, never President)`,
       };
+    // ED-218 ACTIVE (SP-20260718-005 SEC-1): validated_workorder_or_cli_binding is TRUE either (a) the
+    // Phase-2 channel-asserted default when NO WorkOrder is presented (backward-compatible; every
+    // pre-Phase-3 caller/fixture never passes `workorder` and hits this branch unchanged), or (b) ONLY
+    // when a PRESENTED WorkOrder passes workorder-validator#validate (schema + same-session authority/
+    // provenance) — a failing/forged WorkOrder falls to `false`, which evaluateRoleBinding treats
+    // identically to "not presented" (the unbound path, worker_default_when_unbound governs = BLOCK).
+    let validatedWorkorderOrCli = true;
+    let workorderFailReason = null;
+    if (workorder !== undefined && workorder !== null) {
+      try {
+        const validateWorkOrder = opts.workorderValidate || require("./workorder-validator").validate;
+        const wv = validateWorkOrder(workorder, opts.workorderOpts || {});
+        validatedWorkorderOrCli = !!(wv && wv.ok);
+        if (!validatedWorkorderOrCli) workorderFailReason = (wv && wv.reason) || "workorder validation failed (validator returned no reason)";
+      } catch (e) {
+        validatedWorkorderOrCli = false;
+        workorderFailReason = `workorder-validator unavailable (fail-closed): ${e.message}`;
+      }
+    }
+
     // Resolve through the SAME fixture-proven graph the conformance fixtures prove.
-    const out = evaluateRoleBinding({ actor_kind, validated_workorder_or_cli_binding: true }, rb);
+    const out = evaluateRoleBinding({ actor_kind, validated_workorder_or_cli_binding: validatedWorkorderOrCli }, rb);
     if (out.outcome !== "PASS")
-      return { actor_kind, boundRole: null, ok: false, failClosed: true, reason: `precedence graph did not resolve dispatched worker: ${out.reason}` };
+      return {
+        actor_kind,
+        boundRole: null,
+        ok: false,
+        failClosed: true,
+        reason: workorderFailReason
+          ? `ED-218 WorkOrder validation failed (fail-closed): ${workorderFailReason}`
+          : `precedence graph did not resolve dispatched worker: ${out.reason}`,
+      };
     return {
       actor_kind,
       boundRole: role,
       ok: true,
       failClosed: false,
-      reason: "bound via validated_workorder_or_cli (channel-asserted argv role); derived-not-settable, ambient text inert (CORE-3)",
+      reason:
+        workorder !== undefined && workorder !== null
+          ? "bound via validated_workorder_or_cli (ED-218 ACTIVE: WorkOrder schema + same-session provenance validated); derived-not-settable, ambient text inert (CORE-3)"
+          : "bound via validated_workorder_or_cli (channel-asserted argv role); derived-not-settable, ambient text inert (CORE-3)",
     };
   }
 
