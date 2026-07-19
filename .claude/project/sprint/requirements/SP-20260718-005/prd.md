@@ -20,6 +20,9 @@ ED-069 (started-row) + ED-070 (quota field) are wired into ALL dispatch writers 
 ## R-6 — Completions are reliably signaled (F1)
 The teammate background-dispatch re-wake seam dropped 9+ completions this session. A robust completion signal + the fire-and-poll doctrine is load-bearing for the dispatch control plane. Process-absence is NEVER the completion signal.
 
+## R-7 — A resuming conductor has an explicit admission protocol (product-lead REVISE)
+The lease + ledger primitives are not enough on their own — the resume JTBD needs an ADMISSION protocol: cold acquire (no prior lease → clean start), warm token validation (a resumed holder validates its inherited fencing token), holder/supersession refusal (a superseded session is refused + surfaced, never silently proceeding), ledger + checkpoint visibility on resume, and a precise permitted-next-action. The lease itself needs safe release / renew / expiry-reclaim so a crashed holder does not deadlock the SP-id or force an unsafe manual takeover. This is the FTUE that makes R-3 usable and prevents a resumed conductor from following the wrong workflow (the sprint-state-contradiction risk product-lead flagged, now reconciled in current.yaml/progress.yaml).
+
 ## Non-goals (do-not-reopen — carried, β-confirmed)
 - The derived-not-settable role-binding spine (SP-004) is REUSED, not rebuilt.
 - The same-session-vs-cross-session signature boundary + the R3 cross-session false-RED disposition stand.

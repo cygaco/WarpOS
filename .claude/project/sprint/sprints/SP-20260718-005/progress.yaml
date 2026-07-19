@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260718-005"
-updated_at: "2026-07-19T04:27:45.231Z"
-current_phase: idle
-current_command: none
+updated_at: "2026-07-19T05:30:00.000Z"
+current_phase: design
+current_command: "sprint:full --epsilon (Phase 3 execution)"
 current_ticket: null
-current_task: null
+current_task: "design-complete; entering build (backend-first)"
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+status: in_progress
+last_completed_step: "design_complete (record-trust gate FIRED; beta design->build DECIDE B/0.90 PROCEED)"
+next_action: "BUILD — dispatch backend-builder then security-builder per build_spec.md waves. Do NOT re-run /sprint:plan."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "resume BUILD per build_spec.md (backend-first); consume the folded beta verdicts; do NOT re-run /sprint:plan or re-consult plan->design"
+resume_notes: "Phase 3 HIGH-risk. Design complete (Epsilon, 2026-07-19): prd/build_spec/acceptance-criteria/qa-plan + record-trust gate (8 surfaces, 10+ falsifiers) FIRED. beta cleared design->build (DECIDE B/0.90). Next: BUILD."
 safe_to_continue: true
 stop_reason: null

@@ -1,16 +1,16 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260718-005"
 title: "Phase 3 — WorkOrder / ResultEnvelope (adapt packet 06 onto the EXISTING dispatch ledger: schema version + correlation id + effective role/provider/model + immutable base + result-tree hash + capabilities/paths + retry lineage + evidence refs + 5 terminal states; failure-classification + reaper signal-ranking; ED-069 started-row + ED-070 quota + ED-071 stall fold-back; sprint leases + do-not-reopen ledger [packet 07 / ED-228]; ED-218 workorder provenance validator; ED-232 cross-session key-distribution; ED-221 Option-2 impl; Unit-B instruction-projection follow-up)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+objective: "Adapt packet-06 WorkOrder/ResultEnvelope onto the EXISTING dispatch ledger so the propose->dispatch->gauntlet->acceptance->integration loop is auditable + un-forgeable end-to-end (trusted AcceptanceRecord authorizes integration; a provider `success` never does)."
+status: in_progress
 created_at: "2026-07-19T04:27:45.231Z"
-updated_at: "2026-07-19T04:27:45.231Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-07-19T05:30:00.000Z"
+source_request: "WARPOS 1.0 Phase 3 (RATIFIED-PLAN); executed via /session:resume 2026-07-19 work order to Epsilon."
+interpreted_intent: "WorkOrder/ResultEnvelope/AcceptanceRecord + conductor-lease + do-not-reopen on the existing ledger; record-trust gate front-loaded at design."
+plan_contract: ".claude/project/sprint/sprints/SP-20260718-005/plan.md"
+risk_level: high
 approval_state: none_required
-current_phase: idle
+current_phase: design
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -38,16 +38,18 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
+  prd: ".claude/project/sprint/requirements/SP-20260718-005/prd.md"
   high_level_stories: null
   granular_stories: null
   copy: null
   inputs: null
   trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
+  acceptance_criteria: ".claude/project/sprint/requirements/SP-20260718-005/acceptance-criteria.md"
+  qa_plan: ".claude/project/sprint/requirements/SP-20260718-005/qa-plan.md"
+  redteam_plan: ".claude/project/sprint/requirements/SP-20260718-005/qa-plan.md"
   release_plan: null
+  build_spec: ".claude/project/sprint/requirements/SP-20260718-005/build_spec.md"
+  record_trust_gate: ".claude/project/sprint/sprints/SP-20260718-005/record-trust-gate.manifest.json"
 checks:
   lint: { status: not_run, last_run: null, evidence: "" }
   typecheck: { status: not_run, last_run: null, evidence: "" }
@@ -74,10 +76,12 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
-  active_files: []
+  last_checkpoint: "design-complete; record-trust gate FIRED (design-exit PASS); beta design->build DECIDE B/0.90 PROCEED"
+  resume_command: "resume BUILD — dispatch backend-builder then security-builder per build_spec.md (backend-first); do NOT re-run /sprint:plan or re-consult plan->design"
+  resume_summary: "Phase 3 HIGH-risk, parked at plan->design then executed to design-complete by Epsilon (2026-07-19). Requirements + record-trust gate authored; beta cleared design->build. Next: BUILD (see build_spec.md waves)."
+  active_files:
+    - ".claude/project/sprint/requirements/SP-20260718-005/build_spec.md"
+    - ".claude/project/sprint/sprints/SP-20260718-005/record-trust-gate.manifest.json"
   dirty_state: false
   blockers: []
   safe_to_continue: true

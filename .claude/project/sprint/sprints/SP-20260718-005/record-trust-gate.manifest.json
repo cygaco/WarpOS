@@ -76,7 +76,9 @@
         "scripts/dispatch/falsifiers/target-mismatch.falsifier.test.js",
         "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js",
         "scripts/dispatch/falsifiers/acceptance-choke-point-bypass.falsifier.test.js",
-        "scripts/dispatch/falsifiers/lease-x-acceptance.falsifier.test.js"
+        "scripts/dispatch/falsifiers/lease-x-acceptance.falsifier.test.js",
+        "scripts/dispatch/falsifiers/forged-acceptance-record.falsifier.test.js",
+        "scripts/dispatch/falsifiers/validation-to-merge-race.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/acceptance-positive-companion.test.js"
