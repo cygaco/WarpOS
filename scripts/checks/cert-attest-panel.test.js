@@ -13,7 +13,12 @@ const assert = require("assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+// ORIGIN-PROOF (ED-231 / ADR-0025): a TEST secret so the signer + verifier share it without touching the real
+// one; set BEFORE requiring cert-attest so attest-signing resolves it. A REAL record IS signed by the trusted
+// writer — rec() signs; the forgery teeth build UNSIGNED/bad-MAC records to prove the fail-closed.
+process.env.WARPOS_ATTEST_SECRET_FILE = path.join(os.tmpdir(), `attest-secret-panel-test-${process.pid}-${Date.now()}`);
 const { attestLane, attestPanelRun, readLedgerRecords } = require("./cert-attest");
+const { signRecord } = require("../dispatch/attest-signing");
 
 let passed = 0;
 const failures = [];
@@ -30,7 +35,11 @@ const S = "SP-TEST-001", R = "panel-run-abc";
 const SHA = "abc1234";
 
 // same-run REAL records: bound to the run IDENTITY (panel_run_id, SR-011) + the code_sha executed (SR-013).
-const rec = (o) => ({ sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, ...o });
+// rec builds a same-run record AND signs it (ED-231 origin-proof) — a REAL record is signed by the trusted
+// writer. A record whose SIGNED field is later spread-mutated invalidates the sig (correct: a tampered record
+// must not attest); tests that mutate a signed field then expect ATTEST must re-sign via reSign() below.
+const rec = (o) => { const r = { sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, ...o }; r.attest_sig = signRecord(r); return r; };
+const reSign = (r) => { const { attest_sig, ...rest } = r; return { ...rest, attest_sig: signRecord(rest) }; };
 const gptOk = rec({ role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-gpt", cmdline_checksum: "c-gpt" });
 const agyOk = rec({ role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-agy", cmdline_checksum: "c-agy" });
 // The hunter record carries the sanctioned ROLE identity (β#3/SR-005) — not a bare security-reviewer.
@@ -233,8 +242,38 @@ test("SR-013: a record with NO cmdline_checksum (no invocation digest) → NOT a
   assert.equal(attestLane(LANES.gpt, [noInvGpt], { runId: R, codeSha: SHA }).attested, false);
 });
 
+// ═══ ED-231 ORIGIN-PROOF forgery teeth (α ruling option A; ADR-0025) — the permanent negative fixtures that
+//     replace the pre-ED-231 field-only trust. These are THE ship gate: a hand-authored/forged record must
+//     FAIL-CLOSED; only a record SIGNED by the trusted per-session writer attests. ═══
+// The exact reproduced attack: a COMPLETE forged 3-lab set with all the right fields but NO valid signature.
+const forgedHunter = { sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, role: "security_claude_hunter", provider: "claude", shape: "in-process-agent", evidence_sha: "e-forge", cmdline_checksum: "c-forge", verdict: "pass" };
+const forgedGpt = { sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, role: "security-reviewer", provider: "openai", tool_id: "codex", shape: "subprocess-cross-provider", output_digest: "d-forge", cmdline_checksum: "cc-forge" };
+const forgedAgy = { sprint_id: S, run_id: R, panel_run_id: R, code_sha: SHA, ok: true, fallback: false, role: "security-reviewer", provider: "antigravity", tool_id: "agy", shape: "subprocess-cross-provider", output_digest: "d-forge2", cmdline_checksum: "cc-forge2" };
+test("ED-231: an UNSIGNED forged 3-lab set (the reproduced attack) does NOT attest — fail-closed", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [forgedGpt, forgedAgy, forgedHunter] });
+  assert.equal(out.ok, false, "a hand-authored (unsigned) record set must NOT attest — origin-proof closes the forgery");
+});
+test("ED-231: a WRONG-MAC forged set does NOT attest — fail-closed", () => {
+  const bad = [forgedGpt, forgedAgy, forgedHunter].map((r) => ({ ...r, attest_sig: "0".repeat(64) }));
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: bad });
+  assert.equal(out.ok, false, "an invalid signature must NOT attest");
+});
+test("ED-231: a single hand-authored hunter record (right fields, no sig) does NOT attest its lane", () => {
+  const out = attestLane(LANES.claude, [forgedHunter], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "an unsigned hunter record is a forgery — the in-process lane must reject it");
+});
+test("ED-231 no over-block: a REAL SIGNED 3-lab set STILL attests (origin-proof is not a blanket block)", () => {
+  const out = attestPanelRun({ runId: R, sprintId: S, codeSha: SHA, profile: { name: "panel-3lab" }, lanes: [LANES.gpt, LANES.claude, LANES.agy], records: [gptOk, agyOk, claudeHunterOk] });
+  assert.ok(out.ok, `a properly signed set must still attest: ${out.reason}`);
+});
+test("ED-231: tampering a SIGNED field (role) after signing invalidates the signature → not attested", () => {
+  const tampered = { ...claudeHunterOk, role: "security-reviewer" }; // mutate a signed field, keep the old sig
+  const out = attestLane(LANES.claude, [tampered], { runId: R, sprintId: S, codeSha: SHA, profileName: "panel-3lab" });
+  assert.equal(out.attested, false, "a tampered signed field must break the signature and fail-closed");
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [cert-attest-panel.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [cert-attest-panel.test] ${passed} passed (T5 claimed-agy/returned-claude FAILS; wrapper claim != proof)\n`);
+process.stdout.write(`OK   [cert-attest-panel.test] ${passed} passed (T5 wrapper-claim != proof; ED-231 origin-proof: forged/unsigned/wrong-mac/tampered → fail-closed, signed → attests)\n`);

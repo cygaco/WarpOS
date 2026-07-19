@@ -367,7 +367,7 @@ function telemetry() {
 function recordAgentDispatch(
   agentPlan,
   sprintId,
-  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime" } = {},
+  { ok, promptBytes = 0, evidenceBytes, evidenceSha, elapsedMs = 0, via = "epsilon-runtime", verdict, shape = "in-process-agent" } = {},
 ) {
   // FAKE-GREEN GUARD: refuse to write a completion record without an EXPLICIT boolean
   // outcome from a real spawn. The prior `{ ok = true }` default let conductStep stamp
@@ -402,11 +402,15 @@ function recordAgentDispatch(
     stderr_bytes: 0,
     fallback: false,
     ok,
-    // SR-016 sweep: the in-process record carries its STRUCTURAL channel shape, exactly as the subprocess
-    // wrappers do (dispatch-agent → subprocess-cross-provider, dispatch-claude → subprocess-claude). This
-    // is the non-settable identity the panel hunter attestation keys on — a subprocess record (shape
-    // subprocess-claude) can never masquerade as the in-process hunter by setting a `via` label.
-    shape: "in-process-agent",
+    // SR-016 sweep: the record carries its STRUCTURAL channel shape, exactly as the subprocess wrappers do
+    // (dispatch-agent → subprocess-cross-provider, dispatch-claude → subprocess-claude). This is the
+    // non-settable identity the panel hunter attestation keys on. `shape` is WRITER-DETERMINED BY ROUTE
+    // (this internal function's two trusted call sites: the in-process path defaults to "in-process-agent";
+    // the CLAUDE_RAW `claude -p --agent` path passes "subprocess-claude" — CLAUDE-RAW-SHAPE-STAMP hunter LOW,
+    // channel-faithful). It is NOT settable from a dispatch payload — a subprocess record can never
+    // masquerade as the in-process hunter (isHunterRecord also requires role === security_claude_hunter,
+    // which no CLAUDE_RAW tool role carries).
+    shape,
     // T-303 (N8): run-context for §17.4 coverage-gate run-scoped filtering.
     // run_id from env (set by full.js or inherited — null when dispatched standalone).
     // phase_id derived from agentPlan.step (authoritative for in-process records;
@@ -415,6 +419,13 @@ function recordAgentDispatch(
     // sprint_id: use the explicit sprintId arg (reliable even when env not set);
     //   the runContext() single-source reads env, but the arg is always present here.
     run_id: process.env.WARPOS_RUN_ID || null,
+    // SAME-RUN panel correlation (SP-20260718-003 Unit H activation): the in-process hunter record MUST carry
+    // the panel_run_id the runner minted (WARPOS_PANEL_RUN_ID) + the code_sha it ran against (git HEAD), exactly
+    // as dispatch-agent stamps its CLI records — otherwise applyPanelGate / attestPanelRun cannot same-run
+    // correlate the hunter lane into a panel-3lab attestation (ADR-0022 teeth-5: binding-green needs one REAL
+    // same-run hunter record). Both are null when the hunter is dispatched outside a panel run (standalone).
+    panel_run_id: process.env.WARPOS_PANEL_RUN_ID || null,
+    code_sha: (() => { try { return require("../dispatch/git-head").readGitHead(agentRoot()) || null; } catch { return null; } })(),
     phase_id: agentPlan.step,
     // ε-conductor provenance (extra fields are ignored by gauntlet-verify's typed check):
     sprint_id: sprintId,
@@ -423,6 +434,10 @@ function recordAgentDispatch(
     route: agentPlan.route,
     // in-process evidence binding (Increment B): sha256 of the Agent-tool return that backs ok.
     ...(evidenceSha ? { evidence_sha: evidenceSha } : {}),
+    // SR-019 (ADR-0022): the REVIEW verdict (pass/fail/warn) extracted from the Agent-tool return, so the
+    // panel gate can bind the binding claude lane to the HUNTER's verdict. Only stamped when a real verdict
+    // was parsed from the evidence — an absent verdict leaves the field off → the gate treats it as BLOCK.
+    ...(verdict ? { verdict } : {}),
   });
   return { recorded: true, dispatch_id: dispatchId };
 }
@@ -647,7 +662,11 @@ function spawnAgent(agentPlan, sprintId, opts = {}) {
   const r = run(bin, [...binArgs, "-p", "--agent", agentPlan.role], { ...common, input: prompt, timeout: rawBaseMs + PARENT_GRACE_MS });
   const out = interpretSpawn(r, agentPlan, /*recordedByCli=*/ false);
   if (out.spawned) {
-    recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt) });
+    // CLAUDE-RAW-SHAPE-STAMP (hunter LOW, channel-faithful): a `claude -p --agent` raw dispatch is a
+    // SUBPROCESS-claude channel, not in-process — stamp its true channel shape (the record can never be
+    // mistaken for the in-process hunter; role != security_claude_hunter + no evidence digest already
+    // exclude it — this is faithfulness/defense-in-depth, not a fix for an exploitable path).
+    recordAgentDispatch(agentPlan, sprintId, { ok: out.ok, promptBytes: Buffer.byteLength(prompt), shape: "subprocess-claude" });
     out.recorded = true;
   }
   return out;
@@ -690,12 +709,27 @@ function recordInProcessCompletion(agentPlan, sprintId, { evidenceFile, elapsedM
   const evidenceBytes = buf.length;
   const evidenceSha = crypto.createHash("sha256").update(buf).digest("hex");
   const ok = evidenceBytes > 0; // 0-byte return = reap (ED-018 analog), NOT a success
+  // SR-019 (ADR-0022): extract the hunter's REVIEW verdict from the Agent-tool return so the panel gate
+  // can bind the binding claude lane to the HUNTER's verdict (dispatch-review#applyPanelGate). The evidence
+  // is the hunter's ReviewResult JSON; read its top-level `verdict`. Fail-CLOSED: a non-JSON return or an
+  // absent/invalid verdict leaves `verdict` undefined → the record carries no verdict → the gate BLOCKS the
+  // hunter lane (a hunter that produced no parseable verdict must never read as a pass). `ok` (did it RUN)
+  // stays independent of the verdict (did it PASS) — a hunter that ran and FAILED is ok:true + verdict:fail.
+  let verdict;
+  try {
+    const parsed = JSON.parse(buf.toString("utf8"));
+    const v = parsed && typeof parsed.verdict === "string" ? parsed.verdict.toLowerCase() : null;
+    if (v === "pass" || v === "fail" || v === "warn") verdict = v;
+  } catch {
+    /* non-JSON evidence → no verdict → the panel gate treats the hunter lane as BLOCK (fail-closed) */
+  }
   const result = recordAgentDispatch(agentPlan, sprintId, {
     ok,
     evidenceBytes,
     evidenceSha,
     elapsedMs,
     via: "epsilon-agent",
+    verdict,
   });
   // Surface the DERIVED outcome so callers (CLI + tests) see what ok was bound to — proves
   // ok came from the evidence bytes, not an assertion.

@@ -21,7 +21,7 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const { harness, sealedDir } = require("../checks/lib/fixture-harness");
-const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, PROJECT_ROOT } = require("./safe-spawn");
+const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen } = require("./safe-spawn");
 
 // Synchronous, event-loop-free sleep so a process-liveness poll can block inside a
 // synchronous h.test without a foreground shell `sleep`. The detached descendants
@@ -53,11 +53,22 @@ h.violation("agy multi-line in --model rejected (carve-out is -p only)", () =>
 // (c) refused: a newline to a DIFFERENT tool (codex -m) is not carved out — agy-only.
 h.violation("codex -m multi-line rejected (carve-out is agy-only)", () =>
   assertArgs("codex", ["exec", "-m", AGY_MULTILINE, "-"]));
-// (d) refused: agy `-p` still rejects every OTHER injection metachar (backtick / pipe).
-h.violation("agy -p with a backtick still rejected (only newline is carved out)", () =>
-  assertArgs("agy", ["-p", "hi `whoami`"]));
-h.violation("agy -p with a pipe still rejected", () =>
-  assertArgs("agy", ["-p", "a | b"]));
+// (d) (b) CARVE-OUT (β DECIDE B/0.90, ADR-0020-amend, RIDER-4): agy `-p` now ACCEPTS the full code-review
+// char set — under shell:false + native-exe + a discrete-argv element (RIDER-3) the shell-injection premise
+// is void, so backtick / pipe / $ / ; / < > / " / % / ^ / & in a code payload are accepted for review. Scoped
+// to agy `-p` ONLY (the (d2) block below proves every OTHER tool/slot still refuses them — denylist intact).
+h.pass("agy -p code payload with backtick+pipe ACCEPTED (b carve-out — shell:false ⇒ metachars inert)", () =>
+  assertArgs("agy", ["-p", "review: `whoami` && cat a|b; echo $HOME > out"]));
+h.pass("agy -p full code payload ACCEPTED (RIDER-4 fixture i)", () =>
+  assertArgs("agy", ["--model", "gemini-3.1-pro-high", "-p", 'function f(x){return `${x}`&&x>0||x<1;} // $VAR, a|b, c;d, e^f, "q", 100%']));
+// RIDER-4 fixture (ii): NUL is STILL refused even in the agy -p code slot (REG-001 — it truncates the arg).
+h.violation("agy -p NUL still refused (REG-001, the ONE char refused in the code slot)", () =>
+  assertArgs("agy", ["-p", "bad" + String.fromCharCode(0) + "payload"]));
+// RIDER-4 fixture (v) / RIDER-2: a LEADING-DASH payload is ACCEPTED — structurally bound as -p's discrete-argv
+// VALUE (consumed as the flag value at assertArgs, never parsed as a flag), so a real diff / `-webkit-` /
+// flag-snippet review is NOT silently dropped (a false-BLOCK there would itself be a security-lane hole).
+h.pass("agy -p leading-dash payload ACCEPTED, not silently dropped (RIDER-2 / RIDER-4 v)", () =>
+  assertArgs("agy", ["--model", "gemini-3.1-pro-high", "-p", "-webkit-box; - removed diff line; --flag in a snippet"]));
 // (d2) β item-2 property 4: the newline carve-out is CROSS-TOOL scoped — the same multi-line value
 // refuses in EVERY other tool/slot: gemini -p, codex -c, agy -m (short form), and an agy positional.
 h.violation("gemini -p multi-line rejected (carve-out is agy-only, not gemini)", () =>
@@ -68,6 +79,19 @@ h.violation("agy -m (short form) multi-line rejected (only -p is carved out)", (
   assertArgs("agy", ["-m", AGY_MULTILINE, "-p", "hi"]));
 h.violation("agy positional multi-line rejected (agy takes no positionals; not the -p slot)", () =>
   assertArgs("agy", ["-p", "hi", AGY_MULTILINE]));
+// (d3) RIDER-1 (β, ADR-0020-amend) — the ASSEMBLED-command-line bound, BIDIRECTIONAL. A real code payload
+// UNDER the bound passes; an oversize payload is OVER the bound → safeSpawnSync returns a NAMED cmdline_oversize
+// (BLOCKED, never truncate-and-send). Tested via the pure exported helper so it is env-independent (no spawn).
+h.test("RIDER-1: a normal agy -p code payload is UNDER the assembled-cmdline bound", () => {
+  const payload = "function auth(req){ return verify(`${req.token}`) && !req.expired; } // ~2KB review payload " + "x".repeat(2000);
+  assert.ok(assembledCmdlineLen("C:/agy/bin/agy.exe", ["--model", "gemini-3.1-pro-high", "--print-timeout", "90s", "-p", payload]) < CMDLINE_MAX,
+    "a ~2KB code payload must be under the bound (real reviews must go through)");
+});
+h.test("RIDER-1: an OVERSIZE agy -p payload is OVER the bound → BLOCKED-oversize, never truncated", () => {
+  const oversize = "x".repeat(CMDLINE_MAX + 500);
+  assert.ok(assembledCmdlineLen("C:/agy/bin/agy.exe", ["--model", "gemini-3.1-pro-high", "-p", oversize]) > CMDLINE_MAX,
+    "an oversize payload must exceed the bound so safeSpawnSync BLOCKS it (never truncate-and-send)");
+});
 // (e) refused: a .cmd/.bat SHIM agy is refused in safeSpawnSync (native-exe only — cmd.exe /c would
 // reparse the newline). The native-exe half of the allowlist-of-shape.
 h.failClosed("agy .cmd-shim refused (native-exe only carve-out)", () => {

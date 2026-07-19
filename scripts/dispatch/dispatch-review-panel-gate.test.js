@@ -39,7 +39,9 @@ const ledgerClean = [
 ];
 const ctxClean = { readLedger: () => ledgerClean, sinceMs: 0, panelRunId: PRID };
 // The BINDING panel-3lab claude lane is the in-process hunter — a distinct record the runner never fires.
-const hunterRec = { role: "security_claude_hunter", provider: "claude", shape: "in-process-agent", ok: true, fallback: false, output_digest: "d-hunter", panel_run_id: PRID, completed_at: now() };
+// SR-019 (ADR-0022): the hunter record now carries the REVIEW `verdict` (pass/fail/warn); the binding claude
+// lane binds to IT, never the floor subprocess pass. A passing hunter must stamp verdict:"pass".
+const hunterRec = { role: "security_claude_hunter", provider: "claude", shape: "in-process-agent", ok: true, fallback: false, verdict: "pass", output_digest: "d-hunter", panel_run_id: PRID, completed_at: now() };
 
 // ── role scoping ──
 test("isSecurityPanelRole: only security-reviewer is the panel role", () => {
@@ -73,6 +75,20 @@ test("SR-015: WITH a hunter record, the binding claude lane is alive → 3lab BL
   const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => [...ledgerClean, hunterRec], sinceMs: 0, panelRunId: PRID });
   assert.equal(g.floor_pass, true, "floor still passes on the subprocess-claude lane");
   assert.equal(g.binding.status, "BLOCKED-ON-OPERATOR", `with the hunter present, only agy blocks 3lab: ${g.binding.reason}`);
+});
+// ── SR-019 (ADR-0022) TEETH: the binding claude lane binds to the HUNTER's verdict, fail-closed. ──
+test("SR-019: a hunter record with NO verdict → binding claude BLOCKS (not only-agy) — missing verdict is not a pass", () => {
+  const noVerdictHunter = { ...hunterRec }; delete noVerdictHunter.verdict;
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => [...ledgerClean, noVerdictHunter], sinceMs: 0, panelRunId: PRID });
+  assert.notEqual(g.binding.status, "PASS");
+  // claude is now ALSO blocked (verdict→error), so it is not the only-agy BLOCKED-ON-OPERATOR case
+  assert.ok(/claude/.test(g.binding.reason), `a verdict-less hunter must BLOCK the binding claude lane, not read as pass: ${g.binding.reason}`);
+});
+test("SR-019: a hunter record with verdict:'fail' → binding claude BLOCKS (a hunter FAIL binds)", () => {
+  const failHunter = { ...hunterRec, verdict: "fail" };
+  const g = applyPanelGate(panelLanes, [gptClean, claudeClean, agyDown], { readLedger: () => [...ledgerClean, failHunter], sinceMs: 0, panelRunId: PRID });
+  assert.notEqual(g.binding.status, "PASS", "a hunter FAIL can never let the binding claude lane pass");
+  assert.ok(/claude/.test(g.binding.reason), `hunter-fail must bind to the claude lane: ${g.binding.reason}`);
 });
 test("SR-015 (condition 2): a subprocess-claude record LABELED as the hunter role does NOT satisfy the binding (shape mismatch)", () => {
   // even if a subprocess record CLAIMS role security_claude_hunter, its shape is subprocess-claude, not
@@ -164,8 +180,34 @@ test("QA-010: ANY non-module-absent loader error (syntax/parse) → fail-closed,
   assert.equal(panelLoaderFailClosed("frontend-reviewer", parseErr), true, "a real loader error is not the additive-absent case");
 });
 
+// ── BE-CQ-001 (backend-reviewer HIGH): mergeLanes fail-closes an UNKNOWN verdict — a hallucinated/malformed
+//    value ("banana") can NEVER merge to clean/pass. verdictOf allowlists the parsed verdict too. ──
+{
+  const dr = require("../dispatch-review");
+  test("BE-CQ-001: mergeLanes treats an unknown verdict ('banana') as NOT clean (merges to error)", () => {
+    const m = dr.mergeLanes("security-reviewer", [
+      { pass: "primary", provider: "antigravity", ok: true, verdict: "banana", laneId: "agy" },
+      { pass: "second_pass", provider: "openai", ok: true, verdict: "banana", laneId: "gpt" },
+    ]);
+    assert.equal(m.ok, false, "an unrecognized verdict must not merge to clean/pass");
+    assert.equal(m.mergedVerdict, "error", "an unrecognized verdict merges to error (fail-closed)");
+  });
+  test("BE-CQ-001 no over-block: two real passes still merge clean", () => {
+    const m = dr.mergeLanes("security-reviewer", [
+      { provider: "openai", ok: true, verdict: "pass", laneId: "gpt" },
+      { provider: "claude", ok: true, verdict: "pass", laneId: "claude" },
+    ]);
+    assert.equal(m.ok, true, "two clean passes must merge clean");
+  });
+  test("BE-CQ-001: verdictOf allowlists the parsed verdict (unknown → error)", () => {
+    assert.equal(dr.verdictOf({ parsed: { verdict: "banana" } }), "error", "an unknown parsed verdict must normalize to error");
+    assert.equal(dr.verdictOf({ parsed: { verdict: "PASS" } }), "pass", "a real pass verdict is preserved");
+    assert.equal(dr.verdictOf({ parsed: { verdict: "fail" } }), "fail", "a real fail verdict is preserved");
+  });
+}
+
 if (failures.length) {
   process.stderr.write(`FAIL [dispatch-review-panel-gate.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [dispatch-review-panel-gate.test] ${passed} passed (C1 masquerade blocks; R2-B validate-first fail-closed; R2-C ledger-bound, envelope != attestation)\n`);
+process.stdout.write(`OK   [dispatch-review-panel-gate.test] ${passed} passed (C1 masquerade blocks; R2-B validate-first fail-closed; R2-C ledger-bound; BE-CQ-001 verdict allowlist)\n`);

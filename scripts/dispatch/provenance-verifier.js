@@ -56,6 +56,18 @@ function isHunterRecord(r) {
   return !!r && r.provider === "claude" && r.shape === IN_PROCESS_SHAPE && r.role === HUNTER_ROLE;
 }
 
+// (1b) THE sanctioned in-process claude LANE predicate (SR-020, ADR-0022 teeth-2). The CLI-only tooth
+// (panel-lanes.js#assertCliOnlyPanel) EXEMPTS exactly one lane from the "cross-provider labs must be CLI
+// subprocess" rule: the claude hunter. Identity of that lane = its STRUCTURAL contract — laneId "claude"
+// AND provider "claude" AND the in-process shape — NEVER a settable per-lane label (`sanctioned_lane_id`
+// / `role` on the manifest lane, which SR-020 flagged as the third settable-identity consumer). The
+// choke-point owns this so the tooth keys on the SAME identity authority as the record path (isHunterRecord),
+// closing the SR-020 gap that a gpt/agy lane could assert the exemption by setting sanctioned_lane_id. The
+// laneId+provider positive scope means only lane "claude" on provider "claude" can ever qualify.
+function isSanctionedHunterLane(laneId, lane) {
+  return !!lane && laneId === "claude" && lane.provider === "claude" && lane.shape === IN_PROCESS_SHAPE;
+}
+
 // (2) THE profile-aware claude lane contract. Returns { shape, role, isHunter }. FAILS CLOSED on an
 // unrecognized/absent profile (R7-BE-001) — only `panel-3lab` (BINDING → hunter) and `panel-2family`
 // (FLOOR → subprocess-claude review) are contracted; a typo'd profile throws, it does not floor-default.
@@ -97,6 +109,7 @@ module.exports = {
   RECOGNIZED_PROFILES,
   assertRecognizedProfile,
   isHunterRecord,
+  isSanctionedHunterLane,
   claudeLaneContract,
   laneContract,
   recordMatchesLane,

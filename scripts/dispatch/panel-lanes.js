@@ -27,9 +27,15 @@ const MANIFEST_PATH = path.join(ROOT, ".claude", "agents", "_org", "panel-lane-m
 const SUPPORT_MATRIX_PATH = path.join(ROOT, ".claude", "kernel", "support-matrix.json");
 const SECURITY_ROLE = "security-reviewer";
 
-// The shapes the contract fixes per lane class (single place, so validate + the tooth agree).
-const CROSS_PROVIDER_SHAPE = "subprocess-cross-provider";
-const IN_PROCESS_SHAPE = "in-process-agent";
+// SR-020 (ADR-0022 teeth-2): the shape identity VALUES + the sanctioned-lane predicate come from the SINGLE
+// provenance-verifier choke-point. panel-lanes no longer defines the identity values locally (a local
+// `const IN_PROCESS_SHAPE = "in-process-agent"` is exactly the re-implementation the delegation-complete
+// guard flags — the choke-point owns the values so EVERY lane-identity consumer routes through the ONE
+// authority). The shape constants below are RE-EXPORTS of pv's, used here only for manifest CONTRACT
+// validation (does the manifest declare the required shape per lane class), never to decide a RECORD's identity.
+const pv = require("./provenance-verifier");
+const CROSS_PROVIDER_SHAPE = pv.CROSS_PROVIDER_SHAPE;
+const IN_PROCESS_SHAPE = pv.IN_PROCESS_SHAPE;
 
 // The panel status vocabulary (PRD "Status contract"). The reducer NEVER normalizes a BLOCKED to
 // PASS/GREEN — that normalization IS the false-green this phase kills.
@@ -72,23 +78,16 @@ function requiredLanes(manifest, profileName) {
   });
 }
 
-/** The sanctioned in-process hunter role identity (ADR-0016). The exemption binds to THIS role. */
-const SANCTIONED_HUNTER_ROLE = "security_claude_hunter";
-
 /**
- * The ONE sanctioned in-process panel lane: the claude hunter. POSITIVE identity scope (β rider #3,
- * SR-005): lane id === "claude" AND provider === "claude" AND the lane carries the sanctioned hunter
- * ROLE identity (`sanctioned_lane_id`/`role` === "security_claude_hunter"). NOT the shape alone, NOT a
- * settable flag, and NOT merely provider===claude — an arbitrary Claude in-process security-reviewer
- * lane (no hunter role) can NEVER assert this exemption, nor can a gpt/agy lane.
+ * The ONE sanctioned in-process panel lane: the claude hunter. SR-020 (ADR-0022 teeth-2): identity is
+ * DELEGATED to the provenance-verifier choke-point — it keys on the STRUCTURAL contract (laneId "claude"
+ * AND provider "claude" AND the in-process shape), NEVER the settable `sanctioned_lane_id`/`role` label
+ * that panel-lanes used to compare here (the third settable-identity consumer SR-020 flagged). The
+ * laneId+provider positive scope still means only lane "claude" on provider "claude" can qualify — a
+ * gpt/agy lane, or an arbitrary in-process claude lane without the contracted shape, can NEVER assert it.
  */
 function isSanctionedInProcessLane(laneId, lane) {
-  return (
-    laneId === "claude" &&
-    !!lane &&
-    lane.provider === "claude" &&
-    (lane.sanctioned_lane_id === SANCTIONED_HUNTER_ROLE || lane.role === SANCTIONED_HUNTER_ROLE)
-  );
+  return pv.isSanctionedHunterLane(laneId, lane);
 }
 
 /**
@@ -189,6 +188,15 @@ function validatePanelManifest(opts = {}) {
   if (!p2 || p2.binding === true) errors.push(`panel-2family must exist as the non-binding degraded floor (binding:false)`);
   else if (!setEq(p2.required || [], nonAgyLaneIds)) errors.push(`panel-2family.required must be EXACTLY the non-agy lab set ${JSON.stringify(nonAgyLaneIds)} (got ${JSON.stringify(p2.required)}) — agy is optional (operator-owned), not required, in the degraded floor (SR-006)`);
 
+  // (6) hunter MIN-FAMILIES-UNVALIDATED (defense-in-depth): every profile's min_families must be >= 2. The
+  // required-set (5) + the per-lane coercion gate in panelStatus already force >= 2 DISTINCT observed
+  // families by construction today, but a mutated min_families:1 would pass validation and let panelStatus
+  // green a single-family panel — assert the floor here so a drifted manifest is a loud RED, not silent.
+  for (const [pn, prof] of Object.entries(manifest.profiles || {})) {
+    if (typeof prof.min_families !== "number" || prof.min_families < 2)
+      errors.push(`profile '${pn}' min_families must be a number >= 2 (got ${JSON.stringify(prof.min_families)}) — a security panel requires >= 2 provider families`);
+  }
+
   return { ok: errors.length === 0, errors, passes, lanes };
 }
 
@@ -258,7 +266,12 @@ function panelStatus(profile, lanes = [], opts = {}) {
     if (l.alive !== true) { blocked.push(laneId); laneStatus[laneId] = "dead"; continue; }
     const v = String(l.verdict || "").toLowerCase();
     if (v === "fail") { failed.push(laneId); laneStatus[laneId] = "fail"; continue; }
-    if (v === "error" || v === "") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }
+    // BE-CQ-001 (backend-reviewer HIGH, fail-closed ALLOWLIST): only an allowlisted PASS-class verdict
+    // (pass/warn) is alive-clean. "error"/"" AND any UNKNOWN verdict (a hallucinated/malformed value like
+    // "banana") → BLOCKED refused-or-malformed. The old branch enumerated only "error"/"" explicitly, so
+    // an unrecognized verdict fell through to alive-clean — a binding false-green (verified: panelStatus
+    // PASS on verdict="banana"). An unrecognized verdict can NEVER count as a passing lane.
+    if (v !== "pass" && v !== "warn") { blocked.push(laneId); laneStatus[laneId] = "refused-or-malformed"; continue; }
     // ALIVE + CLEAN + ATTESTED on the CONTRACTED provider → counts toward diversity (β#1 observed).
     laneStatus[laneId] = "alive-clean";
     const fam = PANEL_PROVIDER_FAMILY[l.observedProvider] || l.observedProvider;

@@ -109,11 +109,22 @@ function spawnPass(role, promptFile, pass, domain, laneOutDir) {
   });
 }
 
+// BE-CQ-001 (backend-reviewer HIGH, fail-closed ALLOWLIST): the ONLY verdict values that may read as
+// alive/clean are the allowlisted set. An UNKNOWN verdict string (a hallucinated/malformed/adversarial
+// value like "banana") must NEVER fall through as clean — it is "error" (unresolved binding verdict →
+// BLOCKED). The old parsed-path returned parsed.verdict verbatim, so any non-{fail,error} string
+// normalized to PASS (a binding false-green — verified: verdict="banana" → mergeLanes.ok=true).
+const VALID_REVIEW_VERDICTS = new Set(["pass", "warn", "fail"]);
+function normalizeVerdict(v) {
+  const s = String(v || "").toLowerCase();
+  return VALID_REVIEW_VERDICTS.has(s) ? s : "error";
+}
 function verdictOf(result) {
   if (!result) return "error";
   // dispatch-agent sets result.parsed; dispatch-claude returns the raw agent output in result.output
   // (no parsed) — extract the verdict from either so a claude-pass FAIL is never missed.
-  if (result.parsed && typeof result.parsed.verdict === "string") return result.parsed.verdict.toLowerCase();
+  // BE-CQ-001: the parsed verdict is ALLOWLISTED here (normalizeVerdict) — an unknown value → "error".
+  if (result.parsed && typeof result.parsed.verdict === "string") return normalizeVerdict(result.parsed.verdict);
   const text = typeof result.output === "string" ? result.output : "";
   const m = /"verdict"\s*:\s*"(pass|warn|fail)"/i.exec(text);
   if (m) return m[1].toLowerCase();
@@ -151,7 +162,12 @@ async function main() {
   // (spawnPass inherits process.env). Each child's completion record is stamped with it (recordCompletion),
   // so the panel gate correlates lanes by RUN IDENTITY — not the firing-time window, which a concurrent
   // same-sprint run could satisfy (the SR-011 substitution gap). The window remains a secondary narrow.
-  const panelRunId = `panel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  // BE-CQ-002 (backend-reviewer MEDIUM): RESPECT an INHERITED WARPOS_PANEL_RUN_ID. The runner used to
+  // UNCONDITIONALLY re-mint the id inside its own process, so a conductor that mints the id up-front (to
+  // stamp the separately-summoned in-process hunter with the SAME id) could not correlate the hunter into
+  // the panel run without an out-of-band ledger-extraction workaround. Now: inherit if set, else mint —
+  // and EXPOSE the id on the merged envelope (merged.panel_run_id below) so the caller can always read it.
+  const panelRunId = process.env.WARPOS_PANEL_RUN_ID || `panel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   process.env.WARPOS_PANEL_RUN_ID = panelRunId;
   const runnerStartMs = Date.now();
   // FIRE every pass in PARALLEL — each child is an independent reap-safe single-pass dispatch.
@@ -220,6 +236,9 @@ async function main() {
 
   const merged = mergeLanes(role, lanes);
   merged.lane_out_dir = path.relative(ROOT, laneOutDir);
+  // BE-CQ-002: expose the panel_run_id so a conductor can correlate the in-process hunter (summoned
+  // outside this runner) into the SAME panel run without an out-of-band ledger extraction.
+  merged.panel_run_id = panelRunId;
 
   // C1 (SR-001/QA-001): for the SECURITY PANEL, the binding outcome ALSO runs the D7 panelStatus reducer
   // over the OBSERVED per-lane evidence (never the declared labels). mergeLanes alone (verdict/liveness on
@@ -340,13 +359,23 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
         if (contract.isHunter) return !!r.output_digest || !!r.evidence_sha;
         return !!r.output_digest && !!r.cmdline_checksum && r.tool_id === toolIdOf(l.observedProvider);
       });
+      // SR-019 (ADR-0022): the panel-3lab BINDING claude lane binds its verdict to the SAME-RUN HUNTER
+      // record (the `rec` found above via the choke-point identity), NEVER the floor subprocess pass's
+      // l.verdict. A missing rec, or a hunter record with a missing/invalid verdict, resolves to "error"
+      // → panelStatus BLOCKS at eval (a hunter-fail or hunter-absent can never read as the floor's pass).
+      // The floor (isHunter:false) is unchanged: its verdict stays the subprocess/CLI child judgment.
+      let verdict = l.verdict; // the review JUDGMENT from the child output (floor + CLI lanes)
+      if (contract.isHunter) {
+        const hv = rec && typeof rec.verdict === "string" ? rec.verdict.toLowerCase() : null;
+        verdict = hv === "pass" || hv === "fail" || hv === "warn" ? hv : "error";
+      }
       return {
         laneId: l.laneId,
         contractedProvider: l.provider,
         observedProvider: rec ? rec.provider : l.observedProvider,
         fallback: rec ? false : true,
         alive: !!rec,
-        verdict: l.verdict, // the review JUDGMENT stays from the child output
+        verdict,
         hasEvidence: !!rec,
       };
     });
@@ -371,11 +400,13 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
 // parsed `verdict`) so a verdict-gate consumer reads the MERGED verdict exactly like a single reviewer's.
 function mergeLanes(role, lanes) {
   const anyFail = lanes.some((l) => l.verdict === "fail");
-  // anyError = a DEAD lane (not ok) OR an ALIVE lane whose verdict is "error" (verdictOf returns
-  // "error" for an alive-but-unparseable binding review — HIGH-2). The W1+W2 re-review caught that
-  // checking only `!l.ok` let an alive error-verdict lane merge to pass: an unresolved verdict on a
-  // binding security lane MUST hold the whole review.
-  const anyError = lanes.some((l) => !l.ok || l.verdict === "error");
+  // anyError = a DEAD lane (not ok) OR an ALIVE lane whose verdict is NOT an allowlisted PASS-class
+  // value. BE-CQ-001 (backend-reviewer HIGH, fail-closed): the old check only caught verdict==="error",
+  // so an UNKNOWN verdict string (a hallucinated/malformed "banana") merged to PASS — a binding
+  // false-green (verified: verdict="banana" → ok=true). mergeLanes is called DIRECTLY (not only via
+  // verdictOf), so the allowlist is enforced HERE too — anything that is not exactly pass/warn/fail
+  // holds the review as "error". (A "fail" verdict IS allowlisted and is handled by anyFail above.)
+  const anyError = lanes.some((l) => !l.ok || !VALID_REVIEW_VERDICTS.has(String(l.verdict || "").toLowerCase()));
   const mergedVerdict = anyFail ? "fail" : anyError ? "error" : lanes.some((l) => l.verdict === "warn") ? "warn" : "pass";
   const clean = !anyFail && !anyError; // clean iff EVERY lane is alive AND its verdict is pass/warn
 

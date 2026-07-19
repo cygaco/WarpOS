@@ -121,23 +121,32 @@ test("T1-B (negative, the false-green): a gpt lane ASSERTING lane id 'claude' bu
   const out = assertCliOnlyPanel([{ laneId: "claude", provider: "openai", shape: "in-process-agent" }]);
   assert.ok(!out.ok, "a non-claude-provider lane must NOT be exempted even if it labels itself 'claude'");
 });
-test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process (WITH hunter role) → accepted", () => {
-  // β#3/SR-005: the exemption now requires the sanctioned hunter ROLE identity, not just provider=claude.
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", sanctioned_lane_id: "security_claude_hunter" }), true);
+test("T1-C (sanctioned, must PASS): the genuine claude hunter in-process (structural: claude+claude+in-process) → accepted", () => {
+  // SR-020 (ADR-0022 teeth-2): the exemption is DELEGATED to provenance-verifier.isSanctionedHunterLane and
+  // keys on the STRUCTURAL contract — laneId "claude" AND provider "claude" AND the in-process shape — NOT a
+  // settable label. (In production the observed claude lane is subprocess-claude; the in-process HUNTER is a
+  // separate record whose writer-stamped role is still enforced at the RECORD level by pv.isHunterRecord.)
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", shape: "in-process-agent" }), true);
   const out = assertCliOnlyPanel([
     { laneId: "gpt", provider: "openai", shape: "subprocess-cross-provider" },
     { laneId: "agy", provider: "antigravity", shape: "subprocess-cross-provider" },
-    { laneId: "claude", provider: "claude", shape: "in-process-agent", sanctioned_lane_id: "security_claude_hunter" },
+    { laneId: "claude", provider: "claude", shape: "in-process-agent" },
   ]);
   assert.ok(out.ok, `sanctioned hunter over-rejected: ${out.violations.join(" | ")}`);
 });
-test("T1-D (negative, SR-005): a claude/claude in-process lane WITHOUT the hunter role → REFUSED", () => {
-  // The SR-005 hole: an arbitrary Claude in-process security-reviewer lane (no security_claude_hunter
-  // identity) must NOT ride the sanctioned exemption. Provider=claude alone is insufficient.
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), false);
-  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", role: "security-reviewer" }), false);
-  const out = assertCliOnlyPanel([{ laneId: "claude", provider: "claude", shape: "in-process-agent" }]);
-  assert.ok(!out.ok, "a claude in-process lane lacking the security_claude_hunter role must be refused");
+test("T1-D (SR-020): the settable sanctioned_lane_id/role LABEL does NOT grant the exemption — structure does", () => {
+  // SR-020 close (the THIRD settable-identity consumer): the exemption no longer trusts a settable label. A
+  // gpt lane setting sanctioned_lane_id='security_claude_hunter' gets NOTHING (positive scope: provider must be
+  // claude); a claude lane's exemption keys on the in-process SHAPE, and the label is ignored entirely
+  // (SR-016/SR-017 root: identity is never a settable field). The record-level role check (pv.isHunterRecord)
+  // is where the writer-stamped security_claude_hunter identity is enforced for actual attestation — unchanged.
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "openai", sanctioned_lane_id: "security_claude_hunter", shape: "in-process-agent" }), false, "provider must be claude — a gpt lane can't ride the settable label");
+  assert.equal(isSanctionedInProcessLane("gpt", { provider: "claude", shape: "in-process-agent" }), false, "only laneId 'claude' can be the sanctioned lane");
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude" }), false, "no in-process shape → not the sanctioned in-process lane");
+  assert.equal(isSanctionedInProcessLane("claude", { provider: "claude", shape: "subprocess-claude" }), false, "a subprocess-claude lane is not the in-process hunter lane (it does not need the exemption)");
+  // the masquerade STILL blocks: a gpt lane resolved in-process is refused even if it sets the sanctioned label.
+  const out = assertCliOnlyPanel([{ laneId: "gpt", provider: "openai", shape: "in-process-agent", sanctioned_lane_id: "security_claude_hunter" }]);
+  assert.ok(!out.ok, "a gpt lane resolved in-process must be refused even if it sets the sanctioned label");
 });
 
 // ── H2/SR-006: EXACT required-set validation. A mutated required set that DROPS a lane must FAIL. ──
@@ -159,8 +168,35 @@ test("SR-006 negative control: the REAL manifest (exact sets) still validates ok
   assert.ok(out.ok, `real manifest must validate: ${(out.errors || []).join(" | ")}`);
 });
 
+// ── BE-CQ-001 (backend-reviewer HIGH, fail-closed allowlist): an UNKNOWN verdict is NEVER alive-clean. ──
+{
+  const pl2 = require("./panel-lanes");
+  const twoFam = { name: "panel-2family", required: ["gpt", "claude"], min_families: 2, binding: false };
+  const laneEvidence = (verdict) => [
+    { laneId: "gpt", contractedProvider: "openai", observedProvider: "openai", fallback: false, alive: true, verdict, hasEvidence: true },
+    { laneId: "claude", contractedProvider: "claude", observedProvider: "claude", fallback: false, alive: true, verdict, hasEvidence: true },
+  ];
+  test("BE-CQ-001: panelStatus treats an unknown verdict ('banana') as BLOCKED, never PASS", () => {
+    assert.notEqual(pl2.panelStatus(twoFam, laneEvidence("banana")).status, "PASS");
+  });
+  test("BE-CQ-001 no over-block: a clean pass 2-family panel still PASSes", () => {
+    assert.equal(pl2.panelStatus(twoFam, laneEvidence("pass")).status, "PASS");
+  });
+  // ── hunter MIN-FAMILIES-UNVALIDATED (defense-in-depth): validatePanelManifest asserts min_families >= 2. ──
+  test("min_families: a mutated profile with min_families:1 fails validation", () => {
+    const manifest = pl2.loadManifest();
+    manifest.profiles["panel-3lab"].min_families = 1;
+    const out = pl2.validatePanelManifest({ manifest });
+    assert.equal(out.ok, false, "min_families:1 must be rejected");
+    assert.ok(out.errors.some((e) => /min_families/.test(e)), "the error must name min_families");
+  });
+  test("min_families no over-block: the real manifest (min_families:2) still validates", () => {
+    assert.equal(pl2.validatePanelManifest().ok, true, "the shipped manifest must still validate clean");
+  });
+}
+
 if (failures.length) {
   process.stderr.write(`FAIL [panel-lanes.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [panel-lanes.test] ${passed} passed (single-source drift + CLI-only tooth incl. T1-B masquerade)\n`);
+process.stdout.write(`OK   [panel-lanes.test] ${passed} passed (single-source drift + CLI-only tooth + BE-CQ-001 verdict allowlist + min_families)\n`);
