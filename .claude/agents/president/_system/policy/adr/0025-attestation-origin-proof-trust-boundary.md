@@ -44,10 +44,16 @@ UNSIGNED + `provenance_mismatch:true` (it can never attest) — it never silentl
 the pre-ED-231 caller-explicit-wins model that `record-provenance.test` enshrined (which enshrined exactly what
 the forgery exploited); that test is migrated (α-sanctioned) and β's forged-set fixtures are the stronger teeth.
 
-**Scope (α discipline):** verification is REQUIRED on the BINDING attestation surface ONLY (the cert-attest
-path). The broader `gauntlet-verify` `ok:true` liveness readers (the sprint's release-close gate) are UNTOUCHED
-this session — signing every record is additive + harmless to them. Whole-ledger signature verification is a
-Phase-2 identity/portability item (ED-231 candidate_enforcers).
+**Scope (α discipline) — and the HONEST claim-scope of "mistake-class CLOSED" (β RIDER-1):** verification is
+REQUIRED on the BINDING attestation surface ONLY (the cert-attest path). The mistake-class forgery is therefore
+CLOSED **on the binding surface**, NOT globally: the broader `gauntlet-verify` `ok:true` liveness readers (the
+sprint's release-close gate) are UNTOUCHED this session and remain FIELD-ONLY, so a forged UNSIGNED `ok:true`
+liveness record still fools them — that is the **SAME mistake-reachable forgery class on a different reader**, and
+it stays OPEN there. Whole-ledger signature verification (extend verify to the liveness readers) is therefore a
+**MISTAKE-CLASS-PRIORITY** deferral, NOT "portability / defense-in-depth" — do not mislabel it. Deferred to
+Phase-2 (ED-231 candidate_enforcers) because it needs the identity/portability substrate, but it closes the same
+false-green class, not a nice-to-have. The release gate must NOT silently trust field-only liveness records as if
+the forgery were globally closed.
 
 ## The named CEILING (the (C) honesty — do NOT paper over it)
 
@@ -69,8 +75,15 @@ ceiling, not a false-green the attestation silently emits.
   persisted review artifact and require a match — raises the forger's cost to also-forge-the-artifact. The
   hunter evidence file is not canonically persisted today; folded into ED-231, not a prerequisite (origin-proof
   is the root close).
-- **Whole-ledger verification (deferred, ED-231):** extend signature verification to the `gauntlet-verify`
-  liveness readers in Phase-2.
+- **Whole-ledger verification (deferred, ED-231 — SAME mistake class, β RIDER-1):** extend signature verification
+  to the `gauntlet-verify` liveness readers in Phase-2. This is NOT defense-in-depth — a forged unsigned `ok:true`
+  liveness record fools the field-only release gate today, the same mistake class the binding surface just closed.
+- **Verdict NOT signed (β RIDER-2, forward defense-in-depth):** `SIGNED_FIELDS` binds IDENTITY+PROVENANCE and
+  deliberately EXCLUDES the review verdict (the sig proves the lane RAN with real origin, not what it found). A
+  same-user adversary could therefore flip a real signed record's verdict FAIL→PASS without invalidating the sig
+  — inside the named account ceiling, and BE-CQ-001's verdict allowlist catches malformed/unknown values but NOT a
+  valid-but-tampered flip. "Sign the verdict too" is a Phase-2 candidate (ED-231). Not a live false-green (account
+  ceiling + BE-CQ-001), but named so it isn't mistaken for closed.
 - The §7 served-model colon-echo residual (QA lane) is the separate string-parsing ceiling (ED-230); the true
   close is upstream (agy emitting a machine-readable served-model line under an authenticated backend).
 
@@ -80,4 +93,6 @@ ceiling, not a false-green the attestation silently emits.
 sign) + `cert-attest.attestLane` (verify-first, fail-closed) + `scripts/checks/cert-attest-panel.test.js`
 ED-231 forgery teeth (unsigned/wrong-mac/tampered-field/direct-write → fail-closed; signed → attests) +
 `scripts/dispatch/record-provenance.test.js` (writer-authoritative). Debt: ED-231 (open until (B)-lite +
-whole-ledger land — the mistake-class is CLOSED; the deferrals are defense-in-depth).
+whole-ledger + sign-the-verdict land). The mistake-class is CLOSED **on the binding cert-attest surface**; the
+gauntlet-verify liveness readers are the SAME mistake class, still OPEN, closed by whole-ledger verification (β
+RIDER-1 — mistake-class priority, NOT defense-in-depth). Verdict-signing (β RIDER-2) is the forward defense-in-depth item.

@@ -977,7 +977,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0025-attestation-origin-proof-trust-boundary.md",
         "dest": ".claude/agents/president/_system/policy/adr/0025-attestation-origin-proof-trust-boundary.md",
         "kind": "agent",
-        "sha256": "a51e682538b171d48af0377a0526ced59a00c5a963737ffdca4a58a2c343766f",
+        "sha256": "22c706af95ebb5c8c2880c30e2f8088bce756877068be65f7dc599fac8724847",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
