@@ -173,7 +173,12 @@ over (mutation-lock pid → lease pid; `result_commit` SHA → `base_commit` SHA
 class is at the **model/schema level**:
 - **ED-237:** a single `pidLiveness(pid) → dead|live|indeterminate` primitive + a uniform reclaim
   policy that requires a DEFINITE state at EVERY reclaim site (mutation-lock + lease fast-path +
-  lease stale-path), + lease-level invalid-pid + injected-non-ESRCH teeth.
+  lease stale-path), + lease-level invalid-pid + injected-non-ESRCH teeth. **β's NAMED escalation
+  shape (binding):** the per-site spot-application shape has now failed 3×, so the deeper redesign
+  is a **flock / OS-level lease** (or equivalent OS-primitive) that eliminates the file-based
+  dead-OR-stale-TTL liveness heuristic for the conductor lease entirely, rather than another layer
+  of pid-gating on the existing file lock. (The 3-state model is the incremental option; the
+  OS-lease is β's named mechanism redesign — operator/α picks.)
 - **ED-238:** a validated AcceptanceRecord type/schema where EVERY commit-identity field
   (`base_commit` + `result_commit` + the head coordinates) is a 40-hex SHA **by construction**, not
   ad-hoc regex in `authorizesIntegration`; + an independently-reachable CAS-binding tooth.
