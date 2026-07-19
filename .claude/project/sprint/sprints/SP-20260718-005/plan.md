@@ -38,5 +38,13 @@ Adapt packet 06's WorkOrder/ResultEnvelope onto the EXISTING dispatch ledger (di
 ## Do-not-reopen (carried)
 SP-004's dispositions (derived-not-settable spine; the same-session-vs-cross-session signature boundary; the R3 cross-session-false-RED revert; ED-229 regex-guard AST ceiling as named-residual-not-grind); the 2026-07-17 role-binding split; the dropped-from-1.0 packets (02/09/10/11/12); adversarial-helm containment DROPPED.
 
+## β forward note (Phase-3 plan-lock preview, 2026-07-19 — β will fold at the plan→design boundary)
+Phase 3 inherits the SP-004 identity/attestation arc DIRECTLY — each item is where the durable spine applies again, NOT a fresh problem:
+- **ED-218** = the spawn-provenance validator: the "was-this-spawn-LEGITIMATE" layer ABOVE Phase-2's "worker-can't-forge-its-role". Same derived-not-settable / origin-proof discipline, one layer up.
+- **ED-228** (conductor-lease) = REUSE the Phase-2 derived-not-settable binding machinery (β plan-lock rider) — conductor-authority IS a derived binding + claim-file; do NOT build a parallel mechanism. Two clean manual transfers this session are the behavioral spec.
+- **ED-232** (cross-session key-distribution) = the account-ceiling residual + the re-correlation that touches the BLOCKING coverage-gate (priority); the AcceptanceRecord is itself a cross-session trust artifact — the natural home for the key-distribution DESIGN (α-routes the mechanism, ε drafts).
+- **F1** (wake-seam) = the dispatch-control-plane liveness signal.
+The pattern worth keeping (β): the code-grounded review was possible because the design gave real STRUCTURAL invariants to check (a worker that can't set its role; a guard that fails an un-routed reader) rather than claims on faith. Design Phase-3 the same way — structural invariants + the record-trust gate above.
+
 ## PARK
 **STATE: to be PARKED at the plan→design boundary.** β plan→design consult sent; a FRESH conductor consumes the verdict (no re-consult unless a NEW irreversible risk surfaces) and executes design→build. Seeded EDs: ED-218, ED-069/070/071, ED-228, ED-232, ED-221 (Option-2), ED-214 (G0.3 binding flip), ED-215 (Phase-4 dependency). Prior-phase close: SP-20260718-004 (Phase 2) COMPLETE + MERGED @ e768e5c6 (2026-07-19); retro at `.claude/project/sprint/sprints/SP-20260718-004/retro.md`.
