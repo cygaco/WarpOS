@@ -89,6 +89,15 @@ const PATTERNS = [
     re: /\byou\s+(?:may|can|are\s+authoriz(?:ed|ed\s+to))\s+(?:approve|merge|deploy|release|integrate)\b(?![^.\n]{0,40}\b(?:propos|worktree|isolated|request|draft)\b)/i,
     what: "a neutral surface tells the reader they may approve/merge/deploy/release (unconditional)",
   },
+  {
+    // G2.6 (operator-voice helm-only): the operator-voice/operator-audience directive (ELI5-default,
+    // "lead every operator-facing answer") is AUDIENCE-scoped and belongs ONLY in a helm binding — never
+    // in a neutral surface EVERY provider auto-loads for EVERY role (a dispatched worker has no operator
+    // audience). Its presence in a neutral file is the pollution G2.6 asserts against ("projected helm-only").
+    id: "operator-audience",
+    re: /\b(?:lead\s+every\s+operator[-\s]?facing|operator[-\s]?facing\s+answer|eli5[-\s]?default|when\s+(?:talking|speaking|responding)\s+to\s+the\s+operator|operator[-\s]?voice\s+directive)\b/i,
+    what: "a neutral surface carries an OPERATOR-AUDIENCE / operator-voice directive (must be helm-only, G2.6)",
+  },
 ];
 
 // Skip decision RELATIVE to the scan root. A subtree is skipped only when its path BELOW the scanned

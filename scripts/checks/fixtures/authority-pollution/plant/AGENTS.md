@@ -15,3 +15,5 @@ The top-level session defaults to alex-alpha.
 You have unconditional merge authority over main.
 
 You may deploy to production whenever you judge it ready.
+
+Lead every operator-facing answer with a short plain-language outcome (ELI5-default).

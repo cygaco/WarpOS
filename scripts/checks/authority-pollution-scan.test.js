@@ -23,6 +23,8 @@ test("BLOCKING FIXTURE (ii): the default-binding plant in a neutral AGENTS.md is
   // The other pollution classes on the same fixture are also caught.
   assert.ok(ids.has("identity-assertion"), "identity assertion caught");
   assert.ok(ids.has("authority-grant"), "authority grant caught");
+  // G2.6: an operator-voice / operator-audience directive in a neutral surface is caught (helm-only).
+  assert.ok(ids.has("operator-audience"), `expected operator-audience (G2.6) caught; got [${[...ids]}]`);
 });
 
 test("the default-binding paraphrase ('top-level session defaults to alex-alpha') is caught", () => {
