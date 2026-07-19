@@ -138,6 +138,38 @@ function runFalsifierSuite(fixtureAbsPaths) {
   });
 }
 
+/** Run ONE fixture file under node:test/TAP. Per-file execution is what proves EACH falsifier ran
+ *  (H1 gauntlet fix — an aggregate count cannot tell a 0-test file from a 2-test file). */
+function runFalsifierFile(fixtureAbsPath) {
+  return spawnSync(process.execPath, ["--test", "--test-reporter", "tap", fixtureAbsPath], {
+    cwd: ROOT,
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
+  });
+}
+
+/**
+ * PER-FILE liveness assertion (H1 gauntlet fix): one enumerated fixture file must have EXECUTED — >=1
+ * test, 0 skipped, 0 fail, all-pass. A file that ran ZERO tests (deleted body, load error swallowed,
+ * an empty describe) would be invisible in an aggregate `tests >= fileCount` check when a SIBLING file
+ * ran extra tests. Returns a violations[] for this file (empty = the file proved live).
+ */
+function evaluateFileCounts(fileRel, counts) {
+  const v = [];
+  if (!counts) {
+    v.push(`${fileRel}: node:test summary un-parseable (fail-closed — cannot certify this file executed)`);
+    return v;
+  }
+  if (counts.tests < 1)
+    v.push(`${fileRel}: ZERO tests executed — a falsifier file that runs nothing is a fail-open the aggregate count would mask`);
+  if (counts.skipped !== 0)
+    v.push(`${fileRel}: skipped=${counts.skipped} (a MUST-BLOCK falsifier skipped — a mis-wired/absent choke-point module reads as green)`);
+  if (counts.fail !== 0) v.push(`${fileRel}: fail=${counts.fail} (a falsifier FAILED — a MUST-BLOCK path did not block)`);
+  if (counts.pass !== counts.tests)
+    v.push(`${fileRel}: pass(${counts.pass}) !== tests(${counts.tests}) — not every executed test in this file passed`);
+  return v;
+}
+
 /** Run `record-trust-gate.js --built` and return { ok, detail }. Fail-closed if it can't run. */
 function runRecordTrustGateBuilt(manifestPath) {
   if (!fs.existsSync(RECORD_TRUST_GATE))
@@ -153,7 +185,9 @@ function runRecordTrustGateBuilt(manifestPath) {
 }
 
 function evaluate(manifestPath, opts = {}) {
-  const runSuite = opts.runSuite || runFalsifierSuite;
+  // H1 gauntlet fix: run EACH fixture file individually and prove it executed. `opts.runFile(absPath)`
+  // is the injectable seam (defaults to a real per-file node:test run); tests drive it deterministically.
+  const runFile = opts.runFile || runFalsifierFile;
   const runBuilt = opts.runBuilt || (() => runRecordTrustGateBuilt(manifestPath));
 
   const loaded = loadManifest(manifestPath);
@@ -176,23 +210,32 @@ function evaluate(manifestPath, opts = {}) {
       companions,
     };
 
-  const absPaths = fixtures.map((f) => path.join(ROOT, f));
-  const spawnRes = runSuite(absPaths);
-  if (!spawnRes || spawnRes.error)
-    return { code: 2, ok: false, error: `falsifier suite failed to run: ${(spawnRes && spawnRes.error && spawnRes.error.message) || "no result"} (fail-closed)` };
-
-  const counts = parseTapCounts(spawnRes.stdout);
-  const suiteEval = evaluateCounts(counts, fixtures.length);
+  // PER-FILE execution proof — the H1 fix. Each file must run >=1 test with 0 skipped/0 fail, so a
+  // 0-test file can never be masked by a sibling that ran extra tests.
+  const violations = [];
+  const perFile = [];
+  let totalTests = 0;
+  for (const f of fixtures) {
+    const res = runFile(path.join(ROOT, f));
+    if (!res || res.error) {
+      violations.push(`${f}: node:test failed to run (fail-closed): ${(res && res.error && res.error.message) || "no result"}`);
+      perFile.push({ file: f, counts: null });
+      continue;
+    }
+    const counts = parseTapCounts(res.stdout);
+    perFile.push({ file: f, counts });
+    if (counts && typeof counts.tests === "number") totalTests += counts.tests;
+    violations.push(...evaluateFileCounts(f, counts));
+  }
 
   const built = runBuilt();
-
-  const violations = [...suiteEval.violations];
   if (!built.ok) violations.push(`record-trust-gate --built: ${built.detail}`);
 
   return {
     code: violations.length === 0 ? 0 : 1,
     ok: violations.length === 0,
-    counts,
+    counts: { tests: totalTests, files: fixtures.length },
+    perFile,
     falsifiers,
     companions,
     built,
@@ -218,8 +261,8 @@ function main(argv) {
   }
   if (res.ok) {
     process.stdout.write(
-      `falsifier-liveness: PASS — ${res.falsifiers.length} falsifiers + ${res.companions.length} positive companion(s) EXECUTED; ` +
-        `tests=${res.counts.tests} pass=${res.counts.pass} skipped=0 fail=0; record-trust-gate --built green.\n`,
+      `falsifier-liveness: PASS — ${res.falsifiers.length} falsifiers + ${res.companions.length} positive companion(s) each EXECUTED PER-FILE ` +
+        `(>=1 test, 0 skipped, 0 fail); ${res.counts.files} files, ${res.counts.tests} tests total; record-trust-gate --built green.\n`,
     );
     return 0;
   }
@@ -235,7 +278,9 @@ module.exports = {
   collectFixtures,
   parseTapCounts,
   evaluateCounts,
+  evaluateFileCounts,
   runFalsifierSuite,
+  runFalsifierFile,
   runRecordTrustGateBuilt,
   evaluate,
   DEFAULT_MANIFEST,

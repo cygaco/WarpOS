@@ -35,34 +35,30 @@ test("parseTapCounts returns null when a required count line is absent (fail-clo
   assert.strictEqual(fl.parseTapCounts(undefined), null);
 });
 
-test("evaluateCounts BLOCKS on a skipped falsifier (the AC-18 fail-open loophole)", () => {
-  const r = fl.evaluateCounts({ tests: 13, pass: 9, fail: 0, skipped: 4 }, 13);
-  assert.strictEqual(r.ok, false);
-  assert.ok(r.violations.some((v) => /skipped === 4/.test(v)), "must name the skip count");
+// ── evaluateFileCounts — the PER-FILE liveness proof (H1 gauntlet fix) ────────
+test("evaluateFileCounts BLOCKS a file that ran ZERO tests (the H1 aggregate-masking hole)", () => {
+  const v = fl.evaluateFileCounts("x/f.js", { tests: 0, pass: 0, fail: 0, skipped: 0 });
+  assert.ok(v.some((s) => /ZERO tests executed/.test(s)), JSON.stringify(v));
 });
 
-test("evaluateCounts BLOCKS on a failed falsifier", () => {
-  const r = fl.evaluateCounts({ tests: 13, pass: 12, fail: 1, skipped: 0 }, 13);
-  assert.strictEqual(r.ok, false);
-  assert.ok(r.violations.some((v) => /fail === 1/.test(v)));
+test("evaluateFileCounts BLOCKS a file with a skipped falsifier", () => {
+  const v = fl.evaluateFileCounts("x/f.js", { tests: 1, pass: 0, fail: 0, skipped: 1 });
+  assert.ok(v.some((s) => /skipped=1/.test(s)));
 });
 
-test("evaluateCounts BLOCKS when fewer tests ran than fixtures enumerated", () => {
-  const r = fl.evaluateCounts({ tests: 8, pass: 8, fail: 0, skipped: 0 }, 13);
-  assert.strictEqual(r.ok, false);
-  assert.ok(r.violations.some((v) => /only 8 tests executed but 13/.test(v)));
+test("evaluateFileCounts BLOCKS a file with a failed test", () => {
+  const v = fl.evaluateFileCounts("x/f.js", { tests: 2, pass: 1, fail: 1, skipped: 0 });
+  assert.ok(v.some((s) => /fail=1/.test(s)));
 });
 
-test("evaluateCounts BLOCKS (fail-closed) on null counts", () => {
-  const r = fl.evaluateCounts(null, 13);
-  assert.strictEqual(r.ok, false);
-  assert.ok(r.violations.some((v) => /un-parseable/.test(v)));
+test("evaluateFileCounts is fail-closed on null counts", () => {
+  const v = fl.evaluateFileCounts("x/f.js", null);
+  assert.ok(v.some((s) => /un-parseable/.test(s)));
 });
 
-test("evaluateCounts PASSES on a fully-live suite (skipped 0, all pass)", () => {
-  const r = fl.evaluateCounts({ tests: 13, pass: 13, fail: 0, skipped: 0 }, 13);
-  assert.strictEqual(r.ok, true);
-  assert.deepStrictEqual(r.violations, []);
+test("evaluateFileCounts PASSES a file that executed cleanly (>=1 test, all pass, 0 skipped)", () => {
+  const v = fl.evaluateFileCounts("x/f.js", { tests: 2, pass: 2, fail: 0, skipped: 0 });
+  assert.deepStrictEqual(v, []);
 });
 
 test("collectFixtures derives falsifiers + positive companions from manifest surfaces", () => {
@@ -77,36 +73,43 @@ test("collectFixtures derives falsifiers + positive companions from manifest sur
   assert.deepStrictEqual(companions, ["x/pc.js"]);
 });
 
-// ── evaluate() end-to-end with injected seams (no real spawn) ────────────────
-// Uses the REAL default manifest (its fixtures exist on disk post-build) so the presence check
-// passes; only the suite-run + --built are stubbed to drive the verdict branches.
+// ── evaluate() end-to-end with the injected PER-FILE seam (no real spawn) ─────
+// Uses the REAL default manifest (its fixtures exist on disk post-build) so the presence check passes;
+// only the per-file run + --built are stubbed to drive the verdict branches.
 
 const okBuilt = () => ({ ok: true, detail: "record-trust-gate: PASS (built)" });
-const tap = (o) =>
-  `TAP version 13\n# tests ${o.tests}\n# pass ${o.pass}\n# fail ${o.fail}\n# skipped ${o.skipped}\n`;
+const fileTap = (o) => `TAP version 13\n# tests ${o.tests}\n# pass ${o.pass}\n# fail ${o.fail}\n# skipped ${o.skipped}\n`;
+const liveFile = () => ({ stdout: fileTap({ tests: 1, pass: 1, fail: 0, skipped: 0 }) });
 
-test("evaluate PASSES when the suite is fully live and --built is green", () => {
-  const res = fl.evaluate(fl.DEFAULT_MANIFEST, {
-    runSuite: (files) => ({ stdout: tap({ tests: files.length, pass: files.length, fail: 0, skipped: 0 }) }),
-    runBuilt: okBuilt,
-  });
+test("evaluate PASSES when every fixture file executed per-file and --built is green", () => {
+  const res = fl.evaluate(fl.DEFAULT_MANIFEST, { runFile: liveFile, runBuilt: okBuilt });
   assert.strictEqual(res.ok, true, JSON.stringify(res.violations));
   assert.strictEqual(res.code, 0);
 });
 
-test("evaluate BLOCKS when a real skip appears even though --built is green", () => {
-  const res = fl.evaluate(fl.DEFAULT_MANIFEST, {
-    runSuite: (files) => ({ stdout: tap({ tests: files.length, pass: files.length - 2, fail: 0, skipped: 2 }) }),
-    runBuilt: okBuilt,
-  });
+test("evaluate BLOCKS (H1 fix) when ONE fixture file ran ZERO tests — the aggregate-masking hole", () => {
+  // The exact H1 defect: one file runs 0 tests while siblings run 2, so aggregate tests >= fileCount and
+  // an aggregate check would pass. Per-file catches the 0-test file.
+  let n = 0;
+  const runFile = () =>
+    ({ stdout: fileTap(++n === 1 ? { tests: 0, pass: 0, fail: 0, skipped: 0 } : { tests: 2, pass: 2, fail: 0, skipped: 0 }) });
+  const res = fl.evaluate(fl.DEFAULT_MANIFEST, { runFile, runBuilt: okBuilt });
   assert.strictEqual(res.ok, false);
-  assert.strictEqual(res.code, 1);
-  assert.ok(res.violations.some((v) => /skipped === 2/.test(v)));
+  assert.ok(res.violations.some((v) => /ZERO tests executed/.test(v)), JSON.stringify(res.violations));
 });
 
-test("evaluate BLOCKS when --built is red even though the suite is live", () => {
+test("evaluate BLOCKS when a fixture file has a skip even though --built is green", () => {
+  let n = 0;
+  const runFile = () =>
+    ({ stdout: fileTap(++n === 2 ? { tests: 1, pass: 0, fail: 0, skipped: 1 } : { tests: 1, pass: 1, fail: 0, skipped: 0 }) });
+  const res = fl.evaluate(fl.DEFAULT_MANIFEST, { runFile, runBuilt: okBuilt });
+  assert.strictEqual(res.ok, false);
+  assert.ok(res.violations.some((v) => /skipped=1/.test(v)));
+});
+
+test("evaluate BLOCKS when --built is red even though every file is live", () => {
   const res = fl.evaluate(fl.DEFAULT_MANIFEST, {
-    runSuite: (files) => ({ stdout: tap({ tests: files.length, pass: files.length, fail: 0, skipped: 0 }) }),
+    runFile: liveFile,
     runBuilt: () => ({ ok: false, detail: "record-trust-gate: BLOCK — choke_point module missing" }),
   });
   assert.strictEqual(res.ok, false);
@@ -114,7 +117,7 @@ test("evaluate BLOCKS when --built is red even though the suite is live", () => 
 });
 
 test("evaluate is fail-closed (code 2) on an unreadable manifest", () => {
-  const res = fl.evaluate(fl.DEFAULT_MANIFEST + ".nope", { runSuite: () => ({ stdout: "" }), runBuilt: okBuilt });
+  const res = fl.evaluate(fl.DEFAULT_MANIFEST + ".nope", { runFile: liveFile, runBuilt: okBuilt });
   assert.strictEqual(res.code, 2);
   assert.strictEqual(res.ok, false);
 });
