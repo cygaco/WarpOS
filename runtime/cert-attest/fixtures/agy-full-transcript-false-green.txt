@@ -1,0 +1,14 @@
+PROBE OK
+
+
+I0719 12:11:49.303597 38760 resolver.go:85] Model ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA
+I0719 12:11:49.303597 38760 resolver.go:111] Model resolved via default
+I0719 12:11:49.305126 38760 server.go:1417] Language server version: 1.1.4
+I0719 12:11:49.518312 38760 log.go:398] Failed to poll ListExperiments: error getting token source: You are not logged into Antigravity.
+I0719 12:11:49.519398 38760 log.go:398] error getting token source: You are not logged into Antigravity.
+I0719 12:11:49.520458 38760 launchmanager.go:69] Entering local chrome mode! This is WRONG unless you are running tests or in eval mode on Linux.
+I0719 12:11:49.700000 38760 keyring.go:64] keyringAuth: loaded token, expiry=2026-07-19 01:08:12 expired=true
+I0719 12:11:49.779814 38760 auth.go:132] ChainedAuth: authenticated via keyring (effective: keyring)
+I0719 12:11:49.780328 38760 server_oauth.go:221] OAuth: authenticated successfully as operator@example.com
+I0719 12:11:50.368858 38760 model_config_manager.go:213] Propagating selected model override to backend: label="Gemini 3.1 Pro (High)"
+I0719 12:11:52.622915 38760 model_config_manager.go:213] Propagating selected model override to backend: label="Gemini 3.1 Pro (High)"

@@ -128,9 +128,10 @@ test("SHARP-1: a request ECHO ('Model ID <id> queued') is distinguished from a S
   const v = evaluateAttestation({ requestedModel: "gemini-3.1-pro-high", providerId: "antigravity", output: "Model ID gemini-3.1-pro-high queued. PROBE OK", exitOk: true, catalog });
   assert.equal(v.attested, false, "'Model ID <id>' (echo) is not a served self-id — the bare word 'model' must not attest");
 });
-test("positive-proof calibratable: an AUTHENTICATED agy serve ('Model resolved: <id>') ATTESTS", () => {
+test("agy §7 HONEST-CEILING: even a clean-looking agy log ('Model resolved: <id>') does NOT attest (client-echo, never trusted)", () => {
   const v = evaluateAttestation({ requestedModel: "gemini-3.1-pro-high", providerId: "antigravity", output: "Model resolved: gemini-3.1-pro-high\nauthenticated\nPROBE OK", exitOk: true, catalog });
-  assert.equal(v.attested, true, "a genuine served self-id ('resolved: <id>') must attest — the fix is not an agy-hardcoded fail");
+  assert.equal(v.attested, false, "cert-attest refuses to attest agy from its log — no client line is trusted (§7 honest-ceiling)");
+  assert.equal(v.honestCeiling, true, "the reason is the §7 honest-ceiling");
 });
 
 // ── 2026-07-19 α/β RULING (the false-green fix): the "order-aware slice" was UNSOUND. agy emits a
@@ -147,13 +148,14 @@ test("agy unauth signals + a DECEPTIVE auth line + backend-label echo → FAIL n
   assert.equal(v.attested, false, "unauth signals present → fail-closed even with a later auth line + backend-label (agy emits BOTH while unauthenticated): " + v.reason);
   assert.equal(v.defaultSignal, true, "GATE 1 must fire NON-sliceable on the terminal unauth signal");
 });
-test("GENUINE authenticated run — CLEAN log (auth + backend-label serve, NO unauth signal) → ATTESTS (no over-block)", () => {
+test("agy §7 HONEST-CEILING: even a CLEAN log with a backend-label serve does NOT attest (the label is a client echo)", () => {
   const v = evaluateAttestation({
     requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity",
     output: 'ChainedAuth: authenticated via keyring\nOAuth: authenticated successfully as user@x\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nSERVING-CHECK-OK',
     exitOk: true, catalog,
   });
-  assert.equal(v.attested, true, "a clean authenticated run (no unauth tell) with a genuine backend-label serve must still attest: " + v.reason);
+  assert.equal(v.attested, false, "agy's backend-label is a client-side echo (emitted even unauthenticated) → never trusted; §7 fail-closed by construction");
+  assert.equal(v.honestCeiling, true, "the §7 honest-ceiling is the reason (no client line is served-model proof)");
 });
 test("unauth signal AFTER the last auth line → still FAILS (order-awareness cuts one way only)", () => {
   const v = evaluateAttestation({
@@ -172,21 +174,19 @@ test("authenticated but a DIFFERENT display-name label served → FAILS (GATE 2 
   assert.equal(v.attested, false, "a different served label must never attest the requested model");
 });
 
-// ── ED-060 LAYER-3 (the attestation-side id-mapping): agy self-identifies the SERVED model by DISPLAY
-//    name ("backend: label=…"), so attesting the canonical SLUG FALSE-REDs a genuine authenticated serve.
-//    cert-attest#main maps slug→display (catalog.agyModelName) so the served-model comparison runs against
-//    the display name. This is the exact false-RED observed live 2026-07-19 (a real serve read as failure). ──
-test("layer-3: agy backend-label serve FALSE-REDs vs the SLUG, ATTESTS vs the display name (agyModelName)", () => {
+// ── ED-060 LAYER-3 mapping (dispatch-side) STAYS — the canonical slug must translate to agy's display name
+//    at the --model boundary (asserted at the argv level in providers-antigravity.test.js) so a FUTURE
+//    authenticated dispatch serves the contracted model. But the ATTESTATION-side comparison is MOOT under
+//    the §7 honest-ceiling: agy NEVER attests from its log, so NEITHER slug nor display attests here. ──
+test("layer-3 mapping stays (slug→display) but agy §7 honest-ceiling means neither slug nor display attests via the log", () => {
   const serve = 'ChainedAuth: authenticated via keyring\nOAuth: authenticated successfully\nPropagating selected model override to backend: label="Gemini 3.1 Pro (High)"\nPROBE OK';
-  // THE DEFECT cert-attest#main must avoid: comparing agy's display-name serve label to the SLUG.
-  const bySlug = evaluateAttestation({ requestedModel: "gemini-3.1-pro-high", providerId: "antigravity", output: serve, exitOk: true, catalog });
-  assert.equal(bySlug.attested, false, "the slug never appears in agy's display-name serve label → false-RED (the layer-3 defect)");
-  // THE FIX: cert-attest#main resolves the slug→display via catalog.agyModelName before evaluateAttestation.
   const real = require("../dispatch/catalog.js");
-  const display = real.agyModelName("gemini-3.1-pro-high");
-  assert.equal(display, "Gemini 3.1 Pro (High)", "resolver gives the display name");
-  const byDisplay = evaluateAttestation({ requestedModel: display, providerId: "antigravity", output: serve, exitOk: true, catalog });
-  assert.equal(byDisplay.attested, true, "the display name attests the genuine authenticated serve — layer-3 mapping closes ED-060");
+  assert.equal(real.agyModelName("gemini-3.1-pro-high"), "Gemini 3.1 Pro (High)", "resolver still maps slug→display for the dispatch --model boundary");
+  const bySlug = evaluateAttestation({ requestedModel: "gemini-3.1-pro-high", providerId: "antigravity", output: serve, exitOk: true, catalog });
+  const byDisplay = evaluateAttestation({ requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity", output: serve, exitOk: true, catalog });
+  assert.equal(bySlug.attested, false, "agy never attests from its log (§7 honest-ceiling)");
+  assert.equal(byDisplay.attested, false, "agy never attests even with the display name — the backend-label is a client echo, not trusted");
+  assert.equal(byDisplay.honestCeiling, true, "the §7 honest-ceiling is the reason");
 });
 
 // ── CANONICAL NEGATIVE FIXTURE (α/β ruling directive #1): the committed 19-11-56Z artifact is a REAL
@@ -226,6 +226,27 @@ test("filterAgyLogToRunWindow: drops cross-run stale + untimestamped lines, keep
   assert.ok(kept.includes("in-window serve line"), "in-window line kept");
   assert.ok(!kept.includes("STALE"), "1h-stale cross-run line DROPPED (no serve-marker bleed)");
   assert.ok(!kept.includes("continuation"), "untimestamped continuation DROPPED");
+});
+
+// ── FULL-TRANSCRIPT NEGATIVE FIXTURE (gauntlet R1 INT-002/Axis-4): the committed 19-11 ARTIFACT stores only
+//    the 2KB cli_output_head, which lacks the deceptive auth line + backend-label — so a regression to the
+//    old label-trusting logic would NOT be caught by the head-only fixture. This SHA-pinned FULL redacted
+//    transcript carries the whole false-green scenario (unauth tells + keyring expired=true + deceptive
+//    ChainedAuth/OAuth + fake backend-label serve of the display name), so ANY regression that re-trusted a
+//    client line would flip this to attested:true and the test would catch it. Evaluate the exact bytes. ──
+test("FULL-transcript false-green fixture (deceptive auth + fake backend-label + unauth tells) → attested:false, SHA-pinned", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const crypto = require("crypto");
+  const fixturePath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "fixtures", "agy-full-transcript-false-green.txt");
+  const bytes = fs.readFileSync(fixturePath);
+  const sha = crypto.createHash("sha256").update(bytes).digest("hex");
+  assert.equal(sha, "c7333f4e9e884bde782add82d2fbe8a447b6a35a20bc7c7bc4a209a318ae66b9", "fixture SHA-256 pinned — the transcript must not drift (it is the full false-green exemplar)");
+  const out = bytes.toString("utf8");
+  // Sanity: the fixture really does carry BOTH the deceptive positive markers a regression would trust.
+  assert.ok(/ChainedAuth: authenticated/.test(out) && /Propagating selected model override to backend: label="Gemini 3\.1 Pro \(High\)"/.test(out), "fixture carries the deceptive auth line + fake backend-label (else it can't catch a label-trust regression)");
+  const v = evaluateAttestation({ requestedModel: "Gemini 3.1 Pro (High)", providerId: "antigravity", output: out, exitOk: true, catalog });
+  assert.equal(v.attested, false, "the FULL false-green transcript must fail-closed — restoring any client-line trust (old slice / GATE-2 label-trust) would flip this to true: " + v.reason);
 });
 
 if (failures.length) {

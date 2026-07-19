@@ -152,6 +152,27 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
         "served-model UNVERIFIABLE — THIS run's output carries an UNAMBIGUOUS TERMINAL default/eval/keyring signal ('resolved via default' / 'local chrome mode … eval mode' / keyring expired=true / auth-failed): agy served the DEFAULT, not the contracted model → fail-closed (α/β narrowed ruling 2026-07-19). Ambiguous startup transients (not-logged-in / defaulting) are NOT hard-failed here — they are carried by GATE-2 (default backend-label) + pid/time-window attribution — so a genuine authed serve is not false-RED'd.",
       defaultSignal: true,
     };
+  // §7 HONEST-CEILING FAIL-CLOSED for ANTIGRAVITY (α-RATIFIED + β-line 2026-07-19; gauntlet R1 CONVERGENT
+  // CRITICAL, both cross-provider lanes). agy CANNOT self-attest a genuine serve from its log: the ONLY
+  // "serve marker" agy emits is the CLIENT-SIDE "Propagating … backend: label=<display>" echo, which agy
+  // emits EVEN WHEN UNAUTHENTICATED (both the 19-11-56Z AND 07-18-13-003Z false-greens carried the requested
+  // display label while serving the CCPA default). Trusting it is a residual false-green a novel unauth
+  // phrase walks through (denylist GATE-1 + echo-trusting GATE-2). So NO agy log line is accepted as
+  // served-model proof — cert-attest REFUSES to attest agy from its log. This is TRUST-REMOVAL: fail-closed
+  // by construction, it can NEVER false-green. The genuine ED-060 proof is a REAL AUTHENTICATED dispatch-agent
+  // record post-login (a real review that returned a genuine NON-default response under an authenticated
+  // backend), NOT this probe. Non-agy providers (codex/claude) keep GATE-2 below — their served-model self-id
+  // header is a TRUSTWORTHY CLI report, not a client echo. (ADR-0025: "the true close is upstream — agy
+  // emitting a machine-readable served-model line under an authenticated backend"; that line does not exist.)
+  if (providerId === "antigravity")
+    return {
+      attested: false,
+      effective: null,
+      reason:
+        "§7 HONEST-CEILING (α-ratified 2026-07-19): agy cannot self-attest a genuine serve from its log — the 'backend: label' line is a CLIENT-SIDE echo agy emits even while unauthenticated (the 19-11 + 07-18 false-greens). No agy log line is trusted as served-model proof → fail-closed by construction. ED-060 closes ONLY via a real authenticated dispatch-agent record post-login, never this probe.",
+      honestCeiling: true,
+      servedSelfId: false, // agy's log is never a served-self-id source (the client echo is not trusted)
+    };
   // Any OTHER catalog model for this provider appearing in the output = a served-a-different-model tell.
   let otherSeen = null;
   try {
@@ -419,6 +440,19 @@ function main(argv) {
   // through UNCHANGED. The probe --model arg is already display-translated by probeShape; this closes
   // the third and last site (dispatch-arg providers.js + dispatch-arg cert-attest + THIS comparison).
   const attestModel = providerId === "antigravity" ? catalog.agyModelName(model) : model;
+  // Axis-5 (gauntlet R1): refuse to spawn a NON-CONTRACTED antigravity model. agyModelName passes unmapped
+  // ids through, so `--provider antigravity --model "Claude Sonnet 4.6 (Thinking)"` would otherwise spawn a
+  // non-contracted model (agy exposes non-Google models too). Require the model to be a catalog antigravity
+  // entry — by canonical id OR its agyModelName. Fail-closed BEFORE the spawn (the safe-spawn agy ARG_POLICY
+  // is a charset gate, not a contract gate — this is the contract gate).
+  if (providerId === "antigravity") {
+    const prov = catalog.getProvider("antigravity");
+    const contracted = ((prov && prov.models) || []).some((m) => m.id === model || m.agyModelName === model);
+    if (!contracted) {
+      process.stderr.write(`${NAME}: "${model}" is not a contracted antigravity model (catalog entry required by id or agyModelName) — refusing to spawn a non-contracted model.\n`);
+      return 2;
+    }
+  }
   const shape = probeShape(providerId, model, providerId === "openai" ? effort : null);
   if (!shape) {
     process.stderr.write(`${NAME}: no probe shape for provider "${providerId}"\n`);
