@@ -1,17 +1,23 @@
 #!/usr/bin/env node
 // scripts/dispatch/dispatch-record-fields.js
 // Additive dispatch-ledger record fields — the pure mechanism for WG-13
-// (write-ahead started-row) and WG-11(a) (quota field). NEW FILE, zero wiring
-// into any dispatch script: these are pure builders + predicates so the future
-// one-line wiring into the (currently frozen) writers and gauntlet-verify is
-// trivial and non-conflicting.
+// (write-ahead started-row) and WG-11(a) (quota field): pure builders +
+// predicates, path-resolution-free by design (the canonical ledger file lives
+// in scripts/dispatch-agent.js#ledgerFile/canonicalFile — the CALLER supplies
+// it here so this module never forks the sink's path logic).
 //
-// WHY PURE / UNWIRED: the completion/death record writers live in
-// scripts/dispatch-agent.js, which is mid-flight on sprint/SP-20260716-001-dispatch.
-// Pre-editing that file (or pre-shaping its record schema) is exactly the
-// conflict the branch owner forbade. This lib lands the *mechanism* now; the
-// wiring is logged as enforcement-debt (WG-13 / WG-11a) to be applied as
-// one-liners once the sprint branch merges.
+// WIRED (SP-20260718-005 BE-2 / ED-069 + ED-070): dispatch-agent.js exports a
+// `recordDispatchStart()` wrapper (this file's recordStart() + its own
+// canonical ledger path) and calls it pre-spawn; dispatch-claude.js imports
+// the SAME wrapper; epsilon-runtime.js's CLAUDE_RAW route (the one raw
+// subprocess spawn it performs itself) calls it too. recordCompletion (the
+// single sink) stamps a `quota` fragment (quotaField()) on every completion
+// record, defaulting to the honest `{known:false}` shape when a caller hasn't
+// supplied real quota knowledge — so EVERY writer's record carries a `quota`
+// field with zero per-call-site duplication. See
+// scripts/checks/all-writers-route-recordCompletion.js for the structural
+// guard that keeps a future writer from bypassing recordCompletion and
+// forking this shape.
 //
 // ── WG-13: write-ahead started-row ───────────────────────────────────────────
 // The dispatch ledger is append-only; today the ONLY row is the terminal
@@ -156,6 +162,31 @@ function quotaField(provider, known = {}) {
 }
 
 /**
+ * BE-2 (ED-069) WIRING: compose startedRow() + appendRecord() into ONE call so
+ * a writer emits a correctly-shaped write-ahead started-row with a single line
+ * of code. Deliberately PATH-AGNOSTIC (this module stays pure/path-resolution-
+ * free by design — see file header): the CALLER supplies the canonical ledger
+ * file (dispatch-agent.js#ledgerFile/canonicalFile), so a started-row lands in
+ * the EXACT SAME file recordCompletion writes to — never a second/forked
+ * ledger. A completion later correlates to its start by dispatch_id
+ * (startedRowSuperseded()).
+ *
+ * Throws exactly when startedRow() would (missing role/provider — a caller
+ * bug that should be loud in dev). Callers that must never let telemetry
+ * crash a live dispatch should wrap this in try/catch (mirrors recordCompletion's
+ * own fail-open discipline at the call site).
+ *
+ * @param {string} file absolute path to the dispatch-completions ledger
+ * @param {object} fields see startedRow()
+ * @param {object} [extra] additional additive fields (e.g. runContext())
+ * @returns {boolean} true on a successful append (mirrors appendRecord)
+ */
+function recordStart(file, fields = {}, extra = {}) {
+  const row = startedRow(fields, extra);
+  return appendRecord(file, row);
+}
+
+/**
  * Atomic append of a record to a JSONL ledger (tmp + rename per line is
  * overkill for append; appendFileSync of one line is already atomic on the
  * platforms we run). Fail-open: telemetry never blocks dispatch. Provided so a
@@ -190,6 +221,7 @@ module.exports = {
   startedRow,
   isStartedRow,
   startedRowSuperseded,
+  recordStart,
   quotaField,
   appendRecord,
 };
