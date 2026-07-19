@@ -80,13 +80,43 @@ test("produceForTest() yields a record acceptable to the golden path (positive c
 // read-only git resolving the target ref's actual tree and it MATCHING the record's claimed digest.
 const okTree = () => "tree-OK";
 
+// SP-20260718-005 gauntlet R2/C2: authorizesIntegration now requires the FULL mandatory context — a live
+// integrationHead (=== the record's base "base-OK"), REAL lease coordinates + a current fencing token on the
+// record, plus the injected tree resolver. This helper mints a valid lease and returns a fully-valid record
+// + the opts that authorize it (the production shape). Happy paths must pass through it.
+function validCtx(tag) {
+  const root = tmpLeaseRoot(tag);
+  const spId = "SP-" + String(tag).toUpperCase();
+  const a = lease.acquire(spId, { root, sessionId: "sess-" + tag });
+  const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token });
+  const opts = { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree };
+  return { root, spId, token: a.token, record, opts };
+}
+
 // ── authorizesIntegration() happy path ──────────────────────────────────────────────────────────────
-test("HAPPY: a fully-valid record for the matching target with a fresh base + confirmed recompute authorizes", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", treeResolver: okTree }),
-    true,
-  );
+test("HAPPY: a fully-valid record with fresh base + current lease + confirmed recompute authorizes", () => {
+  const { record, opts } = validCtx("happy4");
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), true);
+});
+
+test("FAIL-CLOSED (R2/C2): omitting the MANDATORY freshness head BLOCKS even an otherwise-valid record", () => {
+  const { record, opts } = validCtx("happy4b");
+  const { integrationHead, ...noHead } = opts; // drop the mandatory freshness coordinate
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", noHead), false);
+});
+
+test("FAIL-CLOSED (R2/C2): omitting the MANDATORY lease coordinates BLOCKS even an otherwise-valid record", () => {
+  const { record, opts } = validCtx("happy4c");
+  const { spId, leaseRoot, ...noLease } = opts; // drop the mandatory lease coordinates
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", noLease), false);
+});
+
+test("FAIL-CLOSED (R2/C2): a record missing the checker/policy/evidence identity digests BLOCKS", () => {
+  const { record, opts } = validCtx("happy4d");
+  for (const missing of [{ checker_digests: {} }, { policy_digest: "" }, { evidence_digests: {} }]) {
+    const bad = Object.assign({}, record, missing);
+    assert.strictEqual(acc.authorizesIntegration(bad, "refs/heads/integration", opts), false, JSON.stringify(missing));
+  }
 });
 
 test("FAIL-CLOSED (C2 fix): authorizesIntegration with NO opts DOES NOT authorize — recompute is mandatory, and the default git resolver cannot confirm a synthetic tree, so it BLOCKS (the prior fail-open path is closed)", () => {
@@ -185,7 +215,7 @@ test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease toke
   const a1 = lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { spId, leaseRoot: root, treeResolver: okTree }),
+    acc.authorizesIntegration(record, "refs/heads/integration", { integrationHead: "base-OK", spId, leaseRoot: root, treeResolver: okTree }),
     true,
   );
 });
@@ -201,17 +231,24 @@ test("ADVERSARIAL: lease coordinates given but the conductor-lease module can't 
 });
 
 // ── commitIntegration() — the post-merge CAS receipt, split from pre-merge authorization ──────────────
-test("HAPPY: commitIntegration succeeds when the live head matches the expected (validated) head", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H1", treeResolver: okTree });
-  assert.strictEqual(result.ok, true);
+test("HAPPY: commitIntegration succeeds when the live head matches the validated head (bound to base_commit)", () => {
+  const { record, opts } = validCtx("commit-happy");
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "base-OK", liveHead: "base-OK" });
+  assert.strictEqual(result.ok, true, result.reason);
   assert.strictEqual(result.receipt.target_ref, "refs/heads/integration");
-  assert.strictEqual(result.receipt.committed_head, "H1");
+  assert.strictEqual(result.receipt.committed_head, "base-OK");
+});
+
+test("ADVERSARIAL (R2/C3): commitIntegration blocks when expectedHead !== the record's base_commit (CAS not bound to accepted base)", () => {
+  const { record, opts } = validCtx("commit-basebind");
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "SOME-OTHER-HEAD", liveHead: "SOME-OTHER-HEAD" });
+  assert.strictEqual(result.ok, false);
+  assert.strictEqual(result.reason, "expected-head-base-mismatch");
 });
 
 test("ADVERSARIAL: commitIntegration blocks when the live head moved since validation (F12 CAS race)", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  const result = acc.commitIntegration(record, "refs/heads/integration", { expectedHead: "H1", liveHead: "H2", treeResolver: okTree });
+  const { record, opts } = validCtx("commit-race");
+  const result = acc.commitIntegration(record, "refs/heads/integration", { ...opts, expectedHead: "base-OK", liveHead: "H2" });
   assert.strictEqual(result.ok, false);
   assert.strictEqual(result.reason, "validation-to-merge-race");
 });
@@ -238,8 +275,8 @@ test("ADVERSARIAL: commitIntegration honors the lease-fencing seam too (a supers
   lease.acquire(spId, { root, sessionId: "sess-current" });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
   const result = acc.commitIntegration(record, "refs/heads/integration", {
-    expectedHead: "H1",
-    liveHead: "H1",
+    expectedHead: "base-OK",
+    liveHead: "base-OK",
     spId,
     leaseRoot: root,
   });
@@ -247,15 +284,15 @@ test("ADVERSARIAL: commitIntegration honors the lease-fencing seam too (a supers
   assert.strictEqual(result.reason, "superseded-lease");
 });
 
-test("TEETH (C3 fix): commitIntegration BLOCKS a forged record even when the heads match — no reaching the CAS without full authorization", () => {
-  // A record with a fabricated result_tree_hash + matching expected/live head. Before the fix, target-match
-  // + head-CAS alone returned {ok:true} and performRefUpdate would mutate the ref. Now commitIntegration
-  // re-verifies authorizesIntegration (mandatory recompute), which the honest resolver ("tree-OK" != forged) BLOCKS.
-  const forged = acc.produceForTest({ target_ref: "refs/heads/integration", result_tree_hash: "f".repeat(40) });
+test("TEETH (C3 fix): commitIntegration BLOCKS a forged-tree record even with matching heads + a VALID lease — recompute inside authorization catches it", () => {
+  // A record with a fabricated result_tree_hash but an otherwise-valid lease/context, so authorization REACHES
+  // the mandatory recompute (not just the lease/identity guards) and the honest resolver ("tree-OK" != forged) BLOCKS.
+  const { opts, token } = validCtx("commit-forged");
+  const forged = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: token, result_tree_hash: "f".repeat(40) });
   const result = acc.commitIntegration(forged, "refs/heads/integration", {
-    expectedHead: "H1",
-    liveHead: "H1",
-    treeResolver: okTree,
+    ...opts,
+    expectedHead: "base-OK",
+    liveHead: "base-OK",
     performRefUpdate: true, // even asking for the real mutation, authorization gates it first
   });
   assert.strictEqual(result.ok, false);
@@ -263,13 +300,19 @@ test("TEETH (C3 fix): commitIntegration BLOCKS a forged record even when the hea
 });
 
 test("commitIntegration never mutates git by default (no performRefUpdate opt-in)", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/acc-record-noop-test-ref" });
+  const root = tmpLeaseRoot("commit-noop");
+  const spId = "SP-COMMIT-NOOP";
+  const a = lease.acquire(spId, { root, sessionId: "sess-noop" });
+  const record = acc.produceForTest({ target_ref: "refs/heads/acc-record-noop-test-ref", lease_fencing_token: a.token });
   const result = acc.commitIntegration(record, "refs/heads/acc-record-noop-test-ref", {
-    expectedHead: "H1",
-    liveHead: "H1",
+    integrationHead: "base-OK",
+    spId,
+    leaseRoot: root,
+    expectedHead: "base-OK",
+    liveHead: "base-OK",
     treeResolver: okTree,
   });
-  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.ok, true, result.reason);
   // resolveCommitSha must still find nothing for this never-created ref (no side effect occurred).
   assert.strictEqual(acc.resolveCommitSha("refs/heads/acc-record-noop-test-ref"), null);
 });

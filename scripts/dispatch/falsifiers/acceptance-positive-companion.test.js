@@ -8,6 +8,7 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const ROOT = path.resolve(__dirname, "..", "..", "..");
 const MOD = path.join(ROOT, "scripts", "dispatch", "acceptance-record.js");
@@ -15,25 +16,20 @@ const MOD = path.join(ROOT, "scripts", "dispatch", "acceptance-record.js");
 test("AC-4 positive companion — a fully valid AcceptanceRecord DOES authorize integration", (t) => {
   if (!fs.existsSync(MOD)) return t.skip("pending SEC-2 — acceptance-record.js not yet built (companion RED)");
   const acc = require(MOD);
-  // Build a record the module itself certifies valid, so this stays true against the real content-addressed
-  // trust anchor (the exact base/tree/digest values are the module's to define — use its own producer if present).
-  const record =
-    typeof acc.produceForTest === "function"
-      ? acc.produceForTest({ target_ref: "refs/heads/integration" })
-      : {
-          workorder_digest: "wo-OK",
-          base_commit: "base-OK",
-          result_tree_hash: "tree-OK",
-          target_ref: "refs/heads/integration",
-          terminal_state: "success",
-        };
-  // SP-20260718-005 gauntlet C2 fix: recompute is MANDATORY. The golden path injects a treeResolver that
-  // returns the record's OWN honest tree — the analog of production's real read-only git resolving the
-  // target ref's actual tree and it MATCHING the honest record's digest. (A forged record's digest would
-  // not match; a reject-everything stub still returns false — both false-greens stay defeated.)
+  const lease = require(path.join(ROOT, "scripts", "dispatch", "conductor-lease.js"));
+  // SP-20260718-005 gauntlet R2/C2: authorization now requires the FULL mandatory context — a live integration
+  // head, real lease coordinates + a current fencing token on the record, full identity digests, and the tree
+  // resolver. The golden path mints a real lease so the record's token is CURRENT (production's exact shape).
+  const leaseRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acc-pos-companion-"));
+  const spId = "SP-ACC-POS-COMPANION";
+  const held = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-companion" });
+  // produceForTest already carries the full checker/policy/evidence identity; add the current lease token.
+  const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: held.token });
   const authorized = acc.authorizesIntegration(record, "refs/heads/integration", {
-    integrationHead: "base-OK",
-    treeResolver: () => record.result_tree_hash,
+    integrationHead: "base-OK", // === record.base_commit ("base-OK") — mandatory freshness coordinate
+    spId,
+    leaseRoot, // mandatory lease coordinates; token verified current
+    treeResolver: () => record.result_tree_hash, // mandatory recompute; honest tree matches
   });
   assert.strictEqual(
     authorized,

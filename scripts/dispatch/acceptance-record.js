@@ -229,18 +229,29 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   //     irrelevant (F2/F6); an untyped ResultEnvelope has no terminal_state at all and fails here too.
   if (record.terminal_state !== "success" || !TERMINAL_STATES.includes(record.terminal_state)) return false;
 
-  // content-addressed identity must be PRESENT — a record missing its own claimed digests is not a
-  // trusted AcceptanceRecord at all (a bare `{success:true}` envelope already failed at (a), belt here).
+  // FULL content-addressed identity MANDATORY (SP-20260718-005 gauntlet R2/C2): the trust anchor is the
+  // WHOLE verifier-bound identity, not just the tree. R1 required only tree/base/workorder present; the
+  // gauntlet showed the checker/policy/evidence digests (the verifier's proof the checkers actually ran)
+  // were never required — a record could omit them and still authorize. A trusted AcceptanceRecord MUST
+  // carry all of them, non-empty, or it fails closed.
   if (!record.result_tree_hash || !record.base_commit || !record.workorder_digest) return false;
+  const _nonEmptyObj = (o) => o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length > 0;
+  if (!_nonEmptyObj(record.checker_digests)) return false; // the checkers-ran proof
+  if (typeof record.policy_digest !== "string" || !record.policy_digest.trim()) return false;
+  if (!_nonEmptyObj(record.evidence_digests)) return false; // the evidence proof
 
-  // (d) freshness — the base must not be stale against the live integration head (check->merge TOCTOU).
-  if (opts.integrationHead != null && record.base_commit !== opts.integrationHead) return false;
+  // (d) freshness MANDATORY (R2/C2): the caller MUST supply the live integration head and the record's base
+  //     MUST match it — the prior `if (opts.integrationHead != null)` opt-in let a caller SKIP the check->
+  //     merge TOCTOU guard by simply omitting the coordinate (fail-open). No opt-out: absent head → BLOCK.
+  if (opts.integrationHead == null || String(opts.integrationHead) === "") return false;
+  if (record.base_commit !== opts.integrationHead) return false;
 
-  // (e) lease-fencing seam (SEC-4) — only evaluated when the caller supplies the lease coordinates;
-  //     a record minted under a superseded lease is refused even though it is otherwise well-formed.
-  if (opts.spId != null && opts.leaseRoot != null) {
-    if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) return false;
-  }
+  // (e) lease-fencing MANDATORY (R2/C2, SEC-4): the caller MUST supply the lease coordinates AND the record
+  //     MUST carry a fencing token, and it MUST be current. The prior `if (opts.spId && opts.leaseRoot)`
+  //     opt-in let a caller authorize under a superseded/absent lease by omitting the coordinates (fail-open).
+  if (opts.spId == null || opts.leaseRoot == null) return false;
+  if (record.lease_fencing_token == null) return false;
+  if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) return false;
 
   // (c) trusted-verifier RECOMPUTE — MANDATORY, never optional (SP-20260718-005 gauntlet C2 fix).
   //     The content-addressed trust anchor is only real if the verifier ALWAYS recomputes result_tree_hash
@@ -274,6 +285,12 @@ function commitIntegration(record, targetRef, opts = {}) {
   if (record.target_ref !== targetRef) return { ok: false, reason: "target-mismatch" };
   if (opts.expectedHead == null) return { ok: false, reason: "missing-expected-head" };
 
+  // C3/R2: BIND the CAS to the accepted content — expectedHead (the head validation observed) MUST be the
+  // record's base_commit. The gauntlet showed a stale-base record with matching expected/live heads passed:
+  // commitIntegration never tied the head it was committing against to the base the record was built on, so
+  // a record for base A could authorize a merge whose expectedHead was B. No opt-out: mismatch → BLOCK.
+  if (opts.expectedHead !== record.base_commit) return { ok: false, reason: "expected-head-base-mismatch" };
+
   if (opts.spId != null && opts.leaseRoot != null) {
     if (!verifyFencingToken(opts.spId, record.lease_fencing_token, opts.leaseRoot)) {
       return { ok: false, reason: "superseded-lease" };
@@ -288,7 +305,10 @@ function commitIntegration(record, targetRef, opts = {}) {
   // (authorizesIntegration: terminal-state + MANDATORY content-addressed recompute + freshness + lease
   // fencing) as a precondition — defense-in-depth over the split, fail-closed if authorization does not hold.
   // (Ordered AFTER the explicit lease check so a superseded lease keeps its specific reason.)
-  if (!authorizesIntegration(record, targetRef, opts)) return { ok: false, reason: "not-authorized" };
+  // authorizesIntegration now REQUIRES the freshness coordinate (R2/C2) — supply integrationHead from the
+  // validated expectedHead (which === base_commit above) so the mandatory freshness check has its input.
+  const authzOpts = { ...opts, integrationHead: opts.integrationHead != null ? opts.integrationHead : opts.expectedHead };
+  if (!authorizesIntegration(record, targetRef, authzOpts)) return { ok: false, reason: "not-authorized" };
 
   const liveHead = opts.liveHead !== undefined ? opts.liveHead : resolveCommitSha(targetRef, opts);
   if (liveHead == null) return { ok: false, reason: "unresolvable-live-head" };
@@ -297,6 +317,14 @@ function commitIntegration(record, targetRef, opts = {}) {
   if (opts.performRefUpdate === true) {
     if (typeof opts.newHead !== "string" || !/^[0-9a-f]{7,40}$/i.test(opts.newHead)) {
       return { ok: false, reason: "missing-new-head-for-ref-update" };
+    }
+    // C3/R2: the committed newHead MUST resolve to the ACCEPTED tree — the CAS can advance the ref only to a
+    // commit whose tree === the record's recompute-accepted result_tree_hash. The gauntlet showed the CAS
+    // never verified this, so it could update the ref to a commit OTHER than the accepted work. Fail-closed.
+    const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : resolveTreeHash;
+    const newTree = resolveTree(opts.newHead, opts);
+    if (!newTree || String(newTree).toLowerCase() !== String(record.result_tree_hash).toLowerCase()) {
+      return { ok: false, reason: "new-head-tree-mismatch" };
     }
     const cwd = opts.gitRoot || PROJECT_ROOT;
     try {
