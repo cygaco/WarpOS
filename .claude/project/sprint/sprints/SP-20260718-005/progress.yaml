@@ -1,13 +1,13 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: SP-20260718-005
-updated_at: "2026-07-19T23:25:00.000Z"
+updated_at: "2026-07-20T00:05:00.000Z"
 current_phase: execute
 current_command: "/sprint:execute"
 current_ticket: null
 current_task: "design-complete; entering build (backend-first)"
 current_loop: null
 status: paused
-last_completed_step: "R5 (bounded-final, beta DECIDE B/0.89) EXECUTED + RE-GAUNTLET = 3-lane FAIL (all LIVE per WG-19) -> beta bounded-final HARD STOP FIRED -> PARKED. R5 code+teeth committed (d463c50b Cluster-1 whole-lifecycle generation fence + atomic election + pidProvenDead; 22654a3c Cluster-2 immutable-SHA result_commit + recompute-from-record + exact-SHA override + ancestry); local battery 241/241 + exit-gate CLIs green. R5 fixes STRUCTURALLY sound (reviewers confirm ABA + result-side override CLOSED) but a THIRD RECURRENCE of BOTH classes appeared one site/field over: lease reclaim() stale-TTL path reclaims indeterminate-pid leases (ED-237); base_commit still a free string (ED-238). Both binding lanes invoked the cap -> mechanism rethink, NOT R6."
+last_completed_step: "ED-237/238 MECHANISM UNIT (beta design-lock DECIDE 0.90) BUILT + committed (802fa80a ED-237 3-state pidLiveness gate at all reclaim sites; 2375348c ED-238 typed commit-identity schema + reachable CAS guard); local battery 261/261 + exit-gate CLIs + all beta exit-greps green. FRESH 3-lane gauntlet in progress (serialized codex). Backend lane landed FAIL — but reviewer CONFIRMS the ED-237 MODEL is complete + both core vectors closed; the FAIL is a NEW different-class finding (a livelock in the R5-era reclaimDeadGeneration return contract: returns true even if the dead-lock unlink failed -> withMutationLock can busy-loop past its deadline). NOT a core-vector leak / NOT a model iteration -> the FRESH hard-stop trigger did not fire; boundary judgment owed to lead. sec+qa lanes pending."
 next_action: "PARKED at beta's bounded-final HARD STOP (3rd recurrence of both defect classes) — do NOT start R6, do NOT patch. AWAIT operator/alpha mechanism-rethink ruling on: ED-237 (model PID liveness as 3-state dead/live/INDETERMINATE and reject indeterminate before ANY reclaim, incl. the lease stale-past-TTL path — a single pidLiveness primitive + uniform policy at all reclaim sites) and ED-238 (a VALIDATED AcceptanceRecord type/schema where EVERY commit-identity field — base_commit + result_commit + the head coordinates — is an immutable 40-hex SHA by construction, not field-by-field regex bolted onto authz; + an independently-reachable CAS-binding tooth). The fix SHAPE (patch-the-flagged-site) is wrong; the class recurs one site/field over each round. R5 code committed (d463c50b, 22654a3c) — a rescoped mechanism fix builds ON it; do NOT revert. ED-236/237/238 OPEN. Release gates NOT cleared. Prior beta gauntlet->release B/0.90 STALE."
 active_files: []
 modified_files: []
