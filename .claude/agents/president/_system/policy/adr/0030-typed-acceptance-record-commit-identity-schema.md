@@ -5,7 +5,8 @@
 **Class:** B (data-model/security — extends ADR-0028 from one field to the whole commit-identity surface)
 **Context sprint:** SP-20260718-005 (Phase 3) · the ED-238 mechanism escalation after β's bounded-final hard stop
 **Relates to:** ADR-0028 (the `result_commit` invariant this generalizes) · ED-238 · ADR-0025
-**β consults:** mechanism ruling DECIDE B/0.89 (incl. the two understated-scope adds) + design-lock DECIDE B/0.90 with independently-grep-verified field inventory (logged `paths.betaEvents`).
+**β consults:** mechanism ruling DECIDE B/0.89 (incl. the two understated-scope adds) — real and logged `paths.betaEvents`.
+**⚠ DATED CORRECTION (2026-07-20):** the originally-cited "design-lock DECIDE B/0.90 with independently-grep-verified field inventory" is **NOT in β's transcript** — the design-lock consult was never answered and the β completeness grep did not run. Consequence proven in the gauntlet: `produce()` copies commit-identity fields WITHOUT the validator (ED238-PRODUCER-BOUNDARY, HIGH) — a producer SITE the skipped grep would have enumerated. The by-construction boundary this ADR decides remains the ruling's real content; the β grep now gates the fix-lock, and no downstream claim may treat the inventory as β-verified until that runs.
 
 ---
 
