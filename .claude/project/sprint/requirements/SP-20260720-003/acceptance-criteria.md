@@ -19,7 +19,11 @@ verified_by (the enforcer's own test/fixture) per G0.1 (name-the-enforcer).
 - EXCUSED when no live registry role of that (tier/kind, provider) exists.
 - WAIVED (explicit, documented) for deliberate deferrals: `{tier:director, provider:antigravity}`
   (ADR-0031 β-deferral; HARD CONSTRAINT 1 — do NOT re-add the rule; the waiver documents the deferral;
-  role-parity is the live-role backstop).
+  role-parity is the live-role backstop). β RIDERS (2026-07-20 DECIDE): the waiver entry must be the
+  NARROWEST form (exactly `{tier:director, provider:antigravity}` — never director-wide or
+  antigravity-wide), carry a WHY (ADR-0031 pointer + nonexistent-consumer rationale), and meta-lockstep
+  MUST FLAG if the waiver is WIDENED beyond the narrowest documented set (a waiver that can grow
+  unobserved re-introduces the silent-absence it cures = a bypass).
 
 ### D2 — scripts/checks/security-binding-lane.js (two teeth)
 - Tooth-A (ED-244), enforced WHILE ED-230 open — assert the PANEL BINDING invariant (NOT
@@ -118,6 +122,23 @@ sprint, route through α if ever taken.
   security-reviewer as a single-pass binding path (dispatch-agent security-reviewer bypassing
   dispatch-review's panel gate) — closes the "audit-has-no-enforcer" rot QL flagged.
   verified_by: security-binding-lane.test.js#no-nontest-single-pass-binding-caller.
+- AC-15 (waiver integrity — β rider): the meta-lockstep waiver list is (a) NARROWEST-form only — an
+  entry broader than `{tier:director, provider:antigravity}` (director-wide or antigravity-wide) → RED;
+  (b) each entry carries a non-empty WHY/reason field → an entry without one → RED; (c) WIDEN-DETECT —
+  meta-lockstep RED if the waiver set is widened beyond the frozen documented baseline (a waiver that
+  grows unobserved is a bypass). verified_by: meta-lockstep.test.js#waiver-narrowest +
+  #waiver-requires-why + #waiver-widen-flagged (all required-present negatives).
+- AC-16 (failure-message legibility — maintainer FTUE, product-lead rider): each scan's RED finding is
+  self-orienting for a zero-context maintainer — it names (a) the broken invariant in plain language,
+  (b) the specific offending (tier/kind/provider) or alias key, and (c) a remediation pointer
+  (meta-lockstep: "add the paired cross-provider rule OR a narrowest-form documented waiver [ADR-0031]";
+  security-binding-lane: "gated on ED-230; binding verdict must resolve to a verifiable lane
+  openai|claude"). Reuse the AC-1 reason-string seam — extend it to require the remediation token, no
+  parallel mechanism. verified_by: {meta-lockstep,security-binding-lane}.test.js#finding-names-reason-and-remediation.
+- AC-17 (flip-criterion tracked, not aspirational — product-lead rider): at close, meta-lockstep's
+  report-only→blocking flip criterion ("one clean scan:full cycle") is logged as an enforcement-debt
+  entry (named owner + explicit trigger) so the report-only state is self-terminating + visible at
+  /enforcement:list + /scan:full. Pairs with AC-12. verified_by: ledger diff (flip-criterion ED present at close).
 
 ## Placement (scan:full) — QL ruling
 - meta-lockstep (D1): start REPORT-ONLY; flip to BLOCKING after one clean scan:full cycle (DoE: the
