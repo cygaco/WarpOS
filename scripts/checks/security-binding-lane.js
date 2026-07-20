@@ -57,8 +57,13 @@ function realDeps() {
       return { binding: prof.binding, min_families: prof.min_families, lanes };
     },
     getProviderForRole: providers.getProviderForRole,
-    providersRaw: providers.DEFAULT_AGENT_PROVIDERS || {},
-    catalogRaw: catalog.DEFAULT_PROVIDER_PER_ROLE || {},
+    // Tooth-B(1) compares the INDEPENDENT raw LITERAL maps (catalog HARDCODES redteam=openai; providers'
+    // literal spreads SCRAPPED_PROVIDER_ALIASES) — NOT the DERIVED maps, which BOTH resolve the redteam alias
+    // from the shared SCRAPPED_PROVIDER_ALIASES and so can never diverge (a production tautology — gauntlet-caught).
+    // The literal maps are exported per the SP-20260720-003 gauntlet fix (α-gated additive export). The fallback
+    // to the derived map keeps the check running pre-export — tautological until the export lands (named residual).
+    providersRaw: providers.LITERAL_DEFAULT_AGENT_PROVIDERS || providers.DEFAULT_AGENT_PROVIDERS || {},
+    catalogRaw: catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE || catalog.DEFAULT_PROVIDER_PER_ROLE || {},
     enforcementDebtPath: PATHS.enforcementDebt,
   };
 }
@@ -81,14 +86,19 @@ function ed230IsOpen(ledgerText) {
     try {
       rec = JSON.parse(t);
     } catch {
-      continue; // a malformed line never relaxes; skip it
+      // fail-closed: a malformed ledger line is a corruption signal → strict. It must NOT be silently
+      // skipped (a malformed trailing line after a valid `closed` record would otherwise leave the close
+      // effective — the gauntlet-caught fail-open). Any unparseable line forces OPEN.
+      return { open: true, reason: "malformed ledger line → assume OPEN (fail-closed)" };
     }
     if (rec && rec.id === "ED-230") last = rec; // LAST-write-wins (append-only JSONL)
   }
   if (!last) return { open: true, reason: "no ED-230 record in a non-empty ledger → assume OPEN (fail-closed)" };
   const closed = last.status === "closed";
   const receiptRaw = last.closure_receipt != null ? last.closure_receipt : last.closed_ts;
-  const hasReceipt = typeof receiptRaw === "string" ? receiptRaw.trim() !== "" : receiptRaw != null && receiptRaw !== false;
+  // require a NON-EMPTY STRING receipt — reject {}, [], true, 0, null and EVERY non-string truthy value
+  // (a spoofable receipt type must never relax a security gate — gauntlet-caught).
+  const hasReceipt = typeof receiptRaw === "string" && receiptRaw.trim() !== "";
   if (closed && hasReceipt) return { open: false, reason: "ED-230 status=closed WITH a closure receipt → relaxed" };
   return {
     open: true,
@@ -103,19 +113,39 @@ function ed230IsOpen(ledgerText) {
  * bypassing dispatch-review's panel gate). Injectable `files` ({ [relPath]: content }) for tests; default
  * walks scripts/ excluding *.test.js, dispatch-review.js (the SANCTIONED multi-pass path), and this file.
  */
-const SINGLE_PASS_BINDING_RE = /dispatch-agent(?:\.js)?["'\s]+security-reviewer/;
+// CO-OCCURRENCE heuristic (gauntlet-caught: a literal `dispatch-agent … security-reviewer` regex MISSED
+// scripts/delta-final-gauntlet.js, which dispatches `dispatch-agent.js, role` where role comes from a ROLES
+// list containing "security-reviewer" — a DYNAMIC single-pass caller). A non-test, non-panel file that BOTH
+// invokes dispatch-agent AND names the security-reviewer/redteam role (literal or in a role list) is a
+// single-pass security dispatch that bypasses dispatch-review's panel gate. Over-flags toward safety
+// (fail-closed); documented-safe callers are allowlisted WITH A REASON (never a silent skip).
+// SPAWN-CONTEXT signal: dispatch-agent.js inside a single-line ARRAY literal `[ … dispatch-agent.js … ]`
+// — the child_process spawn/exec args form (delta: `spawn(node, [path.join(…,"dispatch-agent.js"), role, …])`)
+// — NOT a comment, a `require("../dispatch-agent")`, or a finding-string that merely names it. This is the
+// calibrated distinguisher: the co-occurrence heuristic over-flagged 10 prose/require mentions (gauntlet-caught).
+const SPAWNS_DISPATCH_AGENT_RE = /\[[^\]\n]*dispatch-agent\.js/;
+const SECURITY_ROLE_RE = /["']security-reviewer["']|["']redteam["']/;
+const CREEP_BACK_ALLOWLIST = {
+  "scripts/delta-final-gauntlet.js":
+    "delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES list). LATENT " +
+    "ED-244 exposure: binding-on-agy WHEN agy goes live. SAFE TODAY — agy is blocked-advisory (reaps) AND " +
+    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). Follow-up (tracked ED): " +
+    "route delta's security-reviewer through dispatch-review's panel when agy unblocks. SP-20260720-003 gauntlet.",
+};
 function singlePassBindingCallers({ files } = {}) {
   const src = files || walkScriptsForCallers();
   const hits = [];
   for (const [rel, content] of Object.entries(src)) {
     if (typeof content !== "string") continue;
-    if (SINGLE_PASS_BINDING_RE.test(content)) hits.push(rel);
+    const relN = rel.replace(/\\/g, "/");
+    if (relN in CREEP_BACK_ALLOWLIST) continue; // documented-safe caller (reason in CREEP_BACK_ALLOWLIST)
+    if (SPAWNS_DISPATCH_AGENT_RE.test(content) && SECURITY_ROLE_RE.test(content)) hits.push(relN);
   }
   return hits;
 }
 function walkScriptsForCallers() {
   const out = {};
-  const EXCLUDE = /(\.test\.js$)|(dispatch-review\.js$)|(security-binding-lane\.js$)/;
+  const EXCLUDE = /(\.test\.js$)|((^|[\\/])test-[^\\/]*\.js$)|(dispatch-review\.js$)|(security-binding-lane\.js$)/;
   const walk = (dir) => {
     let entries;
     try {
@@ -171,15 +201,20 @@ function evaluateSecurityBindingLane({ deps = realDeps(), ledgerText, files } = 
     try {
       const p2 = deps.panel2family();
       const lanes = p2.lanes || [];
-      const nonAgy = lanes.filter((l) => l.provider !== "antigravity");
+      const verifiableLanes = lanes.filter((l) => VERIFIABLE.has(l.provider));
+      const distinctFamilies = new Set(verifiableLanes.map((l) => l.provider));
       if (p2.binding === true) {
         errors.push(`${NAME}: BINDING-LANE (P2) — panel-2family is the degraded FLOOR and must be binding:false (found binding:true). FIX: the floor must never be the sole binding contract.`);
       }
-      if ((p2.min_families || 0) < 2 || nonAgy.length < 2 || nonAgy.length !== lanes.length) {
+      // Every required floor lane must be VERIFIABLE (openai|claude — a gemini/unknown lane is NOT), AND the
+      // floor must require ≥2 DISTINCT verifiable families ([openai,openai] is one family, not two;
+      // [openai,gemini] contains a non-verifiable lane). gauntlet-caught (qa: non-agy ≠ verifiable).
+      if ((p2.min_families || 0) < 2 || verifiableLanes.length !== lanes.length || distinctFamilies.size < 2) {
         errors.push(
-          `${NAME}: BINDING-LANE (P2) — the panel-2family floor must require ≥2 VERIFIABLE families (agy not a ` +
-            `required lane). Found required lanes [${lanes.map((l) => `${l.laneId}:${l.provider}`).join(", ")}], ` +
-            `min_families=${p2.min_families}. FIX: the binding floor must resolve to verifiable lanes only.`,
+          `${NAME}: BINDING-LANE (P2) — the panel-2family floor must require ≥2 DISTINCT VERIFIABLE families ` +
+            `(openai|claude; every required lane verifiable, agy not a required lane). Found required lanes ` +
+            `[${lanes.map((l) => `${l.laneId}:${l.provider}`).join(", ")}], distinct-verifiable=${distinctFamilies.size}, ` +
+            `min_families=${p2.min_families}. FIX: the binding floor must resolve to ≥2 distinct verifiable lanes only.`,
         );
       }
     } catch (e) {
@@ -277,7 +312,7 @@ module.exports = {
   VERIFIABLE,
   ed230IsOpen,
   singlePassBindingCallers,
-  SINGLE_PASS_BINDING_RE,
+  CREEP_BACK_ALLOWLIST,
   evaluateSecurityBindingLane,
   realDeps,
 };

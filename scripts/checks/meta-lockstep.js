@@ -166,7 +166,11 @@ function shapeFilterReadsScopeConstant(src) {
   const fnStart = src.indexOf("function evaluateShapeRouteConflicts");
   if (fnStart === -1) return false;
   const fnBody = src.slice(fnStart, fnStart + 2000);
-  return /CROSS_PROVIDER_SCOPE\.includes\(\s*provider\s*\)/.test(fnBody);
+  // The filter must read the injectable `scope`, and `scope` must DEFAULT to the shared CROSS_PROVIDER_SCOPE
+  // export — so a caller not passing scope gets the shared universe. A re-inlined provider literal, or a
+  // default detached from the shared const, fails one of these. (The behavioral test #scope-injection-behavioral
+  // is the stronger teeth; this stays as the source-coupling belt.)
+  return /scope\s*=\s*CROSS_PROVIDER_SCOPE/.test(fnBody) && /!\s*scope\.includes\(\s*provider\s*\)/.test(fnBody);
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────────

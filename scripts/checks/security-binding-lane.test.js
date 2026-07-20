@@ -56,6 +56,16 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   ok(hasFinding(errors, /\(P2\)/), `p2-agy-in-floor: ${errors.join(" | ")}`);
 }
 {
+  // P2c: DUPLICATE openai → one distinct family, not two (gauntlet-caught)
+  const { errors } = run({ panel2family: () => ({ binding: false, min_families: 2, lanes: [{ laneId: "gpt", provider: "openai" }, { laneId: "gpt2", provider: "openai" }] }) });
+  ok(hasFinding(errors, /\(P2\)/), `p2-duplicate-openai: [openai,openai] is one family → RED: ${errors.join(" | ")}`);
+}
+{
+  // P2d: a gemini (non-verifiable) lane in the floor → RED (non-agy but also NOT verifiable)
+  const { errors } = run({ panel2family: () => ({ binding: false, min_families: 2, lanes: [{ laneId: "gpt", provider: "openai" }, { laneId: "gem", provider: "gemini" }] }) });
+  ok(hasFinding(errors, /\(P2\)/), `p2-gemini-in-floor: a non-verifiable lane → RED: ${errors.join(" | ")}`);
+}
+{
   // P3: all passes non-verifiable
   const { errors } = run({ passesOf: () => [{ provider: "antigravity" }, { provider: "antigravity" }] });
   ok(hasFinding(errors, /\(P3\)/), `p3-no-verifiable-pass: ${errors.join(" | ")}`);
@@ -75,6 +85,13 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   ok(sbl.ed230IsOpen(JSON.stringify({ id: "ED-999", status: "closed", closure_receipt: "x" })).open === true, "7e no-ED-230-in-nonempty → strict");
   ok(sbl.ed230IsOpen("").open === true, "7e empty file → strict");
   ok(sbl.ed230IsOpen(undefined).open === true, "7e missing/undefined → strict");
+  // 7f spoofable receipt TYPES (non-string truthy must NOT relax): {}, [], true, 0
+  ok(sbl.ed230IsOpen(JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: {} })).open === true, "7f object receipt → strict");
+  ok(sbl.ed230IsOpen(JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: [] })).open === true, "7f array receipt → strict");
+  ok(sbl.ed230IsOpen(JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: true })).open === true, "7f boolean receipt → strict");
+  ok(sbl.ed230IsOpen(JSON.stringify({ id: "ED-230", status: "closed", closed_ts: 0 })).open === true, "7f zero closed_ts → strict");
+  // 7g a valid closed record FOLLOWED by a malformed line → the corruption forces strict (not left-effective)
+  ok(sbl.ed230IsOpen([JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: "AP-1" }), "{malformed"].join("\n")).open === true, "7g closed-then-malformed → strict (fail-closed on corruption)");
 }
 
 // ── AC-8 relax: valid closed + receipt → open:false, and Tooth-A NOT enforced ──────
@@ -100,13 +117,26 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   ok(hasFinding(errors, /RI-008\.2/), `alias-normalization-stubbed-divergence → RED: ${errors.join(" | ")}`);
 }
 
-// ── AC-14 creep-back (injected files) ──────────────────────────────────────────────
+// ── AC-14 creep-back (injected files) — the DYNAMIC spawn-array pattern (gauntlet-caught) ───────────
 {
-  const planted = { "scripts/evil.js": "exec('node scripts/dispatch-agent.js security-reviewer prompt.txt');" };
-  const { errors } = run({}, LEDGER_OPEN, planted);
-  ok(hasFinding(errors, /SINGLE-PASS CREEP-BACK/) && hasFinding(errors, /scripts\/evil\.js/), `no-nontest-single-pass-binding-caller (planted) → RED: ${errors.join(" | ")}`);
+  // A LITERAL single-pass call (the old form) — the spawn-array signal requires dispatch-agent.js inside
+  // an array literal, so express the planted caller as delta does: a spawn args array + a ROLES list.
+  const dynamicCaller =
+    'const ROLES = ["qa-reviewer", "security-reviewer"];\n' +
+    'for (const role of ROLES) spawn("node", [path.join(ROOT, "scripts", "dispatch-agent.js"), role, prompt]);';
+  const { errors } = run({}, LEDGER_OPEN, { "scripts/evil.js": dynamicCaller });
+  ok(hasFinding(errors, /SINGLE-PASS CREEP-BACK/) && hasFinding(errors, /scripts\/evil\.js/), `no-nontest-single-pass-binding-caller (dynamic spawn-array) → RED: ${errors.join(" | ")}`);
+  // clean tree → no finding
   const { errors: clean } = run({}, LEDGER_OPEN, {});
   ok(!hasFinding(clean, /SINGLE-PASS CREEP-BACK/), `no caller → no creep-back finding`);
+  // prose/require mention (NOT a spawn-array) must NOT flag (the co-occurrence over-flag qa caught)
+  const prose = { "scripts/doc.js": '// dispatch-agent serves the "security-reviewer" default\nrequire("../dispatch-agent");' };
+  const { errors: proseE } = run({}, LEDGER_OPEN, prose);
+  ok(!hasFinding(proseE, /SINGLE-PASS CREEP-BACK/), `prose/require mention must NOT flag: ${proseE.join(" | ")}`);
+  // an ALLOWLISTED caller (delta) is documented-safe → not flagged even with the pattern
+  const allowKey = Object.keys(sbl.CREEP_BACK_ALLOWLIST)[0];
+  const { errors: allowE } = run({}, LEDGER_OPEN, { [allowKey]: dynamicCaller });
+  ok(!hasFinding(allowE, /SINGLE-PASS CREEP-BACK/), `allowlisted caller (${allowKey}) → not flagged (documented-safe)`);
 }
 
 // ── report ──────────────────────────────────────────────────────────────────────────

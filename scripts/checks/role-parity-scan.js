@@ -530,7 +530,7 @@ function deriveClass(roleAttrs, rules, fallback) {
   return fallback;
 }
 
-function evaluateShapeRouteConflicts({ reg, contract }) {
+function evaluateShapeRouteConflicts({ reg, contract, scope = CROSS_PROVIDER_SCOPE }) {
   const errors = [];
   const roles = (reg && reg.roles) || {};
   const rules = (contract && contract.class_derivation && contract.class_derivation.rules) || [];
@@ -542,9 +542,12 @@ function evaluateShapeRouteConflicts({ reg, contract }) {
     const provider = r.provider || "claude";
     // Only cross-provider roles require subprocess-cross-provider routing.
     // (antigravity/agy replaced the SUNSET gemini provider in the 2026-07-20 deep-clean.)
-    // Scope read from the shared CROSS_PROVIDER_SCOPE export — meta-lockstep imports the SAME
-    // symbol, so this filter and the lockstep enforcer can never drift (SP-20260720-003 D1/AC-4).
-    if (!CROSS_PROVIDER_SCOPE.includes(provider)) continue;
+    // Scope read from the injectable `scope` param, which DEFAULTS to the shared CROSS_PROVIDER_SCOPE
+    // export — meta-lockstep imports the SAME symbol, so this filter and the lockstep enforcer can never
+    // drift (SP-20260720-003 D1/AC-4). The default binding to CROSS_PROVIDER_SCOPE is the source-coupling;
+    // the injectable param makes the coupling BEHAVIORALLY testable (a scope perturbation changes which
+    // provider roles are evaluated — gauntlet-caught: a source-regex-only test was insufficient).
+    if (!scope.includes(provider)) continue;
 
     const derivedClass = deriveClass(r, rules, fallbackClass);
     const classEntry = roleClasses[derivedClass];

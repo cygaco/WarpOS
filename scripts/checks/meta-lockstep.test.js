@@ -114,12 +114,26 @@ const REG_SYM = {
   ok(unwaived.errors.some((e) => /director/.test(e) && /ASYMMETRY/.test(e)), `director unwaived (empty waiver): expected a RED; got: ${unwaived.errors.join(" | ")}`);
 }
 
-// ── AC-4 #scope-constant-is-read (source-coupling teeth) ──────────────────────────
+// ── AC-4 scope-injection: BEHAVIORAL (a scope perturbation changes which roles are evaluated) + a
+//     source-coupling belt (the filter reads `scope` defaulting to the shared const) ──────────────
 {
+  // Behavioral: an antigravity lead with NO cross-provider rule → a shape-route conflict IF antigravity is
+  // in scope. Full scope [openai,antigravity] evaluates it (1 finding); narrowed scope ["openai"] skips it
+  // (0 findings) — proving evaluateShapeRouteConflicts READS the injected scope (a re-hardcoded literal
+  // would ignore the param and evaluate the same set regardless).
+  const contract = {
+    class_derivation: { rules: [{ when: { tier: "lead", provider: "openai" }, class: "xprov" }, { when: { tier: "lead" }, class: "manager" }], fallback_class: "manager" },
+    role_classes: { xprov: { allowed_shapes: ["subprocess-cross-provider"] }, manager: { allowed_shapes: ["in-process-agent"] } },
+  };
+  const reg = { roles: { "ag-lead": { tier: "lead", provider: "antigravity" } } };
+  const withAnti = rp.evaluateShapeRouteConflicts({ reg, contract, scope: ["openai", "antigravity"] });
+  const withoutAnti = rp.evaluateShapeRouteConflicts({ reg, contract, scope: ["openai"] });
+  ok(withAnti.length > withoutAnti.length && withoutAnti.length === 0, `scope-injection-behavioral: full scope must evaluate the antigravity role (finding), narrowed scope must skip it (none); got with=${withAnti.length} without=${withoutAnti.length}`);
+  // Source-coupling belt: real filter reads scope defaulting to CROSS_PROVIDER_SCOPE; a re-inlined literal fails.
   const realSrc = fs.readFileSync(path.join(__dirname, "role-parity-scan.js"), "utf8");
-  ok(ml.shapeFilterReadsScopeConstant(realSrc), `scope-constant-is-read: real role-parity-scan.js must read CROSS_PROVIDER_SCOPE at the filter`);
-  const reInlined = realSrc.replace(/CROSS_PROVIDER_SCOPE\.includes\(\s*provider\s*\)/, 'provider !== "openai" && provider !== "antigravity"');
-  ok(!ml.shapeFilterReadsScopeConstant(reInlined.length !== realSrc.length ? reInlined : realSrc.replace("evaluateShapeRouteConflicts", "evaluateShapeRouteConflicts /*x*/").replace(/CROSS_PROVIDER_SCOPE\.includes\([^)]*\)/, "false")), `scope-constant-is-read: a re-inlined literal at the filter must FAIL the source-coupling check`);
+  ok(ml.shapeFilterReadsScopeConstant(realSrc), `scope-constant-is-read (belt): real filter must default scope to CROSS_PROVIDER_SCOPE + read scope`);
+  const reInlined = realSrc.replace(/if \(!scope\.includes\(\s*provider\s*\)\) continue;/, 'if (provider !== "openai" && provider !== "antigravity") continue;');
+  ok(reInlined !== realSrc && !ml.shapeFilterReadsScopeConstant(reInlined), `scope-constant-is-read (belt): a re-inlined literal at the filter must FAIL the coupling check`);
 }
 
 // ── AC-15 waiver integrity ────────────────────────────────────────────────────────
