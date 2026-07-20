@@ -977,5 +977,9 @@ module.exports = {
   PROVIDER_FAMILY,
   DEFAULT_PROVIDERS,
   DEFAULT_AGENT_PROVIDERS,
+  // Additive export (SP-20260720-003, α-approved): the raw LITERAL map (spreads SCRAPPED_PROVIDER_ALIASES),
+  // INDEPENDENT of catalog's literal (which hardcodes redteam). security-binding-lane Tooth-B(1) compares the
+  // two so the redteam alias floor can't silently fork. No behavior change.
+  LITERAL_DEFAULT_AGENT_PROVIDERS,
   DEFAULT_REASONING_EFFORT,
 };

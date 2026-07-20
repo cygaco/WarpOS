@@ -154,6 +154,22 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   ok(!hasFinding(e2, /RI-008\.1/), `tooth-b with exports present + agreeing maps → no finding`);
 }
 
+// ── EXPORT INVARIANT (α condition): the literal maps are exported AND equal the derived maps TODAY for the
+//     compared alias key — so switching Tooth-B(1) derived→literal cannot silently FORK the check. ──────
+{
+  const catalog = require("../dispatch/catalog");
+  const providers = require("../hooks/lib/providers");
+  ok(!!catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE && !!providers.LITERAL_DEFAULT_AGENT_PROVIDERS, "literal maps are exported (catalog + providers)");
+  ok(
+    catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE && catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE.redteam === catalog.DEFAULT_PROVIDER_PER_ROLE.redteam,
+    `catalog literal[redteam] === derived[redteam] TODAY (export behavior-neutral): lit=${catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE && catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE.redteam} der=${catalog.DEFAULT_PROVIDER_PER_ROLE.redteam}`,
+  );
+  ok(
+    providers.LITERAL_DEFAULT_AGENT_PROVIDERS && providers.LITERAL_DEFAULT_AGENT_PROVIDERS.redteam === providers.DEFAULT_AGENT_PROVIDERS.redteam,
+    `providers literal[redteam] === derived[redteam] TODAY: lit=${providers.LITERAL_DEFAULT_AGENT_PROVIDERS && providers.LITERAL_DEFAULT_AGENT_PROVIDERS.redteam} der=${providers.DEFAULT_AGENT_PROVIDERS.redteam}`,
+  );
+}
+
 // ── report ──────────────────────────────────────────────────────────────────────────
 if (fail.length) {
   process.stderr.write(`security-binding-lane.test: ${passed} passed, ${fail.length} FAILED:\n${fail.map((f) => "  ✗ " + f).join("\n")}\n`);

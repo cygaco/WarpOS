@@ -436,6 +436,10 @@ module.exports = {
   PROVIDER_ALIASES,
   ROLES,
   DEFAULT_PROVIDER_PER_ROLE,
+  // Additive export (SP-20260720-003, α-approved): the raw LITERAL map, INDEPENDENT of providers' literal
+  // (this one hardcodes redteam=openai; providers' spreads SCRAPPED_PROVIDER_ALIASES). security-binding-lane
+  // Tooth-B(1) compares the two literals so the redteam alias floor can't silently fork. No behavior change.
+  LITERAL_DEFAULT_PROVIDER_PER_ROLE,
   DEFAULT_EFFORT_PER_ROLE,
   getProvider,
   getModel,

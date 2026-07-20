@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-07-20T22:46:16.519Z",
+  "sprint": "SP-20260720-003",
+  "invocation": "node scripts/sprint/epsilon-runtime.js plan --sprint SP-20260720-003 --json",
+  "composition": {
+    "unit_types": [],
+    "max_risk": "",
+    "domains": []
+  },
+  "build_step_matched_rows": [],
+  "gauntlet_step_matched_rows": [
+    "qa-reviewer",
+    "security-reviewer"
+  ],
+  "conclusion": "build-step matched builder rows = [] (empty composition: no product frontend/backend/security UNITS declared via tickets) → ε-direct is the correct vehicle; NO builder ok:true record is owed (α ε-direct condition 1). gauntlet always-on rows (qa-reviewer,security-reviewer) DO match + are dispatched."
+}
