@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260718-005
+updated_at: "2026-07-19T20:56:10.216Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: "design-complete; entering build (backend-first)"
+current_loop: null
+status: paused
+last_completed_step: "R2 FIX-CYCLE COMPLETE + COMMITTED (HEAD d1fd7a20): ALL R1(8)+R2(6) findings fixed w/ teeth, regression 22/22 green. C4/H5 in-scope DONE (binding_source, ED-236 tracked debt, H5 falsifier). NOT 'remaining' — the wrap note's assumption was stale."
+next_action: "PARKED (session wrapped /session:end --fast). R3 re-gauntlet was dispatched (bg bnkcj1md8) — on resume: read its landed output at scratchpad/*-r3.out OR re-dispatch R3 (backend/qa/security -> gpt-5.6-terra). If R3 GREEN: REFRESH beta gauntlet->release (its B/0.90 pre-dates R2 FAIL, state changed) + WG-19 + exit gates + release-prep + retro. If R3 FAILS: hard park, no R4 (lead ruling). C4/H5 live-wiring = Phase-4/ED-215 (ED-236). AC-16 flip REFUSED (agy upstream-bug down, ED-060)."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "resume R3 re-gauntlet per epsilon.md; lease held (token 1); branch sprint/SP-20260718-005-phase3 @ d1fd7a20"
+resume_notes: "PARKED clean 2026-07-19 (Fable->Opus safeguard switch; fresh Fable resumes). R2 fix cycle FULLY committed: C2/C3 whole-auth fail-closed (55f2594c), C1/H3 owner-lock+fs-namespace (9f2bafe8), C4/H5 honesty+falsifier+ED-236 (d1fd7a20). Only R3 re-gauntlet + (if green) beta-refresh/release/retro remain. Do NOT re-run R2 fixes."
+safe_to_continue: true
+stop_reason: null

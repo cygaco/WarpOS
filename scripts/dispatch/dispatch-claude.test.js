@@ -106,6 +106,16 @@ function readLedger(ledgerDir, name) {
     .map((l) => JSON.parse(l));
 }
 
+// BE-2 (SP-20260718-005 / ED-069): every real dispatch now ALSO writes a
+// write-ahead started-row (phase:"started", ok:false) to the SAME
+// dispatch-completions ledger, before the terminal record. Tests that care
+// about "the completion record" must filter it out — a started row is never
+// a completion (isWellFormedOkRecord requires ok===true), so this is a
+// correctness fix to the test's own record-shape assumption, not a workaround.
+function completionsOnly(records) {
+  return records.filter((r) => r.phase !== "started");
+}
+
 // ── 1. Timeout reap ─────────────────────────────────────────
 test("timeout reap → exit≠0 + builder_timeout_reap death + ok:false completion", () => {
   const ledger = path.join(scratch, "l1");
@@ -116,7 +126,7 @@ test("timeout reap → exit≠0 + builder_timeout_reap death + ok:false completi
     deaths.some((d) => d.reason === "builder_timeout_reap" && d.role === "builder"),
     `expected a builder_timeout_reap death record, got ${JSON.stringify(deaths)}`,
   );
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === false, "expected one ok:false completion record");
 });
 
@@ -130,7 +140,7 @@ test("zero-byte reap → exit≠0 + builder_zero_byte_reap death (even on exit 0
     deaths.some((d) => d.reason === "builder_zero_byte_reap"),
     `expected a builder_zero_byte_reap death record, got ${JSON.stringify(deaths)}`,
   );
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === false, "expected one ok:false completion record");
 });
 
@@ -141,7 +151,8 @@ test("happy path → exit 0 + ok:true well-formed completion + NO death", () => 
   assert(res.status === 0, `expected exit 0, got ${res.status} (stderr: ${res.stderr})`);
   const deaths = readLedger(ledger, "dispatch-deaths.jsonl");
   assert(deaths.length === 0, `expected NO death records, got ${JSON.stringify(deaths)}`);
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const allRecs = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(allRecs);
   assert(comps.length === 1 && comps[0].ok === true, "expected one ok:true completion record");
   assert(comps[0].provider === "claude" && comps[0].role === "builder", "record fields wrong");
 
@@ -153,6 +164,26 @@ test("happy path → exit 0 + ok:true well-formed completion + NO death", () => 
   });
   assert(v.ok === true, `gauntlet-verify should pass on a real builder record: ${JSON.stringify(v.roles)}`);
   assert(v.roles[0].status === "ran", `expected builder status 'ran', got '${v.roles[0].status}'`);
+});
+
+// ── 3b. BE-2 (ED-069/ED-070): started-row + quota wiring, correlated by dispatch_id ──
+test("BE-2: a written-ahead started-row precedes the completion, correlated by dispatch_id; completion carries quota", () => {
+  const ledger = path.join(scratch, "l3"); // reuse the happy-path ledger from test 3
+  const allRecs = readLedger(ledger, "dispatch-completions.jsonl");
+  const started = allRecs.filter((r) => r.phase === "started");
+  const comps = completionsOnly(allRecs);
+  assert(started.length === 1, `expected exactly one started-row, got ${JSON.stringify(started)}`);
+  assert(started[0].ok === false, "a started-row must never carry ok:true");
+  assert(
+    started[0].dispatch_id && started[0].dispatch_id === comps[0].dispatch_id,
+    "started-row and completion must correlate by the SAME dispatch_id",
+  );
+  assert(started[0].role === "builder" && started[0].provider === "claude", "started-row role/provider must match the dispatch");
+  assert(allRecs.indexOf(started[0]) < allRecs.indexOf(comps[0]), "the started-row must be written BEFORE the completion");
+  assert(
+    comps[0].quota && typeof comps[0].quota === "object" && typeof comps[0].quota.known === "boolean",
+    `completion must carry a quota fragment, got ${JSON.stringify(comps[0].quota)}`,
+  );
 });
 
 // ── 4. gauntlet-verify RED's when builder never ran (the reap, weaponized) ──
@@ -181,7 +212,7 @@ test("worktree run → records land in canonical/test ledger, NOT the worktree",
     iso: `worktree:${worktree}`,
   });
   assert(res.status === 0, `expected exit 0, got ${res.status}`);
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === true, "record should be in the test ledger");
   // The worktree must NOT have grown its own runtime ledger.
   const leaked = path.join(worktree, ".claude", "runtime", "dispatch-completions.jsonl");
@@ -193,7 +224,7 @@ test("whitespace-only stdout → exit≠0 + zero_byte_reap (no false-green)", ()
   const ledger = path.join(scratch, "l6");
   const res = runWrapper({ fake: fakeWhitespace, ledgerDir: ledger });
   assert(res.status !== 0, `whitespace-only output must NOT be success, got exit ${res.status}`);
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === false, "expected ok:false completion");
   const deaths = readLedger(ledger, "dispatch-deaths.jsonl");
   assert(
@@ -245,7 +276,7 @@ test("G1: generic build id 'builder' advisory is truthful — no '(fail-closed)'
     `G1 REGRESSION: advisory still says '(fail-closed)' for generic build id 'builder'. stderr: ${(res.stderr || "").slice(0, 500)}`,
   );
   // The record must still be written correctly.
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === true, "completion record must still be ok:true after G1 fix");
 });
 
@@ -260,7 +291,7 @@ test("review-fallback: reviewer role w/o -w → exit 0 + ok:true record with fal
     extraArgs: ["--review-fallback"],
   });
   assert(res.status === 0, `expected exit 0 for review-fallback reviewer, got ${res.status} (stderr: ${(res.stderr || "").slice(0, 500)})`);
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   assert(comps.length === 1 && comps[0].ok === true, "expected one ok:true completion record");
   assert(comps[0].fallback === true, `expected fallback:true, got ${JSON.stringify(comps[0].fallback)}`);
   assert(comps[0].provider === "claude", `expected provider:"claude", got ${JSON.stringify(comps[0].provider)}`);
@@ -273,7 +304,7 @@ test("review-fallback: reviewer role w/o -w → exit 0 + ok:true record with fal
 // ── 12. review-fallback + gauntlet-verify ──────────────────
 test("review-fallback: gauntlet-verify sees the record → status 'fell-back' (not 'no-record')", () => {
   const ledger = path.join(scratch, "l11"); // reuse l11 record
-  const comps = readLedger(ledger, "dispatch-completions.jsonl");
+  const comps = completionsOnly(readLedger(ledger, "dispatch-completions.jsonl"));
   const rec = comps[0];
   const v = verifyGauntlet({
     roles: ["backend-reviewer"],

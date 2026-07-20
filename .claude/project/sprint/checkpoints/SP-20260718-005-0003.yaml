@@ -1,0 +1,26 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: SP-20260718-005
+updated_at: "2026-07-19T20:50:56.210Z"
+current_phase: execute
+current_command: "/sprint:execute"
+current_ticket: null
+current_task: "design-complete; entering build (backend-first)"
+current_loop: null
+status: running
+last_completed_step: "GAUNTLET R2 fix-cycle: 7 R1 findings + 6 R2 residuals all fixed w/ teeth (C1/C2/C3/C4/H1/H2/H3/H4/H5). C4+H5 in-scope record-honesty DONE; live-wiring + non-lexical-proof DEFERRED to Phase-4/ED-215 (tracked: ED-236). NOT 'all ACs green' — gauntlet is the authority; R3 re-gauntlet pending."
+next_action: "R3 re-gauntlet (backend/qa/security -> terra) — the ONE re-gauntlet in the park boundary. If R3 GREEN: WG-19 + exit gates + release-prep + retro. If R3 FAILS: PARK CLEAN (committed-unmerged, ED-236 seam pickup, honest trackers) per lead ruling — no R4."
+active_files: []
+modified_files: []
+checks_last_run: null
+checks_passing: []
+checks_failing: []
+blockers: []
+approvals_needed: []
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "resume R3 re-gauntlet per epsilon.md; lease held (token 1). C4/H5 = Phase-4/ED-215 deferral (ED-236). AC-16 flip REFUSED pending ED-060."
+resume_notes: "R2 fix-cycle COMPLETE (consolidate-to-root): whole-authorization fail-closed (C2/C3, 55f2594c), owner-liveness mutation lock + fs-namespace detector (C1/H3, 9f2bafe8), binding_source un-conflation (C4, eca2dba5), H5 bounded-guard honest-ceiling + in-primitive falsifier. C4 live-wiring + H5 control-flow proof DEFERRED to Phase-4/ED-215 (ED-236, machine-visible). AC-16 conformance flip REFUSED (agy down, ED-060). Park boundary: R3 is the last round tonight."
+safe_to_continue: true
+stop_reason: null

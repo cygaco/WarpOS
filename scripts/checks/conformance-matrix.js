@@ -49,7 +49,13 @@
  *      A fixture/matrix the runner CANNOT decide is always fail-closed, never
  *      a reportable mismatch or a silent pass.
  *
- *   node scripts/checks/conformance-matrix.js [--report-only|--enforce] [--coverage] [--json]
+ *   node scripts/checks/conformance-matrix.js [--report-only|--enforce] [--coverage] [--flip-gate] [--json]
+ *
+ * `--flip-gate` (AC-16 / G0.3 / ED-214): the BINDING-FLIP ASSERTION — exits 0 only when the suite
+ * would pass under enforce (0 fixture mismatches AND 0 required-down lanes AND a non-empty suite), so
+ * the report-only→binding flip can never RED a default. Exit 1 = flip REFUSED (a blocker exists);
+ * exit 2 = runner error (fail-closed). AC-1..15-green is the SPRINT-level precondition the conductor
+ * asserts separately; this is the conformance-half.
  */
 
 const fs = require("fs");
@@ -502,6 +508,34 @@ function evaluateCoverage({ fixtures, supportMatrix }) {
   return { ok: gaps.length === 0, coreCoverage, cellCoverage, gaps };
 }
 
+/**
+ * AC-16 / G0.3 / ED-214 — the BINDING-FLIP GATE (an ASSERTION, not prose).
+ *
+ * The ED-214 flip makes the conformance runner's default BINDING (report-only → enforce). Flipping
+ * a default that is currently RED "reds everything that passed under report-only" (the SP-20260627
+ * sweep-in-sprint lesson) — so the flip MUST be gated on the enforce-default already being GREEN.
+ * This is that gate, mechanical: the flip is AUTHORIZED only when the suite would pass under enforce
+ * (zero fixture mismatches AND zero required-down lanes AND a non-empty suite). A single mismatch or
+ * a `required:true` support-matrix row at `status:"down"` REFUSES the flip (never flip a default red).
+ *
+ * NOTE (SP-20260718-005): AC-16 additionally requires AC-1..15 GREEN before the flip — that is a
+ * SPRINT-level precondition the conductor asserts (the Phase-3 exit gate), deliberately NOT wired
+ * into this Phase-0 kernel runner (a layering inversion). This function is the conformance-half.
+ *
+ * @param {{mismatches:Array, requiredDownLanes:Array, fixtureCount:number}} res  a run() result
+ * @returns {{authorized:boolean, blockers:string[]}}
+ */
+function flipGate(res) {
+  const blockers = [];
+  if (!res || typeof res.fixtureCount !== "number" || res.fixtureCount === 0)
+    blockers.push("zero conformance fixtures executed — cannot certify a binding flip on an empty suite (fail-closed)");
+  for (const m of res.mismatches || [])
+    blockers.push(`fixture mismatch ${m.id} (${m.gate}): expected ${m.expected}, computed ${m.computed} — flipping would RED this fixture`);
+  for (const d of res.requiredDownLanes || [])
+    blockers.push(`required-down lane ${d.helm} (${d.evidence_ref}) — flipping the default to binding would RED this lane`);
+  return { authorized: blockers.length === 0, blockers };
+}
+
 /** fs-backed runner. Throws on any runner-level error (fail-closed, exit 2 at the CLI). */
 function run(opts) {
   opts = opts || {};
@@ -529,6 +563,7 @@ function run(opts) {
 module.exports = {
   evaluate,
   evaluateCoverage,
+  flipGate,
   loadFixtures,
   loadSupportMatrix,
   loadRoleBinding,
@@ -542,6 +577,7 @@ if (require.main === module) {
   const JSON_OUT = argv.includes("--json");
   const ENFORCE = argv.includes("--enforce");
   const COVERAGE = argv.includes("--coverage");
+  const FLIP_GATE = argv.includes("--flip-gate");
 
   let res;
   try {
@@ -551,6 +587,23 @@ if (require.main === module) {
     if (JSON_OUT) console.log(JSON.stringify({ ok: false, error: String(msg) }));
     else console.error(`[${NAME}] runner error (fail-closed): ${msg}`);
     process.exit(2);
+  }
+
+  if (FLIP_GATE) {
+    // AC-16 / G0.3 / ED-214: assert the binding flip is SAFE (never flip a default red).
+    const gate = flipGate(res);
+    if (JSON_OUT) {
+      console.log(JSON.stringify({ check: NAME, mode: "flip-gate", authorized: gate.authorized, blockers: gate.blockers }));
+    } else if (gate.authorized) {
+      console.log(
+        `OK   [${NAME}] --flip-gate: all ${res.fixtureCount} conformance fixtures green + no required-down lane — ` +
+          `the ED-214/G0.3 binding flip is AUTHORIZED (safe to make the default binding).`,
+      );
+    } else {
+      console.error(`REFUSED [${NAME}] --flip-gate: the ED-214/G0.3 binding flip is BLOCKED (never flip a default red) — ${gate.blockers.length} blocker(s):`);
+      for (const b of gate.blockers) console.error(`  - ${b}`);
+    }
+    process.exit(gate.authorized ? 0 : 1);
   }
 
   if (COVERAGE) {

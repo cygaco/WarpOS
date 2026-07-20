@@ -1,14 +1,14 @@
 schema: warpos/sprint/sprint-progress/v1
-sprint: "SP-20260718-005"
-updated_at: "2026-07-19T04:27:45.231Z"
-current_phase: idle
-current_command: none
+sprint: SP-20260718-005
+updated_at: "2026-07-20T17:50:00.000Z"
+current_phase: execute
+current_command: "/sprint:execute"
 current_ticket: null
-current_task: null
+current_task: "ED-240 resume cycle (Epsilon2) COMPLETE + GAUNTLET-GREEN — READY-TO-MERGE (α/lead merges after gemini-deepclean lands)"
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+status: in_progress
+last_completed_step: "ED-240 RESUME CYCLE (Epsilon2, 2nd conductor · isolated worktree of sprint/SP-20260718-005-phase3 @50b4db92, building ON R5, no reverts) COMPLETE + GAUNTLET-GREEN. β design-boundary consult -> PERSISTENT β (msg_id 83d7ee44, ED-239) -> DECIDE B/0.92 both items, audit-verified, 3 riders applied. Commits (50b4db92..HEAD): 753dc3ad ED-240a falsifier migration; 28486f88 ED-240b produceForTest reconciliation + forge-helper split + teeth; 3296280d design-lock amendment + tracker; c1533ad8 freeze forgeInvalidRecordForTest (closes security-lane ED240-SELF-GUARD-MUTABLE-RETURN); 9a999550 falsifier teardown (closes backend-lane CQ-ED240-001). TERMINAL 3-LANE GAUNTLET GREEN (foreground-serial codex, all LIVE per WG-19): backend-reviewer PASS (gpt-5.6-sol, R2 after teardown), qa-reviewer PASS (gpt-5.6-terra), security-reviewer PASS (gpt-5.6-sol, R2 after freeze). WG-19 gauntlet-verify PASS (all 3 roles ok:true records, real elapsed 45-168s, no no-record). FINAL local battery GREEN: acceptance-record 60/60, conductor-lease 47/47, falsifier corpus 16/16 (falsifier-liveness PASS), acceptance-read-choke-point OK, workorder-schema 63/63. Security lane CONFIRMED the production authz/CAS/lease/ancestry/recompute path is UNCHANGED (test-corpus + fixture-helper only). The 6 branch-baseline failures (safe-spawn agy-shim, cutover-completeness, contract-lint, duplicate-doc-drift, model-chain) are PRE-EXISTING (identical fail set with the change stashed) + out of ED-240 scope."
+next_action: "READY-TO-MERGE reported to lead. α/lead merges the branch to main AFTER gemini-deepclean lands (Epsilon's lane; 5 mechanical overlap files: INDEX.md, framework-manifest.json, dispatch-agent.js, agent-dispatch-guide.md, ADR-0027). Epsilon2 does NOT merge. β consult+verdict rows mirrored to CANONICAL paths.betaEvents (append-only, provenance for ED-239 verification post-worktree-teardown). ED-240a + ED-240b CLOSED (ED-237-238-design-lock amendment); ED-236 remains OPEN (separate, not this cycle's scope)."
 active_files: []
 modified_files: []
 checks_last_run: null
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "PARKED at beta bounded-final HARD STOP (do NOT start R6/patch). Await operator/alpha mechanism-rethink ruling on ED-237 (3-state PID liveness at all reclaim sites) + ED-238 (validated AcceptanceRecord schema: every commit-identity field an immutable 40-hex SHA). Lease held (token 1); branch sprint/SP-20260718-005-phase3; R5 code committed (d463c50b, 22654a3c) — build a rescoped mechanism fix ON it, do NOT revert."
+resume_notes: "Bounded-final R5 (beta DECIDE B/0.89) executed + re-gauntlet = 3-lane FAIL = 3rd recurrence of both classes one site/field over -> HARD STOP fired -> PARKED for mechanism rethink (ED-237 liveness 3-state model; ED-238 immutable-commit-SHA record schema). R5 fixes are structurally sound + committed with teeth — do NOT re-apply or revert. Do NOT run plan/design/R2/R3/R4 fixes. Alpha (not epsilon) merges after a fresh beta gauntlet->release; prior B/0.90 STALE. The fix SHAPE (patch-the-flagged-site) is what failed — the rescope must close each class at the MODEL/SCHEMA level."
 safe_to_continue: true
 stop_reason: null

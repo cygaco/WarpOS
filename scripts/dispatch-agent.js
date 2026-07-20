@@ -41,6 +41,15 @@ const {
   releaseSlot,
 } = require("./hooks/lib/concurrency-lock");
 const { record: recordProviderTrace } = require("./agents/provider-trace");
+// BE-2 (SP-20260718-005 / ED-069 + ED-070): the pure started-row builder + the
+// quota-fragment builder. Both are wired here (the single recordCompletion
+// sink + a new recordDispatchStart wrapper) so dispatch-claude.js and
+// epsilon-runtime.js — which already import recordCompletion from this file —
+// inherit the same fields with zero per-caller duplication.
+const {
+  startedRow,
+  quotaField,
+} = require("./dispatch/dispatch-record-fields");
 
 // ── provider-id → tool-id (D2, SP-20260718-003 / I-2) ────────────────────────
 // The dispatch CONTRACT keys on tool-id (`codex`/`gemini`/`agy`); the registry +
@@ -287,13 +296,54 @@ function currentCodeSha() {
   return _cachedCodeSha;
 }
 
-function recordCompletion(record) {
-  // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
-  // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
-  const file = ledgerFile(
+// ED-069 (BE-2): the SAME canonical ledger file recordCompletion writes to —
+// factored out so recordDispatchStart() (below) and recordCompletion() never
+// diverge on path resolution (both call this, not a second copy of
+// canonicalFile/ledgerFile args).
+function completionsLedgerFile() {
+  return ledgerFile(
     PATHS.dispatchCompletionsFile,
     path.join(".claude", "runtime", "dispatch-completions.jsonl"),
   );
+}
+
+/**
+ * ED-069 write-ahead started-row. Call BEFORE the provider/CLI spawn so a
+ * dispatch that dies mid-flight (reap/hang/crash) leaves POSITIVE evidence it
+ * was attempted, in the SAME ledger recordCompletion writes to. Never a valid
+ * completion (phase:"started", ok:false — gauntlet-verify's
+ * isWellFormedOkRecord requires ok===true), so it can never be mistaken for a
+ * "ran" record; it correlates to its eventual completion by dispatch_id
+ * (dispatch-record-fields#startedRowSuperseded).
+ *
+ * Deliberately uses appendJsonl (the SAME raw writer recordCompletion/
+ * recordDeath already use), NOT dispatch-record-fields#appendRecord — that
+ * helper's write-time rotation is out of scope for this wiring change (BE-2
+ * wires started-row + quota fields, not "activate ledger rotation for the
+ * first time"; rotating a real over-cap production ledger is an operational
+ * decision that deserves its own review, not a side effect of composing two
+ * library functions). Fail-open: telemetry must never crash or block a live
+ * dispatch — a bad `fields` shape (missing role/provider) is a caller bug and
+ * is swallowed here with a stderr note, exactly like recordCompletion's own
+ * signing-failure fail-open above.
+ */
+function recordDispatchStart(fields) {
+  try {
+    const row = startedRow(fields);
+    appendJsonl(completionsLedgerFile(), row);
+  } catch (e) {
+    try {
+      process.stderr.write(`[recordDispatchStart] skipped (fail-open): ${e && e.message}\n`);
+    } catch {
+      /* noop */
+    }
+  }
+}
+
+function recordCompletion(record) {
+  // canonicalFile() ensures the path is __dirname-anchored, never cwd-relative.
+  // Fixes ED-016/class-#20: worktree-cwd dispatches wrote to worktree's runtime.
+  const file = completionsLedgerFile();
   // SR-011/SR-013 + ED-231 (execution PROVENANCE, WRITER-AUTHORITATIVE + ORIGIN-PROOF): every completion
   // record is bound to its run IDENTITY + CODE at write-time — injected HERE, the single record-writer that
   // every dispatch wrapper shares (dispatch-agent/dispatch-claude/dispatch-skill/epsilon-runtime), so NO call
@@ -308,6 +358,22 @@ function recordCompletion(record) {
   const runMismatch = callerRun != null && callerRun !== "" && derivedRun != null && callerRun !== derivedRun;
   const shaMismatch = callerSha != null && callerSha !== "" && derivedSha != null && callerSha !== derivedSha;
   const enriched = { ...record, panel_run_id: derivedRun, code_sha: derivedSha };
+  // ED-070 (BE-2): every completion record carries a `quota` fragment — the
+  // provider quota/billing posture known at dispatch time. A caller MAY pass
+  // a pre-built fragment via record.quota (dispatch-record-fields#quotaField)
+  // when it has real knowledge (e.g. this file's own call site maps
+  // runProvider's observed result.quota); when ABSENT, the sink stamps the
+  // SAME builder's honest-unknown default (`{known:false}`) so the shape is
+  // UNIFORM across every writer (dispatch-agent/dispatch-claude/
+  // epsilon-runtime) without each call site duplicating it — "wired into ALL
+  // dispatch writers as ONE change" via the single sink.
+  if (!enriched.quota || typeof enriched.quota !== "object") {
+    try {
+      enriched.quota = quotaField(enriched.provider || null).quota;
+    } catch {
+      /* best-effort — never block a completion write for a quota-stamp hiccup */
+    }
+  }
   if (runMismatch || shaMismatch) {
     // Refuse to SIGN a conflicting-provenance record — it can never attest. Written UNSIGNED + flagged (visible).
     enriched.provenance_mismatch = true;
@@ -529,6 +595,11 @@ if (require.main !== module) {
     // record/path logic — no second copy, no fork. (See dispatch-claude.js.)
     recordCompletion,
     recordDeath,
+    // BE-2 (SP-20260718-005 / ED-069): the write-ahead started-row wrapper —
+    // reused by dispatch-claude.js and epsilon-runtime.js's CLAUDE_RAW raw
+    // spawn so ALL subprocess dispatch writers emit it via the SAME canonical
+    // ledger path (never a forked/second mechanism).
+    recordDispatchStart,
     makeDispatchId,
     cmdlineChecksum,
     // N-1 (PLAN §17.4): run-context + prompt-digest stampers, reused by
@@ -860,6 +931,19 @@ if (!slot) {
   process.exit(1);
 }
 
+// ED-069 (BE-2): write-ahead started-row, AFTER the concurrency slot is
+// acquired (so this dispatch is genuinely about to spawn) and BEFORE the
+// actual runProvider call — the exact window a reap/hang/crash would
+// otherwise leave with zero evidence. sprint_id carried via runContext() for
+// correlation, mirroring the completion record's own run-context stamping.
+recordDispatchStart({
+  role,
+  provider,
+  dispatch_id: dispatchId,
+  started_at: dispatchStartedAt,
+  sprint_id: runContext().sprint_id,
+});
+
 let result;
 try {
   // Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
@@ -960,6 +1044,17 @@ try {
   // C2 (D2-FALSE-GREEN-001 · SR-004/QA-002): the record's provider/tool_id/fallback derive from the
   // OBSERVED result via ONE helper — a quota-fallback openai run can never be stamped as observed-agy.
   const observedRec = observedCompletionFields(provider, result);
+  // ED-070 (BE-2): map runProvider's OBSERVED quota signal (only ever present on a
+  // classified quota/429 failure — see providers.js#classifyQuotaFailure) into the
+  // honest quotaField() shape. Absent real knowledge, recordCompletion's own default
+  // stamps `{known:false}` — this call site just supplies what's ACTUALLY known here.
+  const knownQuota = result && result.quota
+    ? {
+        auth_mode: result.quota.auth_mode,
+        note: `${result.quota.kind}${result.quota.recoverable === false ? " (unrecoverable)" : ""}`,
+        source: "runProvider.result.quota",
+      }
+    : {};
   recordCompletion({
     dispatch_id: dispatchId,
     pid: process.pid,
@@ -991,6 +1086,8 @@ try {
     argv_schema_version: argvSchemaVersion(),
     cwd: AGENT_ROOT,
     output_digest: outputDigest(result.output),
+    // ED-070: honest quota fragment (known:false when runProvider surfaced no quota signal).
+    quota: quotaField(observedRec.provider, knownQuota).quota,
   });
 
   // Silent zero-byte death: process returned a non-ok with no stdout AND no

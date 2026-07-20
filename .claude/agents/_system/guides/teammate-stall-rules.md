@@ -103,12 +103,11 @@ long-running dispatch dead:
 The stall-adherence enforcer is `scripts/checks/epsilon-liveness.js` (WG-6): for
 each stale outstanding subprocess it checks the completion ledger and flags an
 idle-with-outstanding-work stall. The signal-board half is self-tested by
-`scripts/teams/signal-board.test.js`. **Debt:** folding this fire-and-poll
-rewrite back into the frozen `epsilon.md` TEAMMATE STALL RULES section and the
-`agent-dispatch-guide.md` cross-reference is logged as enforcement-debt (WG-29),
-to be applied once `sprint/SP-20260716-001-dispatch` merges — nothing yet
-detects that the frozen doctrine still reads the old blunt "never go idle" form
-instead of this pattern.
+`scripts/teams/signal-board.test.js`. **Fold-back DONE (ED-071 / AC-17, SP-20260718-005):**
+this fire-and-poll rewrite is now folded back into `epsilon.md` TEAMMATE STALL RULES and the
+`agent-dispatch-guide.md` cross-reference (both upgraded from the old blunt "never go idle" form
+and both cite this file as the canonical source of record). The prior WG-29 enforcement-debt is
+closed by that fold-back.
 
 ## Coordination cadence & handoff (session 2026-07-18/19 lessons)
 

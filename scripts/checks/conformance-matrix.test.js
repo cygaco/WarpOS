@@ -18,6 +18,7 @@ const path = require("path");
 const {
   evaluate,
   evaluateCoverage,
+  flipGate,
   loadFixtures,
   loadSupportMatrix,
   loadRoleBinding,
@@ -669,6 +670,46 @@ test("R4-1 (pure-core): validateRoleBinding() accepts a minimal well-formed grap
     "x",
   );
   assert.strictEqual(rb.worker_default_when_unbound, "FAIL_CLOSED");
+});
+
+// ── AC-16 / G0.3 / ED-214: flipGate() — the binding-flip ASSERTION (never flip a red default). ──
+
+test("flipGate(): a clean suite (0 mismatches, 0 required-down, nonzero fixtures) AUTHORIZES the flip", () => {
+  const gate = flipGate({ mismatches: [], requiredDownLanes: [], fixtureCount: 13 });
+  assert.strictEqual(gate.authorized, true, JSON.stringify(gate.blockers));
+  assert.strictEqual(gate.blockers.length, 0);
+});
+
+test("flipGate(): a fixture mismatch REFUSES the flip (never flip a default red)", () => {
+  const gate = flipGate({
+    mismatches: [{ id: "x", gate: "retention", expected: "PASS", computed: "BLOCK" }],
+    requiredDownLanes: [],
+    fixtureCount: 13,
+  });
+  assert.strictEqual(gate.authorized, false);
+  assert.ok(gate.blockers.some((b) => /fixture mismatch x/.test(b)));
+});
+
+test("flipGate(): a required-down lane REFUSES the flip (the live agy-antigravity/ED-060 case)", () => {
+  const gate = flipGate({
+    mismatches: [],
+    requiredDownLanes: [{ helm: "agy-antigravity", evidence_ref: "ED-060" }],
+    fixtureCount: 13,
+  });
+  assert.strictEqual(gate.authorized, false);
+  assert.ok(gate.blockers.some((b) => /required-down lane agy-antigravity/.test(b)));
+});
+
+test("flipGate(): an empty suite REFUSES the flip (fail-closed — cannot certify on zero fixtures)", () => {
+  const gate = flipGate({ mismatches: [], requiredDownLanes: [], fixtureCount: 0 });
+  assert.strictEqual(gate.authorized, false);
+  assert.ok(gate.blockers.some((b) => /zero conformance fixtures/.test(b)));
+});
+
+test("flipGate(): over the REAL corpus, the flip is currently REFUSED by the agy-antigravity down-required lane", () => {
+  const gate = flipGate(run());
+  assert.strictEqual(gate.authorized, false, "expected the live flip to be blocked while agy is down-required (ED-060)");
+  assert.ok(gate.blockers.some((b) => /agy-antigravity/.test(b)), JSON.stringify(gate.blockers));
 });
 
 if (failures.length) {

@@ -338,11 +338,17 @@ chain or cascade — ε is the sole builder-dispatcher (enforced structurally by
 block). (See §9.5 for the in-process-vs-OS-subprocess lane model; the two sections agree — §9.5's
 "in-process subagents have their own context" is the *why*, this table is the *how*.)
 
-**Blocking-only dispatch (WG-6):** teammate-ε MUST dispatch **OS subprocesses** (dispatch-claude.js /
-dispatch-agent.js) **foreground/blocking** and record completions **in the same turn**. NEVER go idle
-with an outstanding OS subprocess — the harness does NOT re-wake a teammate when a background process
-completes. Observed as 25-minute stalls (WG-6 ×3). (An in-process Agent-tool spawn returns to you
-directly, a different lane — §9.5.) See `.claude/agents/president/epsilon.md` TEAMMATE STALL RULES.
+**Fire-and-poll dispatch (WG-6):** a teammate-ε must NEVER go idle with an outstanding **OS
+subprocess** (dispatch-claude.js / dispatch-agent.js) — the harness does NOT re-wake a teammate when
+a background process completes (an in-process Agent-tool spawn returns to you directly, a different
+lane — §9.5). Observed as 25-minute stalls (WG-6 ×3). The fix is not "block foreground only" but
+**fire-and-poll**: fire the work, then actively POLL a durable signal in the SAME turn — the signal
+board (`scripts/teams/signal-board.js wait <topic>`) for teammate rulings, or the completion ledger
+(`gauntlet-verify`) for dispatched-worker returns (absence of an `ok:true` record IS the death
+signal). Bound every poll; a long dispatch is not dead before the 540s clamp + margin — check for the
+late-landing artifact before writing a lane off. Canonical doctrine:
+`.claude/agents/_system/guides/teammate-stall-rules.md`; ε-spec projection:
+`.claude/agents/president/epsilon.md` TEAMMATE STALL RULES.
 
 ---
 
