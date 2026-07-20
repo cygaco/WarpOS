@@ -83,6 +83,11 @@ const SUPPORT_MATRIX_PATH = path.join(KERNEL_DIR, "support-matrix.json");
 const FIXTURES_DIR = path.join(KERNEL_DIR, "fixtures");
 const MANIFEST_PATH = path.join(FIXTURES_DIR, "manifest.json");
 
+// SP-20260720-002 Phase 4 (CORE-2 flip, ED-215): the trust-boundary fixture whose report_only flip makes
+// CORE-2's artifact-verification+integration slice a LIVE block, not just a definitional prediction. Its
+// choke-point module MUST genuinely exist + export the sole entrypoint once flipped — see evaluateCore2Live.
+const CORE2_LIVE_MODULE_REL = "scripts/dispatch/trusted-controller.js";
+
 // contract-lint.js's OWN R1 self-test corpus — never a kernel-conformance gate.
 // conformance-matrix-selftest: this runner's OWN N-2 negative self-test corpus
 // (deliberately shape-malformed fixtures used only by conformance-matrix.test.js)
@@ -509,6 +514,45 @@ function evaluateCoverage({ fixtures, supportMatrix }) {
 }
 
 /**
+ * evaluateCore2Live({fixtures, rootDir}) -> {ok, checked, violations:[]} (SP-20260720-002 Phase 4, ED-215
+ * CORE-2 flip). Before this phase, the `trust-boundary` gate's CORE-2 fixture was a pure DEFINITIONAL
+ * evaluator (GATE_EVALUATORS['trust-boundary'] above) — it proves the RULE is fixture-testable, never that
+ * a live mechanism backs it. This function is the LIVE half: for every loaded `trust-boundary` fixture that
+ * is `bound_core:"CORE-2"` AND has flipped `report_only:false` (the scoped artifact-verification+
+ * integration slice, honest-promise-bound per top-level-runtime-contract.md §1 P1.2), it asserts the real
+ * adapter module genuinely EXISTS on disk, LOADS without throwing, and exports its sole entrypoint
+ * (`integrate`) — never a report_only:false flip with no live module behind it (that would be the exact
+ * "flip the label, not the mechanism" false-green this check exists to catch). A fixture that is STILL
+ * `report_only:true` is unaffected (this function is a no-op for it) — flipping is opt-in per fixture.
+ */
+function evaluateCore2Live({ fixtures, rootDir } = {}) {
+  const root = rootDir || ROOT;
+  const relevant = (fixtures || []).filter((fx) => fx.gate === "trust-boundary" && fx.bound_core === "CORE-2" && fx.report_only === false);
+  if (relevant.length === 0) {
+    return { ok: true, checked: 0, violations: [] };
+  }
+  const violations = [];
+  const modAbs = path.join(root, CORE2_LIVE_MODULE_REL);
+  if (!fs.existsSync(modAbs)) {
+    violations.push(`CORE-2 live adapter module missing: ${CORE2_LIVE_MODULE_REL} (report_only:false flipped with no live mechanism behind it)`);
+  } else {
+    let mod;
+    try {
+      delete require.cache[require.resolve(modAbs)];
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      mod = require(modAbs);
+    } catch (e) {
+      violations.push(`CORE-2 live adapter module failed to load: ${CORE2_LIVE_MODULE_REL}: ${(e && e.message) || e}`);
+      mod = null;
+    }
+    if (mod && typeof mod.integrate !== "function") {
+      violations.push(`CORE-2 live adapter module ${CORE2_LIVE_MODULE_REL} does not export integrate() — the sole entrypoint`);
+    }
+  }
+  return { ok: violations.length === 0, checked: relevant.length, violations };
+}
+
+/**
  * AC-16 / G0.3 / ED-214 — the BINDING-FLIP GATE (an ASSERTION, not prose).
  *
  * The ED-214 flip makes the conformance runner's default BINDING (report-only → enforce). Flipping
@@ -522,18 +566,34 @@ function evaluateCoverage({ fixtures, supportMatrix }) {
  * SPRINT-level precondition the conductor asserts (the Phase-3 exit gate), deliberately NOT wired
  * into this Phase-0 kernel runner (a layering inversion). This function is the conformance-half.
  *
- * @param {{mismatches:Array, requiredDownLanes:Array, fixtureCount:number}} res  a run() result
- * @returns {{authorized:boolean, blockers:string[]}}
+ * `opts.scope === "core2"` (SP-20260720-002 Phase 4, AC-26): a NARROWER flip-gate scoped to CORE-2's
+ * artifact-verification+integration slice ONLY — it drops `requiredDownLanes` from the blocker set (a
+ * down REQUIRED lane like `agy-antigravity`/ED-060 is a DIFFERENT, unrelated, operator-owned support-matrix
+ * concern; ED-060 stays open by explicit ratified deferral and is not this slice's job to fix) but ALWAYS
+ * still includes `core2Live` violations (never optional, either scope) — the CORE-2 live-adapter module
+ * genuinely existing is not something ANY scope may skip. The default (unscoped) flip-gate is UNCHANGED —
+ * every existing caller/test keeps its exact prior behavior (requiredDownLanes still blocks it).
+ *
+ * @param {{mismatches:Array, requiredDownLanes:Array, fixtureCount:number, core2Live?:object}} res  a run() result
+ * @param {{scope?:string}} [opts]
+ * @returns {{authorized:boolean, blockers:string[], scope:string}}
  */
-function flipGate(res) {
+function flipGate(res, opts = {}) {
+  const scope = opts && opts.scope === "core2" ? "core2" : "full";
   const blockers = [];
   if (!res || typeof res.fixtureCount !== "number" || res.fixtureCount === 0)
     blockers.push("zero conformance fixtures executed — cannot certify a binding flip on an empty suite (fail-closed)");
   for (const m of res.mismatches || [])
     blockers.push(`fixture mismatch ${m.id} (${m.gate}): expected ${m.expected}, computed ${m.computed} — flipping would RED this fixture`);
-  for (const d of res.requiredDownLanes || [])
-    blockers.push(`required-down lane ${d.helm} (${d.evidence_ref}) — flipping the default to binding would RED this lane`);
-  return { authorized: blockers.length === 0, blockers };
+  if (scope !== "core2") {
+    for (const d of res.requiredDownLanes || [])
+      blockers.push(`required-down lane ${d.helm} (${d.evidence_ref}) — flipping the default to binding would RED this lane`);
+  }
+  if (res && res.core2Live && res.core2Live.ok === false) {
+    for (const v of res.core2Live.violations || [])
+      blockers.push(`CORE-2 live-adapter check failed: ${v}`);
+  }
+  return { authorized: blockers.length === 0, blockers, scope };
 }
 
 /** fs-backed runner. Throws on any runner-level error (fail-closed, exit 2 at the CLI). */
@@ -549,6 +609,7 @@ function run(opts) {
 
   const { results, mismatches, requiredDownLanes } = evaluate({ fixtures, supportMatrix, roleBinding });
   const coverage = evaluateCoverage({ fixtures, supportMatrix });
+  const core2Live = evaluateCore2Live({ fixtures, rootDir: opts.rootDir || ROOT });
 
   let manifestCount;
   try {
@@ -557,12 +618,13 @@ function run(opts) {
     manifestCount = undefined;
   }
 
-  return { results, mismatches, requiredDownLanes, coverage, fixtureCount: fixtures.length, manifestCount };
+  return { results, mismatches, requiredDownLanes, coverage, core2Live, fixtureCount: fixtures.length, manifestCount };
 }
 
 module.exports = {
   evaluate,
   evaluateCoverage,
+  evaluateCore2Live,
   flipGate,
   loadFixtures,
   loadSupportMatrix,
@@ -570,6 +632,7 @@ module.exports = {
   validateRoleBinding,
   run,
   GATE_EVALUATORS,
+  CORE2_LIVE_MODULE_REL,
 };
 
 if (require.main === module) {
@@ -578,6 +641,12 @@ if (require.main === module) {
   const ENFORCE = argv.includes("--enforce");
   const COVERAGE = argv.includes("--coverage");
   const FLIP_GATE = argv.includes("--flip-gate");
+  // SP-20260720-002 Phase 4 (AC-26): `--scope=core2` narrows --flip-gate to CORE-2's artifact-verification+
+  // integration slice (drops the unrelated agy-antigravity/ED-060 required-down blocker, keeps everything
+  // else — including the core2Live check, which is NEVER droppable). Omitted -> the ORIGINAL, unchanged
+  // full-suite flip-gate (still correctly refused while agy stays required+down, ED-060, operator-deferred).
+  const scopeArg = argv.find((a) => a.startsWith("--scope="));
+  const SCOPE = scopeArg ? scopeArg.slice("--scope=".length) : undefined;
 
   let res;
   try {
@@ -590,17 +659,21 @@ if (require.main === module) {
   }
 
   if (FLIP_GATE) {
-    // AC-16 / G0.3 / ED-214: assert the binding flip is SAFE (never flip a default red).
-    const gate = flipGate(res);
+    // AC-16 / G0.3 / ED-214 (+ AC-26 CORE-2 scoped variant): assert the binding flip is SAFE (never flip a
+    // default red).
+    const gate = flipGate(res, { scope: SCOPE });
     if (JSON_OUT) {
-      console.log(JSON.stringify({ check: NAME, mode: "flip-gate", authorized: gate.authorized, blockers: gate.blockers }));
+      console.log(JSON.stringify({ check: NAME, mode: "flip-gate", scope: gate.scope, authorized: gate.authorized, blockers: gate.blockers }));
     } else if (gate.authorized) {
       console.log(
-        `OK   [${NAME}] --flip-gate: all ${res.fixtureCount} conformance fixtures green + no required-down lane — ` +
-          `the ED-214/G0.3 binding flip is AUTHORIZED (safe to make the default binding).`,
+        `OK   [${NAME}] --flip-gate${gate.scope === "core2" ? " --scope=core2" : ""}: all ${res.fixtureCount} conformance fixtures green` +
+          `${gate.scope === "core2" ? " (CORE-2 slice: unrelated required-down lanes excluded)" : " + no required-down lane"} — ` +
+          `the binding flip is AUTHORIZED (safe to make the default binding).`,
       );
     } else {
-      console.error(`REFUSED [${NAME}] --flip-gate: the ED-214/G0.3 binding flip is BLOCKED (never flip a default red) — ${gate.blockers.length} blocker(s):`);
+      console.error(
+        `REFUSED [${NAME}] --flip-gate${gate.scope === "core2" ? " --scope=core2" : ""}: the binding flip is BLOCKED (never flip a default red) — ${gate.blockers.length} blocker(s):`,
+      );
       for (const b of gate.blockers) console.error(`  - ${b}`);
     }
     process.exit(gate.authorized ? 0 : 1);
@@ -621,7 +694,11 @@ if (require.main === module) {
 
   const hasMismatch = res.mismatches.length > 0;
   const hasRequiredDown = res.requiredDownLanes.length > 0;
-  const binding = ENFORCE && (hasMismatch || hasRequiredDown);
+  // SP-20260720-002: a CORE-2 live-adapter failure (a flipped report_only:false fixture whose module is
+  // missing/broken) is ALWAYS a blocker under --enforce, same footing as a mismatch — the flip must never
+  // read binding while the mechanism behind it is absent.
+  const hasCore2LiveFail = !!(res.core2Live && res.core2Live.ok === false);
+  const binding = ENFORCE && (hasMismatch || hasRequiredDown || hasCore2LiveFail);
 
   if (JSON_OUT) {
     console.log(
@@ -632,12 +709,14 @@ if (require.main === module) {
         manifestCount: res.manifestCount,
         mismatches: res.mismatches,
         requiredDownLanes: res.requiredDownLanes,
+        core2Live: res.core2Live,
       }),
     );
   } else {
     console.log(
       `[${NAME}] ${ENFORCE ? "ENFORCE" : "REPORT-ONLY (ED-214)"} — ${res.fixtureCount} fixture(s) executed, ` +
-        `${res.mismatches.length} mismatch(es), ${res.requiredDownLanes.length} required-down lane(s)`,
+        `${res.mismatches.length} mismatch(es), ${res.requiredDownLanes.length} required-down lane(s), ` +
+        `CORE-2 live-adapter ${res.core2Live && res.core2Live.checked ? (res.core2Live.ok ? "OK" : "FAILED") : "not-flipped"}`,
     );
     for (const m of res.mismatches) {
       console.error(`  - MISMATCH ${m.id} (${m.gate}): expected ${m.expected}, computed ${m.computed}`);
@@ -645,7 +724,10 @@ if (require.main === module) {
     for (const d of res.requiredDownLanes) {
       console.error(`  - REQUIRED-DOWN ${d.helm}: ${d.evidence_ref}`);
     }
-    if (!ENFORCE && (hasMismatch || hasRequiredDown)) {
+    if (hasCore2LiveFail) {
+      for (const v of res.core2Live.violations) console.error(`  - CORE-2-LIVE-ADAPTER-FAIL: ${v}`);
+    }
+    if (!ENFORCE && (hasMismatch || hasRequiredDown || hasCore2LiveFail)) {
       console.error(`[${NAME}] report-only (ED-214) — re-run with --enforce to make this a blocking gate.`);
     }
     if (res.fixtureCount === 0) {
