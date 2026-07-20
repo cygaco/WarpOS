@@ -1,14 +1,14 @@
 {
   "$schema": "warpos/provider-fallback/v1",
   "version": 1,
-  "comment": "UNENFORCED legacy scaffold (Phase 0 workstream E). The LIVE fallback authority is now WG-11(b) family-aware routing in scripts/hooks/lib/providers.js (suggestFallbackProvider + PROVIDER_FAMILY) — a quota/outage fallback lands in a DIFFERENT model family, never same-family. This file's per-role policies below still carry PRE-ADR-0007 role keys (redteam/reviewer/compliance/qa) and PRE-DISPATCH.md-§8 model ids (gpt-5.5, claude-sonnet-4-6, gemini-3.1-pro-preview); they are documentation only and no consumer routes off them. A full rewrite to the new roster (security-reviewer/frontend-reviewer/qa-reviewer + gpt-5.6/sonnet-5/antigravity) is deferred with the ADR-0007 scaffold-cleanup, out of the SP-20260716-001 flip scope. Do not treat the ids below as authoritative.",
+  "comment": "UNENFORCED legacy scaffold (Phase 0 workstream E). The LIVE fallback authority is now WG-11(b) family-aware routing in scripts/hooks/lib/providers.js (suggestFallbackProvider + PROVIDER_FAMILY) — a quota/outage fallback lands in a DIFFERENT model family, never same-family. This file's per-role policies below still carry PRE-ADR-0007 role keys (reviewer/compliance/qa) and PRE-DISPATCH.md-§8 model ids (gpt-5.5, claude-sonnet-4-6); they are documentation only and no consumer routes off them. The SUNSET individual `gemini` CLI targets were repointed to antigravity (agy) in the 2026-07-20 deep-clean. A full rewrite to the new roster (security-reviewer/frontend-reviewer/qa-reviewer + gpt-5.6/sonnet-5) is deferred with the ADR-0007 scaffold-cleanup. Do not treat the ids below as authoritative.",
   "policies": {
-    "redteam": {
-      "primary": "gemini:gemini-3.1-pro-preview",
-      "fallback": "gemini:gemini-3.5-flash",
-      "deep_fallback": "gemini:gemini-2.5-flash",
-      "second_pass": "openai:gpt-5.5",
-      "rationale": "redteam runs adversarial-corpus reasoning; gemini-3.1-pro-preview is the primary (operator directive 2026-06-01 — thinking always-on, 1M context, ideal for attack-chain reasoning). It is a PREVIEW tier (v1beta) and can quota-fail / silently downgrade under load, so the first fallback is gemini-3.5-flash — the GA (v1) promotion of the 3.x Flash line: newer than 2.5, no preview fragility, same adversarial-corpus diversity (β DECIDE 2026-06-01, conf 0.87). gemini-2.5-flash is retained as deep_fallback — a prior-gen but rock-solid known-good safety net. A total gemini outage falls through runProvider's provider-level fallback:claude. A SECOND security pass ALWAYS runs on openai:gpt-5.5 (dispatch-agent --provider openai) so security covers two model families and survives even that. Override the primary anytime with GEMINI_MODEL=gemini-3.5-flash (or gemini-2.5-flash)."
+    "security-reviewer": {
+      "primary": "antigravity:gemini-3.1-pro-high",
+      "fallback": "openai:gpt-5.6-sol",
+      "deep_fallback": "claude:claude-opus-4-8",
+      "second_pass": "openai:gpt-5.6-sol",
+      "rationale": "security-reviewer (was redteam) runs adversarial-corpus reasoning; the Gemini lab is the primary, served through the Antigravity `agy` CLI (the individual-tier gemini CLI is SUNSET — deep-clean 2026-07-20). CROSS-FAMILY fallback: a Google-lab outage retries on the GPT lab (openai:gpt-5.6-sol), never another google endpoint (WG-11(b)); a total outage falls through runProvider's provider-level fallback. A SECOND security pass ALWAYS runs on openai:gpt-5.6-sol so security covers two model families. deep_fallback is the Claude hunter lane (claude-opus-4-8) as a last-resort known-good."
     },
     "reviewer": {
       "primary": "openai:gpt-5.5",

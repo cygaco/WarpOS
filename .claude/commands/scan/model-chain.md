@@ -32,7 +32,9 @@ when ANY:
    only checks the negative "max only on alpha"; a downgraded alpha would pass silently otherwise).
 3. **top-model** — `model_policy.doers.model` ≠ the shipped top.
 4. **completeness / validity** — a role missing `model`, missing an `effort` key, or carrying an
-   invalid effort level. `effort:null` is allowed only for `skeleton-builder` and gemini roles.
+   invalid effort level. `effort:null` is allowed only for `skeleton-builder`, `security_claude_hunter`
+   (the in-process claude hunter — effort carried by `security-reviewer.third_pass`), and `antigravity`
+   (agy) roles — the SUNSET individual `gemini` provider was removed in the 2026-07-20 deep-clean.
 5. **max-only-alpha** — any non-alpha role at `max` (positive policy home; mirrors role-parity for a
    CRITICAL invariant).
 6. **[DRIFT]** — catalog/providers resolve a role to a DIFFERENT provider or effort than the
@@ -43,10 +45,23 @@ must never read green on its own corruption. **Wired REPORT-ONLY** in `/scan:ful
 findings alongside `/scan:role-parity`; the flip-to-blocking is the ramp tail once the chain has
 held drift-free).
 
-Bite-test: `node scripts/checks/model-chain.test.js` (19 planted-violation assertions incl. the
+Bite-test: `node scripts/checks/model-chain.test.js` (planted-violation assertions incl. the
 no-fable false-positive guard + a live-registry integration pass).
+
+## Legacy-Gemini-CLI creep-back gate (ADR-0031, extends this scan)
+
+Also runs `node scripts/checks/no-legacy-gemini-cli.js` — the wiring-precise gate that REJECTS
+(exit 1) any re-introduction of the SUNSET individual `gemini` CLI: a `gemini:` provider block /
+`cli:"gemini"`, `GEMINI_API_KEY`/`GOOGLE_API_KEY` injection, `GEMINI_CLI_TRUST*`/`--skip-trust`, the
+removed key/oauth loaders, a bare quoted provider/tool id `"gemini"` (role→`"gemini"`,
+`provider==="gemini"`, a `"gemini"` TOOL_ID, a panel pass→`"gemini"`), or a `gemini <flag>` CLI call.
+It does NOT flag the KEPT partition — `gemini-3.1-pro-*` MODEL ids served via `agy`, `antigravity`/`agy`
+wiring, `ANTIGRAVITY_MODEL`. The sanctioned Gemini DEEP-RESEARCH API path (`scripts/research/deep-run.js`,
+`gemini-deep-research.js`, `auth-resolver.js`) is excluded (a no-CLI-equivalent capability, not the CLI).
+Bite-test: `node scripts/checks/no-legacy-gemini-cli.test.js` (a negative fixture per removed form +
+a positive gemini-model-via-agy fixture — the no-widen/no-narrow proof).
 
 ## When to run
 
 After any edit to `role-registry.json` model/effort fields, `catalog.js`/`providers.js` role maps,
-or a model-catalog refresh. Part of `/scan:full`.
+a model-catalog refresh, or any dispatch provider wiring. Part of `/scan:full`.

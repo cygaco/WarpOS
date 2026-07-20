@@ -1053,7 +1053,7 @@ try {
 // call `node scripts/warpos/provider-tier-check.js --json` here (report-only) and
 // gate any `--set-tier` write / CLI install on an explicit prompt.
 const codexPresent = cmdExists("codex");
-const geminiPresent = cmdExists("gemini");
+const agyPresent = cmdExists("agy");
 
 console.log(`\n${"─".repeat(54)}`);
 console.log(`${HEADER}  SETUP COMPLETE${RESET}\n`);
@@ -1068,10 +1068,11 @@ console.log(
 console.log(
   `  for model diversity. Same-model review is blind to shared failure`,
 );
-console.log(`  modes — so evaluator/compliance/qa/auditor run on OpenAI, and`);
+console.log(`  modes — so review/compliance/qa run on OpenAI, and the`);
 console.log(
-  `  redteam runs on Gemini. Without these CLIs, agents fall back to`,
+  `  security reviewer's Gemini lab runs through Antigravity (agy).`,
 );
+console.log(`  Without these CLIs, agents fall back to`);
 console.log(`  Claude (still works, just loses the diversity benefit).\n`);
 
 if (codexPresent) {
@@ -1083,14 +1084,14 @@ if (codexPresent) {
   console.log(`       Install:  npm i -g @openai/codex`);
   console.log(`       Auth:     codex login   (or set OPENAI_API_KEY)`);
 }
-if (geminiPresent) {
-  console.log(`  ${OK} Gemini CLI detected (redteam will use Gemini)`);
+if (agyPresent) {
+  console.log(`  ${OK} Antigravity CLI (agy) detected (security reviewer's Gemini lab)`);
 } else {
   console.log(
-    `  ${WARN} Gemini CLI missing — redteam will fall back to Claude`,
+    `  ${WARN} Antigravity CLI (agy) missing — the Gemini security lab will fall back to Claude`,
   );
-  console.log(`       Install:  npm i -g @google/gemini-cli`);
-  console.log(`       Auth:     gemini auth login   (or set GEMINI_API_KEY)`);
+  console.log(`       Install:  the standalone Antigravity 'agy' CLI (not npm)`);
+  console.log(`       Auth:     sign in to Antigravity so its ~/.gemini keyring carries a session`);
 }
 
 // SP-20260523-003: Post-install manifest-coverage hook.

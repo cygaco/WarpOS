@@ -126,15 +126,18 @@ function loadRegistryMap() {
 // We look for a GitHub-flavored markdown table whose header row contains both a
 // "role" column and a "provider" column, then extract role/provider per data
 // row. Providers are normalized to the canonical ids used in code
-// (anthropic→claude, gpt→openai, google→gemini). Returns { table, found }.
+// (anthropic→claude, gpt→openai, google→antigravity). Returns { table, found }.
+// D3 (deep-clean 2026-07-20): `google` normalizes to `antigravity` (the agy lane that
+// serves Gemini MODELS); the SUNSET individual `gemini` CLI provider was removed.
 const PROVIDER_NORMALIZE = {
   claude: "claude",
   anthropic: "claude",
   openai: "openai",
   gpt: "openai",
   codex: "openai",
-  gemini: "gemini",
-  google: "gemini",
+  google: "antigravity",
+  antigravity: "antigravity",
+  agy: "antigravity",
 };
 
 function normalizeProvider(token) {

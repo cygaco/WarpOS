@@ -122,7 +122,7 @@ agree — keep them in sync.
 | compliance | openai | gpt-5.5 xhigh — cross-provider audit |
 | qa | openai | independent failure-mode pass |
 | ops-analyst | openai | cross-run synthesis (formerly `learner`) |
-| redteam | gemini | different adversarial corpus, thinking-on |
+| redteam | openai | superseded by `security-reviewer` (antigravity/agy); back-compat FLOOR = openai, the verifiable GPT lane (the individual gemini CLI is SUNSET — deep-clean 2026-07-20) |
 | design-lead | openai | gpt-5.5 xhigh — product design/UX/flows (ADR-0007) |
 | director-of-product | openai | gpt-5.5 xhigh — product strategy/sequencing/JTBD (E-DISPATCH-PERFECT-001 W2) |
 | product-lead | openai | gpt-5.5 high — requirement authoring PRD/stories/AC (operator: GPT writes product requirements) |
@@ -150,13 +150,16 @@ not the default for the review layer — cross-provider diversity is the point.
 shared failure modes. Every gauntlet must include at least one non-Anthropic
 reviewer.
 
-**Security runs TWICE.** `redteam` dispatches to gemini (primary,
-corpus-diverse) AND a second pass to openai/gpt-5.5 via the `--provider openai`
-override on `dispatch-agent.js`. This gives two-model-family security coverage
-and keeps security running if gemini is unavailable.
+**Security runs as a 3-lab panel.** `security-reviewer` (which supersedes `redteam`)
+fires the Gemini lab via Antigravity `agy` (primary, corpus-diverse — the individual
+`gemini` CLI is SUNSET, so the Gemini lab routes through agy), then a `gpt-5.6-sol`
+jailbreak pass, then a `claude-opus-4-8` in-process hunter (last, so it never displaces
+the cross-family coverage; ADR-0016). A second GPT pass via the `--provider openai`
+override keeps two-model-family coverage if the agy lane is unavailable — the verifiable
+GPT floor is where the binding default sits (ADR-0031).
 
 ```bash
-node scripts/dispatch-agent.js redteam <prompt-file> --provider openai --model gpt-5.5
+node scripts/dispatch-agent.js security-reviewer <prompt-file> --provider openai --model gpt-5.6-sol
 ```
 
 `--provider <claude|openai|gemini>` and `--model <id>` override the manifest

@@ -75,7 +75,10 @@ const ALLOWED_RECIPE_KINDS = Object.freeze([
 // key blocked even if the catalog says safe_to_autofix=true. RT-2 hard
 // floor — prevents a malicious / accidental catalog edit from setting
 // e.g. ANTHROPIC_API_KEY="hijacked" via set_env_and_reprobe.
-const ALLOWED_ENV_KEYS = Object.freeze(["GEMINI_CLI_TRUST_WORKSPACE"]);
+// (Emptied in the 2026-07-20 deep-clean: the sole entry GEMINI_CLI_TRUST_WORKSPACE
+// belonged to the SUNSET gemini CLI's trusted_directory_required recipe, now retired.
+// The agy lane has no workspace-trust env. No live safe_to_autofix recipe sets an env.)
+const ALLOWED_ENV_KEYS = Object.freeze([]);
 
 // Substrings in env-var names that ALWAYS block (defense in depth — never
 // touch credential-looking variables even if someone adds them to

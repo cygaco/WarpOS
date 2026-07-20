@@ -55,7 +55,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 // kind drives invocation. `.cmd` shims on Windows still carry CVE-2024-27980
 // residual risk — mitigated by the arg-allowlist (no metachars reach the shell)
 // + arg-array invocation. `node` runs OUR absolute JS entrypoints only.
-const TOOL_IDS = new Set(["claude", "codex", "gemini", "node", "git", "taskkill", "agy"]);
+const TOOL_IDS = new Set(["claude", "codex", "node", "git", "taskkill", "agy"]);
 
 // ── Per-tool argument policy (allowlist, not just metachar refusal) ──
 // flags: allowed flag tokens. valueFlags: flags that consume the next arg, with a
@@ -154,19 +154,6 @@ const ARG_POLICY = {
     },
     positionals: (v) => v === "-",
   },
-  gemini: {
-    subcommands: new Set([]),
-    boolFlags: new Set(["-", "--skip-trust"]),
-    valueFlags: {
-      "-m": (v) => TOKEN.test(v),
-      "--model": (v) => TOKEN.test(v),
-      "-o": (v) => /^(json|text)$/.test(v),
-      // -p carries a fixed instruction string; allow plain ASCII words/space/period
-      // only — NO quotes/parens/metachars (aligns with INJECT_META; shell:false anyway).
-      "-p": (v) => /^[A-Za-z0-9 .,:/-]+$/.test(v) && v.length <= 4096,
-    },
-    positionals: (v) => v === "-",
-  },
   agy: {
     // Antigravity CLI: `agy --model <id> --print-timeout <dur> -p '<multi-line prompt>'` (no stdin,
     // no prompt-file flag — the prompt is the `-p` argv VALUE). #27 carve-out.
@@ -239,6 +226,14 @@ const ARG_POLICY = {
   },
 };
 
+// ADR-0031 rider 4: agy must NEVER carry a skip-permissions / auto-approve escape. agy is an
+// AGENTIC CLI whose headless tool-permission wall is handled by a SCOPED READ-ONLY allow-list
+// (operator-owned; agy stays BLOCKED-ADVISORY until that permissions.allow whitelist is verified) —
+// NOT by bypassing the permission system. This constant + the assertArgs check below refuse the
+// bypass STRUCTURALLY at the choke-point every agy dispatch routes through, so it can never be
+// self-granted (a future edit that adds the flag fails closed here, and safe-spawn.test asserts it).
+const AGY_FORBIDDEN_SKIP_PERM = /^--(dangerously-skip-permissions?|yolo|skip-permissions?|allow-all)$/i;
+
 // A UNC path or a drive-absolute executable arg — the model must never choose an
 // executable path; reject these wherever they appear in argv.
 const looksLikeUNC = (v) =>
@@ -291,6 +286,8 @@ function assertArgs(toolId, args) {
     // ERR_INVALID_ARG_VALUE past the fail-closed result contract. (Consumed flag VALUES are covered by
     // consumedValueViolations' INJECT_META; this closes the positional/token path universally.)
     if (a.indexOf("\x00") !== -1) violations.push(`arg ${i} contains a NUL byte — refused universally (never legitimate; crashes child_process)`);
+    // ADR-0031 rider 4: refuse an agy permission-bypass flag at the choke-point (never self-granted).
+    if (toolId === "agy" && AGY_FORBIDDEN_SKIP_PERM.test(a)) violations.push(`agy must NEVER carry a skip-permissions/auto-approve flag (${JSON.stringify(a)}) — ADR-0031 rider 4: the scoped read-only tool-permission is operator-owned; a permission-bypass is refused structurally.`);
     if (SHELL_META.test(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) contains a shell metacharacter/space`);
     if (looksLikeUNC(a)) violations.push(`arg ${i} (${JSON.stringify(a)}) looks like a UNC/absolute-executable path (model must never choose the executable)`);
 
@@ -733,4 +730,4 @@ function safeSpawnFile(toolId, args, opts = {}) {
   };
 }
 
-module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen };
+module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen, AGY_FORBIDDEN_SKIP_PERM };

@@ -49,7 +49,7 @@ const WARN_THRESHOLD_PCT = 0.8;
 
 // Metered cross-provider providers. `claude` runs on the Claude Code
 // subscription seat, NOT a per-call metered API, so it is NOT ledgered here.
-const PAID_PROVIDERS = new Set(["openai", "gemini"]);
+const PAID_PROVIDERS = new Set(["openai", "antigravity"]);
 
 // Rough bytes→tokens divisor (English text ≈ 4 bytes/token).
 const BYTES_PER_TOKEN = 4;

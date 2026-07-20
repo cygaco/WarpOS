@@ -64,13 +64,14 @@ function check() {
   } catch {
     return { ok: false, findings: ["manifest missing"] };
   }
-  const providers = manifest.agentProviders || {};
+  const manifestProviders = manifest.agentProviders || {};
   // ADR-0007 cutover: the review roster is the new per-pod + qa + security set,
   // DERIVED from the org map's code-qc gauntlet (no hardcoded legacy literal).
   // Fail-safe to the static new roster if org-roles can't load. The cross-
-  // provider invariant this asserts (≥1 openai reviewer + the gemini security
-  // reviewer) holds for the new roster: qa-reviewer/pod-reviewers→openai,
-  // security-reviewer→gemini.
+  // provider invariant this asserts (≥1 openai reviewer + the antigravity/agy
+  // security reviewer) holds for the new roster: qa-reviewer/pod-reviewers→openai,
+  // security-reviewer→antigravity (the individual gemini CLI is SUNSET; the Gemini
+  // lab now routes through agy — deep-clean 2026-07-20).
   let reviewRoles;
   try {
     reviewRoles = require("../dispatch/org-roles").gauntletReviewRoles();
@@ -78,10 +79,19 @@ function check() {
   } catch {
     reviewRoles = ["frontend-reviewer", "backend-reviewer", "qa-reviewer", "security-reviewer"];
   }
-  const expected = new Set(reviewRoles.map((r) => providers[r]).filter(Boolean));
+  // Resolve each review role's provider the way real dispatch does (registry-aware,
+  // manifest override wins) — the review roles are NOT in manifest.agentProviders
+  // anymore (they derive from the role-registry keystone), so a raw manifest read
+  // would see an empty set.
+  let resolveProvider = (r) => manifestProviders[r];
+  try {
+    const { getProviderForRole } = require("../hooks/lib/providers");
+    resolveProvider = (r) => manifestProviders[r] || getProviderForRole(r);
+  } catch { /* fall back to the manifest-only read */ }
+  const expected = new Set(reviewRoles.map(resolveProvider).filter(Boolean));
   const findings = [];
   if (!expected.has("openai")) findings.push("review roles do not include openai");
-  if (!expected.has("gemini")) findings.push("review roles do not include gemini");
+  if (!expected.has("antigravity")) findings.push("review roles do not include antigravity (the agy Gemini lab)");
   return { ok: findings.length === 0, expectedProviders: [...expected], findings, traceEntries: readTrace().length };
 }
 

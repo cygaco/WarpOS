@@ -61,8 +61,8 @@ const providersLib = tryRequire("scripts/hooks/lib/providers.js");
 
 // ── Auth-tier detection (read-only, no spend) ────────────────
 // Returns one of: "harness" | "oauth" | "key" | "none" | "unknown".
-// For gemini we reuse providers.js#hasValidGeminiOAuth when available so this
-// check and the live dispatch path AGREE on what "logged in" means (WI-19).
+// The agy (antigravity) lane self-auths via the shared ~/.gemini keyring; the
+// SUNSET individual gemini CLI auth branch was removed in the 2026-07-20 deep-clean.
 function readFileSafe(p) {
   try {
     return fs.readFileSync(p, "utf8");
@@ -71,46 +71,15 @@ function readFileSafe(p) {
   }
 }
 
-function geminiKeyPresent() {
-  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return true;
-  // Mirror providers.js#loadGeminiApiKey candidate locations.
-  const candidates = [
-    path.join(os.homedir(), ".gemini", ".env"),
-    path.join(ROOT, ".gemini", ".env"),
-  ];
-  for (const f of candidates) {
-    const txt = readFileSafe(f);
-    if (txt && /^\s*GEMINI_API_KEY\s*=\s*.+/m.test(txt)) return true;
-  }
-  return false;
-}
-
 function detectAuthTier(provider) {
   if (provider === "claude") return { tier: "harness", detail: "Claude is the harness" };
 
-  if (provider === "gemini") {
-    let oauth = false;
-    if (providersLib && typeof providersLib.hasValidGeminiOAuth === "function") {
-      try {
-        oauth = providersLib.hasValidGeminiOAuth();
-      } catch {
-        oauth = false;
-      }
-    } else {
-      // Fallback detection if providers.js didn't export the helper.
-      const creds = readFileSafe(path.join(os.homedir(), ".gemini", "oauth_creds.json"));
-      oauth = !!(creds && /(refresh|access)_token/.test(creds));
-    }
-    const key = geminiKeyPresent();
-    if (oauth)
-      return {
-        tier: "oauth",
-        detail: key
-          ? "OAuth login detected (paid) — file key present but correctly NOT injected (WI-19)"
-          : "OAuth login detected (paid)",
-      };
-    if (key) return { tier: "key", detail: "API key only (free-tier risk; no OAuth login)" };
-    return { tier: "none", detail: "no OAuth login and no GEMINI_API_KEY — run `gemini auth login`" };
+  if (provider === "antigravity") {
+    // agy self-auths via the shared ~/.gemini keyring (oauth_creds.json). VALUE-FREE presence check.
+    const creds = readFileSafe(path.join(os.homedir(), ".gemini", "oauth_creds.json"));
+    const oauth = !!(creds && /(refresh|access)_token/.test(creds));
+    if (oauth) return { tier: "oauth", detail: "agy keyring session detected (~/.gemini/oauth_creds.json)" };
+    return { tier: "none", detail: "no agy keyring session — sign in to Antigravity (`agy`)" };
   }
 
   if (provider === "openai") {
@@ -225,7 +194,7 @@ function resolveRole(role) {
 function cliInstalled(provider) {
   if (provider === "claude") return true;
   if (providerHealth && typeof providerHealth.cliPresent === "function") {
-    const cli = provider === "openai" ? "codex" : provider === "gemini" ? "gemini" : provider;
+    const cli = provider === "openai" ? "codex" : provider === "antigravity" ? "agy" : provider;
     try {
       return providerHealth.cliPresent(cli);
     } catch {
@@ -267,7 +236,7 @@ function buildReadiness() {
     return { ...resolved, modelCheck: m, effortCheck: e };
   });
   // Always include the three known providers even if no role routes to them.
-  ["claude", "openai", "gemini"].forEach((p) => providersSet.add(p));
+  ["claude", "openai", "antigravity"].forEach((p) => providersSet.add(p));
 
   const providerRows = [...providersSet].sort().map((provider) => {
     const cli = cliInstalled(provider);

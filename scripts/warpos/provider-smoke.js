@@ -10,7 +10,7 @@
  *
  * Usage:
  *   node scripts/warpos/provider-smoke.js
- *     [--providers a,b,c]   default: claude,openai,gemini
+ *     [--providers a,b,c]   default: claude,openai,antigravity
  *     [--probe list]        default: ""  (presence-only)
  *     [--json]              default: false (human output, see COPY C-1)
  *     [--exit-on-yellow]    default: false (PRD R-7 -- yellow exits 0)
@@ -45,10 +45,10 @@
  *   48-char separator, icons ok/!!/xx, padded provider+status columns.
  *
  *   Cross-platform Windows stdin-bug guard (PRD R-8, RT-5):
- *   This orchestrator NEVER shells out to `codex exec` / `gemini -p` directly.
+ *   This orchestrator NEVER shells out to `codex exec` / `agy -p` directly.
  *   All provider probing routes through probeAll() in provider-health.js,
  *   which uses execSync with explicit stdio:["pipe","pipe","pipe"] and a
- *   bounded timeout. Adding any `cat | codex` / `cat | gemini` invocation
+ *   bounded timeout. Adding any `cat | codex` / `cat | agy` invocation
  *   here re-introduces the LRN-2026-04-17-n / LRN-2026-04-30 binding-gap bug
  *   class and fails AC-8.1.
  */
@@ -67,7 +67,7 @@ const { log } = require(
 // G1.6 per-role smoke: resolve provider+model exactly as real dispatch does
 // (getProviderForRole + the role spec's provider_model) and dispatch a tiny
 // ping through runProvider. Routing through runProvider — NOT a raw `codex
-// exec` / `gemini -p` — keeps this on the single safe dispatch path and away
+// exec` / `agy -p` — keeps this on the single safe dispatch path and away
 // from the LRN-2026-04-17/-04-30 binding-gap bug class (RT-5 / AC-8.1). These
 // requires are lazy inside perRoleProbe() so the default presence-only smoke
 // (the hot path for /warp:setup) pays zero extra require cost.
@@ -88,7 +88,7 @@ const SCHEMA = "warpos/provider-smoke/v1";
 // Hard-coded for T-019. When T-021 mints provider-failure-modes.json with a
 // `known_providers` field, this list will be loaded from the catalog and this
 // constant will be replaced.
-const KNOWN_PROVIDERS = ["claude", "openai", "gemini", "antigravity"];
+const KNOWN_PROVIDERS = ["claude", "openai", "antigravity"];
 
 const PROBE_MODES = ["", "list"];
 
@@ -308,7 +308,7 @@ function loadFailureModeCatalog() {
 
 // Per-role smoke (G1.6) ---------------------------------------
 //
-// Provider-level probing answers "is the codex/gemini CLI present + authed?".
+// Provider-level probing answers "is the codex/agy CLI present + authed?".
 // It does NOT answer "can the model THIS role is pinned to actually be served
 // on this account?". A role pinned to gpt-5.5 on an account that only has
 // gpt-5.4 passes the provider probe (codex is present) yet fails the moment a

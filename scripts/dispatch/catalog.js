@@ -166,81 +166,10 @@ const OPENAI = {
   ],
 };
 
-// ── Gemini ─────────────────────────────────────────────────────
-// gemini-2.5-pro deliberately excluded per project policy
-// (see _requirements/09-integrations/PROVIDER/03-google-gemini.md)
-//
-// MODEL IDS (audited 2026-06-01 vs ai.google.dev/gemini-api/docs/models):
-// DEFAULT = `gemini-3.1-pro-preview` (operator directive 2026-06-01) — 1M in /
-// 65K out, thinking ALWAYS-ON (thinking_level minimal|low|medium|high, default
-// high; cannot be disabled). It is a PREVIEW id (v1beta, tighter quota, may be
-// paid-API-only) — it 404'd on 2026-05-30 then shipped. Current real ids:
-//   - `gemini-3.1-pro-preview`  reasoning flagship (preview / v1beta)
-//   - `gemini-3.5-flash`        GA flash, thinking always-on (the new fast pick)
-//   - `gemini-3.1-flash-lite`   GA, cheapest Gemini-3
-//   - `gemini-2.5-flash`        GA, thinking TOGGLEABLE — safest non-preview fallback
-// REMOVED 2026-06-01: `gemini-3-pro-preview` (SHUT DOWN 2026-03-09 → 3.1) and the
-// `gemini-flash-latest` rolling alias (pin concrete ids so the strict downgrade
-// check can verify which model actually served).
-// THINKING PARAM GOTCHA: Gemini 3 uses thinking_level (string); Gemini 2.5 uses
-// thinkingBudget (int) — crossing them is a silent dispatch failure. The gemini
-// CLI exposes no effort flag, so effortLevels:[] for all (thinking is implicit).
-// Auth: GEMINI_API_KEY in ~/.gemini/.env OR `gemini auth login` (OAuth) — one is
-// REQUIRED once per fresh install / new machine / update.
-// `-p`/`--prompt` is soft-deprecated upstream (positional prompt); works in 0.44.x.
-// NOTE: preview tier CAN quota-fail / silently downgrade — fall back to GA flash
-// with GEMINI_MODEL=gemini-2.5-flash (or gemini-3.5-flash).
-const GEMINI = {
-  id: "gemini",
-  label: "Google Gemini",
-  cli: "gemini",
-  cliEffortFlagTemplate: "",
-  syntaxTemplate: "gemini -m {model} -p",
-  requiresFallback: true,
-  defaultModel: "gemini-3.1-pro-preview",
-  models: [
-    {
-      id: "gemini-3.1-pro-preview",
-      label: "Gemini 3.1 Pro (preview, thinking always-on)",
-      effortLevels: [],
-      contextTokens: 1_000_000,
-      maxOutputTokens: 65_536,
-      thinkingAlwaysOn: true,
-      pricing: { inPerMTok: 2, outPerMTok: 12 },
-    },
-    {
-      id: "gemini-3.5-flash",
-      label: "Gemini 3.5 Flash (GA, thinking always-on)",
-      effortLevels: [],
-      contextTokens: 1_000_000,
-      maxOutputTokens: 65_536,
-      thinkingAlwaysOn: true,
-      pricing: { inPerMTok: 1.5, outPerMTok: 9 },
-    },
-    {
-      id: "gemini-3.1-flash-lite",
-      label: "Gemini 3.1 Flash-Lite (GA, thinking always-on)",
-      effortLevels: [],
-      contextTokens: 1_000_000,
-      maxOutputTokens: 65_536,
-      thinkingAlwaysOn: true,
-      pricing: { inPerMTok: 0.25, outPerMTok: 1.5 },
-    },
-    {
-      id: "gemini-2.5-flash",
-      label: "Gemini 2.5 Flash (GA, safe non-preview fallback)",
-      effortLevels: [],
-      contextTokens: 1_000_000,
-      maxOutputTokens: 65_536,
-      pricing: { inPerMTok: 0.3, outPerMTok: 2.5 },
-    },
-  ],
-};
-
 // ── Antigravity (Gemini via `agy`) ─────────────────────────────
 // DISPATCH.md 2026-07-12: the individual-tier `gemini` CLI is SUNSET — route ALL Gemini through
-// Antigravity's `agy` CLI. Self-auth at ~/.gemini/antigravity-cli. Added as a NEW provider id
-// `antigravity` alongside the legacy `gemini` provider (removed LAST, after the §6 sweep + parity).
+// Antigravity's `agy` CLI. Self-auth at ~/.gemini/antigravity-cli. `antigravity` is now the SOLE
+// google-family provider (the legacy `gemini` CLI provider was removed in the 2026-07-20 deep-clean).
 //
 // EMPIRICAL INVOCATION CONTRACT (2026-07-16 top-level probe, CORRECTED by the 2026-07-19 ED-060
 // calibration — the 2026-07-16 note was WRONG that the kebab slug is the working `--model` id):
@@ -289,17 +218,19 @@ const ANTIGRAVITY = {
   ],
 };
 
-const PROVIDERS = { claude: ANTHROPIC, openai: OPENAI, gemini: GEMINI, antigravity: ANTIGRAVITY };
-const PROVIDER_LIST = [ANTHROPIC, OPENAI, GEMINI, ANTIGRAVITY];
+const PROVIDERS = { claude: ANTHROPIC, openai: OPENAI, antigravity: ANTIGRAVITY };
+const PROVIDER_LIST = [ANTHROPIC, OPENAI, ANTIGRAVITY];
 
 // Accepted aliases the user might type — normalize to canonical id.
+// D2 (deep-clean 2026-07-20): the SUNSET individual `gemini` CLI provider is removed;
+// `google` now resolves to the supported `antigravity` (agy) lane that serves Gemini
+// MODELS, and the bare `gemini` alias is dropped (it pointed at the dead provider).
 const PROVIDER_ALIASES = {
   anthropic: "claude",
   claude: "claude",
   openai: "openai",
   gpt: "openai",
-  gemini: "gemini",
-  google: "gemini",
+  google: "antigravity",
   antigravity: "antigravity",
   agy: "antigravity",
 };
@@ -361,7 +292,9 @@ const LITERAL_DEFAULT_PROVIDER_PER_ROLE = {
   compliance: "openai",
   "ops-analyst": "openai", // S-7: was `learner`
   qa: "openai",
-  redteam: "gemini",
+  // Security literal FLOOR = the VERIFIABLE GPT lane (β DECIDE B/0.90, 2026-07-20): a registry-read
+  // failure falls to openai, NEVER the SUNSET gemini CLI. LIVE default = antigravity via role-registry.
+  redteam: "openai",
   "skeleton-builder": "claude", // S-7: was `stub-scaffold`
   cabinet: "openai", // S-7: registered freeform consult role
   // ADR-0007 new roster (must match providers.js DEFAULT_AGENT_PROVIDERS):
@@ -372,7 +305,7 @@ const LITERAL_DEFAULT_PROVIDER_PER_ROLE = {
   "backend-reviewer": "openai",
   "backend-fixer": "claude",
   "security-builder": "claude",
-  "security-reviewer": "gemini",
+  "security-reviewer": "openai", // literal FLOOR only — LIVE default = antigravity via role-registry (β DECIDE B/0.90)
   "security-fixer": "claude",
   "qa-reviewer": "openai",
   "visual-review": "claude",

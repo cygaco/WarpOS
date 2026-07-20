@@ -56,6 +56,11 @@ h.test("class derivation: builder=build_chain_worker, security-reviewer=cross_pr
   assert.strictEqual(classForRole("director-of-growth"), "cross_provider_consult_lead");
   assert.strictEqual(classForRole("product-lead"), "cross_provider_consult_lead");
   assert.strictEqual(classForRole("design-lead"), "cross_provider_consult_lead");
+  // gemini-deepclean-20260720 (Task#1 fix-b): the {tier:lead,provider:antigravity} rule FIRES before the
+  // generic {tier:lead}→manager catch-all, so research-lead (Growth's antigravity/gemini-lab research
+  // consult, ADR-0016 model-spread) derives cross_provider_consult_lead — NOT the Claude-only in-process
+  // "manager". Mirrors the openai-lead rule; completes the deep-clean's scan-broadening (role-parity-scan.js:535).
+  assert.strictEqual(classForRole("research-lead"), "cross_provider_consult_lead");
 });
 
 // ── happy shapes pass ───────────────────────────────────────
@@ -65,8 +70,8 @@ h.pass("builder via subprocess-claude (with a worktree cwd) is allowed", () =>
 // role is NOT a bypass — it must be flagged.
 h.violation("builder with NO cwd is rejected (omitting cwd is not a worktree bypass)", () =>
   validateDispatch({ role: "frontend-builder", shape: "subprocess-claude", toolId: "claude" }));
-h.pass("security-reviewer via subprocess-cross-provider (gemini) is allowed", () =>
-  validateDispatch({ role: "security-reviewer", shape: "subprocess-cross-provider", toolId: "gemini" }));
+h.pass("security-reviewer via subprocess-cross-provider (agy) is allowed", () =>
+  validateDispatch({ role: "security-reviewer", shape: "subprocess-cross-provider", toolId: "agy" }));
 h.pass("design-quality via in-process-agent is allowed (MCP carve-out)", () =>
   validateDispatch({ role: "design-quality", shape: "in-process-agent", toolId: "agent-tool" }));
 

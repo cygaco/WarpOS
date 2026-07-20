@@ -1,0 +1,27 @@
+// positive-fixture — the KEPT partition: the Gemini MODEL family served through the
+// supported Antigravity (agy) CLI. The enforcer MUST NOT flag ANY line here (no-widen).
+// gemini-3.1-pro-* are MODEL IDS (a hyphen follows "gemini"), NOT the sunset provider id.
+
+const ANTIGRAVITY = {
+  id: "antigravity",
+  label: "Antigravity (Gemini)",
+  cli: "agy",
+  default_model: process.env.ANTIGRAVITY_MODEL || "gemini-3.1-pro-high",
+  agyModelName: "Gemini 3.1 Pro (High)",
+  fallback: "openai",
+  syntax: "agy --model {model} --print-timeout 90s -p",
+};
+
+const roles = {
+  "security-reviewer": { provider: "antigravity", model: "gemini-3.1-pro-high", effort: null },
+  "research-lead": { provider: "antigravity", model: "gemini-3.1-pro-high" },
+};
+
+// The ordered panel passes — the primary is the agy Gemini lab (model id, not the CLI).
+const passes = [
+  { provider: "antigravity", model: "gemini-3.1-pro-high", key: "primary" },
+  { provider: "openai", model: "gpt-5.6-sol", key: "second_pass" },
+];
+
+// Model catalog entries — gemini-3.1-pro family + flash ids served via agy.
+const models = ["gemini-3.1-pro-high", "gemini-3.5-flash", "gemini-2.5-flash"];

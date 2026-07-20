@@ -48,9 +48,11 @@ const MAX_ALLOWED_ROLES = new Set(["security-reviewer"]);
 const ULTRA_MODELS = new Set(["gpt-5.6-sol", "gpt-5.6-terra"]);
 const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", "ultra", null]);
 // effort:null is legitimate ONLY here (documented): skeleton-builder (matches the live catalog
-// DEFAULT_EFFORT_PER_ROLE default for that role) and any gemini-provider role (gemini has no
-// effort flag — thinking is always-on for the pro-preview tier).
-const NULL_EFFORT_ALLOW = new Set(["skeleton-builder"]);
+// DEFAULT_EFFORT_PER_ROLE default for that role), security_claude_hunter (the ADR-0022 in-process
+// claude hunter — its top-level effort is null because opus@max is carried by
+// security-reviewer.third_pass; documented in the registry _note), and any antigravity-provider role
+// (agy has no effort flag — thinking is always-on). (The SUNSET gemini provider was removed 2026-07-20.)
+const NULL_EFFORT_ALLOW = new Set(["skeleton-builder", "security_claude_hunter"]);
 // Roles collapsed by ADR-0007 (builder→{frontend,backend,security}-builder; reviewer→pod reviewers;
 // qa→qa-reviewer; redteam→security-reviewer; fixer→pod fixers; compliance→qa-reviewer integrity scope).
 // They must never reappear as a registry role or a live-consumer route key.
@@ -125,19 +127,19 @@ function evaluateModelChain({ reg, consumers, specs }) {
       );
     if (!("effort" in r)) {
       errors.push(
-        `role "${name}" has no effort key — every role must declare effort (null only for skeleton-builder / gemini / antigravity)`,
+        `role "${name}" has no effort key — every role must declare effort (null only for skeleton-builder / antigravity)`,
       );
     } else if (!VALID_EFFORTS.has(r.effort)) {
       errors.push(`role "${name}" effort="${r.effort}" is not a valid level (low|medium|high|xhigh|max|ultra|null)`);
     } else if (
       r.effort === null &&
       !NULL_EFFORT_ALLOW.has(name) &&
-      r.provider !== "gemini" &&
       r.provider !== "antigravity"
     ) {
-      // gemini AND antigravity (agy) have no effort flag — thinking is always-on for the pro-preview tier.
+      // antigravity (agy) has no effort flag — thinking is always-on. (The SUNSET gemini
+      // provider was removed in the 2026-07-20 deep-clean; security-reviewer is now antigravity.)
       errors.push(
-        `role "${name}" effort=null but is not skeleton-builder or a gemini/antigravity role — null effort needs documented justification`,
+        `role "${name}" effort=null but is not skeleton-builder or an antigravity role — null effort needs documented justification`,
       );
     }
   }

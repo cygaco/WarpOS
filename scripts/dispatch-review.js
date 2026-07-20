@@ -295,7 +295,7 @@ function requireToolIdOf() {
   try {
     return require("./dispatch-agent").providerToolId;
   } catch {
-    return (p) => ({ openai: "codex", gemini: "gemini", antigravity: "agy" }[p] ?? p);
+    return (p) => ({ openai: "codex", antigravity: "agy" }[p] ?? p);
   }
 }
 

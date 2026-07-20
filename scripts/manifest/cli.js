@@ -99,7 +99,7 @@ function validateManifest(data) {
     }
   }
   if (data.agentProviders) {
-    const validProviders = new Set(["claude", "openai", "gemini"]);
+    const validProviders = new Set(["claude", "openai", "antigravity"]);
     for (const [role, p] of Object.entries(data.agentProviders)) {
       if (!validProviders.has(p)) {
         errors.push(

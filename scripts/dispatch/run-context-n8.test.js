@@ -116,7 +116,7 @@ function rec(over) {
     cmdline_checksum: "sha256:cafef00d",
     run_id: RUN,
     role: "security-reviewer",
-    provider: "gemini",
+    provider: "antigravity", // security-reviewer migrated gemini→antigravity (agy) in the 2026-07-20 deep-clean
     ok: true,
     argv_schema_version: ARGV_SCHEMA_VERSION,
     output_digest: "sha256:feedface00000000",

@@ -42,7 +42,7 @@ try {
 try {
   authResolver = require("../../dispatch/auth-resolver");
 } catch {
-  /* fail-open: loadGeminiApiKey fallback below */
+  /* fail-open: dispatch proceeds without the shared auth-resolver */
 }
 // T-20260610-306: TTL'd circuit breaker — marks a provider down after a quota
 // failure so subsequent dispatches skip it instead of re-burning the quota window.
@@ -93,12 +93,13 @@ function detectAuthModeLabel(provider) {
       if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) return "key (env)";
       return "none";
     }
-    if (provider === "gemini") {
-      // Mirror gemini OAuth check without importing dispatch-readiness.
+    if (provider === "antigravity") {
+      // agy self-auths via the shared ~/.gemini keyring (oauth_creds.json). VALUE-FREE:
+      // presence of a refresh/access token → an oauth session; else none. (The SUNSET
+      // individual gemini CLI's key/env auth path was removed with the deep-clean.)
       const credsPath = path.join(os_mod.homedir(), ".gemini", "oauth_creds.json");
       const raw = readFileSafeLocal(credsPath);
       if (raw && /(refresh|access)_token/.test(raw)) return "oauth (plan)";
-      if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) return "key (env)";
       return "none";
     }
     return "unknown";
@@ -122,100 +123,6 @@ function loadStore() {
   } catch {
     return {};
   }
-}
-
-/**
- * Load GEMINI_API_KEY from the gemini CLI's own .env locations. Verified
- * 2026-05-30: under spawnSync the gemini CLI does NOT auto-load ~/.gemini/.env,
- * so dispatch must read it and inject into the child env. Checks the global
- * (~/.gemini/.env) then the project-local (<project>/.gemini/.env). Value is
- * never logged. Returns null when no key file is present.
- */
-function loadGeminiApiKey() {
-  const os = require("os");
-  const candidates = [
-    path.join(os.homedir(), ".gemini", ".env"),
-    path.join(PROJECT || ".", ".gemini", ".env"),
-  ];
-  for (const f of candidates) {
-    try {
-      const txt = fs.readFileSync(f, "utf8");
-      const m = txt.match(/^\s*GEMINI_API_KEY\s*=\s*(.+?)\s*$/m);
-      if (m) return m[1].trim().replace(/^["']|["']$/g, "");
-    } catch {
-      /* try next candidate */
-    }
-  }
-  return null;
-}
-
-/**
- * Has the operator completed an interactive `gemini` OAuth / Code-Assist login?
- *
- * WI-19 (operator pain, flagged twice): the gemini CLI silently uses the
- * free-tier API KEY whenever GEMINI_API_KEY is in the env — even when the user
- * is logged into a PAID OAuth account. We must NOT inject the file key when a
- * usable OAuth/login session exists, so a logged-in CLI uses the paid account.
- *
- * Detection (conservative, two independent signals — either one counts):
- *   1. ~/.gemini/oauth_creds.json carries a refresh/access token. The CLI writes
- *      this after `gemini auth login` and refreshes the access token itself, so
- *      we deliberately do NOT gate on token expiry (the CLI handles refresh).
- *   2. The gemini settings file selects `oauth-personal` auth. New
- *      projects/bootstraps that did `gemini auth login` but whose creds file
- *      landed in a non-default spot (or got rotated) still record the auth-type
- *      choice here — this is the signal `provider-health.js` already trusts, and
- *      catches the "new project / after switching" cases the operator reported.
- *
- * Operator escape hatches (env, so no code change needed):
- *   - WARPOS_GEMINI_PREFER_OAUTH=1  → assume OAuth (never inject the file key,
- *     even if detection misses). Use when you KNOW you're logged in.
- *   - WARPOS_GEMINI_FORCE_KEY=1     → ignore OAuth detection and inject the file
- *     key anyway (the old unconditional behavior). Use for key-only setups that
- *     happen to also have stale oauth_creds.json lying around.
- *
- * Returns true when the file key should be SKIPPED (an OAuth session is assumed
- * present); false when it's safe/needed to inject the file key.
- */
-function hasValidGeminiOAuth() {
-  // Explicit force-key wins: behave like the old unconditional injection.
-  if (process.env.WARPOS_GEMINI_FORCE_KEY === "1") return false;
-  // Explicit prefer-OAuth wins: never inject the key.
-  if (process.env.WARPOS_GEMINI_PREFER_OAUTH === "1") return true;
-
-  const os = require("os");
-  const home = os.homedir();
-
-  // Signal 1 — credential file with a live/refreshable token.
-  for (const credsPath of [
-    path.join(home, ".gemini", "oauth_creds.json"),
-    path.join(home, ".config", "gemini", "oauth_creds.json"),
-  ]) {
-    try {
-      const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
-      if (creds && (creds.refresh_token || creds.access_token)) return true;
-    } catch {
-      /* try next */
-    }
-  }
-
-  // Signal 2 — settings file records an oauth-personal auth choice.
-  for (const settingsPath of [
-    path.join(home, ".gemini", "settings.json"),
-    path.join(home, ".config", "gemini", "settings.json"),
-    path.join(home, "AppData", "Roaming", "gemini", "settings.json"),
-  ]) {
-    try {
-      const obj = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
-      const selected =
-        (obj && obj.auth && obj.auth.selectedType) || obj.selectedAuthType;
-      if (selected && /oauth/i.test(String(selected))) return true;
-    } catch {
-      /* try next */
-    }
-  }
-
-  return false;
 }
 
 /**
@@ -263,7 +170,7 @@ function classifyQuotaFailure(text) {
 // map the failed provider to its family and return a target in ANOTHER family, preferring a
 // NON-claude cross-family target for a Google-lab failure so a security hunter retries on the GPT lab
 // rather than collapsing toward the Claude lane (cross-lab diversity preserved).
-const PROVIDER_FAMILY = { claude: "anthropic", openai: "openai", gemini: "google", antigravity: "google" };
+const PROVIDER_FAMILY = { claude: "anthropic", openai: "openai", antigravity: "google" };
 function suggestFallbackProvider(failedProvider, cfg) {
   const family = PROVIDER_FAMILY[failedProvider] || failedProvider;
   // COR-001 (backend-reviewer HIGH): NEVER trust cfg.fallback to be cross-family — a config with
@@ -291,15 +198,6 @@ function suggestFallbackProvider(failedProvider, cfg) {
 // (qa, learner) where cost matters more than peak reasoning.
 const OPENAI_FLAGSHIP = process.env.OPENAI_FLAGSHIP_MODEL || "gpt-5.6-sol"; // reviewer, compliance (DISPATCH.md §8 flip; gotcha-8 plumbing default)
 const OPENAI_MINI = process.env.OPENAI_MINI_MODEL || "gpt-5.4-mini"; // qa, learner (no gpt-5.5-mini exists yet)
-// Default = gemini-3.1-pro-preview (operator directive 2026-06-01; confirmed
-// real at ai.google.dev/gemini-api/docs/models/gemini-3.1-pro-preview — 1M in /
-// 64K out, thinking always-on). It 404'd on v1beta as of 2026-05-30 (hence the
-// old "ghost" note) but has since shipped. The preview tier CAN quota-fail /
-// silently downgrade under load; the strict downgrade-check + claude fallback +
-// the GPT 2nd security pass cover that. Fall back to the GA flash with one env
-// var: GEMINI_MODEL=gemini-3.5-flash (GA; β-preferred fallback rung) or the
-// prior-gen known-good gemini-2.5-flash.
-const GEMINI_DEFAULT = process.env.GEMINI_MODEL || "gemini-3.1-pro-preview";
 
 // Reasoning effort per role. Forces deeper deliberation across all dispatch
 // roles. Per recent learning: "LLM-as-judge is systematically biased and
@@ -405,16 +303,6 @@ const DEFAULT_PROVIDERS = {
     // role-specific level is set; otherwise empty.
     syntax: `codex exec --sandbox workspace-write --ask-for-approval never {reasoning} -m {model} -`,
   },
-  gemini: {
-    cli: "gemini",
-    default_model: GEMINI_DEFAULT,
-    fallback: "claude",
-    // Gemini CLI: pipe context on stdin, instruction via `-p`, plain-text output via `-o text`.
-    // `gemini-3.1-pro-preview` has thinking mode + 1M input context — ideal for attack-chain reasoning.
-    // No explicit reasoning-effort flag; thinking is always-on for the pro-preview tier.
-    // `{reasoning}` template var is empty for gemini (kept for syntax uniformity).
-    syntax: `gemini {reasoning} -m {model} -p`,
-  },
   // D6 (SP-20260718-003, ED-060): Antigravity CLI (`agy`) — the migration target for the SUNSET
   // gemini individual CLI (IneligibleTierError → "migrate to Antigravity", 2026-06-18). This is the
   // Gemini LAB of the panel-3lab security review. LIVENESS IS OPERATOR-OWNED (ED-060): no live agy
@@ -469,8 +357,11 @@ const LITERAL_DEFAULT_AGENT_PROVIDERS = {
   compliance: "openai",
   "ops-analyst": "openai", // S-7: was `learner`
   qa: "openai",
-  // Security — Gemini for different adversarial training corpus, thinking always-on
-  redteam: "gemini",
+  // Security literal FLOOR = the VERIFIABLE GPT lane (β DECIDE B/0.90, 2026-07-20): a registry-read
+  // failure must fall to openai (verifiable), NEVER the SUNSET gemini CLI and NEVER the unverifiable
+  // agy lane (ED-230 open). The LIVE security-reviewer default is antigravity via the role-registry
+  // derivation (this literal is only the recovery net); redteam is superseded by security-reviewer.
+  redteam: "openai",
   // ADR-0007 new roster (must match catalog.js DEFAULT_PROVIDER_PER_ROLE):
   epsilon: "claude",
   "design-lead": "openai",
@@ -479,7 +370,7 @@ const LITERAL_DEFAULT_AGENT_PROVIDERS = {
   "backend-reviewer": "openai",
   "backend-fixer": "claude",
   "security-builder": "claude",
-  "security-reviewer": "gemini",
+  "security-reviewer": "openai", // literal FLOOR only — LIVE default = antigravity via role-registry (β DECIDE B/0.90)
   "security-fixer": "claude",
   "qa-reviewer": "openai",
   "visual-review": "claude",
@@ -519,7 +410,7 @@ function buildReasoningFlag(providerName, role) {
   if (!level) return "";
   if (providerName === "openai") return `-c model_reasoning_effort=${level}`;
   if (providerName === "claude") return `--effort ${level}`;
-  // gemini — thinking is implicit on pro-preview tier
+  // antigravity (agy) — thinking is always-on; no reasoning-effort flag
   return "";
 }
 
@@ -605,9 +496,10 @@ function tempFilePath(role) {
  * Check whether a given model is actually available on the user's account
  * for the given provider. Returns true if available, false otherwise.
  *
- * For Gemini: probes `gemini models list` if supported, or falls back to
- * trying a minimal prompt and checking the response. For OpenAI/codex:
- * the CLI itself knows the available models.
+ * For OpenAI/codex: the CLI itself knows the available models (optimistic; the
+ * post-dispatch assertion catches mismatches). For antigravity (agy): NEVER probe
+ * `agy models` (it hangs headless) — stay optimistic and rely on cert-attest's
+ * served-model check. (The SUNSET gemini `models list` probe was removed 2026-07-20.)
  *
  * Cached per-session (12 min TTL) to avoid repeated probes.
  */
@@ -619,19 +511,13 @@ function modelAvailable(providerName, model) {
 
   let available = true; // default optimistic; pre-flight is best-effort
   try {
-    if (providerName === "gemini") {
-      // gemini CLI exposes `models list` — parse the output for the requested ID
-      const out = execSync("gemini models list 2>&1", {
-        stdio: ["pipe", "pipe", "pipe"],
-        timeout: 10_000,
-      }).toString();
-      if (out && !out.toLowerCase().includes(model.toLowerCase())) {
-        available = false;
-      }
-    } else if (providerName === "openai") {
+    if (providerName === "openai") {
       // codex doesn't expose models list; skip probe, rely on post-dispatch assertion
       available = true;
     }
+    // antigravity (agy): NEVER probe `agy models` — it HANGS headless (>10min, zero
+    // output; catalog note). Stay optimistic; cert-attest's served-model check is the
+    // real drift witness for the agy lane.
   } catch {
     // Probe failed; fall back to optimistic. Post-dispatch assertion catches mismatches.
     available = true;
@@ -692,30 +578,19 @@ function modelsMatch(requested, reported) {
 /**
  * Build the { toolId, argv, usesStdin } CLI invocation shape for a provider dispatch. PURE — the
  * single source of each provider's argv (D6 added agy), so the invocation shape is an assertable
- * surface instead of an untestable inline branch. Behavior-identical to the prior inline block for
- * openai/gemini. Returns { fail:true, error } for a provider with no kernel-covered shape (fail-CLOSED
- * — refuse an unvetted spawn rather than shell out a custom cfg.syntax).
+ * surface instead of an untestable inline branch. Returns { fail:true, error } for a provider with no
+ * kernel-covered shape (fail-CLOSED — refuse an unvetted spawn rather than shell out a custom cfg.syntax).
  *
- * @param {string} providerName  openai | gemini | antigravity
+ * @param {string} providerName  openai | antigravity
  * @param {string} model
  * @param {string[]} reasoningArgs  pre-split reasoning-effort tokens (openai only; [] otherwise)
- * @param {object} [opts]  { geminiTrustBypass:boolean, prompt:string }  prompt is agy's -p VALUE
+ * @param {object} [opts]  { prompt:string }  prompt is agy's -p VALUE
  * @returns {{ toolId, argv, usesStdin } | { fail:true, error }}
  */
 function buildProviderArgv(providerName, model, reasoningArgs = [], opts = {}) {
   if (providerName === "openai") {
     // `codex exec --sandbox workspace-write [-c …] -m <model> -` — prompt on stdin.
     return { toolId: "codex", argv: ["exec", "--sandbox", "workspace-write", ...reasoningArgs, "-m", model, "-"], usesStdin: true };
-  }
-  if (providerName === "gemini") {
-    // gemini: context on stdin, fixed instruction via -p, `-o json` envelope. --skip-trust gated by
-    // WARPOS_GEMINI_TRUST_BYPASS (default OFF).
-    const trustArgs = opts.geminiTrustBypass ? ["--skip-trust"] : [];
-    return {
-      toolId: "gemini",
-      argv: [...trustArgs, "-m", model, "-p", "Process the instructions on stdin and produce the requested output.", "-o", "json"],
-      usesStdin: true,
-    };
   }
   if (providerName === "antigravity") {
     // agy (Antigravity CLI) — the SUNSET-gemini migration target (ED-060). Headless contract:
@@ -839,10 +714,9 @@ function runProvider(role, prompt, opts = {}) {
     const reasoningArgs = reasoningFlag
       ? reasoningFlag.split(/\s+/).filter(Boolean)
       : [];
-    // D6: single-source the per-provider argv shape (openai/gemini unchanged; agy added). agy carries
-    // the prompt as its `-p` argv value (usesStdin:false) — every other provider streams it on stdin.
+    // D6: single-source the per-provider argv shape (openai + agy). agy carries the prompt as its `-p`
+    // argv value (usesStdin:false) — every other provider streams it on stdin.
     const built = buildProviderArgv(providerName, model, reasoningArgs, {
-      geminiTrustBypass: process.env.WARPOS_GEMINI_TRUST_BYPASS === "1",
       prompt: promptContent,
     });
     if (built.fail) {
@@ -875,44 +749,10 @@ function runProvider(role, prompt, opts = {}) {
       [`GIT_CONFIG_VALUE_${gitCfgIdx}`]: "*",
     };
 
-    // Gemini headless requirements (verified 2026-05-30 — both were silent
-    // dispatch-killers: auth code 41, then "not a trusted directory"):
-    //  1. AUTH — the CLI does NOT auto-load ~/.gemini/.env under spawnSync, so
-    //     inject GEMINI_API_KEY (from ~/.gemini/.env or <project>/.gemini/.env)
-    //     when it's absent from the inherited env. Value is never logged.
-    //  2. TRUST — non-interactive runs need GEMINI_CLI_TRUST_WORKSPACE=true (the
-    //     headless equivalent of "trust this folder"; the older --skip-trust flag
-    //     path is superseded by this env var, per
-    //     geminicli.com/docs/cli/trusted-folders/#headless-and-automated-environments).
-    if (providerName === "gemini") {
-      childEnv.GEMINI_CLI_TRUST_WORKSPACE =
-        childEnv.GEMINI_CLI_TRUST_WORKSPACE || "true";
-      // KEY-PRECEDENCE (WI-19, operator directive 2026-06-01): the file-loaded key
-      // must win ONLY for API-requiring tasks (e.g. gemini-deep-research.js, which
-      // reads GEMINI_API_KEY directly). CLI/gauntlet dispatch does NOT require the
-      // API, so a live OAuth/Code-Assist login wins for it — we therefore do NOT
-      // inject the ~/.gemini/.env key when an OAuth session is detected. This fixes
-      // the reported symptom: a stale/quota'd free-tier file key beating a working
-      // paid `gemini` login (esp. on new projects/bootstraps or after switching).
-      // hasValidGeminiOAuth() checks creds file + settings auth-type and honors
-      // WARPOS_GEMINI_PREFER_OAUTH=1 / WARPOS_GEMINI_FORCE_KEY=1 overrides.
-      // SAFE DEFAULT: when there is NO OAuth, we still inject the file key, so the
-      // headless fix (L15: key + trust) never regresses on key-only / fresh setups.
-      // A deliberately EXPORTED GEMINI_API_KEY in the inherited env is left as-is.
-      if (!childEnv.GEMINI_API_KEY && !hasValidGeminiOAuth()) {
-        // N-3: resolve via the shared auth-resolver (full source precedence,
-        // in-code dotenv, BOM-safe, never a shell). Refuse a shell-suspicious
-        // value. Value injected into the child env only — never logged. Falls
-        // back to the legacy local reader if the resolver can't be loaded.
-        if (authResolver) {
-          const r = authResolver.resolveKey("GEMINI_API_KEY", { withValue: true });
-          if (r.found && r.value && !r.suspicious) childEnv.GEMINI_API_KEY = r.value;
-        } else {
-          const geminiKey = loadGeminiApiKey();
-          if (geminiKey) childEnv.GEMINI_API_KEY = geminiKey;
-        }
-      }
-    }
+    // agy (Antigravity) self-authenticates through its own ~/.gemini keyring
+    // (oauth_creds.json) — dispatch injects NO provider key into the child env.
+    // (The SUNSET individual gemini CLI's GEMINI_API_KEY injection + workspace-trust
+    // env were removed with the deep-clean.)
     // ── Spawn through the dispatch SAFETY KERNEL (shell:false, arg-allowlisted,
     // tool resolved to abs path, tree-kill on timeout). Fail CLOSED if the kernel
     // can't be loaded — refuse the legacy shell:true spawn rather than silently
@@ -956,25 +796,14 @@ function runProvider(role, prompt, opts = {}) {
     }
     const rawOutput = (spawned.stdout || "").trim();
 
-    // Gemini JSON envelope unwrap + actual-model audit.
+    // actual-model audit.
     // R2 COR-002: actualModel is the OBSERVED served model — it stays NULL unless the provider REPORTS
-    // it. Gemini reports it via stats.models (below). codex/OpenAI exposes no served-model header, so it
-    // stays null rather than echoing the REQUESTED `model` (an echoed request is not an attestation).
-    // The requested value is retained only in the returned `model` field.
-    let output = rawOutput;
-    let actualModel = null;
-    if (providerName === "gemini") {
-      try {
-        const env = JSON.parse(rawOutput);
-        if (env && typeof env.response === "string") output = env.response;
-        if (env && env.stats && env.stats.models) {
-          const served = Object.keys(env.stats.models);
-          if (served.length) actualModel = served[0];
-        }
-      } catch {
-        // Fall through — keep rawOutput as output, model as actualModel
-      }
-    }
+    // it. codex/OpenAI exposes no served-model header, so it stays null rather than echoing the REQUESTED
+    // `model` (an echoed request is not an attestation). The agy (Antigravity) lane's served-model proof
+    // is the cert-attest §7 honest-ceiling path, NOT this in-band unwrap. The requested value is retained
+    // only in the returned `model` field.
+    const output = rawOutput;
+    const actualModel = null;
 
     // Strict assertion — detect silent downgrade.
     // actualModel comes from the CLI's own stats (authoritative); compare to requested.
@@ -1141,9 +970,6 @@ module.exports = {
   providerAvailable,
   parseProviderJson,
   assertStrictModel,
-  // WI-19/WI-04: exported so the static dispatch-readiness check agrees with the
-  // live dispatch path on what "logged into gemini" means.
-  hasValidGeminiOAuth,
   // WI-18: exported for unit testing the quota classifier.
   classifyQuotaFailure,
   // WG-11(b): family-aware fallback — exported for unit testing the routing rule.

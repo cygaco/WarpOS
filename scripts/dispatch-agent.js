@@ -48,7 +48,7 @@ const { record: recordProviderTrace } = require("./agents/provider-trace");
 // BOTH the validate call and the completion record — an inlined ternary that
 // omitted `antigravity`→`agy` tripped dispatch-contract on security-reviewer.
 // Refactor-hygiene: replace EVERY occurrence, not just the one you remember.
-const PROVIDER_TOOL_ID = { openai: "codex", gemini: "gemini", antigravity: "agy" };
+const PROVIDER_TOOL_ID = { openai: "codex", antigravity: "agy" };
 function providerToolId(provider) {
   return PROVIDER_TOOL_ID[provider] ?? provider;
 }
@@ -558,8 +558,11 @@ const PROVIDER_ALIAS = {
   claude: "claude",
   openai: "openai",
   gpt: "openai",
-  gemini: "gemini",
-  google: "gemini",
+  // The SUNSET individual `gemini` CLI was removed in the 2026-07-20 deep-clean; `google`
+  // resolves to the supported `antigravity` (agy) lane that serves Gemini models.
+  google: "antigravity",
+  antigravity: "antigravity",
+  agy: "antigravity",
 };
 const rawProviderOverride = parseFlag("--provider");
 const providerOverride = rawProviderOverride
@@ -753,28 +756,9 @@ try {
   /* fail-open — the resolver consult never crashes a working dispatch */
 }
 
-// Phase 5T F8: Gemini redteam prompts above 75KB routinely timed out.
-// Return a structured fallback signal before spending the provider timeout.
-if (provider === "gemini" && role === "redteam" && promptBytes > 75 * 1024) {
-  const fallbackResult = {
-    ok: false,
-    provider,
-    role,
-    fallback: true,
-    error: `Prompt is ${promptBytes} bytes; redteam/gemini limit is 75KB. Split the scan or fall back to Claude redteam.`,
-  };
-  recordProviderTrace({
-    role,
-    expectedProvider: provider,
-    actualProvider: "claude",
-    fellBack: true,
-    fallbackReason: fallbackResult.error,
-    promptBytes,
-    ok: false,
-  });
-  console.log(JSON.stringify(fallbackResult));
-  process.exit(1);
-}
+// (The Phase-5T Gemini-redteam 75KB prompt cap was removed in the 2026-07-20 deep-clean:
+// the SUNSET individual gemini CLI is gone. The agy lane's assembled-command-line ceiling is
+// bounded structurally by safe-spawn's CMDLINE_MAX / RIDER-1, not a provider-specific pre-check.)
 
 if (!providerAvailable(provider)) {
   recordProviderTrace({
@@ -879,8 +863,8 @@ if (!slot) {
 let result;
 try {
   // Honor the agent's frontmatter-declared provider_model (e.g. qa → gpt-5.4-mini,
-  // reviewer → gpt-5.5, redteam → gemini-3.1-pro-preview) instead of the provider
-  // default. BUT when --provider overrides the native provider, the spec's model
+  // reviewer → gpt-5.6-sol, security-reviewer → gemini-3.1-pro-high via agy) instead of the
+  // provider default. BUT when --provider overrides the native provider, the spec's model
   // belongs to the WRONG provider — ignore it and use --model (or let runProvider
   // pick the override provider's default).
   const roleModel = getRoleModel(role);

@@ -69,7 +69,7 @@ const SUBSCRIPTION_RANK = {
 // sensible default — NOT a session-specific value).
 const DEFAULT_SELECTED_TIER = "t1";
 const DEFAULT_T3_FLOOR = "max_5x"; // OPERATOR-TUNABLE (see provider-tier-check.js header)
-const KNOWN_PROVIDERS = ["claude", "openai", "gemini"];
+const KNOWN_PROVIDERS = ["claude", "openai", "antigravity"];
 
 function FRAMEWORK_DEFAULTS() {
   const providers = {};

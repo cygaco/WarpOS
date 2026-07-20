@@ -533,8 +533,9 @@ function evaluateShapeRouteConflicts({ reg, contract }) {
   for (const [name, r] of Object.entries(roles)) {
     if (!r || typeof r !== "object") continue;
     const provider = r.provider || "claude";
-    // Only cross-provider roles require subprocess-cross-provider routing
-    if (provider !== "openai" && provider !== "gemini") continue;
+    // Only cross-provider roles require subprocess-cross-provider routing.
+    // (antigravity/agy replaced the SUNSET gemini provider in the 2026-07-20 deep-clean.)
+    if (provider !== "openai" && provider !== "antigravity") continue;
 
     const derivedClass = deriveClass(r, rules, fallbackClass);
     const classEntry = roleClasses[derivedClass];

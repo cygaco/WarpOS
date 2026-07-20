@@ -78,8 +78,10 @@ function parseArgs(argv) {
   return a;
 }
 
-// Map a dispatch-catalog provider id to its research-snapshot filename stem.
-const VENDOR_FILE = { claude: "claude", openai: "openai", gemini: "gemini" };
+// Map a dispatch-catalog provider id to its research-snapshot filename stem. The
+// antigravity (agy) provider serves the Gemini model family, so its research snapshot
+// is the gemini.json file (the SUNSET individual gemini CLI provider was removed 2026-07-20).
+const VENDOR_FILE = { claude: "claude", openai: "openai", antigravity: "gemini" };
 
 // Which research key holds the "best current flagship" per provider, so we can
 // flag a stale default. (claude→newest_opus; others→newest_flagship.)

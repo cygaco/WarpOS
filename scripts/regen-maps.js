@@ -546,9 +546,9 @@ function regenTools() {
   // External CLIs (well-known per the skill)
   const knownCLIs = [
     {
-      name: "gemini",
-      install: "npm i -g @google/gemini-cli",
-      env: ["GEMINI_API_KEY"],
+      name: "agy",
+      install: "standalone Antigravity CLI (not npm)",
+      env: [],
     },
     {
       name: "codex",
