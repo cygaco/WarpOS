@@ -91,6 +91,36 @@ The enforcement MECHANISM (the Phase-4 trusted adapter) does not exist yet; see 
 
 Deferred: ED-215 @ Phase-4-exit
 
+#### P1.2 — Honest-promise scope: the Phase-4 trusted enforcement adapter covers artifact-verification + integration-to-main ONLY (ED-215 closed, ED-236 adjacent)
+
+SP-20260720-002 (Phase 4) SHIPS the trusted enforcement adapter P1.1 named as missing —
+`scripts/dispatch/trusted-controller.js` (the sole integration principal), `scripts/dispatch/helm-runner.js`
+(the aggregate entrypoint over it), and `scripts/hooks/protected-ref-transaction.js` (the sole-route
+MECHANISM for `refs/heads/main`, probe-confirmed in `runtime/sp002-phase4/reftxn-probe-evidence.md`). This
+block states the adapter's HONEST, BOUNDED promise — the only claim it is entitled to make, and the only
+claim a downstream reader may draw from ED-215's closure below.
+
+- **What IS now live-enforced (2 of CORE-2's 4 named powers):** **verification** — the controller
+  re-derives its own verdict from a FRESH, nonce-bound, pinned-checker-bundle run over real git objects,
+  never adopting a caller's self-asserted ResultEnvelope verdict (β rider 1) — and **integration-to-main**
+  — the controller is the sole brokered CAS route into a protected ref, and the `reference-transaction`
+  hook is the git-level MECHANISM that refuses any un-brokered write surface (update-ref/merge/push/
+  fast-forward) touching it, evidence-grounded and NOT bypassed by `--no-verify`.
+- **What is NOT covered by this slice (still open, unaffected by ED-215's closure):** **capability grants**
+  and **protected mutation** (writes to durable company state — trackers, ledgers, registries — outside the
+  one integration-to-main CAS path) are NOT this adapter's job. ED-236 H5/C4 stays ADJACENT, not closed —
+  see `paths.enforcementDebt`.
+- **The honest ceiling (named, evidence-grounded, operator-DROPPED — adversarial containment, explicitly
+  OUT of scope):** `core.hooksPath` redirect, hook file deletion, a direct `.git/refs/**` filesystem write,
+  and a hostile process forging the controller's fencing token. All four require local shell access +
+  intent; this adapter defends against MISTAKES (an un-brokered merge/update-ref/push/fast-forward), never
+  a hostile operator with a shell.
+- **Falsifier-proven, never merely asserted:**
+  `scripts/dispatch/falsifiers/honest-promise-scope.falsifier.test.js` mechanically asserts this statement
+  never overclaims capability-grant/protected-mutation coverage.
+
+Enforcer: scripts/checks/conformance-matrix.js
+
 ---
 
 ## §2 — Runtime Levels 0–3
@@ -468,6 +498,7 @@ Enforcer: scripts/checks/contract-lint.js
 | Block | Section | Trailer |
 |---|---|---|
 | P1.1 | §1 Trust boundary | `Deferred: ED-215 @ Phase-4-exit` |
+| P1.2 | §1 Honest-promise scope (ED-215 closed, ED-236 adjacent) | `Enforcer: scripts/checks/conformance-matrix.js` |
 | P2.1 | §2 Runtime levels | `Deferred: ED-214 @ Phase-3-exit` |
 | P3.1 | §3 Role-binding precedence | `Deferred: ED-216 @ Phase-2-exit` |
 | P3.2 | §3 `validated_workorder_or_cli` provenance | `Deferred: ED-218 @ Phase-3-exit` |

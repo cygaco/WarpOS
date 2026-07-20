@@ -207,6 +207,11 @@ function produce(input = {}) {
     result_commit: typeof input.result_commit === "string" ? input.result_commit : input.result_commit,
     target_ref: input.target_ref || "",
     terminal_state,
+    // SP-20260720-002 Phase 4 (unit CONTROLLER, additive AC-8/AC-2): the check-suite identity the
+    // trusted-controller bound this record to, read from the PINNED bundle manifest at integrate() time —
+    // NEVER from result_envelope. Default "" preserves every pre-existing produce() call site (additive);
+    // authorizesIntegration below requires it present+non-empty, fail-closed if absent.
+    check_suite_version: typeof input.check_suite_version === "string" ? input.check_suite_version : (input.check_suite_version || ""),
     checker_digests: input.checker_digests && typeof input.checker_digests === "object" ? input.checker_digests : {},
     policy_digest: input.policy_digest || "",
     evidence_digests: input.evidence_digests && typeof input.evidence_digests === "object" ? input.evidence_digests : {},
@@ -274,6 +279,9 @@ function produceForTest(overrides = {}) {
     // ref-aware tests key on this exact value.
     result_commit: TEST_CAND_SHA,
     target_ref: "refs/heads/integration",
+    // SP-20260720-002 Phase 4 additive default — keeps produceForTest() a FULLY-VALID record under the new
+    // mandatory authorizesIntegration check_suite_version gate below.
+    check_suite_version: "check-suite/v1-test",
     checker_digests: { lint: "digest-lint", tests: "digest-tests" },
     policy_digest: "policy-OK",
     evidence_digests: { "ev-1": "digest-ev-1" },
@@ -370,6 +378,9 @@ function authorizesIntegration(record, targetRef, opts = {}) {
   if (!_isDigestMap(record.checker_digests)) return false; // the checkers-ran proof (every value a non-empty digest)
   if (typeof record.policy_digest !== "string" || !record.policy_digest.trim()) return false;
   if (!_isDigestMap(record.evidence_digests)) return false; // the evidence proof (every value a non-empty digest)
+  // SP-20260720-002 Phase 4 (AC-2/AC-8): check_suite_version MUST be present + non-empty — fail-closed if
+  // absent. Bound by produce() from the pinned bundle manifest's suite_version, never the caller/envelope.
+  if (typeof record.check_suite_version !== "string" || !record.check_suite_version.trim()) return false;
 
   // (d) freshness MANDATORY (R2/C2) + head-coord SHA re-binding (ED-238): the caller MUST supply the live
   //     integration head, it MUST be an immutable full SHA, and the record's base MUST === it. base_commit is
