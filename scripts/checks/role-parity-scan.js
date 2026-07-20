@@ -509,6 +509,13 @@ function evaluateModelPins({ reg, specFm }) {
 //
 // Injectable seam: reg + contract — tests inject stub objects.
 
+// The single source for the shape-route scope filter (SP-20260720-003 D1). ONE leaf export, TWO
+// consumers: the L538-area filter below reads it (never a re-inlined literal), and
+// scripts/checks/meta-lockstep.js imports the SAME symbol for its cross-provider-routing SYMMETRY
+// invariant — so the "which providers are cross-provider" universe can never drift between the two
+// checks. Frozen (immutable) + a leaf export (no import cycle).
+const CROSS_PROVIDER_SCOPE = Object.freeze(["openai", "antigravity"]);
+
 function matchesClassRule(roleAttrs, when) {
   for (const [k, v] of Object.entries(when || {})) {
     if (roleAttrs[k] !== v) return false;
@@ -535,7 +542,9 @@ function evaluateShapeRouteConflicts({ reg, contract }) {
     const provider = r.provider || "claude";
     // Only cross-provider roles require subprocess-cross-provider routing.
     // (antigravity/agy replaced the SUNSET gemini provider in the 2026-07-20 deep-clean.)
-    if (provider !== "openai" && provider !== "antigravity") continue;
+    // Scope read from the shared CROSS_PROVIDER_SCOPE export — meta-lockstep imports the SAME
+    // symbol, so this filter and the lockstep enforcer can never drift (SP-20260720-003 D1/AC-4).
+    if (!CROSS_PROVIDER_SCOPE.includes(provider)) continue;
 
     const derivedClass = deriveClass(r, rules, fallbackClass);
     const classEntry = roleClasses[derivedClass];
@@ -697,4 +706,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateReportingStructure, scanSpecTree, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole, evaluateModelPins, readAllSpecFm, evaluateShapeRouteConflicts, matchesClassRule, deriveClass };
+module.exports = { evaluate, evaluateRegistry, validateRegistry, evaluateReportingStructure, scanSpecTree, evaluateHooks, readHookSources, referencesScrappedLiteral, HOOK_SCRAPPED_LITERALS, parseGammaOnlyTypes, collectOrgRoles, makeRealAgentResolver, isDoerRole, evaluateModelPins, readAllSpecFm, evaluateShapeRouteConflicts, matchesClassRule, deriveClass, CROSS_PROVIDER_SCOPE };
