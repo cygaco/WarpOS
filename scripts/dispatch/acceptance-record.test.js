@@ -98,6 +98,29 @@ test("produceForTest() yields a record acceptable to the golden path (positive c
   assert.ok(record.result_tree_hash && record.base_commit && record.workorder_digest);
 });
 
+// ── ED-240b (β design-boundary DECIDE 0.92): produceForTest reconciliation + forgeInvalidRecordForTest self-guard ──
+// Discharges the ED238-POSTVALIDATION-OVERRIDE finding the security lane raised and β conceded: overrides route into
+// the produce() INPUT (validate + digest over the FINAL record), and the one adversarial-invalid fixture moves to a
+// self-guarded named helper.
+test("TEETH (ED-240b): produceForTest routes overrides into produce() input — a schema-invalid override THROWS (post-validation-override CLOSED) + the digest is FRESH", () => {
+  // post-validation-override CLOSED: an invalid commit-identity override can no longer land on the finished record.
+  assert.throws(() => acc.produceForTest({ result_commit: "" }), /40-hex commit SHA/, "produceForTest must reject an invalid result_commit override at produce()");
+  assert.throws(() => acc.produceForTest({ base_commit: "refs/heads/mutable" }), /40-hex commit SHA/, "produceForTest must reject a mutable base_commit override");
+  // stale-digest CLOSED: record_digest is over the FINAL (post-override) record, not a pre-override snapshot.
+  const rec = acc.produceForTest({ target_ref: "refs/heads/integration", result_tree_hash: "tree-XYZ", lease_fencing_token: 7 });
+  const { record_digest, ...body } = rec;
+  assert.strictEqual(record_digest, acc.stableDigest(body), "record_digest must equal stableDigest of the final record (fresh, not stale)");
+});
+
+test("TEETH (ED-240b): forgeInvalidRecordForTest self-guard — throws UNLESS its output FAILS validateCommitIdentity (β rider 2 construction invariant)", () => {
+  // MISUSE: no schema-invalidating override → the output would be schema-VALID → the construction invariant throws,
+  // so a forged fixture can never leak into a positive/authz-TRUE assertion (the settable-label / false-green class).
+  assert.throws(() => acc.forgeInvalidRecordForTest({ target_ref: "refs/heads/x" }), /construction invariant/, "self-guard must throw on a non-invalidating override");
+  // LEGIT: an invalidating override returns a schema-INVALID record for adversarial fail-closed tests.
+  const forged = acc.forgeInvalidRecordForTest({ result_commit: "" });
+  assert.strictEqual(acc.validateCommitIdentity(forged), false, "forged record must fail validateCommitIdentity");
+});
+
 // SP-20260718-005 gauntlet C2 fix: recompute is now MANDATORY (no opt-in). A happy path must inject a
 // treeResolver that returns the honest synthetic tree ("tree-OK") — the analog of production's real
 // read-only git resolving the target ref's actual tree and it MATCHING the record's claimed digest.
@@ -352,10 +375,12 @@ test("TEETH (R3-REG-1): full authorize-then-CAS DETERMINATION on the real-integr
 test("TEETH (R3-REG-1): with NO bound candidate (empty result_commit) authorization FAILS CLOSED", () => {
   // A record with no immutable candidate the accepted tree can be recomputed FROM cannot be authorized — the
   // empty result_commit fails the immutable-SHA identity gate (R5-C2B). Fail-closed (never recompute the destination).
+  // ED-240b: this is an intentionally-INVALID (empty result_commit) fixture — it now uses the named adversarial door
+  // forgeInvalidRecordForTest (produceForTest is validate-by-construction and would THROW on result_commit:"").
   const root = tmpLeaseRoot("r3reg1-nocand");
   const spId = "SP-R3REG1-NOCAND";
   const a = lease.acquire(spId, { root, sessionId: "sess-nocand" });
-  const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token, result_commit: "" });
+  const record = acc.forgeInvalidRecordForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a.token, result_commit: "" });
   const opts = { integrationHead: BASE, spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
   assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", opts), false);
 });

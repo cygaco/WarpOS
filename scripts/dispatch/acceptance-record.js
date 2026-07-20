@@ -259,7 +259,14 @@ function produceForTest(overrides = {}) {
     evidence_refs: ["ev-1"],
     terminal_state: "success",
   };
-  const base = produce({
+  // ED-240b (β design-boundary DECIDE 0.92, discharging the ED238-POSTVALIDATION-OVERRIDE finding β conceded):
+  // overrides are merged into the produce() INPUT — TOP-LEVEL (β rider 1: input.terminal_state has precedence
+  // over workorder.terminal_state, so a flat spread covers every call site; never merge into the workorder
+  // sub-object) — NOT Object.assigned onto the finished record. produce() therefore runs validateCommitIdentity
+  // AND stableDigest over the FINAL record: a commit-identity override can no longer bypass the schema, and the
+  // record_digest is never stale. produceForTest's contract is now "a FULLY-VALID, fresh-digest record"; an
+  // intentionally-INVALID fixture uses forgeInvalidRecordForTest (the named adversarial door) instead.
+  const input = {
     workorder,
     base_commit: TEST_BASE_SHA, // immutable full SHA (ED-238) — the head coords === this in the golden path
     result_tree_hash: "tree-OK",
@@ -273,8 +280,34 @@ function produceForTest(overrides = {}) {
     route: "claude:opus",
     fallback: false,
     lease_fencing_token: null,
-  });
-  return Object.assign({}, base, overrides);
+  };
+  return produce({ ...input, ...overrides });
+}
+
+/**
+ * forgeInvalidRecordForTest(overrides) -> an intentionally-INVALID/forged AcceptanceRecord for ADVERSARIAL
+ * fail-closed tests ONLY (ED-240b, the named residual of the produceForTest reconciliation). It applies overrides
+ * AFTER produce() (post-validation), so a caller CAN inject a value the by-construction schema would reject
+ * (e.g. an empty/mutable/non-SHA result_commit) to prove authorizesIntegration/commitIntegration FAIL CLOSED on a
+ * malformed record. The record_digest is DELIBERATELY the pre-override digest — an honest forgery signal (a forged
+ * record's self-digest does not re-attest its tampered content). NEVER use this for a happy-path fixture:
+ * produceForTest is the always-valid door.
+ *
+ * SELF-GUARD (β rider 2): this helper asserts BY CONSTRUCTION that its output FAILS validateCommitIdentity before
+ * returning, so a forged fixture can never leak into a positive/authz-TRUE assertion (the settable-label /
+ * false-green class). A call with no schema-invalidating override is a MISUSE and throws. One call site today; if
+ * a 2nd appears, add a lint per the ED-237-238-design-lock amendment.
+ */
+function forgeInvalidRecordForTest(overrides = {}) {
+  const forged = Object.assign({}, produceForTest(), overrides);
+  if (validateCommitIdentity(forged)) {
+    throw new TypeError(
+      "forgeInvalidRecordForTest MUST produce a record that FAILS validateCommitIdentity (ED-240b construction " +
+        "invariant) — pass a schema-invalidating override (e.g. result_commit:'' / a mutable ref / a non-SHA). " +
+        "For a VALID fixture use produceForTest.",
+    );
+  }
+  return forged;
 }
 
 /**
@@ -471,6 +504,7 @@ function commitIntegration(record, targetRef, opts = {}) {
 module.exports = {
   produce,
   produceForTest,
+  forgeInvalidRecordForTest,
   authorizesIntegration,
   commitIntegration,
   resolveTreeHash,
