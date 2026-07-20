@@ -115,17 +115,15 @@ const providers = {
       return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
     },
   },
-  gemini: {
-    cmd: "gemini",
+  antigravity: {
+    cmd: "agy",
     test() {
-      // gemini reads stdin and APPENDS --prompt to it (per `gemini --help`).
-      // Smoke intentionally pings the cheap pinned flash (NOT the runtime default
-      // gemini-3.1-pro-preview) so a connectivity check never burns preview quota
-      // or trips a preview-tier downgrade. Follows GEMINI_MODEL if the operator
-      // sets it. HYGIENE Rule 67.
-      const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-      const r = runShell(`gemini -m ${model} --prompt ""`, TEST_PROMPT);
-      return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
+      // agy (Antigravity) is the supported Gemini lab — the individual-tier `gemini` CLI is
+      // SUNSET (removed in the 2026-07-20 deep-clean). agy SERVE liveness is operator-owned
+      // (ED-060) and attested by cert-attest, NOT here (and `agy models` HANGS headless), so this
+      // smoke only checks the agy CLI is present + invocable — it never false-greens a serve.
+      const r = runShell(`agy --version`);
+      return { ...r, ok: r.exit === 0 };
     },
   },
 };

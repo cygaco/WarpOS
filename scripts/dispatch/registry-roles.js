@@ -7,8 +7,8 @@
  *
  * The dispatch consumers (catalog.js, state.js, providers.js, dispatch-route-guard.js,
  * adhoc-fail-override.js) each hardcode role lists/maps that ARE the registry's data
- * under another name — provider/effort per role, the build-chain set, the gemini /
- * flagship-openai sets, the binding-reviewer gate keys. This is the ONE place that
+ * under another name — provider/effort per role, the build-chain set, the
+ * flagship-openai set, the binding-reviewer gate keys. This is the ONE place that
  * DERIVES those from the registry, so a role change is a registry edit, not N edits
  * (the dispatch-side analog of scripts/sprint/hook-points.js#loadRoles).
  *
@@ -107,11 +107,6 @@ function buildChainRoles(roles = loadRoles()) {
   return roleIds(roles).filter((r) => roles[r].build_chain === true);
 }
 
-/** Gemini-provider roles (state.GEMINI_ROLES). */
-function geminiRoles(roles = loadRoles()) {
-  return roleIds(roles).filter((r) => roles[r].provider === "gemini");
-}
-
 /** Flagship-OpenAI roles (state.FLAGSHIP_OPENAI_ROLES) — provider:openai + model gpt-5.5. */
 function flagshipOpenaiRoles(roles = loadRoles()) {
   return roleIds(roles).filter((r) => roles[r].provider === "openai" && roles[r].model === "gpt-5.5");
@@ -173,7 +168,9 @@ const SCRAPPED_PROVIDER_ALIASES = Object.freeze({
   reviewer: "openai",
   compliance: "openai",
   qa: "openai",
-  redteam: "gemini",
+  // redteam is superseded by security-reviewer (antigravity/agy via the registry). Its back-compat
+  // FLOOR is the VERIFIABLE GPT lane, NEVER the SUNSET gemini CLI (β DECIDE B/0.90, 2026-07-20).
+  redteam: "openai",
 });
 const SCRAPPED_EFFORT_ALIASES = Object.freeze({
   builder: "high",
@@ -200,7 +197,6 @@ module.exports = {
   modelOf,
   passesOf,
   buildChainRoles,
-  geminiRoles,
   flagshipOpenaiRoles,
   fixerRoles,
   reviewerGateKeys,

@@ -94,7 +94,7 @@ const CREDIT_TABLE = {
 // ── Credential loading ──────────────────────────────────────────────────────
 /**
  * Load Higgsfield credentials from ~/.higgsfield/.env (operator-placed,
- * gitignored). MIRRORS scripts/hooks/lib/providers.js#loadGeminiApiKey: read a
+ * gitignored). Same homedir-.env pattern the dispatch key-loaders use: read a
  * homedir .env, parse the key, NEVER log the value. Supports both credential
  * forms documented by the SDK:
  *   HF_CREDENTIALS="ID:SECRET"           (preferred)

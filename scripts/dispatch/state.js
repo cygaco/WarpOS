@@ -71,11 +71,6 @@ const FLAGSHIP_OPENAI_ROLES = registryRoles.deriveOrFallback(
 // Pure scrapped alias with no active registry equivalent (no derivation source) —
 // stays a literal: qa → mini-openai back-compat routing.
 const MINI_OPENAI_ROLES = ["qa"];
-const GEMINI_ROLES = registryRoles.deriveOrFallback(
-  () => [...new Set([...registryRoles.geminiRoles(), "redteam"])],
-  ["redteam", "security-reviewer"],
-  "state.GEMINI_ROLES",
-);
 
 function readRoleFrontmatter(files) {
   if (files.length === 0) {
@@ -122,13 +117,6 @@ function resolveModel(role, provider, fm) {
     const v = process.env.OPENAI_MINI_MODEL;
     if (v) {
       envShadows.push({ var: "OPENAI_MINI_MODEL", value: v, affects: "model" });
-      return { model: v, modelSource: "env", envShadowsModel: envShadows };
-    }
-  }
-  if (provider === "gemini" && GEMINI_ROLES.includes(role)) {
-    const v = process.env.GEMINI_MODEL;
-    if (v) {
-      envShadows.push({ var: "GEMINI_MODEL", value: v, affects: "model" });
       return { model: v, modelSource: "env", envShadowsModel: envShadows };
     }
   }

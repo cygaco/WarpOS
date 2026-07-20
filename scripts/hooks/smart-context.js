@@ -871,39 +871,9 @@ async function main() {
     /* best-effort */
   }
 
-  // Phase 0 workstream E: one-shot per-session warning when Gemini auth
-  // configuration is ambiguous (env API key set AND CLI configured for
-  // OAuth-personal). The warning is best-effort — fail-silent on any
-  // probe error. We dedupe via a session-scoped marker so the operator
-  // sees the warning once, not every prompt.
-  try {
-    const markerDir = path.join(PROJECT, ".claude", "runtime");
-    const marker = path.join(markerDir, ".gemini-auth-mismatch-warned");
-    if (!fs.existsSync(marker)) {
-      const {
-        detectGeminiAuthSourceMismatch,
-      } = require("./lib/provider-health.js");
-      const mismatch = detectGeminiAuthSourceMismatch();
-      if (mismatch) {
-        const warning =
-          "GEMINI_AUTH_NOTICE: GEMINI_API_KEY is set, but Gemini CLI " +
-          "settings declare `auth.selectedType: " +
-          mismatch.selected +
-          "`. The CLI may silently use the OAuth account and ignore the " +
-          "API key. Verify the intended auth source before interpreting " +
-          "any `model_not_found` or quota errors from gemini.";
-        context += (context ? "\n\n" : "") + warning;
-        try {
-          fs.mkdirSync(markerDir, { recursive: true });
-          fs.writeFileSync(marker, new Date().toISOString());
-        } catch {
-          /* marker is optional */
-        }
-      }
-    }
-  } catch {
-    /* probe failures are non-blocking */
-  }
+  // (The Phase-0 Gemini auth-source-mismatch notice was removed in the 2026-07-20
+  // deep-clean along with the SUNSET individual `gemini` CLI it warned about; the
+  // supported agy lane self-auths via its own keyring.)
 
   if (context) {
     output.hookSpecificOutput.additionalContext = context;

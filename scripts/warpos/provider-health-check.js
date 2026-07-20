@@ -53,7 +53,7 @@ const providers = args.providers
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
-  : ["claude", "openai", "gemini"];
+  : ["claude", "openai", "antigravity"];
 
 const results = probeAll(providers, { probe: probeMode });
 

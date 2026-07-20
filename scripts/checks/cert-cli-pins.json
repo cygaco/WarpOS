@@ -5,8 +5,7 @@
   "verified_by": "SP-20260716-001 (E-DISPATCH-MODELSPREAD-001)",
   "pins": {
     "codex": { "version": "0.144.1", "provider": "openai", "path_family": "AppData/Local/Programs/OpenAI/Codex/bin", "models_verified": ["gpt-5.6-sol (pending cert-attest fire)"], "note": "gpt-5.6 family per DISPATCH.md §2; sol attestation via cert-attest.js." },
-    "agy": { "version": "1.1.2", "provider": "antigravity", "path_family": "AppData/Local/agy/bin", "binary": "agy.EXE (native PE32+, not .cmd shim)", "models_verified": ["gemini-3.1-pro-high"], "note": "invocation: agy --model <id> --print-timeout <bound> -p '<prompt>' (prompt-as-arg, no stdin; `agy models` HANGS — never script it). Model id is the kebab display name, NOT gemini-3.1-pro-preview." },
-    "gemini": { "version": "0.46.0", "provider": "gemini", "status": "SUNSET", "note": "individual-tier gemini CLI is sunset (DISPATCH.md §3) + tier-blocked; all Gemini routes through agy. Retained only until the §6 legacy sweep removes it." },
+    "agy": { "version": "1.1.2", "provider": "antigravity", "path_family": "AppData/Local/agy/bin", "binary": "agy.EXE (native PE32+, not .cmd shim)", "models_verified": ["gemini-3.1-pro-high"], "note": "invocation: agy --model <id> --print-timeout <bound> -p '<prompt>' (prompt-as-arg, no stdin; `agy models` HANGS — never script it). Model id is the kebab display name, NOT gemini-3.1-pro-preview. The individual-tier `gemini` CLI pin was removed in the 2026-07-20 deep-clean; all Gemini routes through agy." },
     "claude": { "version": "2.1.211", "provider": "claude", "note": "harness session; Claude-5 family (fable-5/sonnet-5) + opus-4-8 per DISPATCH.md §4." }
   }
 }

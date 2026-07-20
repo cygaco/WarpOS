@@ -101,7 +101,8 @@ const { TIER_RANK, SUBSCRIPTION_RANK } = cfgLib;
 const KEY_NAME = {
   claude: "ANTHROPIC_API_KEY",
   openai: "OPENAI_API_KEY",
-  gemini: "GEMINI_API_KEY",
+  // antigravity (agy) self-auths via its own keyring — no metered API key. (The SUNSET
+  // individual gemini CLI's GEMINI_API_KEY entry was removed in the 2026-07-20 deep-clean.)
 };
 
 function tierRank(t) {

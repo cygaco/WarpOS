@@ -64,12 +64,10 @@ function breakdownFor(provider, effort, model, role, reasoningFlag) {
     out.push({ flag: "-", meaning: "Read prompt from stdin" });
     return out;
   }
-  if (provider === "gemini") {
-    out.push({ flag: `-m ${model}`, meaning: "Model selection" });
-    out.push({
-      flag: "-p",
-      meaning: "Inline prompt; thinking implicit on pro tier",
-    });
+  if (provider === "antigravity") {
+    out.push({ flag: `--model ${model}`, meaning: "Model selection (agy display name)" });
+    out.push({ flag: "--print-timeout 90s", meaning: "Explicit headless print timeout" });
+    out.push({ flag: "-p", meaning: "Inline prompt (agy has no stdin); thinking always-on" });
     return out;
   }
   return out;

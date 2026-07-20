@@ -573,7 +573,7 @@ process.stdin.on("end", () => {
         "MANDATORY REFERENCE — Build-chain dispatch must use " +
         "`node scripts/dispatch-agent.js <role> <prompt-file>` (or the " +
         "documented `claude -p --agent <role>` Claude fallback). Raw " +
-        "`codex exec` / `gemini -p` / `cat … | codex|gemini|claude` " +
+        "`codex exec` / `agy -p` / `cat … | codex|agy|claude` " +
         "calls from Bash are blocked by the dispatch-route-guard hook " +
         "(LRN-2026-04-17 Windows-stdin, LRN-2026-04-30 binding-gap). Full " +
         "rules: .claude/agents/_system/guides/agent-dispatch-guide.md " +

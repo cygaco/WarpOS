@@ -64,98 +64,10 @@ function cliPresent(cli) {
   return probe.ok;
 }
 
-// ── Gemini-specific helpers ───────────────────────────────
-
-function detectGeminiAuthSourceMismatch() {
-  const apiKeySet = !!(
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_KEY
-  );
-  if (!apiKeySet) return null;
-
-  // Inspect the Gemini CLI settings file. Path varies by platform. Best-effort.
-  const home = os.homedir();
-  const candidates = [
-    path.join(home, ".gemini", "settings.json"),
-    path.join(home, ".config", "gemini", "settings.json"),
-    path.join(home, "AppData", "Roaming", "gemini", "settings.json"),
-  ];
-  for (const f of candidates) {
-    try {
-      const raw = fs.readFileSync(f, "utf8");
-      const obj = JSON.parse(raw);
-      const selected =
-        (obj && obj.auth && obj.auth.selectedType) || obj.selectedAuthType;
-      if (selected && /oauth-personal/i.test(String(selected))) {
-        return { settingsPath: f, selected };
-      }
-    } catch {
-      /* keep checking */
-    }
-  }
-  return null;
-}
-
-function classifyGeminiError(stderr) {
-  const s = (stderr || "").toLowerCase();
-  if (!s) return null;
-  if (
-    s.includes("trusted") &&
-    (s.includes("directory") || s.includes("workspace"))
-  ) {
-    return {
-      status: "trusted_directory_required",
-      reason:
-        "Gemini CLI requires running inside a trusted directory; current cwd is not on the trust list.",
-      suggestion:
-        "Run with --skip-trust (one-shot) or add the project root to Gemini's trusted directories.",
-    };
-  }
-  if (s.includes("model not found") || /404[^0-9]/.test(s)) {
-    return {
-      status: "model_not_found",
-      reason:
-        "The requested model is unknown to this Gemini CLI / API version.",
-      suggestion:
-        "Check `gemini --version`. Upgrade the CLI if it is older than 0.45 — bundled registry rots fast. If the upgrade still fails, treat as entitlement/account/quota.",
-    };
-  }
-  if (
-    s.includes("quota") ||
-    s.includes("rate limit") ||
-    s.includes("ratelimit")
-  ) {
-    if (s.includes("free") && /limit:\s*0|limit\s*=\s*0/.test(s)) {
-      return {
-        status: "free_tier_limit_zero",
-        reason:
-          "Gemini free-tier quota reports daily limit of zero for the requested model.",
-        suggestion:
-          "Switch tier or fall back to claude/openai. Free-tier zero-limit cannot be retried.",
-      };
-    }
-    return {
-      status: "quota_exhausted",
-      reason: "Gemini reported quota or rate limit error.",
-      suggestion:
-        "Wait for quota reset, or set provider_fallback policy so the orchestrator routes around.",
-    };
-  }
-  if (
-    s.includes("unauthorized") ||
-    s.includes("invalid api key") ||
-    s.includes("permission denied")
-  ) {
-    return {
-      status: "auth_missing",
-      reason: "Gemini reported unauthorized / invalid credentials.",
-      suggestion:
-        "Run `gemini auth login` or set GEMINI_API_KEY in your harness environment.",
-    };
-  }
-  return null;
-}
+// (The SUNSET individual `gemini` CLI helpers — detectGeminiAuthSourceMismatch +
+// classifyGeminiError — were removed in the 2026-07-20 deep-clean. The Gemini lab now
+// runs through the `antigravity` (agy) CLI, which self-auths via its own keyring; agy
+// probe failures fall through to the generic unknown_error path.)
 
 // ── OpenAI codex helpers ───────────────────────────────────
 
@@ -220,11 +132,9 @@ function probeProvider(providerName, opts = {}) {
   const cli =
     providerName === "openai"
       ? "codex"
-      : providerName === "gemini"
-        ? "gemini"
-        : providerName === "antigravity"
-          ? "agy"
-          : providerName;
+      : providerName === "antigravity"
+        ? "agy"
+        : providerName;
 
   if (!cliPresent(cli)) {
     return {
@@ -234,39 +144,18 @@ function probeProvider(providerName, opts = {}) {
       suggestion:
         providerName === "openai"
           ? "Install: npm i -g @openai/codex && codex login"
-          : providerName === "gemini"
-            ? "Install: npm i -g @google/gemini-cli && gemini auth login"
-            : providerName === "antigravity"
-              ? "Install the Antigravity `agy` CLI (standalone, not npm) and self-auth at ~/.gemini/antigravity-cli."
-              : `Install the ${cli} CLI.`,
+          : providerName === "antigravity"
+            ? "Install the Antigravity `agy` CLI (standalone, not npm) and self-auth at ~/.gemini/antigravity-cli."
+            : `Install the ${cli} CLI.`,
     };
-  }
-
-  // Provider-specific config sanity (no token spend yet)
-  if (providerName === "gemini") {
-    const mismatch = detectGeminiAuthSourceMismatch();
-    if (mismatch) {
-      return {
-        provider: "gemini",
-        status: "auth_source_mismatch",
-        reason:
-          "GEMINI_API_KEY is set, but Gemini CLI is configured for oauth-personal auth. The CLI may use the OAuth account and ignore the API key.",
-        suggestion:
-          "Verify intended auth source. Either unset GEMINI_API_KEY OR change auth.selectedType in Gemini settings to api-key.",
-        detail: {
-          settingsPath: mismatch.settingsPath,
-          selectedType: mismatch.selected,
-        },
-      };
-    }
   }
 
   // Optional cheap reachability check (gated by opts.probe = "list" or
   // explicit env). Default OFF to keep /warp:setup fast.
   if (opts.probe === "list") {
     let probeCmd;
-    if (providerName === "gemini") probeCmd = "gemini models list";
-    else if (providerName === "openai") probeCmd = "codex --help";
+    // NOTE: never `agy models` (it HANGS headless); `agy --help` is the safe reachability probe.
+    if (providerName === "openai") probeCmd = "codex --help";
     else if (providerName === "antigravity") probeCmd = "agy --help";
     if (probeCmd) {
       const probe = safeExec(probeCmd, { timeout: opts.timeout || 8_000 });
@@ -281,11 +170,9 @@ function probeProvider(providerName, opts = {}) {
           };
         }
         const classified =
-          providerName === "gemini"
-            ? classifyGeminiError(probe.stderr)
-            : providerName === "openai"
-              ? classifyCodexError(probe.stderr)
-              : null; // antigravity/agy → generic unknown_error (no codex misclassification)
+          providerName === "openai"
+            ? classifyCodexError(probe.stderr)
+            : null; // antigravity/agy → generic unknown_error (no codex misclassification)
         if (classified)
           return Object.assign({ provider: providerName }, classified);
         return {
@@ -314,8 +201,6 @@ function probeAll(providerList, opts = {}) {
 module.exports = {
   probeProvider,
   probeAll,
-  classifyGeminiError,
   classifyCodexError,
-  detectGeminiAuthSourceMismatch,
   cliPresent,
 };

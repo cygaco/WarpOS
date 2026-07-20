@@ -75,9 +75,8 @@ function probeShape(providerId, model, effort) {
   if (providerId === "claude") {
     return { toolId: "claude", argv: ["-p", "--model", model], stdin: true };
   }
-  if (providerId === "gemini") {
-    return { toolId: "gemini", argv: ["-m", model, "-p", PROBE_PROMPT], stdin: false };
-  }
+  // The SUNSET individual `gemini` CLI probe was removed in the 2026-07-20 deep-clean —
+  // the Gemini lab is attested via the `antigravity` (agy) branch above.
   return null;
 }
 

@@ -85,11 +85,11 @@
       "fallback": "claude",
       "syntax": "codex exec --sandbox workspace-write {reasoning} -m {model} -"
     },
-    "gemini": {
-      "cli": "gemini",
-      "default_model": "gemini-3.1-pro-preview",
-      "fallback": "claude",
-      "syntax": "gemini {reasoning} -m {model} -p"
+    "antigravity": {
+      "cli": "agy",
+      "default_model": "gemini-3.1-pro-high",
+      "fallback": "openai",
+      "syntax": "agy {reasoning} --model {model} --print-timeout 90s -p"
     }
   },
   "_agentProviders_note": "WG-26: this per-project override WINS over the role-registry keystone (getProviderForRole reads manifest.agentProviders first). DISPATCH.md §8 flip: reduced to the President faces only (β flipped claude→openai per L166) — every other role now derives from the registry single-source (DEFAULT_AGENT_PROVIDERS). The pre-ADR-0007 scrapped-name entries (builder/fixer/reviewer/compliance/learner/qa/redteam/stub-scaffold) were removed: they resolved legacy names to STALE providers that shadowed the flip (e.g. redteam→gemini vs the registry's security-reviewer→antigravity). Legacy names now normalize + derive correctly via the registry.",

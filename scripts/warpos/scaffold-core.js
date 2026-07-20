@@ -615,16 +615,15 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
           // non-interactive so `--ask-for-approval` is not a valid exec flag).
           syntax: "codex exec --sandbox workspace-write -m {model} -",
         },
-        gemini: {
-          cli: "gemini",
-          default_model: "gemini-3.1-pro-preview",
-          fallback: "claude",
-          // `gemini -m <model> -p <instruction>` (context via stdin). Default =
-          // gemini-3.1-pro-preview (1M in/64K out, thinking always-on). Preview tier
-          // can quota-fail/downgrade under load → fall back to the pinned flash via
-          // GEMINI_MODEL=gemini-2.5-flash. Auth: GEMINI_API_KEY in ~/.gemini/.env OR
-          // `gemini auth login` (OAuth) — REQUIRED once per fresh install / new machine.
-          syntax: "gemini -m {model} -p",
+        antigravity: {
+          cli: "agy",
+          default_model: "gemini-3.1-pro-high",
+          fallback: "openai",
+          // Antigravity (`agy`) — the supported Gemini lab. The individual-tier `gemini` CLI is
+          // SUNSET (removed in the 2026-07-20 deep-clean); agy self-auths via its own keyring and
+          // its `--model` takes DISPLAY names ("Gemini 3.1 Pro (High)"). CROSS-FAMILY fallback is
+          // openai (a Google-lab outage retries on the GPT lab, never another google endpoint).
+          syntax: "agy --model {model} --print-timeout 90s -p",
         },
       },
       agentProviders: {
@@ -638,7 +637,9 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
         compliance: "openai",
         auditor: "openai",
         qa: "openai",
-        redteam: "gemini",
+        // Security FLOOR = the VERIFIABLE GPT lane (never the SUNSET gemini CLI); the live
+        // security-reviewer default is antigravity via the role-registry keystone.
+        redteam: "openai",
       },
       buildCommands: {},
       fileOwnership: { foundation: [] },

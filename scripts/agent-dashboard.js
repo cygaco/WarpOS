@@ -1346,7 +1346,7 @@ function renderAgents(store) {
   // ── External provider agents ──
   const compliance = store.compliance || {};
   const primaryCmd = compliance.command || "codex";
-  const fallbackCmd = compliance.fallback || "gemini";
+  const fallbackCmd = compliance.fallback || "claude";
 
   console.log(
     `  ${BOLD}${GREEN}COMPLIANCE${RESET} ${DIM}(external providers)${RESET}\n`,
