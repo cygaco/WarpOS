@@ -129,37 +129,66 @@ function ed230IsOpen(ledgerText) {
 // that constructs the "dispatch-agent.js" string dynamically (the AST ceiling). The STRUCTURAL close is a
 // dispatch-time guard that refuses a single-pass security-reviewer binding — tracked as a follow-up ED.
 const REFERENCES_DISPATCH_AGENT_RE = /dispatch-agent\.js/;
-const SECURITY_ROLE_RE = /["']security-reviewer["']|["']redteam["']/;
-// The audited allowlist: a co-occurrence that is NOT a sanctioned-panel-bypassing single-pass BINDING caller.
-// delta-final-gauntlet.js is a TRACKED real caller (latent ED-244); the rest are reference-only.
+// Match the role in single-, double-, OR template-literal (backtick) form (gauntlet R-3: a template-literal
+// `security-reviewer` caller bypassed the quote-only regex).
+const SECURITY_ROLE_RE = /[`'"](?:security-reviewer|redteam)[`'"]/;
+// The audited allowlist, SPLIT BY TYPE (gauntlet R-3):
+//   - "reference-only": never a caller (a role name in check logic, a comment, or a require() module import)
+//     → ALWAYS suppressed.
+//   - "tracked-caller-ed230-gated": a real single-pass caller (delta) suppressed ONLY WHILE ED-230 is OPEN.
+//     When ED-230 CLOSES (agy activation), it is FLAGGED again — the re-open trigger fires MECHANICALLY (not
+//     just in a comment): the exposure goes live exactly when Tooth-A stops enforcing, so the guard must too.
 const CREEP_BACK_ALLOWLIST = {
-  "scripts/delta-final-gauntlet.js":
-    "TRACKED CALLER — delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES " +
-    "list). LATENT ED-244: binding-on-agy WHEN agy goes live. SAFE TODAY — agy blocked-advisory (reaps) + " +
-    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). RE-OPEN TRIGGER: ED-230 " +
-    "closure / agy activation — the SAME trigger this scan relaxes Tooth-A on, so the exposure goes live exactly " +
-    "when the enforcer stops enforcing. Follow-up ED: route delta's security-reviewer through dispatch-review's " +
-    "panel then. SP-20260720-003 gauntlet.",
-  "scripts/checks/model-chain.js": "reference-only — names 'security-reviewer' as a role in check logic (MAX_ALLOWED_ROLES) + 'dispatch-agent' in comments; not a dispatch.",
-  "scripts/dispatch/gauntlet-verify.js": "reference-only — a comment naming the dispatch-agent.js completion ledger it READS; not a dispatch.",
-  "scripts/hooks/dispatch-route-guard.js": "reference-only — the ROUTING GUARD names the canonical `node scripts/dispatch-agent.js` route it ENFORCES; it is the enforcer, not a caller.",
-  "scripts/hooks/lib/providers.js": "reference-only — the transport lib names security-reviewer in provider-config comments; runProvider is the transport, not a single-pass security dispatch.",
-  "scripts/warpos/provider-smoke.js": "reference-only — require()s dispatch-agent.js as a MODULE for getRoleModel (a ping smoke test); not a spawn of dispatch-agent.js with security-reviewer.",
+  "scripts/delta-final-gauntlet.js": {
+    type: "tracked-caller-ed230-gated",
+    reason:
+      "TRACKED CALLER — delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES " +
+      "list). LATENT ED-244: binding-on-agy WHEN agy goes live. Suppressed + SAFE WHILE ED-230 is OPEN (agy " +
+      "blocked-advisory reaps + delta-aggregate treats a dispatch-failed lane as non-pass). RE-OPEN TRIGGER " +
+      "(mechanical): when ED-230 CLOSES / agy activates, this stops suppressing → delta is FLAGGED until it routes " +
+      "security-reviewer through dispatch-review's panel. Follow-up ED. SP-20260720-003 gauntlet.",
+  },
+  "scripts/checks/model-chain.js": { type: "reference-only", reason: "names 'security-reviewer' as a role in check logic (MAX_ALLOWED_ROLES) + 'dispatch-agent' in comments; not a dispatch." },
+  "scripts/dispatch/gauntlet-verify.js": { type: "reference-only", reason: "a comment naming the dispatch-agent.js completion ledger it READS; not a dispatch." },
+  "scripts/hooks/dispatch-route-guard.js": { type: "reference-only", reason: "the ROUTING GUARD names the canonical `node scripts/dispatch-agent.js` route it ENFORCES; the enforcer, not a caller." },
+  "scripts/hooks/lib/providers.js": { type: "reference-only", reason: "the transport lib names security-reviewer in provider-config comments; runProvider is the transport, not a single-pass security dispatch." },
+  "scripts/warpos/provider-smoke.js": { type: "reference-only", reason: "require()s dispatch-agent.js as a MODULE for getRoleModel (a ping smoke test); not a spawn of dispatch-agent.js with security-reviewer." },
 };
-function singlePassBindingCallers({ files } = {}) {
+function singlePassBindingCallers({ files, ed230Open = true } = {}) {
   const src = files || walkScriptsForCallers();
   const hits = [];
   for (const [rel, content] of Object.entries(src)) {
     if (typeof content !== "string") continue;
     const relN = rel.replace(/\\/g, "/");
-    if (relN in CREEP_BACK_ALLOWLIST) continue; // audited-safe (reason in CREEP_BACK_ALLOWLIST)
+    const allow = CREEP_BACK_ALLOWLIST[relN];
+    if (allow) {
+      if (allow.type === "reference-only") continue; // never a caller
+      // tracked-caller: suppressed ONLY while ED-230 is open; once closed → fall through → FLAG (re-open trigger)
+      if (allow.type === "tracked-caller-ed230-gated" && ed230Open) continue;
+    }
     if (REFERENCES_DISPATCH_AGENT_RE.test(content) && SECURITY_ROLE_RE.test(content)) hits.push(relN);
   }
   return hits;
 }
+// EXACT repo-relative sanctioned MECHANISMS excluded from the CALLER scan (gauntlet R-3: a suffix match
+// `dispatch-review.js$` let a spoof at scripts/anything/dispatch-review.js be skipped — exclude only the EXACT
+// canonical paths, so a spoof elsewhere IS scanned). These are dispatch mechanisms being invoked, not invokers:
+// dispatch-agent.js is the single-pass TRANSPORT itself (references its own name + role tokens), dispatch-review.js
+// is the sanctioned multi-pass PANEL, and this file is the guard itself.
+const WALK_EXACT_EXCLUDE = new Set([
+  "scripts/dispatch-agent.js",
+  "scripts/dispatch-review.js",
+  "scripts/checks/security-binding-lane.js",
+]);
+// A *.test.js or test-*.js file ANYWHERE is legitimately a test, not a live caller.
+const WALK_TEST_EXCLUDE = /(\.test\.js$)|((^|\/)test-[^/]*\.js$)/;
+/** Whether a repo-relative (forward-slash) path is excluded from the caller scan. Exported so the exact-path
+ *  exclusion is regression-testable (a spoof at scripts/evil/dispatch-review.js must NOT be excluded). */
+function isWalkExcluded(relN) {
+  return WALK_EXACT_EXCLUDE.has(relN) || WALK_TEST_EXCLUDE.test(relN);
+}
 function walkScriptsForCallers() {
   const out = {};
-  const EXCLUDE = /(\.test\.js$)|((^|[\\/])test-[^\\/]*\.js$)|(dispatch-review\.js$)|(security-binding-lane\.js$)/;
   const walk = (dir) => {
     let entries;
     try {
@@ -172,9 +201,11 @@ function walkScriptsForCallers() {
       if (e.isDirectory()) {
         if (e.name === "node_modules" || e.name.startsWith(".")) continue;
         walk(full);
-      } else if (e.name.endsWith(".js") && !EXCLUDE.test(full)) {
+      } else if (e.name.endsWith(".js")) {
+        const relN = path.relative(ROOT, full).replace(/\\/g, "/");
+        if (isWalkExcluded(relN)) continue;
         try {
-          out[path.relative(ROOT, full)] = fs.readFileSync(full, "utf8");
+          out[relN] = fs.readFileSync(full, "utf8");
         } catch {
           /* skip unreadable */
         }
@@ -285,8 +316,8 @@ function evaluateSecurityBindingLane({ deps = realDeps(), ledgerText, files } = 
     errors.push(`${NAME}: ALIAS-CONSISTENCY (RI-008.2) — getProviderForRole failed: ${e.message}.`);
   }
 
-  // ── AC-14 creep-back guard ──
-  const callers = singlePassBindingCallers({ files });
+  // ── AC-14 creep-back guard (ed230.open gates the tracked-caller suppression: delta is FLAGGED once ED-230 closes) ──
+  const callers = singlePassBindingCallers({ files, ed230Open: ed230.open });
   for (const c of callers) {
     errors.push(
       `${NAME}: SINGLE-PASS CREEP-BACK — non-test caller "${c}" routes security-reviewer as a single-pass ` +
@@ -336,6 +367,7 @@ module.exports = {
   VERIFIABLE,
   ed230IsOpen,
   singlePassBindingCallers,
+  isWalkExcluded,
   CREEP_BACK_ALLOWLIST,
   evaluateSecurityBindingLane,
   realDeps,

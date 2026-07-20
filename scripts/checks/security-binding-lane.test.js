@@ -140,9 +140,30 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   // a mention WITHOUT the .js subprocess script (a bare "dispatch-agent" module/prose ref) → NOT flagged
   const prose = { "scripts/doc.js": '// dispatch-agent serves the "security-reviewer" default\nrequire("../dispatch-agent");' };
   ok(!hasFinding(run({}, LEDGER_OPEN, prose).errors, /SINGLE-PASS CREEP-BACK/), `bare dispatch-agent (no .js) ref must NOT flag`);
-  // an ALLOWLISTED file (delta) is documented-safe → not flagged even with the pattern
+  // an ALLOWLISTED file (delta) is documented-safe WHILE ED-230 OPEN → not flagged
   const allowKey = Object.keys(sbl.CREEP_BACK_ALLOWLIST)[0];
-  ok(!hasFinding(run({}, LEDGER_OPEN, { [allowKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `allowlisted caller (${allowKey}) → not flagged`);
+  ok(!hasFinding(run({}, LEDGER_OPEN, { [allowKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `tracked caller (${allowKey}) suppressed while ED-230 open`);
+  // R-3: the tracked delta caller is FLAGGED once ED-230 CLOSES (mechanical re-open trigger, not comment-only)
+  const LEDGER_CLOSED_R3 = JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: "AP-230-x" });
+  ok(hasFinding(run({}, LEDGER_CLOSED_R3, { [allowKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `delta FLAGGED when ED-230 closes (mechanical re-open trigger)`);
+  // R-3: a reference-only allowlist entry stays suppressed even when ED-230 is closed
+  const refKey = Object.keys(sbl.CREEP_BACK_ALLOWLIST).find((k) => sbl.CREEP_BACK_ALLOWLIST[k].type === "reference-only");
+  ok(!hasFinding(run({}, LEDGER_CLOSED_R3, { [refKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `reference-only (${refKey}) stays suppressed when ED-230 closed`);
+  // R-3: template-literal (backtick) role form is caught
+  const templateCaller = 'const ROLES = [`security-reviewer`]; spawn("node", [path.join(ROOT, "dispatch-agent.js"), ROLES[0]]);';
+  ok(hasFinding(run({}, LEDGER_OPEN, { "scripts/evil2.js": templateCaller }).errors, /SINGLE-PASS CREEP-BACK/), `template-literal role caught: ${run({}, LEDGER_OPEN, { "scripts/evil2.js": templateCaller }).errors.join(" | ")}`);
+}
+
+// ── R-3: exact-path exclusion — a spoof at scripts/evil/dispatch-review.js must NOT be excluded from the scan ──
+{
+  ok(sbl.isWalkExcluded("scripts/dispatch-agent.js") === true, "exact dispatch-agent.js (the transport) excluded");
+  ok(sbl.isWalkExcluded("scripts/evil/dispatch-agent.js") === false, "PATH-SPOOF scripts/evil/dispatch-agent.js NOT excluded (scanned)");
+  ok(sbl.isWalkExcluded("scripts/dispatch-review.js") === true, "exact sanctioned dispatch-review.js excluded");
+  ok(sbl.isWalkExcluded("scripts/checks/security-binding-lane.js") === true, "exact self excluded");
+  ok(sbl.isWalkExcluded("scripts/evil/dispatch-review.js") === false, "PATH-SPOOF scripts/evil/dispatch-review.js NOT excluded (scanned)");
+  ok(sbl.isWalkExcluded("scripts/foo.test.js") === true, "*.test.js excluded");
+  ok(sbl.isWalkExcluded("scripts/test-foo.js") === true, "test-*.js excluded");
+  ok(sbl.isWalkExcluded("scripts/checks/foo.js") === false, "an ordinary file is scanned");
 }
 
 // ── Tooth-B(1) FAIL-CLOSED on absent literal exports (gauntlet R-2) ─────────────────
