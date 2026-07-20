@@ -25,6 +25,7 @@ test("AC-F12 CAS: an integration whose expected head moved before the atomic ref
   const spId = "SP-FALSIFIER-F12";
   const leaseRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acc-f12-"));
   const held = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-f12" });
+  t.after(() => { try { lease.release(spId, { root: leaseRoot, token: held.token }); } catch {} try { fs.rmSync(leaseRoot, { recursive: true, force: true }); } catch {} });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: held.token });
 
   // Full-valid authz context so the nested authorizesIntegration PASSES and control reaches the CAS.

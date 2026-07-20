@@ -25,6 +25,7 @@ test("AC-F10 valid AcceptanceRecord minted under a SUPERSEDED lease MUST-BLOCK i
   const a1 = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-stale" });
   lease.release(spId, { root: leaseRoot, token: a1.token });
   const a2 = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-current" }); // supersedes a1
+  t.after(() => { try { lease.release(spId, { root: leaseRoot, token: a2.token }); } catch {} try { fs.rmSync(leaseRoot, { recursive: true, force: true }); } catch {} });
 
   // Full-valid authz context (identical for both) so the lease gate is actually REACHED.
   const baseOpts = (record) => ({

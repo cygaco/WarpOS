@@ -25,6 +25,7 @@ test("AC-F11 provider-authored AcceptanceRecord with a fabricated result-tree ha
   const leaseRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acc-f11-"));
   const spId = "SP-FALSIFIER-F11";
   const held = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-f11" });
+  t.after(() => { try { lease.release(spId, { root: leaseRoot, token: held.token }); } catch {} try { fs.rmSync(leaseRoot, { recursive: true, force: true }); } catch {} });
 
   // A VALID current-schema record whose ONLY defect is a FABRICATED result_tree_hash (the provider-claimed value).
   const forged = acc.produceForTest({

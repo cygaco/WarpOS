@@ -23,6 +23,7 @@ test("AC-F3 stale-base MUST-BLOCK integration (head advanced after the freshness
   const spId = "SP-FALSIFIER-F3";
   const leaseRoot = fs.mkdtempSync(path.join(os.tmpdir(), "acc-f3-"));
   const held = lease.acquire(spId, { root: leaseRoot, sessionId: "sess-f3" });
+  t.after(() => { try { lease.release(spId, { root: leaseRoot, token: held.token }); } catch {} try { fs.rmSync(leaseRoot, { recursive: true, force: true }); } catch {} });
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: held.token });
 
   // Full-valid authz context (identical for both) so the freshness gate is actually REACHED.
