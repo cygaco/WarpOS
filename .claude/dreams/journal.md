@@ -498,3 +498,33 @@ than pruning.
 - **INTEGRATION-READY** (confidence adjustments / verification-rigor bars / anti-patterns / reinforcements composing existing principles — no NEW authority, per the 2026-06-05 / 06-08 auto-integrate precedent): the **beta-phase-boundary confidence REVERSAL** (reasoned alpha-team-logged consult lane = high-quality REAL judgment, reverses the 2026-06-02 NULL note); **AP-12** (grounded-motion-evidence over reassurance); **G-23** (on-demand latency-transparency bar); **DP-gap #42** (build-the-seam standing authorization — REMOVES an escalation path, integrator confirms "build-seam != sign-up" vs the never-allowed list); the **P-077 reinforcement** (append the DISPATCH-EXPLAINED evidence + P-066 linkage, no new number); **P-079** (mechanized-liveness recorded as the DELIVERED baseline + keep flagging the wake-seam gap); **H-008 +4-confirmations** hold at/near ceiling; the **calibration-watch** note (0-escalate arc is P-064-explained — keep 0.88-0.90 as-is, watch the band).
 - **HELD (operator-must-rule / do-NOT-auto-close):** **P-078** as a NEW named standing-autonomy beta principle (new behavioral stance — its confidence reinforcement + DP-gap#42 are ready, but minting the principle needs a ruling); **P-080** IF minted as a new named comms principle (its bar ships via G-23 otherwise); and **CRITICAL — AP-1/P-043 must NOT be auto-marked resolved**: the miner's caveat is validated — the confidence reversal is against the alpha-team-logged reasoned lane, a DIFFERENT path from the automated sprint_full_beta_consult audit stream (never re-checked this pass); closure waits on that separate check.
 - False-memory guard on beta recs: the reasoned-lane evidence (beta/events.jsonl 128-146) is real and on-disk; the reversal rests on verified records, not inference.
+
+# Sleep Journal — 2026-07-20 (post gemini-deepclean merge @14951f5e)
+
+## NREM Consolidation
+- Learnings: 134 -> 141 (7 new from gemini-deepclean Task#1 conversation; 0 pruned — all fresh + session-specific). Status: 31 implemented / 4 validated / 103 logged; 7 promotion candidates (score>=0.7, not implemented).
+- Importance audit: HIGH — broaden-check-forget-rule (scan/rule lockstep), verify-siblings-before-misconfig (both caught a real regression + flipped a shared wrong assumption). MEDIUM — CODEX_HOME isolation, 540s-clamp effort-lever, check-2 verify-before-dismiss, beta minimal-diff defer, inbox-batching directive races.
+- Decay: 0 entries hit the 14/21d stale thresholds; store far under the 1000 max — bias to keep.
+
+## Cleanup (Glymphatic)
+- Tracked tree clean on main @14951f5e (== origin/main). 33 untracked runtime/ evidence artifacts (gitignored, kept).
+- Recurring issues: RI-008 (redteam catalog!=providers split + model-chain coverage gap), RI-009 (codex multi-writer cache collision + CODEX_HOME seam + high-effort deviation). Enforcement debt: ED-244 (ADR-0031 point-2 openai-floor has no enforcer).
+- Worktrees: 4 active (Epsilon2 SP-005 lanes + SP-20260719-001) — NOT orphans; SP-005 merged @bf7b5aa3, cleanup is Epsilon2/lead's call. Stray ~/.codex cache backup removed.
+
+## Replay (Spindle)
+- Real goal today: land gemini-deepclean cleanly AND honestly, not just make the gate green. Achieved: blocker fixed at root (class-symmetry), pre-existing gaps logged not papered.
+- Blind spot: I under-called check-2 as 'doc-precision' before grounding it — a near-miss of the aspirational-vs-enforced anti-pattern; caught by verifying DEFAULT_PROVIDER_PER_ROLE at ground truth.
+- Simpler path missed? None material — the a->b flip cost one round but produced the correct, status-quo-preserving fix.
+
+## REM Dreams
+- 'The shared well that keeps rewriting itself' (codex multi-writer cache): isolation beats diagnosis for intermittent shared-mutable-resource failures.
+- 'The gate that widened its eyes but never learned the new word' (role-parity scan/rule lockstep): broaden the gaze and teach every new word in one breath; defer words for souls that don't exist yet.
+- 2 paintings saved to dreams/2026-07-20.md. Subconscious learnings: a-sip-is-not-a-test; the-fastest-wrong-answer-and-the-correct-one-look-identical-from-the-doorway.
+
+## Alex beta Decision Review
+- gemini-deepclean: 2 beta DECIDEs (research-lead fix B/0.88, then B/0.90 director-defer trim), 0 escalations, 0 overrides. beta's minimal-diff trim (defer the hypothetical director rule) was correct + accepted — a validated instance of 'fix active red, defer self-detecting hypothetical'. Confidence signal: beta on dispatch-taxonomy/class-derivation judgments = solid.
+
+## Growth
+- System strength: trending stronger — the independent GPT cross-check caught a real scan/rule regression the green build gate missed; the fix closed a class (contract taxonomy symmetry) + regression-locked it.
+- Biggest leverage point: a meta-lockstep enforcer — 'broadening a scan's scope filter requires the paired class_derivation/rule table to gain the matching rule(s)'. The deep-clean violated exactly this.
+- Morning briefing appended to coaching.md.

@@ -271,3 +271,10 @@ Resume the **SP-003 panel-3lab binding activation** build (ED-227, ADR-0022 teet
 ## Gentle coaching (from the session's own patterns)
 - The operator's "**honestly, what is taking so long?**" this arc was a *visibility* demand on a run he WANTS to continue (P-080/AP-12), not "go faster" and not "too autonomous". When it comes again: probe artifacts first (commits, completion records, lane diffs, the watchdog's own read), report the real % and the honest breakdown of where the time went and which lane is the bottleneck, and KEEP the authorized run moving. The reassuring gloss is the one wrong answer.
 - The standing-autonomy opener (P-078) pre-authorizes the run: a missing account/key is **build-the-seam-and-continue**, never a stop; a transient outage is **probe-every-5-min-and-continue**; delegate builder work to subprocesses and protect your own context. These are pre-declared, not per-instance asks.
+
+## 2026-07-20 — Morning briefing (post gemini-deepclean)
+
+- Key unresolved: ED-244 — the ADR-0031 point-2 openai floor has no enforcer; the binding security DEFAULT resolves to antigravity via registry derivation (holds today only because agy is blocked-advisory). RI-008 — redteam catalog!=providers split + a model-chain coverage gap on DEFAULT_PROVIDER_PER_ROLE. Both want one scan asserting the security BINDING default is verifiable until ED-230 closes.
+- Dream solution worth reviewing: for INTERMITTENT failures, look for a shared mutable resource with many writers before blaming the tool (isolation > diagnosis). Adopt the CODEX_HOME=~/.codex-warpos seam for any lane dispatching codex — flag it for Epsilon2's SP-005 codex work.
+- Suggested first task next session: wire the meta-lockstep enforcer (broadening a scan's scope filter requires its paired class_derivation/rule table to gain the matching rule) — the deep-clean violated exactly this and only the GPT cross-check caught it.
+- Watch-out: don't dismiss a review finding as 'just wording' before grounding it at the code — check-2 nearly entered the record as doc-precision when it was a real (pre-existing) registry-overrides-floor gap.
