@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260719-001"
 title: "agy id-mapping reconciliation — slug->display translation at dispatch boundary + real agy serve record (ED-060) + honest panel-3lab activation (ED-230)"
 objective: "Ship agy slug->display id-mapping + agy §7 honest-ceiling fail-closed (attestation cannot trust agy's client-echoed served-model). ED-060/ED-230 post-login."
-status: parked
+status: released
 created_at: "2026-07-19T18:50:04.146Z"
-updated_at: "2026-07-19T20:15:00.000Z"
+updated_at: "2026-07-20T02:05:00.000Z"
 source_request: ""
 interpreted_intent: ""
 plan_contract: null
 risk_level: high
 approval_state: none_required
-current_phase: gauntlet
+current_phase: release
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -74,14 +74,11 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: "gauntlet R2 FAIL (attestLane §7 gap) — PARKED committed-unmerged 2026-07-19"
-  resume_command: "resume from ED-060-CLOSE-SEAM.md PARK STATE (attestLane §7 hard-fail -> R3 re-gauntlet)"
-  resume_summary: "Branch sprint/SP-20260719-001-agy-idmap off main@5810f60d, committed-unmerged (12 commits) in worktree .claude/runtime/worktrees/SP-20260719-001. DONE+green: 3-layer id-mapping + agy §7 honest-ceiling + narrowed GATE-1 + attribution + full-transcript fixture + non-catalog refusal. R2 FAIL = attestLane still attests the agy panel lane without §7 (fix: hard-fail antigravity in attestLane + panel fixture flips + re-gauntlet). NOT MERGED; nothing broken."
-  active_files:
-    - "scripts/checks/cert-attest.js"
-    - "scripts/checks/cert-attest-panel.test.js"
+  last_checkpoint: "RELEASED 2026-07-20 — merged to main by α (beta gauntlet→release DECIDE B/0.90; merge-hygiene diff clean)"
+  resume_command: "no sprint-resume (released); post-merge work = tasks #12/#13 + ED-241"
+  resume_summary: "R3-R6 arc complete: attestLane agy hard-fail + pv choke-point (BOTH readers) + INV-4 enforcer + fixture flips + spike-provenance verification, all committed on sprint/SP-20260719-001-agy-idmap and MERGED to main. R6 residual = INV-4 completeness ceiling only (4x MEDIUM convergent) → ED-241 named debt per SP-004/ED-232 precedent; runtime verified sound 3x + by beta directly. NOT closed: ED-060 (needs operator agy login + rider-3 serve), panel-3lab activation, support-matrix flip."
+  active_files: []
   dirty_state: false
   blockers:
-    - "agy UNAUTHENTICATED (operator login)"
-    - "R2-CRITICAL-01 attestLane §7 gap"
+    - "ED-060 close: agy keyring EXPIRED — one interactive operator login, then the rider-3 serve"
   safe_to_continue: true
