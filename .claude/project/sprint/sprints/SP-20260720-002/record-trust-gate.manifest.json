@@ -1,0 +1,95 @@
+{
+  "schema": "warpos/record-trust-gate/v1",
+  "sprint": "SP-20260720-002",
+  "phase": "Phase 4 — trusted enforcement adapter",
+  "falsifier_dir": "scripts/dispatch/falsifiers",
+  "note": "Every required_present falsifier must EXIST and fail CLOSED (skip RED until its module is built; never green-on-absence). Positive companions are required_present too. Consumed by scripts/checks/record-trust-gate.js --manifest <this> --built and scripts/checks/falsifier-liveness.js.",
+  "surfaces": [
+    {
+      "id": "S1-acceptance-to-merge",
+      "choke_point": "scripts/dispatch/acceptance-record.js#commitIntegration/#authorizesIntegration + Phase-4 pinned external checker",
+      "session_scope": "cross-session (content-addressed git identity, never per-session HMAC)",
+      "required_present": [
+        {"file": "self-asserted-accept-over-failing-tree.falsifier.test.js", "gate": "rider-1", "ac": "AC-4", "reason": "self-asserted-over-failing-check", "positive": "self-asserted-accept.positive.test.js"},
+        {"file": "head-advanced-after-check.falsifier.test.js", "gate": "G4.2", "ac": "AC-5", "reason": "head-advanced-after-check"},
+        {"file": "unbrokered-merge-bypass.falsifier.test.js", "gate": "G4.4", "ac": "AC-10", "reason": "unbrokered-ref-mutation", "positive": "brokered-merge.positive.test.js"},
+        {"file": "write-surface-delegation-completeness.falsifier.test.js", "gate": "G4.4", "ac": "AC-11", "reason": "per-verb-refusal+named-uncovered"},
+        {"file": "precommit-bypass-harmless.falsifier.test.js", "gate": "G4.4", "ac": "AC-12", "reason": "requires-new-controller-acceptance-record"}
+      ],
+      "retained_existing": ["forged-acceptance-record", "self-asserted-success", "stale-base", "superseded-lease", "validation-to-merge-race", "acceptance-choke-point-bypass"]
+    },
+    {
+      "id": "S2-pinned-bundle-integrity",
+      "choke_point": "scripts/dispatch/pinned-checker-bundle.js#runPinnedSuite (verify-before-execute + out-of-tree)",
+      "session_scope": "same-session (content-addressed bundle pin)",
+      "required_present": [
+        {"file": "checker-poisoning.falsifier.test.js", "gate": "G4.1", "ac": "AC-14", "reason": "checker-not-from-pinned-bundle", "positive": "checker-poisoning.positive.test.js"},
+        {"file": "checker-self-modification.falsifier.test.js", "gate": "G4.6", "ac": "AC-16", "reason": "checker-mutated-mid-run"},
+        {"file": "pinned-bundle-path-symlink.falsifier.test.js", "gate": "-", "ac": "AC-15", "reason": "resolution-outside-candidate"},
+        {"file": "bundle-hash-mismatch.falsifier.test.js", "gate": "-", "ac": "AC-13", "reason": "bundle-pin-mismatch"}
+      ]
+    },
+    {
+      "id": "S3-check-library",
+      "choke_point": "scripts/dispatch/check-lib/index.js (one module, 3 consumers) + scripts/checks/check-lib-single-source.js",
+      "session_scope": "same-session",
+      "required_present": [
+        {"file": "shared-check-library-reachability.falsifier.test.js", "gate": "rider-4", "ac": "AC-19", "reason": "check-fired-via-each-consumer", "positive": "shared-check-library-3consumer.positive.test.js"},
+        {"file": "shared-check-library-export-drift.falsifier.test.js", "gate": "rider-4", "ac": "AC-18", "reason": "check-export-missing"}
+      ]
+    },
+    {
+      "id": "S4-run-manifest-default-deny",
+      "choke_point": "scripts/dispatch/trusted-controller.js#reconcileRunManifest (nonce-bound)",
+      "session_scope": "same-session (per-run nonce)",
+      "distinct_reason_contract": true,
+      "required_present": [
+        {"file": "default-deny-missing-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "missing-required-check"},
+        {"file": "default-deny-duplicate-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "duplicate-check-result"},
+        {"file": "default-deny-unknown-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "unknown-check-result"},
+        {"file": "default-deny-stale-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "stale-check-result"},
+        {"file": "default-deny-malformed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "malformed-check-result"},
+        {"file": "default-deny-timedout-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-timed-out"},
+        {"file": "default-deny-skipped-required-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "required-check-skipped"},
+        {"file": "default-deny-crashed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-failed"}
+      ],
+      "positive": "run-manifest-satisfied.positive.test.js"
+    },
+    {
+      "id": "S5-helm-runner-exit-proof",
+      "choke_point": "scripts/dispatch/helm-runner.js via panel-lanes.panelStatus (panel-2family floor)",
+      "session_scope": "same-session",
+      "required_present": [
+        {"file": "sol-a3-required-lane-killed.falsifier.test.js", "gate": "G4.5", "ac": "AC-22", "reason": "required-lane-failed"},
+        {"file": "sol-a3-optional-lane-semantics.falsifier.test.js", "gate": "G4.5", "ac": "AC-23", "reason": "optional-lane-ran-and-failed", "positive": "sol-a3-absent-optional-agy.positive.test.js"},
+        {"file": "sol-a3-agy-route-not-served-proof.falsifier.test.js", "gate": "G4.5", "ac": "AC-24", "reason": "agy-route-not-served-proof"}
+      ]
+    },
+    {
+      "id": "S6-ap8-signature-contract",
+      "choke_point": "scripts/dispatch/trusted-controller.js module-load assertAcceptanceRecordContract()",
+      "session_scope": "same-session",
+      "required_present": [
+        {"file": "acceptance-record-signature-drift.falsifier.test.js", "gate": "rider-6", "ac": "AC-2", "reason": "acceptance-record-contract-drift-throws-at-load"}
+      ]
+    },
+    {
+      "id": "S7-honest-promise-scope",
+      "choke_point": "honest-promise statement + CORE-2 conformance flip",
+      "session_scope": "n/a (static)",
+      "required_present": [
+        {"file": "honest-promise-scope.falsifier.test.js", "gate": "rider-CORE2-slice", "ac": "AC-1", "reason": "promise-overclaims-beyond-artifact-verification+integration-slice"}
+      ]
+    }
+  ],
+  "bonus_falsifiers": [
+    "forge-invalid-cannot-authorize.falsifier.test.js",
+    "produce-override-cannot-bypass-schema.falsifier.test.js",
+    "cas-newhead-binding-reachable.falsifier.test.js"
+  ],
+  "closure_gates": {
+    "core2_flip": "node scripts/checks/conformance-matrix.js --enforce --coverage --flip-gate",
+    "ed215_close": "ED-215 closed only when every G4.1-G4.6 falsifier is required-present + runs zero-skips; ED-236 H5/C4 recorded as adjacent, NOT closed",
+    "single_source": "node scripts/checks/check-lib-single-source.js (exit 0)"
+  }
+}
