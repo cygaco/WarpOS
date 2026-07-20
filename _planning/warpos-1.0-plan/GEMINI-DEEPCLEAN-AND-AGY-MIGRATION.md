@@ -34,6 +34,8 @@ Per ADR-0027 rider-3 (still governing): ED-060 closes on ONE real `dispatch-agen
 
 **⏸ DEFERRED-TO-PLAN-END — operator priority call, 2026-07-20 (ED-060 Task #3, Epsilon2).** The ED-060 (c) real serve, the ED-230 served-model proof, and panel-3lab activation ALL ride at the **END of the WarpOS 1.0 plan** — deferred by an operator priority call (an interactive login attempt did not take; `~/.gemini/oauth_creds.json` still carries the 2026-07-20T04:52Z expiry). (a) routing is DONE and (b) headless tool-permission is RESOLVED-AS-BLOCKED-ADVISORY (agy 1.1.4 has NO scoped-permission seam — ADR-0031 amendment @`d3455f87`, β DECIDE B/0.90); only (c) remains. **Re-open trigger:** a valid keyring at plan-end OR an operator-initiated `agy` login. The one-login-away serve runbook + payload are committed at `_planning/warpos-1.0-plan/ed060-c-serve-runbook.md` (+ `ed060-sec-serve-prompt.txt`) so (c) stays instantly executable whenever a valid keyring appears. Do NOT resurface agy work before plan-end.
 
+**Named plan-end follow-up (SP-20260720-003 gauntlet):** when agy activates — the SAME ED-230-closure / agy-activation trigger above — also **route `scripts/delta-final-gauntlet.js`'s single-pass `security-reviewer` through dispatch-review's panel**. It is a latent ED-244 exposure (its verdict would bind on the unverifiable agy lane once agy goes live), safe TODAY only because agy is blocked-advisory (reaps) + `delta-aggregate-reviews` fails-closed on the reap (dispatch-failed → non-pass). Tracked as the delta follow-up ED (id assigned by α at merge) and flagged by `scripts/checks/security-binding-lane.js`'s AC-14 creep-back guard (delta allowlisted with this exact reason + trigger).
+
 ## Status matrix
 
 | Item | State |

@@ -136,8 +136,10 @@ const CREEP_BACK_ALLOWLIST = {
   "scripts/delta-final-gauntlet.js":
     "TRACKED CALLER — delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES " +
     "list). LATENT ED-244: binding-on-agy WHEN agy goes live. SAFE TODAY — agy blocked-advisory (reaps) + " +
-    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). Follow-up ED: route " +
-    "delta's security-reviewer through dispatch-review's panel when agy unblocks. SP-20260720-003 gauntlet.",
+    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). RE-OPEN TRIGGER: ED-230 " +
+    "closure / agy activation — the SAME trigger this scan relaxes Tooth-A on, so the exposure goes live exactly " +
+    "when the enforcer stops enforcing. Follow-up ED: route delta's security-reviewer through dispatch-review's " +
+    "panel then. SP-20260720-003 gauntlet.",
   "scripts/checks/model-chain.js": "reference-only — names 'security-reviewer' as a role in check logic (MAX_ALLOWED_ROLES) + 'dispatch-agent' in comments; not a dispatch.",
   "scripts/dispatch/gauntlet-verify.js": "reference-only — a comment naming the dispatch-agent.js completion ledger it READS; not a dispatch.",
   "scripts/hooks/dispatch-route-guard.js": "reference-only — the ROUTING GUARD names the canonical `node scripts/dispatch-agent.js` route it ENFORCES; it is the enforcer, not a caller.",
