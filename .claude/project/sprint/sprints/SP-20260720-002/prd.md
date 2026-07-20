@@ -92,16 +92,19 @@ Excluded from acceptance criteria: credential isolation, OS sandboxing, adversar
   `verified_by:` `node --test scripts/dispatch/trusted-controller-git-identity.test.js`
 
 - **AC-4 — Re-derive, never adopt:** A ResultEnvelope self-asserting `checks_passed:true` and `verdict:"accept"` for a tree that fails the fresh pinned-bundle run is refused; no envelope verdict field is consulted as authorization.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-2-envelope-self-asserted-success.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/self-asserted-accept-over-failing-tree.falsifier.test.js`
 
 - **AC-5 — Check-to-merge TOCTOU refusal:** If the destination head advances after checking and before the ref update, the controller’s CAS refuses integration rather than merging against a different head.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-2-head-advanced-after-check.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/head-advanced-after-check.falsifier.test.js`
 
 - **AC-6 — Exact run manifest:** Every controller run has a unique nonce-bound manifest listing each expected check, its requiredness, suite version, and expected evidence identity.  
   `verified_by:` `node --test scripts/dispatch/trusted-controller-run-manifest.test.js`
 
 - **AC-7 — Controller default-deny:** Missing, duplicate, unknown, stale, malformed, crashed, timed-out, partial, and skipped-required check results each produce `BLOCKED`, never an authorization result.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-3-run-manifest-default-deny.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifiers (8 distinct-reason files, manifest S4)** `node --test scripts/dispatch/falsifiers/default-deny-{missing,duplicate,unknown,stale,malformed,timedout,skipped-required,crashed}-check.falsifier.test.js` + positive `run-manifest-satisfied.positive.test.js`
+
+- **AC-7b — Check-set provenance, not caller-settable (β R1):** The controller runs the pinned bundle's FULL frozen `CHECK_NAMES`; the run-manifest's `expected_checks`/`required_checks` are minted FROM the pinned bundle's frozen `CHECK_NAMES`/`REQUIRED_CHECKS`, never from `input.expected_checks`. `input.expected_checks?` may ONLY additively constrain (assert `input ⊆ bundle.CHECK_NAMES` / require MORE), never shrink required below the bundle's `REQUIRED_CHECKS`. A caller passing `expected_checks=[]` (or a shrunk-required set) over a tree that FAILS a required check is still REFUSED — the pinned required checks fire and fail.
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/caller-cannot-shrink-check-set.falsifier.test.js`
 
 - **AC-8 — Record binds recomputed evidence:** The produced AcceptanceRecord includes `check_suite_version`, destination ref, lease fencing token, and recomputed WorkOrder, policy, checker, and evidence digests; stale or fabricated digest values are refused.  
   `verified_by:` `node --test scripts/dispatch/trusted-controller-acceptance-binding.test.js`
@@ -110,28 +113,28 @@ Excluded from acceptance criteria: credential isolation, OS sandboxing, adversar
   `verified_by:` `node --test scripts/dispatch/trusted-controller-cas-integration.test.js`
 
 - **AC-10 — Direct main merge is refused:** A normal un-brokered direct merge into `main` is refused by the sole-route mechanism.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-4-unbrokered-main-merge.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/unbrokered-merge-bypass.falsifier.test.js`
 
 - **AC-11 — Delegation completeness:** The integration surface inventory lists `git update-ref`, merge, push, and fast-forward; each is marked controller-covered or explicitly uncovered, and an uncovered surface blocks design/build exit.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-4-write-surface-delegation-completeness.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/write-surface-delegation-completeness.falsifier.test.js`
 
 - **AC-12 — Pre-commit is non-authoritative:** A candidate created with `--no-verify` cannot integrate without a new controller-run AcceptanceRecord; the test proves the boundary rather than relying on pre-commit.  
-  `verified_by:` `node --test scripts/dispatch/falsifiers/g4-4-precommit-bypass-harmless.falsifier.test.js`
+  `verified_by:` `node --test scripts/dispatch/falsifiers/precommit-bypass-harmless.falsifier.test.js`
 
 - **AC-13 — Bundle pin integrity:** The bundle manifest’s content hash covers checker code, helpers, dependencies, configuration, executable resolution, and the frozen check-library export contract; a supplied content hash that differs from the promoted pin blocks before execution.  
   `verified_by:` `node --test scripts/checks/pinned-checker-bundle-manifest.test.js`
 
 - **AC-14 — Poisoned candidate checker is blocked:** Candidate edits to its own enforcer, `CLAUDE.md`, `AGENTS.md`, or checker shim cannot select the executed checker; the pinned copy runs instead and the poisoned bundle attempt blocks.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-1-poisoned-bundle.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/checker-poisoning.falsifier.test.js`
 
 - **AC-15 — External, clean execution:** The runner uses absolute pinned-bundle paths, a clean environment, and pre/post execution hash verification; hostile `PATH` or symlink resolution is detected and blocks.  
   `verified_by:` `node --test scripts/dispatch/falsifiers/pinned-bundle-path-symlink.falsifier.test.js`
 
 - **AC-16 — Checker self-modification is detected:** A checker attempting to alter its own pinned artifact during execution is detected by post-run verification and blocks integration.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/g4-6-checker-self-modification.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/checker-self-modification.falsifier.test.js`
 
 - **AC-17 — One library, three consumers:** Hooks, pre-commit, and controller bundle execution each `require()` the declared shared check-library contract; the controller import resolves under the verified bundle root, not the candidate workspace.  
-  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/shared-check-library-three-consumers.falsifier.test.js`
+  `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/shared-check-library-reachability.falsifier.test.js`
 
 - **AC-18 — No reimplementation or export drift:** Repository grep finds zero independent implementations of the shared checks, and any missing, renamed, or arity-drifted required export blocks rather than silently skipping a check.  
   `verified_by:` **REQUIRED-PRESENT falsifier** `node --test scripts/dispatch/falsifiers/shared-check-library-export-drift.falsifier.test.js` and `rg -n "function .*<shared-check>|const .*<shared-check>" scripts hooks .git/hooks`

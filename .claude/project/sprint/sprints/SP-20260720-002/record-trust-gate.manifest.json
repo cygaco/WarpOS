@@ -33,6 +33,7 @@
       "id": "S3-check-library",
       "choke_point": "scripts/dispatch/check-lib/index.js (one module, 3 consumers) + scripts/checks/check-lib-single-source.js",
       "session_scope": "same-session",
+      "beta_R2": "check-lib-single-source.js proves hook+pre-commit require() the SOURCE, but the AUTHORITATIVE consumer (the controller) runs the PINNED snapshot — so the enforcer must ALSO assert the pinned bundle manifest's promotion.from_src_digest === the live check-lib source digest (a fork could otherwise ship in the snapshot unverified-as-same-source). β re-checks this lineage at gaunttet.",
       "required_present": [
         {"file": "shared-check-library-reachability.falsifier.test.js", "gate": "rider-4", "ac": "AC-19", "reason": "check-fired-via-each-consumer", "positive": "shared-check-library-3consumer.positive.test.js"},
         {"file": "shared-check-library-export-drift.falsifier.test.js", "gate": "rider-4", "ac": "AC-18", "reason": "check-export-missing"}
@@ -51,7 +52,8 @@
         {"file": "default-deny-malformed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "malformed-check-result"},
         {"file": "default-deny-timedout-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-timed-out"},
         {"file": "default-deny-skipped-required-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "required-check-skipped"},
-        {"file": "default-deny-crashed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-failed"}
+        {"file": "default-deny-crashed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-failed"},
+        {"file": "caller-cannot-shrink-check-set.falsifier.test.js", "gate": "beta-R1", "ac": "AC-7b", "reason": "check-failed (pinned required check fires despite input.expected_checks=[]/shrunk)", "note": "β design->build R1 (settable check-set provenance): the controller runs the pinned bundle FULL frozen CHECK_NAMES; run-manifest expected/required minted FROM the pinned frozen sets, never from input; input.expected_checks may only additively constrain (subset/require-more), never shrink required below the bundle REQUIRED_CHECKS. A caller passing []/shrunk over a tree that FAILS a required check is still REFUSED (the pinned required check fires+fails). Reachability: assert the required check FIRED, not just outcome=REFUSED."}
       ],
       "positive": "run-manifest-satisfied.positive.test.js"
     },
