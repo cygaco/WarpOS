@@ -1,0 +1,20 @@
+{
+  "check": "cert-attest",
+  "requested_model": "gemini-3.1-pro-high",
+  "attested_model_id": "Gemini 3.1 Pro (High)",
+  "provider": "antigravity",
+  "effort": null,
+  "attested": true,
+  "effective_model": "Gemini 3.1 Pro (High)",
+  "reason": "CLI output affirmatively self-identifies the requested model as SERVED (positive proof; no default/unauth signal)",
+  "exit_ok": true,
+  "exit_code": 0,
+  "reaped": false,
+  "violations": null,
+  "stdout_bytes": 9,
+  "stderr_bytes": 0,
+  "elapsed_ms": 7113,
+  "ts": "2026-07-19T19:11:56.343Z",
+  "cli_output_sha256": "37e515fda4cdb774e4cd56ef0cc57a04334b5c1c80fbd6cdc3dbf539018b38f7",
+  "cli_output_head": "PROBE OK\n\n\nI0719 12:11:49.303597 38760 resolver.go:85] Model ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA\nI0719 12:11:49.303597 38760 resolver.go:111] Model resolved via default\nI0719 12:11:49.303597 38760 server.go:1367] Starting language server process with pid 38760\nI0719 12:11:49.305126 38760 server.go:1417] Language server version: 1.1.4\nI0719 12:11:49.305126 38760 server.go:523] Language server will attempt to listen on host localhost\nI0719 12:11:49.311970 38760 server.go:538] Language server listening on random port at 54569 for HTTPS (gRPC)\nI0719 12:11:49.313476 38760 server.go:546] Language server listening on random port at 54570 for HTTP\nE0719 12:11:49.518312 38760 log.go:398] Failed to poll ListExperiments: error getting token source: You are not logged into Antigravity.\nW0719 12:11:49.519398 38760 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error getting token source: You are not logged into Antigravity.\nE0719 12:11:49.519398 38760 log.go:398] error getting token source: You are not logged into Antigravity.\nW0719 12:11:49.519398 38760 log_context.go:117] Cache(availableModels): Singleflight refresh failed: failed to get load code assist response: error getting token source: You are not logged into Antigravity.\nE0719 12:11:49.519398 38760 log.go:398] failed to get load code assist response: error getting token source: You are not logged into Antigravity.\nE0719 12:11:49.519930 38760 log.go:398] Failed to poll FetchAvailableModels: failed to get load code assist response: error getting token source: You are not logged into Antigravity.\nW0719 12:11:49.520458 38760 launchmanager.go:69] Entering local chrome mode! This is WRONG unless you are running tests or in eval mode on Linux.\nI0719 12:11:49.520987 38760 manager.go:98] Creating trajectory store manager with proto store and SQLite store\nW0719 12:11:49.520987 38760 log_context.go:117] Cache(loadCodeAssistResponse): Singleflight refresh failed: error g"
+}

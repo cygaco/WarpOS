@@ -242,11 +242,17 @@ const GEMINI = {
 // Antigravity's `agy` CLI. Self-auth at ~/.gemini/antigravity-cli. Added as a NEW provider id
 // `antigravity` alongside the legacy `gemini` provider (removed LAST, after the §6 sweep + parity).
 //
-// EMPIRICAL INVOCATION CONTRACT (live probe fired top-level 2026-07-16 — overrides DISPATCH.md's
-// simplified form, which was WRONG on both the id and the prompt delivery):
-//   WORKING: `agy --model gemini-3.1-pro-high --print-timeout 90s -p '<prompt>'` → exit 0, stdout text.
-//   1. Model id is `gemini-3.1-pro-high` (kebab display name, thinking-level baked in) — NOT
-//      `gemini-3.1-pro-preview` (INVALID on agy, exit 1) and NOT bare `gemini-3.1-pro`.
+// EMPIRICAL INVOCATION CONTRACT (2026-07-16 top-level probe, CORRECTED by the 2026-07-19 ED-060
+// calibration — the 2026-07-16 note was WRONG that the kebab slug is the working `--model` id):
+//   WORKING: `agy --model "Gemini 3.1 Pro (High)" --print-timeout 90s -p '<prompt>'` → exit 0, authed serve.
+//   1. agy's `--model` takes the DISPLAY NAME `Gemini 3.1 Pro (High)`, NOT the catalog slug
+//      `gemini-3.1-pro-high`. Passing the slug makes agy SILENTLY DEFAULT ("Model ID
+//      gemini-3.1-pro-high not in local config, defaulting to CCPA" → serves the WRONG model;
+//      verified live 2026-07-19, ED-060). The canonical slug stays the catalog `id` (source of
+//      truth); the `agyModelName` field below single-sources the display name, and the two agy
+//      dispatch boundaries (providers.js#buildProviderArgv + cert-attest#probeShape) translate
+//      slug→display via agyModelName(). NOT `gemini-3.1-pro-preview` (INVALID on agy, exit 1) and
+//      NOT bare `gemini-3.1-pro`.
 //   2. The prompt is the ARGUMENT to `-p` (`-p '<prompt>'`); bare `-p` with stdin errors "flag needs
 //      an argument". NO stdin delivery (unlike codex/claude).
 //   3. `--print-timeout` needs an EXPLICIT bound (default 5m > a teammate's ~2-min Bash cap → long
@@ -269,6 +275,11 @@ const ANTIGRAVITY = {
     {
       id: "gemini-3.1-pro-high",
       label: "Gemini 3.1 Pro (high thinking) — via agy",
+      // The string agy's `--model` flag actually RESOLVES (a display name, NOT the slug id). Passing
+      // the slug silently defaults to CCPA on agy (ED-060); agyModelName() single-sources this and
+      // both agy dispatch boundaries translate slug→display. Must satisfy safe-spawn's
+      // AGY_MODEL_DISPLAY shape (alnum-start, then letters/digits/space/dot/paren/hyphen, ≤64).
+      agyModelName: "Gemini 3.1 Pro (High)",
       effortLevels: [],
       contextTokens: 1_000_000,
       maxOutputTokens: 65_536,
@@ -453,6 +464,20 @@ function resolveModelAlias(modelOrAlias) {
   return modelOrAlias;
 }
 
+/**
+ * Resolve a canonical model slug to the string the agy (Antigravity) CLI's `--model` flag RESOLVES.
+ * agy takes DISPLAY NAMES ("Gemini 3.1 Pro (High)"), NOT the kebab catalog slug ("gemini-3.1-pro-high")
+ * — passing the slug makes agy silently default ("Model ID … not in local config, defaulting to CCPA"),
+ * serving the WRONG model (verified live 2026-07-19; ED-060). The display name is single-sourced on the
+ * antigravity model entry's `agyModelName` field. A non-antigravity or unmapped id returns UNCHANGED —
+ * the translation is antigravity-only, zero blast radius. This is the ONE mapping source both agy
+ * dispatch boundaries (providers.js#buildProviderArgv, cert-attest#probeShape) call — never a second copy.
+ */
+function agyModelName(canonicalId) {
+  const m = getModel("antigravity", canonicalId);
+  return (m && m.agyModelName) || canonicalId;
+}
+
 /** Validate a (provider, model, effort) tuple. Returns null if valid, else an error string. */
 function validateTuple(provider, model, effort) {
   const p = getProvider(provider);
@@ -482,6 +507,7 @@ module.exports = {
   getProvider,
   getModel,
   resolveModelAlias,
+  agyModelName,
   normalizeProviderId,
   validateTuple,
 };

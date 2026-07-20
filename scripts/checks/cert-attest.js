@@ -66,7 +66,11 @@ function probeShape(providerId, model, effort) {
   }
   if (providerId === "antigravity") {
     // Prompt is the ARGUMENT to -p (no stdin); requires the agy ARG_POLICY in safe-spawn (task #27).
-    return { toolId: "agy", argv: ["--model", model, "--print-timeout", "90s", "-p", PROBE_PROMPT], stdin: false };
+    // ED-060 slug→display: agy's `--model` resolves the DISPLAY name, not the catalog slug (a slug
+    // silently defaults to CCPA → serves the WRONG model, defeating this very attestation). Translate
+    // via the ONE catalog resolver (the SAME buildProviderArgv uses) so a raw slug never reaches agy.
+    const agyModel = loadCatalog().agyModelName(model);
+    return { toolId: "agy", argv: ["--model", agyModel, "--print-timeout", "90s", "-p", PROBE_PROMPT], stdin: false };
   }
   if (providerId === "claude") {
     return { toolId: "claude", argv: ["-p", "--model", model], stdin: true };
@@ -84,6 +88,33 @@ const PROBE_PROMPT =
 const norm = (s) => String(s || "").toLowerCase().replace(/[_\s]+/g, "-");
 
 /**
+ * ATTRIBUTION (α/β ruling 2026-07-19, directive #3): keep only the agy cli.log lines that belong to THIS
+ * run's time window, so a PRIOR run's stale lines (auth-shaped / serve-label / unauth signals) in the
+ * shared rotating log cannot bleed into the attestation. agy lines are prefixed
+ * "[IWEF]MMDD HH:MM:SS.ffffff PID file.go:NN]" in LOCAL time. Keep lines in [startedMs - marginMs, now];
+ * DROP out-of-window lines AND non-timestamped continuation lines — a dropped line can never contribute a
+ * stale serve marker (favors fail-closed; agy's line format is stable so a non-parsing line is anomalous).
+ * PURE + exported for the bite-test. A false-RED (dropping a genuine but skewed line) is safe (re-probe);
+ * a false-GREEN (a stale serve marker leaking in) is the class this closes.
+ */
+function filterAgyLogToRunWindow(agyLog, startedMs, marginMs = 5000) {
+  if (!agyLog) return "";
+  const lo = startedMs - marginMs;
+  const hi = Date.now() + 1000;
+  const year = new Date().getFullYear();
+  const kept = [];
+  for (const line of agyLog.split("\n")) {
+    const m = line.match(/^[IWEF](\d{2})(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/);
+    if (!m) continue; // no run-attributable timestamp → drop (never leaks a stale serve marker)
+    const [, mo, da, hh, mm, ss, frac] = m;
+    const ms = frac ? Number(frac.slice(0, 3).padEnd(3, "0")) : 0;
+    const t = new Date(year, Number(mo) - 1, Number(da), Number(hh), Number(mm), Number(ss), ms).getTime();
+    if (t >= lo && t <= hi) kept.push(line);
+  }
+  return kept.join("\n");
+}
+
+/**
  * Decide the attestation from the raw CLI output + the requested model. The KEY check: the requested
  * model id must appear in the CLI's own output (its echoed header / self-id), and NO other catalog
  * model id for the same provider may appear INSTEAD. Pure + injectable for the bite-test.
@@ -94,33 +125,53 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   const req = norm(requestedModel);
   if (!exitOk) return { attested: false, effective: null, reason: "dispatch did not exit cleanly (non-zero / reaped / empty)" };
   if (!out) return { attested: false, effective: null, reason: "empty CLI output — nothing to attest" };
-  // GATE 1 (QA-HG-001, fail-closed — LOUD defense-in-depth, NOT the sole gate): any NON-AUTHENTICATED /
-  // DEFAULT / FALLBACK / EVAL signal means the requested model did NOT genuinely serve. Observed LIVE
-  // (unauthenticated agy): "Model ID gemini-3.1-pro-high not in local config, defaulting to CCPA" /
-  // "Model resolved via default" / "not logged into Antigravity" / "Entering local chrome mode ... eval mode".
-  // A blocklist is a LOWER BOUND (a novel unauth phrase could dodge it) — so GATE 2 below is the real
-  // positive-proof requirement (β SHARP-1). This gate stays as the loud, named diagnostic.
-  const NON_AUTH_SIGNAL = /(not-in-local-config|resolved-via-default|resolved-via-fallback|defaulting-to|not-logged-in|local-chrome-mode|eval-mode|authentication-failed|unauthorized)/;
-  // 2026-07-19 ORDER-AWARENESS (authenticated-agy calibration): agy's keyring auth completes
-  // ASYNCHRONOUSLY after process start, so a genuine authenticated run's log ALWAYS carries
-  // transient "not logged in"/"defaulting" lines BEFORE "ChainedAuth: authenticated via keyring" /
-  // "OAuth: authenticated successfully". Rule: if an AFFIRMATIVE auth line exists, GATE 1 evaluates
-  // only the SUFFIX AFTER the LAST auth line (pre-auth signals = the known startup transient); any
-  // unauth/default signal AFTER final auth is REAL and still fails. With NO auth line, the whole
-  // output is evaluated exactly as before (fail-closed unchanged — this never weakens GATE 2's
-  // positive-proof requirement, which remains mandatory).
-  const AUTH_LINE = /(authenticated-via-keyring|oauth:-authenticated-successfully|chainedauth:-authenticated)/g;
-  let gate1Scope = out;
-  let lastAuthIdx = -1;
-  for (let m; (m = AUTH_LINE.exec(out)); ) lastAuthIdx = m.index + m[0].length;
-  if (lastAuthIdx >= 0) gate1Scope = out.slice(lastAuthIdx);
-  if (NON_AUTH_SIGNAL.test(gate1Scope))
+  // GATE 1 (α/β ruling 2026-07-19, NARROWED per β DIRECTIVE 0.87 — assumption-robust false-green fix):
+  // hard-fail ONLY on UNAMBIGUOUS TERMINAL / keyring tells that CANNOT appear in a valid-token serve of the
+  // contracted model, regardless of the (UNVERIFIED) question of whether a genuine authed run carries
+  // transient startup unauth lines. The prior blanket non-sliceable set INCLUDED the AMBIGUOUS transients
+  // (not-logged-in / defaulting-to / not-in-local-config) — those risk a STRUCTURAL false-RED: agy's
+  // async-auth STARTUP may legitimately emit them before auth completes, so hard-failing them could make a
+  // REQUIRED lane PERMANENTLY un-attestable (ED-060 stuck forever). No genuine authed serve has EVER been
+  // confirmed (the 07-18-13-003Z artifact once believed genuine is ALSO an unauth false-green — its bytes
+  // carry eval-mode + resolved-via-default), so betting GATE-1 on "genuine = clean log" (or its negation) is
+  // unsound either way. The terminal tells below each INDEPENDENTLY catch BOTH observed false-greens
+  // (19-11-56Z AND 07-18-13-003Z both carry eval-mode + resolved-via-default): eval/local-chrome = the
+  // unauth-fallback mode; resolved-via-default/fallback = it served the DEFAULT not the contracted model;
+  // keyring expired=true; auth-failed / unauthorized. The ambiguous transients are carried by GATE-2 (an
+  // unauth serve's backend-label names the DEFAULT, not the contracted id → fails / otherSeen) + the
+  // pid/time-window attribution (strips the cross-run deceptive backend-label). {narrowed terminal tells +
+  // GATE-2 positive proof + attribution} closes the false-green with NO false-RED risk. ADR-0025 amendment:
+  // AUTH_LINE-match != genuine auth; "genuine authed run = clean log" is an OPEN assumption resolved against
+  // the FIRST real authed serve post-login — NOT enshrined as fact.
+  const NON_AUTH_SIGNAL = /(resolved-via-default|resolved-via-fallback|local-chrome-mode|eval-mode|authentication-failed|unauthorized|expired=true)/;
+  if (NON_AUTH_SIGNAL.test(out))
     return {
       attested: false,
       effective: null,
       reason:
-        "served-model UNVERIFIABLE — output carries a default/unauthenticated/eval signal ('not in local config, defaulting' / 'resolved via default' / 'not logged in' / 'local chrome mode'): the requested id was echoed but did NOT serve → fail-closed (QA-HG-001 GATE 1)",
+        "served-model UNVERIFIABLE — THIS run's output carries an UNAMBIGUOUS TERMINAL default/eval/keyring signal ('resolved via default' / 'local chrome mode … eval mode' / keyring expired=true / auth-failed): agy served the DEFAULT, not the contracted model → fail-closed (α/β narrowed ruling 2026-07-19). Ambiguous startup transients (not-logged-in / defaulting) are NOT hard-failed here — they are carried by GATE-2 (default backend-label) + pid/time-window attribution — so a genuine authed serve is not false-RED'd.",
       defaultSignal: true,
+    };
+  // §7 HONEST-CEILING FAIL-CLOSED for ANTIGRAVITY (α-RATIFIED + β-line 2026-07-19; gauntlet R1 CONVERGENT
+  // CRITICAL, both cross-provider lanes). agy CANNOT self-attest a genuine serve from its log: the ONLY
+  // "serve marker" agy emits is the CLIENT-SIDE "Propagating … backend: label=<display>" echo, which agy
+  // emits EVEN WHEN UNAUTHENTICATED (both the 19-11-56Z AND 07-18-13-003Z false-greens carried the requested
+  // display label while serving the CCPA default). Trusting it is a residual false-green a novel unauth
+  // phrase walks through (denylist GATE-1 + echo-trusting GATE-2). So NO agy log line is accepted as
+  // served-model proof — cert-attest REFUSES to attest agy from its log. This is TRUST-REMOVAL: fail-closed
+  // by construction, it can NEVER false-green. The genuine ED-060 proof is a REAL AUTHENTICATED dispatch-agent
+  // record post-login (a real review that returned a genuine NON-default response under an authenticated
+  // backend), NOT this probe. Non-agy providers (codex/claude) keep GATE-2 below — their served-model self-id
+  // header is a TRUSTWORTHY CLI report, not a client echo. (ADR-0025: "the true close is upstream — agy
+  // emitting a machine-readable served-model line under an authenticated backend"; that line does not exist.)
+  if (providerId === "antigravity")
+    return {
+      attested: false,
+      effective: null,
+      reason:
+        "§7 HONEST-CEILING (α-ratified 2026-07-19): agy cannot self-attest a genuine serve from its log — the 'backend: label' line is a CLIENT-SIDE echo agy emits even while unauthenticated (the 19-11 + 07-18 false-greens). No agy log line is trusted as served-model proof → fail-closed by construction. ED-060 closes ONLY via a real authenticated dispatch-agent record post-login, never this probe.",
+      honestCeiling: true,
+      servedSelfId: false, // agy's log is never a served-self-id source (the client echo is not trusted)
     };
   // Any OTHER catalog model for this provider appearing in the output = a served-a-different-model tell.
   let otherSeen = null;
@@ -232,6 +283,26 @@ function attestLane(lane, records, opts = {}) {
   // Backward-compat: a bare string 3rd arg is the panel role (the pre-SR-004 signature).
   const { runId = null, sprintId = null, codeSha = null, profileName = "panel-2family" } =
     typeof opts === "string" ? {} : opts || {};
+  // §7 HONEST-CEILING AT THE PANEL READER (R2-CRITICAL-01 — β RIDER-1 "same class, DIFFERENT reader"):
+  // a lane whose provider cannot be served-model-verified from a ledger record CANNOT be attested here. The
+  // predicate is the SINGLE choke-point (pv.servedModelUnverifiableFromRecord) that dispatch-review's
+  // buildObserved ALSO calls — so this reader and the panelStatus BINDING reader fail-close on the SAME root,
+  // and a third reader cannot reintroduce the class (R3-CRITICAL-02). For agy: a signed record proves a
+  // dispatch RAN, but agy emits NO trustworthy server-origin served-model receipt (only the CLIENT-SIDE
+  // "backend: label" echo that §7 refuses to trust — the 19-11 / 07-18 / 22:16 false-greens all carried the
+  // correct display label while serving the CCPA default). TRUST-REMOVAL, fail-closed BY CONSTRUCTION until an
+  // independently trustworthy server-origin served-model proof exists (the deferred ED-230 predicate REPLACES
+  // this; ADR-0027 rider 3). Consequence (consistent with support-matrix agy=down): panel-3lab BINDING can
+  // never attest while agy is down — the honest floor, never GREEN.
+  if (lane && pv.servedModelUnverifiableFromRecord(lane.provider)) {
+    return {
+      laneId: lane.laneId,
+      attested: false,
+      reason:
+        "§7 HONEST-CEILING at the panel reader (R2-CRITICAL-01): the antigravity lane cannot be attested from a ledger record — agy emits no trustworthy server-origin served-model receipt (only the client-side 'backend: label' echo, which §7 refuses to trust). Fail-closed by construction until the ED-230 served-model predicate lands (ADR-0027 rider 3). panel-3lab BINDING cannot attest while agy is down.",
+      honestCeiling: true,
+    };
+  }
   // IDENTITY via the SINGLE choke-point (α round-6): the claude lane's contract is PROFILE-AWARE
   // (2family FLOOR → subprocess-claude/security-reviewer; 3lab BINDING → the in-process hunter), and the
   // hunter is identified by WRITER-STAMPED shape+role ONLY (no settable via/record_via/sanctioned_lane_id).
@@ -380,6 +451,28 @@ function main(argv) {
     process.stderr.write(`${NAME}: cannot resolve a provider for model "${model}" (pass --provider) — is it in the catalog?\n`);
     return 2;
   }
+  // ED-060 slug→display (ATTESTATION layer — the layer-3 completion of the id-mapping fix). agy
+  // self-identifies the SERVED model in its output by DISPLAY name ("Gemini 3.1 Pro (High)"), NOT the
+  // catalog slug. So the served-model comparison (evaluateAttestation GATE-2) must run against the
+  // display name — otherwise a GENUINE authenticated serve of the contracted model FALSE-REDs, because
+  // the requested slug never appears in agy's serve label ("backend: label=…"; observed live 2026-07-19).
+  // Same single catalog resolver the two dispatch boundaries use; non-antigravity / unmapped ids pass
+  // through UNCHANGED. The probe --model arg is already display-translated by probeShape; this closes
+  // the third and last site (dispatch-arg providers.js + dispatch-arg cert-attest + THIS comparison).
+  const attestModel = providerId === "antigravity" ? catalog.agyModelName(model) : model;
+  // Axis-5 (gauntlet R1): refuse to spawn a NON-CONTRACTED antigravity model. agyModelName passes unmapped
+  // ids through, so `--provider antigravity --model "Claude Sonnet 4.6 (Thinking)"` would otherwise spawn a
+  // non-contracted model (agy exposes non-Google models too). Require the model to be a catalog antigravity
+  // entry — by canonical id OR its agyModelName. Fail-closed BEFORE the spawn (the safe-spawn agy ARG_POLICY
+  // is a charset gate, not a contract gate — this is the contract gate).
+  if (providerId === "antigravity") {
+    const prov = catalog.getProvider("antigravity");
+    const contracted = ((prov && prov.models) || []).some((m) => m.id === model || m.agyModelName === model);
+    if (!contracted) {
+      process.stderr.write(`${NAME}: "${model}" is not a contracted antigravity model (catalog entry required by id or agyModelName) — refusing to spawn a non-contracted model.\n`);
+      return 2;
+    }
+  }
   const shape = probeShape(providerId, model, providerId === "openai" ? effort : null);
   if (!shape) {
     process.stderr.write(`${NAME}: no probe shape for provider "${providerId}"\n`);
@@ -459,13 +552,18 @@ function main(argv) {
       }
       fs.closeSync(fd);
     } catch { /* no default log — attestation stays fail-closed on absent evidence */ }
+    // ATTRIBUTION (α/β ruling 2026-07-19, directive #3): bind the folded agy cli.log to THIS run's time
+    // WINDOW so a PRIOR run's lines (stale auth-shaped / serve-label / unauth signals) in the shared
+    // rotating log cannot bleed into this attestation — the cross-run contamination that (with the unsound
+    // GATE-1 slice, now removed) produced the 19-11 false-green. Belt beyond rotation-awareness.
+    agyLog = filterAgyLogToRunWindow(agyLog, started);
   }
   const combined = `${stdout}\n${stderr}\n${agyLog}`; // the served model id may land on stdout/stderr OR the CLI log
   // liveness-verified: `spawned` is a SUBPROCESS spawn result (carries .exitCode), NOT a dispatch-completion
   // ledger record — this .ok is a process-exit signal, not a forgeable liveness claim.
   const exitOk = spawned.ok === true && spawned.exitCode === 0;
 
-  const verdict = evaluateAttestation({ requestedModel: model, providerId, output: combined, exitOk, catalog });
+  const verdict = evaluateAttestation({ requestedModel: attestModel, providerId, output: combined, exitOk, catalog });
 
   // Write the attestation artifact (walk-skipped runtime/). Full raw output retained for audit +
   // header-regex calibration on the first live fire.
@@ -474,6 +572,7 @@ function main(argv) {
   const artifact = {
     check: NAME,
     requested_model: model,
+    attested_model_id: attestModel, // ED-060: the (display-name) id agy's serve label was compared against; == requested_model for non-antigravity
     provider: providerId,
     effort: providerId === "openai" ? effort : null,
     attested: verdict.attested,
@@ -509,6 +608,7 @@ module.exports = {
   providerForModel,
   probeShape,
   norm,
+  filterAgyLogToRunWindow,
   NAME,
   // D8 (SP-20260718-003): same-run panel attestation.
   attestLane,

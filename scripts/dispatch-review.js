@@ -357,6 +357,26 @@ function applyPanelGate(panelLanes, lanes, ctx = {}) {
   const pv = require("./dispatch/provenance-verifier");
   const buildObserved = (profileName) =>
     lanes.map((l) => {
+      // R3-CRITICAL-02 (served-model fail-close via the SINGLE choke-point — the SAME predicate cert-attest's
+      // attestLane uses, so this panelStatus BINDING reader and the attestPanelRun reader fail-close on ONE root,
+      // not two drifting inline checks): a provider whose served model cannot be verified from a ledger record
+      // (agy — no trustworthy server-origin served-model receipt, only the client-side "backend: label" echo)
+      // can NEVER contribute a served-model-verified lane. A signed agy record proves LIVENESS but not the
+      // served model (even served_default:true / attested_model_id=contracted-name), so it must NOT green the
+      // panel-3lab BINDING. Force the lane un-attestable (no verified evidence) → panelStatus resolves it
+      // operator-owned-absent (agy) → BLOCKED_ON_OPERATOR, never PASS. The FLOOR is unaffected (agy is not a
+      // required floor lane). The genuine close is an authenticated served-model receipt (ED-060 / ED-230).
+      if (pv.servedModelUnverifiableFromRecord(l.provider)) {
+        return {
+          laneId: l.laneId,
+          contractedProvider: l.provider,
+          observedProvider: l.observedProvider,
+          fallback: true,
+          alive: false,
+          verdict: "error",
+          hasEvidence: false,
+        };
+      }
       const contract = pv.laneContract(profileName, l.observedProvider);
       const rec = records.find((r) => {
         if (!pv.recordMatchesLane(r, contract, l.observedProvider)) return false; // IDENTITY from the module

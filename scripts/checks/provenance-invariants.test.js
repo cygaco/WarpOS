@@ -130,8 +130,31 @@ test("live: consumers still delegate after the .role-access hardening (0 violati
   assert.equal(g.run().length, 0, "the hardened guard must stay green on the delegated consumers");
 });
 
+// ── INV-4 (R5-MEDIUM-01): the SERVED-MODEL choke-point enforcer. The R3-CRITICAL-02 recurrence is a THIRD
+//    ledger reader that inlines `record/lane.provider === "antigravity"` instead of the choke-point. ──
+test("INV-4b: a SYNTHETIC third reader inlining rec.provider === 'antigravity' is CAUGHT (regression fixture)", () => {
+  const thirdReader = `function attestSomethingNew(rec) {\n  if (rec.provider === "antigravity") return { attested: false };\n  return liveness(rec);\n}`;
+  assert.equal(g.hasInlineAgyRecordProviderCheck(thirdReader), true, "a new reader inlining the agy record check must be caught");
+});
+test("INV-4b: the reversed and lane-object forms are also caught", () => {
+  assert.equal(g.hasInlineAgyRecordProviderCheck(`if ("antigravity" === r.provider) block();`), true);
+  assert.equal(g.hasInlineAgyRecordProviderCheck(`if (l.provider === "antigravity") { hasEvidence = false; }`), true);
+});
+test("INV-4b: the raw-CLI §7 evaluator (providerId PARAM) is EXEMPT — a different evidence class, permitted", () => {
+  assert.equal(g.hasInlineAgyRecordProviderCheck(`if (providerId === "antigravity") return { honestCeiling: true };`), false, "the §7 log evaluator's providerId param must NOT be flagged (no .provider member access)");
+});
+test("INV-4a: the choke-point INVOCATION detector (call, not a bare mention)", () => {
+  assert.equal(g.invokesServedModelChokePoint(`if (pv.servedModelUnverifiableFromRecord(l.provider)) return blocked();`), true);
+  assert.equal(g.invokesServedModelChokePoint(`// mentions servedModelUnverifiableFromRecord in a comment only`), false, "stripped comments must not count as an invocation");
+  assert.equal(g.invokesServedModelChokePoint(`return r.ok === true && r.fallback === false;`), false, "an inline liveness computation is not the choke-point");
+});
+test("INV-4 live: the served-model ledger readers route through the choke-point (0 served-model violations)", () => {
+  const v = g.run().filter((x) => x.inv === "SERVED-MODEL-CHOKEPOINT" || x.inv === "NO-INLINE-AGY-SERVED-MODEL");
+  assert.equal(v.length, 0, `attestLane + buildObserved must invoke the choke-point with no inline agy check: ${JSON.stringify(v)}`);
+});
+
 if (failures.length) {
   process.stderr.write(`FAIL [provenance-invariants.test] ${failures.length} failure(s):\n${failures.map((f) => `  - ${f}`).join("\n")}\n`);
   process.exit(1);
 }
-process.stdout.write(`OK   [provenance-invariants.test] ${passed} passed (value-detector + .role-ACCESS hardening; message/opts-param safe; honest-ceiling; live consumers delegate)\n`);
+process.stdout.write(`OK   [provenance-invariants.test] ${passed} passed (value-detector + .role-ACCESS hardening; INV-4 served-model choke-point enforcer; message/opts-param safe; honest-ceiling; live consumers delegate)\n`);

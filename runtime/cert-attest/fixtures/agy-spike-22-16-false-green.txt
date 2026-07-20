@@ -1,0 +1,16 @@
+PROBE OK.
+
+
+I0719 15:16:03.692459 41464 resolver.go:85] Model ID Gemini 3.1 Pro (High) not in local config, defaulting to CCPA
+I0719 15:16:03.692459 41464 resolver.go:111] Model resolved via default
+I0719 15:16:03.693483 41464 server.go:1417] Language server version: 1.1.4
+E0719 15:16:03.921715 41464 log.go:398] Failed to poll ListExperiments: error getting token source: You are not logged into Antigravity.
+E0719 15:16:03.922750 41464 log.go:398] error getting token source: You are not logged into Antigravity.
+W0719 15:16:03.923265 41464 launchmanager.go:69] Entering local chrome mode! This is WRONG unless you are running tests or in eval mode on Linux.
+I0719 15:16:03.945846 41464 keyring.go:64] keyringAuth: loaded token, expiry=2026-07-19 13:01:27 expired=true
+I0719 15:16:04.510138 41464 auth.go:132] ChainedAuth: authenticated via keyring (effective: keyring)
+I0719 15:16:04.510138 41464 server_oauth.go:221] OAuth: authenticated successfully as operator@example.com
+I0719 15:16:06.079248 41464 model_resolver.go:62] Resolving model Gemini 3.1 Pro (High)
+I0719 15:16:06.079248 41464 model_config_manager.go:213] Propagating selected model override to backend: label="Gemini 3.1 Pro (High)"
+I0719 15:16:10.484978 41464 http_helpers.go:228] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse ResponseID: p0xdaoXBB5aEz7IPnPjJ0Qk
+I0719 15:16:11.209487 41464 http_helpers.go:228] URL: https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse ResponseID: qkxdauLfNOSEz7IP8-W74Qg

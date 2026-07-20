@@ -56,6 +56,18 @@ const NAME = "provenance-invariants";
 // residual is named in the header HONEST CEILING and defended by the live binding-evidence layer.
 const CONSUMERS = ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js", "scripts/dispatch/panel-lanes.js"];
 const VERIFIER = "provenance-verifier";
+// INV-4 (R5-MEDIUM-01, SP-20260719-001) — the SERVED-MODEL choke-point enforcer. The runtime consolidation
+// (attestLane + buildObserved both call pv.servedModelUnverifiableFromRecord) was CONVENTION, not enforced — a
+// FUTURE ledger reader with an inline `record/lane.provider === "antigravity"` served-model check would import
+// the verifier (passing the identity invariants) yet bypass the served-model choke-point undetected, so the
+// R3-CRITICAL-02 sibling-reader class could RECUR. This makes the choke-point STRUCTURAL for the ledger
+// readers. SCOPED to the RECORD readers only: cert-attest's evaluateAttestation is a RAW-CLI LOG evaluator (a
+// different evidence class — it decides on the `providerId` PARAM + the log output, NOT a ledger record's
+// `.provider`), so its inline `providerId === "antigravity"` §7 honest-ceiling is PERMITTED by construction
+// (it never touches a record's `.provider` member). panel-lanes.js is a structural-validation consumer (profile
+// set computation), not a served-model reader, so it is NOT in this set.
+const SERVED_MODEL_READERS = ["scripts/checks/cert-attest.js", "scripts/dispatch-review.js"];
+const SERVED_MODEL_CHOKEPOINT = "servedModelUnverifiableFromRecord";
 
 function read(rel) {
   return fs.readFileSync(path.join(ROOT, rel), "utf8");
@@ -144,6 +156,26 @@ function readsRecordRoleForDecision(code) {
 function importsVerifier(code) {
   return new RegExp(`require\\([^)]*${VERIFIER}[^)]*\\)`).test(code);
 }
+// INV-4a: a served-model ledger reader must INVOKE the choke-point (a CALL — open paren — not a bare mention
+// in prose). If a reader file stops calling it, the fail-close either reverted to an inline check or vanished.
+function invokesServedModelChokePoint(code) {
+  return new RegExp(`${SERVED_MODEL_CHOKEPOINT}\\s*\\(`).test(stripComments(code));
+}
+// INV-4b: a served-model ledger reader must NOT re-implement the agy fail-close as an inline check on a
+// RECORD/LANE's `.provider` MEMBER (the exact R3-CRITICAL-02 form: `l.provider === "antigravity"`). Keyed on
+// the `.provider` member access compared to "antigravity" (either order) — this EXEMPTS the raw-CLI evaluator's
+// `providerId === "antigravity"` (a bare param, no `.provider` member) so the §7 log honest-ceiling stays
+// permitted BY CONSTRUCTION. HONEST CEILING (consistent with this file's other detectors): a runtime-
+// reconstructed provider value or a differently-named field evades any regex — the same static ceiling as the
+// identity detectors, backed by the reader-set enumeration + the live binding layer; a fully-computed evasion
+// is deferred AST debt (ED-229 class), not a claimed catch.
+function hasInlineAgyRecordProviderCheck(code) {
+  const c = stripComments(code);
+  return (
+    /\.provider\s*(===|!==|==|!=)\s*["']antigravity["']/.test(c) || // X.provider === "antigravity"
+    /["']antigravity["']\s*(===|!==|==|!=)\s*[A-Za-z_$][\w$.[\]"']*\.provider\b/.test(c) // "antigravity" === X.provider (reversed)
+  );
+}
 // INV-3: every git-head ref-read path (packed + loose/detached) SHA-validates its token.
 function gitHeadTokenValidated(src) {
   const packed = /function readPackedRef[\s\S]*?\n}/.exec(src);
@@ -165,6 +197,15 @@ function run() {
     // and honest consumers delegate). Bounded by the ACCESS, not the value.
     if (readsRecordRoleForDecision(src)) violations.push({ inv: "NO-RECORD-ROLE-DECISION", file: f, msg: "reads a record's .role field for an identity DECISION (member/computed/destructure/alias) outside the verifier — a COMPLETE hunter-identity decision requires the record's role, and honest consumers delegate to provenance-verifier.isHunterRecord/recordMatchesLane. This catches the value-reconstruction evasion (role assembled at runtime via join/concat/char-codes) that a value-only detector misses (R6-BE-002). A fully-computed field scan that never names .role is the honest static ceiling — defended by the live binding-evidence layer, not this guard." });
   }
+  // INV-4 (R5-MEDIUM-01): the served-model ledger readers must route the agy fail-close through the ONE
+  // choke-point, with no inline record/lane `.provider === "antigravity"` re-implementation (the raw-CLI §7
+  // evaluator's `providerId` param check is exempt by construction — see hasInlineAgyRecordProviderCheck).
+  for (const f of SERVED_MODEL_READERS) {
+    let src;
+    try { src = read(f); } catch (e) { violations.push({ inv: "SERVED-MODEL-READER", file: f, msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); continue; }
+    if (!invokesServedModelChokePoint(src)) violations.push({ inv: "SERVED-MODEL-CHOKEPOINT", file: f, msg: `a served-model ledger reader that does not invoke pv.${SERVED_MODEL_CHOKEPOINT} — the agy served-model fail-close MUST route through the ONE choke-point, never an inline check (R3-CRITICAL-02 sibling-reader class: attestLane closed attestPanelRun but buildObserved re-implemented the trust inline and greened the panel-3lab binding)` });
+    if (hasInlineAgyRecordProviderCheck(src)) violations.push({ inv: "NO-INLINE-AGY-SERVED-MODEL", file: f, msg: `re-implements the agy served-model fail-close as an inline record/lane '.provider === "antigravity"' check — delegate to pv.${SERVED_MODEL_CHOKEPOINT}. The raw-CLI §7 evaluator (providerId PARAM, not a record's .provider) is exempt by construction` });
+  }
   let gh;
   try { gh = read("scripts/dispatch/git-head.js"); } catch (e) { violations.push({ inv: "INV-3", file: "scripts/dispatch/git-head.js", msg: `unreadable (fail-closed): ${e.message}`, fatal: true }); }
   if (gh && !gitHeadTokenValidated(gh)) violations.push({ inv: "INV-3", file: "scripts/dispatch/git-head.js", msg: "a ref-read path returns a token without hex-SHA validation (R5/R6-BE-001)" });
@@ -182,4 +223,4 @@ if (require.main === module) {
   process.exit(violations.length === 0 ? 0 : fatal ? 2 : 1);
 }
 
-module.exports = { run, NAME, hasLocalIdentityDecision, readsRecordRoleForDecision, importsVerifier, gitHeadTokenValidated };
+module.exports = { run, NAME, hasLocalIdentityDecision, readsRecordRoleForDecision, importsVerifier, gitHeadTokenValidated, invokesServedModelChokePoint, hasInlineAgyRecordProviderCheck };

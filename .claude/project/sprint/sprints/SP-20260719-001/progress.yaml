@@ -1,0 +1,36 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: "SP-20260719-001"
+updated_at: "2026-07-20T02:05:00.000Z"
+current_phase: release
+current_command: "/sprint:full (ε2-conducted R3-R6; α acting conductor from R6 adjudication — ε2 dropped-wake stall, handover clause 79f9733c)"
+current_ticket: null
+current_task: "released — merge to main executed by α under beta gauntlet→release DECIDE B/0.90"
+current_loop: null
+status: released
+last_completed_step: "R6 gauntlet adjudicated: qa gpt-5.6-terra FAIL 3-MEDIUM + security FLOOR gpt-5.6-sol FAIL 1-MEDIUM — ALL FOUR convergent on the INV-4 guard completeness CEILING only; runtime record-trust protections verified SOUND 3x (R5-sec 0.99, R6-qa, R6-sec-floor) + independently code-verified by the persistent beta. Released as a NAMED-DEBT release per the SP-004/ED-232 precedent: ED-241 minted (INV-4 self-discovery/per-function/static-forms/mutation-fixtures + wire the flash-served-as-pro specimen as a rejected negative fixture)."
+next_action: "post-merge: (1) operator runs ONE interactive agy login (keyring expired) → then task #12 real security-reviewer serve via dispatch-agent.js per ADR-0027 rider-3 (keyring VALID, no terminal tells, fallback:false, served-model from account config) → ED-060 close; (2) task #13 support-matrix flip + panel-3lab wiring ONLY on rider-3 evidence; (3) ED-241 guard hardening before #13 flips anything; (4) retro (deferred to next session or milestone close per RI-001 engine-sprint pattern)."
+active_files: []
+modified_files: []
+checks_last_run: "2026-07-20T01:50Z"
+checks_passing:
+  - "cert-attest.test.js 24/24"
+  - "cert-attest-panel.test.js 35/35 (3-lab positive flipped to BLOCKED; signed-unauth + non-catalog negatives present)"
+  - "providers-antigravity.test.js 8/8"
+  - "panel-lanes.test.js 18/18"
+  - "provenance-invariants 26 + INV-4 enforcer teeth (neuter-the-predicate verified)"
+  - "dispatch-review-panel-gate 27/27 (+2 binding-never-PASSes teeth)"
+  - "R6 security FLOOR (gpt-5.6-sol): runtime fix + §7 raw-CLI exemption + panel-lanes exclusion confirmed SOUND"
+checks_failing:
+  - "R6 convergent 4x MEDIUM (qa 3 + sec-floor 1): INV-4 completeness ceiling (hardcoded 2-file reader list / per-file not per-function / alias+computed+reversed static forms / self-test not discovery-based) — dispositioned ED-241 tracked debt per beta DECIDE B/0.90; NOT runtime holes (every actual reader verifies)"
+blockers:
+  - "ED-060/ED-230 close: agy keyring EXPIRED — needs ONE interactive operator agy login, then the rider-3 serve (support-matrix stays down until then)"
+approvals_needed: []
+external_services_needed:
+  - "Antigravity interactive login (operator) — the single remaining operator action for the ED-060 close attempt"
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "post-merge work tracked in tasks #12/#13 + ED-241; no sprint-resume needed (released)"
+resume_notes: "RELEASED 2026-07-20 (merge to main by α; beta DECIDE B/0.90 with merge-hygiene diff-check clean — record-trust files only, no Lane-1 files). Scope merged = record-trust hardening: 3-layer slug→display id-mapping, attestLane agy hard-fail, pv.servedModelUnverifiableFromRecord choke-point called by BOTH readers, INV-4 enforcer (honest ceiling documented), fixture corpus (07-18 + 19-11 unauth false-greens + spike artifacts). NOT closed by this release: ED-060 (no valid agy serve — tonight's flash-served-as-pro specimen is a REJECTED wrong-model record, preserved at canonical runtime/agy-adr-evidence/), panel-3lab activation, support-matrix flip. ε2 stalled after R6 prompt-prep (4th dropped-wake of the night); α executed the handover clause, fired R6 lanes, adjudicated, consulted beta, merged."
+safe_to_continue: true
+stop_reason: "released (named-debt release: gauntlet-FAIL-all-MEDIUM-defense-in-depth, runtime verified sound, ED-241 tracks the completion)"
