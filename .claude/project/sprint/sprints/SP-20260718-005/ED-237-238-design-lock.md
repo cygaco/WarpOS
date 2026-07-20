@@ -127,3 +127,46 @@ DECIDE (adopt as specified) · DIRECTIVE (adjust the model/policy/inventory/teet
 independently re-derive the two inventories by grep and confirm the completeness-proof targets are achievable
 as written (one `pidLiveness`, zero independent liveness/stale; one `validateCommitIdentity`, zero inline
 field-by-field regex; the CAS guard independently reachable).
+
+---
+
+## CONTRACT AMENDMENT — ED-240 resume cycle (Epsilon2, β DECIDE B/0.92, 2026-07-20; OPEN_ADR: false)
+
+The Phase-3 park (ED-240) left ONE bounded cycle. Resumed by Epsilon2 (2nd conductor, parallel lane) on an
+isolated worktree of `sprint/SP-20260718-005-phase3` @50b4db92, building ON R5 (no reverts). β design-boundary
+consult routed to the PERSISTENT β (msg_id `83d7ee44`; ED-239-compliant) → **DECIDE B/0.92, both items, audit
+verified against code**. No new numbered ADR — this discharges flagged findings WITHIN this lock.
+
+### ED-240a — falsifier-corpus schema migration (RESOLVED)
+The ED-238 by-construction hardening (`validateCommitIdentity` requires full-SHA base+result) made the four
+pre-schema binding falsifiers DEAD GATES (BC-16): green but short-circuiting at the identity gate BEFORE the
+coordinate they claim to attack (proven empirically — forged `treeResolver` call-count 0; stale-base blocked with
+base===integrationHead). Each was rebuilt from a VALID current-schema record (`produceForTest` + a real lease),
+altering ONLY the attacked coordinate, and now ASSERTS the attacked gate is REACHED:
+- `forged-acceptance-record` (AC-F11): fabricated `result_tree_hash`; a `treeResolver` spy MUST be invoked +
+  an honest-tree control authorizes → the recompute gate is reached, not short-circuited.
+- `validation-to-merge-race` (AC-F12): `commitIntegration` asserts the EXACT reason `validation-to-merge-race`
+  (not an earlier `invalid-commit-identity`) + an unmoved-head control commits ok.
+- `stale-base` (AC-F3) / `lease-x-acceptance` (AC-F10): fully-valid fixture + single-coordinate delta control
+  that AUTHORIZES → `false` is uniquely attributable to the attacked coordinate (freshness / lease currency).
+
+### ED-240b — produceForTest DISPUTED-VERDICT reconciliation (CLOSED)
+The security lane's `ED238-POSTVALIDATION-OVERRIDE` (β's fix-lock-0.91 "carve-out" concession, now reversed in the
+honesty-tightening direction β conceded) is discharged:
+- **`produceForTest` contract change:** overrides now merge into the `produce()` INPUT — top-level (β rider 1) —
+  so `validateCommitIdentity` + `stableDigest` run over the FINAL record. Both flags closed: a commit-identity
+  override can no longer bypass the schema (it throws at `produce()`), and `record_digest` is never stale.
+  New contract: **"a FULLY-VALID, fresh-digest record."** Verified against all call sites — only the one
+  adversarial-invalid fixture (`acceptance-record.test.js` empty-`result_commit`) needed migration.
+- **`forgeInvalidRecordForTest` split (named residual):** the one adversarial-invalid case moves to this new
+  named helper, which SELF-GUARDS (β rider 2) — it throws unless its output FAILS `validateCommitIdentity`, so a
+  forged fixture can never leak into a positive/authz-TRUE assertion. One call site today; a 2nd triggers a lint.
+- **Teeth (same cycle):** `TEETH (ED-240b)` in `acceptance-record.test.js` assert both closures + the self-guard
+  throw/legit paths.
+
+**Verify (β rider 3, build-time):** scoped battery GREEN — acceptance-record 59/59, conductor-lease 47/47,
+falsifier corpus 16/16 (`falsifier-liveness` PASS: 12 falsifiers + 1 companion each executed per-file, 0 skipped);
+the 4 migrated falsifiers pass their REACHABILITY assertion (spy-called / exact-reason / control-authorizes-TRUE),
+not merely `authz=false`. The 6 branch-baseline failures (safe-spawn agy-shim, cutover-completeness, contract-lint,
+duplicate-doc-drift, model-chain) are PRE-EXISTING (identical fail set with the change stashed) and out of ED-240
+scope. **ED-240a + ED-240b CLOSED.**
