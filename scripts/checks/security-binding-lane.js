@@ -64,6 +64,10 @@ function realDeps() {
     // to the derived map keeps the check running pre-export — tautological until the export lands (named residual).
     providersRaw: providers.LITERAL_DEFAULT_AGENT_PROVIDERS || providers.DEFAULT_AGENT_PROVIDERS || {},
     catalogRaw: catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE || catalog.DEFAULT_PROVIDER_PER_ROLE || {},
+    // Whether the two INDEPENDENT literal maps are actually exported. Tooth-B(1) FAILS CLOSED when they are
+    // not (falling back to the tautological derived maps is not a real check — gauntlet R-2). Undefined in
+    // tests (which inject the maps directly to exercise the comparison logic); only production sets it.
+    literalsExported: !!(providers.LITERAL_DEFAULT_AGENT_PROVIDERS && catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE),
     enforcementDebtPath: PATHS.enforcementDebt,
   };
 }
@@ -113,24 +117,32 @@ function ed230IsOpen(ledgerText) {
  * bypassing dispatch-review's panel gate). Injectable `files` ({ [relPath]: content }) for tests; default
  * walks scripts/ excluding *.test.js, dispatch-review.js (the SANCTIONED multi-pass path), and this file.
  */
-// CO-OCCURRENCE heuristic (gauntlet-caught: a literal `dispatch-agent … security-reviewer` regex MISSED
-// scripts/delta-final-gauntlet.js, which dispatches `dispatch-agent.js, role` where role comes from a ROLES
-// list containing "security-reviewer" — a DYNAMIC single-pass caller). A non-test, non-panel file that BOTH
-// invokes dispatch-agent AND names the security-reviewer/redteam role (literal or in a role list) is a
-// single-pass security dispatch that bypasses dispatch-review's panel gate. Over-flags toward safety
-// (fail-closed); documented-safe callers are allowlisted WITH A REASON (never a silent skip).
-// SPAWN-CONTEXT signal: dispatch-agent.js inside a single-line ARRAY literal `[ … dispatch-agent.js … ]`
-// — the child_process spawn/exec args form (delta: `spawn(node, [path.join(…,"dispatch-agent.js"), role, …])`)
-// — NOT a comment, a `require("../dispatch-agent")`, or a finding-string that merely names it. This is the
-// calibrated distinguisher: the co-occurrence heuristic over-flagged 10 prose/require mentions (gauntlet-caught).
-const SPAWNS_DISPATCH_AGENT_RE = /\[[^\]\n]*dispatch-agent\.js/;
+// CONSERVATIVE-BY-CONSTRUCTION (gauntlet R-1→R-2: a regex SIGNAL is fundamentally bypassable — a literal
+// `dispatch-agent … security-reviewer` missed delta's dynamic dispatch; a spawn-array signal then missed the
+// bound-first form `const a = path.join(…,"dispatch-agent.js"); spawn([a, role])` and multi-line arrays. Both
+// reviewers converged on "fail closed on UNRECOGNIZED callers"). So the guard is an ALLOWLIST-of-shape, not a
+// denylist-of-pattern: any non-test file that references the dispatch-agent.js SUBPROCESS SCRIPT (.js) AND a
+// security-reviewer/redteam role is a POTENTIAL single-pass caller → flagged, UNLESS it is on the audited
+// allowlist (a documented-safe reference OR a tracked real caller). A NEW co-occurrence fails closed (RED)
+// until triaged — this closes the bypass class no regex could (bound-first/multi-line all reference both terms).
+// RESIDUAL (named): static co-occurrence cannot distinguish a reference from a live dispatch, nor catch a caller
+// that constructs the "dispatch-agent.js" string dynamically (the AST ceiling). The STRUCTURAL close is a
+// dispatch-time guard that refuses a single-pass security-reviewer binding — tracked as a follow-up ED.
+const REFERENCES_DISPATCH_AGENT_RE = /dispatch-agent\.js/;
 const SECURITY_ROLE_RE = /["']security-reviewer["']|["']redteam["']/;
+// The audited allowlist: a co-occurrence that is NOT a sanctioned-panel-bypassing single-pass BINDING caller.
+// delta-final-gauntlet.js is a TRACKED real caller (latent ED-244); the rest are reference-only.
 const CREEP_BACK_ALLOWLIST = {
   "scripts/delta-final-gauntlet.js":
-    "delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES list). LATENT " +
-    "ED-244 exposure: binding-on-agy WHEN agy goes live. SAFE TODAY — agy is blocked-advisory (reaps) AND " +
-    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). Follow-up (tracked ED): " +
-    "route delta's security-reviewer through dispatch-review's panel when agy unblocks. SP-20260720-003 gauntlet.",
+    "TRACKED CALLER — delta oneshot gauntlet single-passes security-reviewer via dispatch-agent (dynamic ROLES " +
+    "list). LATENT ED-244: binding-on-agy WHEN agy goes live. SAFE TODAY — agy blocked-advisory (reaps) + " +
+    "delta-aggregate-reviews treats a dispatch-failed lane as non-pass (fail-closed). Follow-up ED: route " +
+    "delta's security-reviewer through dispatch-review's panel when agy unblocks. SP-20260720-003 gauntlet.",
+  "scripts/checks/model-chain.js": "reference-only — names 'security-reviewer' as a role in check logic (MAX_ALLOWED_ROLES) + 'dispatch-agent' in comments; not a dispatch.",
+  "scripts/dispatch/gauntlet-verify.js": "reference-only — a comment naming the dispatch-agent.js completion ledger it READS; not a dispatch.",
+  "scripts/hooks/dispatch-route-guard.js": "reference-only — the ROUTING GUARD names the canonical `node scripts/dispatch-agent.js` route it ENFORCES; it is the enforcer, not a caller.",
+  "scripts/hooks/lib/providers.js": "reference-only — the transport lib names security-reviewer in provider-config comments; runProvider is the transport, not a single-pass security dispatch.",
+  "scripts/warpos/provider-smoke.js": "reference-only — require()s dispatch-agent.js as a MODULE for getRoleModel (a ping smoke test); not a spawn of dispatch-agent.js with security-reviewer.",
 };
 function singlePassBindingCallers({ files } = {}) {
   const src = files || walkScriptsForCallers();
@@ -138,8 +150,8 @@ function singlePassBindingCallers({ files } = {}) {
   for (const [rel, content] of Object.entries(src)) {
     if (typeof content !== "string") continue;
     const relN = rel.replace(/\\/g, "/");
-    if (relN in CREEP_BACK_ALLOWLIST) continue; // documented-safe caller (reason in CREEP_BACK_ALLOWLIST)
-    if (SPAWNS_DISPATCH_AGENT_RE.test(content) && SECURITY_ROLE_RE.test(content)) hits.push(relN);
+    if (relN in CREEP_BACK_ALLOWLIST) continue; // audited-safe (reason in CREEP_BACK_ALLOWLIST)
+    if (REFERENCES_DISPATCH_AGENT_RE.test(content) && SECURITY_ROLE_RE.test(content)) hits.push(relN);
   }
   return hits;
 }
@@ -239,11 +251,21 @@ function evaluateSecurityBindingLane({ deps = realDeps(), ledgerText, files } = 
   // ── Tooth-B (RI-008) — alias-inclusive DEFAULT_PROVIDER consistency (always checked) ──
   const catR = deps.catalogRaw || {};
   const provR = deps.providersRaw || {};
-  if (catR.redteam !== provR.redteam) {
+  if (deps.literalsExported === false) {
+    // FAIL-CLOSED (gauntlet R-2): the two INDEPENDENT raw literal maps are not exported, so Tooth-B(1) fell
+    // back to the DERIVED maps — which both resolve the redteam alias from the shared SCRAPPED_PROVIDER_ALIASES
+    // and can NEVER diverge (a tautology, no teeth). Refuse to read green on a check that cannot verify.
     errors.push(
-      `${NAME}: ALIAS-CONSISTENCY (RI-008.1) — the raw DEFAULT_PROVIDER maps disagree on the redteam alias: ` +
+      `${NAME}: ALIAS-CONSISTENCY (RI-008.1) — the independent raw LITERAL maps are NOT exported ` +
+        `(catalog.LITERAL_DEFAULT_PROVIDER_PER_ROLE / providers.LITERAL_DEFAULT_AGENT_PROVIDERS), so Tooth-B(1) ` +
+        `cannot compare independent sources (the derived maps are tautological — both from SCRAPPED_PROVIDER_ALIASES). ` +
+        `FAIL-CLOSED. FIX: export the two literal maps (additive, α-gated) so Tooth-B(1) verifies real agreement.`,
+    );
+  } else if (catR.redteam !== provR.redteam) {
+    errors.push(
+      `${NAME}: ALIAS-CONSISTENCY (RI-008.1) — the raw LITERAL DEFAULT_PROVIDER maps disagree on the redteam alias: ` +
         `catalog="${catR.redteam}" vs providers="${provR.redteam}". model-chain's registry-NAME-only drift loop ` +
-        `misses alias keys. FIX: reconcile the redteam literal so catalog-raw and providers-raw agree.`,
+        `misses alias keys. FIX: reconcile the redteam literal so catalog-literal and providers-literal agree.`,
     );
   }
   try {

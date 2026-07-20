@@ -117,26 +117,41 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   ok(hasFinding(errors, /RI-008\.2/), `alias-normalization-stubbed-divergence → RED: ${errors.join(" | ")}`);
 }
 
-// ── AC-14 creep-back (injected files) — the DYNAMIC spawn-array pattern (gauntlet-caught) ───────────
+// ── AC-14 creep-back — conservative-by-construction: co-occurrence of dispatch-agent.js + a security role
+//     catches the R-2 bypass forms (dynamic, bound-first, multi-line) that a regex signal missed ──────────
 {
-  // A LITERAL single-pass call (the old form) — the spawn-array signal requires dispatch-agent.js inside
-  // an array literal, so express the planted caller as delta does: a spawn args array + a ROLES list.
   const dynamicCaller =
     'const ROLES = ["qa-reviewer", "security-reviewer"];\n' +
     'for (const role of ROLES) spawn("node", [path.join(ROOT, "scripts", "dispatch-agent.js"), role, prompt]);';
-  const { errors } = run({}, LEDGER_OPEN, { "scripts/evil.js": dynamicCaller });
-  ok(hasFinding(errors, /SINGLE-PASS CREEP-BACK/) && hasFinding(errors, /scripts\/evil\.js/), `no-nontest-single-pass-binding-caller (dynamic spawn-array) → RED: ${errors.join(" | ")}`);
+  // R-2 bypass #1 — bound-first (dispatcher bound to a var, then used): the regex signal missed this.
+  const boundFirst =
+    'const agent = path.join(ROOT, "scripts", "dispatch-agent.js");\n' +
+    'const ROLES = ["security-reviewer"]; spawn("node", [agent, ROLES[0], prompt]);';
+  // R-2 bypass #2 — multi-line spawn args array: dispatch-agent.js on a later line.
+  const multiLine =
+    'const ROLES = ["security-reviewer"];\nspawn("node", [\n  path.join(ROOT, "scripts", "dispatch-agent.js"),\n  role,\n]);';
+  for (const [label, src] of [["dynamic", dynamicCaller], ["bound-first", boundFirst], ["multi-line", multiLine]]) {
+    const { errors } = run({}, LEDGER_OPEN, { "scripts/evil.js": src });
+    ok(hasFinding(errors, /SINGLE-PASS CREEP-BACK/) && hasFinding(errors, /scripts\/evil\.js/), `creep-back catches ${label} form → RED: ${errors.join(" | ")}`);
+  }
   // clean tree → no finding
   const { errors: clean } = run({}, LEDGER_OPEN, {});
   ok(!hasFinding(clean, /SINGLE-PASS CREEP-BACK/), `no caller → no creep-back finding`);
-  // prose/require mention (NOT a spawn-array) must NOT flag (the co-occurrence over-flag qa caught)
+  // a mention WITHOUT the .js subprocess script (a bare "dispatch-agent" module/prose ref) → NOT flagged
   const prose = { "scripts/doc.js": '// dispatch-agent serves the "security-reviewer" default\nrequire("../dispatch-agent");' };
-  const { errors: proseE } = run({}, LEDGER_OPEN, prose);
-  ok(!hasFinding(proseE, /SINGLE-PASS CREEP-BACK/), `prose/require mention must NOT flag: ${proseE.join(" | ")}`);
-  // an ALLOWLISTED caller (delta) is documented-safe → not flagged even with the pattern
+  ok(!hasFinding(run({}, LEDGER_OPEN, prose).errors, /SINGLE-PASS CREEP-BACK/), `bare dispatch-agent (no .js) ref must NOT flag`);
+  // an ALLOWLISTED file (delta) is documented-safe → not flagged even with the pattern
   const allowKey = Object.keys(sbl.CREEP_BACK_ALLOWLIST)[0];
-  const { errors: allowE } = run({}, LEDGER_OPEN, { [allowKey]: dynamicCaller });
-  ok(!hasFinding(allowE, /SINGLE-PASS CREEP-BACK/), `allowlisted caller (${allowKey}) → not flagged (documented-safe)`);
+  ok(!hasFinding(run({}, LEDGER_OPEN, { [allowKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `allowlisted caller (${allowKey}) → not flagged`);
+}
+
+// ── Tooth-B(1) FAIL-CLOSED on absent literal exports (gauntlet R-2) ─────────────────
+{
+  const { errors } = run({ literalsExported: false });
+  ok(hasFinding(errors, /RI-008\.1/) && hasFinding(errors, /NOT exported/), `tooth-b fail-closed on absent literals → RED: ${errors.join(" | ")}`);
+  // exported → the injected-map comparison runs (agree → no finding)
+  const { errors: e2 } = run({ literalsExported: true, catalogRaw: { redteam: "openai" }, providersRaw: { redteam: "openai" } });
+  ok(!hasFinding(e2, /RI-008\.1/), `tooth-b with exports present + agreeing maps → no finding`);
 }
 
 // ── report ──────────────────────────────────────────────────────────────────────────
