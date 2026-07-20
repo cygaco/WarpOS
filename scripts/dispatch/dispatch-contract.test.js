@@ -56,6 +56,11 @@ h.test("class derivation: builder=build_chain_worker, security-reviewer=cross_pr
   assert.strictEqual(classForRole("director-of-growth"), "cross_provider_consult_lead");
   assert.strictEqual(classForRole("product-lead"), "cross_provider_consult_lead");
   assert.strictEqual(classForRole("design-lead"), "cross_provider_consult_lead");
+  // gemini-deepclean-20260720 (Task#1 fix-b): the {tier:lead,provider:antigravity} rule FIRES before the
+  // generic {tier:lead}→manager catch-all, so research-lead (Growth's antigravity/gemini-lab research
+  // consult, ADR-0016 model-spread) derives cross_provider_consult_lead — NOT the Claude-only in-process
+  // "manager". Mirrors the openai-lead rule; completes the deep-clean's scan-broadening (role-parity-scan.js:535).
+  assert.strictEqual(classForRole("research-lead"), "cross_provider_consult_lead");
 });
 
 // ── happy shapes pass ───────────────────────────────────────

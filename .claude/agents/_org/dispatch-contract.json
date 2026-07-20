@@ -78,6 +78,7 @@
       { "when": { "tier": "director", "provider": "openai" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "director" }, "class": "manager" },
       { "when": { "tier": "lead", "provider": "openai" }, "class": "cross_provider_consult_lead" },
+      { "when": { "tier": "lead", "provider": "antigravity" }, "class": "cross_provider_consult_lead" },
       { "when": { "tier": "lead" }, "class": "manager" },
       { "when": { "kind": "tool", "provider": "claude" }, "class": "tool_claude" },
       { "when": { "kind": "tool", "provider": "openai" }, "class": "tool_cross_provider" },

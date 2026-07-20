@@ -41,6 +41,13 @@ It satisfies the operator directive (no legacy-gemini CLI wiring) while preservi
 
 Superseding ADR. If Google revives an individual Gemini CLI tier, a new provider block would be added deliberately — not by un-reverting this. The reroute-to-verifiable-floor is invariant until ED-230 closes.
 
+## GPT cross-check + class-symmetry completion (2026-07-20)
+
+An independent GPT cross-check (gpt-5.6-terra; `runtime/agy-adr-evidence/gpt-check-{coherence,conflict}-result-20260720.json`) found the deep-clean broadened the role-parity shape-route check to `antigravity` (`role-parity-scan.js`) **without** adding the matching `class_derivation` rule — leaving `research-lead` (the sole `{tier:lead, provider:antigravity}` role) to fall to the `{tier:lead}→manager` (Claude-only, in-process) catch-all and trip a role-parity RED. Fix (β DECIDE B/0.88→0.90): added `{tier:lead, provider:antigravity}→cross_provider_consult_lead` (mirrors the openai-lead rule), completing the symmetry. **research-lead stays on the Gemini lab as a cross-provider research consult** (ADR-0016 department model-spread — Growth leads are non-Claude by design); the gemini→antigravity reroute applies to it as a cross-provider role, NOT a demotion to Claude. Regression-locked by a `dispatch-contract.test.js` assertion.
+
+- **Director analog deferred (deliberate, not missed):** the `{tier:director, provider:antigravity}` rule is NOT added — no antigravity director exists today, and the broadened scan self-detects at introduction (a future antigravity director trips role-parity RED, the signal to add the rule then with a real role to test against).
+- **point-2 openai-floor caveat (pre-existing, NOT resolved here):** the security-reviewer/redteam role DEFAULT resolves to `antigravity` (registry derivation), not the `openai` literal floor point 2 intends — the floor has no enforcer and is silently overridden. The binding-verdict-on-verifiable-lane invariant still holds in practice (agy is blocked-advisory → the antigravity primary can't serve → the openai/claude passes bind). Pre-existing state (inherited from merged SP-20260719-001), tracked as enforcement debt — NOT claimed resolved.
+
 ## References
 - Consolidated plan: `_planning/warpos-1.0-plan/GEMINI-DEEPCLEAN-AND-AGY-MIGRATION.md`
 - Inventory: `runtime/agy-adr-evidence/GEMINI-DEEPCLEAN-INVENTORY-20260720.md`
