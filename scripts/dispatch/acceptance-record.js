@@ -294,9 +294,13 @@ function produceForTest(overrides = {}) {
  * produceForTest is the always-valid door.
  *
  * SELF-GUARD (β rider 2): this helper asserts BY CONSTRUCTION that its output FAILS validateCommitIdentity before
- * returning, so a forged fixture can never leak into a positive/authz-TRUE assertion (the settable-label /
- * false-green class). A call with no schema-invalidating override is a MISUSE and throws. One call site today; if
- * a 2nd appears, add a lint per the ED-237-238-design-lock amendment.
+ * returning AND FREEZES the record, so a forged fixture can never leak into a positive/authz-TRUE assertion (the
+ * settable-label / false-green class). The freeze closes the gauntlet finding ED240-SELF-GUARD-MUTABLE-RETURN: a
+ * point-in-time validate that returned a MUTABLE record could be defeated by re-assigning the invalidated field
+ * back to a valid value AFTER return (forge `result_commit:""` → reassign a valid SHA → authorize). Object.freeze
+ * makes the invalid commit-identity IMMUTABLE — the reassignment is a no-op (sloppy) or throws (strict), so the
+ * record stays schema-invalid for its whole lifetime. A call with no schema-invalidating override is a MISUSE and
+ * throws. One call site today; if a 2nd appears, add a lint per the ED-237-238-design-lock amendment.
  */
 function forgeInvalidRecordForTest(overrides = {}) {
   const forged = Object.assign({}, produceForTest(), overrides);
@@ -307,7 +311,9 @@ function forgeInvalidRecordForTest(overrides = {}) {
         "For a VALID fixture use produceForTest.",
     );
   }
-  return forged;
+  // ED240-SELF-GUARD-MUTABLE-RETURN (security-lane binding fix): freeze so the invalid state is immutable by
+  // construction — a caller cannot mutate the invalidated commit-identity back to a valid SHA after return.
+  return Object.freeze(forged);
 }
 
 /**

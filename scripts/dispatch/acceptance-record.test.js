@@ -121,6 +121,20 @@ test("TEETH (ED-240b): forgeInvalidRecordForTest self-guard — throws UNLESS it
   assert.strictEqual(acc.validateCommitIdentity(forged), false, "forged record must fail validateCommitIdentity");
 });
 
+test("TEETH (ED240-SELF-GUARD-MUTABLE-RETURN, security-lane binding): the forged record is FROZEN — it cannot be mutated back to schema-valid post-return", () => {
+  // The security lane's attack on a point-in-time guard: forge an invalid record, then reassign the invalidated
+  // commit-identity field back to a valid SHA AFTER return, then authorize. Object.freeze closes it by construction.
+  const forged = acc.forgeInvalidRecordForTest({ result_commit: "" });
+  assert.ok(Object.isFrozen(forged), "the forged record must be FROZEN (invalid state immutable by construction)");
+  try {
+    forged.result_commit = acc.TEST_CAND_SHA; // the attack: mutate back to a valid candidate
+  } catch (_) {
+    /* a strict-mode TypeError on the frozen property is an acceptable outcome — the mutation did not take */
+  }
+  assert.strictEqual(forged.result_commit, "", "result_commit must remain empty — the mutable-return bypass is closed");
+  assert.strictEqual(acc.validateCommitIdentity(forged), false, "a forged fixture can NEVER become schema-valid after return");
+});
+
 // SP-20260718-005 gauntlet C2 fix: recompute is now MANDATORY (no opt-in). A happy path must inject a
 // treeResolver that returns the honest synthetic tree ("tree-OK") — the analog of production's real
 // read-only git resolving the target ref's actual tree and it MATCHING the record's claimed digest.
