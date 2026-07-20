@@ -81,6 +81,15 @@ h.violation("agy -p NUL still refused (REG-001, the ONE char refused in the code
 // flag-snippet review is NOT silently dropped (a false-BLOCK there would itself be a security-lane hole).
 h.pass("agy -p leading-dash payload ACCEPTED, not silently dropped (RIDER-2 / RIDER-4 v)", () =>
   assertArgs("agy", ["--model", "gemini-3.1-pro-high", "-p", "-webkit-box; - removed diff line; --flag in a snippet"]));
+// ── ADR-0031 rider 4: agy must NEVER carry a skip-permissions / auto-approve BYPASS. The scoped
+// read-only tool-permission is operator-owned (agy stays BLOCKED-ADVISORY); the bypass is refused
+// STRUCTURALLY here so it can never be self-granted (a future edit that adds the flag fails closed). ──
+h.pass("agy clean invocation (no permission-bypass) passes", () =>
+  assertArgs("agy", ["--model", "Gemini 3.1 Pro (High)", "--print-timeout", "90s", "-p", "review this"]));
+h.violation("agy --dangerously-skip-permissions REFUSED (ADR-0031 rider 4)", () =>
+  assertArgs("agy", ["--model", "gemini-3.1-pro-high", "--dangerously-skip-permissions", "-p", "x"]));
+h.violation("agy --yolo REFUSED (permission-bypass, ADR-0031 rider 4)", () =>
+  assertArgs("agy", ["--yolo", "--model", "gemini-3.1-pro-high", "-p", "x"]));
 // (d2) β item-2 property 4: the newline carve-out is CROSS-TOOL scoped — the same multi-line value
 // refuses in EVERY other tool/slot: gemini -p, codex -c, agy -m (short form), and an agy positional.
 h.violation("gemini -p multi-line rejected (carve-out is agy-only, not gemini)", () =>

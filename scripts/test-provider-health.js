@@ -24,51 +24,9 @@ function check(name, cond, detail) {
   }
 }
 
-// ── Gemini classifier ─────────────────────────────────────
-
-const trustErr = ph.classifyGeminiError(
-  "Error: Refusing to run gemini outside a trusted workspace directory.",
-);
-check(
-  "trusted_directory_required from Gemini stderr",
-  trustErr && trustErr.status === "trusted_directory_required",
-);
-
-const modelErr = ph.classifyGeminiError(
-  "ModelNotFoundError: models/gemini-3.1-flash is not found for API version v1beta (404)",
-);
-check(
-  "model_not_found from Gemini 404",
-  modelErr && modelErr.status === "model_not_found",
-);
-
-const quotaErr = ph.classifyGeminiError(
-  "Resource has been exhausted: rate limit exceeded (RATELIMIT)",
-);
-check(
-  "quota_exhausted from Gemini ratelimit",
-  quotaErr && quotaErr.status === "quota_exhausted",
-);
-
-const freeZero = ph.classifyGeminiError(
-  "Free tier quota - limit: 0 per day for the requested model",
-);
-check(
-  "free_tier_limit_zero detection",
-  freeZero && freeZero.status === "free_tier_limit_zero",
-);
-
-const authErr = ph.classifyGeminiError("Unauthorized: invalid API key");
-check(
-  "auth_missing from Gemini unauthorized",
-  authErr && authErr.status === "auth_missing",
-);
-
-check("Gemini empty stderr → null", ph.classifyGeminiError("") === null);
-check(
-  "Gemini noise stderr → null",
-  ph.classifyGeminiError("ok response") === null,
-);
+// (The Gemini classifier tests were removed with classifyGeminiError in the 2026-07-20
+// deep-clean — the SUNSET individual gemini CLI is gone; the agy lane self-auths via its
+// keyring and its probe failures fall through to the generic unknown_error path.)
 
 // ── Codex classifier ──────────────────────────────────────
 

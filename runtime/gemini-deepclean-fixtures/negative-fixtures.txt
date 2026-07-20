@@ -1,0 +1,36 @@
+// negative-fixtures — EVERY code line below is legacy-gemini-CLI WIRING the
+// no-legacy-gemini-cli enforcer MUST catch. One trigger per forbidden `form`.
+// (This file lives under runtime/ so the live scanTree() never scans it; the
+// bite-test scans it explicitly via scanText().)
+
+// form: gemini-provider-block  +  bare-quoted-gemini (cli:"gemini")
+  gemini: { cli: "gemini", default_model: "x", syntax: "gemini {r} -m {model} -p" },
+
+// form: bare-quoted-gemini (role → "gemini" in a provider map)
+  redteam: "gemini",
+  "security-reviewer": "gemini",
+
+// form: bare-quoted-gemini (provider === "gemini" branch)
+  if (provider === "gemini") { doThing(); }
+
+// form: bare-quoted-gemini (a "gemini" TOOL_ID / panel pass)
+  const TOOL_IDS = new Set(["claude", "codex", "gemini", "agy"]);
+  const pass = { provider: "gemini", key: "primary" };
+
+// form: gemini-key-injection
+  childEnv.GEMINI_API_KEY = loadKey();
+  if (process.env.GOOGLE_API_KEY) { useKey(); }
+
+// form: gemini-trust
+  childEnv.GEMINI_CLI_TRUST_WORKSPACE = "true";
+  const trustArgs = ["--skip-trust"];
+
+// form: gemini-loaders
+  if (hasValidGeminiOAuth()) return;
+  const k = loadGeminiApiKey();
+  const geminiTrustBypass = process.env.WARPOS_GEMINI_TRUST_BYPASS === "1";
+
+// form: gemini-cli-call
+  execSync("gemini models list");
+  const r = runShell(`gemini -m ${model} --prompt ""`);
+  const version = execSync("gemini --version");

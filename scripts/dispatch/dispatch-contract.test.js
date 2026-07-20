@@ -65,8 +65,8 @@ h.pass("builder via subprocess-claude (with a worktree cwd) is allowed", () =>
 // role is NOT a bypass — it must be flagged.
 h.violation("builder with NO cwd is rejected (omitting cwd is not a worktree bypass)", () =>
   validateDispatch({ role: "frontend-builder", shape: "subprocess-claude", toolId: "claude" }));
-h.pass("security-reviewer via subprocess-cross-provider (gemini) is allowed", () =>
-  validateDispatch({ role: "security-reviewer", shape: "subprocess-cross-provider", toolId: "gemini" }));
+h.pass("security-reviewer via subprocess-cross-provider (agy) is allowed", () =>
+  validateDispatch({ role: "security-reviewer", shape: "subprocess-cross-provider", toolId: "agy" }));
 h.pass("design-quality via in-process-agent is allowed (MCP carve-out)", () =>
   validateDispatch({ role: "design-quality", shape: "in-process-agent", toolId: "agent-tool" }));
 

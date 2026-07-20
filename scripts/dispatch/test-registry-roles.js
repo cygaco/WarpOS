@@ -35,7 +35,9 @@ console.log("derived maps/sets (vs known-good):");
   ok("modelOf design-lead = gpt-5.5", R.modelOf("design-lead") === "gpt-5.5");
   ok("buildChainRoles includes FE/BE/security builders", ["frontend-builder", "backend-builder", "security-builder"].every((r) => R.buildChainRoles().includes(r)), R.buildChainRoles().join(","));
   ok("flagshipOpenaiRoles includes design-lead", R.flagshipOpenaiRoles().includes("design-lead"), R.flagshipOpenaiRoles().join(","));
-  ok("geminiRoles includes security-reviewer", R.geminiRoles().includes("security-reviewer"), R.geminiRoles().join(","));
+  // security-reviewer migrated to the antigravity (agy) Gemini lab — the SUNSET gemini
+  // provider + the geminiRoles() derivation were removed in the 2026-07-20 deep-clean.
+  ok("security-reviewer provider is antigravity (not the SUNSET gemini)", R.providerOf("security-reviewer") === "antigravity", R.providerOf("security-reviewer"));
   ok("fixerRoles are the 3 pod fixers", eq(sorted(R.fixerRoles()), ["backend-fixer", "frontend-fixer", "security-fixer"]), R.fixerRoles().join(","));
   ok("reviewerGateKeys = the 4 binding pod reviewers (snake)", eq(R.reviewerGateKeys(), ["backend_reviewer", "frontend_reviewer", "qa_reviewer", "security_reviewer"]), R.reviewerGateKeys().join(","));
 }
@@ -69,16 +71,8 @@ function tryRequire(p) { try { return require(p); } catch { return null; } }
     ok("effortMap agrees with catalog.DEFAULT_EFFORT_PER_ROLE (shared roles)", mism.length === 0, "mismatch: " + mism.map((r) => `${r}:reg=${der[r]}/lit=${lit[r]}`).join(", "));
   }
 }
-{
-  const state = tryRequire("./state");
-  if (state && Array.isArray(state.GEMINI_ROLES)) {
-    // the literal carries scrapped 'redteam'; the derived carries only active gemini roles.
-    const activeLit = state.GEMINI_ROLES.filter((r) => R.roleIds().includes(r));
-    ok("geminiRoles deep-equals state.GEMINI_ROLES (active roles only)", eq(sorted(activeLit), sorted(R.geminiRoles())), `lit(active)=${activeLit} der=${R.geminiRoles()}`);
-  } else {
-    console.log("  ..  state.GEMINI_ROLES not exported — verify at rewire");
-  }
-}
+// (state.GEMINI_ROLES + registry-roles.geminiRoles() were removed in the 2026-07-20
+// deep-clean — no registry role is the SUNSET gemini provider; security-reviewer is antigravity.)
 
 // ── (3) deriveOrFallback — the loud-fallback contract (β requirement) ─────────
 

@@ -13,11 +13,9 @@ const guard = require(path.join(__dirname, "hooks", "dispatch-route-guard.js"));
 
 const SAFE = [
   "codex --version",
-  "gemini --version",
-  "gemini --help",
+  "agy --version",
+  "agy --help",
   "claude --version",
-  "gemini models list",
-  "gemini auth status",
   "codex auth status",
   "node scripts/dispatch-agent.js reviewer /tmp/prompt.txt",
   'node "$CLAUDE_PROJECT_DIR/scripts/dispatch-agent.js" qa /tmp/qa.txt',

@@ -25,8 +25,10 @@ test("COR-001: openai + {fallback:openai} → claude (never same-family)", () =>
 test("COR-001: antigravity + {fallback:antigravity} → openai (never same google family)", () => {
   assert.equal(suggestFallbackProvider("antigravity", { fallback: "antigravity" }), "openai");
 });
-test("COR-001: openai + {fallback:gemini} → gemini (a DIFFERENT-family configured fallback is honored)", () => {
-  assert.equal(suggestFallbackProvider("openai", { fallback: "gemini" }), "gemini");
+test("COR-001: openai + {fallback:antigravity} → antigravity (a DIFFERENT-family configured fallback is honored)", () => {
+  // antigravity is google-family (≠ openai), so a configured cross-family fallback is honored.
+  // (The SUNSET gemini provider was removed from PROVIDER_FAMILY in the 2026-07-20 deep-clean.)
+  assert.equal(suggestFallbackProvider("openai", { fallback: "antigravity" }), "antigravity");
 });
 test("COR-001: every provider's suggested fallback is a DIFFERENT known family (exhaustive)", () => {
   for (const failed of Object.keys(PROVIDER_FAMILY)) {
@@ -94,7 +96,7 @@ test("β-rider: a claude fallback (fallback:true) → ran_on_gpt false", () => {
   assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD, fallback: true }).ranOnGpt, false);
 });
 test("β-rider: a quotaFallbackFrom retry → ran_on_gpt false", () => {
-  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD, quotaFallbackFrom: { provider: "gemini" } }).ranOnGpt, false);
+  assert.equal(attestRanOnGpt({ ok: true, provider: "openai", cmd: CODEX_CMD, quotaFallbackFrom: { provider: "antigravity" } }).ranOnGpt, false);
 });
 test("β-rider: provider claude → ran_on_gpt false", () => {
   assert.equal(attestRanOnGpt({ ok: true, provider: "claude", cmd: "claude -p" }).ranOnGpt, false);
