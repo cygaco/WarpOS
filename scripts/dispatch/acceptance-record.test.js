@@ -38,7 +38,8 @@ test("produce() binds workorder_digest + base/tree/target + digests + route/fall
   };
   const record = acc.produce({
     workorder,
-    base_commit: "base-1",
+    base_commit: acc.TEST_BASE_SHA, // ED-238/F2: produce() enforces full-SHA commit identity by construction
+    result_commit: acc.TEST_CAND_SHA,
     result_tree_hash: "tree-1",
     target_ref: "refs/heads/integration",
     checker_digests: { lint: "d1" },
@@ -49,7 +50,8 @@ test("produce() binds workorder_digest + base/tree/target + digests + route/fall
     lease_fencing_token: 3,
   });
   assert.strictEqual(record.workorder_digest, workOrderDigest(workorder));
-  assert.strictEqual(record.base_commit, "base-1");
+  assert.strictEqual(record.base_commit, acc.TEST_BASE_SHA);
+  assert.strictEqual(record.result_commit, acc.TEST_CAND_SHA);
   assert.strictEqual(record.result_tree_hash, "tree-1");
   assert.strictEqual(record.target_ref, "refs/heads/integration");
   assert.strictEqual(record.terminal_state, "success");
@@ -64,8 +66,29 @@ test("produce() binds workorder_digest + base/tree/target + digests + route/fall
 });
 
 test("produce() accepts a pre-computed workorder_digest string directly (no workorder object required)", () => {
-  const record = acc.produce({ workorder: "digest-precomputed", terminal_state: "success", target_ref: "refs/heads/x" });
+  const record = acc.produce({
+    workorder: "digest-precomputed",
+    terminal_state: "success",
+    target_ref: "refs/heads/x",
+    base_commit: acc.TEST_BASE_SHA, // ED-238/F2: full-SHA commit identity required by construction
+    result_commit: acc.TEST_CAND_SHA,
+  });
   assert.strictEqual(record.workorder_digest, "digest-precomputed");
+});
+
+// ── ED-238 F2 (β fix-lock 0.91): produce() enforces the commit-identity schema BY CONSTRUCTION (fail-closed) ──
+test("TEETH (ED-238/F2): produce() THROWS on a mutable / short / non-hex / wrong-length / absent base_commit or result_commit", () => {
+  const good = { workorder: "wo", terminal_state: "success", target_ref: "refs/heads/x", base_commit: acc.TEST_BASE_SHA, result_commit: acc.TEST_CAND_SHA };
+  assert.ok(acc.produce(good), "a full-SHA base+candidate produces a record");
+  const bads = [
+    { base_commit: "refs/heads/mutable" }, { base_commit: "abc1234" }, { base_commit: "" }, { base_commit: undefined },
+    { base_commit: "b".repeat(41) }, { base_commit: "g".repeat(40) }, { base_commit: [acc.TEST_BASE_SHA] },
+    { result_commit: "refs/heads/mutable" }, { result_commit: "abc1234" }, { result_commit: "" }, { result_commit: undefined },
+    { result_commit: "c".repeat(39) }, { result_commit: { toString: () => acc.TEST_CAND_SHA } },
+  ];
+  for (const bad of bads) {
+    assert.throws(() => acc.produce(Object.assign({}, good, bad)), /immutable full 40-hex commit SHA/, "produce must reject: " + JSON.stringify(bad));
+  }
 });
 
 test("produceForTest() yields a record acceptable to the golden path (positive companion contract)", () => {
@@ -125,9 +148,10 @@ test("FAIL-CLOSED (R2/C2): a record missing the checker/policy/evidence identity
   }
 });
 
-test("FAIL-CLOSED (C2 fix): authorizesIntegration with NO opts DOES NOT authorize — recompute is mandatory, and the default git resolver cannot confirm a synthetic tree, so it BLOCKS (the prior fail-open path is closed)", () => {
+test("FAIL-CLOSED (F4 prerequisite): authorizesIntegration with NO opts blocks at the FIRST mandatory coordinate (the freshness head is absent) — a valid record cannot authorize without the mandatory context", () => {
   const record = acc.produceForTest({ target_ref: "refs/heads/integration" });
-  // No treeResolver -> the real read-only git resolver runs against a ref that does not resolve here -> null -> BLOCK.
+  // Honest about the gate: with no opts the mandatory freshness head (integrationHead) is absent → BLOCK before
+  // lease/recompute. This is a PREREQUISITE check (that the mandatory context is required), NOT a recompute check.
   assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration"), false);
 });
 
@@ -184,36 +208,44 @@ test("ADVERSARIAL: stale base against a supplied integrationHead blocks (TOCTOU)
   );
 });
 
-test("ADVERSARIAL (C2 fix): a forged result_tree_hash is caught ALWAYS — recompute is mandatory, not opt-in", () => {
-  const forged = acc.produceForTest({ target_ref: "refs/heads/integration", result_tree_hash: "f".repeat(40) });
-  // (a) With a resolver returning the HONEST real tree ("tree-OK"), the forged digest does not match -> BLOCK.
-  //     This PROVES the recompute catches a fabricated digest against a real ref (the old test only passed
-  //     because the ref failed to resolve at all — a weaker signal the qa lane flagged).
-  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration", { treeResolver: okTree }), false);
-  // (b) With NO resolver (the production default git resolver, unresolvable ref) it also BLOCKS — there is
-  //     no opt-out that would bless the forged record (the fail-open path is gone).
-  assert.strictEqual(acc.authorizesIntegration(forged, "refs/heads/integration"), false);
+test("ADVERSARIAL (F4 recompute REACHABLE): a forged result_tree_hash is caught AT the recompute gate — the resolver IS invoked (not short-circuited at an earlier prereq)", () => {
+  // Build from a FULLY-valid ctx and change ONLY result_tree_hash, so authz passes identity/freshness/lease and
+  // REACHES the mandatory recompute. Spy the resolver to prove it actually ran (the old test passed {treeResolver}
+  // with no integrationHead → it blocked at freshness before recompute; treeCalls was 0 — qa flagged this).
+  const { record, opts } = validCtx("forged-reach");
+  const forged = Object.assign({}, record, { result_tree_hash: "f".repeat(40) });
+  let treeCalls = 0;
+  const spyResolver = (ref, o) => { treeCalls++; return okTree(ref, o); }; // honest "tree-OK" != forged
+  const res = acc.authorizesIntegration(forged, "refs/heads/integration", Object.assign({}, opts, { treeResolver: spyResolver }));
+  assert.strictEqual(res, false, "the forged tree must BLOCK at recompute");
+  assert.ok(treeCalls > 0, "the recompute resolver MUST be reached — treeCalls=" + treeCalls);
 });
 
-test("ADVERSARIAL: recompute against an unresolvable target ref fails closed even for a plausible-looking hash", () => {
-  const record = acc.produceForTest({ target_ref: "refs/heads/does-not-exist-at-all" });
-  assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/does-not-exist-at-all"),
-    false,
-  );
+test("ADVERSARIAL (F4 recompute REACHABLE): a candidate whose tree cannot be resolved fails closed AT the recompute gate (resolver returns null → block)", () => {
+  const { record, opts } = validCtx("unresolvable-reach");
+  let treeCalls = 0;
+  const nullResolver = () => { treeCalls++; return null; }; // the candidate's tree cannot be resolved by git
+  const res = acc.authorizesIntegration(record, "refs/heads/integration", Object.assign({}, opts, { treeResolver: nullResolver }));
+  assert.strictEqual(res, false, "an unresolvable candidate tree must fail closed");
+  assert.ok(treeCalls > 0, "the recompute resolver IS reached and its null result fails closed — treeCalls=" + treeCalls);
 });
 
-test("ADVERSARIAL: lease-fencing seam — a record minted under a superseded lease token blocks (SEC-4)", () => {
-  const root = tmpLeaseRoot("acc-f10-unit");
-  const spId = "SP-ACC-UNIT";
+test("ADVERSARIAL (F4 lease-gate REACHABLE): a record under a SUPERSEDED lease blocks AT the lease-fencing gate — the SAME record with the CURRENT token authorizes (only the lease gate distinguishes them)", () => {
+  const root = tmpLeaseRoot("acc-f10-reach");
+  const spId = "SP-ACC-F10-REACH";
   const a1 = lease.acquire(spId, { root, sessionId: "sess-stale" });
   lease.release(spId, { root, token: a1.token });
   lease.acquire(spId, { root, sessionId: "sess-current" }); // supersedes a1
   const record = acc.produceForTest({ target_ref: "refs/heads/integration", lease_fencing_token: a1.token });
-  assert.strictEqual(
-    acc.authorizesIntegration(record, "refs/heads/integration", { spId, leaseRoot: root }),
-    false,
-  );
+  // FULL valid opts (integrationHead===base, tree + ancestry resolvers) so authz passes identity/freshness and
+  // REACHES the lease-fencing gate, where the stale token fails (the old test passed only {spId,leaseRoot} → it
+  // blocked at freshness before verifyToken; verifyCalls was 0 — qa flagged this).
+  const fullOpts = { integrationHead: BASE, spId, leaseRoot: root, treeResolver: okTree, ancestryResolver: () => true };
+  assert.strictEqual(acc.authorizesIntegration(record, "refs/heads/integration", fullOpts), false, "the superseded-token record must block");
+  // Prove the LEASE gate is what distinguished it: the identical record carrying the CURRENT token authorizes.
+  const cur = lease.status(spId, { root }).token;
+  const okRec = Object.assign({}, record, { lease_fencing_token: cur });
+  assert.strictEqual(acc.authorizesIntegration(okRec, "refs/heads/integration", fullOpts), true, "the SAME record with the CURRENT token authorizes — the lease-fencing gate was reached and decisive");
 });
 
 test("HAPPY: lease-fencing seam — a record minted under the CURRENT lease token authorizes", () => {
@@ -431,6 +463,14 @@ test("validateCommitIdentity: TRUE only when BOTH base_commit AND result_commit 
     { base_commit: acc.TEST_BASE_SHA, result_commit: "refs/heads/y" },  // mutable ref candidate
     { base_commit: "g".repeat(40), result_commit: acc.TEST_CAND_SHA },  // 40 non-hex
     { base_commit: acc.TEST_BASE_SHA, result_commit: "c".repeat(41) },  // 41 hex
+    // F3 (β fix-lock 0.91): NON-STRING commit-identity values must be rejected (no String() coercion). A
+    // one-element array of a 40-hex string previously coerced past FULL_SHA_RE.
+    { base_commit: [acc.TEST_BASE_SHA], result_commit: acc.TEST_CAND_SHA },                       // array (was the coercion bypass)
+    { base_commit: acc.TEST_BASE_SHA, result_commit: [acc.TEST_CAND_SHA] },                       // array candidate
+    { base_commit: new String(acc.TEST_BASE_SHA), result_commit: acc.TEST_CAND_SHA },            // boxed String object
+    { base_commit: acc.TEST_BASE_SHA, result_commit: { toString: () => acc.TEST_CAND_SHA } },    // object w/ toString
+    { base_commit: 123, result_commit: acc.TEST_CAND_SHA },                                       // number
+    { base_commit: acc.TEST_BASE_SHA, result_commit: null },                                      // null field
     null, undefined, "not-an-object",
   ]) {
     assert.strictEqual(acc.validateCommitIdentity(bad), false, "must reject: " + JSON.stringify(bad));

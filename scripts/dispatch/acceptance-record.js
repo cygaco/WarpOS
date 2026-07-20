@@ -104,12 +104,13 @@ const FULL_SHA_RE = /^[0-9a-f]{40}$/i;
  * (result_tree_hash / workorder_digest are DIGESTS, not commit SHAs — validated separately by presence.)
  */
 function validateCommitIdentity(record) {
-  return (
-    !!record &&
-    typeof record === "object" &&
-    FULL_SHA_RE.test(String(record.base_commit || "")) &&
-    FULL_SHA_RE.test(String(record.result_commit || ""))
-  );
+  if (!record || typeof record !== "object") return false;
+  const b = record.base_commit;
+  const r = record.result_commit;
+  // F3 (β fix-lock 0.91): require STRING commit-identity fields — NO String() coercion. Previously
+  // String(record.base_commit || "") coerced a non-string (e.g. a one-element array ["<40hex>"]) past
+  // FULL_SHA_RE, so the "typed" schema did not actually require strings. typeof-gate BEFORE the regex.
+  return typeof b === "string" && FULL_SHA_RE.test(b) && typeof r === "string" && FULL_SHA_RE.test(r);
 }
 
 /** isFullSha(x) -> boolean. A head-coordinate (integrationHead/expectedHead/liveHead/newHead) must be an
@@ -197,12 +198,13 @@ function produce(input = {}) {
     produced_by: "trusted-verifier", // call-site-restricted provenance (see module doc), not a settable trust field
     produced_at: Date.now(),
     workorder_digest,
-    base_commit: input.base_commit || "",
+    // ED-238/F2: commit-identity fields are carried as-is (no `|| ""` mutable/empty default) and enforced by the
+    // validator below — produce() CANNOT emit a record whose base/candidate are not immutable full SHAs.
+    base_commit: typeof input.base_commit === "string" ? input.base_commit : input.base_commit,
     result_tree_hash: input.result_tree_hash || "",
     // R3-REG-1: the candidate/result commit the accepted tree is recomputed FROM at authz time (the immutable
-    // result ref, NOT the destination target_ref). Empty when the verifier did not bind one — authorization
-    // then requires the caller to supply opts.resultRef|opts.newHead, else it fails closed.
-    result_commit: input.result_commit || "",
+    // result ref, NOT the destination target_ref) — a full SHA, enforced by construction (below).
+    result_commit: typeof input.result_commit === "string" ? input.result_commit : input.result_commit,
     target_ref: input.target_ref || "",
     terminal_state,
     checker_digests: input.checker_digests && typeof input.checker_digests === "object" ? input.checker_digests : {},
@@ -213,6 +215,18 @@ function produce(input = {}) {
     lease_fencing_token: input.lease_fencing_token != null ? input.lease_fencing_token : null,
     integration_receipt: null, // filled in post-merge by commitIntegration's caller (split pre/post-merge, AC-5)
   };
+  // ED-238/F2 (β fix-lock 0.91): the PRODUCER / parse boundary enforces the commit-identity schema BY
+  // CONSTRUCTION — produce() FAILS CLOSED (throws) rather than emit a record whose base_commit/result_commit are
+  // not immutable full 40-hex SHAs. This closes the bypass where produce() copied arbitrary/mutable/empty values
+  // (authz still fail-closed downstream, but the by-construction invariant was absent — the ED238-PRODUCE-OLD-SHAPE
+  // finding). Validate BEFORE stableDigest so the digest is only ever taken over a valid record.
+  if (!validateCommitIdentity(record)) {
+    throw new TypeError(
+      "acceptance-record.produce: base_commit and result_commit MUST both be immutable full 40-hex commit SHAs " +
+        `(ED-238) — got base_commit=${JSON.stringify(record.base_commit)}, result_commit=${JSON.stringify(record.result_commit)}. ` +
+        "The trusted verifier must pass resolved commit SHAs.",
+    );
+  }
   record.record_digest = stableDigest(record);
   return record;
 }
@@ -379,6 +393,10 @@ function commitIntegration(record, targetRef, opts = {}) {
   if (!record || typeof record !== "object") return { ok: false, reason: "invalid-record" };
   if (typeof targetRef !== "string" || !targetRef) return { ok: false, reason: "invalid-target" };
   if (record.target_ref !== targetRef) return { ok: false, reason: "target-mismatch" };
+  // ED-238 axis-(b) no-bypass (β fix-lock 0.91): route the commit-identity through the ONE validator BEFORE any
+  // read of record.base_commit / record.result_commit (the hoisted CAS check + expected-head-base check read them
+  // below). No commit-identity reader precedes validateCommitIdentity.
+  if (!validateCommitIdentity(record)) return { ok: false, reason: "invalid-commit-identity" };
   if (opts.expectedHead == null) return { ok: false, reason: "missing-expected-head" };
 
   // C3/R2 + ED-238 head-coord re-binding: BIND the CAS to the accepted content — expectedHead (the head
