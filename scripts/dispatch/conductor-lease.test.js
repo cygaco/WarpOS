@@ -470,3 +470,47 @@ test("TEETH (ED-237): a LIVE stale-past-TTL lease IS reclaimed (hung-conductor r
   assert.strictEqual(staleRelease.ok, false);
   assert.strictEqual(staleRelease.reason, "fencing-mismatch");
 });
+
+// ── ED-237 F1 (β fix-lock 0.91): reclaimDeadGeneration return contract — a persistent unlink failure must NOT livelock ──
+test("TEETH (ED-237/F1): a PERSISTENT unlink failure on the dead lock returns a BOUNDED mutation-contended, never a livelock", () => {
+  const root = tmpRoot("ed237-f1-eperm");
+  const spId = "SP-ED237-F1";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  // A proven-dead, nonce-identified generation the reclaimer will elect + try to retire.
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now(), nonce: "deadF1gen" }) + "\n");
+  const origUnlink = fs.unlinkSync;
+  let ran = false;
+  try {
+    // Force unlink of the DEAD LOCK itself (mlp) to persistently fail (EPERM); allow all other unlinks (reap, tmp).
+    fs.unlinkSync = (p) => { if (p === mlp) { const e = new Error("perm"); e.code = "EPERM"; throw e; } return origUnlink.call(fs, p); };
+    const t0 = Date.now();
+    const res = lease._withMutationLock(spId, root, () => { ran = true; return { ok: true }; }, { maxWaitMs: 60 });
+    const elapsed = Date.now() - t0;
+    assert.strictEqual(ran, false, "must NOT enter the callback — the dead lock could not be retired");
+    assert.strictEqual(res.ok, false);
+    assert.strictEqual(res.reason, "mutation-contended", "a persistent unlink failure must return BOUNDED mutation-contended (reclaimDeadGeneration reports NOT-retired)");
+    assert.ok(elapsed < 5000, "must be BOUNDED — returned in <5s, not an unbounded busy-loop (was " + elapsed + "ms)");
+  } finally {
+    fs.unlinkSync = origUnlink;
+  }
+});
+
+test("TEETH (ED-237/F1): reclaimDeadGeneration returns FALSE when the dead lock cannot be removed, TRUE when it is (or is already absent)", () => {
+  const root = tmpRoot("ed237-f1-ret");
+  const spId = "SP-ED237-F1RET";
+  fs.mkdirSync(path.join(root, "conductor-leases"), { recursive: true });
+  const mlp = lease._mutationLockPath(spId, root);
+  fs.writeFileSync(mlp, JSON.stringify({ pid: 999999999, ts: Date.now(), nonce: "genRet" }) + "\n");
+  const origUnlink = fs.unlinkSync;
+  try {
+    fs.unlinkSync = (p) => { if (p === mlp) { const e = new Error("perm"); e.code = "EPERM"; throw e; } return origUnlink.call(fs, p); };
+    assert.strictEqual(lease._reclaimDeadGeneration(mlp, "genRet", 999999999), false, "unlink failed + lp still present → NOT retired");
+    assert.ok(fs.existsSync(mlp), "the dead lock survives an unlink failure");
+  } finally {
+    fs.unlinkSync = origUnlink;
+  }
+  // Now allow the unlink → retired true.
+  assert.strictEqual(lease._reclaimDeadGeneration(mlp, "genRet", 999999999), true, "unlink succeeds → retired");
+  assert.ok(!fs.existsSync(mlp), "the dead lock is gone");
+});

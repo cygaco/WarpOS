@@ -141,18 +141,28 @@ function reclaimDeadGeneration(lp, deadNonce, deadPid) {
   } catch {
     return false; // EEXIST (already elected) / ENOENT (already retired) / unsupported → contended
   }
+  let retired = false;
   try {
     const raw = fs.readFileSync(reap, "utf8").trim(); // same inode as lp
     const o = raw ? JSON.parse(raw) : null;
     if (o && o.nonce === deadNonce && pidProvenDead(o.pid)) {
-      try { fs.unlinkSync(lp); } catch {} // retire the dead-lock name (election-held; still proven dead)
+      // Retire the dead-lock name (election-held; still proven dead). Record whether it was ACTUALLY removed.
+      try { fs.unlinkSync(lp); retired = true; } catch { retired = false; }
     }
-    // else: lp is no longer the dead generation (a live replacement appeared) — leave it INTACT.
+    // else: lp is no longer the dead generation (a live replacement appeared) — leave it INTACT (retired stays false).
   } catch {
     /* reap unreadable — fall through to clean the reap link */
   }
   try { fs.unlinkSync(reap); } catch {} // always clean the reap link
-  return true;
+  // F1 (β design-lock 0.91): return true ONLY when the dead lock is CONFIRMED gone. A swallowed unlink failure
+  // must NOT read as retirement — otherwise withMutationLock treats `true` as success and `continue`s in a loop
+  // that never observes its deadline (an unbounded busy-loop on a persistent EPERM). If the unlink failed but lp
+  // is already absent (raced away), that still counts as retired. Otherwise return false → the caller falls to
+  // the contended/deadline path and returns a BOUNDED mutation-contended.
+  if (!retired) {
+    try { retired = !fs.existsSync(lp); } catch { retired = false; }
+  }
+  return retired;
 }
 
 /**
