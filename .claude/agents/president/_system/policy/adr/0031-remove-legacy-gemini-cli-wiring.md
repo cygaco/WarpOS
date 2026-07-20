@@ -53,3 +53,70 @@ An independent GPT cross-check (gpt-5.6-terra; `runtime/agy-adr-evidence/gpt-che
 - Inventory: `runtime/agy-adr-evidence/GEMINI-DEEPCLEAN-INVENTORY-20260720.md`
 - β ruling: `paths.betaEvents` 2026-07-20 (DECIDE B/0.90)
 - Branch: `sprint/gemini-deepclean-20260720`
+
+---
+
+## AMENDMENT — 2026-07-20 (ED-060 Task #3, Epsilon2): point-4 scoped-allow is STRUCTURALLY ABSENT in agy 1.1.4 → BLOCKED-ADVISORY stands; re-open trigger = agy version bump
+
+Point 4 specified "agy headless tool-permission = scoped read-only allow-list (grep/cat/ls/find/git-log/diff/show,
+deny else) … If scoped-allow is insufficient, agy stays BLOCKED-ADVISORY." The ED-060 diagnostic (worktree off
+main @bf7b5aa3) establishes the stronger fact: **agy 1.1.4 exposes NO per-tool permission mechanism at all** — the
+"scoped read-only allow-list" has nothing to bind to, so the fallback clause resolves to BLOCKED-ADVISORY not
+because scoped-allow is *insufficient* but because it is **absent**.
+
+**Evidence (re-checkable):**
+- `agy --help` (v1.1.4): the ONLY permission-related flags are `--dangerously-skip-permissions` (Auto-approve ALL —
+  forbidden by the `safe-spawn.js#AGY_FORBIDDEN_SKIP_PERM` guard + operator directive), `--sandbox` (terminal
+  restrictions — a coarse restrict, not a per-tool allow), and `--mode plan|accept-edits` (execution modes, not an
+  allowlist). There is NO `--allowedTools`, NO `--permissions-file`, NO `--permission-mode allowlist`.
+- agy settings (`~/.gemini/settings.json`, `~/.gemini/antigravity-cli/settings.json`, `~/.gemini/trustedFolders.json`):
+  ONLY folder-trust (`trustedWorkspaces` / `trustedFolders` — already trusting WarpOS). NO `permissions.allow` /
+  `allowedTools` schema exists for agy to read.
+
+**Resolution:** the agy AGENTIC headless tool-permission wall stays **BLOCKED-ADVISORY** (the honest 2-family floor,
+r3) — no scoped seam to build; NEVER skip-perms; NEVER a manual bypass. This is not a capability regression: the
+ED-060 **liveness** serve uses agy `-p` PRINT mode (agy's sole transport, ADR-0023), which does NOT invoke agentic
+tools (empirically `-p "PROBE OK."` returns clean, no permission wall), so the liveness close is **DECOUPLED** from
+the agentic tool-permission wall — ED-060 (c) does not require (b).
+
+**Re-open trigger (named enforcer, per policy-hygiene):** an **agy version bump** (current `agy --version` = 1.1.4).
+If a future agy adds a scoped per-tool permission flag/settings schema, re-open point-4 and wire the scoped
+read-only allow-list. Re-checkable at any time: `agy --version` + `agy --help | grep -iE 'allow|permission|tool'`
+(non-empty scoped-permission match = the seam now exists = re-open). Until then, point-4's allow-list is
+NOT-BUILDABLE-BY-CONSTRUCTION and BLOCKED-ADVISORY is the terminal honest state.
+
+**Do NOT reach for folder-trust as the permission seam (β-binding).** `trustedWorkspaces`/`trustedFolders` is
+COARSE (folder-level), the OPPOSITE of point-4's "scoped read-only, deny-else" intent — using it to enable agentic
+tools is a BROADER grant than the ADR wanted (a security downgrade dressed as a fix), it is not in point-4's option
+set (scoped-allow OR blocked-advisory; skip-perms operator-only), and enabling broader agy arbitrary execution is
+explicitly operator territory (r3). Since ED-060 liveness is decoupled via `-p`, there is no forcing function to
+solve agentic-permission now.
+
+**NAMED FUTURE OPERATOR DECISION (flag, do not pre-adopt):** if agy AGENTIC tool use ever becomes genuinely
+required beyond `-p`, whether to accept folder-trust-scoped agy execution is a **Class C operator security-posture
+call**. Surface it then with a real forcing function; never pre-adopt.
+
+### ED-060 HONESTY SPLIT (β load-bearing rider — never-claim-live-from-transport)
+A clean `agy -p` return proves the TRANSPORT is reachable and the print path decouples from the agentic wall — a
+NEGATIVE/decoupling result. It does NOT prove agy served the CONTRACTED model AUTHENTICATED. With the keyring
+EXPIRED (live 19:04Z probe: "not logged into Antigravity" + defaulting-to-CCPA + local-chrome/eval), a current
+clean `-p` return is very likely EVAL-MODE output, not an authenticated serve (the SP-719-L2 false-green: a
+"serve-proven" artifact whose own `cli_output` said "not logged in / eval mode"). So the ED-060 record SPLITS:
+- **(i) closeable NOW, recorded NARROWLY:** `-p` TRANSPORT-reachability + agentic-wall DECOUPLING.
+- **(ii) DEFERRED, blocked on operator `agy` login + ED-230:** the REAL served-model proof (`fallback:false`,
+  `gemini-3.1-pro-high`, cert-attest GREEN). NEVER folded into "ED-060 done" or "agy live."
+
+**Therefore ED-060 PARTIALLY closes:** (a) routing DONE (ADR-0031), (b) headless-perms RESOLVED-AS-BLOCKED-ADVISORY
+(this amendment), (c) real-serve OPEN/DEFERRED. Do NOT mark ED-060 fully closed. panel-3lab activation stays
+BLOCKED.
+
+**Enforcer for the split (β):** cert-attest MUST stay FAIL-CLOSED on the eval/default/not-logged-in `cli_output`
+tells (verified: `attested:false` at 19:04Z). Never let an `attested` boolean or a self-serving gate edit override
+the raw `cli_output` tells (the SP-719-L2 guard) — that is what keeps a future eval-mode `-p` output from being
+attested as live.
+
+- β: design-boundary consult to the PERSISTENT Beta → **DECIDE B/0.90** (msg 1c363adf reply, 2026-07-20 ~19:10Z,
+  ED-239 route); lead concurs + cleared the commit. Position-stable; verified against point-4/r3 + the
+  advisory-lab architecture.
+- ED-060 (c) real serve (`-p` → `fallback:false`, contracted model) remains gated on a valid keyring (operator
+  interactive `agy` login — ADR-0027 mitigation-3); ED-230 served-model proof stays OPEN.
