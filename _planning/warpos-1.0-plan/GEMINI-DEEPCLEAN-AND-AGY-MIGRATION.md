@@ -26,9 +26,13 @@ Prior sessions asserted agy was "blocked on an operator login / expired keyring 
 
 For a read-only security review of our own repo, give agy a **scoped `permissions.allow` whitelist** of read/inspect commands only (grep, cat, ls, find, git log/diff/show — deny all else) + a **guard that the agy invocation can NEVER carry `--dangerously-skip-permissions`** (that flag grants an advisory model arbitrary execution — operator territory, never a self-grant). If scoped-allow proves technically insufficient, agy stays **BLOCKED-ADVISORY** (the honest 2-family floor) — that is an acceptable outcome, skip-perms is not.
 
+**RESOLVED 2026-07-20 (ED-060 Task #3, Epsilon2) → BLOCKED-ADVISORY.** The `agy 1.1.4` diagnostic establishes the stronger fact: scoped-allow is not merely "insufficient" but **structurally ABSENT** — `agy --help` exposes NO per-tool allowlist (only `--dangerously-skip-permissions`[forbidden], `--sandbox`, `--mode`), and agy's settings (`~/.gemini/*`) carry only folder-trust, NO `permissions.allow`/`allowedTools` schema. So there is nothing to bind a scoped whitelist to; point-4's own blocked-advisory fallback is the terminal resolved state (ADR-0031 amendment @`d3455f87`, β DECIDE B/0.90). Folder-trust is NOT the seam (coarse/broader-grant/operator-territory, β-binding). **Re-open trigger: an agy version bump** (`agy --help | grep -iE 'allow|permission|tool'`). The liveness serve is decoupled anyway — it uses agy `-p` print mode, which invokes no agentic tools.
+
 ## Part 3 — the ED-060 close (liveness) + ED-230 (served-model proof)
 
 Per ADR-0027 rider-3 (still governing): ED-060 closes on ONE real `dispatch-agent.js security-reviewer` serve through the **agy lane** (once routing + tool-permission land), proving **authenticated liveness** (keyring valid, no terminal-fallback tell, real non-empty output, `fallback:false`) — machine-checked — plus **served-model identity from the operator's account config** (operator-attested), stated honestly as such. The stronger client-un-fakeable proof (an output-content challenge only the contracted model answers) is the **ED-230 / Phase-4** design candidate, NOT a reason to soften §7. **panel-3lab activation stays honestly BLOCKED until ED-230**; the 2-family floor + honest-blocked-3lab posture is unchanged. cert-attest's agy §7 remains fail-closed by construction (agy's log echo is never served-model proof).
+
+**⏸ DEFERRED-TO-PLAN-END — operator priority call, 2026-07-20 (ED-060 Task #3, Epsilon2).** The ED-060 (c) real serve, the ED-230 served-model proof, and panel-3lab activation ALL ride at the **END of the WarpOS 1.0 plan** — deferred by an operator priority call (an interactive login attempt did not take; `~/.gemini/oauth_creds.json` still carries the 2026-07-20T04:52Z expiry). (a) routing is DONE and (b) headless tool-permission is RESOLVED-AS-BLOCKED-ADVISORY (agy 1.1.4 has NO scoped-permission seam — ADR-0031 amendment @`d3455f87`, β DECIDE B/0.90); only (c) remains. **Re-open trigger:** a valid keyring at plan-end OR an operator-initiated `agy` login. The one-login-away serve runbook + payload are committed at `_planning/warpos-1.0-plan/ed060-c-serve-runbook.md` (+ `ed060-sec-serve-prompt.txt`) so (c) stays instantly executable whenever a valid keyring appears. Do NOT resurface agy work before plan-end.
 
 ## Status matrix
 
@@ -38,10 +42,10 @@ Per ADR-0027 rider-3 (still governing): ED-060 closes on ONE real `dispatch-agen
 | slug→display id-mapping | ✅ merged (`81847f40`) |
 | Legacy `gemini` CLI deep-clean | ▶️ THIS session (branch `sprint/gemini-deepclean-20260720`, β B/0.90) |
 | Role default reroute gemini→openai (verifiable binding) | ▶️ THIS session |
-| agy scoped read-only allow-list | ▶️ THIS session (or blocked-advisory, honest) |
+| agy scoped read-only allow-list | ✅ RESOLVED-AS-BLOCKED-ADVISORY (2026-07-20) — agy 1.1.4 has NO scoped-permission seam (ADR-0031 amendment `d3455f87`, β B/0.90); re-open = agy version bump |
 | Creep-back enforcer (wiring-precise + fixtures) | ▶️ THIS session (ED-243) |
-| ED-060 liveness close (real agy serve) | ⬜ after clean lands + tool-permission works — reversible, no operator action |
-| ED-230 served-model proof / panel-3lab activation | ⬜ OPEN design-level (Phase-4/ED-215); panel-3lab stays honest-blocked |
+| ED-060 liveness close (real agy serve) | ⏸ DEFERRED-TO-PLAN-END (operator priority call 2026-07-20; keyring expired, one interactive `agy` login un-defers; staged runbook committed) |
+| ED-230 served-model proof / panel-3lab activation | ⏸ DEFERRED-TO-PLAN-END with ED-060 (c) — OPEN design-level (Phase-4/ED-215); panel-3lab stays honest-blocked |
 
 ## Enforcers (named)
 - Deep-clean creep-back: the new wiring-precise check (ED-243) + its negative/positive fixtures + repointed `scan:model-chain`/`provider-trace`/`role-parity-scan`/`test-registry-roles`.

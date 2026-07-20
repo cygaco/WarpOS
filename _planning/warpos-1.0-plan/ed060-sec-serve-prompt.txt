@@ -1,0 +1,16 @@
+You are a security reviewer. Review the function below for security defects ONLY (auth/authz, injection, secrets, validation, trust-boundary). It is fully self-contained — everything you need is inlined; do not attempt to open files or run tools. Return a JSON object: {"verdict":"PASS"|"FAIL","findings":[{"id":"...","severity":"critical|high|medium|low","claim":"...","evidence":"..."}],"summary":"..."}.
+
+```js
+// verifyToken(spId, token, opts) — gate an irreversible integration on a per-sprint fencing token.
+function verifyToken(spId, token, opts = {}) {
+  const root = opts.root || process.env.LEASE_ROOT || "/tmp/leases";
+  const path = root + "/" + spId + ".lease";           // (1)
+  let lease;
+  try { lease = JSON.parse(require("fs").readFileSync(path, "utf8")); }
+  catch { return true; }                                 // (2) missing/unreadable lease -> allow
+  if (String(lease.token) == String(token)) return true; // (3) loose compare, string coercion
+  return false;
+}
+```
+
+Review these specifically: (1) is the lease path built safely from spId? (2) is the fail-open on a missing/unreadable lease correct for a security gate? (3) is the token comparison sound? Be concrete and cite the numbered lines.
