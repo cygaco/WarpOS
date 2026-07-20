@@ -161,7 +161,7 @@ Excluded from acceptance criteria: credential isolation, OS sandboxing, adversar
   `verified_by:` `node --test scripts/dispatch/helm-runner-codex-exit-proof.test.js`
 
 - **AC-26 — Scoped CORE-2 binding flip:** `trust-boundary/trusted-layer-sole-integrator` changes from `report_only:true` to binding, covers only artifact verification and integration, and passes the binding conformance run.  
-  `verified_by:` `node scripts/checks/conformance-matrix.js --enforce --coverage --flip-gate`
+  `verified_by:` `node scripts/checks/conformance-matrix.js --enforce --coverage --flip-gate --scope=core2` (the CORE-2 slice; the unrelated operator-deferred agy-antigravity/ED-060 lane is excluded — the full-suite flip stays correctly refused while agy is deferred)
 
 - **AC-27 — ED and falsifier closure:** ED-215 is closed only when the Phase-4 record-trust manifest names all G4.1–G4.6 falsifiers as required-present, each runs with zero skips, and ED-236 H5/C4 is recorded as adjacent rather than closed.  
   `verified_by:` `node scripts/checks/record-trust-gate.js --manifest .claude/project/sprint/sprints/SP-20260720-002/record-trust-gate.manifest.json --built` and `node scripts/checks/falsifier-liveness.js`

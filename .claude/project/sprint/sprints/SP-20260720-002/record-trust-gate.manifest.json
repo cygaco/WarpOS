@@ -2,96 +2,145 @@
   "schema": "warpos/record-trust-gate/v1",
   "sprint": "SP-20260720-002",
   "phase": "Phase 4 — trusted enforcement adapter",
-  "falsifier_dir": "scripts/dispatch/falsifiers",
-  "note": "Every required_present falsifier must EXIST and fail CLOSED (skip RED until its module is built; never green-on-absence). Positive companions are required_present too. Consumed by scripts/checks/record-trust-gate.js --manifest <this> --built and scripts/checks/falsifier-liveness.js.",
+  "_note": "Conforms to the scripts/checks/record-trust-gate.js schema (reference: SP-20260718-005 manifest). Each surface: reader (the module that gates the irreversible action), choke_point (path#anchor), structural_guard (path), scope in {same-session, cross-session}, trust_anchor (never a per-session-HMAC term for cross-session), falsifier_fixtures + positive_companions (root-relative paths, each present + FALSIFIER/MUST-BLOCK shaped). β design->build R1 (caller-cannot-shrink-check-set) is in S4; R2 (from_src_digest lineage) is enforced by scripts/checks/check-lib-single-source.js (S3 structural_guard). Consumed by: node scripts/checks/record-trust-gate.js --manifest <this> --built + scripts/checks/falsifier-liveness.js.",
+  "trust_anchor_forbidden_for_cross_session": ["hmac", "per-session-signature", "attest-signing", "sessionSecret"],
   "surfaces": [
     {
       "id": "S1-acceptance-to-merge",
-      "choke_point": "scripts/dispatch/acceptance-record.js#commitIntegration/#authorizesIntegration + Phase-4 pinned external checker",
-      "session_scope": "cross-session (content-addressed git identity, never per-session HMAC)",
-      "required_present": [
-        {"file": "self-asserted-accept-over-failing-tree.falsifier.test.js", "gate": "rider-1", "ac": "AC-4", "reason": "self-asserted-over-failing-check", "positive": "self-asserted-accept.positive.test.js"},
-        {"file": "head-advanced-after-check.falsifier.test.js", "gate": "G4.2", "ac": "AC-5", "reason": "head-advanced-after-check"},
-        {"file": "unbrokered-merge-bypass.falsifier.test.js", "gate": "G4.4", "ac": "AC-10", "reason": "unbrokered-ref-mutation", "positive": "brokered-merge.positive.test.js"},
-        {"file": "write-surface-delegation-completeness.falsifier.test.js", "gate": "G4.4", "ac": "AC-11", "reason": "per-verb-refusal+named-uncovered"},
-        {"file": "precommit-bypass-harmless.falsifier.test.js", "gate": "G4.4", "ac": "AC-12", "reason": "requires-new-controller-acceptance-record"}
+      "reader": "scripts/dispatch/trusted-controller.js",
+      "action_gated": "authorized integration -> merge into main",
+      "scope": "cross-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/acceptance-record.js#authorizesIntegration",
+      "structural_guard": "scripts/checks/acceptance-read-choke-point.js",
+      "trust_anchor": "content-addressed git identity (immutable full-SHA + trusted-verifier recompute + ancestry)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/self-asserted-accept-over-failing-tree.falsifier.test.js",
+        "scripts/dispatch/falsifiers/head-advanced-after-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/unbrokered-merge-bypass.falsifier.test.js",
+        "scripts/dispatch/falsifiers/write-surface-delegation-completeness.falsifier.test.js",
+        "scripts/dispatch/falsifiers/precommit-bypass-harmless.falsifier.test.js"
       ],
-      "retained_existing": ["forged-acceptance-record", "self-asserted-success", "stale-base", "superseded-lease", "validation-to-merge-race", "acceptance-choke-point-bypass"]
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/self-asserted-accept.positive.test.js",
+        "scripts/dispatch/falsifiers/brokered-merge.positive.test.js"
+      ]
     },
     {
       "id": "S2-pinned-bundle-integrity",
-      "choke_point": "scripts/dispatch/pinned-checker-bundle.js#runPinnedSuite (verify-before-execute + out-of-tree)",
-      "session_scope": "same-session (content-addressed bundle pin)",
-      "required_present": [
-        {"file": "checker-poisoning.falsifier.test.js", "gate": "G4.1", "ac": "AC-14", "reason": "checker-not-from-pinned-bundle", "positive": "checker-poisoning.positive.test.js"},
-        {"file": "checker-self-modification.falsifier.test.js", "gate": "G4.6", "ac": "AC-16", "reason": "checker-mutated-mid-run"},
-        {"file": "pinned-bundle-path-symlink.falsifier.test.js", "gate": "-", "ac": "AC-15", "reason": "resolution-outside-candidate"},
-        {"file": "bundle-hash-mismatch.falsifier.test.js", "gate": "-", "ac": "AC-13", "reason": "bundle-pin-mismatch"}
+      "reader": "scripts/dispatch/trusted-controller.js",
+      "action_gated": "which checker runs -> integration decision",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/pinned-checker-bundle.js#runPinnedSuite",
+      "structural_guard": "scripts/dispatch/pinned-checker-bundle.js",
+      "trust_anchor": "content-addressed bundle digest (verify-before + re-hash-after; resolveExecutable-outside-candidate)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/checker-poisoning.falsifier.test.js",
+        "scripts/dispatch/falsifiers/checker-self-modification.falsifier.test.js",
+        "scripts/dispatch/falsifiers/pinned-bundle-path-symlink.falsifier.test.js",
+        "scripts/dispatch/falsifiers/bundle-hash-mismatch.falsifier.test.js"
+      ],
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/checker-poisoning.positive.test.js"
       ]
     },
     {
       "id": "S3-check-library",
-      "choke_point": "scripts/dispatch/check-lib/index.js (one module, 3 consumers) + scripts/checks/check-lib-single-source.js",
-      "session_scope": "same-session",
-      "beta_R2": "check-lib-single-source.js proves hook+pre-commit require() the SOURCE, but the AUTHORITATIVE consumer (the controller) runs the PINNED snapshot — so the enforcer must ALSO assert the pinned bundle manifest's promotion.from_src_digest === the live check-lib source digest (a fork could otherwise ship in the snapshot unverified-as-same-source). β re-checks this lineage at gaunttet.",
-      "required_present": [
-        {"file": "shared-check-library-reachability.falsifier.test.js", "gate": "rider-4", "ac": "AC-19", "reason": "check-fired-via-each-consumer", "positive": "shared-check-library-3consumer.positive.test.js"},
-        {"file": "shared-check-library-export-drift.falsifier.test.js", "gate": "rider-4", "ac": "AC-18", "reason": "check-export-missing"}
+      "reader": "scripts/checks/check-lib-single-source.js",
+      "action_gated": "single-source guarantee -> 3-consumer wiring + from_src_digest lineage (beta R2)",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/check-lib/index.js",
+      "structural_guard": "scripts/checks/check-lib-single-source.js",
+      "trust_anchor": "one shared module + pinned-bundle from_src_digest lineage",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/shared-check-library-reachability.falsifier.test.js",
+        "scripts/dispatch/falsifiers/shared-check-library-export-drift.falsifier.test.js"
+      ],
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/shared-check-library-3consumer.positive.test.js"
       ]
     },
     {
       "id": "S4-run-manifest-default-deny",
-      "choke_point": "scripts/dispatch/trusted-controller.js#reconcileRunManifest (nonce-bound)",
-      "session_scope": "same-session (per-run nonce)",
-      "distinct_reason_contract": true,
-      "required_present": [
-        {"file": "default-deny-missing-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "missing-required-check"},
-        {"file": "default-deny-duplicate-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "duplicate-check-result"},
-        {"file": "default-deny-unknown-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "unknown-check-result"},
-        {"file": "default-deny-stale-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "stale-check-result"},
-        {"file": "default-deny-malformed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "malformed-check-result"},
-        {"file": "default-deny-timedout-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-timed-out"},
-        {"file": "default-deny-skipped-required-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "required-check-skipped"},
-        {"file": "default-deny-crashed-check.falsifier.test.js", "gate": "G4.3", "ac": "AC-7", "reason": "check-failed"},
-        {"file": "caller-cannot-shrink-check-set.falsifier.test.js", "gate": "beta-R1", "ac": "AC-7b", "reason": "check-failed (pinned required check fires despite input.expected_checks=[]/shrunk)", "note": "β design->build R1 (settable check-set provenance): the controller runs the pinned bundle FULL frozen CHECK_NAMES; run-manifest expected/required minted FROM the pinned frozen sets, never from input; input.expected_checks may only additively constrain (subset/require-more), never shrink required below the bundle REQUIRED_CHECKS. A caller passing []/shrunk over a tree that FAILS a required check is still REFUSED (the pinned required check fires+fails). Reachability: assert the required check FIRED, not just outcome=REFUSED."}
+      "reader": "scripts/dispatch/trusted-controller.js",
+      "action_gated": "default-deny over every expected check -> integration",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/trusted-controller.js#reconcileRunManifest",
+      "structural_guard": "scripts/dispatch/trusted-controller.js",
+      "trust_anchor": "nonce-bound run manifest + expected/required minted from pinned frozen CHECK_NAMES (beta R1)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/default-deny-missing-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-duplicate-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-unknown-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-stale-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-malformed-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-timedout-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-skipped-required-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/default-deny-crashed-check.falsifier.test.js",
+        "scripts/dispatch/falsifiers/caller-cannot-shrink-check-set.falsifier.test.js"
       ],
-      "positive": "run-manifest-satisfied.positive.test.js"
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/run-manifest-satisfied.positive.test.js"
+      ]
     },
     {
       "id": "S5-helm-runner-exit-proof",
-      "choke_point": "scripts/dispatch/helm-runner.js via panel-lanes.panelStatus (panel-2family floor)",
-      "session_scope": "same-session",
-      "required_present": [
-        {"file": "sol-a3-required-lane-killed.falsifier.test.js", "gate": "G4.5", "ac": "AC-22", "reason": "required-lane-failed"},
-        {"file": "sol-a3-optional-lane-semantics.falsifier.test.js", "gate": "G4.5", "ac": "AC-23", "reason": "optional-lane-ran-and-failed", "positive": "sol-a3-absent-optional-agy.positive.test.js"},
-        {"file": "sol-a3-agy-route-not-served-proof.falsifier.test.js", "gate": "G4.5", "ac": "AC-24", "reason": "agy-route-not-served-proof"}
+      "reader": "scripts/dispatch/helm-runner.js",
+      "action_gated": "aggregate helm exit-proof -> release readiness",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/helm-runner.js",
+      "structural_guard": "scripts/dispatch/helm-runner.js",
+      "trust_anchor": "panel-2family floor required/optional (absent-optional not block; optional-ran-failed binds; never agy-as-proof)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/sol-a3-required-lane-killed.falsifier.test.js",
+        "scripts/dispatch/falsifiers/sol-a3-optional-lane-semantics.falsifier.test.js",
+        "scripts/dispatch/falsifiers/sol-a3-agy-route-not-served-proof.falsifier.test.js"
+      ],
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/sol-a3-absent-optional-agy.positive.test.js"
       ]
     },
     {
       "id": "S6-ap8-signature-contract",
-      "choke_point": "scripts/dispatch/trusted-controller.js module-load assertAcceptanceRecordContract()",
-      "session_scope": "same-session",
-      "required_present": [
-        {"file": "acceptance-record-signature-drift.falsifier.test.js", "gate": "rider-6", "ac": "AC-2", "reason": "acceptance-record-contract-drift-throws-at-load"}
-      ]
+      "reader": "scripts/dispatch/trusted-controller.js",
+      "action_gated": "acceptance-record contract drift -> controller load refusal",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/dispatch/trusted-controller.js#assertAcceptanceRecordContract",
+      "structural_guard": "scripts/dispatch/trusted-controller.js",
+      "trust_anchor": "module-load behavioral smoke (exact exports + produce/authorizesIntegration behavior; drift throws)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/acceptance-record-signature-drift.falsifier.test.js"
+      ],
+      "positive_companions": []
     },
     {
       "id": "S7-honest-promise-scope",
-      "choke_point": "honest-promise statement + CORE-2 conformance flip",
-      "session_scope": "n/a (static)",
-      "required_present": [
-        {"file": "honest-promise-scope.falsifier.test.js", "gate": "rider-CORE2-slice", "ac": "AC-1", "reason": "promise-overclaims-beyond-artifact-verification+integration-slice"}
-      ]
+      "reader": "scripts/checks/conformance-matrix.js",
+      "action_gated": "CORE-2 slice binding-flip -> honest-promise scope",
+      "scope": "same-session",
+      "new_in_phase3": false,
+      "choke_point": "scripts/checks/conformance-matrix.js",
+      "structural_guard": "scripts/checks/conformance-matrix.js",
+      "trust_anchor": "scoped CORE-2 artifact-verification+integration SLICE only (evaluateCore2Live + --flip-gate --scope=core2)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/honest-promise-scope.falsifier.test.js"
+      ],
+      "positive_companions": []
     }
   ],
   "bonus_falsifiers": [
-    "forge-invalid-cannot-authorize.falsifier.test.js",
-    "produce-override-cannot-bypass-schema.falsifier.test.js",
-    "cas-newhead-binding-reachable.falsifier.test.js"
+    "scripts/dispatch/falsifiers/forge-invalid-cannot-authorize.falsifier.test.js",
+    "scripts/dispatch/falsifiers/produce-override-cannot-bypass-schema.falsifier.test.js",
+    "scripts/dispatch/falsifiers/cas-newhead-binding-reachable.falsifier.test.js"
   ],
   "closure_gates": {
-    "core2_flip": "node scripts/checks/conformance-matrix.js --enforce --coverage --flip-gate",
-    "ed215_close": "ED-215 closed only when every G4.1-G4.6 falsifier is required-present + runs zero-skips; ED-236 H5/C4 recorded as adjacent, NOT closed",
+    "core2_flip": "node scripts/checks/conformance-matrix.js --enforce --coverage --flip-gate --scope=core2",
+    "ed215_close": "ED-215 resolved on-disk; ED-236 H5/C4 recorded adjacent (NOT closed). gitignored ledger — reconcile canonical at release.",
     "single_source": "node scripts/checks/check-lib-single-source.js (exit 0)"
   }
 }

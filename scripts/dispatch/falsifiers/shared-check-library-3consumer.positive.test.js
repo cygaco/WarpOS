@@ -13,10 +13,12 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..", "..", "..");
 const CHECK_LIB_DIR = path.join(ROOT, "scripts", "dispatch", "check-lib");
 const HOOK = path.join(ROOT, "scripts", "hooks", "check-lib-prevention.js");
-const PRECOMMIT = path.join(ROOT, "scripts", "hooks", "pre-commit-steps-check.js");
+// Seam D reconcile (ε integration phase): pre-commit consumer = pre-commit-check-lib.js; the controller
+// consumes the PINNED SNAPSHOT (pinned-checker-bundle), not check-lib directly (Seam B / β R2).
+const PRECOMMIT = path.join(ROOT, "scripts", "hooks", "pre-commit-check-lib.js");
 const CONTROLLER = path.join(ROOT, "scripts", "dispatch", "trusted-controller.js");
 
-function fileRequiresCheckLib(p) {
+function fileMatches(p, re) {
   if (!fs.existsSync(p)) return false;
   let content;
   try {
@@ -24,8 +26,10 @@ function fileRequiresCheckLib(p) {
   } catch {
     return false;
   }
-  return /require\([^)]*check-lib[^)]*\)/.test(content);
+  return re.test(content);
 }
+const fileRequiresCheckLib = (p) => fileMatches(p, /require\([^)]*check-lib[^)]*\)/);
+const controllerRequiresPinnedBundle = (p) => fileMatches(p, /require\([^)]*pinned-checker-bundle[^)]*\)/);
 
 test("AC-19 shared check-library — POSITIVE: the hook consumer authorizes only after the shared REQUIRED checks ran clean", (t) => {
   if (!fs.existsSync(CHECK_LIB_DIR) || !fs.existsSync(HOOK)) return t.skip("pending BUNDLE (falsifier RED)");
@@ -42,9 +46,11 @@ test("AC-19 shared check-library — POSITIVE: the hook consumer authorizes only
   );
   assert.strictEqual(cleanResult.missing.length, 0, "no registry drift on the golden path");
 
-  // Full 3-consumer positive requires backend-builder's pre-commit + controller wiring — asserted together
-  // once present (matches the negative falsifier's gating; not fabricated as green in the meantime).
-  if (!fileRequiresCheckLib(PRECOMMIT) || !fs.existsSync(CONTROLLER) || !fileRequiresCheckLib(CONTROLLER)) {
+  // Full 3-consumer positive: pre-commit consumes the check-lib SOURCE; the controller consumes the PINNED
+  // SNAPSHOT (Seam B / β R2). Skip RED only if a consumer is genuinely absent/unwired; else AFFIRM.
+  if (!fileRequiresCheckLib(PRECOMMIT) || !fs.existsSync(CONTROLLER) || !controllerRequiresPinnedBundle(CONTROLLER)) {
     return t.skip("pending backend-builder — full 3-consumer positive awaits pre-commit + controller wiring (falsifier RED)");
   }
+  assert.ok(fileRequiresCheckLib(PRECOMMIT), "pre-commit consumer require()s the check-lib source");
+  assert.ok(controllerRequiresPinnedBundle(CONTROLLER), "controller consumer require()s the pinned bundle snapshot (Seam B)");
 });

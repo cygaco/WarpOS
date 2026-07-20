@@ -59,10 +59,16 @@ const SELF_EXEMPT = new Set(["scripts/checks/check-lib-single-source.js"]);
 // The 3 Seam D consumers (β rider 4 / R-4). Paths not yet present are `pending`, never a hard failure —
 // the CLOSURE gate that requires all 3 PRESENT+wired is record-trust-gate.js --built, run after every
 // unit in the Phase-4 build order has merged.
+// Seam D integration reconcile (ε, SP-20260720-002 build integration phase): each consumer declares
+// its OWN require target. The hook + pre-commit consume the check-lib SOURCE directly (fast/early
+// feedback). The controller consumes the PINNED SNAPSHOT (pinned-checker-bundle) — NEVER the live
+// in-tree source (Seam B / β R2); its same-source guarantee is the from_src_digest LINEAGE
+// (checkLineage), so its wired-check verifies the SNAPSHOT require, not a check-lib require (a
+// direct-check-lib expectation on the controller was the cross-builder seam mismatch this reconciles).
 const CONSUMERS = Object.freeze([
-  { id: "hook", path: "scripts/hooks/check-lib-prevention.js" },
-  { id: "pre-commit", path: "scripts/hooks/pre-commit-steps-check.js" },
-  { id: "controller", path: "scripts/dispatch/trusted-controller.js" },
+  { id: "hook", path: "scripts/hooks/check-lib-prevention.js", requireTarget: "check-lib" },
+  { id: "pre-commit", path: "scripts/hooks/pre-commit-check-lib.js", requireTarget: "check-lib" },
+  { id: "controller", path: "scripts/dispatch/trusted-controller.js", requireTarget: "pinned-checker-bundle" },
 ]);
 
 function identifierVariants(name) {
@@ -148,8 +154,13 @@ function checkConsumers(root = ROOT, consumers = CONSUMERS) {
       report.push({ ...c, status: "unreadable", error: String(e && e.message ? e.message : e) });
       continue;
     }
-    const requiresCheckLib = /require\(\s*(['"])(?:[^'"]*\/)?(?:dispatch\/)?check-lib(?:\/index(?:\.js)?)?\1\s*\)/.test(content);
-    report.push({ ...c, status: requiresCheckLib ? "wired" : "missing-require" });
+    // Per-consumer require target: check-lib SOURCE (hook/pre-commit) vs the pinned SNAPSHOT
+    // pinned-checker-bundle (controller, Seam B — verified same-source by checkLineage).
+    const wiredRe =
+      c.requireTarget === "pinned-checker-bundle"
+        ? /require\(\s*(['"])(?:[^'"]*\/)?(?:dispatch\/)?pinned-checker-bundle(?:\.js)?\1\s*\)/
+        : /require\(\s*(['"])(?:[^'"]*\/)?(?:dispatch\/)?check-lib(?:\/index(?:\.js)?)?\1\s*\)/;
+    report.push({ ...c, status: wiredRe.test(content) ? "wired" : "missing-require" });
   }
   return report;
 }

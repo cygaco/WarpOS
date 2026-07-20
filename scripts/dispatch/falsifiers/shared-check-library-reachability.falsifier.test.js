@@ -6,7 +6,7 @@
 // (for pre-commit/controller) is actually wired to require() check-lib — those two are backend-builder's
 // units (build_spec §3: BUNDLE merges first, CONTROLLER/HELM-RUNNER second). The hook consumer (this unit,
 // BUNDLE) is asserted fully: a spy-proof that the shared suite really RAN (not just imported), and a
-// negative control exposing the exact check reason on a bad input.
+// negative control that MUST-BLOCK a hollow-success envelope, exposing the exact check reason on a bad input.
 const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("fs");
@@ -15,10 +15,13 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..", "..", "..");
 const CHECK_LIB_DIR = path.join(ROOT, "scripts", "dispatch", "check-lib");
 const HOOK = path.join(ROOT, "scripts", "hooks", "check-lib-prevention.js");
-const PRECOMMIT = path.join(ROOT, "scripts", "hooks", "pre-commit-steps-check.js");
+// Seam D reconcile (ε integration phase): the pre-commit consumer is pre-commit-check-lib.js (the
+// CONTROLLER builder's actual file), and the controller consumes the PINNED SNAPSHOT (pinned-checker-
+// bundle), NEVER check-lib directly (Seam B / β R2) — so its wiring is detected by the snapshot require.
+const PRECOMMIT = path.join(ROOT, "scripts", "hooks", "pre-commit-check-lib.js");
 const CONTROLLER = path.join(ROOT, "scripts", "dispatch", "trusted-controller.js");
 
-function fileRequiresCheckLib(p) {
+function fileMatches(p, re) {
   if (!fs.existsSync(p)) return false;
   let content;
   try {
@@ -26,7 +29,13 @@ function fileRequiresCheckLib(p) {
   } catch {
     return false;
   }
-  return /require\([^)]*check-lib[^)]*\)/.test(content);
+  return re.test(content);
+}
+function fileRequiresCheckLib(p) {
+  return fileMatches(p, /require\([^)]*check-lib[^)]*\)/);
+}
+function controllerRequiresPinnedBundle(p) {
+  return fileMatches(p, /require\([^)]*pinned-checker-bundle[^)]*\)/);
 }
 
 test("AC-17/AC-19 shared check-library reachability — the shared check FIRES via each of the 3 consumers", (t) => {
@@ -34,7 +43,9 @@ test("AC-17/AC-19 shared check-library reachability — the shared check FIRES v
   if (!fs.existsSync(HOOK)) return t.skip("pending BUNDLE — hook consumer not yet built (falsifier RED)");
   if (!fileRequiresCheckLib(PRECOMMIT)) return t.skip("pending backend-builder — pre-commit not yet wired to check-lib (falsifier RED)");
   if (!fs.existsSync(CONTROLLER)) return t.skip("pending backend-builder — controller not yet built (falsifier RED)");
-  if (!fileRequiresCheckLib(CONTROLLER)) return t.skip("pending backend-builder — controller not yet wired to check-lib (falsifier RED)");
+  // Seam B / β R2: the controller is wired via the PINNED SNAPSHOT (pinned-checker-bundle), never a
+  // direct check-lib require — detect that, not a check-lib require (the cross-builder model reconcile).
+  if (!controllerRequiresPinnedBundle(CONTROLLER)) return t.skip("pending backend-builder — controller not yet wired to the pinned bundle (falsifier RED)");
 
   // Consumer 1 — the Claude hook: call the exported entrypoint (NOT just require() it) and prove the
   // suite-completeness REQUIRED check actually FIRED, with real result shapes (a spy-equivalent — we
