@@ -21,7 +21,7 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const { harness, sealedDir } = require("../checks/lib/fixture-harness");
-const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen } = require("./safe-spawn");
+const { assertArgs, resolveTool, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen, withCodexHome, DEFAULT_CODEX_HOME } = require("./safe-spawn");
 
 // Synchronous, event-loop-free sleep so a process-liveness poll can block inside a
 // synchronous h.test without a foreground shell `sleep`. The detached descendants
@@ -378,6 +378,45 @@ h.failClosed("safeSpawnFile fails closed on an arg violation (NO spawn, NO file)
     const wrong = r.ok === true || r.reason !== "arg_policy_violation" || fs.existsSync(outFile);
     return { ok: wrong };
   } finally {
+    fx.cleanup();
+  }
+});
+
+// ── withCodexHome — the isolated CODEX_HOME seam (RI-009 codex cache multi-writer collision) ──
+// The default is the isolated ~/.codex-warpos (reading the constant does NOT seed).
+h.pass("DEFAULT_CODEX_HOME is the isolated ~/.codex-warpos", () => ({
+  ok: typeof DEFAULT_CODEX_HOME === "string" && /[\\/]\.codex-warpos$/.test(DEFAULT_CODEX_HOME),
+}));
+
+// Behavior: codex spawns get the isolated CODEX_HOME; an explicit CODEX_HOME wins; non-codex
+// tools are untouched; the caller's env is never mutated. Point DEFAULT at a SEALED temp via a
+// fresh require so the one-time seed is side-effect-contained (never touches the real home).
+h.pass("withCodexHome: codex defaulted, explicit wins, other tools untouched, no env mutation", () => {
+  const fx = sealedDir({}, "codexhome");
+  const home = fx.dir;
+  const prev = process.env.WARPOS_CODEX_HOME;
+  process.env.WARPOS_CODEX_HOME = home;
+  delete require.cache[require.resolve("./safe-spawn")];
+  try {
+    const ss = require("./safe-spawn");
+    const input = {};
+    ss.withCodexHome("codex", input); // must NOT mutate the caller's env
+    const explicitEnv = { CODEX_HOME: "D:/pinned" };
+    const claudeEnv = { PATH: "x" };
+    const ok =
+      ss.withCodexHome("codex", {}).CODEX_HOME === home && // (1) codex defaulted to the isolated home
+      ss.DEFAULT_CODEX_HOME === home &&
+      ss.withCodexHome("codex", explicitEnv) === explicitEnv && // (2) explicit override returned untouched
+      ss.withCodexHome("codex", explicitEnv).CODEX_HOME === "D:/pinned" &&
+      ss.withCodexHome("claude", claudeEnv) === claudeEnv && // (3) non-codex tools untouched (same object)
+      ss.withCodexHome("agy", claudeEnv).CODEX_HOME === undefined &&
+      input.CODEX_HOME === undefined; // (4) no mutation of the caller's env
+    return { ok };
+  } finally {
+    if (prev === undefined) delete process.env.WARPOS_CODEX_HOME;
+    else process.env.WARPOS_CODEX_HOME = prev;
+    delete require.cache[require.resolve("./safe-spawn")];
+    require("./safe-spawn"); // restore the canonical module instance in the require cache
     fx.cleanup();
   }
 });

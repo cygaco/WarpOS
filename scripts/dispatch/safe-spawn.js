@@ -51,6 +51,51 @@ const { spawnSync } = require("child_process");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
+// ── Isolated CODEX_HOME (RI-009: codex model-cache multi-writer collision) ──────────
+// The ChatGPT desktop app's embedded codex, the codex CLI, and stale session remnants
+// all share ~/.codex/models_cache.json and write INCOMPATIBLE schemas — whoever writes
+// last decides whether OUR CLI can LOAD it (intermittent "missing field
+// supports_reasoning_summaries" load failure; a read-only pin instead yields "Access is
+// denied"). Fix: give WarpOS codex spawns their OWN CODEX_HOME so the shared cache can't
+// be clobbered under us. This is applied at the SINGLE kernel choke-point every codex
+// spawn routes through (providers.js runProvider, cert-attest.js, dispatch-review →
+// dispatch-agent, ...); the raw `codex exec`-from-Bash route is separately blocked by
+// dispatch-route-guard, so the two together cover both routes (lib-only-fix pairing).
+const DEFAULT_CODEX_HOME =
+  process.env.WARPOS_CODEX_HOME || path.join(os.homedir(), ".codex-warpos");
+const _codexHomeSeeded = new Set();
+
+// Seed the isolated home ONCE per process: copy-if-MISSING auth.json + config.toml from
+// ~/.codex (never overwrite an existing file; never log key material). Fail-open — a seed
+// failure must never block a dispatch (codex will just re-auth / re-fetch its own cache).
+function seedCodexHome(dir) {
+  if (_codexHomeSeeded.has(dir)) return;
+  _codexHomeSeeded.add(dir); // memoize up-front so a partial failure never retry-spams the hot path
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const src = path.join(os.homedir(), ".codex");
+    for (const f of ["auth.json", "config.toml"]) {
+      const dst = path.join(dir, f);
+      if (fs.existsSync(dst)) continue; // copy-if-missing — never overwrite
+      const s = path.join(src, f);
+      if (fs.existsSync(s)) fs.copyFileSync(s, dst);
+    }
+  } catch {
+    /* fail-open: seeding is best-effort, never a dispatch blocker */
+  }
+}
+
+// Default CODEX_HOME for codex spawns WHEN NOT ALREADY SET (an explicit CODEX_HOME wins).
+// Returns a possibly-NEW env object — NEVER mutates the caller's env / process.env. Every
+// non-codex tool is returned untouched. This is the structural replacement for the manual
+// `CODEX_HOME=... node scripts/dispatch-agent.js ...` prefix (RI-009).
+function withCodexHome(toolId, env) {
+  if (toolId !== "codex") return env;
+  if (env && env.CODEX_HOME) return env; // explicit override wins — untouched
+  seedCodexHome(DEFAULT_CODEX_HOME);
+  return { ...(env || {}), CODEX_HOME: DEFAULT_CODEX_HOME };
+}
+
 // ── Tool-ID allowlist (the model never supplies an exe path) ──
 // kind drives invocation. `.cmd` shims on Windows still carry CVE-2024-27980
 // residual risk — mitigated by the arg-allowlist (no metachars reach the shell)
@@ -504,7 +549,7 @@ function safeSpawnSync(toolId, args, opts = {}) {
 
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
-  const childEnv = opts.env || process.env;
+  const childEnv = withCodexHome(toolId, opts.env || process.env);
 
   // .cmd shim => explicit `cmd.exe /c <abs.cmd> args` (the arg-allowlist already
   // refused shell metachars, so cmd.exe parsing has nothing to weaponize). Native
@@ -651,7 +696,7 @@ function safeSpawnFile(toolId, args, opts = {}) {
 
   const timeoutMs = opts.timeoutMs || 20 * 60 * 1000;
   const input = opts.input != null ? normalizeStdin(opts.input) : undefined;
-  const childEnv = opts.env || process.env;
+  const childEnv = withCodexHome(toolId, opts.env || process.env);
 
   let bin = tool.path;
   let spawnArgs = args || [];
@@ -730,4 +775,4 @@ function safeSpawnFile(toolId, args, opts = {}) {
   };
 }
 
-module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen, AGY_FORBIDDEN_SKIP_PERM };
+module.exports = { resolveTool, assertArgs, normalizeStdin, treeKill, safeSpawnSync, safeSpawnFile, TOOL_IDS, ARG_POLICY, PROJECT_ROOT, CMDLINE_MAX, assembledCmdlineLen, AGY_FORBIDDEN_SKIP_PERM, withCodexHome, DEFAULT_CODEX_HOME };
