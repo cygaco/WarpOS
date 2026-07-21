@@ -291,6 +291,31 @@ CANNED["test-upgrade-current-to-new.js"] = { status: 2, stdout: "", stderr: "FAT
   const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
   ok("GATE-B: an engine crash (no parseable payload) is fail-closed RED, never a clean pass", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
 }
+// ── 12: GATE-B INCOMPLETE-B skip-loud (no UNRELEASED capsule to upgrade TO,
+// mid-dev steady state where every capsule is a shipped/tagged frozen release)
+// → severity:manual — NOT red, NOT green. The full upgrade->conformance path
+// runs at the CEREMONY when a fresh capsule is cut from the current tree.
+// DISTINCT from the ps-unavailable INCOMPLETE (§9) which RED-blocks. ──
+CANNED["test-upgrade-current-to-new.js"] = {
+  status: 0,
+  stdout: JSON.stringify({
+    ok: null,
+    incomplete: true,
+    incomplete_reason: "no unreleased capsule cut (newest shipped/tagged=0.17.0); the full path runs at the ceremony when a fresh capsule is cut from the current tree",
+    from_version: null,
+    to_version: null,
+    ran: false,
+    ps_available: null,
+    asserts: [{ name: "upgrade_target_available", ok: false, detail: "INCOMPLETE (skip-loud)", loadBearing: false }],
+    sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+  }),
+};
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: INCOMPLETE-B (no unreleased cut) is severity:manual — skip-loud, NOT red, NOT green", gb && gb.severity === "manual", gb && `severity=${gb.severity}`);
+  ok("GATE-B: INCOMPLETE-B never greens release (severity !== green)", gb && gb.severity !== "green", gb && `severity=${gb.severity}`);
+  ok("GATE-B: INCOMPLETE-B message names the ceremony", gb && /ceremony/i.test(gb.message), gb && gb.message);
+}
 
 cp.spawnSync = realSpawnSync;
 
