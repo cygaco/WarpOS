@@ -62,7 +62,28 @@ function summarizeGateBAsserts(payload) {
       `sandbox-isolation NO-DELTA VIOLATED: onlyBefore=${(payload.sandbox_isolation.onlyBefore || []).length} onlyAfter=${(payload.sandbox_isolation.onlyAfter || []).length}`,
     );
   }
+  // F6 — dirty-set content-hash compensating control (SP-20260721-001 D-4
+  // INC-3 gauntlet-r1 fix cycle).
+  if (payload && payload.sandbox_isolation && payload.sandbox_isolation.dirty_set_content_unchanged === false) {
+    out.push(
+      `sandbox-isolation DIRTY-SET CONTENT CHANGED: ${((payload.sandbox_isolation.dirty_set_changed_files || []).slice(0, 5)).join(", ")}`,
+    );
+  }
   return out.slice(0, 8);
+}
+
+// (F2 — qa FUNC-PAYLOAD-TRUST) GATE-B's named LOAD-BEARING evidence: a green
+// verdict must never rest on merely `payload.ok === true` — the gate
+// independently re-verifies the SPECIFIC asserts the trust model requires are
+// present and green, mirroring the engine's own `ok` computation
+// (test-upgrade-current-to-new.js's REQUIRED_NAMED_LOAD_BEARING_ASSERTS).
+const GATE_B_REQUIRED_NAMED_ASSERTS = ["scan_install_green_3b", "fresh_n_parity_pathset_3c", "fresh_n_parity_content_3c"];
+function gateBNamedEvidencePresent(payload) {
+  const asserts = (payload && payload.asserts) || [];
+  return GATE_B_REQUIRED_NAMED_ASSERTS.every((name) => {
+    const a = asserts.find((x) => x.name === name);
+    return !!a && a.ok === true;
+  });
 }
 
 // GATE-A report-only ramp (SP-20260721-001 INC-2, α-ratified option b — the WarpOS report-only→enforce
@@ -296,6 +317,20 @@ const GATES = [
         details: summarizeGateBAsserts(payload),
       };
     }
+    // (1.25) F6 — dirty-set content-hash compensating control (SP-20260721-001
+    //     D-4 INC-3 gauntlet-r1). Same unconditional priority as (1): a
+    //     porcelain-line diff cannot see a content change to an ALREADY-dirty
+    //     file, so this control covers exactly that gap and blocks
+    //     unconditionally too, never softened by a later branch.
+    if (payload && payload.sandbox_isolation && payload.sandbox_isolation.dirty_set_content_unchanged === false) {
+      return {
+        ok: false,
+        severity: "red",
+        message:
+          "GATE-B upgrade_current_to_new: SANDBOX-ISOLATION DIRTY-SET CONTENT CHANGED — an already-dirty canonical file's CONTENT changed during the run (a porcelain status-line diff cannot see this). This BLOCKS unconditionally.",
+        details: summarizeGateBAsserts(payload),
+      };
+    }
     // (1.5) INCOMPLETE (B skip-loud) — no UNRELEASED capsule to upgrade TO
     //     (steady-state mid-dev: every capsule is a shipped/tagged frozen
     //     release). NOT a pass, NOT a red: the full upgrade->conformance path
@@ -315,7 +350,21 @@ const GATES = [
     }
     // (2) clean pass — apply succeeded and every load-bearing conformance
     //     assert (3b, 3c, + preconditions) is green.
-    if (r.status === 0 && payload && payload.ok) {
+    // (F2 — qa FUNC-PAYLOAD-TRUST) never trust `payload.ok === true` alone: a
+    //     status-0 payload could claim ok:true while missing the isolation
+    //     evidence entirely or omitting the named 3b/3c asserts (e.g. only
+    //     n1_resolved ran). Independently re-verify sandbox_isolation is
+    //     PRESENT and both its checks are true, AND the named load-bearing
+    //     evidence is present and green, before rendering green.
+    if (
+      r.status === 0 &&
+      payload &&
+      payload.ok === true &&
+      payload.sandbox_isolation &&
+      payload.sandbox_isolation.no_delta === true &&
+      payload.sandbox_isolation.dirty_set_content_unchanged === true &&
+      gateBNamedEvidencePresent(payload)
+    ) {
       return {
         ok: true,
         severity: "green",

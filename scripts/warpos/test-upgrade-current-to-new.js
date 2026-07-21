@@ -10,15 +10,24 @@
  * Class-C/preflight-block — see Step 2 below), and proves canonical was never
  * touched (reuses GATE-A's sandbox-isolation harness verbatim).
  *
- * CHUNK 1 of 2 (this file): Step 0 (resolve N/N-1) -> Step 1 (materialize N-1
- * via git-tag worktree + its own install.ps1) -> Step 2 (real apply via
- * run()) -> isolation -> the cheap 3a version-sanity sanity check.
- * CHUNK 2 (not yet in this file): 3b (scan:install GREEN on the upgraded
- * tree) and 3c (fresh-N oracle parity via test-scaffold-all-ways#runLeg3).
- * Both are LOAD-BEARING per the build-spec's trust model; 3a alone never
- * gates a green verdict. Deliberately NOT stubbed here — they are simply not
- * yet emitted into `asserts`, which is why `ok` below only reflects Steps 0-2
- * + isolation + 3a.
+ * Full engine shape: Step 0 (resolve N/N-1 via tagged-release capsules, fail-
+ * closed on any git-tag query error) -> Step 1 (materialize a REAL N-1
+ * install via git-tag worktree + its own install.ps1) -> Step 2 (real apply
+ * via run(), never the --json CLI) -> 3a (cheap, NON-load-bearing version-
+ * sanity signal) -> 3b (LOAD-BEARING: scan:install GREEN on the upgraded
+ * tree) -> 3c (LOAD-BEARING: FULL-TREE content+path parity vs a fresh-N
+ * oracle install via test-scaffold-all-ways#runLeg3, including
+ * framework-installed.json so a stuck/wrong installedVersion is caught here,
+ * not only by non-load-bearing 3a). Sandbox isolation (no-delta on canonical
+ * `git status`, plus a content-hash compensating control over the
+ * already-dirty file set — see `dirty_set_content_unchanged`) is checked
+ * unconditionally and blocks before any green verdict, regardless of asserts.
+ * `ok` requires: isolation held (both checks) AND every load-bearing assert
+ * passed AND the NAMED load-bearing evidence (`scan_install_green_3b`,
+ * `fresh_n_parity_pathset_3c`, `fresh_n_parity_content_3c`) is present and
+ * green — never merely "the set of load-bearing asserts happened to be
+ * non-empty and pass". 3a is excluded from `ok` on purpose; it can appear in
+ * `asserts` but can never flip the verdict alone.
  *
  * Usage:
  *   node scripts/warpos/test-upgrade-current-to-new.js [--json] [--timeout-ms <n>] [--help]
@@ -32,6 +41,7 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const {
@@ -41,7 +51,13 @@ const {
   findPowershellReal,
   runLeg3,
 } = require("./test-scaffold-all-ways");
-const { treeFileList, parityDiff } = require("./test-install-matrix");
+// NOTE: `treeFileList` deliberately NOT imported here — test-install-matrix.js's
+// version is SCOPED (.claude/_warpos/_requirements/_docs/ROADMAP.md/PROJECT.md
+// only), for THAT script's own narrower parity contract. GATE-B's 3c claims
+// FULL-TREE parity, so it uses its own `fullTreeFileList` (below), which walks
+// EVERY file under the install root. `parityDiff` (a generic set-diff) is
+// still shared.
+const { parityDiff } = require("./test-install-matrix");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const DEFAULT_TIMEOUT_MS = 240_000;
@@ -73,11 +89,65 @@ function semverCompare(a, b) {
   return 0;
 }
 
-// Fail-closed: throws if version.json is unreadable; returns n1:null (never a
-// guess) if no capsule strictly below N exists under framework/releases/.
-function tagExists(version) {
-  const r = spawnSync("git", ["tag", "-l", `warpos@${version}`], { cwd: REPO_ROOT, encoding: "utf8", timeout: 15_000 });
-  return r.status === 0 && (r.stdout || "").trim() === `warpos@${version}`;
+// Fail-closed: throws if version.json is unreadable, if resolving the
+// unreleased-cut's identity fails to bind to version.json (see
+// checkUnreleasedCutIdentity below), or if a tag query itself errors (see
+// tagExists below); returns n1:null (never a guess) if no capsule strictly
+// below N exists under framework/releases/.
+//
+// (F1 — qa FUNC-INCOMPLETE-FAILOPEN / TRACE-B-SEMANTICS) A git ERROR querying
+// a tag must NEVER be folded into ordinary "tag absent" — that silently
+// degrades a real git failure into the B-semantics "no unreleased cut"
+// INCOMPLETE path (skip-loud, renders manual, never blocks). Split the
+// outcomes: a CLEAN result (git exits 0) yields a definitive true/false by
+// stdout (`git tag -l <pattern>` exits 0 with empty stdout for a genuine
+// no-match — that is real tag-absence, not an error). A git ERROR (spawn
+// error, signal/timeout, or ANY non-zero exit — `git tag -l` never exits
+// non-zero for "no match") THROWS, so the caller (resolveVersions, then
+// runEngine's `n1_resolved` assert) propagates it as a LOAD-BEARING failure —
+// the engine/gate FAIL-CLOSED (red), never fail-open to manual.
+// `spawnFn` is injectable for testability (mirrors runLeg3's `findPs` seam)
+// without needing a real git failure to exercise the fail-closed path.
+function tagExists(version, spawnFn = spawnSync) {
+  const r = spawnFn("git", ["tag", "-l", `warpos@${version}`], { cwd: REPO_ROOT, encoding: "utf8", timeout: 15_000 });
+  if (r && r.error) {
+    throw new Error(`tagExists(${version}): git spawn error: ${r.error.message}`);
+  }
+  if (r && r.signal) {
+    throw new Error(`tagExists(${version}): git tag -l TIMEOUT/KILLED (signal=${r.signal})`);
+  }
+  if (!r || r.status !== 0) {
+    throw new Error(
+      `tagExists(${version}): git tag -l exited non-zero (status=${r && r.status}): ${((r && (r.stderr || r.stdout)) || "").slice(0, 300)}`,
+    );
+  }
+  return (r.stdout || "").trim() === `warpos@${version}`;
+}
+
+// (F1 identity bind) version.json is the current tree's release identity —
+// fail-closed if unreadable or malformed (never a silent skip).
+function readCurrentVersion() {
+  const versionPath = path.join(REPO_ROOT, "version.json");
+  const raw = fs.readFileSync(versionPath, "utf8");
+  const parsed = JSON.parse(raw);
+  if (!parsed || typeof parsed.version !== "string" || !parsed.version) {
+    throw new Error(`version.json at ${versionPath} has no usable .version field`);
+  }
+  return parsed.version;
+}
+
+// (F1 — qa TRACE-B-SEMANTICS) BIND identity: the selected unreleased-cut N
+// must equal version.json's version (the current tree's release identity).
+// Without this, a stale/foreign untagged capsule dir could be selected as N
+// even though it does not represent the tree actually under test — a
+// phantom N. Throws (fail-closed) on mismatch; never silently substitutes.
+function checkUnreleasedCutIdentity(unreleasedCut, currentVersion) {
+  if (unreleasedCut !== currentVersion) {
+    throw new Error(
+      `identity mismatch: selected unreleased-cut N=${unreleasedCut} does not equal version.json's version=${currentVersion} — refusing to select a phantom N (fail-closed)`,
+    );
+  }
+  return true;
 }
 
 // B semantics (ceremony-faithful): upgrade the newest SHIPPED release -> what we
@@ -92,7 +162,14 @@ function tagExists(version) {
 //     TO. Testing against a frozen shipped capsule skews by post-cut drift and
 //     hits baked shipped-drift (ED-251) — proves nothing about the release being
 //     cut. The full upgrade->conformance path runs at the CEREMONY.
-function resolveVersions() {
+// `tagExistsFn` is injectable (defaults to the real `tagExists`) so a git-tag
+// ERROR can be exercised synthetically without needing a real git failure —
+// see selfTest()'s F1 tooth. Any error thrown by `tagExistsFn` propagates
+// straight out of this function uncaught (fail-closed) — the caller
+// (runEngine) already wraps `resolveVersions()` in a try/catch that asserts
+// `n1_resolved:false` (LOAD-BEARING) on throw, never folding it into the
+// ordinary "no unreleased cut" INCOMPLETE (skip-loud/manual) path.
+function resolveVersions({ tagExistsFn = tagExists } = {}) {
   const releasesDir = path.join(REPO_ROOT, "framework", "releases");
   const capsules = fs
     .readdirSync(releasesDir, { withFileTypes: true })
@@ -103,13 +180,16 @@ function resolveVersions() {
   if (!capsules.length) {
     return { incomplete: true, reason: "no release capsules under framework/releases/ — nothing to resolve" };
   }
-  const tagged = capsules.filter((v) => tagExists(v));
+  const tagged = capsules.filter((v) => tagExistsFn(v));
   const newestTagged = tagged.length ? tagged[tagged.length - 1] : null;
   const unreleased = capsules.filter(
-    (v) => !tagExists(v) && v !== newestTagged && (!newestTagged || !semverLt(v, newestTagged)),
+    (v) => !tagExistsFn(v) && v !== newestTagged && (!newestTagged || !semverLt(v, newestTagged)),
   );
   const unreleasedCut = unreleased.length ? unreleased[unreleased.length - 1] : null;
   if (unreleasedCut && newestTagged) {
+    // F1 identity bind — throws (fail-closed) on mismatch, never selects a
+    // phantom N. See checkUnreleasedCutIdentity above.
+    checkUnreleasedCutIdentity(unreleasedCut, readCurrentVersion());
     return { incomplete: false, n: unreleasedCut, n1: newestTagged };
   }
   return {
@@ -160,14 +240,23 @@ function replaceAllLiteral(haystack, needle, replacement) {
   return haystack.split(needle).join(replacement);
 }
 
-// ORDER MATTERS: the exact-literal rule (absolute_sandbox_path) runs FIRST,
-// before the generic pattern-based rules (iso_timestamp, per_run_nonce). A
-// sandbox tmp-dir name can incidentally contain a substring shaped like a
-// nonce (e.g. `...warpos-gateb-...`) — if a generic regex rule ran first it
-// could partially consume an exact-path match, leaving the rest of that path
-// unnormalized and producing a false content mismatch. Running the known
-// exact substitution first, then generic patterns on what's left, avoids
-// that class of order-dependent false-red.
+// ORDER MATTERS: the two exact-literal rules (absolute_sandbox_path,
+// per_run_nonce) run FIRST, before the generic pattern-based rules
+// (iso_timestamp, transaction_id). A sandbox tmp-dir name can incidentally
+// contain a substring shaped like a timestamp or txn-id — if a generic regex
+// rule ran first it could partially consume an exact-literal match, leaving
+// the rest unnormalized and producing a false content mismatch. Running the
+// known exact substitutions first, then generic patterns on what's left,
+// avoids that class of order-dependent false-red.
+//
+// (F5 — qa FUNC-NORMALIZATION-OVERBROAD / backend 7G-001) `per_run_nonce` used
+// to be a GENERIC regex (`/\b[0-9a-z]{6,13}-[0-9a-z]{4,8}\b/`) that normalized
+// ANY token of that shape — proved to false-green real content drift (e.g.
+// "release-alpha" vs "release-bravo" both collapsed to the same placeholder).
+// It is now a LITERAL replacement of the ACTUAL minted nonce(s) for this run,
+// threaded through `ctx.nonces` exactly like `ctx.sandboxRoots` — never a
+// pattern. A nonce-SHAPED string that is NOT one of this run's actual minted
+// nonces is real content and must still diverge.
 const NORMALIZE_3C = [
   {
     name: "absolute_sandbox_path",
@@ -184,14 +273,21 @@ const NORMALIZE_3C = [
     },
   },
   {
+    name: "per_run_nonce",
+    why: "this engine mints a per-run nonce for tmp-dir naming; if the EXACT minted literal leaks into an installed artifact it is run-identity, not upgrade content — normalized as a literal (ctx.nonces), never a shape-based pattern (see F5)",
+    apply: (text, ctx) => {
+      let out = text;
+      for (const n of (ctx && ctx.nonces) || []) {
+        if (!n) continue;
+        out = replaceAllLiteral(out, n, "<NORMALIZED-NONCE>");
+      }
+      return out;
+    },
+  },
+  {
     name: "iso_timestamp",
     why: "install/apply/regen stamp real wall-clock ISO-8601 timestamps (installedAt, generatedAt, ...); two independent runs never share a clock reading by construction, not by upgrade defect",
     apply: (text) => text.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?/g, "<NORMALIZED-TS>"),
-  },
-  {
-    name: "per_run_nonce",
-    why: "this engine mints a per-run nonce shaped `${Date.now().toString(36)}-${rand.toString(36).slice(2,8)}` for tmp-dir naming; if that shape leaks into an installed artifact it is run-identity, not upgrade content",
-    apply: (text) => text.replace(/\b[0-9a-z]{6,13}-[0-9a-z]{4,8}\b/g, "<NORMALIZED-NONCE>"),
   },
   {
     name: "transaction_id",
@@ -237,15 +333,153 @@ function compareTreeContents(treeA, treeB, commonRelPaths, ctx) {
   return { equal: mismatches.length === 0, mismatches };
 }
 
+// ── F4 (qa FUNC-3C-SCOPE / INT-OVERCLAIM-FULL-TREE) — TRUE full-tree file
+// enumeration for 3c ────────────────────────────────────────────────────────
+// test-install-matrix.js's `treeFileList` is SCOPED (only .claude, _warpos,
+// _requirements, _docs, ROADMAP.md, PROJECT.md) — of 1668 manifest assets,
+// only 582 ever entered that scope, so a broken upgrade that left
+// scripts/framework/schemas/etc. at N-1 could still pass. GATE-B's 3c claims
+// FULL-TREE parity, so it must actually walk the full tree. This is a SHORT,
+// ENUMERATED exclusion list — everything else under the install root is
+// in-scope, including .claude/framework-installed.json and
+// .claude/framework-manifest.json (previously excluded upstream; see F3).
+const FULL_TREE_EXCLUDES = [
+  {
+    re: /^\.git(\/|$)/,
+    why: "git metadata — not a manifest asset, never install content",
+  },
+  {
+    re: /^\.warpos(\/|$)/,
+    why: "update.js's own per-run transaction bookkeeping (.warpos/transactions/<txId>/backup, plan, etc.) written by the Step-2 apply; the fresh-N oracle never runs an update, so this subtree has no counterpart to diff against",
+  },
+  {
+    re: /^\.claude\/runtime(\/|$)/,
+    why: "runtime state (events, dispatch, checkpoints) written at RUN time by whichever process subsequently touches the tree (scan:install, update.js) — not by install/apply content itself; same class test-install-matrix.js's PARITY_ALLOWLIST already vets",
+  },
+  {
+    re: /^\.claude\/project\/events(\/|$)/,
+    why: "event logs — per-run, not install content",
+  },
+  {
+    re: /^\.claude\/project\/memory(\/|$)/,
+    why: "memory stores — per-run, not install content",
+  },
+  {
+    re: /(^|\/)node_modules(\/|$)/,
+    why: "dependency tree — never a manifest asset or install content",
+  },
+  {
+    re: /(^|\/)\.DS_Store$/,
+    why: "macOS filesystem noise",
+  },
+];
+
+function isFullTreeExcluded(rel) {
+  return FULL_TREE_EXCLUDES.some((e) => e.re.test(rel));
+}
+
+/**
+ * Build a sorted list of EVERY relative file path under `rootDir` (POSIX
+ * separators), pruning only the short enumerated exclusion list above. Unlike
+ * test-install-matrix.js's `treeFileList`, there is no scope allowlist — this
+ * is the FULL tree.
+ */
+function fullTreeFileList(rootDir) {
+  const out = [];
+  function walk(absDir, relDir) {
+    let entries;
+    try {
+      entries = fs.readdirSync(absDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const ent of entries) {
+      const relPath = relDir ? `${relDir}/${ent.name}` : ent.name;
+      if (ent.isDirectory()) {
+        if (isFullTreeExcluded(`${relPath}/`)) continue;
+        walk(path.join(absDir, ent.name), relPath);
+      } else if (ent.isFile()) {
+        if (!isFullTreeExcluded(relPath)) out.push(relPath);
+      }
+    }
+  }
+  walk(rootDir, "");
+  out.sort();
+  return out;
+}
+
+// ── F6 (qa FUNC-ISOLATION-FALSE-GREEN) — dirty-set content-hash compensating
+// control ────────────────────────────────────────────────────────────────
+// The real fix (content-hash canonical no-delta) is cross-cutting into
+// GATE-A's snapshotCanonicalState/noDeltaCheck — OUT OF SCOPE here (tracked
+// debt; the full fix is cross-engine and belongs to GATE-A). This is an
+// ENGINE-LOCAL compensating control targeted at exactly the gap a porcelain
+// `git status` line diff cannot see: a file that was ALREADY dirty before
+// this run started, whose CONTENT changes during the run without its
+// porcelain status line changing (e.g. still "M path/to/file" before and
+// after). We hash the content of the pre-existing dirty set before the run
+// and re-hash the SAME set after; any mismatch is caught here even though
+// noDeltaCheck's line-level diff would miss it.
+function listDirtyFiles() {
+  const r = spawnSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  if (r.status !== 0) {
+    throw new Error(`listDirtyFiles: git status failed (status=${r.status}): ${(r.stderr || r.stdout || "").slice(0, 300)}`);
+  }
+  const files = [];
+  for (const line of (r.stdout || "").split(/\r?\n/)) {
+    if (!line) continue;
+    // Porcelain format: "XY <path>" or, for renames, "XY <old> -> <new>".
+    const rest = line.slice(3);
+    const arrowIdx = rest.indexOf(" -> ");
+    files.push(arrowIdx !== -1 ? rest.slice(arrowIdx + 4) : rest);
+  }
+  return files;
+}
+
+function hashDirtyFileSet(rootDir, relFiles) {
+  const hashes = {};
+  for (const rel of relFiles) {
+    try {
+      const buf = fs.readFileSync(path.join(rootDir, rel));
+      hashes[rel] = crypto.createHash("sha256").update(buf).digest("hex");
+    } catch (e) {
+      // A file that is genuinely gone/unreadable is still a state change vs
+      // "had a hash before" — recorded distinctly so it counts as changed,
+      // never silently dropped from the set.
+      hashes[rel] = `UNREADABLE:${e.code || e.message}`;
+    }
+  }
+  return hashes;
+}
+
+function dirtySetUnchanged(beforeHashes, afterHashes) {
+  const changed = [];
+  const keys = new Set([...Object.keys(beforeHashes || {}), ...Object.keys(afterHashes || {})]);
+  for (const k of keys) {
+    if ((beforeHashes || {})[k] !== (afterHashes || {})[k]) changed.push(k);
+  }
+  return { equal: changed.length === 0, changed };
+}
+
 // ── Orchestration ────────────────────────────────────────────────────────────
 async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   const asserts = [];
   // loadBearing defaults true — ONLY 3a (version_sanity_NON_LOAD_BEARING) is
   // marked false, per the β trust model: it may appear in `asserts` but must
   // NEVER be able to flip `ok` on its own.
+  // (F7 — qa FUNC-WARNING-DETAIL-DROPPED / backend 7B-001) `detail` is now
+  // recorded REGARDLESS of `ok` — previously it was erased on ok:true, which
+  // silently discarded the committedWithWarnings / provider-smoke LOUD
+  // observations several call sites deliberately pass even on success. Most
+  // call sites simply don't pass a detail on success, so this is a no-op for
+  // them; the loud ones now actually land in the artifact.
   const assert = (name, ok, detail, opts) => {
     const loadBearing = !opts || opts.loadBearing !== false;
-    asserts.push({ name, ok: !!ok, detail: ok ? "" : detail || "", loadBearing });
+    asserts.push({ name, ok: !!ok, detail: detail || "", loadBearing });
     return !!ok;
   };
 
@@ -257,6 +491,11 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   let incompleteReason = null;
 
   const beforeSnapshot = snapshotCanonicalState();
+  // F6 — capture the pre-existing dirty file set's CONTENT hashes now, before
+  // any sandbox I/O, so a compensating control can catch a content change to
+  // an already-dirty file that a porcelain-line diff cannot see.
+  const dirtyFilesBefore = listDirtyFiles();
+  const dirtyHashesBefore = hashDirtyFileSet(REPO_ROOT, dirtyFilesBefore);
   const nonce = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const tmpBase = path.join(os.tmpdir(), `warpos-gateb-${nonce}`);
   const n1Src = path.join(tmpBase, "n1-src");
@@ -542,8 +781,10 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
             `fresh-N oracle install INCOMPLETE (ps_available=${leg && leg.ps_available} ran=${leg && leg.ran}) — 3c skip-loud, NOT a pass: ${failed.join("; ") || "no oracle asserts produced"}`,
           );
         } else {
-          const upgradedList = treeFileList(n1Install);
-          const freshList = treeFileList(freshNTree);
+          // F4 — FULL-TREE, not the scoped test-install-matrix.js#treeFileList
+          // (see fullTreeFileList's own header comment for the exclusion list).
+          const upgradedList = fullTreeFileList(n1Install);
+          const freshList = fullTreeFileList(freshNTree);
           const pathParity = parityDiff(upgradedList, freshList);
           assert(
             "fresh_n_parity_pathset_3c",
@@ -553,7 +794,14 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
 
           const freshSet = new Set(freshList);
           const commonPaths = upgradedList.filter((p) => freshSet.has(p));
-          const ctx = { sandboxRoots: [n1Install, oracleRoot] };
+          // sandboxRoots ORDER MATTERS: freshNTree (the actual oracle leaf
+          // target, e.g. embedded in framework-installed.json#target) must be
+          // normalized BEFORE its parent oracleRoot — otherwise oracleRoot's
+          // literal replace would partially consume the freshNTree match
+          // first, leaving an un-normalized "/leg3-installps1" suffix that
+          // would false-red the F3 framework-installed.json parity on the
+          // `target` field alone (sandbox identity, not upgrade content).
+          const ctx = { sandboxRoots: [n1Install, freshNTree, oracleRoot], nonces: [nonce] };
           const contentResult = compareTreeContents(n1Install, freshNTree, commonPaths, ctx);
           assert(
             "fresh_n_parity_content_3c",
@@ -593,19 +841,44 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
 
   const afterSnapshot = snapshotCanonicalState();
   const delta = noDeltaCheck(beforeSnapshot, afterSnapshot);
+  // F6 — dirty-set content-hash compensating control: re-hash the SAME
+  // pre-existing dirty files and compare. Recorded as a LOAD-BEARING assert
+  // (`dirty_set_content_unchanged`) alongside the porcelain-line no-delta
+  // check, since it covers exactly the gap that check cannot see.
+  const dirtyHashesAfter = hashDirtyFileSet(REPO_ROOT, dirtyFilesBefore);
+  const dirtyContentCheck = dirtySetUnchanged(dirtyHashesBefore, dirtyHashesAfter);
+  assert(
+    "dirty_set_content_unchanged",
+    dirtyContentCheck.equal,
+    dirtyContentCheck.equal
+      ? ""
+      : `already-dirty file(s) changed CONTENT during the run even though a porcelain status-line diff would not catch it: ${dirtyContentCheck.changed.slice(0, 8).join(", ")}`,
+  );
 
-  // Isolation is checked FIRST, unconditionally — a no-delta violation blocks
-  // the verdict before any green, regardless of what the asserts say.
+  // Isolation is checked FIRST, unconditionally — a no-delta violation (either
+  // form: porcelain-line delta OR the F6 dirty-set content-hash control)
+  // blocks the verdict before any green, regardless of what the other asserts
+  // say.
   // Verdict wiring (β trust model, DECIDE B/0.89): `ok` rests on isolation AND
   // every LOAD-BEARING assert (which includes 3b + 3c, plus every required
   // precondition step). 3a (version_sanity_NON_LOAD_BEARING) is excluded on
   // purpose — it can appear in `asserts` but must never flip `ok` alone.
   const loadBearingAsserts = asserts.filter((a) => a.loadBearing !== false);
   const assertsOk = loadBearingAsserts.length > 0 && loadBearingAsserts.every((a) => a.ok);
+  // (F2 — qa FUNC-PAYLOAD-TRUST) `ok` must require the NAMED load-bearing
+  // evidence to be PRESENT and green — not merely "the set of load-bearing
+  // asserts happened to be non-empty and all pass" (a payload missing 3b/3c
+  // entirely, e.g. only n1_resolved ran, would otherwise vacuously satisfy
+  // assertsOk). Mirrored in release-gates.js's GATE-B green branch.
+  const REQUIRED_NAMED_LOAD_BEARING_ASSERTS = ["scan_install_green_3b", "fresh_n_parity_pathset_3c", "fresh_n_parity_content_3c"];
+  const requiredNamedEvidencePresent = REQUIRED_NAMED_LOAD_BEARING_ASSERTS.every((name) => {
+    const a = asserts.find((x) => x.name === name);
+    return !!a && a.ok === true;
+  });
   // INCOMPLETE (B skip-loud: no unreleased capsule to upgrade to) is NEITHER a
   // pass NOR a fail — ok is null and the gate renders it manual/degraded. Only a
-  // genuine run computes ok from isolation + load-bearing asserts.
-  const ok = incomplete ? null : delta.equal && assertsOk;
+  // genuine run computes ok from isolation + load-bearing asserts + named evidence.
+  const ok = incomplete ? null : delta.equal && dirtyContentCheck.equal && assertsOk && requiredNamedEvidencePresent;
 
   return {
     ok,
@@ -620,6 +893,9 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       no_delta: delta.equal,
       onlyBefore: delta.onlyBefore,
       onlyAfter: delta.onlyAfter,
+      // F6 compensating control — see dirtySetUnchanged above.
+      dirty_set_content_unchanged: dirtyContentCheck.equal,
+      dirty_set_changed_files: dirtyContentCheck.changed,
     },
   };
 }
@@ -637,6 +913,59 @@ function selfTest() {
       results.push({ name, status: "fail", detail: e.message });
     }
   };
+
+  // ── F1 tooth (tagExists fail-closed + resolveVersions error propagation) ──
+  t("F1: tagExists THROWS on a git ERROR (non-zero exit) — never silently folded into tag-absence", () => {
+    let threw = false;
+    try {
+      tagExists("0.17.0", () => ({ status: 128, stdout: "", stderr: "fatal: synthetic git error", error: null, signal: null }));
+    } catch (e) {
+      threw = /git tag -l exited non-zero/.test(e.message);
+    }
+    return threw === true;
+  });
+  t("F1: tagExists THROWS on a spawn error (e.g. git binary missing)", () => {
+    let threw = false;
+    try {
+      tagExists("0.17.0", () => ({ error: new Error("ENOENT: spawn git"), status: null, stdout: "", stderr: "" }));
+    } catch (e) {
+      threw = /spawn error/.test(e.message);
+    }
+    return threw === true;
+  });
+  t("F1: tagExists positive control — a CLEAN exit-0 no-match result returns false (real tag-absence, not an error)", () => {
+    return tagExists("0.17.0", () => ({ status: 0, stdout: "", stderr: "", error: null, signal: null })) === false;
+  });
+  t("F1: tagExists positive control — a CLEAN exit-0 matching result returns true", () => {
+    return tagExists("0.17.0", () => ({ status: 0, stdout: "warpos@0.17.0\n", stderr: "", error: null, signal: null })) === true;
+  });
+  t("F1: resolveVersions PROPAGATES a mocked git-tag error as a THROW (NOT folded into ordinary incomplete:true) — qa FUNC-INCOMPLETE-FAILOPEN", () => {
+    let threw = false;
+    let becameIncomplete = false;
+    try {
+      const r = resolveVersions({
+        tagExistsFn: () => {
+          throw new Error("SYNTHETIC git-tag ERROR (mocked)");
+        },
+      });
+      becameIncomplete = !!(r && r.incomplete === true);
+    } catch (e) {
+      threw = /SYNTHETIC git-tag ERROR/.test(e.message);
+    }
+    return threw === true && becameIncomplete === false;
+  });
+  t("F1: identity bind — an untagged capsule whose version != version.json is REJECTED (fail-closed, never a phantom N)", () => {
+    let threw = false;
+    try {
+      checkUnreleasedCutIdentity("0.16.0", "0.17.0");
+    } catch (e) {
+      threw = /identity mismatch/.test(e.message) && /phantom N/.test(e.message);
+    }
+    return threw === true;
+  });
+  t("F1: identity bind positive control — unreleasedCut === version.json's version is ACCEPTED", () => {
+    return checkUnreleasedCutIdentity("0.17.0", "0.17.0") === true;
+  });
 
   // ── 3a tooth ──
   t("3a REDs on a synthetic upgraded install whose framework-installed.json still says N-1 (non-advancing version, NOT a correctness proof)", () => {
@@ -711,6 +1040,127 @@ function selfTest() {
     }
   });
 
+  // ── F3 tooth (3a-defeat via 3c — qa FUNC-3A-NOT-DEFEATED) ──
+  // framework-installed.json is now IN-SCOPE for 3c's content parity (no
+  // longer excluded); a wrong installedVersion must RED the LOAD-BEARING 3c,
+  // not just the non-load-bearing 3a.
+  t("F3: a synthetic upgraded tree whose framework-installed.json installedVersion != the oracle's REDs 3c (defeats the 3a-only settable-label case)", () => {
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f3-red-a-"));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f3-red-b-"));
+    try {
+      fs.mkdirSync(path.join(dirA, ".claude"), { recursive: true });
+      fs.mkdirSync(path.join(dirB, ".claude"), { recursive: true });
+      fs.writeFileSync(
+        path.join(dirA, ".claude", "framework-installed.json"),
+        JSON.stringify({ installedVersion: "0.16.0", installedAt: "2026-07-21T00:00:00.000Z", source: "/repo" }),
+      );
+      fs.writeFileSync(
+        path.join(dirB, ".claude", "framework-installed.json"),
+        JSON.stringify({ installedVersion: "0.17.0", installedAt: "2026-07-21T00:05:00.000Z", source: "/repo" }),
+      );
+      const ctx = { sandboxRoots: [dirA, dirB], nonces: [] };
+      const result = compareTreeContents(dirA, dirB, [".claude/framework-installed.json"], ctx);
+      return result.equal === false;
+    } finally {
+      fs.rmSync(dirA, { recursive: true, force: true });
+      fs.rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+  t("F3 positive control: two framework-installed.json trees differing ONLY in installedAt timestamp (same installedVersion) parity EQUAL", () => {
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f3-green-a-"));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f3-green-b-"));
+    try {
+      fs.mkdirSync(path.join(dirA, ".claude"), { recursive: true });
+      fs.mkdirSync(path.join(dirB, ".claude"), { recursive: true });
+      fs.writeFileSync(
+        path.join(dirA, ".claude", "framework-installed.json"),
+        JSON.stringify({ installedVersion: "0.17.0", installedAt: "2026-07-21T00:00:00.000Z", source: "/repo" }),
+      );
+      fs.writeFileSync(
+        path.join(dirB, ".claude", "framework-installed.json"),
+        JSON.stringify({ installedVersion: "0.17.0", installedAt: "2026-07-21T00:09:12.500Z", source: "/repo" }),
+      );
+      const ctx = { sandboxRoots: [dirA, dirB], nonces: [] };
+      const result = compareTreeContents(dirA, dirB, [".claude/framework-installed.json"], ctx);
+      return result.equal === true;
+    } finally {
+      fs.rmSync(dirA, { recursive: true, force: true });
+      fs.rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+
+  // ── F4 tooth (full-tree 3c scope — qa FUNC-3C-SCOPE / INT-OVERCLAIM-FULL-TREE) ──
+  t("F4: fullTreeFileList walks a path the OLD scoped treeFileList would have excluded (e.g. scripts/…), so a divergence there is now visible to 3c", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f4-"));
+    try {
+      fs.mkdirSync(path.join(dir, "scripts", "warpos"), { recursive: true });
+      fs.writeFileSync(path.join(dir, "scripts", "warpos", "update.js"), "// out-of-scope-for-the-old-scoped-list\n");
+      fs.mkdirSync(path.join(dir, ".claude"), { recursive: true });
+      fs.writeFileSync(path.join(dir, ".claude", "framework-installed.json"), "{}");
+      const list = fullTreeFileList(dir);
+      return list.includes("scripts/warpos/update.js") && list.includes(".claude/framework-installed.json");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  t("F4: fullTreeFileList still excludes the short enumerated volatile set (.git, .warpos, .claude/runtime, .claude/project/events, .claude/project/memory)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f4-excl-"));
+    try {
+      for (const rel of [
+        ".git/HEAD",
+        ".warpos/transactions/tx-1/backup.json",
+        ".claude/runtime/events.log",
+        ".claude/project/events/e.jsonl",
+        ".claude/project/memory/MEMORY.md",
+      ]) {
+        fs.mkdirSync(path.join(dir, path.dirname(rel)), { recursive: true });
+        fs.writeFileSync(path.join(dir, rel), "x");
+      }
+      fs.writeFileSync(path.join(dir, "ROADMAP.md"), "x");
+      const list = fullTreeFileList(dir);
+      return (
+        list.length === 1 &&
+        list[0] === "ROADMAP.md"
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  // ── F5 tooth (nonce normalization: LITERAL, not a generic pattern — qa
+  // FUNC-NORMALIZATION-OVERBROAD / backend 7G-001) ──
+  t("F5: nonce-SHAPED real content drift ('release-alpha' vs 'release-bravo') is NOT swallowed by normalization — REDs", () => {
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f5-red-a-"));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f5-red-b-"));
+    try {
+      const mintedNonce = "abc123x-yz98";
+      fs.writeFileSync(path.join(dirA, "file.txt"), `tmpdir-id=${mintedNonce} releaseTag=release-alpha`);
+      fs.writeFileSync(path.join(dirB, "file.txt"), `tmpdir-id=${mintedNonce} releaseTag=release-bravo`);
+      const ctx = { sandboxRoots: [], nonces: [mintedNonce] };
+      const result = compareTreeContents(dirA, dirB, ["file.txt"], ctx);
+      return result.equal === false;
+    } finally {
+      fs.rmSync(dirA, { recursive: true, force: true });
+      fs.rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+  t("F5 positive control: two trees differing ONLY in their own actual minted nonce literals (passed via ctx.nonces) parity EQUAL", () => {
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f5-green-a-"));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-f5-green-b-"));
+    try {
+      const nonceA = "abc123x-yz98";
+      const nonceB = "def456y-wq12";
+      fs.writeFileSync(path.join(dirA, "file.txt"), `tmpdir-id=${nonceA} featureFlag=on`);
+      fs.writeFileSync(path.join(dirB, "file.txt"), `tmpdir-id=${nonceB} featureFlag=on`);
+      const ctx = { sandboxRoots: [], nonces: [nonceA, nonceB] };
+      const result = compareTreeContents(dirA, dirB, ["file.txt"], ctx);
+      return result.equal === true;
+    } finally {
+      fs.rmSync(dirA, { recursive: true, force: true });
+      fs.rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+
   // ── isolation tooth ──
   t("isolation tooth: noDeltaCheck REDs on a simulated delta (mirrors GATE-A's proven vector)", () => {
     const before = "a\nb\nc";
@@ -720,6 +1170,43 @@ function selfTest() {
   t("isolation tooth positive control: identical snapshots are equal", () => {
     const snap = "a\nb\nc";
     return noDeltaCheck(snap, snap).equal === true;
+  });
+
+  // ── F6 tooth (dirty-set content-hash compensating control — qa
+  // FUNC-ISOLATION-FALSE-GREEN) ──
+  t("F6: a simulated content change to an already-dirty file (SAME porcelain status line before/after) is CAUGHT by the content-hash control", () => {
+    const before = { "scripts/foo.js": "sha256-AAA" };
+    const after = { "scripts/foo.js": "sha256-BBB" }; // same path (same porcelain "M scripts/foo.js" line either way) — content mutated
+    return dirtySetUnchanged(before, after).equal === false;
+  });
+  t("F6 positive control: identical hashes across the dirty set are equal", () => {
+    const same = { "scripts/foo.js": "sha256-AAA", "framework/releases/0.17.0/release.json": "sha256-CCC" };
+    return dirtySetUnchanged(same, same).equal === true;
+  });
+  t("F6 (integration): hashDirtyFileSet re-hash of a MUTATED file differs, even though the mutation would leave its git porcelain status line identical", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-dirtyset-"));
+    try {
+      const rel = "already-dirty.txt";
+      fs.writeFileSync(path.join(dir, rel), "original content (already dirty before the run)");
+      const before = hashDirtyFileSet(dir, [rel]);
+      fs.writeFileSync(path.join(dir, rel), "MUTATED content — porcelain status line for this path is unchanged (still just 'M'), only bytes changed");
+      const after = hashDirtyFileSet(dir, [rel]);
+      return dirtySetUnchanged(before, after).equal === false;
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  t("F6 (integration) positive control: an UNCHANGED already-dirty file re-hashes identically", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-dirtyset-unchanged-"));
+    try {
+      const rel = "already-dirty.txt";
+      fs.writeFileSync(path.join(dir, rel), "content that never changes during the run");
+      const before = hashDirtyFileSet(dir, [rel]);
+      const after = hashDirtyFileSet(dir, [rel]);
+      return dirtySetUnchanged(before, after).equal === true;
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   const pass = results.filter((r) => r.status === "pass").length;
@@ -820,4 +1307,14 @@ module.exports = {
   compareTreeContents,
   normalizeContent3c,
   NORMALIZE_3C,
+  // F1
+  tagExists,
+  readCurrentVersion,
+  checkUnreleasedCutIdentity,
+  // F4
+  fullTreeFileList,
+  // F6
+  listDirtyFiles,
+  hashDirtyFileSet,
+  dirtySetUnchanged,
 };

@@ -39,6 +39,7 @@
 
 const path = require("path");
 const cp = require("child_process");
+const { runTooth: runJsonLoudFailTooth } = require("./test-update-json-loud-fail");
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const RELEASE_GATES_PATH = path.join(REPO_ROOT, "scripts", "warpos", "release-gates.js");
@@ -88,6 +89,13 @@ const CANNED = {
   // GATE-B upgrade_current_to_new (SP-20260721-001 D-4 INC-3) — canned shape
   // matches test-upgrade-current-to-new.js's real --json payload:
   // {ok, from_version, to_version, ran, ps_available, asserts, sandbox_isolation}.
+  // Assert names MUST match the engine's ACTUAL emitted names (qa
+  // TRACE-TEETH-COVERAGE flagged a prior drift here: "scan_install_green" /
+  // "fresh_vs_upgraded_parity" do not exist — the real names are
+  // scan_install_green_3b / fresh_n_parity_pathset_3c /
+  // fresh_n_parity_content_3c) — release-gates.js's F2 named-evidence check
+  // requires the REAL names, so a stale fixture here would false-red this
+  // suite's own "ran GREEN against the canned success payload" test.
   "test-upgrade-current-to-new.js": {
     status: 0,
     stdout: JSON.stringify({
@@ -100,10 +108,12 @@ const CANNED = {
         { name: "n1_resolved", ok: true, detail: "", loadBearing: true },
         { name: "apply_committed", ok: true, detail: "", loadBearing: true },
         { name: "version_sanity_NON_LOAD_BEARING", ok: true, detail: "", loadBearing: false },
-        { name: "scan_install_green", ok: true, detail: "", loadBearing: true },
-        { name: "fresh_vs_upgraded_parity", ok: true, detail: "", loadBearing: true },
+        { name: "scan_install_green_3b", ok: true, detail: "", loadBearing: true },
+        { name: "fresh_n_parity_pathset_3c", ok: true, detail: "", loadBearing: true },
+        { name: "fresh_n_parity_content_3c", ok: true, detail: "", loadBearing: true },
+        { name: "dirty_set_content_unchanged", ok: true, detail: "", loadBearing: true },
       ],
-      sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+      sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [], dirty_set_content_unchanged: true, dirty_set_changed_files: [] },
     }),
     stderr: "",
   },
@@ -277,9 +287,11 @@ CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
   ps_available: true,
   asserts: [
     { name: "apply_committed", ok: true, detail: "", loadBearing: true },
-    { name: "fresh_vs_upgraded_parity", ok: false, detail: "content drift outside normalization", loadBearing: true },
+    { name: "scan_install_green_3b", ok: true, detail: "", loadBearing: true },
+    { name: "fresh_n_parity_pathset_3c", ok: true, detail: "", loadBearing: true },
+    { name: "fresh_n_parity_content_3c", ok: false, detail: "content drift outside normalization", loadBearing: true },
   ],
-  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [], dirty_set_content_unchanged: true, dirty_set_changed_files: [] },
 });
 {
   const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
@@ -317,7 +329,103 @@ CANNED["test-upgrade-current-to-new.js"] = {
   ok("GATE-B: INCOMPLETE-B message names the ceremony", gb && /ceremony/i.test(gb.message), gb && gb.message);
 }
 
+// ── 13: GATE-B named-evidence requirement (SP-20260721-001 D-4 INC-3
+// gauntlet-r1 F2 — qa FUNC-PAYLOAD-TRUST). A status-0 payload that SAYS
+// ok:true/ran:true but is MISSING the named load-bearing 3b/3c evidence (and
+// has no isolation evidence at all) must NEVER be treated as green — the
+// gate must not blindly trust `payload.ok`. ──
+CANNED["test-upgrade-current-to-new.js"] = {
+  status: 0,
+  stdout: JSON.stringify({
+    ok: true, // the engine SAYS ok:true — the gate must not blindly trust this alone
+    from_version: "0.16.0",
+    to_version: "0.17.0",
+    ran: true,
+    ps_available: true,
+    asserts: [{ name: "n1_resolved", ok: true, detail: "", loadBearing: true }],
+    sandbox_isolation: {}, // no isolation evidence at all
+  }),
+  stderr: "",
+};
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok(
+    "GATE-B: payload.ok:true but MISSING named 3b/3c evidence + isolation evidence is NEVER green (F2 named-evidence trust fix)",
+    gb && gb.severity !== "green",
+    gb && `severity=${gb.severity}`,
+  );
+}
+// A payload that HAS isolation evidence but is still missing the named 3c
+// content-parity assert (only pathset present, not content) must also not green.
+CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
+  ok: true,
+  from_version: "0.16.0",
+  to_version: "0.17.0",
+  ran: true,
+  ps_available: true,
+  asserts: [
+    { name: "apply_committed", ok: true, detail: "", loadBearing: true },
+    { name: "scan_install_green_3b", ok: true, detail: "", loadBearing: true },
+    { name: "fresh_n_parity_pathset_3c", ok: true, detail: "", loadBearing: true },
+    // fresh_n_parity_content_3c deliberately absent
+  ],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [], dirty_set_content_unchanged: true, dirty_set_changed_files: [] },
+});
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok(
+    "GATE-B: payload missing ONLY fresh_n_parity_content_3c (partial named evidence) is still NEVER green",
+    gb && gb.severity !== "green",
+    gb && `severity=${gb.severity}`,
+  );
+}
+
+// ── 14: GATE-B F6 dirty-set content-hash control BLOCKS unconditionally,
+// same load-bearing priority as the no-delta check (SP-20260721-001 D-4
+// INC-3 gauntlet-r1 F6 — qa FUNC-ISOLATION-FALSE-GREEN). ──
+CANNED["test-upgrade-current-to-new.js"] = {
+  status: 0,
+  stdout: JSON.stringify({
+    ok: false,
+    from_version: "0.16.0",
+    to_version: "0.17.0",
+    ran: true,
+    ps_available: true,
+    asserts: [{ name: "dirty_set_content_unchanged", ok: false, detail: "already-dirty file content changed", loadBearing: true }],
+    sandbox_isolation: {
+      no_delta: true, // the porcelain-line diff did NOT catch it — that's the whole point of the control
+      onlyBefore: [],
+      onlyAfter: [],
+      dirty_set_content_unchanged: false,
+      dirty_set_changed_files: ["scripts/foo.js"],
+    },
+  }),
+  stderr: "",
+};
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: a dirty-set content-hash violation is RED (blocks unconditionally, even though no_delta itself held)", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
+  ok("GATE-B dirty-set message names DIRTY-SET CONTENT CHANGED", gb && /DIRTY-SET CONTENT CHANGED/.test(gb.message), gb && gb.message);
+}
+
 cp.spawnSync = realSpawnSync;
+
+// ── 15: BC-16 --json loud-fail regression tooth (SP-20260721-001 D-4 INC-3
+// F7 — qa INT-TEST-REACH). test-update-json-loud-fail.js was present in the
+// manifest but had no discovered invocation from any committed test/gate —
+// invoked HERE so it fires continuously as part of this committed suite, not
+// only when run standalone. Runs AFTER `cp.spawnSync` is restored to the
+// real implementation — it shells out to a real (cheap, fast — preflight
+// fail-fast, no full install) `update.js` subprocess, and its script name
+// never matches HEAVY_SCRIPT_NAMES above regardless. ──
+{
+  const jr = runJsonLoudFailTooth();
+  ok(
+    `test-update-json-loud-fail.js tooth suite is GREEN (BC-16 --json loud-fail fix; pass=${jr.pass} fail=${jr.fail})`,
+    jr.fail === 0,
+    `pass=${jr.pass} fail=${jr.fail}`,
+  );
+}
 
 process.stdout.write(`\n${pass} passed, ${fail} failed\n`);
 process.exit(fail > 0 ? 1 : 0);

@@ -24,6 +24,12 @@
  * PRE-FIX this exited 0 (the lying-exit-0 the fix closes). POST-FIX it must
  * exit non-zero.
  *
+ * (SP-20260721-001 D-4 INC-3 gauntlet-r1 F7 — qa INT-TEST-REACH) The tooth
+ * logic is exported as `runTooth()` so a committed suite (test-gate-wiring.js)
+ * can invoke it directly and have it fire CONTINUOUSLY as part of that
+ * suite's run, not only when this file is executed standalone. The CLI
+ * entrypoint below (guarded by `require.main === module`) is unchanged.
+ *
  * Exit 0 = tooth passes (fix holds). Exit 1 = regression (lying exit-0 is back).
  */
 "use strict";
@@ -36,19 +42,27 @@ const { spawnSync } = require("child_process");
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const UPDATE_JS = path.join(REPO_ROOT, "scripts", "warpos", "update.js");
 
-let pass = 0;
-let fail = 0;
-function ok(name, cond, detail) {
-  if (cond) {
-    process.stdout.write(`  ok  ${name}\n`);
-    pass++;
-  } else {
-    process.stderr.write(`  FAIL  ${name}${detail ? ` — ${detail}` : ""}\n`);
-    fail++;
+/**
+ * Runs the BC-16 --json loud-fail tooth suite and returns { pass, fail,
+ * results }. Prints each assertion's ok/FAIL line to stdout/stderr as it
+ * goes (same visible-progress contract as the standalone CLI run), but never
+ * calls process.exit — callers decide what to do with the result.
+ */
+function runTooth() {
+  let pass = 0;
+  let fail = 0;
+  const results = [];
+  function ok(name, cond, detail) {
+    results.push({ name, status: cond ? "pass" : "fail", detail: cond ? undefined : detail || "" });
+    if (cond) {
+      process.stdout.write(`  ok  ${name}\n`);
+      pass++;
+    } else {
+      process.stderr.write(`  FAIL  ${name}${detail ? ` — ${detail}` : ""}\n`);
+      fail++;
+    }
   }
-}
 
-function main() {
   // version.json — resolve the current release version to target with --to,
   // so the capsule under framework/releases/<version>/ is guaranteed to
   // exist in canonical (dynamic, never hardcoded — same discipline as the
@@ -105,9 +119,14 @@ function main() {
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true });
   }
+
+  return { pass, fail, results };
 }
 
-main();
+if (require.main === module) {
+  const { pass, fail } = runTooth();
+  process.stdout.write(`\n${pass} passed, ${fail} failed\n`);
+  process.exit(fail > 0 ? 1 : 0);
+}
 
-process.stdout.write(`\n${pass} passed, ${fail} failed\n`);
-process.exit(fail > 0 ? 1 : 0);
+module.exports = { runTooth };
