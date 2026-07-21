@@ -161,6 +161,29 @@
         "scripts/dispatch/falsifiers/verified-by-bare-filename.falsifier.test.js"
       ],
       "positive_companions": []
+    },
+    {
+      "id": "S9-brokered-transport-main-write",
+      "reader": "scripts/dispatch/trusted-controller.js",
+      "action_gated": "a merge/release main-write -> the fenced CAS on refs/heads/main (SP-20260721-001 D-4 INC-1)",
+      "scope": "cross-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/dispatch/trusted-controller.js#fencedRefUpdate",
+      "structural_guard": "scripts/checks/transport-record-trust-guard.js",
+      "trust_anchor": "re-resolved live head as the sole CAS anchor (beta R1) + suite over the tree materialized from the landing SHA (beta R2) + fence token resolved fresh from the conductor-lease store (never caller-asserted; leaseToken/base_commit/expectedHead/candidateRoot are absent from the frozen TRANSPORT_OPT_KEYS)",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/cas-anchor-caller-adopted-ignored.falsifier.test.js",
+        "scripts/dispatch/falsifiers/checked-equals-landed.falsifier.test.js",
+        "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
+        "scripts/dispatch/falsifiers/broker-acceptance.falsifier.test.js",
+        "scripts/dispatch/falsifiers/bundle-corrupt-configured-refused-no-fallback.falsifier.test.js",
+        "scripts/dispatch/falsifiers/release-index-feature-snapshot-excluded.falsifier.test.js",
+        "scripts/dispatch/falsifiers/ledger-unreadable-refuses-not-count-zero.falsifier.test.js"
+      ],
+      "positive_companions": [
+        "scripts/dispatch/falsifiers/broker-acceptance.falsifier.test.js"
+      ],
+      "_note": "SEC-1 + MIG. The CALLER-migration completeness enforcer (scripts/checks/main-write-broker-completeness.js) is the named FLIP-TRIGGER for arming the Seam E fence; it is EXPECTED RED until the release-ceremony migrations (#2 release-canonical.js + #4 commit/land.md, plus the census-discovered session/end.md + session/turbo.md) land. Static scan = pre-flip breakage-prevention; the live reference-transaction hook is the runtime security boundary. The last three falsifiers are the gauntlet-round MIG dogfood/fallback-visibility teeth (GF-1..GF-3 / R2-F1..F3): a configured-but-missing/corrupt bundle refuses-with-no-fallback (a security reason can never be fallback-eligible), a feature-branch index cannot leak a foreign snapshot onto a release commit (the release-commit analog of beta R1 — isolated index seeded from head), and an unreadable-but-present fallback ledger refuses rather than certifying a false count-0 (the count that gates the arm decision)."
     }
   ],
   "bonus_falsifiers": [
