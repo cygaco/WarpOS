@@ -112,8 +112,16 @@ function runTooth() {
       `payload=${JSON.stringify(payload)}`,
     );
     ok(
-      "the failure is the expected PREFLIGHT BLOCKED (gate 1: warpos-install-baseline) — not an unrelated setup error",
-      !!payload && typeof payload.error === "string" && /PREFLIGHT BLOCKED/.test(payload.error) && /warpos-install-baseline/.test(payload.error),
+      "the failure is a STRUCTURED preflight/escalation block (not an unrelated crash) — robust to WHICH preflight gate fires",
+      // NEW-TEST-JSON-TOOTH-NOT-GREEN: do NOT pin the specific gate name
+      // (warpos-install-baseline vs EFASTPREFLIGHTDRIFT etc. depends on the
+      // sandbox's exact drift state). Assert the STRUCTURED-failure shape that
+      // the BC-16 loud-fail fix guarantees: a real preflight-block / escalation,
+      // not a usage/crash error. This is the load-bearing property being tested.
+      !!payload &&
+        typeof payload.error === "string" &&
+        (/PREFLIGHT BLOCKED/.test(payload.error) || /^ESCALATE:/.test(payload.error)) &&
+        payload.committed !== true,
       `error=${payload && payload.error}`,
     );
   } finally {

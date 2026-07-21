@@ -309,6 +309,9 @@ function normalizeContent3c(text, ctx) {
 function compareTreeContents(treeA, treeB, commonRelPaths, ctx) {
   const mismatches = [];
   for (const rel of commonRelPaths) {
+    // Symlink marker entries (fullTreeFileList tags them "<path>\t<SYMLINK>") are
+    // PRESENCE-checked by the path-set parity, not content-read here — skip them.
+    if (rel.includes("\t<SYMLINK>")) continue;
     let bufA;
     let bufB;
     try {
@@ -324,6 +327,16 @@ function compareTreeContents(treeA, treeB, commonRelPaths, ctx) {
       continue;
     }
     if (bufA.equals(bufB)) continue; // byte-identical — no normalization needed
+    // Byte-exact (NEW-FUNC-3C-BINARY-UTF8-FALSE-GREEN): the buffers DIFFER here.
+    // Text normalization (NORMALIZE_3C) operates on decoded UTF-8, but a LOSSY
+    // decode collapses distinct invalid bytes (0xFF vs 0xFE) to the SAME U+FFFD
+    // and would false-green a real binary divergence. So only normalize+compare
+    // when BOTH files round-trip through UTF-8 losslessly; otherwise the differing
+    // bytes ARE a real mismatch (they are already !equals here).
+    if (!isRoundTripUtf8(bufA) || !isRoundTripUtf8(bufB)) {
+      mismatches.push({ rel, reason: "binary content differs (byte-exact; not UTF-8 round-trip safe)" });
+      continue;
+    }
     const normA = normalizeContent3c(bufA.toString("utf8"), ctx);
     const normB = normalizeContent3c(bufB.toString("utf8"), ctx);
     if (normA !== normB) {
@@ -331,6 +344,14 @@ function compareTreeContents(treeA, treeB, commonRelPaths, ctx) {
     }
   }
   return { equal: mismatches.length === 0, mismatches };
+}
+
+// A buffer is "text" for normalization purposes only if decoding to UTF-8 and
+// re-encoding reproduces the EXACT original bytes. A binary file (or one with
+// invalid UTF-8) fails this and must be compared byte-exact, never through the
+// lossy U+FFFD-replacement decode that would collapse distinct bytes to equal.
+function isRoundTripUtf8(buf) {
+  return Buffer.from(buf.toString("utf8"), "utf8").equals(buf);
 }
 
 // ── F4 (qa FUNC-3C-SCOPE / INT-OVERCLAIM-FULL-TREE) — TRUE full-tree file
@@ -390,12 +411,23 @@ function fullTreeFileList(rootDir) {
     let entries;
     try {
       entries = fs.readdirSync(absDir, { withFileTypes: true });
-    } catch {
-      return;
+    } catch (e) {
+      // FAIL-CLOSED (qa FUNC-3C-SCOPE still-open / backend 7C-001): an unreadable
+      // directory must NEVER be silently omitted — that would let an upgraded-only
+      // file behind an EACCES subtree vanish from BOTH parity sets and false-green
+      // "full-tree". THROW so the 3c block catches it and RED-fails "cannot certify
+      // full-tree parity" instead of pretending the subtree is empty.
+      throw new Error(`fullTreeFileList: cannot read ${relDir || "."} (${e.code || e.message}) — full-tree parity uncertifiable, fail-closed`);
     }
     for (const ent of entries) {
       const relPath = relDir ? `${relDir}/${ent.name}` : ent.name;
-      if (ent.isDirectory()) {
+      if (ent.isSymbolicLink()) {
+        // Record symlinks/junctions as entries (do NOT follow — a followed link
+        // could escape the tree or loop); their presence is install content and
+        // a presence divergence must be caught by the path-set parity. Marked so
+        // the content pass skips them (they are not regular files).
+        if (!isFullTreeExcluded(relPath)) out.push(`${relPath}\t<SYMLINK>`);
+      } else if (ent.isDirectory()) {
         if (isFullTreeExcluded(`${relPath}/`)) continue;
         walk(path.join(absDir, ent.name), relPath);
       } else if (ent.isFile()) {
@@ -412,7 +444,7 @@ function fullTreeFileList(rootDir) {
 // control ────────────────────────────────────────────────────────────────
 // The real fix (content-hash canonical no-delta) is cross-cutting into
 // GATE-A's snapshotCanonicalState/noDeltaCheck — OUT OF SCOPE here (tracked
-// debt; the full fix is cross-engine and belongs to GATE-A). This is an
+// debt ED-253; the full fix is cross-engine and belongs to GATE-A). This is an
 // ENGINE-LOCAL compensating control targeted at exactly the gap a porcelain
 // `git status` line diff cannot see: a file that was ALREADY dirty before
 // this run started, whose CONTENT changes during the run without its
@@ -421,7 +453,13 @@ function fullTreeFileList(rootDir) {
 // and re-hash the SAME set after; any mismatch is caught here even though
 // noDeltaCheck's line-level diff would miss it.
 function listDirtyFiles() {
-  const r = spawnSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+  // NUL-safe (backend 7C-002 / F6-false-green): plain --porcelain C-QUOTES paths
+  // with special chars (spaces, unicode, control) and uses " -> " for renames, so
+  // a newline+slice parser hashes a quoted literal as a nonexistent path (an
+  // identical UNREADABLE sentinel that false-greens). `-z` emits NUL-delimited,
+  // UNquoted records; a rename/copy ("R"/"C") record is followed by a SECOND
+  // NUL field (the origin path) which we consume and ignore.
+  const r = spawnSync("git", ["status", "--porcelain", "-z", "--untracked-files=all"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
     timeout: 30_000,
@@ -429,13 +467,14 @@ function listDirtyFiles() {
   if (r.status !== 0) {
     throw new Error(`listDirtyFiles: git status failed (status=${r.status}): ${(r.stderr || r.stdout || "").slice(0, 300)}`);
   }
+  const parts = (r.stdout || "").split("\0");
   const files = [];
-  for (const line of (r.stdout || "").split(/\r?\n/)) {
-    if (!line) continue;
-    // Porcelain format: "XY <path>" or, for renames, "XY <old> -> <new>".
-    const rest = line.slice(3);
-    const arrowIdx = rest.indexOf(" -> ");
-    files.push(arrowIdx !== -1 ? rest.slice(arrowIdx + 4) : rest);
+  for (let i = 0; i < parts.length; i++) {
+    const rec = parts[i];
+    if (!rec) continue;
+    const status = rec.slice(0, 2);
+    files.push(rec.slice(3));
+    if (status[0] === "R" || status[0] === "C") i++; // skip the origin-path field
   }
   return files;
 }
@@ -1038,6 +1077,25 @@ function selfTest() {
       fs.rmSync(dirA, { recursive: true, force: true });
       fs.rmSync(dirB, { recursive: true, force: true });
     }
+  });
+
+  // ── Round-2 tooth (NEW-FUNC-3C-BINARY-UTF8-FALSE-GREEN) — byte-exact, no
+  // lossy UTF-8 collapse ──
+  t("R2: two binary files differing ONLY in an invalid-UTF-8 byte (0xFF vs 0xFE) RED byte-exact (no U+FFFD collapse to false-green)", () => {
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-bin-a-"));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-bin-b-"));
+    try {
+      fs.writeFileSync(path.join(dirA, "blob.bin"), Buffer.from([0x00, 0xff, 0x01]));
+      fs.writeFileSync(path.join(dirB, "blob.bin"), Buffer.from([0x00, 0xfe, 0x01]));
+      const result = compareTreeContents(dirA, dirB, ["blob.bin"], { sandboxRoots: [dirA, dirB] });
+      return result.equal === false;
+    } finally {
+      fs.rmSync(dirA, { recursive: true, force: true });
+      fs.rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+  t("R2 positive control: isRoundTripUtf8 true for clean text, false for invalid UTF-8", () => {
+    return isRoundTripUtf8(Buffer.from("hello world", "utf8")) === true && isRoundTripUtf8(Buffer.from([0xff, 0xfe])) === false;
   });
 
   // ── F3 tooth (3a-defeat via 3c — qa FUNC-3A-NOT-DEFEATED) ──
