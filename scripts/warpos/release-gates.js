@@ -28,6 +28,24 @@ function gate(name, fn) {
   return { name, fn };
 }
 
+// Extracts failing-assertion names per leg from a fresh_scaffold_all_ways
+// --json payload, for gate `details` (bounded to a few lines per leg).
+function summarizeGateALegs(payload) {
+  const out = [];
+  for (const leg of (payload && payload.legs) || []) {
+    const fails = (leg.asserts || []).filter((a) => a.status === "fail");
+    if (fails.length) {
+      out.push(`leg ${leg.leg} (${leg.name}): ${fails.map((a) => a.name).join("; ")}`);
+    }
+  }
+  if (payload && payload.sandbox_isolation && !payload.sandbox_isolation.no_delta) {
+    out.push(
+      `sandbox-isolation NO-DELTA VIOLATED: onlyBefore=${payload.sandbox_isolation.onlyBefore.length} onlyAfter=${payload.sandbox_isolation.onlyAfter.length}`,
+    );
+  }
+  return out.slice(0, 8);
+}
+
 function runScript(scriptRelative, args, env) {
   const full = path.join(REPO_ROOT, scriptRelative);
   if (!fs.existsSync(full)) {
@@ -181,23 +199,17 @@ const GATES = [
     };
   }),
 
-  // 6. Fresh Install Fixture
-  gate("fresh_install_fixture", () => {
-    const fixture = path.join(REPO_ROOT, "fixtures", "install-empty-next-app");
-    if (!fs.existsSync(fixture)) {
-      return {
-        ok: false,
-        severity: "yellow",
-        message:
-          "fixtures/install-empty-next-app/ missing — Phase 4G ships only update-from-clean fixture in 0.1.0 baseline.",
-      };
-    }
-    return {
-      ok: true,
-      severity: "green",
-      message: "Fresh install fixture present.",
-    };
-  }),
+  // 6. RETIRED (SP-20260721-001 D-4 INC-2 — GATE-A `fresh_scaffold_all_ways`,
+  // coverage-map below). `fresh_install_fixture` asserted ONLY that
+  // fixtures/install-empty-next-app/ EXISTS as a directory — cosmetic, never
+  // ran an install. SUBSUMED by GATE-A Leg 1 (/portfolio:new, real install)
+  // and Leg 3 (shipped install.ps1, real install) below, both of which
+  // exercise a REAL fresh install and assert on its actual end-state
+  // (framework-installed.json, scan:install GREEN) rather than a fixture
+  // directory's mere existence. See the retirement coverage-map comment next
+  // to `fresh_scaffold_all_ways` for the full R5 accounting (why this one
+  // retires, why `customized_install_fixture` retires, why
+  // `update_fixture_from_previous` does NOT).
 
   // 7. Update Fixture from previous version
   // Fix-forward (codex Phase 4 review 2026-04-30): previously this just
@@ -305,26 +317,13 @@ const GATES = [
     };
   }),
 
-  // 8. Customized Install Fixture
-  gate("customized_install_fixture", () => {
-    const fixture = path.join(
-      REPO_ROOT,
-      "fixtures",
-      "update-from-0.0.0-customized-claude-md",
-    );
-    if (!fs.existsSync(fixture)) {
-      return {
-        ok: false,
-        severity: "yellow",
-        message: "Customized-install fixture pending Phase 4G+.",
-      };
-    }
-    return {
-      ok: true,
-      severity: "green",
-      message: "Customized install fixture present.",
-    };
-  }),
+  // 8. RETIRED (SP-20260721-001 D-4 INC-2 — GATE-A `fresh_scaffold_all_ways`).
+  // `customized_install_fixture` asserted ONLY that
+  // fixtures/update-from-0.0.0-customized-claude-md/ EXISTS as a directory —
+  // cosmetic, never ran an install or touched a CLAUDE.md. SUBSUMED by
+  // GATE-A Leg 2 (manual /warp:setup over a SEEDED pre-existing CLAUDE.md,
+  // real merge), which asserts identity-merge, seeded-content survival, and a
+  // pre-merge backup — the real behavior this fixture only gestured at.
 
   // 9. Runtime Leak Scan
   // Only flag truly-runtime paths that should never be in git.
@@ -625,6 +624,118 @@ const GATES = [
       severity: "red",
       message: "Regression-seed runner errored (run.js produced no parseable verdict).",
       details: (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-6),
+    };
+  }),
+
+  // GATE-A `fresh_scaffold_all_ways` (SP-20260721-001 D-4 INC-2 —
+  // ADR-0034). The operator's D-4 standing standard #1 ("fresh-scaffold, ALL
+  // WAYS") made a REAL, BLOCKING release gate: runs all 3 shipped install
+  // paths for real (scripts/warpos/test-scaffold-all-ways.js — see that
+  // file's header for the full engine contract + the sandbox-isolation
+  // binding), sandbox-isolated, and PROVES the run never touched canonical
+  // (a no-delta git-status snapshot before/after).
+  //
+  // R5 RETIREMENT COVERAGE-MAP (coverage-proven, not retired on number):
+  //   - `fresh_install_fixture`       RETIRED — was `fs.existsSync` on a
+  //     fixture DIRECTORY only, never ran an install. Subsumed by Leg 1
+  //     (/portfolio:new) + Leg 3 (shipped install.ps1), both real installs.
+  //   - `customized_install_fixture`  RETIRED — same class, directory-exists
+  //     only. Subsumed by Leg 2 (manual /warp:setup over a SEEDED pre-existing
+  //     CLAUDE.md — real identity-merge + survival + backup asserts).
+  //   - `update_fixture_from_previous` STAYS — it is NOT cosmetic: it loads a
+  //     real framework-installed.json fixture and runs the update.js
+  //     classifier against it. That is UPGRADE domain (GATE-B / INC-3), not
+  //     fresh-scaffold — retiring it on adjacency to the other two would be
+  //     wrong; it covers ground GATE-A does not.
+  //
+  // Role-aware like `regression_seed`: only canonical can act as a WarpOS
+  // engine SOURCE (a product/consumer repo has no framework-manifest.json and
+  // install.ps1 refuses it as a source) — opt-in/skip-as-green for product
+  // repos, same qa W5 manifest-unreadable distinction.
+  gate("fresh_scaffold_all_ways", () => {
+    const rs = roleStatus();
+    if (!rs.canonical) {
+      if (rs.manifestExists && !rs.manifestReadable) {
+        return {
+          ok: true,
+          severity: "manual",
+          message:
+            ".claude/manifest.json exists but is unreadable — cannot resolve repoRole. fresh_scaffold_all_ways was NOT run; verify the manifest before release.",
+        };
+      }
+      return {
+        ok: true,
+        severity: "green",
+        message: `fresh_scaffold_all_ways is opt-in for product repos (repoRole=${rs.role || "product"}) — skipped.`,
+      };
+    }
+    const r = runScript("scripts/warpos/test-scaffold-all-ways.js", ["--json"]);
+    let payload = null;
+    try {
+      payload = JSON.parse((r.stdout || "").trim() || "{}");
+    } catch {
+      /* leave payload null — the errored branch below fires */
+    }
+    if (r.status === 0 && payload && payload.ok) {
+      return {
+        ok: true,
+        severity: "green",
+        message: `GATE-A fresh_scaffold_all_ways: all 3 legs pass, sandbox-isolation no-delta held (ps_available=${payload.ps_available}).`,
+      };
+    }
+    if (payload && payload.incomplete) {
+      return {
+        ok: false,
+        severity: "degraded",
+        message:
+          "GATE-A fresh_scaffold_all_ways: INCOMPLETE — Leg 3 (shipped install.ps1) did not run (no PowerShell on this host). Not a pass (R2 skip-loud).",
+        details: summarizeGateALegs(payload),
+      };
+    }
+    return {
+      ok: false,
+      severity: "red",
+      message:
+        "GATE-A fresh_scaffold_all_ways FAILED — a real-install leg or the sandbox-isolation no-delta assertion failed.",
+      details: payload ? summarizeGateALegs(payload) : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8),
+    };
+  }),
+
+  // `install_matrix` — wires the previously-orphaned
+  // scripts/warpos/test-install-matrix.js (7-scenario install-fixture CI
+  // matrix — SP-20260524-001/SP-20260525-019) into the release gate so it
+  // actually runs and blocks, instead of sitting unreferenced. Same
+  // role-aware opt-in-for-product-repos treatment as the gates above.
+  gate("install_matrix", () => {
+    const rs = roleStatus();
+    if (!rs.canonical) {
+      return {
+        ok: true,
+        severity: "green",
+        message: `install_matrix is opt-in for product repos (repoRole=${rs.role || "product"}) — skipped.`,
+      };
+    }
+    const r = runScript("scripts/warpos/test-install-matrix.js", ["--json"]);
+    let payload = null;
+    try {
+      payload = JSON.parse((r.stdout || "").trim() || "{}");
+    } catch {
+      /* leave payload null */
+    }
+    if (r.status === 0 && payload && payload.ok) {
+      return {
+        ok: true,
+        severity: "green",
+        message: `install_matrix: ${payload.totals ? `${payload.totals.pass}/${payload.scenarios.length}` : "all"} scenarios passed.`,
+      };
+    }
+    return {
+      ok: false,
+      severity: "red",
+      message: "install_matrix FAILED — a install-fixture regression scenario failed.",
+      details: payload && payload.scenarios
+        ? payload.scenarios.filter((s) => s.status !== "pass").map((s) => `scenario ${s.id} (${s.name}): ${(s.assertions || []).find((a) => a.status === "fail")?.name || "?"}`)
+        : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8),
     };
   }),
 

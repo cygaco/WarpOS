@@ -7,13 +7,13 @@
     "skill": 235,
     "kernel": 42,
     "reference": 29,
-    "maps_baseline": 26,
+    "maps_baseline": 25,
     "hook": 82,
     "hook_lib": 25,
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 59,
+    "warpos_script": 61,
     "check_tool": 177,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1662,
+  "total": 1663,
   "assets": {
     "agent": [
       {
@@ -558,18 +558,6 @@
         "dest": ".claude/agents/president/_system/beta/beta-source-data.md",
         "kind": "agent",
         "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
-        "owner": "framework",
-        "mergeStrategy": "three_way_markdown",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "agent.president._system.beta.events.jsonl.bak-premirror",
-        "src": ".claude/agents/president/_system/beta/events.jsonl.bak-premirror",
-        "dest": ".claude/agents/president/_system/beta/events.jsonl.bak-premirror",
-        "kind": "agent",
-        "sha256": "a995d8eaf87bf613658d24edcb40e6ffac2509bfbc1aa8752d0f4152365a8b3c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1093,11 +1081,23 @@
         "replaces": null
       },
       {
+        "id": "agent.president._system.policy.adr.0034-gate-a-fresh-scaffold-all-ways-sandbox-isolation.md",
+        "src": ".claude/agents/president/_system/policy/adr/0034-gate-a-fresh-scaffold-all-ways-sandbox-isolation.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0034-gate-a-fresh-scaffold-all-ways-sandbox-isolation.md",
+        "kind": "agent",
+        "sha256": "63b89ba01ec8f58201f4375cfa8018a48104ca3569b442981303321cdbf5020f",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.president._system.policy.adr.INDEX.md",
         "src": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "de89cac4df3392ced0b0b16ec652b6b932a5113f99b823c7b491a38dd0a9504a",
+        "sha256": "6457a5bc13796635b04561d5c2606a870e55537a7c93b5a2a9f2bb0c8c2e1e51",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -5337,18 +5337,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -7417,7 +7405,7 @@
         "src": "scripts/warpos/release-gates.js",
         "dest": "scripts/warpos/release-gates.js",
         "kind": "warpos_script",
-        "sha256": "10d3ee591d12bcffcd4799892d160a204f3652cfe3f75b3ffe184901b8c65ed0",
+        "sha256": "8ad8c1454663ac8f3b60e82631e74aa9d05c3722a72acf648731577781a8371e",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -7569,6 +7557,18 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.test-gate-wiring.js",
+        "src": "scripts/warpos/test-gate-wiring.js",
+        "dest": "scripts/warpos/test-gate-wiring.js",
+        "kind": "warpos_script",
+        "sha256": "f23ee65739045b3b321f8230cae3431e1d985c79f2d4627e9498dce5bf0c29b6",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.test-hash-back-compat.js",
         "src": "scripts/warpos/test-hash-back-compat.js",
         "dest": "scripts/warpos/test-hash-back-compat.js",
@@ -7622,6 +7622,18 @@
         "dest": "scripts/warpos/test-rollback-cli-smoke.js",
         "kind": "warpos_script",
         "sha256": "34c8f20f5d323db5b11e5ef91ed2da0ab494833c6aa2f73f4bc2268763ee9d55",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "warpos_script.test-scaffold-all-ways.js",
+        "src": "scripts/warpos/test-scaffold-all-ways.js",
+        "dest": "scripts/warpos/test-scaffold-all-ways.js",
+        "kind": "warpos_script",
+        "sha256": "66dcee9b705bf422003d315417cd02b46560e5a3ddfd9b71beef8e27b5b27e8a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -13379,7 +13391,7 @@
         "src": "scripts/portfolio/new-lib.js",
         "dest": "scripts/portfolio/new-lib.js",
         "kind": "portfolio_tool",
-        "sha256": "3310bb75e79810e8d4681dfac517bec37f5134465249d71e5334e283d45d2cdb",
+        "sha256": "4203a31c82ee5c0e3fec0a1e906c646572f886718ff837313c1e7c0da936398b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
