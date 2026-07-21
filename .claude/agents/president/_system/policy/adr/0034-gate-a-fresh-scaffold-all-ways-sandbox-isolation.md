@@ -101,6 +101,13 @@ per-install id + hashes; `.claude/framework-manifest.json` is legitimately insta
      test-scaffold-all-ways.js` + `release-gates.js` + `test-install-matrix.js` wiring +
      `new-lib.js` seam only). GATE-A will legitimately RED on Leg 3 until those are fixed — that is
      the gate doing its job, not a defect in this build.
+   - **Amendment (post-design, α-ratified gate-mode option b):** the straight-RED design above was
+     superseded during the ED-249 window by a REPORT-ONLY ramp (the WarpOS report-only→enforce
+     discipline). A real-install LEG failure now surfaces as `yellow` (reported, non-blocking) naming
+     the ED-249 flip-trigger; a SANDBOX-ISOLATION no-delta LEAK still `red`s UNCONDITIONALLY (checked
+     first, never softened). `install_matrix` shares the same ED-249 window. FLIP both to hard
+     (`GATE_A_REPORT_ONLY=false`) once ED-249 resolves (build.js classifies clean) AND Leg-3 is green —
+     which is ALSO a release-ceremony prerequisite (build.js drives RI-003 manifest convergence).
 - **Reversibility:** additive (`parentDir` defaults to the old behavior when omitted); the two
   retired gates can be restored verbatim from git history if ever needed, though their coverage is
   fully subsumed.

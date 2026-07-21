@@ -167,6 +167,44 @@ CANNED["test-scaffold-all-ways.js"].stdout = JSON.stringify({
   ok("report-only NEVER softens a leak: a sandbox-isolation NO-DELTA violation is RED (blocks)", ga && ga.severity === "red", ga && `severity=${ga.severity}`);
   ok("leak message names the SANDBOX-ISOLATION violation", ga && /SANDBOX-ISOLATION/.test(ga.message), ga && ga.message);
 }
+// ── 6: the branch-ORDER BLOCKER fix — a no-PS host (incomplete) with a LEAK still reds (leak check FIRST) ──
+CANNED["test-scaffold-all-ways.js"].stdout = JSON.stringify({
+  ok: false,
+  incomplete: true, // no PowerShell → Leg 3 did not run
+  ps_available: false,
+  legs: [{ leg: 1, name: "portfolio_new", ran: true, ok: false, asserts: [{ name: "canonical no-delta", status: "fail" }] }],
+  sandbox_isolation: { no_delta: false, onlyBefore: [], onlyAfter: ["../leaked-sibling-repo"] }, // a Leg-1/2 leak
+});
+{
+  const ga = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("fresh_scaffold_all_ways");
+  ok("BLOCKER-fix: a no-PS host (incomplete) WITH a leak is RED, never softened to degraded (leak check is FIRST)", ga && ga.severity === "red", ga && `severity=${ga.severity}`);
+}
+// incomplete WITHOUT a leak, during the report-only ramp → degraded (non-blocking, but NOT a pass).
+CANNED["test-scaffold-all-ways.js"].stdout = JSON.stringify({
+  ok: false,
+  incomplete: true,
+  ps_available: false,
+  legs: [
+    { leg: 1, name: "portfolio_new", ran: true, ok: true, asserts: [] },
+    { leg: 2, name: "manual_warp_setup", ran: true, ok: true, asserts: [] },
+  ],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+});
+{
+  const ga = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("fresh_scaffold_all_ways");
+  ok("no-PS incomplete (no leak) is DEGRADED during the report-only ramp — not a pass, non-blocking", ga && ga.severity === "degraded", ga && `severity=${ga.severity}`);
+}
+// ── 7: install_matrix shares GATE-A's ED-249 report-only window — a failing scenario is YELLOW, not red ──
+CANNED["test-install-matrix.js"].stdout = JSON.stringify({
+  ok: false,
+  scenarios: [{ id: "1", name: "clean_install", status: "fail", assertions: [{ name: "_warpos/MANIFEST.json present", status: "fail" }] }],
+  totals: { pass: 0, fail: 1 },
+});
+{
+  const im = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("install_matrix");
+  ok("install_matrix report-only: a scenario failure → YELLOW (non-blocking) during the ED-249 window", im && im.severity === "yellow", im && `severity=${im.severity}`);
+  ok("install_matrix report-only message names the ED-249 flip-trigger", im && /ED-249/.test(im.message) && /FLIP-TRIGGER/.test(im.message), im && im.message);
+}
 
 cp.spawnSync = realSpawnSync;
 

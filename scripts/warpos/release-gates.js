@@ -685,6 +685,21 @@ const GATES = [
     } catch {
       /* leave payload null — the errored branch below fires */
     }
+    // (1) SANDBOX-ISOLATION no-delta violation (a real leg leaking into canonical) is the load-bearing
+    //     correctness property — it BLOCKS UNCONDITIONALLY, and it is checked FIRST, before green /
+    //     incomplete / report-only, so NO branch (a no-PS `incomplete` short-circuit, the report-only ramp)
+    //     can ever soften a leak. (β R1 / the canonical-corruption incident / backend-reviewer branch-order
+    //     BLOCKER: on a no-PS host `incomplete` fired before this check and a Leg-1/2 leak returned degraded.)
+    if (payload && payload.sandbox_isolation && payload.sandbox_isolation.no_delta === false) {
+      return {
+        ok: false,
+        severity: "red",
+        message:
+          "GATE-A fresh_scaffold_all_ways: SANDBOX-ISOLATION NO-DELTA VIOLATED — a real-install leg leaked into canonical. This BLOCKS unconditionally (never softened by incomplete or report-only).",
+        details: summarizeGateALegs(payload),
+      };
+    }
+    // (2) all 3 legs pass, no leak.
     if (r.status === 0 && payload && payload.ok) {
       return {
         ok: true,
@@ -692,29 +707,20 @@ const GATES = [
         message: `GATE-A fresh_scaffold_all_ways: all 3 legs pass, sandbox-isolation no-delta held (ps_available=${payload.ps_available}).`,
       };
     }
+    // (3) INCOMPLETE — Leg 3 (the SHIPPED install.ps1) did not run (no PowerShell). Never a pass (R2
+    //     skip-loud). Non-blocking (degraded) DURING the report-only ramp; once the ramp flips HARD, a host
+    //     that cannot certify the shipped installer must BLOCK (red) — a no-PS host may not green GATE-A
+    //     (the R2/AC-15 false-green the gate exists to kill).
     if (payload && payload.incomplete) {
       return {
         ok: false,
-        severity: "degraded",
-        message:
-          "GATE-A fresh_scaffold_all_ways: INCOMPLETE — Leg 3 (shipped install.ps1) did not run (no PowerShell on this host). Not a pass (R2 skip-loud).",
+        severity: GATE_A_REPORT_ONLY ? "degraded" : "red",
+        message: `GATE-A fresh_scaffold_all_ways: INCOMPLETE — Leg 3 (shipped install.ps1) did not run (no PowerShell on this host). Not a pass (R2 skip-loud).${GATE_A_REPORT_ONLY ? " Non-blocking during the report-only ramp." : " BLOCKS post-flip — the shipped installer must be certifiable to green GATE-A."}`,
         details: summarizeGateALegs(payload),
       };
     }
-    // A SANDBOX-ISOLATION no-delta violation (a real leg leaking into canonical) is the load-bearing
-    // correctness property — it BLOCKS unconditionally, NEVER report-only (β R1 / the canonical-corruption
-    // incident). Check it before the report-only ramp so a leak can never be softened to yellow.
-    if (payload && payload.sandbox_isolation && payload.sandbox_isolation.no_delta === false) {
-      return {
-        ok: false,
-        severity: "red",
-        message:
-          "GATE-A fresh_scaffold_all_ways: SANDBOX-ISOLATION NO-DELTA VIOLATED — a real-install leg leaked into canonical. This BLOCKS unconditionally (never report-only).",
-        details: summarizeGateALegs(payload),
-      };
-    }
-    // Report-only ramp (ED-249): a real-install LEG failure is reported LOUDLY (yellow) but does not block
-    // while GATE-A ramps. report-only ≠ silent — the finding + the flip-trigger are surfaced in the tally.
+    // (4) Report-only ramp (ED-249): a real-install LEG failure is reported LOUDLY (yellow) but does not
+    //     block while GATE-A ramps. report-only ≠ silent — the finding + the flip-trigger are surfaced.
     if (GATE_A_REPORT_ONLY) {
       return {
         ok: false,
@@ -761,13 +767,28 @@ const GATES = [
         message: `install_matrix: ${payload.totals ? `${payload.totals.pass}/${payload.scenarios.length}` : "all"} scenarios passed.`,
       };
     }
+    const matrixDetails = payload && payload.scenarios
+      ? payload.scenarios.filter((s) => s.status !== "pass").map((s) => `scenario ${s.id} (${s.name}): ${(s.assertions || []).find((a) => a.status === "fail")?.name || "?"}`)
+      : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8);
+    // install_matrix reds on the SAME pre-existing ED-249 (build.js unclassified → _warpos/MANIFEST.json
+    // missing) that GATE-A was ramped past. So it SHARES GATE-A's ED-249 report-only window (the same
+    // GATE_A_REPORT_ONLY flag = the ED-249 ramp, same flip-trigger): a scenario failure is REPORTED loudly
+    // (yellow) but does not block while the window is open — else the release would be blocked on ED-249 via
+    // this SECOND gate, defeating GATE-A's ramp (qa-reviewer HIGH). Flips HARD with GATE-A when ED-249 clears.
+    if (GATE_A_REPORT_ONLY) {
+      return {
+        ok: false,
+        severity: "yellow",
+        message:
+          "install_matrix [REPORT-ONLY]: a scenario failed — currently blocked by ED-249 (shared with GATE-A: build.js unclassified paths → _warpos/MANIFEST.json missing). NOT blocking during the ED-249 report-only ramp. FLIP-TRIGGER: ED-249 resolved → set GATE_A_REPORT_ONLY=false.",
+        details: matrixDetails,
+      };
+    }
     return {
       ok: false,
       severity: "red",
       message: "install_matrix FAILED — a install-fixture regression scenario failed.",
-      details: payload && payload.scenarios
-        ? payload.scenarios.filter((s) => s.status !== "pass").map((s) => `scenario ${s.id} (${s.name}): ${(s.assertions || []).find((a) => a.status === "fail")?.name || "?"}`)
-        : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8),
+      details: matrixDetails,
     };
   }),
 
