@@ -157,6 +157,77 @@ const s2 = sha256OfFile(SCHEMA_PATH);
 ok("sha256 is hex64", /^[a-f0-9]{64}$/.test(s1));
 ok("sha256 deterministic across two calls", s1 === s2);
 
+// F. Lock-step: build.js#buildRules ↔ populate-source.js#isFrameworkViewDest.
+// build.js gives every framework `.claude/**` path a `_warpos/<rest>` source
+// pointer in PRODUCT mode (sourcePrefix=_warpos). populate-source.js mirrors
+// exactly the dests its isFrameworkViewDest() accepts. If a `.claude/**` path
+// gets a `_warpos/` source but is NOT accepted by isFrameworkViewDest, the
+// product-install source dangles (never mirrored → /warp:update is inert, or the
+// regenerated view is absent). This is the invariant both files' headers assert
+// "in lock-step" but nothing enforced — the exact gap that let the kernel/schemas
+// rules ship a `_warpos/` pointer with no mirror (INC-2.5 / ED-249). A regression
+// here fails loudly at the generator test, not silently in a product install.
+process.stdout.write("F. build.js ↔ populate-source lock-step\n");
+const { buildRules, classify } = require(BUILD_PATH);
+const { isFrameworkViewDest } = require(
+  path.join(REPO_ROOT, "scripts", "warpos", "views", "populate-source.js"),
+);
+const prodRules = buildRules("_warpos");
+const lockStepBreaks = [];
+for (const rel of Object.keys(manifest.paths || {})) {
+  if (!rel.startsWith(".claude/")) continue;
+  const c = classify(rel, prodRules);
+  if (!c) continue;
+  const src = c.entry.source;
+  if (typeof src === "string" && src.startsWith("_warpos/") && !isFrameworkViewDest(rel)) {
+    lockStepBreaks.push(rel);
+  }
+}
+ok(
+  "every .claude/** _warpos-mirror source is covered by isFrameworkViewDest",
+  lockStepBreaks.length === 0,
+  `${lockStepBreaks.length} un-mirrored: ${JSON.stringify(lockStepBreaks.slice(0, 5))}`,
+);
+
+// F2. Shipping-side lock-step: every `.claude/**` path build.js gives a `_warpos/`
+// source MUST also be enumerated by the shipping manifest (.claude/framework-
+// manifest.json#assets). isFrameworkViewDest coverage alone (F) is not enough —
+// populate-source iterates the SHIP manifest and mirrors only entries it lists, so
+// a path with a `_warpos/` source + a mirror predicate but NO ship-manifest entry
+// still ships to nobody (the R1 defect: `.claude/schemas` had the classifier rule
+// but no ASSET_DIRS root). Removing an ASSET_DIRS root + regenerating would fail
+// HERE, where F alone would stay green.
+process.stdout.write("F2. shipping manifest enumerates _warpos-backed dests\n");
+const shipDests = new Set();
+try {
+  const fm = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, ".claude", "framework-manifest.json"), "utf8"),
+  );
+  for (const kind of Object.keys(fm.assets || {})) {
+    for (const e of fm.assets[kind] || []) {
+      if (e && e.dest) shipDests.add(e.dest);
+    }
+  }
+} catch {
+  /* shipDests stays empty → the assertions below fail loudly */
+}
+const notShipped = [];
+for (const rel of Object.keys(manifest.paths || {})) {
+  if (!rel.startsWith(".claude/")) continue;
+  const c = classify(rel, prodRules);
+  if (!c) continue;
+  const src = c.entry.source;
+  if (typeof src === "string" && src.startsWith("_warpos/") && !shipDests.has(rel)) {
+    notShipped.push(rel);
+  }
+}
+ok("framework-manifest present + non-empty", shipDests.size > 0, `shipDests=${shipDests.size}`);
+ok(
+  "every .claude/** _warpos-mirror source is enumerated by the shipping manifest",
+  notShipped.length === 0,
+  `${notShipped.length} un-shipped: ${JSON.stringify(notShipped.slice(0, 5))}`,
+);
+
 // Cleanup
 try {
   fs.unlinkSync(tmpManifest);

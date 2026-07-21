@@ -278,6 +278,15 @@ const ASSET_DIRS = [
   { src: "scripts/bootstrap", kind: "bootstrap_tool" },
   { src: "scripts/canon", kind: "canon_tool" },
   { src: "schemas", kind: "schema" },
+  // SP-20260718-005 BE-1/BE-3 (INC-2.5 / ED-249): the machine-readable schema
+  // contracts under .claude/schemas/ (workorder-min.schema.json — the shape
+  // scripts/dispatch/workorder-schema.js mirrors by hand). Same silent-drop gap
+  // the .claude/kernel entry fixed: no ASSET_DIRS root visited .claude/schemas,
+  // so it shipped to nobody and its build.js framework classification pointed at
+  // an un-mirrored _warpos/schemas/ source. Placed adjacent to the top-level
+  // `schemas` root (same `schema` kind) so regen adds entries without reordering
+  // the kind-keyed output. Enumerated here so it ships + mirrors.
+  { src: ".claude/schemas", kind: "schema" },
   { src: "migrations", kind: "migration" },
   { src: "framework/releases", kind: "release_capsule" },
   { src: "framework/paths.registry.json", kind: "paths_registry" },
