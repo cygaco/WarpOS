@@ -150,13 +150,23 @@ make the write atomic-by-construction, never rely on a stale read.
    which ids are live by Read before reporting or repairing.
 
 **Enforcer — two tiers:**
-- **Cheap, self-detecting (build first): a ledger duplicate-id lint** — fail if any
-  ED id appears twice, **Read-based, not a grep-count** (discipline 3's
-  false-negative), wired into `/scan:full`. It catches the collision SYMPTOM the
-  instant it lands (it would flag today's transient ED-253 dup AND the standing
-  pre-existing ED-244 dup). Filed as a LOW enforcement-debt entry **ED-258** to
-  build it — this is the named enforcer that closes the hygiene bar without waiting
-  on the root fix.
+- **Cheap, self-detecting (build first): a ledger duplicate-id lint — keyed on
+  GENESIS records, NOT bare id-count.** A ledger is APPEND-ONLY (discipline 2), so an
+  ED is CLOSED (or amended) by APPENDING a record with the SAME id — every closed ED
+  legitimately carries its id ≥2× (an open genesis + a closure). So flag an id only
+  when it has **>1 GENESIS record** — a record that is NOT a closure/status-update/
+  amendment (exclude any record carrying `status:closed`, `closure_receipt`,
+  `closed_ts`, or an `amends` / `record_kind:amendment` marker). One open + N
+  closures/amendments = OK (lifecycle); TWO genesis records with the same id = the
+  real cross-lane collision (today's ED-253). **Read-based, not a grep-count**
+  (discipline 3's false-negative), wired into `/scan:full`. Its test MUST plant BOTH:
+  a closed ED (open+closure pair) that PASSES, and a seeded same-id two-genesis
+  fixture that REDs. A bare "id appears ≥2× = dup" lint would false-RED on EVERY
+  closed ED — e.g. the legitimately-closed **ED-244** (open genesis + closure
+  `SP-20260720-003`, which must PASS) — and flood `/scan:full`: the DP-gap #38
+  over-broad-detector-that-gets-dismissed (the false-green inverse), worse than no
+  lint (β DIRECTIVE 2026-07-21, 0.90). Filed as LOW enforcement-debt **ED-258** — the
+  named enforcer that closes the hygiene bar without waiting on the root fix.
 - **Root fix (legitimately deferred): atomic id-allocation** — a lock or a
   monotonic allocator so two lanes cannot mint the same id (the only thing that
   CLOSES discipline 1's residual, per the caveat above). Deferred because this
