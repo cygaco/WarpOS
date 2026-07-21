@@ -39,6 +39,7 @@ const {
   snapshotCanonicalState,
   noDeltaCheck,
   findPowershellReal,
+  runLeg3,
 } = require("./test-scaffold-all-ways");
 const { treeFileList, parityDiff } = require("./test-install-matrix");
 
@@ -74,20 +75,47 @@ function semverCompare(a, b) {
 
 // Fail-closed: throws if version.json is unreadable; returns n1:null (never a
 // guess) if no capsule strictly below N exists under framework/releases/.
+function tagExists(version) {
+  const r = spawnSync("git", ["tag", "-l", `warpos@${version}`], { cwd: REPO_ROOT, encoding: "utf8", timeout: 15_000 });
+  return r.status === 0 && (r.stdout || "").trim() === `warpos@${version}`;
+}
+
+// B semantics (ceremony-faithful): upgrade the newest SHIPPED release -> what we
+// are ABOUT TO SHIP. "About to ship" = a capsule that has been CUT (dir +
+// release.json) but not yet TAGGED (the release-in-progress). A capsule whose
+// warpos@<v> tag already exists is a SHIPPED, frozen release.
+//   - unreleasedCut = highest capsule with NO warpos@<v> tag AND strictly above
+//     the newest TAGGED capsule = the ceremony's fresh cut. Its content == the
+//     current tree, so apply(--source=current) and oracle(fresh from current)
+//     are identity-consistent.
+//   - none => INCOMPLETE (skip-loud): there is no unreleased release to upgrade
+//     TO. Testing against a frozen shipped capsule skews by post-cut drift and
+//     hits baked shipped-drift (ED-251) — proves nothing about the release being
+//     cut. The full upgrade->conformance path runs at the CEREMONY.
 function resolveVersions() {
-  const versionDoc = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "version.json"), "utf8"));
-  const n = versionDoc.version;
-  if (!n) throw new Error("version.json has no .version field");
-
   const releasesDir = path.join(REPO_ROOT, "framework", "releases");
-  const candidates = fs
+  const capsules = fs
     .readdirSync(releasesDir, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+    .filter((d) => d.isDirectory() && semverParts(d.name))
+    .filter((d) => fs.existsSync(path.join(releasesDir, d.name, "release.json")))
     .map((d) => d.name)
-    .filter((name) => semverParts(name) && semverLt(name, n))
     .sort(semverCompare);
-
-  return { n, n1: candidates.length ? candidates[candidates.length - 1] : null };
+  if (!capsules.length) {
+    return { incomplete: true, reason: "no release capsules under framework/releases/ — nothing to resolve" };
+  }
+  const tagged = capsules.filter((v) => tagExists(v));
+  const newestTagged = tagged.length ? tagged[tagged.length - 1] : null;
+  const unreleased = capsules.filter(
+    (v) => !tagExists(v) && v !== newestTagged && (!newestTagged || !semverLt(v, newestTagged)),
+  );
+  const unreleasedCut = unreleased.length ? unreleased[unreleased.length - 1] : null;
+  if (unreleasedCut && newestTagged) {
+    return { incomplete: false, n: unreleasedCut, n1: newestTagged };
+  }
+  return {
+    incomplete: true,
+    reason: `no unreleased capsule cut (newest shipped/tagged=${newestTagged || "none"}); the full upgrade->conformance path runs at the ceremony when a fresh capsule is cut from the current tree. Mid-dev, a frozen shipped capsule skews by post-cut drift (ED-251) and proves nothing about the release being cut.`,
+  };
 }
 
 function describeSpawnFailure(r) {
@@ -225,23 +253,14 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   let to_version = null;
   let ran = false;
   let ps_available = null;
+  let incomplete = false;
+  let incompleteReason = null;
 
   const beforeSnapshot = snapshotCanonicalState();
   const nonce = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const tmpBase = path.join(os.tmpdir(), `warpos-gateb-${nonce}`);
   const n1Src = path.join(tmpBase, "n1-src");
   const n1Install = path.join(tmpBase, "n1-install");
-  // Identity-pinning (gauntlet-run finding): the N source AND the fresh-N oracle
-  // are BOTH materialized from the frozen warpos@<N> release tag, NOT dev-HEAD.
-  // The upgrade target is the frozen N capsule; comparing it against a dev-HEAD-N
-  // oracle skews by every post-release-cut file (mid-dev drift), which is not an
-  // upgrade deficiency. Pinning both to the frozen tag makes GATE-B test
-  // frozen-(N-1) -> frozen-N (identity-consistent — what a standing gate should
-  // test: an operator upgrades to the RELEASED N, not dev-HEAD). β#2 delta: the
-  // oracle is still a REAL install.ps1 fresh install (same mechanism as runLeg3),
-  // just sourced from the frozen tag instead of the working tree.
-  const nSrc = path.join(tmpBase, "n-src");
-  const oracleInstall = path.join(tmpBase, "freshN-install");
 
   try {
     let proceed = true;
@@ -255,17 +274,19 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       proceed = false;
     }
     if (proceed) {
-      to_version = versions.n;
-      from_version = versions.n1;
-      if (!from_version) {
-        assert(
-          "n1_resolved",
-          false,
-          `no release capsule under framework/releases/ strictly below N=${to_version} — fail-closed, never a silent green`,
-        );
+      if (versions.incomplete) {
+        // B semantics: no unreleased capsule to upgrade TO. SKIP-LOUD INCOMPLETE
+        // — NOT a pass, NOT a RED. The engine sets `incomplete` on the result;
+        // the gate renders it manual/degraded (never green, never red). The full
+        // apply->conformance path runs at the ceremony when a fresh capsule is cut.
+        incomplete = true;
+        incompleteReason = versions.reason;
+        assert("upgrade_target_available", false, `INCOMPLETE (skip-loud): ${versions.reason}`, { loadBearing: false });
         proceed = false;
       } else {
-        assert("n1_resolved", true, `N=${to_version} N-1=${from_version}`);
+        to_version = versions.n;
+        from_version = versions.n1;
+        assert("n1_resolved", true, `N=${to_version} (unreleased cut) N-1=${from_version} (newest shipped)`);
       }
     }
 
@@ -275,8 +296,6 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       try {
         assertSandboxTargetSafe(n1Src, { label: "n1-src worktree target" });
         assertSandboxTargetSafe(n1Install, { label: "n1-install sandbox target" });
-        assertSandboxTargetSafe(nSrc, { label: "n-src (frozen-N) worktree target" });
-        assertSandboxTargetSafe(oracleInstall, { label: "fresh-N oracle install target" });
         assert("sandbox_targets_safe", true, "");
       } catch (e) {
         assert("sandbox_targets_safe", false, e.message);
@@ -300,24 +319,6 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
         proceed = false;
       } else {
         assert("n1_worktree_materialized", true, "");
-      }
-    }
-
-    // Materialize the FROZEN N source from warpos@<N> (identity-pin). Fail-closed
-    // if the N release tag is absent — the gate needs a real frozen N release to
-    // test the upgrade against; never a silent green.
-    if (proceed) {
-      const nTag = `warpos@${to_version}`;
-      const nWtAdd = spawnSync("git", ["worktree", "add", "--detach", nSrc, nTag], {
-        cwd: REPO_ROOT,
-        encoding: "utf8",
-        timeout: 60_000,
-      });
-      if (nWtAdd.status !== 0) {
-        assert("n_source_materialized", false, `git worktree add ${nSrc} ${nTag} failed (is ${nTag} tagged?): ${describeSpawnFailure(nWtAdd)}`);
-        proceed = false;
-      } else {
-        assert("n_source_materialized", true, "");
       }
     }
 
@@ -376,13 +377,13 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       try {
         const installedJsonPath = path.join(n1Install, ".claude", "framework-installed.json");
         const installedJson = JSON.parse(fs.readFileSync(installedJsonPath, "utf8"));
-        installedJson.source = nSrc;
+        installedJson.source = REPO_ROOT;
         fs.writeFileSync(installedJsonPath, JSON.stringify(installedJson, null, 2));
         const manifestPath = path.join(n1Install, ".claude", "manifest.json");
         if (fs.existsSync(manifestPath)) {
           const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
           if (manifest && manifest.warpos) {
-            manifest.warpos.source = nSrc;
+            manifest.warpos.source = REPO_ROOT;
             fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
           }
         }
@@ -404,7 +405,7 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
         // eslint-disable-next-line global-require
         const { run } = require("./update");
         r = await Promise.race([
-          run({ to: to_version, source: nSrc, target: n1Install, apply: true, allRed: true }),
+          run({ to: to_version, source: REPO_ROOT, target: n1Install, apply: true, allRed: true }),
           new Promise((_, reject) => setTimeout(() => reject(new Error("apply TIMEOUT (fail-closed backstop)")), timeoutMs)),
         ]);
       } catch (e) {
@@ -504,44 +505,43 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
     }
 
     // Step 3c — fresh-N oracle parity (LOAD-BEARING, convergence-to-oracle,
-    // β#2/#3/#4). The oracle is a REAL install.ps1 fresh install of the FROZEN
-    // warpos@<N> release (never the source tree, a fixture, or the apply's own
-    // output re-used as its own oracle). `oracleInstall` lives under `tmpBase`
-    // so the top-level `finally` reclaims it.
+    // β#2/#3/#4). The oracle is a REAL fresh-N install produced by GATE-A's
+    // own runLeg3 (never the source tree, a fixture, or the apply's own
+    // output re-used as its own oracle). `oracleRoot` lives under `tmpBase`
+    // so the existing top-level `finally` cleanup below already reclaims it —
+    // runLeg3 itself does NOT delete its sandbox.
     if (proceed) {
-      const freshNTree = oracleInstall;
+      const oracleRoot = path.join(tmpBase, "freshN");
       try {
-        // β#2 delta (surfaced to β): the oracle is a REAL install.ps1 fresh
-        // install — the SAME mechanism as GATE-A's runLeg3 — of the FROZEN
-        // warpos@<N> release, sourced from the SAME frozen tree the upgrade
-        // applies from (nSrc), NOT dev-HEAD. This pins the oracle identity to
-        // the apply target, so any residual parity diff is a REAL upgrade
-        // deficiency, not mid-dev drift.
-        const oracleInstallPs1 = path.join(nSrc, "install.ps1");
-        let oracleReady = false;
-        if (!fs.existsSync(oracleInstallPs1)) {
-          assert("fresh_n_oracle_ready_3c", false, `frozen-N source ${nSrc} has no install.ps1`);
-        } else {
-          fs.mkdirSync(oracleInstall, { recursive: true });
-          const oracleRun = spawnSync(
-            ps,
-            ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", oracleInstallPs1, "-Target", oracleInstall, "-SkipPrompt"],
-            { cwd: nSrc, encoding: "utf8", timeout: ORACLE_TIMEOUT_MS },
-          );
-          oracleReady =
-            oracleRun.status === 0 &&
-            fs.existsSync(path.join(oracleInstall, ".claude", "framework-installed.json"));
-          if (!oracleReady) {
-            assert(
-              "fresh_n_oracle_ready_3c",
-              false,
-              `fresh-N oracle install INCOMPLETE (frozen-N install.ps1 from ${nSrc}) — 3c skip-loud, NOT a pass: ${describeSpawnFailure(oracleRun)}`,
-            );
-          }
-        }
+        assertSandboxTargetSafe(oracleRoot, { label: "freshN oracle sandbox target" });
+        const leg = runLeg3({ sandboxRoot: oracleRoot, timeoutMs: ORACLE_TIMEOUT_MS });
+        const freshNTree = path.join(oracleRoot, "leg3-installps1");
 
-        if (oracleReady) {
-          assert("fresh_n_oracle_ready_3c", true, "");
+        // runLeg3's OWN "both_path_parity" assertion is N/A here — we
+        // deliberately do not pass a `leg2Dir` (there is no GATE-A Leg-2 tree
+        // in this engine's flow), so that specific internal comparison
+        // assertion always fails and must be excluded when judging whether
+        // the ORACLE ITSELF materialized correctly. Every OTHER assertion
+        // runLeg3 makes (framework-installed.json present, scan:install
+        // GREEN, regenerate --check clean, complete-install path checks)
+        // must still have passed.
+        const legAsserts = (leg && Array.isArray(leg.asserts)) ? leg.asserts : [];
+        const oracleCore = legAsserts.filter((a) => !/both_path_parity/.test(a.name));
+        const oracleReady =
+          !!leg &&
+          leg.ran === true &&
+          oracleCore.length > 0 &&
+          oracleCore.every((a) => a.status === "pass") &&
+          fs.existsSync(path.join(freshNTree, ".claude", "framework-installed.json"));
+
+        if (!oracleReady) {
+          const failed = oracleCore.filter((a) => a.status !== "pass").map((a) => a.name);
+          assert(
+            "fresh_n_oracle_ready_3c",
+            false,
+            `fresh-N oracle install INCOMPLETE (ps_available=${leg && leg.ps_available} ran=${leg && leg.ran}) — 3c skip-loud, NOT a pass: ${failed.join("; ") || "no oracle asserts produced"}`,
+          );
+        } else {
           const upgradedList = treeFileList(n1Install);
           const freshList = treeFileList(freshNTree);
           const pathParity = parityDiff(upgradedList, freshList);
@@ -553,7 +553,7 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
 
           const freshSet = new Set(freshList);
           const commonPaths = upgradedList.filter((p) => freshSet.has(p));
-          const ctx = { sandboxRoots: [n1Install, oracleInstall] };
+          const ctx = { sandboxRoots: [n1Install, oracleRoot] };
           const contentResult = compareTreeContents(n1Install, freshNTree, commonPaths, ctx);
           assert(
             "fresh_n_parity_content_3c",
@@ -567,7 +567,7 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
           );
         }
       } catch (e) {
-        assert("fresh_n_oracle_ready_3c", false, `3c oracle/parity threw: ${e.message}`);
+        assert("fresh_n_oracle_ready_3c", false, `runLeg3/3c threw: ${e.message}`);
       }
     }
   } catch (e) {
@@ -576,11 +576,6 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
     // Clean ALL sandboxes here — pass AND fail.
     try {
       spawnSync("git", ["worktree", "remove", "--force", n1Src], { cwd: REPO_ROOT, encoding: "utf8", timeout: 60_000 });
-    } catch {
-      /* best-effort */
-    }
-    try {
-      spawnSync("git", ["worktree", "remove", "--force", nSrc], { cwd: REPO_ROOT, encoding: "utf8", timeout: 60_000 });
     } catch {
       /* best-effort */
     }
@@ -607,10 +602,15 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   // purpose — it can appear in `asserts` but must never flip `ok` alone.
   const loadBearingAsserts = asserts.filter((a) => a.loadBearing !== false);
   const assertsOk = loadBearingAsserts.length > 0 && loadBearingAsserts.every((a) => a.ok);
-  const ok = delta.equal && assertsOk;
+  // INCOMPLETE (B skip-loud: no unreleased capsule to upgrade to) is NEITHER a
+  // pass NOR a fail — ok is null and the gate renders it manual/degraded. Only a
+  // genuine run computes ok from isolation + load-bearing asserts.
+  const ok = incomplete ? null : delta.equal && assertsOk;
 
   return {
     ok,
+    incomplete,
+    incomplete_reason: incompleteReason,
     from_version,
     to_version,
     ran,
@@ -793,10 +793,12 @@ async function main() {
     }
     process.stdout.write(
       `sandbox-isolation no-delta: ${result.sandbox_isolation.no_delta ? "HELD" : "VIOLATED"}\n` +
-        `overall=${result.ok ? "PASS" : "FAIL"}\n`,
+        `overall=${result.incomplete ? "INCOMPLETE (skip-loud): " + result.incomplete_reason : result.ok ? "PASS" : "FAIL"}\n`,
     );
   }
-  return result.ok ? 0 : 1;
+  // INCOMPLETE exits 0 (not a failure) — the gate reads payload.incomplete and
+  // renders manual/degraded, never green, never red.
+  return result.incomplete ? 0 : result.ok ? 0 : 1;
 }
 
 if (require.main === module) {

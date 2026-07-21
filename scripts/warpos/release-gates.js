@@ -296,6 +296,23 @@ const GATES = [
         details: summarizeGateBAsserts(payload),
       };
     }
+    // (1.5) INCOMPLETE (B skip-loud) — no UNRELEASED capsule to upgrade TO
+    //     (steady-state mid-dev: every capsule is a shipped/tagged frozen
+    //     release). NOT a pass, NOT a red: the full upgrade->conformance path
+    //     runs at the CEREMONY when a fresh capsule is cut from the current tree
+    //     (identity-consistent — the fresh capsule == current). Rendered manual
+    //     so it never greens release and never falsely blocks it. DISTINCT from
+    //     the ps-unavailable INCOMPLETE below, which DOES block (a host that
+    //     cannot run the real installs is a genuine gap). At the actual ceremony
+    //     an unreleased cut EXISTS, so this manual flag surfaces if the capsule
+    //     was not cut.
+    if (payload && payload.incomplete === true) {
+      return {
+        ok: true,
+        severity: "manual",
+        message: `GATE-B upgrade_current_to_new: INCOMPLETE (skip-loud) — ${payload.incomplete_reason || "no unreleased capsule cut; the full path runs at the release ceremony."}`,
+      };
+    }
     // (2) clean pass — apply succeeded and every load-bearing conformance
     //     assert (3b, 3c, + preconditions) is green.
     if (r.status === 0 && payload && payload.ok) {
