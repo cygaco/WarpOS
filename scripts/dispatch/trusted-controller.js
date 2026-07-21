@@ -930,9 +930,461 @@ function integrateInternal(input = {}, o = {}, seams = REAL_SEAMS) {
   return { ok: true, decision: "INTEGRATED", receipt: commit.receipt, runManifest };
 }
 
+// ══ INC-1 (SP-20260721-001, D-4) — the BROKERED TRANSPORT ════════════════════════════════════════════════
+//
+// WHAT THIS CLOSES (ED-controller-no-live-release-transport): `integrate()` above is UNIT-shaped — it wants
+// a builder WorkOrder + a ResultEnvelope + an AcceptanceRecord binding. A RELEASE needs two other write
+// shapes that have no such envelope: (a) landing a sprint BRANCH onto main as a real merge commit, and
+// (b) a routine RELEASE/bookkeeping COMMIT. Fabricating a unit envelope for either would be false-green
+// GENESIS (rejected by α + β at design-lock), so INC-1 adds two PURPOSE-BUILT brokered entrypoints that
+// adopt NOTHING from any caller and mint NO record they did not derive themselves.
+//
+// Both entrypoints funnel through ONE choke-point, `fencedRefUpdate` (β R4) — the only place in this
+// section that a protected ref is ever written. The trust spine it enforces, in order:
+//   β R1  RE-RESOLVE the live tip of `target_ref` fresh from git and use THAT as the CAS `expectedHead`.
+//         A caller-supplied `base_commit`/anchor is IGNORED — not validated, not preferred, never read.
+//         (`sanitizeTransportOpts` additionally makes such a key un-passable through `opts` at all.)
+//   β R2  CHECKED === LANDED: the pinned suite runs over the tree materialized from `newHead`'s EXACT SHA
+//         out of the object store — never a separately-supplied tree, working directory, or caller claim.
+//   β R5  RUNNER ISOLATION: `candidateRoot` for the suite run is the MATERIALIZED tree itself, so the
+//         pinned node executable and the pinned check-lib must both resolve OUTSIDE the candidate's
+//         writable domain — nothing in the content being judged can resolve the runner that judges it.
+//   β R6  For a merge, the SECOND parent (the source branch tip) is recorded as PROVENANCE ONLY. It is
+//         never a trust guard: trust comes from the re-resolved first-parent binding + the suite over the
+//         merge commit's OWN tree, which is what actually lands.
+//   record-trust: the fence token is resolved FRESH via `defaultLeaseTokenResolver` (the CURRENT holder's
+//         token from the lease store) — never caller-asserted, never reachable through `opts`.
+//
+// FAIL-CLOSED on: an unresolvable/non-commit newHead, an unresolvable live head, a parent binding that
+// does not reconcile against the RE-RESOLVED head, a newHead that does not descend from the live head, a
+// bundle/materialization failure, ANY suite failure, a mid-run tree mutation, a lease that is not held,
+// and a CAS race (git's own `update-ref <ref> <new> <expected>` refuses a stale expected value).
+//
+// PRE-FLIP NOTE (dogfood-before-arm): hook liveness is OBSERVED and reported on the receipt
+// (`hook_active`) but is deliberately NOT a precondition here — the Seam E hook flip is DEFERRED to the
+// release ceremony, and this transport must carry real D-4 merges BEFORE the fence is armed (that is the
+// mileage the arm decision rests on). Post-flip the hook is the RUNTIME backstop that refuses any
+// un-brokered write regardless; pre-flip this module's own fail-closed spine is the guarantee.
+
+/**
+ * TRANSPORT_OPT_KEYS — the EXACT, FROZEN set of `opts` keys the transport entrypoints may read (same
+ * discipline as PRODUCTION_OPT_KEYS: a docstring is not a boundary, an allowlist is). Deliberately ABSENT:
+ * `base_commit`/`expectedHead`/`anchor` (β R1 — the CAS anchor is re-resolved, never supplied),
+ * `leaseToken` (record-trust — the token is resolved fresh from the lease store), `candidateRoot` (β R5 —
+ * the candidate zone IS the materialized tree, never a caller's choice), and every function seam (those
+ * arrive only via the explicit third parameter of the `*ForTest` exports).
+ */
+const TRANSPORT_OPT_KEYS = Object.freeze(["bundleManifestPath", "bundleRoot", "spId", "leaseRoot", "gitRoot"]);
+
+/** sanitizeTransportOpts(opts) -> a NEW plain object carrying ONLY TRANSPORT_OPT_KEYS. */
+function sanitizeTransportOpts(opts) {
+  const out = {};
+  if (!opts || typeof opts !== "object") return out;
+  for (const k of TRANSPORT_OPT_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(opts, k)) out[k] = opts[k];
+  }
+  return out;
+}
+
+/**
+ * TRANSPORT_SKIP_ALLOWED — the ONE explicitly-named, reason-pinned skip the transport tolerates.
+ *
+ * A brokered merge/release write has NO ResultEnvelope by construction (fabricating one is the false-green
+ * genesis this whole design refuses), so `false-green-envelope` — an envelope-shape tripwire — reports
+ * `skipped` with the reason `no-envelope-in-context`. Tolerating that EXACT name+reason pair is honest;
+ * tolerating "skips" generally would be a dead gate. Every other skip, and any skip of this check for any
+ * OTHER reason, is REFUSED (`required-check-skipped`). Frozen, so a silent widening is a visible diff.
+ */
+const TRANSPORT_SKIP_ALLOWED = Object.freeze({ "false-green-envelope": "no-envelope-in-context" });
+
+/** gitRead(args, gitRoot) -> trimmed stdout, or null on any failure. READ-ONLY (rev-list/cat-file only). */
+function gitRead(args, gitRoot) {
+  try {
+    const r = spawnSync("git", args, { cwd: gitRoot || PROJECT_ROOT, encoding: "utf8", windowsHide: true });
+    if (!r || r.status !== 0) return null;
+    return String(r.stdout || "").trim();
+  } catch {
+    return null;
+  }
+}
+
+/** isCommitObject(sha, gitRoot) -> boolean. `git rev-parse --verify <40-hex>` will happily echo back a
+ *  well-formed object NAME that does not exist in this repository, so resolving a SHA is NOT proof that a
+ *  commit is there. `git cat-file -t` reads the actual object store — fail-closed on anything but "commit". */
+function isCommitObject(sha, gitRoot) {
+  return gitRead(["cat-file", "-t", sha], gitRoot) === "commit";
+}
+
+/** resolveCommitParents(sha, gitRoot) -> [parentSha,...] or null when the object is not a resolvable commit.
+ *  Uses `git rev-list --parents -n 1 <sha>` ("<sha> <p1> [<p2> ...]") — the commit's OWN recorded parents,
+ *  read from the object store, never from a caller's claim. */
+function resolveCommitParents(sha, gitRoot) {
+  if (!isCommitObject(sha, gitRoot)) return null;
+  const line = gitRead(["rev-list", "--parents", "-n", "1", sha], gitRoot);
+  if (!line) return null;
+  const toks = line.split(/\s+/).filter(Boolean);
+  if (toks.length < 1) return null;
+  return toks.slice(1).map((t) => t.toLowerCase());
+}
+
+/**
+ * reconcileTransportSuite(expectedChecks, results, nonce) -> {ok, reason?, offending?}. PURE. The
+ * transport's default-deny reconciliation — the same discipline as `reconcileRunManifest` (distinct,
+ * machine-checkable reason per branch; never a collapsed `not-authorized`), minus the unit run-manifest
+ * that a transport write legitimately does not have. PASS only when every name in the pinned bundle's
+ * frozen `expectedChecks` has EXACTLY one fresh (nonce-matching), well-formed, terminal, PASSING result —
+ * or is the one explicitly allowlisted, reason-pinned skip in TRANSPORT_SKIP_ALLOWED.
+ */
+function reconcileTransportSuite(expectedChecks, results, nonce) {
+  if (!Array.isArray(expectedChecks) || expectedChecks.length === 0) {
+    return { ok: false, reason: "empty-expected-check-set" };
+  }
+  if (typeof nonce !== "string" || !nonce) return { ok: false, reason: "malformed-run-nonce" };
+
+  const byName = new Map();
+  for (const r of Array.isArray(results) ? results : []) {
+    const shapeOk = r && typeof r === "object" && typeof r.name === "string" && r.name && typeof r.status === "string";
+    if (!shapeOk) return { ok: false, reason: "malformed-check-result", offending: r && r.name };
+    if (!expectedChecks.includes(r.name)) return { ok: false, reason: "unknown-check-result", offending: r.name };
+    if (r.nonce !== nonce) return { ok: false, reason: "stale-check-result", offending: r.name };
+    if (byName.has(r.name)) return { ok: false, reason: "duplicate-check-result", offending: r.name };
+    byName.set(r.name, r);
+  }
+
+  for (const name of expectedChecks) {
+    const r = byName.get(name);
+    if (!r) return { ok: false, reason: "missing-required-check", offending: name };
+    if (r.status === "pass") continue;
+    if (r.status === "fail") return { ok: false, reason: "check-failed", offending: name };
+    if (r.status === "timeout") return { ok: false, reason: "check-timed-out", offending: name };
+    if (r.status === "skipped") {
+      // Exactly one name, for exactly one reason (see TRANSPORT_SKIP_ALLOWED) — anything else fails closed.
+      if (Object.prototype.hasOwnProperty.call(TRANSPORT_SKIP_ALLOWED, name) && r.reason === TRANSPORT_SKIP_ALLOWED[name]) continue;
+      return { ok: false, reason: "required-check-skipped", offending: name };
+    }
+    return { ok: false, reason: "malformed-check-result", offending: name };
+  }
+  return { ok: true };
+}
+
+/**
+ * defaultRefUpdater(targetRef, newHead, expectedHead, gitRoot) -> {ok, reason?}. Git's OWN atomic
+ * compare-and-swap: `git update-ref <ref> <new> <expected>` is refused BY GIT if the ref no longer holds
+ * `<expected>`, so the last-moment race is closed by git itself, not by a read-then-write of ours. This is
+ * the transport's sanctioned mutating write (the analogue of acceptance-record.js#commitIntegration's CAS
+ * for the unit path — a separate site precisely because a merge/release write has no AcceptanceRecord to
+ * bind, and fabricating one would be the false-green genesis this design refuses). It is ONLY ever invoked
+ * from inside `withControllerFence` (see fencedRefUpdateInternal).
+ */
+function defaultRefUpdater(targetRef, newHead, expectedHead, gitRoot) {
+  try {
+    const r = spawnSync("git", ["update-ref", targetRef, newHead, expectedHead], {
+      cwd: gitRoot || PROJECT_ROOT,
+      encoding: "utf8",
+      windowsHide: true,
+    });
+    if (!r || r.status !== 0) {
+      return { ok: false, reason: "ref-update-refused", detail: (r && (r.stderr || String(r.error || ""))) || "unknown error" };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: "ref-update-error", detail: e.message };
+  }
+}
+
+/** REAL_TRANSPORT_SEAMS — the production wiring for the transport path. `null` = "use the real default". */
+const REAL_TRANSPORT_SEAMS = Object.freeze({
+  materializeResultTree,
+  commitResolver: null, // -> acceptanceRecord.resolveCommitSha
+  treeResolver: null, // -> acceptanceRecord.resolveTreeHash
+  ancestryResolver: null, // -> acceptanceRecord.defaultIsAncestor
+  leaseTokenResolver: defaultLeaseTokenResolver,
+  refUpdater: defaultRefUpdater,
+  hookLivenessCheck: verifyActiveHookInstalled,
+  checkLibSrcRoot: null,
+});
+
+/**
+ * fencedRefUpdate(newHead, targetRef, opts) -> {ok, decision, reason?, receipt?, offending?}. THE single
+ * fenced-CAS choke-point (β R4): both brokered entrypoints call it, and NEITHER of them writes a ref
+ * anywhere else. `decision` is `"LANDED"` (ok:true) or `"BLOCKED"` (ok:false).
+ *
+ * `opts`: EXACTLY {bundleManifestPath, bundleRoot, spId, leaseRoot, gitRoot} — everything else a caller
+ * passes (notably any `base_commit`/`expectedHead` anchor or `leaseToken`) is DROPPED by
+ * `sanitizeTransportOpts` and can never influence a trust decision.
+ */
+function fencedRefUpdate(newHead, targetRef, opts = {}) {
+  return fencedRefUpdateInternal(newHead, targetRef, sanitizeTransportOpts(opts), REAL_TRANSPORT_SEAMS, {});
+}
+
+/** fencedRefUpdateForTest(newHead, targetRef, opts, seams) — the SANCTIONED test-producer seam (same
+ *  pattern as `integrateForTest`): seams arrive ONLY via the explicit third parameter, never via `opts`. */
+function fencedRefUpdateForTest(newHead, targetRef, opts = {}, seams = {}, binding = {}) {
+  return fencedRefUpdateInternal(
+    newHead,
+    targetRef,
+    sanitizeTransportOpts(opts),
+    { ...REAL_TRANSPORT_SEAMS, ...(seams && typeof seams === "object" ? seams : {}) },
+    binding && typeof binding === "object" ? binding : {},
+  );
+}
+
+/**
+ * fencedRefUpdateInternal(newHead, targetRef, o, seams, binding).
+ *
+ * `binding` is INTERNAL (never caller-reachable through `opts`): the entrypoints hand in
+ * `{transport, verifyAgainstHead(expectedHead) -> {ok, reason?}, provenance}`. `verifyAgainstHead` is
+ * evaluated against the SAME re-resolved head the CAS then uses as its expected value — that is what keeps
+ * the parent binding and the CAS anchor from being two different heads (a head that advanced between an
+ * entrypoint's own check and the CAS would otherwise let a merge built on the OLD head land on the NEW one,
+ * silently discarding the intervening commit).
+ */
+function fencedRefUpdateInternal(newHead, targetRef, o = {}, seams = REAL_TRANSPORT_SEAMS, binding = {}) {
+  const gitRoot = o.gitRoot || PROJECT_ROOT;
+  const resolveCommit = typeof seams.commitResolver === "function" ? seams.commitResolver : acceptanceRecord.resolveCommitSha;
+  const isAncestor = typeof seams.ancestryResolver === "function" ? seams.ancestryResolver : acceptanceRecord.defaultIsAncestor;
+  const transport = typeof binding.transport === "string" && binding.transport ? binding.transport : "fenced-ref-update";
+
+  if (typeof targetRef !== "string" || !targetRef) return { ok: false, decision: "BLOCKED", reason: "invalid-target-ref" };
+
+  // (1) β R2 — the commit that will LAND, resolved from the object store by its own SHA.
+  const head = resolveCommit(typeof newHead === "string" ? newHead : "", { gitRoot });
+  if (!head) return { ok: false, decision: "BLOCKED", reason: "new-head-unresolvable" };
+  if (!isCommitObject(head, gitRoot)) return { ok: false, decision: "BLOCKED", reason: "new-head-not-a-commit" };
+
+  // (2) β R1 — RE-RESOLVE the live tip of the target ref. This, and ONLY this, is the CAS anchor. No
+  //     caller-supplied `base_commit` is read anywhere in this function (it cannot even arrive: see
+  //     TRANSPORT_OPT_KEYS), so a stale/wrong/hostile anchor cannot be adopted — at worst it is ignored.
+  const expectedHead = resolveCommit(targetRef, { gitRoot });
+  if (!expectedHead) return { ok: false, decision: "BLOCKED", reason: "live-head-unresolvable" };
+  if (expectedHead === head) return { ok: false, decision: "BLOCKED", reason: "new-head-equals-live-head" };
+
+  // (3) The entrypoint's own parent binding, evaluated against THAT SAME re-resolved head.
+  if (typeof binding.verifyAgainstHead === "function") {
+    let verdict;
+    try {
+      verdict = binding.verifyAgainstHead(expectedHead);
+    } catch (e) {
+      return { ok: false, decision: "BLOCKED", reason: "head-binding-error", detail: e.message };
+    }
+    if (!verdict || verdict.ok !== true) {
+      return { ok: false, decision: "BLOCKED", reason: (verdict && verdict.reason) || "head-binding-refused", detail: verdict && verdict.detail };
+    }
+  }
+
+  // (4) No-history-loss floor: the landing commit MUST descend from the live head. Implied by both
+  //     entrypoints' parent checks, asserted here too so a DIRECT fencedRefUpdate call cannot fast-forward
+  //     the ref onto an unrelated history. Fail-closed — an unconfirmable relationship is a refusal.
+  if (isAncestor(expectedHead, head, { gitRoot }) !== true) {
+    return { ok: false, decision: "BLOCKED", reason: "new-head-not-descendant-of-live-head" };
+  }
+
+  // (5) Load + verify the pinned bundle (lineage-bound, self-authenticating — see loadPinnedCheckLib).
+  let bundleManifest;
+  try {
+    bundleManifest = pcb.loadBundleManifest(o.bundleManifestPath);
+  } catch (e) {
+    return { ok: false, decision: "BLOCKED", reason: e.code || "bundle-load-failed", detail: e.message };
+  }
+
+  // (6) β R2 — materialize EXACTLY `head`'s tree into a trusted, out-of-candidate path, and (β R5) treat
+  //     THAT tree as the candidate zone for the run: the pinned executable and pinned check-lib must both
+  //     resolve outside it, so the content under judgement cannot supply or influence its own judge.
+  const materializeFn = typeof seams.materializeResultTree === "function" ? seams.materializeResultTree : materializeResultTree;
+  let materialized;
+  try {
+    materialized = materializeFn(head, { gitRoot, treeResolver: seams.treeResolver, materializedTreeResolver: seams.materializedTreeResolver });
+  } catch (e) {
+    return { ok: false, decision: "BLOCKED", reason: e.code || "result-tree-materialize-failed", detail: e.message };
+  }
+
+  const nonce = crypto.randomBytes(16).toString("hex");
+  let pinnedIndex, pinnedResult, suiteOutcome;
+  try {
+    try {
+      pinnedIndex = loadPinnedCheckLib(bundleManifest, {
+        bundleRoot: o.bundleRoot,
+        candidateRoot: materialized.dir,
+        checkLibSrcRoot: seams.checkLibSrcRoot || undefined,
+      });
+    } catch (e) {
+      return { ok: false, decision: "BLOCKED", reason: e.code || "bundle-load-failed", detail: e.message };
+    }
+
+    pinnedResult = pcb.runPinnedSuite(
+      bundleManifest,
+      // NO `envelope` — a transport write has none, and fabricating one is exactly the false-green genesis
+      // this design refuses. The envelope-shape check therefore reports its documented `skipped` reason,
+      // which reconcileTransportSuite tolerates ONLY under that exact name+reason pin.
+      { root: materialized.dir },
+      { bundleRoot: o.bundleRoot, candidateRoot: materialized.dir, nonce },
+    );
+
+    // Post-run re-verify (mirrors integrate()'s own fence): the MATERIALIZED tree must be UNCHANGED after
+    // the suite ran — checked === landed only holds if what was checked never moved mid-run.
+    const postVerify = typeof seams.materializedTreeResolver === "function" ? seams.materializedTreeResolver : acceptanceRecord.resolveTreeHash;
+    const postTree = postVerify("HEAD", { gitRoot: materialized.dir });
+    if (!postTree || String(postTree).toLowerCase() !== String(materialized.treeHash).toLowerCase()) {
+      return { ok: false, decision: "BLOCKED", reason: "result-tree-mutated-mid-run" };
+    }
+    if (!pinnedResult.ok) {
+      return { ok: false, decision: "BLOCKED", reason: pinnedResult.reason || "pinned-suite-failed" };
+    }
+    suiteOutcome = reconcileTransportSuite(pinnedIndex.CHECK_NAMES.slice(), pinnedResult.results, nonce);
+  } finally {
+    materialized.cleanup();
+  }
+  if (!suiteOutcome.ok) {
+    return { ok: false, decision: "BLOCKED", reason: suiteOutcome.reason, offending: suiteOutcome.offending };
+  }
+
+  // (7) record-trust: the CURRENT holder's token, read FRESH from the lease store. Never caller-asserted
+  //     (a `leaseToken` cannot even reach this function), never cached across the suite run.
+  const resolveLeaseToken = typeof seams.leaseTokenResolver === "function" ? seams.leaseTokenResolver : defaultLeaseTokenResolver;
+  let leaseToken = null;
+  try {
+    leaseToken = resolveLeaseToken(o.spId, o.leaseRoot);
+  } catch {
+    leaseToken = null;
+  }
+  if (leaseToken == null || leaseToken === "") {
+    return { ok: false, decision: "BLOCKED", reason: "lease-not-held" };
+  }
+
+  // (8) Seam E — the fence is set ONLY around the CAS itself (never around the checker run, never around
+  //     the resolves above), and the CAS is git's own atomic compare-and-swap against the re-resolved head.
+  const updater = typeof seams.refUpdater === "function" ? seams.refUpdater : defaultRefUpdater;
+  const updated = withControllerFence(o.spId, leaseToken, o.leaseRoot, () => updater(targetRef, head, expectedHead, gitRoot));
+  if (!updated || updated.ok !== true) {
+    return { ok: false, decision: "BLOCKED", reason: (updated && updated.reason) || "ref-update-refused", detail: updated && updated.detail };
+  }
+
+  // Hook liveness is OBSERVED for the receipt, never a gate (pre-flip dogfood — see the section header).
+  let hookActive = null;
+  try {
+    const hookCheckFn = typeof seams.hookLivenessCheck === "function" ? seams.hookLivenessCheck : verifyActiveHookInstalled;
+    hookActive = hookCheckFn({ gitRoot }).ok === true;
+  } catch {
+    hookActive = null;
+  }
+
+  return {
+    ok: true,
+    decision: "LANDED",
+    receipt: {
+      transport,
+      target_ref: targetRef,
+      previous_head: expectedHead,
+      committed_head: head,
+      committed_at: Date.now(),
+      suite_version: pinnedIndex.SUITE_VERSION,
+      bundle_digest: bundleManifest.bundle_digest,
+      run_nonce: nonce,
+      // β R6: PROVENANCE ONLY — recorded for the ledger, never consulted as a trust guard.
+      provenance: binding.provenance && typeof binding.provenance === "object" ? binding.provenance : {},
+      hook_active: hookActive,
+    },
+  };
+}
+
+/**
+ * integrateBranchMerge({merge_commit, target_ref}, opts) -> the fencedRefUpdate result shape.
+ *
+ * Lands a sprint branch onto `target_ref` as a REAL merge commit. `merge_commit` must be an actual 2-parent
+ * merge whose FIRST parent is the re-resolved live head of `target_ref`. Its SECOND parent (the source
+ * branch tip) is recorded as PROVENANCE only and is NEVER a trust guard (β R6) — trust comes from the
+ * first-parent binding plus the pinned suite over the merge commit's OWN tree, which is what actually
+ * lands. Any `base_commit`/anchor on `input` is IGNORED (β R1) — the CAS anchor is always re-resolved.
+ */
+function integrateBranchMerge(input = {}, opts = {}) {
+  return integrateBranchMergeInternal(input, sanitizeTransportOpts(opts), REAL_TRANSPORT_SEAMS);
+}
+
+/** integrateBranchMergeForTest(input, opts, seams) — sanctioned test-producer seam (see integrateForTest). */
+function integrateBranchMergeForTest(input = {}, opts = {}, seams = {}) {
+  return integrateBranchMergeInternal(input, sanitizeTransportOpts(opts), { ...REAL_TRANSPORT_SEAMS, ...(seams && typeof seams === "object" ? seams : {}) });
+}
+
+function integrateBranchMergeInternal(input = {}, o = {}, seams = REAL_TRANSPORT_SEAMS) {
+  const gitRoot = o.gitRoot || PROJECT_ROOT;
+  const resolveCommit = typeof seams.commitResolver === "function" ? seams.commitResolver : acceptanceRecord.resolveCommitSha;
+  const targetRef = typeof input.target_ref === "string" && input.target_ref ? input.target_ref : null;
+  if (!targetRef) return { ok: false, decision: "BLOCKED", reason: "invalid-target-ref" };
+
+  const mergeCommit = resolveCommit(typeof input.merge_commit === "string" ? input.merge_commit : "", { gitRoot });
+  if (!mergeCommit || !isCommitObject(mergeCommit, gitRoot)) return { ok: false, decision: "BLOCKED", reason: "merge-commit-unresolvable" };
+
+  const parents = resolveCommitParents(mergeCommit, gitRoot);
+  if (!parents) return { ok: false, decision: "BLOCKED", reason: "merge-parents-unresolvable" };
+  if (parents.length !== 2) return { ok: false, decision: "BLOCKED", reason: "merge-commit-not-a-two-parent-merge" };
+
+  return fencedRefUpdateInternal(mergeCommit, targetRef, o, seams, {
+    transport: "branch-merge",
+    // Evaluated INSIDE fencedRefUpdate against the very head the CAS will use as its expected value.
+    verifyAgainstHead: (expectedHead) =>
+      parents[0] === String(expectedHead).toLowerCase()
+        ? { ok: true }
+        : { ok: false, reason: "merge-first-parent-not-live-head", detail: `first parent ${parents[0]} !== live head ${expectedHead}` },
+    // β R6 — provenance, not a guard.
+    provenance: { merge_parents: parents.slice(), source_branch_tip: parents[1] },
+  });
+}
+
+/**
+ * integrateReleaseCommit({release_commit, target_ref}, opts) -> the fencedRefUpdate result shape.
+ *
+ * Lands a routine release/bookkeeping commit (manifest regen, ledger, version bump). `release_commit` must
+ * be a SINGLE-parent commit whose parent is the re-resolved live head of `target_ref`. Same fail-closed
+ * spine, same choke-point; any `base_commit`/anchor on `input` is IGNORED (β R1).
+ */
+function integrateReleaseCommit(input = {}, opts = {}) {
+  return integrateReleaseCommitInternal(input, sanitizeTransportOpts(opts), REAL_TRANSPORT_SEAMS);
+}
+
+/** integrateReleaseCommitForTest(input, opts, seams) — sanctioned test-producer seam. */
+function integrateReleaseCommitForTest(input = {}, opts = {}, seams = {}) {
+  return integrateReleaseCommitInternal(input, sanitizeTransportOpts(opts), { ...REAL_TRANSPORT_SEAMS, ...(seams && typeof seams === "object" ? seams : {}) });
+}
+
+function integrateReleaseCommitInternal(input = {}, o = {}, seams = REAL_TRANSPORT_SEAMS) {
+  const gitRoot = o.gitRoot || PROJECT_ROOT;
+  const resolveCommit = typeof seams.commitResolver === "function" ? seams.commitResolver : acceptanceRecord.resolveCommitSha;
+  const targetRef = typeof input.target_ref === "string" && input.target_ref ? input.target_ref : null;
+  if (!targetRef) return { ok: false, decision: "BLOCKED", reason: "invalid-target-ref" };
+
+  const releaseCommit = resolveCommit(typeof input.release_commit === "string" ? input.release_commit : "", { gitRoot });
+  if (!releaseCommit || !isCommitObject(releaseCommit, gitRoot)) return { ok: false, decision: "BLOCKED", reason: "release-commit-unresolvable" };
+
+  const parents = resolveCommitParents(releaseCommit, gitRoot);
+  if (!parents) return { ok: false, decision: "BLOCKED", reason: "release-parents-unresolvable" };
+  if (parents.length !== 1) return { ok: false, decision: "BLOCKED", reason: "release-commit-not-single-parent" };
+
+  return fencedRefUpdateInternal(releaseCommit, targetRef, o, seams, {
+    transport: "release-commit",
+    verifyAgainstHead: (expectedHead) =>
+      parents[0] === String(expectedHead).toLowerCase()
+        ? { ok: true }
+        : { ok: false, reason: "release-parent-not-live-head", detail: `parent ${parents[0]} !== live head ${expectedHead}` },
+    provenance: { parent: parents[0] },
+  });
+}
+
 module.exports = {
   integrate,
   integrateForTest,
+  // INC-1 brokered transport (SP-20260721-001)
+  fencedRefUpdate,
+  fencedRefUpdateForTest,
+  integrateBranchMerge,
+  integrateBranchMergeForTest,
+  integrateReleaseCommit,
+  integrateReleaseCommitForTest,
+  reconcileTransportSuite,
+  resolveCommitParents,
+  sanitizeTransportOpts,
+  defaultRefUpdater,
+  TRANSPORT_OPT_KEYS,
+  TRANSPORT_SKIP_ALLOWED,
   PRODUCTION_OPT_KEYS,
   sanitizeOpts,
   extractPinnedHookInvocation,
