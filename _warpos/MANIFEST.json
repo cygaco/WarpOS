@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-21T22:40:43.224Z",
+  "generatedAt": "2026-07-21T22:51:28.501Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -29992,8 +29992,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/teammate-stall-rules.md",
       "kind": "md",
-      "sha256": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5",
-      "installedSha": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5"
+      "sha256": "83717a9df6616619211fa998248cd8593a4d8c3278795c6abdae1c4908e7cc13",
+      "installedSha": "83717a9df6616619211fa998248cd8593a4d8c3278795c6abdae1c4908e7cc13"
     },
     ".claude/agents/_principles/base.md": {
       "owner": "framework",
