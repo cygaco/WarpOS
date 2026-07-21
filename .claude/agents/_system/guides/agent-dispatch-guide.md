@@ -93,6 +93,44 @@ completion record, exit code lost to `$(...)`. The reap is invisible
 The `dispatch-route-guard` hook BLOCKS the raw `claude -p --agent <build-role>`
 form, so the wrapper is the only path.
 
+### Builder right-sizing — ≤15-min units, extract-then-write, savepoint per chunk
+
+The bounded wrapper makes a reap LOUD; right-sizing makes it RARE and CHEAP. A
+monolith builder that must READ a large surface before it can WRITE spends its
+whole window reading and reaps with **zero worktree diff** (measured 2026-07-21:
+a ~20-min read-only reap vs 5–9-min chunks after pre-extraction). Size every
+build-chain dispatch so the worker WRITES, not reads:
+
+1. **≤15-minute units.** Scope each builder dispatch to a unit that finishes well
+   inside `DISPATCH_BUILDER_TIMEOUT_MS` with margin, not racing the clamp. A unit
+   that can't fit is too big — split it.
+2. **Research / interface-extraction pass BEFORE the first chunk.** Do the reading
+   first (yourself, or in a cheap read-only pass) and hand the builder the extracted
+   interfaces / signatures / file-map in its prompt, so it writes from a spec
+   instead of discovering the surface on the clock. The 20-min read-reap above was
+   the builder doing the orchestrator's reading.
+3. **Savepoint commit per chunk.** After each chunk lands, commit a savepoint in
+   the worktree so a later reap never costs the earlier chunks — chunk + savepoint
+   is the ED-018 companion to the loud death record.
+4. **On a reap with ZERO worktree diff, NEVER re-fire the monolith.** A zero-diff
+   reap is proof the unit was too big to even start writing; an identical retry
+   reaps identically (the 540s-clamp determinism — see
+   `.claude/agents/_system/guides/teammate-stall-rules.md`). Chunk it + pre-extract,
+   then dispatch the smaller unit.
+5. **Artifact-first reap verification stays (RI-004).** A reap is diagnosed by the
+   completion record + worktree diff, never by narration; a builder that reaped
+   AFTER writing real work gets ONE resume-and-finish, not a rebuild.
+
+**Enforcer (debt, ED-257):** unit-sizing + savepoint discipline is behavioral —
+nothing asserts a build-chain prompt is a ≤15-min unit or that multi-chunk builds
+savepoint per chunk. Candidate: a **`dispatch-claude.js` prompt-size / savepoint
+lint** that warns (or, under an enforce env, blocks) when a build-chain prompt
+exceeds a size floor implying a >15-min unit, or when a multi-chunk build fires
+without per-chunk savepoints. The **prompt-size floor is the write-time firing
+part** (load-bearing, deterministic); per-chunk-savepoint detection is harder
+(needs cross-dispatch chunk tracking) — its companion signal is a
+per-chunk-savepoint field in the completion record, not the prompt lint alone.
+
 ### Non-build Claude roles → raw fallback is allowed
 
 ```bash
