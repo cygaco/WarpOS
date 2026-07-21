@@ -293,7 +293,7 @@
         "src": ".claude/agents/_system/guides/teammate-stall-rules.md",
         "dest": ".claude/agents/_system/guides/teammate-stall-rules.md",
         "kind": "agent",
-        "sha256": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5",
+        "sha256": "83717a9df6616619211fa998248cd8593a4d8c3278795c6abdae1c4908e7cc13",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
