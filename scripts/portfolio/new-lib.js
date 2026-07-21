@@ -76,6 +76,12 @@ function scaffoldProductApp({ repoRoot, slug, install = false, log = () => {} })
  * @param {boolean} [opts.wantGithub]
  * @param {boolean} [opts.wantNoScaffold]
  * @param {boolean} [opts.wantInstall]
+ * @param {string|null} [opts.parentDir] TEST/SANDBOX-ONLY seam (GATE-A
+ *   fresh_scaffold_all_ways, SP-20260721-001 D-4 INC-2). Overrides the sibling
+ *   parent the new repo is scaffolded under (default: WARPOS_ROOT/..). This is
+ *   a NON-TRUST seam (β R3): it relocates WHERE the scaffold lands, it never
+ *   weakens any assertion the caller makes afterward. Production /portfolio:new
+ *   callers never pass it — real users always get the real sibling location.
  * @param {(m:string)=>void} [opts.log]
  * @param {(m:string)=>void} [opts.errorLog]
  * @returns {{ ok:boolean, code?:number, error?:string, repoPath?:string, githubUrl?:string|null, slug?:string }}
@@ -87,6 +93,7 @@ function createProductRepo(opts) {
     wantGithub = false,
     wantNoScaffold = false,
     wantInstall = false,
+    parentDir = null,
     log = (m) => console.log(m),
     errorLog = (m) => console.error(m),
   } = opts || {};
@@ -95,7 +102,9 @@ function createProductRepo(opts) {
   if (!v.ok) return v;
 
   // ── resolve sibling path ───────────────────────────────────
-  const repoPath = path.resolve(WARPOS_ROOT, "..", slug);
+  // parentDir (test/sandbox seam) overrides the parent dir; default stays the
+  // real sibling-of-WARPOS_ROOT location every production caller gets.
+  const repoPath = path.resolve(parentDir || path.resolve(WARPOS_ROOT, ".."), slug);
 
   if (fs.existsSync(repoPath)) {
     const allowedLeftovers = new Set([".git", ".gitignore", "README.md", ".claude"]);

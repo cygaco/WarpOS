@@ -129,18 +129,22 @@ foreach ($kind in $Manifest.assets.PSObject.Properties.Name) {
     foreach ($asset in $Manifest.assets.$kind) {
         $srcPath  = Join-Path $Source $asset.src
         $destPath = Join-Path $Target $asset.dest
-        if (-not (Test-Path $srcPath)) {
+        # -LiteralPath at every read/match site: without it PowerShell wildcard-interprets bracket
+        # paths (Next.js [ref] / [...slug] dynamic routes), so Test-Path returns false and the asset is
+        # silently skipped — a real install.ps1-vs-warp-setup divergence GATE-A caught. (New-Item creates
+        # with -Force, which handles literal paths and has no -LiteralPath parameter.)
+        if (-not (Test-Path -LiteralPath $srcPath)) {
             Write-Warn "Source missing: $($asset.src) - skipped"
             $Skipped += 1
             continue
         }
         $destDir = Split-Path -Parent $destPath
-        if (-not (Test-Path $destDir)) {
+        if (-not (Test-Path -LiteralPath $destDir)) {
             New-Item -ItemType Directory -Path $destDir -Force | Out-Null
         }
-        Copy-Item -Path $srcPath -Destination $destPath -Force
+        Copy-Item -LiteralPath $srcPath -Destination $destPath -Force
         $Copied += 1
-        $hash = (Get-FileHash -Path $destPath -Algorithm SHA256).Hash.ToLower()
+        $hash = (Get-FileHash -LiteralPath $destPath -Algorithm SHA256).Hash.ToLower()
         $InstalledAssets += [ordered]@{
             id              = $asset.id
             kind            = $asset.kind
@@ -194,7 +198,7 @@ Write-Step "Stage 2/3 - snapshot at .claude\framework-installed.json (no BOM)"
 # generator against the target's own scripts. The first install copies
 # generate-framework-manifest.js as an asset; we invoke that copy.
 $GeneratorPath = Join-Path $Target "scripts\generate-framework-manifest.js"
-if (Test-Path $GeneratorPath) {
+if (Test-Path -LiteralPath $GeneratorPath) {
     Push-Location $Target
     try {
         & node $GeneratorPath 2>&1 | Out-Null
@@ -202,7 +206,7 @@ if (Test-Path $GeneratorPath) {
             Write-Step "Stage 2/3 - framework-manifest.json regenerated against $Target ($Script:WARPOS_VERSION)"
         } else {
             Write-Warn "framework-manifest.json regenerator returned $LASTEXITCODE - falling back to canonical copy"
-            Copy-Item -Path (Join-Path $Source ".claude\framework-manifest.json") -Destination (Join-Path $Target ".claude\framework-manifest.json") -Force
+            Copy-Item -LiteralPath (Join-Path $Source ".claude\framework-manifest.json") -Destination (Join-Path $Target ".claude\framework-manifest.json") -Force
         }
     } finally {
         Pop-Location
@@ -213,10 +217,10 @@ if (Test-Path $GeneratorPath) {
     $ManifestSrc = Join-Path $Source ".claude\framework-manifest.json"
     $ManifestDst = Join-Path $Target ".claude\framework-manifest.json"
     $ManifestDstDir = Split-Path -Parent $ManifestDst
-    if (-not (Test-Path $ManifestDstDir)) {
+    if (-not (Test-Path -LiteralPath $ManifestDstDir)) {
         New-Item -ItemType Directory -Path $ManifestDstDir -Force | Out-Null
     }
-    Copy-Item -Path $ManifestSrc -Destination $ManifestDst -Force
+    Copy-Item -LiteralPath $ManifestSrc -Destination $ManifestDst -Force
     Write-Step "Stage 2/3 - framework-manifest.json copied from canonical (no generator on target yet)"
 }
 
