@@ -444,7 +444,7 @@ function fullTreeFileList(rootDir) {
 // control ────────────────────────────────────────────────────────────────
 // The real fix (content-hash canonical no-delta) is cross-cutting into
 // GATE-A's snapshotCanonicalState/noDeltaCheck — OUT OF SCOPE here (tracked
-// debt ED-253; the full fix is cross-engine and belongs to GATE-A). This is an
+// debt ED-255; the full fix is cross-engine and belongs to GATE-A). This is an
 // ENGINE-LOCAL compensating control targeted at exactly the gap a porcelain
 // `git status` line diff cannot see: a file that was ALREADY dirty before
 // this run started, whose CONTENT changes during the run without its
