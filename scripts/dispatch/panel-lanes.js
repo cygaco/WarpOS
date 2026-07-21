@@ -278,6 +278,40 @@ function panelStatus(profile, lanes = [], opts = {}) {
     if (fam) observedFamilies.add(fam);
   }
 
+  // ── FIX-5b R2 (BE-CQ-P4-001, β rider 5 BINDING) — PRESENT-OPTIONAL-LANE reduction lives HERE. ───────────
+  // The required loop above iterates ONLY `profile.required`, so a lane that is PRESENT in `lanes` but NOT
+  // required (e.g. agy on panel-2family) was never even LOOKED AT by this reducer — a present-but-coerced/
+  // dead/malformed/failed optional lane was silently DROPPED and the panel still read PASS. That gap was
+  // previously patched by a BOLT-ON reducer inside helm-runner.js, which (a) created a SECOND lane-reduction
+  // authority and (b) only ever bound the CLEAN alive-uncoerced `verdict:'fail'` sub-case. `panelStatus` is
+  // the single reduction authority, so the completion lands here, applying the SAME per-lane semantics the
+  // required loop applies:
+  //   - hasEvidence !== true  → genuinely ABSENT/unprovable → WAIVED (the ONLY tolerated optional state)
+  //   - coerced               → BLOCKED ("coerced" — non-proof, NOT a proven failure; security's SR-R2 read)
+  //   - dead (alive !== true) → BLOCKED
+  //   - unknown/malformed verdict → BLOCKED ("refused-or-malformed")
+  //   - verdict 'fail'        → FAILED ("ran and failed" — backend's β-rider-5 binding read)
+  //   - alive-clean pass/warn → OK
+  // An optional lane never contributes to the diversity family count (it is not part of the contracted
+  // floor) — it can only ever BLOCK or FAIL the panel, never help it green.
+  const requiredSet = new Set(required);
+  const optionalBlocked = [];
+  const optionalFailed = [];
+  for (const l of lanes) {
+    if (!l || !l.laneId || requiredSet.has(l.laneId)) continue; // required lanes were already reduced above
+    if (l.hasEvidence !== true) {
+      laneStatus[l.laneId] = "optional-absent-waived";
+      continue;
+    }
+    const oCoerced = l.fallback === true || !l.observedProvider || (!!l.contractedProvider && l.observedProvider !== l.contractedProvider);
+    if (oCoerced) { optionalBlocked.push(l.laneId); laneStatus[l.laneId] = "coerced"; continue; }
+    if (l.alive !== true) { optionalBlocked.push(l.laneId); laneStatus[l.laneId] = "dead"; continue; }
+    const ov = String(l.verdict || "").toLowerCase();
+    if (ov === "fail") { optionalFailed.push(l.laneId); laneStatus[l.laneId] = "fail"; continue; }
+    if (ov !== "pass" && ov !== "warn") { optionalBlocked.push(l.laneId); laneStatus[l.laneId] = "refused-or-malformed"; continue; }
+    laneStatus[l.laneId] = "alive-clean";
+  }
+
   const families = observedFamilies.size;
   const minFamilies = (profile && profile.min_families) || 2;
 
@@ -285,14 +319,31 @@ function panelStatus(profile, lanes = [], opts = {}) {
   if (failed.length) {
     return { status: STATUS.FAIL, reason: `required lane(s) FAILED: ${failed.join(", ")}`, families, laneStatus, binding };
   }
+  // An OPTIONAL lane that genuinely RAN (alive, uncoerced) and FAILED binds exactly like a required FAIL —
+  // "absence is tolerated, a real failure is NOT" (β rider 5). Distinct reason so the coerced/dead/malformed
+  // BLOCKED cases below can never be mistaken for a proven failure.
+  if (optionalFailed.length) {
+    return { status: STATUS.FAIL, reason: `optional lane(s) RAN and FAILED (binds, β rider 5): ${optionalFailed.join(", ")}`, families, laneStatus, binding };
+  }
   // BLOCKED-ON-OPERATOR: the ONLY blocking issue is the operator-owned lane(s) (agy). The honest
   // "seam built, lane awaiting operator" exit (ED-060) — never GREEN.
-  if (operatorBlocked.length && blocked.length === 0) {
+  if (operatorBlocked.length && blocked.length === 0 && optionalBlocked.length === 0) {
     return { status: STATUS.BLOCKED_ON_OPERATOR, reason: `awaiting operator-owned lane(s): ${operatorBlocked.join(", ")} (ED-060) — never GREEN`, families, laneStatus, binding, operator_blocked: operatorBlocked };
   }
   // Any other unprovable lane (with or without an operator-owned absence) → INCONCLUSIVE.
   if (blocked.length || operatorBlocked.length) {
     return { status: STATUS.BLOCKED_INCONCLUSIVE, reason: `unprovable required lane(s): ${[...blocked, ...operatorBlocked].join(", ")}`, families, laneStatus, binding };
+  }
+  // A PRESENT optional lane that is coerced/dead/refused-or-malformed is NOT proof of anything — it is an
+  // unprovable lane the panel actually observed, so it BLOCKS (never a proven failure, never a silent PASS).
+  if (optionalBlocked.length) {
+    return {
+      status: STATUS.BLOCKED_INCONCLUSIVE,
+      reason: `unprovable PRESENT optional lane(s) (coerced/dead/refused-or-malformed — present is not proof): ${optionalBlocked.join(", ")}`,
+      families,
+      laneStatus,
+      binding,
+    };
   }
   // Diversity: fewer than min_families OBSERVED → BLOCKED (a collapsed panel is not a pass).
   if (families < minFamilies) {
