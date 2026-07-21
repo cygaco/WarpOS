@@ -32,7 +32,7 @@ by-construction (fail-closed on unrecognized callers); the allowlist is typed �
 content-qualified (a reference-only file that GAINS the spawn-args caller shape is FLAGGED, not file-wide
 hidden), and the `tracked-caller` (delta) is suppressed ONLY while ED-230 is open (FLAGGED once ED-230 closes
 — the mechanical re-open trigger). Catches literal/dynamic/bound-first/multi-line/template-literal forms;
-exact-path exclusion (a spoof at `scripts/evil/dispatch-review.js` is scanned). Findings name the invariant,
+exact-path exclusion (a spoof at `scripts/evil/dispatch-review.js` is scanned). Findings name the invariant, <!-- doc-ref-ignore: scripts/evil/dispatch-review.js is an adversarial ILLUSTRATION (the spoof path the AC-14 guard is described as scanning), not a real dependency -->
 the offending key, and the fix.
 
 **HONEST CEILING (β bounded-final, SP-20260720-003 gauntlet R-1..R-4).** This is a BEST-EFFORT STATIC scan,

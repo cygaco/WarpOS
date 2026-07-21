@@ -64,13 +64,17 @@ const ALLOWLIST_FILE = path.join(__dirname, "duplicate-doc-drift.allowlist.json"
 // the "one canonical doc shipped twice" class this enforcer hunts.
 const EXCLUDED_KINDS = new Set(["skill", "template", "fixture", "release_capsule"]);
 // Path prefixes for the same surfaces (defense in depth against a mis-kinded asset).
-const EXCLUDED_PREFIXES = [".claude/commands/", "framework/releases/", "fixtures/"];
+const EXCLUDED_PREFIXES = [".claude/commands/", "framework/releases/"];
 const norm = (p) => p.replace(/\\/g, "/");
-// `**​/templates/` anywhere in the path.
+// A path SEGMENT match anywhere in the path (not a top-level prefix).
 const isTemplatePath = (p) => /(^|\/)templates\//.test(p);
+// D-4 INC-4 fix: `fixtures/` was a top-level-only PREFIX in EXCLUDED_PREFIXES, so it missed NESTED
+// fixture dirs (e.g. scripts/checks/fixtures/authority-pollution/) — the docstring already promises
+// fixtures are excluded, so this aligns the impl with intent (the AGENTS.md false-positive).
+const isFixturePath = (p) => /(^|\/)fixtures\//.test(p);
 
 function isExcludedPath(p) {
-  return EXCLUDED_PREFIXES.some((pre) => p.startsWith(pre)) || isTemplatePath(p);
+  return EXCLUDED_PREFIXES.some((pre) => p.startsWith(pre)) || isTemplatePath(p) || isFixturePath(p);
 }
 
 // ── dir-glob matcher (a single trailing `*` = one path segment) ──────────────

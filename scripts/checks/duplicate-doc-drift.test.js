@@ -206,11 +206,15 @@ h.test("integration: real enforcer catches the agent-dispatch-guide drift; repor
   const outRO = `${ro.stdout || ""}${ro.stderr || ""}`;
   assert.strictEqual(statusRO, 0, `report-only must exit 0, got ${statusRO}: ${outRO.slice(0, 300)}`);
   assert.ok(/\[duplicate-doc-drift\]/.test(outRO), `expected a verdict line, got: ${outRO.slice(0, 200)}`);
-  assert.ok(/agent-dispatch-guide\.md/.test(outRO), "expected the known agent-dispatch-guide drift to be flagged");
-  // Sanctioned per-pod docs must NOT be in the findings.
+  // D-4 INC-4: this case used to hard-depend on a specific live-tree agent-dispatch-guide drift; that drift was
+  // reconciled, so the assertion became brittle-stale (it failed on main). The sealed-fixture cases ABOVE already
+  // prove the enforcer CATCHES a drift with a controlled input; this integration case's honest job is to prove the
+  // enforcer RUNS on the REAL tree without crashing or false-flagging a sanctioned doc — the exit reflects whatever
+  // the live tree currently is (clean -> 0, a real drift -> 1), never 2 (fail-closed is malformed-manifest only).
+  // Sanctioned per-pod / per-dir docs must NEVER be a finding on the live tree.
   assert.ok(!/FAIL[\s\S]*builder\.md/.test(outRO) && !/WARN[\s\S]*builder\.md/.test(outRO), "builder.md (sanctioned) must NOT be a finding");
 
-  // --enforce: same finding, exit 1 (never 2).
+  // --enforce: exit reflects the live tree — 0 (clean) or 1 (a real drift); NEVER 2 (a crash / malformed manifest).
   let statusEnf = 0;
   let outEnf = "";
   try {
@@ -219,8 +223,8 @@ h.test("integration: real enforcer catches the agent-dispatch-guide drift; repor
     statusEnf = e.status;
     outEnf = `${e.stdout || ""}${e.stderr || ""}`;
   }
-  assert.strictEqual(statusEnf, 1, `--enforce must exit 1 on the live drift, got ${statusEnf}: ${outEnf.slice(0, 300)}`);
-  assert.ok(/FAIL \[duplicate-doc-drift\]/.test(outEnf), "enforce mode must print a FAIL verdict");
+  assert.ok(statusEnf === 0 || statusEnf === 1, `--enforce must exit 0 (clean) or 1 (drift), never 2, got ${statusEnf}: ${outEnf.slice(0, 300)}`);
+  if (statusEnf === 1) assert.ok(/FAIL \[duplicate-doc-drift\]/.test(outEnf), "enforce mode prints a FAIL verdict when it exits 1");
 });
 
 h.done();
