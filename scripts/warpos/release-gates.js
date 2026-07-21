@@ -46,6 +46,15 @@ function summarizeGateALegs(payload) {
   return out.slice(0, 8);
 }
 
+// GATE-A report-only ramp (SP-20260721-001 INC-2, α-ratified option b — the WarpOS report-only→enforce
+// discipline). GATE-A is BUILT + CORRECT and surfaces real findings, but Leg-3 is currently RED on a
+// PRE-EXISTING foundation issue (ED-249: scripts/warpos/manifest/build.js fails with ~43-45 unclassified
+// paths → _warpos/MANIFEST.json cannot regenerate → install.ps1 produces an incomplete install). During
+// the ramp a real-install LEG failure REPORTS (yellow) but does NOT block; a SANDBOX-ISOLATION leak ALWAYS
+// blocks (red), even in report-only mode — that is the load-bearing correctness property. FLIP this to
+// false once the named trigger is met: ED-249 resolved (build.js classifies clean) AND GATE-A Leg-3 green.
+const GATE_A_REPORT_ONLY = true;
+
 function runScript(scriptRelative, args, env) {
   const full = path.join(REPO_ROOT, scriptRelative);
   if (!fs.existsSync(full)) {
@@ -690,6 +699,29 @@ const GATES = [
         message:
           "GATE-A fresh_scaffold_all_ways: INCOMPLETE — Leg 3 (shipped install.ps1) did not run (no PowerShell on this host). Not a pass (R2 skip-loud).",
         details: summarizeGateALegs(payload),
+      };
+    }
+    // A SANDBOX-ISOLATION no-delta violation (a real leg leaking into canonical) is the load-bearing
+    // correctness property — it BLOCKS unconditionally, NEVER report-only (β R1 / the canonical-corruption
+    // incident). Check it before the report-only ramp so a leak can never be softened to yellow.
+    if (payload && payload.sandbox_isolation && payload.sandbox_isolation.no_delta === false) {
+      return {
+        ok: false,
+        severity: "red",
+        message:
+          "GATE-A fresh_scaffold_all_ways: SANDBOX-ISOLATION NO-DELTA VIOLATED — a real-install leg leaked into canonical. This BLOCKS unconditionally (never report-only).",
+        details: summarizeGateALegs(payload),
+      };
+    }
+    // Report-only ramp (ED-249): a real-install LEG failure is reported LOUDLY (yellow) but does not block
+    // while GATE-A ramps. report-only ≠ silent — the finding + the flip-trigger are surfaced in the tally.
+    if (GATE_A_REPORT_ONLY) {
+      return {
+        ok: false,
+        severity: "yellow",
+        message:
+          "GATE-A fresh_scaffold_all_ways [REPORT-ONLY]: a real-install leg is RED — currently blocked by ED-249 (build.js unclassified paths → _warpos/MANIFEST.json missing → install incomplete). NOT blocking during the report-only ramp. FLIP-TRIGGER: ED-249 resolved (build.js classifies clean) AND Leg-3 green → set GATE_A_REPORT_ONLY=false.",
+        details: payload ? summarizeGateALegs(payload) : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8),
       };
     }
     return {

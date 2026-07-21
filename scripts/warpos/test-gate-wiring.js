@@ -136,6 +136,38 @@ for (const name of ["fresh_install_fixture", "customized_install_fixture"]) {
   ok("update_fixture_from_previous is STILL present (R5 — upgrade domain, not retired)", !!r, "missing from GATES");
 }
 
+// ── 5: report-only ramp behavior (SP-20260721-001 INC-2 — the ratified option-(b) teeth) ──
+// A real-install LEG failure REPORTS (yellow, non-blocking) and names the flip-trigger — report-only ≠ silent.
+CANNED["test-scaffold-all-ways.js"].stdout = JSON.stringify({
+  ok: false,
+  incomplete: false,
+  ps_available: true,
+  legs: [
+    { leg: 1, name: "portfolio_new", ran: true, ok: true, asserts: [] },
+    { leg: 2, name: "manual_warp_setup", ran: true, ok: true, asserts: [] },
+    { leg: 3, name: "shipped_install_ps1", ran: true, ok: false, asserts: [{ name: "_warpos/MANIFEST.json present (COMPLETE install)", status: "fail" }] },
+  ],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+});
+{
+  const ga = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("fresh_scaffold_all_ways");
+  ok("report-only: a real-install LEG failure is YELLOW (reported, NON-blocking), not red", ga && ga.severity === "yellow", ga && `severity=${ga.severity}`);
+  ok("report-only: the message names the flip-trigger (ED-249)", ga && /ED-249/.test(ga.message) && /FLIP-TRIGGER/.test(ga.message), ga && ga.message);
+}
+// A SANDBOX-ISOLATION leak BLOCKS unconditionally (red), even during the report-only ramp — the load-bearing property is never softened.
+CANNED["test-scaffold-all-ways.js"].stdout = JSON.stringify({
+  ok: false,
+  incomplete: false,
+  ps_available: true,
+  legs: [{ leg: 1, name: "portfolio_new", ran: true, ok: false, asserts: [{ name: "canonical no-delta", status: "fail" }] }],
+  sandbox_isolation: { no_delta: false, onlyBefore: [], onlyAfter: ["../leaked-sibling-repo"] },
+});
+{
+  const ga = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("fresh_scaffold_all_ways");
+  ok("report-only NEVER softens a leak: a sandbox-isolation NO-DELTA violation is RED (blocks)", ga && ga.severity === "red", ga && `severity=${ga.severity}`);
+  ok("leak message names the SANDBOX-ISOLATION violation", ga && /SANDBOX-ISOLATION/.test(ga.message), ga && ga.message);
+}
+
 cp.spawnSync = realSpawnSync;
 
 process.stdout.write(`\n${pass} passed, ${fail} failed\n`);
