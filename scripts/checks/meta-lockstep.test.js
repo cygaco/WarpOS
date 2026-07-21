@@ -134,6 +134,9 @@ const REG_SYM = {
   ok(ml.shapeFilterReadsScopeConstant(realSrc), `scope-constant-is-read (belt): real filter must default scope to CROSS_PROVIDER_SCOPE + read scope`);
   const reInlined = realSrc.replace(/if \(!scope\.includes\(\s*provider\s*\)\) continue;/, 'if (provider !== "openai" && provider !== "antigravity") continue;');
   ok(reInlined !== realSrc && !ml.shapeFilterReadsScopeConstant(reInlined), `scope-constant-is-read (belt): a re-inlined literal at the filter must FAIL the coupling check`);
+  // R-4: the SCAN's AC-4 proof is also BEHAVIORAL (not just a source regex a comment could satisfy) — the real
+  // evaluator reads the injected scope, so a scope perturbation changes the evaluated set.
+  ok(ml.shapeFilterReadsScopeBehaviorally() === true, "scope-injection BEHAVIORAL: the real evaluator reads the injected scope");
 }
 
 // ── AC-15 waiver integrity ────────────────────────────────────────────────────────

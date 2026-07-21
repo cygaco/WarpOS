@@ -191,6 +191,18 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   );
 }
 
+// ── R-4 type-safety fixes ──────────────────────────────────────────────────────────
+{
+  // P2: a truthy non-boolean binding ("true" string) must NOT read clean (=== true missed it)
+  ok(hasFinding(run({ panel2family: () => ({ binding: "true", min_families: 2, lanes: [{ laneId: "gpt", provider: "openai" }, { laneId: "claude", provider: "claude" }] }) }).errors, /\(P2\)/), `p2-binding-string "true" → RED`);
+  // P2: a string min_families "2" must NOT coerce past the numeric floor
+  ok(hasFinding(run({ panel2family: () => ({ binding: false, min_families: "2", lanes: [{ laneId: "gpt", provider: "openai" }, { laneId: "claude", provider: "claude" }] }) }).errors, /\(P2\)/), `p2-min_families-string "2" → RED`);
+  // ED-230: a line that parses as a NON-OBJECT (true/[]/null/string) after a valid close → fail-closed strict
+  ok(sbl.ed230IsOpen([JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: "AP-1" }), "true"].join("\n")).open === true, "ed230 closed-then-nonobject(true) → strict");
+  ok(sbl.ed230IsOpen([JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: "AP-1" }), "[]"].join("\n")).open === true, "ed230 closed-then-nonobject([]) → strict");
+  ok(sbl.ed230IsOpen('null').open === true, "ed230 bare null line → strict");
+}
+
 // ── report ──────────────────────────────────────────────────────────────────────────
 if (fail.length) {
   process.stderr.write(`security-binding-lane.test: ${passed} passed, ${fail.length} FAILED:\n${fail.map((f) => "  ✗ " + f).join("\n")}\n`);

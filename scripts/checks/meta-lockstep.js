@@ -173,6 +173,32 @@ function shapeFilterReadsScopeConstant(src) {
   return /scope\s*=\s*CROSS_PROVIDER_SCOPE/.test(fnBody) && /!\s*scope\.includes\(\s*provider\s*\)/.test(fnBody);
 }
 
+/** AC-4 BEHAVIORAL proof (gauntlet R-4: a source regex can be satisfied by a comment/dead code while the live
+ *  filter drifted to a hardcoded literal). Perturb the INJECTED scope on a synthetic case — an antigravity role
+ *  that conflicts IFF antigravity is in scope. If the two scopes yield the SAME result, evaluateShapeRouteConflicts
+ *  is NOT reading the injected scope. Uses role-parity-scan's exported evaluator (real behavior, not source text). */
+function shapeFilterReadsScopeBehaviorally() {
+  let rp;
+  try {
+    rp = require("./role-parity-scan");
+  } catch {
+    return false; // fail-closed: can't verify → treat as drift
+  }
+  const contract = {
+    class_derivation: { rules: [{ when: { tier: "lead", provider: "openai" }, class: "x" }, { when: { tier: "lead" }, class: "m" }], fallback_class: "m" },
+    role_classes: { x: { allowed_shapes: ["subprocess-cross-provider"] }, m: { allowed_shapes: ["in-process-agent"] } },
+  };
+  const reg = { roles: { "ag-lead": { tier: "lead", provider: "antigravity" } } };
+  try {
+    const withAnti = rp.evaluateShapeRouteConflicts({ reg, contract, scope: ["openai", "antigravity"] });
+    const withoutAnti = rp.evaluateShapeRouteConflicts({ reg, contract, scope: ["openai"] });
+    // scope IS read iff adding antigravity to scope changes the evaluated set (the ag-lead conflict appears).
+    return withAnti.length > withoutAnti.length && withoutAnti.length === 0;
+  } catch {
+    return false;
+  }
+}
+
 // ── CLI ──────────────────────────────────────────────────────────────────────────
 
 function readJson(p) {
@@ -193,12 +219,14 @@ function main(argv) {
   }
 
   const { errors } = evaluateMetaLockstep({ reg, contract });
-  // AC-4: prove role-parity's filter still reads the shared constant (source-coupling teeth).
-  if (!shapeFilterReadsScopeConstant(roleParitySrc)) {
+  // AC-4: prove role-parity's filter reads the shared scope — BEHAVIORALLY (a scope perturbation must change the
+  // evaluated set; gauntlet R-4 — a source regex alone can be satisfied by a comment) AND the source-coupling belt.
+  if (!shapeFilterReadsScopeBehaviorally() || !shapeFilterReadsScopeConstant(roleParitySrc)) {
     errors.push(
-      `${NAME}: SCOPE-DRIFT — role-parity-scan.js#evaluateShapeRouteConflicts no longer reads the shared ` +
-        `CROSS_PROVIDER_SCOPE export (a re-inlined provider literal at the filter). The scope filter and this ` +
-        `enforcer must share ONE source. FIX: restore \`if (!CROSS_PROVIDER_SCOPE.includes(provider)) continue;\`.`,
+      `${NAME}: SCOPE-DRIFT — role-parity-scan.js#evaluateShapeRouteConflicts does not read the shared injected ` +
+        `scope (behavioral: a scope perturbation did not change the evaluated set, and/or a re-inlined provider ` +
+        `literal at the filter). The scope filter and this enforcer must share ONE source. FIX: restore ` +
+        `\`if (!scope.includes(provider)) continue;\` with the \`scope = CROSS_PROVIDER_SCOPE\` default.`,
     );
   }
 
@@ -225,4 +253,5 @@ module.exports = {
   checkWaiverIntegrity,
   evaluateMetaLockstep,
   shapeFilterReadsScopeConstant,
+  shapeFilterReadsScopeBehaviorally,
 };

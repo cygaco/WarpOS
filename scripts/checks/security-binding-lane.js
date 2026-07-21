@@ -93,9 +93,15 @@ function ed230IsOpen(ledgerText) {
       // fail-closed: a malformed ledger line is a corruption signal → strict. It must NOT be silently
       // skipped (a malformed trailing line after a valid `closed` record would otherwise leave the close
       // effective — the gauntlet-caught fail-open). Any unparseable line forces OPEN.
-      return { open: true, reason: "malformed ledger line → assume OPEN (fail-closed)" };
+      return { open: true, reason: "malformed ledger line (unparseable) → assume OPEN (fail-closed)" };
     }
-    if (rec && rec.id === "ED-230") last = rec; // LAST-write-wins (append-only JSONL)
+    // A line that PARSES but is not a plain-object record (null, array, string, number, boolean) is also
+    // malformed → fail-closed strict (gauntlet R-4: a `true`/`[]`/`null`/string line after a valid close must
+    // not leave the close effective; the id check alone would silently skip it).
+    if (rec === null || typeof rec !== "object" || Array.isArray(rec)) {
+      return { open: true, reason: "malformed ledger record (non-object) → assume OPEN (fail-closed)" };
+    }
+    if (rec.id === "ED-230") last = rec; // LAST-write-wins (append-only JSONL)
   }
   if (!last) return { open: true, reason: "no ED-230 record in a non-empty ledger → assume OPEN (fail-closed)" };
   const closed = last.status === "closed";
@@ -248,13 +254,15 @@ function evaluateSecurityBindingLane({ deps = realDeps(), ledgerText, files } = 
       const lanes = p2.lanes || [];
       const verifiableLanes = lanes.filter((l) => VERIFIABLE.has(l.provider));
       const distinctFamilies = new Set(verifiableLanes.map((l) => l.provider));
-      if (p2.binding === true) {
-        errors.push(`${NAME}: BINDING-LANE (P2) — panel-2family is the degraded FLOOR and must be binding:false (found binding:true). FIX: the floor must never be the sole binding contract.`);
+      // binding must be EXACTLY the boolean false — a truthy non-boolean (string "true", 1) that panelStatus
+      // would coerce to binding:true must NOT read clean (gauntlet R-4: `=== true` missed a string "true").
+      if (p2.binding !== false) {
+        errors.push(`${NAME}: BINDING-LANE (P2) — panel-2family is the degraded FLOOR and must be binding:false (boolean); found ${JSON.stringify(p2.binding)}. FIX: the floor must be binding:false and never the sole binding contract.`);
       }
       // Every required floor lane must be VERIFIABLE (openai|claude — a gemini/unknown lane is NOT), AND the
-      // floor must require ≥2 DISTINCT verifiable families ([openai,openai] is one family, not two;
-      // [openai,gemini] contains a non-verifiable lane). gauntlet-caught (qa: non-agy ≠ verifiable).
-      if ((p2.min_families || 0) < 2 || verifiableLanes.length !== lanes.length || distinctFamilies.size < 2) {
+      // floor must require ≥2 DISTINCT verifiable families. min_families must be a NUMBER (a string "2" that
+      // coerces past `< 2` must NOT pass — gauntlet R-4). gauntlet-caught (qa: non-agy ≠ verifiable + type bug).
+      if (typeof p2.min_families !== "number" || p2.min_families < 2 || verifiableLanes.length !== lanes.length || distinctFamilies.size < 2) {
         errors.push(
           `${NAME}: BINDING-LANE (P2) — the panel-2family floor must require ≥2 DISTINCT VERIFIABLE families ` +
             `(openai|claude; every required lane verifiable, agy not a required lane). Found required lanes ` +
