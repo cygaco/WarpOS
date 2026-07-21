@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: SP-20260720-002
+primary: SP-20260721-001
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1200,5 +1200,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/SP-20260720-003"
     created_at: "2026-07-20T20:14:12.257Z"
     updated_at: "2026-07-20T20:14:12.257Z"
+  - id: SP-20260721-001
+    title: "D-4 release-gates standing sprint (WarpOS 1.0): brokered branch-merge+release-commit transport -> Seam-E hook live-install as a release gate (ED-controller-no-live-release-transport flip); GATE-A fresh-scaffold-all-ways (portfolio:new/warp:setup/install.ps1 3-leg + wire orphaned test-install-matrix); GATE-B upgrade-current-to-new (N-1 capsule -> real update --apply -> conformance); 2-family Phase-4 re-run on codex recovery; triage 4 enforcer reds + SP-20260718-005 stale-status ledger hygiene"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/SP-20260721-001"
+    created_at: "2026-07-21T08:13:07.141Z"
+    updated_at: "2026-07-21T08:13:07.141Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-07-20T20:14:12.257Z"
+updated_at: "2026-07-21T08:13:07.141Z"
