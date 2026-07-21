@@ -115,6 +115,59 @@ wants a **wake-drop telemetry counter** (alert when drops exceed a threshold), n
 just a field check. (Ledger is gitignored/machine-local — split-durability: the
 future enforcer resolves the cited ED id from THIS committed doc, not the ledger.)
 
+## Shared-ledger write discipline — the ledger-side sibling of the paired-waiter
+
+Parallel lanes writing to the SAME runtime append-log (`paths.enforcementDebt` =
+`.claude/project/memory/enforcement-debt.jsonl`, and any shared `.jsonl` ledger)
+race the same way a dispatched worker's wake does — and the fix is the same shape:
+make the write atomic-by-construction, never rely on a stale read.
+
+1. **APPEND with the next-free id read AT write time — never pre-announce an id as
+   final.** Ids are MINTED at write time, not reserved by announcement. On
+   2026-07-21 (SP-20260721-002) both the doctrine lane and the parallel INC-3 lane
+   read "highest = ED-252" early and each planned "ED-253"; the second append
+   created a transient duplicate ED-253. Re-read the ledger immediately before the
+   write, take the ACTUAL next-free, and report the REAL minted id in your
+   envelope — never the pre-announced one. **Caveat:** read-next-free-at-write-time
+   only SHRINKS the collision window (to the read→append gap); it does NOT close it
+   — two lanes can each read the same next-free and both append it (write-atomic,
+   id-colliding). Only atomic ALLOCATION closes the class (see Enforcer).
+2. **NEVER read-filter-rewrite a shared ledger — repair is ALWAYS
+   single-writer-coordinated.** A whole-file rewrite (to dedup or renumber) reads
+   the file, edits in memory, and writes it back — clobbering any concurrent append
+   that landed in the window (lost-update race). You cannot reliably OBSERVE that no
+   other lane is appending (the operator or another agent may), so the rule is
+   UNCONDITIONAL, not "while another lane is active": never self-heal a shared ledger
+   in place. `O_APPEND` gives WRITE-atomicity (two concurrent appends both LAND,
+   neither clobbers — exactly what a rewrite loses); it does NOT give id-allocation
+   atomicity (that residual is discipline 1's, closed only by the Enforcer's
+   allocator). **Dedup / repair is a SINGLE-WRITER maintenance action** — coordinate
+   it through the team lead (one writer, no live co-writer), never a mid-flight
+   self-heal.
+3. **Verify ledger state by direct READ, never a grep-count.** grep gave a
+   false-negative on this ledger (a present `"id":"ED-253"` counted 0 — the
+   BOM/long-line fresh-migration class); the Read tool showed the truth. Confirm
+   which ids are live by Read before reporting or repairing.
+
+**Enforcer — two tiers:**
+- **Cheap, self-detecting (build first): a ledger duplicate-id lint** — fail if any
+  ED id appears twice, **Read-based, not a grep-count** (discipline 3's
+  false-negative), wired into `/scan:full`. It catches the collision SYMPTOM the
+  instant it lands (it would flag today's transient ED-253 dup AND the standing
+  pre-existing ED-244 dup). Filed as a LOW enforcement-debt entry **ED-258** to
+  build it — this is the named enforcer that closes the hygiene bar without waiting
+  on the root fix.
+- **Root fix (legitimately deferred): atomic id-allocation** — a lock or a
+  monotonic allocator so two lanes cannot mint the same id (the only thing that
+  CLOSES discipline 1's residual, per the caveat above). Deferred because this
+  collision was first-occurrence, transient, self-recovered, no data loss (unlike
+  the recurring-cost ED-256/257). Concrete trigger to file the `id-allocation-race`
+  ED or build the allocator: the **SECOND** real collision, OR **any** collision
+  causing actual DATA LOSS (not a transient renumber).
+
+(Durable citation: this committed doc, not the gitignored ledger — same
+split-durability as ED-256/257.)
+
 ## Poll patience — the 540s clamp bound (live evidence, 2026-07-16)
 
 Do not declare a dispatch dead early. Tonight's ledger gave three deterministic
