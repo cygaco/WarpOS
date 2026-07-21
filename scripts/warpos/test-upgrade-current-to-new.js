@@ -332,6 +332,37 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
       if (!installOk) proceed = false;
     }
 
+    // Step 1.5 — repoint the N-1 install's recorded source to the N source (the
+    // canonical repo under test). MODELS THE REAL UPGRADE: the operator installed
+    // N-1 from their canonical WarpOS repo, which has since advanced to N, so the
+    // install's source hint points at a repo that HAS the N capsule. The preflight
+    // `warpos-capsule-resolvable` gate searches the TARGET's recorded source
+    // (framework-installed.json#source / manifest.warpos.source), NOT update.js's
+    // --source flag — so without this it looks only at the frozen N-1 tag checkout
+    // and can never resolve the N capsule. FINDING (surfaced to beta at
+    // gauntlet->release): the preflight gate does not honor --source though its
+    // remediation implies it does; out of INC-3 scope to fix in update.js.
+    if (proceed) {
+      try {
+        const installedJsonPath = path.join(n1Install, ".claude", "framework-installed.json");
+        const installedJson = JSON.parse(fs.readFileSync(installedJsonPath, "utf8"));
+        installedJson.source = REPO_ROOT;
+        fs.writeFileSync(installedJsonPath, JSON.stringify(installedJson, null, 2));
+        const manifestPath = path.join(n1Install, ".claude", "manifest.json");
+        if (fs.existsSync(manifestPath)) {
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+          if (manifest && manifest.warpos) {
+            manifest.warpos.source = REPO_ROOT;
+            fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+          }
+        }
+        assert("n1_source_repointed_to_N", true, "");
+      } catch (e) {
+        assert("n1_source_repointed_to_N", false, `could not repoint N-1 install source to N: ${e.message}`);
+        proceed = false;
+      }
+    }
+
     // Step 2 — real apply via run(), NEVER the --json CLI (which does
     // console.log(JSON.stringify(r)) BEFORE any process.exit, so a Class-C/
     // preflight-block run silent-greens at exit 0 — the exact trap this
@@ -351,10 +382,55 @@ async function runEngine({ timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
         proceed = false;
       }
       if (proceed) {
-        if (r && r.ok === true && r.committed === true) {
-          assert("apply_committed", true, "");
+        // apply_committed is a PRECONDITION assert (did the apply LAND?), NEVER
+        // the verdict. It rests on r.committed — NOT r.ok. r.ok folds in the
+        // apply's OWN postflight self-report (provider connectivity, missing
+        // rollup scripts), which is exactly the self-report the verdict must not
+        // rest on (ED-225/227, one level up). 3b (scan:install) + 3c (fresh-N
+        // parity) independently judge the RESULT — a committed:true lie fails 3c.
+        const pf = (r && r.postflight && (r.postflight.gates || r.postflight.checks)) || [];
+        const pfFails = pf
+          .filter((x) => x.status && x.status !== "green" && x.status !== "pass")
+          .map((x) => `${x.name}:${x.status}(${(x.reason || "").slice(0, 80)})`);
+        if (r && r.committed === true) {
+          // committedWithWarnings (r.ok:false, r.committed:true) → record the
+          // postflight self-report LOUD as detail, but do NOT gate on it.
+          assert(
+            "apply_committed",
+            true,
+            r.ok === true
+              ? ""
+              : `apply COMMITTED with postflight warnings (self-report — NOT gated; 3b/3c judge conformance): ${pfFails.join("; ") || "(no postflight detail)"}`,
+          );
+          // provider-smoke: ENVIRONMENTAL — RECORD-DON'T-JUDGE (lead steer,
+          // β-ratified scope boundary). The sandbox has no provider auth BY
+          // DESIGN; runtime connectivity is not upgrade conformance. Named as a
+          // non-load-bearing observation so the scope boundary is explicit and
+          // never silently swallowed.
+          const smoke = pf.find((x) => x.name === "provider-smoke");
+          if (smoke && smoke.status !== "green" && smoke.status !== "pass") {
+            assert(
+              "provider_smoke_ENVIRONMENTAL_OBSERVATION",
+              true,
+              `OUT OF GATE-B SCOPE (β-ratified): provider-smoke ${smoke.status} (${(smoke.reason || "").slice(0, 80)}). Sandbox has no provider auth by design; runtime connectivity is not upgrade conformance.`,
+              { loadBearing: false },
+            );
+          }
         } else {
-          assert("apply_committed", false, (r && r.error) || "run() returned ok:false with no error detail");
+          // Apply did NOT commit — a true failure / rollback. LOUD detail: error,
+          // then preflight reds, then postflight fails — never "no detail" (the
+          // run() committedWithWarnings-no-top-level-error gap is a named update.js
+          // finding carried to β, not masked here).
+          const preReds = ((r && r.preflight && r.preflight.gates) || [])
+            .filter((x) => x.status === "red")
+            .map((x) => `${x.name}:${(x.reason || "").slice(0, 80)}`);
+          const detail =
+            (r && r.error) ||
+            (preReds.length ? `PREFLIGHT: ${preReds.join("; ")}` : "") ||
+            (pfFails.length ? `POSTFLIGHT (uncommitted): ${pfFails.join("; ")}` : "") ||
+            (r && r.outcome ? `outcome=${r.outcome}` : "") ||
+            "run() returned committed:false with no error/preflight/postflight detail (update.js loud-fail gap — carried to β)";
+          assert("apply_committed", false, detail);
           proceed = false;
         }
       }
@@ -659,10 +735,22 @@ async function main() {
     return st.ok ? 0 : 1;
   }
 
-  const result = await runEngine({ timeoutMs: opts.timeoutMs });
+  // Artifact hygiene: run()'s in-process console.log (e.g. "FRAMEWORK SOURCE
+  // MIRROR (_warpos/)") would land in the --json stdout artifact and corrupt it
+  // (non-machine-parseable). In --json mode, route ALL stdout produced DURING
+  // the engine run to stderr, then emit ONLY the final JSON to the real stdout.
+  let result;
   if (opts.json) {
+    const realWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (...args) => process.stderr.write(...args);
+    try {
+      result = await runEngine({ timeoutMs: opts.timeoutMs });
+    } finally {
+      process.stdout.write = realWrite;
+    }
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   } else {
+    result = await runEngine({ timeoutMs: opts.timeoutMs });
     process.stdout.write(`from_version=${result.from_version} to_version=${result.to_version} ran=${result.ran} ps_available=${result.ps_available}\n`);
     for (const a of result.asserts) {
       process.stdout.write(`[${a.ok ? "ok  " : "FAIL"}] ${a.name}${a.detail ? ` — ${a.detail}` : ""}\n`);
