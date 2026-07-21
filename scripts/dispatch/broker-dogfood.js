@@ -209,17 +209,29 @@ function fallbackCount(logPath) {
   return readFallbacks(logPath).length;
 }
 
-/** fallbackCountSafe(logPath) -> {count, unreadable}. A NON-throwing read for INFORMATIONAL success-path
- *  result fields (GF-3b): once a brokered write has LANDED (or a refusal is already decided), an unreadable
- *  ledger must not turn that outcome into an uncaught exception + unsafe retry pressure. Returns
- *  {count:null, unreadable:true} rather than substituting a false zero (the very under-count lie GF-3 closes).
- *  The SECURITY decision path stays on the throwing fallbackCount. */
-function fallbackCountSafe(logPath) {
+/**
+ * readFallbacksSafe(logPath) -> {rows, unreadable}. THE ONE non-throwing ledger read for every INFORMATIONAL
+ * site (the success-path result fields AND report()). It encodes a single invariant, in a single place, so
+ * no caller can drift off it (the lib-only-fix-bypassing-callers class): reading the fallback ledger must
+ * NEVER affect the success/failure of a ref op that already completed, and must NEVER certify a false zero.
+ * ENOENT (never written) -> {rows:[], unreadable:false}; a present-but-unreadable ledger -> {rows:null,
+ * unreadable:true}. The SECURITY DECISION path (recordFallback pre-append) deliberately does NOT use this —
+ * it keeps the throwing readFallbacks/fallbackCount so an unreadable ledger REFUSES the fallback outright.
+ */
+function readFallbacksSafe(logPath) {
   try {
-    return { count: fallbackCount(logPath), unreadable: false };
+    return { rows: readFallbacks(logPath), unreadable: false };
   } catch {
-    return { count: null, unreadable: true };
+    return { rows: null, unreadable: true };
   }
+}
+
+/** fallbackCountSafe(logPath) -> {count, unreadable}. The count projection of the ONE safe read
+ *  (readFallbacksSafe) — used at the success-path result fields (GF-3b). {count:null,unreadable:true} on an
+ *  unreadable ledger, never a fabricated zero, never a throw. */
+function fallbackCountSafe(logPath) {
+  const safe = readFallbacksSafe(logPath);
+  return { count: safe.unreadable ? null : safe.rows.length, unreadable: safe.unreadable };
 }
 
 /**
@@ -588,23 +600,20 @@ function attemptFallback(ctx = {}) {
 
 function report(logPath) {
   const p = logPath || defaultLogPath();
-  let rows;
-  try {
-    rows = readFallbacks(p);
-  } catch (e) {
-    // The ledger EXISTS but cannot be read (GF-3). It must NEVER read as "✔ ZERO fallbacks" — that is
-    // precisely the false-green the flip decision is argued against. Surface the unreadable state loudly.
+  // The SAME safe-read choke-point the success paths use (GF-3 / lead's round-2 note): an unreadable ledger
+  // must NEVER read as "✔ ZERO fallbacks" — the false-green the flip decision is argued against.
+  const { rows, unreadable } = readFallbacksSafe(p);
+  if (unreadable) {
     const bar = "═".repeat(94);
     const text = [
       "D-4 INC-1 — brokered-transport dogfood fallback ledger",
       `  ledger : ${p}`,
       bar,
       "  ⛔ LEDGER UNREADABLE — the fallback count CANNOT be certified.",
-      `     ${e.message}`,
       "  Do NOT argue the Seam E flip from dogfood mileage until this ledger reads cleanly.",
       bar,
     ].join("\n");
-    return { count: null, rows: null, unreadable: true, error: e.message, text };
+    return { count: null, rows: null, unreadable: true, error: "ledger present but unreadable", text };
   }
   const lines = [];
   lines.push("D-4 INC-1 — brokered-transport dogfood fallback ledger");
@@ -643,6 +652,7 @@ module.exports = {
   fallbackAllowed,
   defaultLogPath,
   readFallbacks,
+  readFallbacksSafe,
   fallbackCount,
   fallbackCountSafe,
   recordFallback,
