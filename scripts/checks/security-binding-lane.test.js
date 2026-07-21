@@ -146,9 +146,12 @@ function run(overrides = {}, ledgerText = LEDGER_OPEN, files = {}) {
   // R-3: the tracked delta caller is FLAGGED once ED-230 CLOSES (mechanical re-open trigger, not comment-only)
   const LEDGER_CLOSED_R3 = JSON.stringify({ id: "ED-230", status: "closed", closure_receipt: "AP-230-x" });
   ok(hasFinding(run({}, LEDGER_CLOSED_R3, { [allowKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `delta FLAGGED when ED-230 closes (mechanical re-open trigger)`);
-  // R-3: a reference-only allowlist entry stays suppressed even when ED-230 is closed
+  // R-4 (content-qualified): a reference-only entry with PURE reference content (no spawn-args caller shape)
+  // stays suppressed; but a reference-only file that GAINS the caller SHAPE is FLAGGED (not file-wide hidden).
   const refKey = Object.keys(sbl.CREEP_BACK_ALLOWLIST).find((k) => sbl.CREEP_BACK_ALLOWLIST[k].type === "reference-only");
-  ok(!hasFinding(run({}, LEDGER_CLOSED_R3, { [refKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `reference-only (${refKey}) stays suppressed when ED-230 closed`);
+  const refContent = '// names the "security-reviewer" role + dispatch-agent.js in a comment; not a spawn';
+  ok(!hasFinding(run({}, LEDGER_CLOSED_R3, { [refKey]: refContent }).errors, /SINGLE-PASS CREEP-BACK/), `reference-only (${refKey}) pure-reference content stays suppressed`);
+  ok(hasFinding(run({}, LEDGER_OPEN, { [refKey]: dynamicCaller }).errors, /SINGLE-PASS CREEP-BACK/), `reference-only (${refKey}) that GAINS the caller shape → FLAGGED (content-qualified)`);
   // R-3: template-literal (backtick) role form is caught
   const templateCaller = 'const ROLES = [`security-reviewer`]; spawn("node", [path.join(ROOT, "dispatch-agent.js"), ROLES[0]]);';
   ok(hasFinding(run({}, LEDGER_OPEN, { "scripts/evil2.js": templateCaller }).errors, /SINGLE-PASS CREEP-BACK/), `template-literal role caught: ${run({}, LEDGER_OPEN, { "scripts/evil2.js": templateCaller }).errors.join(" | ")}`);

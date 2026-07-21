@@ -160,6 +160,12 @@ const CREEP_BACK_ALLOWLIST = {
   "scripts/hooks/lib/providers.js": { type: "reference-only", reason: "the transport lib names security-reviewer in provider-config comments; runProvider is the transport, not a single-pass security dispatch." },
   "scripts/warpos/provider-smoke.js": { type: "reference-only", reason: "require()s dispatch-agent.js as a MODULE for getRoleModel (a ping smoke test); not a spawn of dispatch-agent.js with security-reviewer." },
 };
+// The caller SHAPE: dispatch-agent.js inside a spawn-args ARRAY literal. Used to CONTENT-QUALIFY the
+// reference-only allowlist (gauntlet R-4: a file-wide suppress would hide a future real caller ADDED to a
+// reference-only file). A reference-only file is suppressed ONLY while it does NOT contain this shape; if it
+// gains the shape it is FLAGGED. (Residual: a bound-first/multi-line caller in a reference-only file is the
+// named AST ceiling — the structural close is a dispatch-time guard.)
+const CALLER_SHAPE_RE = /\[[^\]\n]*dispatch-agent\.js/;
 function singlePassBindingCallers({ files, ed230Open = true } = {}) {
   const src = files || walkScriptsForCallers();
   const hits = [];
@@ -168,7 +174,9 @@ function singlePassBindingCallers({ files, ed230Open = true } = {}) {
     const relN = rel.replace(/\\/g, "/");
     const allow = CREEP_BACK_ALLOWLIST[relN];
     if (allow) {
-      if (allow.type === "reference-only") continue; // never a caller
+      // reference-only: suppressed ONLY while it stays a pure reference (no spawn-args caller SHAPE). If a
+      // reference-only file GAINS the caller shape it fell through → FLAGGED (content-qualified, not file-wide).
+      if (allow.type === "reference-only" && !CALLER_SHAPE_RE.test(content)) continue;
       // tracked-caller: suppressed ONLY while ED-230 is open; once closed → fall through → FLAG (re-open trigger)
       if (allow.type === "tracked-caller-ed230-gated" && ed230Open) continue;
     }
