@@ -152,11 +152,6 @@ function extractVerifiedByRefs(prdText) {
   return { paths: Array.from(found), bare: Array.from(bare).filter((b) => !qualifiedBasenames.has(b)) };
 }
 
-/** Back-compat shim: the fully-qualified half of the extractor (kept — existing callers/tests use it). */
-function extractVerifiedByFilePaths(prdText) {
-  return extractVerifiedByRefs(prdText).paths;
-}
-
 const BARE_SCAN_ROOTS = ["scripts", ".claude", "framework", "docs"];
 const BARE_SCAN_SKIP = new Set(["node_modules", ".git", "runtime", ".provider-tmp", ".worktrees"]);
 
@@ -346,7 +341,6 @@ module.exports = {
   evaluate,
   checkFalsifier,
   filePart,
-  extractVerifiedByFilePaths,
   extractVerifiedByRefs,
   resolveBareRef,
   checkVerifiedByPaths,
