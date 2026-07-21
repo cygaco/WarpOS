@@ -483,15 +483,20 @@ test("MIG helpers are ALLOWLISTED in the main-write-broker-completeness enforcer
   }
 });
 
-test("#7 turbo census — scripts/turbo/apply.js performs NO git write at all (push-only surface, recorded)", () => {
+test("#7 turbo census — scripts/turbo/apply.js performs NO local git write (push-only surface, verified from the TRACKED source)", () => {
   // β R6 census close. `turbo/apply.js` GRANTS the `push-to-main` permission scope in settings.json; it
-  // never spawns git itself, so it is not a local main-writer and the ref-transaction fence (a LOCAL ref
-  // surface) does not gate it. Pinned here so a future edit that adds a git write to it REDs this test.
+  // never spawns a process itself, so it cannot do a LOCAL git write and the ref-transaction fence (a LOCAL
+  // ref surface) does not gate it — a git SPAWN is the only way to do a local write, so its absence is the
+  // whole invariant. Verified STRUCTURALLY from the tracked source.
+  //
+  // PORTABILITY (merge-time fix): the census EVIDENCE doc (runtime/d4/inc1/turbo-census.md) is a per-run
+  // artifact that is intentionally UNTRACKED (per-run artifacts do not ride git — project rule), so it must
+  // NEVER be a test dependency: it exists in the build worktree but is ABSENT on a clean checkout of main,
+  // and reading it here ENOENT-failed the whole suite post-merge. The real invariant lives in the tracked
+  // source below; the prose census doc is human evidence, not a fixture. Pinned so a future edit that adds a
+  // process spawn REDs this test.
   const src = fs.readFileSync(path.join(dog.ROOT, "scripts", "turbo", "apply.js"), "utf8");
-  assert.equal(/\bspawnSync\b|\bexecSync\b|\bexecFileSync\b|require\(["']child_process["']\)/.test(src), false, "turbo/apply.js must not spawn any process (it would be an unaudited write surface)");
-  const census = fs.readFileSync(path.join(dog.ROOT, "runtime", "d4", "inc1", "turbo-census.md"), "utf8");
-  assert.match(census, /push-only/i);
-  assert.match(census, /no local main-write/i);
+  assert.equal(/\bspawnSync\b|\bexecSync\b|\bexecFileSync\b|require\(["']child_process["']\)/.test(src), false, "turbo/apply.js must not spawn any process (it would be an unaudited LOCAL write surface)");
 });
 
 // ══ 7. GF-1..GF-4 — the gauntlet-round hardening, each with its own teeth ═════════════════════════════
