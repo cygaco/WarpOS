@@ -96,6 +96,14 @@ const SECURITY_REASONS = Object.freeze([
   "ref-update-refused", // git refused the compare-and-swap: the ref MOVED. Never paper over a race.
   // this module's own security-shaped refusals
   "fallback-unrecordable", // a fallback that cannot be logged is a silent bypass — refuse it instead
+  // ambiguous-toward-attack failures on a CONFIGURED bundle / a specific candidate tree (GF-1, conservative-
+  // by-construction). A PRESENT-but-unreadable/unparseable promoted bundle, or a candidate SHA whose tree
+  // will not materialize, cannot be PROVEN an infrastructure miss — a poisoned/truncated pinned bundle and
+  // a hostile candidate arrive the same way. So they NEVER fall back. (True absence of a configured bundle
+  // is the DISTINCT operational reason `no-pinned-bundle-configured`; a structurally-incomplete manifest is
+  // the DISTINCT security code `incomplete-bundle-manifest` emitted by the controller.)
+  "bundle-load-failed", // a configured, present pinned bundle failed to read/parse — suspicious, not infra
+  "result-tree-materialize-failed", // a specific candidate SHA's tree would not materialize — candidate-dependent
 ]);
 
 /**
@@ -120,18 +128,19 @@ const USAGE_REASONS = Object.freeze([
 ]);
 
 /**
- * OPERATIONAL_REASONS — the broker could not RUN. No judgement was rendered, so the ordinary route is not
- * a bypass of anything. DELIBERATELY SHORT and enumerated one-by-one (never a prefix/family match): the
- * bundle-error family in particular splits across this list and SECURITY_REASONS above, because
- * `loadBundleManifest` failing to READ a manifest is an operational miss while `loadPinnedCheckLib`
- * failing to AUTHENTICATE one is an attack shape, and both arrive as a `reason` string.
+ * OPERATIONAL_REASONS — the broker could not RUN, and the failure is PROVABLY infrastructure, not a
+ * judgement about the request. DELIBERATELY SHORT and enumerated one-by-one (never a prefix/family match).
+ * CONSERVATIVE-BY-CONSTRUCTION (GF-1): only failures that cannot possibly encode an attack on THIS request
+ * belong here. A present-but-corrupt configured bundle (`bundle-load-failed`) and an un-materializable
+ * candidate tree (`result-tree-materialize-failed`) are ambiguous-toward-attack and live in SECURITY_REASONS
+ * above — they never fall back. What remains here is either a genuine tooling gap (`merge-tree-unsupported`,
+ * `broker-module-unavailable`), a git-transport error (`ref-update-error`), or the honest ABSENCE of a
+ * configured bundle (`no-pinned-bundle-configured`) — none of which is a verdict about the write.
  */
 const OPERATIONAL_REASONS = Object.freeze([
-  "bundle-load-failed", // manifest missing / unreadable / not JSON / structurally incomplete
-  "result-tree-materialize-failed", // could not create or populate the scratch materialization
   "ref-update-error", // the git spawn itself errored (not a refusal — a refusal is `ref-update-refused`)
   // this module's own operational misses
-  "no-pinned-bundle-configured", // no promoted bundle available to this invocation
+  "no-pinned-bundle-configured", // no promoted bundle available to this invocation (ABSENCE, not corruption)
   "broker-module-unavailable",
   "broker-threw",
   "merge-tree-unsupported", // git too old for `merge-tree --write-tree`
@@ -163,13 +172,21 @@ function defaultLogPath(root) {
 }
 
 /** readFallbacks(logPath) -> [record,...]. A malformed line is preserved as {_malformed} — never dropped,
- *  because dropping it would UNDER-count fallbacks, which is the one direction that must never happen. */
+ *  because dropping it would UNDER-count fallbacks, which is the one direction that must never happen.
+ *
+ *  ENOENT (the ledger has never been written) is the ONLY read failure that legitimately means "empty" —
+ *  it is returned as []. Any OTHER read error (EACCES/EISDIR/EIO — a ledger that EXISTS but cannot be read)
+ *  is NOT empty: swallowing it to [] would under-count fallbacks, which is exactly the silent-bypass the
+ *  fallback-visibility rider forbids (an unreadable-but-appendable ledger would otherwise permit a count-0
+ *  fallback and certify "ZERO fallbacks" at flip time). So a non-ENOENT read error THROWS; callers on the
+ *  security path (recordFallback, report) catch it and refuse / surface rather than under-count. (GF-3) */
 function readFallbacks(logPath) {
   let raw;
   try {
     raw = fs.readFileSync(logPath, "utf8");
-  } catch {
-    return [];
+  } catch (e) {
+    if (e && e.code === "ENOENT") return []; // never written = legitimately empty
+    throw e; // present-but-unreadable is NOT empty — the caller must not under-count
   }
   return raw
     .split(/\r?\n/)
@@ -199,7 +216,15 @@ function fallbackCount(logPath) {
  */
 function recordFallback(entry, opts = {}) {
   const logPath = opts.logPath || defaultLogPath(opts.root);
-  const prior = fallbackCount(logPath);
+  let prior;
+  try {
+    prior = fallbackCount(logPath);
+  } catch (e) {
+    // The ledger EXISTS but cannot be read (GF-3). We cannot honestly count, so we cannot make this
+    // fallback visible — report it as unrecordable, which `attemptFallback` turns into a REFUSAL
+    // (`fallback-unrecordable`, a SECURITY reason) rather than a silent count-0 ordinary write.
+    return { ok: false, count: null, record: null, logPath, error: `ledger-unreadable: ${e.message}`, event_mirrored: false };
+  }
   const record = {
     schema: FALLBACK_SCHEMA,
     seq: prior + 1,
@@ -228,8 +253,15 @@ function recordFallback(entry, opts = {}) {
   }
 
   // Re-derive the count from the ledger rather than trusting `prior + 1`: if a concurrent writer also
-  // appended, the honest count is what the file now holds.
-  return { ok: true, count: fallbackCount(logPath), record, logPath, event_mirrored: mirrored };
+  // appended, the honest count is what the file now holds. (Just appended, so the file is present+readable;
+  // if a read hiccup races us anyway, prior+1 is the honest floor — never under-count.)
+  let derived;
+  try {
+    derived = fallbackCount(logPath);
+  } catch {
+    derived = prior + 1;
+  }
+  return { ok: true, count: derived, record, logPath, event_mirrored: mirrored };
 }
 
 /** resolveEventsPath() -> paths.eventsFile, or null when the registry is unavailable (never throws). */
@@ -284,8 +316,14 @@ function refusalBanner(transport, reason, classification, detail) {
 
 // ── git helpers (READ-ONLY unless the name says otherwise) ───────────────────────────────────────────
 
-function git(args, cwd) {
-  const r = spawnSync("git", args, { cwd: cwd || ROOT, encoding: "utf8", windowsHide: true });
+function git(args, cwd, env) {
+  const r = spawnSync("git", args, {
+    cwd: cwd || ROOT,
+    encoding: "utf8",
+    windowsHide: true,
+    // Optional env overlay (e.g. GIT_INDEX_FILE for an isolated build index — see broker-release-commit GF-2).
+    env: env ? { ...process.env, ...env } : process.env,
+  });
   return {
     ok: !!r && r.status === 0,
     status: r ? r.status : null,
@@ -318,34 +356,62 @@ function currentBranchRef(cwd) {
  * held: reuse an existing holder if there is one (α's own conductor lease, the normal case), otherwise
  * acquire one for the duration and hand back a `release()` the caller must run.
  */
+/** leaseReleaseWarning(spId, detail) -> a loud stderr banner. A dogfood-ACQUIRED lease that fails to
+ *  release is ORPHANED and blocks the next conductor — this must never be silent (GF-4). */
+function leaseReleaseWarning(spId, detail) {
+  const bar = "═".repeat(94);
+  return [
+    "",
+    bar,
+    `  ⚠  LEASE RELEASE FAILED — the conductor lease for ${spId} may be ORPHANED`,
+    `     ${detail}`,
+    "     A later conductor may be blocked until it is cleared. Investigate before the next run.",
+    bar,
+    "",
+  ].join("\n");
+}
+
 function ensureLease(spId, leaseRoot, api = lease) {
-  if (!spId) return { ok: false, state: "no-sp-id", release: () => {} };
+  const noop = () => ({ ok: true, released: false }); // nothing to release — a NO-OP still reports its shape
+  if (!spId) return { ok: false, state: "no-sp-id", release: noop };
   let acquired = null;
   try {
     acquired = api.acquire(spId, { root: leaseRoot, sessionId: `d4-dogfood-${process.pid}` });
   } catch (e) {
-    return { ok: false, state: "acquire-threw", detail: e.message, release: () => {} };
+    return { ok: false, state: "acquire-threw", detail: e.message, release: noop };
   }
   if (acquired && acquired.ok) {
     return {
       ok: true,
       state: "acquired",
       token: acquired.token,
+      // We ACQUIRED this lease for the duration, so we MUST release it. A failed release ORPHANS the lease
+      // and blocks the next conductor — so the outcome is RETURNED and loudly self-surfaced, never swallowed
+      // (GF-4). The caller inspects the return; the stderr banner guarantees a surface even if it does not.
       release: () => {
+        let r;
         try {
-          api.release(spId, { root: leaseRoot, token: acquired.token });
-        } catch {
-          /* best effort */
+          r = api.release(spId, { root: leaseRoot, token: acquired.token });
+        } catch (e) {
+          const err = `lease release threw: ${e.message}`;
+          process.stderr.write(leaseReleaseWarning(spId, err));
+          return { ok: false, released: false, error: err };
         }
+        if (r && r.ok === false) {
+          const err = `lease release refused: ${r.reason || "unknown"}`;
+          process.stderr.write(leaseReleaseWarning(spId, err));
+          return { ok: false, released: false, error: err };
+        }
+        return { ok: true, released: true };
       },
     };
   }
   if (acquired && acquired.reason === "held") {
     // Someone already conducts this sprint (normally α). That is the intended shape — do NOT steal it,
     // do NOT release it on the way out.
-    return { ok: true, state: "pre-existing", token: null, release: () => {} };
+    return { ok: true, state: "pre-existing", token: null, release: noop };
   }
-  return { ok: false, state: (acquired && acquired.reason) || "unavailable", release: () => {} };
+  return { ok: false, state: (acquired && acquired.reason) || "unavailable", release: noop };
 }
 
 // ── the broker module (loaded defensively: an unloadable broker is an OPERATIONAL miss) ──────────────
@@ -438,7 +504,15 @@ function attemptFallback(ctx = {}) {
   // fallback #3" is unanswerable if #3 never actually happened. Report the PROJECTION instead: what the
   // record would say, and what the count would become. Nothing is written.
   if (ctx.dryRun === true) {
-    const projected = fallbackCount(logPath) + 1;
+    let currentCount;
+    try {
+      currentCount = fallbackCount(logPath);
+    } catch (e) {
+      // A rehearsal against an unreadable ledger (GF-3): give the SAME refusal the live path would, rather
+      // than throwing — a dry run must never crash, and must not pretend it could record a fallback.
+      return { ok: false, route: "none", refused: true, classification: "security", reason: "fallback-unrecordable", detail: `ledger-unreadable: ${e.message}`, broker_reason: reason, dry_run: true };
+    }
+    const projected = currentCount + 1;
     const preview = { schema: FALLBACK_SCHEMA, seq: projected, ts: null, dry_run: true, ...draft };
     const dryBanner = fallbackBanner({ ...preview, transport: `${preview.transport} (DRY RUN — nothing written)` }, projected, logPath);
     if (ctx.emit !== false) process.stderr.write(`${dryBanner}\n`);
@@ -448,7 +522,7 @@ function attemptFallback(ctx = {}) {
       performed: false,
       recorded: false,
       record: preview,
-      count: fallbackCount(logPath),
+      count: currentCount,
       projected_count: projected,
       banner: dryBanner,
     };
@@ -481,7 +555,24 @@ function attemptFallback(ctx = {}) {
 
 function report(logPath) {
   const p = logPath || defaultLogPath();
-  const rows = readFallbacks(p);
+  let rows;
+  try {
+    rows = readFallbacks(p);
+  } catch (e) {
+    // The ledger EXISTS but cannot be read (GF-3). It must NEVER read as "✔ ZERO fallbacks" — that is
+    // precisely the false-green the flip decision is argued against. Surface the unreadable state loudly.
+    const bar = "═".repeat(94);
+    const text = [
+      "D-4 INC-1 — brokered-transport dogfood fallback ledger",
+      `  ledger : ${p}`,
+      bar,
+      "  ⛔ LEDGER UNREADABLE — the fallback count CANNOT be certified.",
+      `     ${e.message}`,
+      "  Do NOT argue the Seam E flip from dogfood mileage until this ledger reads cleanly.",
+      bar,
+    ].join("\n");
+    return { count: null, rows: null, unreadable: true, error: e.message, text };
+  }
   const lines = [];
   lines.push("D-4 INC-1 — brokered-transport dogfood fallback ledger");
   lines.push(`  ledger : ${p}`);
@@ -542,9 +633,11 @@ if (require.main === module) {
   const p = idx >= 0 ? argv[idx + 1] : undefined;
   const r = report(p);
   if (argv.includes("--json")) {
-    console.log(JSON.stringify({ count: r.count, rows: r.rows, log: p || defaultLogPath() }, null, 2));
+    console.log(JSON.stringify({ count: r.count, rows: r.rows, unreadable: r.unreadable || false, log: p || defaultLogPath() }, null, 2));
   } else {
     console.log(r.text);
   }
-  process.exit(0);
+  // An unreadable ledger is a non-zero exit: the flip decision must not be argued from a count that
+  // could not even be read (GF-3).
+  process.exit(r.unreadable ? 1 : 0);
 }

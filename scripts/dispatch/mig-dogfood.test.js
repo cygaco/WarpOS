@@ -65,9 +65,13 @@ test("classifyRefusal — DEFAULT-DENY: an unknown/absent reason is treated as S
 test("classifyRefusal — only the enumerated OPERATIONAL reasons are fallback-eligible", () => {
   const eligible = [...dog.SECURITY_REASONS, ...dog.USAGE_REASONS, ...dog.OPERATIONAL_REASONS].filter((r) => dog.fallbackAllowed(r));
   assert.deepEqual(eligible.slice().sort(), dog.OPERATIONAL_REASONS.slice().sort());
-  // The bundle-error family SPLITS across classes on purpose: failing to READ a manifest is operational,
-  // failing to AUTHENTICATE one is an attack shape.
-  assert.equal(dog.classifyRefusal("bundle-load-failed"), "operational");
+  // The bundle-error family SPLITS across classes on purpose (GF-1, conservative-by-construction): a
+  // present-but-corrupt configured bundle (bundle-load-failed) and an un-materializable candidate tree
+  // (result-tree-materialize-failed) are ambiguous-toward-attack and are SECURITY — only the honest
+  // ABSENCE of a configured bundle (no-pinned-bundle-configured) is a provable operational miss.
+  assert.equal(dog.classifyRefusal("bundle-load-failed"), "security"); // present-but-unreadable = suspicious
+  assert.equal(dog.classifyRefusal("result-tree-materialize-failed"), "security"); // candidate-dependent
+  assert.equal(dog.classifyRefusal("no-pinned-bundle-configured"), "operational"); // true absence = infra miss
   assert.equal(dog.classifyRefusal("bundle-pin-mismatch"), "security");
   assert.equal(dog.classifyRefusal("ref-update-error"), "operational"); // spawn failure
   assert.equal(dog.classifyRefusal("ref-update-refused"), "security"); // the CAS lost — the ref MOVED
@@ -88,7 +92,7 @@ test("recordFallback — writes a structured record, mirrors to the events log, 
   const L = scratchLedger("record");
   assert.equal(dog.fallbackCount(L.logPath), 0);
 
-  const first = dog.recordFallback({ transport: "branch-merge", target_ref: "refs/heads/main", reason: "bundle-load-failed", classification: "operational", fallback_route: "git merge --no-ff" }, L);
+  const first = dog.recordFallback({ transport: "branch-merge", target_ref: "refs/heads/main", reason: "no-pinned-bundle-configured", classification: "operational", fallback_route: "git merge --no-ff" }, L);
   assert.equal(first.ok, true);
   assert.equal(first.count, 1);
   assert.equal(first.record.seq, 1);
@@ -122,7 +126,7 @@ test("fallbackCount — a MALFORMED ledger line is still COUNTED (under-counting
 test("report — ZERO fallbacks reads as a clean claim; a non-zero count demands explanation", () => {
   const L = scratchLedger("report");
   assert.match(dog.report(L.logPath).text, /ZERO fallbacks/);
-  dog.recordFallback({ transport: "branch-merge", target_ref: "refs/heads/main", reason: "bundle-load-failed", classification: "operational", fallback_route: "git update-ref" }, L);
+  dog.recordFallback({ transport: "branch-merge", target_ref: "refs/heads/main", reason: "no-pinned-bundle-configured", classification: "operational", fallback_route: "git update-ref" }, L);
   const t = dog.report(L.logPath).text;
   assert.match(t, /count\s*:\s*1/);
   assert.match(t, /must be individually EXPLAINED/);
@@ -163,7 +167,10 @@ test("attemptFallback — an UNRECORDABLE fallback does NOT happen (fallback-unr
 
 test("attemptFallback — --no-fallback refuses even an operational miss, and logs nothing", () => {
   const L = scratchLedger("nofb");
-  const r = dog.attemptFallback({ reason: "bundle-load-failed", transport: "release-commit", targetRef: "refs/heads/main", gitRoot: L.dir, allowFallback: false, ...L, emit: false });
+  // Uses a GENUINELY-operational reason (no-pinned-bundle-configured): the --no-fallback flag is what
+  // refuses it, not the classification. (bundle-load-failed is now SECURITY — GF-1 — so it would refuse
+  // on classification alone and never reach the flag check.)
+  const r = dog.attemptFallback({ reason: "no-pinned-bundle-configured", transport: "release-commit", targetRef: "refs/heads/main", gitRoot: L.dir, allowFallback: false, ...L, emit: false });
   assert.equal(r.refused, true);
   assert.equal(r.reason, "fallback-disabled-by-flag");
   assert.equal(dog.fallbackCount(L.logPath), 0);
@@ -485,4 +492,118 @@ test("#7 turbo census — scripts/turbo/apply.js performs NO git write at all (p
   const census = fs.readFileSync(path.join(dog.ROOT, "runtime", "d4", "inc1", "turbo-census.md"), "utf8");
   assert.match(census, /push-only/i);
   assert.match(census, /no local main-write/i);
+});
+
+// ══ 7. GF-1..GF-4 — the gauntlet-round hardening, each with its own teeth ═════════════════════════════
+// backend-reviewer (gpt-5.6-sol) FAIL on the MIG fallback-visibility/helper layer; these lock the fixes.
+
+test("GF-1 — a present-but-corrupt bundle / un-materializable candidate is SECURITY and NEVER falls back", () => {
+  // Conservative-by-construction: a CONFIGURED-and-PRESENT pinned bundle that fails to read/parse, and a
+  // specific candidate SHA whose tree will not materialize, are ambiguous-toward-attack (a poisoned bundle
+  // and a hostile candidate arrive the same way as an I/O blip). Only the honest ABSENCE of a bundle
+  // (no-pinned-bundle-configured) is a provable operational miss.
+  for (const r of ["bundle-load-failed", "result-tree-materialize-failed"]) {
+    assert.equal(dog.classifyRefusal(r), "security", `${r} must be security-classified`);
+    assert.equal(dog.fallbackAllowed(r), false, `${r} must NOT be fallback-eligible`);
+    assert.equal(dog.OPERATIONAL_REASONS.includes(r), false, `${r} must be OUT of OPERATIONAL_REASONS`);
+    assert.equal(dog.SECURITY_REASONS.includes(r), true, `${r} must be listed in SECURITY_REASONS`);
+  }
+  assert.equal(dog.fallbackAllowed("no-pinned-bundle-configured"), true, "true absence stays operational");
+  // through attemptFallback: a bundle-load-failed refusal writes NO ledger record and lands nothing.
+  const L = scratchLedger("gf1");
+  const res = dog.attemptFallback({ reason: "bundle-load-failed", transport: "release-commit", targetRef: "refs/heads/main", gitRoot: L.dir, ...L, emit: false });
+  assert.equal(res.ok, false);
+  assert.equal(res.refused, true);
+  assert.equal(res.classification, "security");
+  assert.equal(dog.fallbackCount(L.logPath), 0, "a security refusal is not a fallback — nothing is logged");
+  fs.rmSync(L.dir, { recursive: true, force: true });
+});
+
+test("GF-2 — a release commit built while a FEATURE branch is checked out cannot smuggle the feature snapshot onto main", () => {
+  // The vector: run brokerReleaseCommit while a DIFFERENT branch (with foreign content) is checked out. The
+  // built commit must be head(main)'s tree + ONLY the named pathspec — the feature branch's other files must
+  // NOT appear on the landed main commit. Pre-fix, `write-tree` over the ambient index would carry them.
+  const fx = makeTransportFixture("mig-gf2");
+  const Lg = scratchLedger("gf2");
+  try {
+    const mainHead = fx.head("refs/heads/main");
+    sh(["checkout", "-b", "feature/evil"], fx.dir);
+    fs.writeFileSync(path.join(fx.dir, "FEATURE_SECRET.txt"), "should never land on main\n");
+    sh(["add", "FEATURE_SECRET.txt"], fx.dir);
+    sh(["commit", "-m", "feature work"], fx.dir);
+    // While ON feature/evil, write a legitimate bookkeeping file and broker a release-commit to main.
+    fs.writeFileSync(path.join(fx.dir, "MANIFEST.generated.json"), JSON.stringify({ regenerated: true }));
+    const res = brokerReleaseCommit(
+      { message: "chore: manifest regen", add: ["MANIFEST.generated.json"], target_ref: "refs/heads/main" },
+      { ...fx.opts(), emit: false },
+      { logPath: Lg.logPath, eventsPath: Lg.eventsPath },
+    );
+    assert.equal(res.ok, true, `${res.reason} ${res.detail || ""}`);
+    const landed = res.release_commit;
+    const parents = sh(["rev-list", "--parents", "-n", "1", landed], fx.dir).split(/\s+/).slice(1);
+    assert.equal(parents.length, 1, "a bookkeeping commit is single-parent");
+    assert.equal(parents[0].toLowerCase(), mainHead, "parented to live main, not the feature branch");
+    const treeFiles = sh(["ls-tree", "-r", "--name-only", landed], fx.dir).split(/\s+/).filter(Boolean);
+    assert.ok(treeFiles.includes("MANIFEST.generated.json"), "the named bookkeeping path must be present");
+    assert.equal(treeFiles.includes("FEATURE_SECRET.txt"), false, "the feature-branch snapshot must NOT leak onto main");
+  } finally {
+    fx.cleanup();
+    fs.rmSync(Lg.dir, { recursive: true, force: true });
+  }
+});
+
+test("GF-3 — an unreadable-but-present ledger REFUSES the fallback (fallback-unrecordable), never a count-0 bypass", () => {
+  const L = scratchLedger("gf3");
+  // Make the ledger PRESENT-BUT-UNREADABLE by putting a DIRECTORY where the ledger file must be (readFileSync
+  // on a directory throws a non-ENOENT error — distinct from ENOENT, which is a legitimately-empty ledger).
+  fs.mkdirSync(L.logPath, { recursive: true });
+  const rec = dog.recordFallback({ transport: "branch-merge", target_ref: "refs/heads/main", reason: "no-pinned-bundle-configured" }, { logPath: L.logPath });
+  assert.equal(rec.ok, false, "an unreadable ledger cannot be counted — recordFallback must fail");
+  assert.match(String(rec.error), /ledger-unreadable/);
+  // through attemptFallback: an operational miss on an unreadable ledger is REFUSED as fallback-unrecordable.
+  const res = dog.attemptFallback({ reason: "no-pinned-bundle-configured", transport: "branch-merge", targetRef: "refs/heads/main", gitRoot: L.dir, logPath: L.logPath, emit: false });
+  assert.equal(res.ok, false);
+  assert.equal(res.reason, "fallback-unrecordable");
+  assert.equal(res.classification, "security");
+  // report() must NOT certify ZERO on an unreadable ledger — that is the flip-time false-green this guards.
+  const rep = dog.report(L.logPath);
+  assert.equal(rep.unreadable, true);
+  assert.match(rep.text, /UNREADABLE/);
+  assert.equal(/ZERO fallbacks/.test(rep.text), false, "an unreadable ledger must never read as a clean ZERO");
+  fs.rmSync(L.dir, { recursive: true, force: true });
+});
+
+test("GF-4 — a dogfood-ACQUIRED lease whose release FAILS surfaces the orphan, never swallows it", () => {
+  let released = false;
+  const fakeApi = {
+    acquire: () => ({ ok: true, token: "tok-123" }),
+    release: () => { released = true; throw new Error("store write denied"); },
+  };
+  const held = dog.ensureLease("SP-TEST", os.tmpdir(), fakeApi);
+  assert.equal(held.ok, true);
+  assert.equal(held.state, "acquired");
+  const orig = process.stderr.write;
+  let captured = "";
+  process.stderr.write = (s) => { captured += s; return true; };
+  let rel;
+  try {
+    rel = held.release();
+  } finally {
+    process.stderr.write = orig;
+  }
+  assert.equal(released, true, "the underlying release WAS attempted");
+  assert.equal(rel.ok, false, "a failed release must be REPORTED, not swallowed");
+  assert.match(String(rel.error), /release threw|store write denied/);
+  assert.match(captured, /LEASE RELEASE FAILED/);
+  assert.match(captured, /ORPHAN/i);
+});
+
+test("GF-4 positive — a clean release reports released:true; a pre-existing lease is a no-op", () => {
+  const okApi = { acquire: () => ({ ok: true, token: "t" }), release: () => ({ ok: true }) };
+  const held = dog.ensureLease("SP-OK", os.tmpdir(), okApi);
+  assert.deepEqual(held.release(), { ok: true, released: true });
+  const heldApi = { acquire: () => ({ ok: false, reason: "held" }) };
+  const pre = dog.ensureLease("SP-HELD", os.tmpdir(), heldApi);
+  assert.equal(pre.state, "pre-existing");
+  assert.deepEqual(pre.release(), { ok: true, released: false });
 });

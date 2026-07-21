@@ -182,7 +182,12 @@ function brokerMerge(input = {}, opts = {}, seams = {}) {
 
     return finish(res || { ok: false, reason: "broker-threw", detail: "no result" }, { gitRoot, targetRef, branch, head, newHead: mergeCommit, message: input.message, opts, seams, emit });
   } finally {
-    held.release();
+    // GF-4: inspect the release outcome. release() self-surfaces a loud orphan banner on failure, so a
+    // discarded lease can never be silent; this captures it rather than dropping it on the floor.
+    const rel = held.release();
+    if (rel && rel.ok === false && emit) {
+      process.stderr.write(`  ⓘ lease cleanup did not confirm for ${spId || "(sprint)"} — see the orphan warning above.\n`);
+    }
   }
 }
 

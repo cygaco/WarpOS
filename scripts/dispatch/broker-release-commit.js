@@ -36,31 +36,64 @@
  *
  * EXIT 0 = landed (brokered OR logged fallback) · 1 = refused/failed · 2 = usage error.
  */
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
 const dog = require("./broker-dogfood");
 
 const TARGET_DEFAULT = "refs/heads/main";
 
 /**
- * buildReleaseCommit({gitRoot, head, message}) -> {ok, sha} | {ok:false, reason, detail}.
- * A single-parent commit over the CURRENT INDEX. Writes no ref.
+ * buildReleaseCommit({gitRoot, head, message, add}) -> {ok, sha, tree} | {ok:false, reason, detail}.
+ *
+ * A single-parent commit built in an ISOLATED temp index SEEDED FROM `head` (GF-2). The commit tree is
+ * therefore `head`'s tree + ONLY the explicitly-added pathspecs' working-tree content — NEVER the ambient
+ * branch/index snapshot. Without this seed, `git write-tree` over the caller's current index could produce
+ * a foreign tree (e.g. a whole feature-branch snapshot when run off a feature branch) that STILL parents
+ * cleanly to live main and could pass the pinned suite — silently replacing main's tree. Seeding from the
+ * target head makes "only the named paths can differ from main" a property of construction, not of caller
+ * discipline. Writes no ref, and never touches the caller's real index.
  */
 function buildReleaseCommit(args = {}) {
-  const { gitRoot, head, message } = args;
-  const wt = dog.git(["write-tree"], gitRoot);
-  if (!wt.ok || !/^[0-9a-f]{40}$/i.test(wt.stdout)) {
-    return { ok: false, reason: "nothing-to-commit", detail: wt.stderr || `write-tree gave: ${wt.stdout.slice(0, 200)}` };
+  const { gitRoot, head, message, add } = args;
+  const tmpIndex = path.join(os.tmpdir(), `warpos-release-index-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const env = { GIT_INDEX_FILE: tmpIndex };
+  try {
+    // Seed the temp index from the TARGET head's tree — the only legitimate baseline for a main-forward commit.
+    const seed = dog.git(["read-tree", head], gitRoot, env);
+    if (!seed.ok) {
+      return { ok: false, reason: "result-tree-materialize-failed", detail: `read-tree ${head.slice(0, 8)}: ${seed.stderr}` };
+    }
+    // Stage ONLY the explicit pathspecs, into the temp index (each path's working-tree content over head's tree).
+    for (const spec of Array.isArray(add) ? add : []) {
+      const a = dog.git(["add", "--", spec], gitRoot, env);
+      if (!a.ok) {
+        return { ok: false, reason: "nothing-to-commit", detail: `git add ${spec}: ${a.stderr}` };
+      }
+    }
+    const wt = dog.git(["write-tree"], gitRoot, env);
+    if (!wt.ok || !/^[0-9a-f]{40}$/i.test(wt.stdout)) {
+      return { ok: false, reason: "nothing-to-commit", detail: wt.stderr || `write-tree gave: ${wt.stdout.slice(0, 200)}` };
+    }
+    const tree = wt.stdout.toLowerCase();
+    const headTree = dog.gitRead(["rev-parse", `${head}^{tree}`], gitRoot);
+    if (headTree && headTree.toLowerCase() === tree) {
+      // An empty commit is not "bookkeeping", it is noise the broker would then have to judge.
+      return { ok: false, reason: "nothing-to-commit", detail: `staged tree is identical to ${head.slice(0, 8)} — stage something first (--add <pathspec>)` };
+    }
+    const ct = dog.git(["commit-tree", tree, "-p", head, "-m", message], gitRoot, env);
+    if (!ct.ok || !/^[0-9a-f]{40}$/i.test(ct.stdout)) {
+      return { ok: false, reason: "nothing-to-commit", detail: ct.stderr || ct.stdout };
+    }
+    return { ok: true, sha: ct.stdout.toLowerCase(), tree };
+  } finally {
+    try {
+      fs.rmSync(tmpIndex, { force: true });
+    } catch {
+      /* temp index cleanup is best-effort */
+    }
   }
-  const tree = wt.stdout.toLowerCase();
-  const headTree = dog.gitRead(["rev-parse", `${head}^{tree}`], gitRoot);
-  if (headTree && headTree.toLowerCase() === tree) {
-    // An empty commit is not "bookkeeping", it is noise the broker would then have to judge.
-    return { ok: false, reason: "nothing-to-commit", detail: `index tree is identical to ${head.slice(0, 8)} — stage something first (--add <pathspec>)` };
-  }
-  const ct = dog.git(["commit-tree", tree, "-p", head, "-m", message], gitRoot);
-  if (!ct.ok || !/^[0-9a-f]{40}$/i.test(ct.stdout)) {
-    return { ok: false, reason: "nothing-to-commit", detail: ct.stderr || ct.stdout };
-  }
-  return { ok: true, sha: ct.stdout.toLowerCase(), tree };
 }
 
 /** brokerReleaseCommit(input, opts, seams) -> result. `seams` = the sanctioned test-producer seam. */
@@ -72,19 +105,18 @@ function brokerReleaseCommit(input = {}, opts = {}, seams = {}) {
   const head = dog.resolveRef(targetRef, gitRoot);
   if (!head) return { ok: false, route: "none", decision: "BLOCKED", reason: "target-ref-unresolvable", detail: targetRef, classification: "usage" };
 
-  // ── (1) explicit staging only ──────────────────────────────────────────────────────────────────────
-  for (const spec of Array.isArray(input.add) ? input.add : []) {
-    const r = dog.git(["add", "--", spec], gitRoot);
-    if (!r.ok) return { ok: false, route: "none", decision: "BLOCKED", reason: "nothing-to-commit", detail: `git add ${spec}: ${r.stderr}`, classification: "usage" };
-  }
-
-  // ── (2) build the commit object — NO ref is written ────────────────────────────────────────────────
+  // ── (1) build the commit object — NO ref is written ────────────────────────────────────────────────
+  // Explicit staging happens INSIDE buildReleaseCommit, into an isolated index seeded from the target head
+  // (GF-2): the caller's real index is never touched, and only the named pathspecs can differ from main —
+  // so a run from the wrong branch can no longer smuggle a foreign snapshot onto the release commit.
   let releaseCommit = input.release_commit || null;
   if (!releaseCommit) {
     const message = input.message;
     if (!message) return { ok: false, route: "none", decision: "BLOCKED", reason: "nothing-to-commit", detail: "a commit message is required (-m)", classification: "usage" };
-    const built = buildReleaseCommit({ gitRoot, head, message });
+    const built = buildReleaseCommit({ gitRoot, head, message, add: input.add });
     if (!built.ok) {
+      // finish() derives the class from the reason: nothing-to-commit -> usage, result-tree-materialize-failed
+      // -> security (GF-1) — both no-fallback, so a base-mismatch/build failure never reaches the ordinary route.
       return finish({ ok: false, decision: "BLOCKED", reason: built.reason, detail: built.detail }, { gitRoot, targetRef, head, newHead: null, opts, seams, emit });
     }
     releaseCommit = built.sha;
@@ -143,7 +175,12 @@ function brokerReleaseCommit(input = {}, opts = {}, seams = {}) {
 
     return finish(res || { ok: false, reason: "broker-threw", detail: "no result" }, { gitRoot, targetRef, head, newHead: releaseCommit, opts, seams, emit });
   } finally {
-    held.release();
+    // GF-4: inspect the release outcome. release() self-surfaces a loud orphan banner on failure, so a
+    // discarded lease can never be silent; this captures it rather than dropping it on the floor.
+    const rel = held.release();
+    if (rel && rel.ok === false && emit) {
+      process.stderr.write(`  ⓘ lease cleanup did not confirm for ${spId || "(sprint)"} — see the orphan warning above.\n`);
+    }
   }
 }
 
