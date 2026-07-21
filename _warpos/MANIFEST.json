@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-21T18:36:35.049Z",
+  "generatedAt": "2026-07-21T22:40:43.224Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -29952,8 +29952,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "df9254bb7a8c5e3f9e8289d1853a3c418d1b15666e9c8b5716eb169a9eb1428a",
-      "installedSha": "df9254bb7a8c5e3f9e8289d1853a3c418d1b15666e9c8b5716eb169a9eb1428a"
+      "sha256": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1",
+      "installedSha": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",
@@ -29992,8 +29992,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/teammate-stall-rules.md",
       "kind": "md",
-      "sha256": "d49670c9cc92ce27de933a43ba940b718c35f53bef7aa41a46b972ed1aa8d5ff",
-      "installedSha": "d49670c9cc92ce27de933a43ba940b718c35f53bef7aa41a46b972ed1aa8d5ff"
+      "sha256": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5",
+      "installedSha": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5"
     },
     ".claude/agents/_principles/base.md": {
       "owner": "framework",
@@ -30184,8 +30184,8 @@
       "managed": true,
       "source": ".claude/agents/president/epsilon.md",
       "kind": "md",
-      "sha256": "2074cac01806f0dd47fdb9f78e2b715e1074490d41fe3964c72e3f648aae91a2",
-      "installedSha": "2074cac01806f0dd47fdb9f78e2b715e1074490d41fe3964c72e3f648aae91a2"
+      "sha256": "a5612cb1e11fe77c9d1d525f7bf5967b07a3d4f13d928b101978bfee1f36ab64",
+      "installedSha": "a5612cb1e11fe77c9d1d525f7bf5967b07a3d4f13d928b101978bfee1f36ab64"
     },
     ".claude/agents/president/gamma.md": {
       "owner": "framework",
