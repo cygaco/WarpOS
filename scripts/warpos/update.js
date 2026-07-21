@@ -1987,6 +1987,15 @@ if (require.main === module) {
     .then((r) => {
       if (opts.json) {
         console.log(JSON.stringify(r, null, 2));
+        // SP-20260721-001 D-4 INC-3 (BC-16 lying-diagnostic fix) — the --json
+        // path used to `return` here with NO exit code, so a !r.ok run
+        // (ESCALATE / PREFLIGHT BLOCKED / any error) silently exited 0. Honor
+        // the SAME failure semantics the non-json path already uses below
+        // (exits 1 on !r.ok whether or not committed) — never a clean pass on
+        // a failed/blocked run.
+        if (!r.ok) {
+          process.exit(1);
+        }
         return;
       }
       // G5.10b — honest failure vs. committed-with-warnings.
