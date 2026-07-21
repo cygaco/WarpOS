@@ -21,14 +21,20 @@
  *
  * WHAT IS MIRRORED (the regenerate.js working set — exactly the dest patterns
  * build.js assigns a `_warpos/` source pointer to when sourcePrefix=_warpos):
- *   - .claude/commands/**.md                         (framework-claude-command)
- *   - .claude/agents/**.md (except decision-policy.md)(framework-claude-agent)
- *   - .claude/project/reference/**                    (framework-claude-reference)
- *   - .claude/agents/**\/.system/*.json|*.schema.json (framework-claude-agent-system)
+ *   - .claude/commands/**.md                          (framework-claude-command)
+ *   - .claude/agents/**.md (except decision-policy.md) (framework-claude-agent)
+ *   - .claude/project/reference/**                     (framework-claude-reference)
+ *   - .claude/agents/**\/_system/*.json|*.schema.json  (framework-agent-system-data)
+ *   - .claude/agents/_org|_principles|_evals/**        (framework-manager-data)
+ *   - .claude/kernel/**                                (framework-kernel)
+ *   - .claude/schemas/**                               (framework-claude-schemas)
  * plus _warpos/settings/defaults.json (the layered-settings compiler source,
  * referenced by the generated-settings rule's compiled_from).
+ * (INC-2.5 / ED-249: added kernel/schemas + the _org/_principles/_evals and
+ * _system trees; corrected the pre-ADR-0007 `.system` → `_system` rename.
+ * test-build.js section F enforces this list stays == build.js#buildRules.)
  *
- * Runtime files under .claude/agents/**\/.system/ (events.jsonl) are NOT
+ * Runtime files under .claude/agents/**\/_system/ (events.jsonl) are NOT
  * mirrored — build.js classifies them owner=runtime (no source pointer), and
  * regenerate.js never touches them.
  *
@@ -81,22 +87,38 @@ function isFrameworkViewDest(dest) {
   if (dest.startsWith(".claude/commands/") && dest.endsWith(".md")) return dest;
   // reference: anything under project/reference/
   if (dest.startsWith(".claude/project/reference/")) return dest;
-  // agents .md (decision-policy.md is owner=project — seeded, not a view)
+  // WarpOS 1.0 kernel (build.js framework-kernel rule): the Top-Level Runtime
+  // Contract + JSON companions + conformance fixtures under .claude/kernel/.
+  // Framework view mirrored to _warpos/kernel/ in products (paths.kernel).
+  if (dest.startsWith(".claude/kernel/")) return dest;
+  // WarpOS 1.0 machine-readable schemas (build.js framework-claude-schemas rule):
+  // .claude/schemas/ mirrored to _warpos/schemas/ in products.
+  if (dest.startsWith(".claude/schemas/")) return dest;
+  // agents .md (decision-policy.md is owner=project — seeded, not a view).
+  // ADR-0007 renamed .system → _system; the carve-out must match the REAL
+  // (underscore) path or decision-policy.md gets wrongly pulled into the mirror.
   if (
     dest.startsWith(".claude/agents/") &&
     dest.endsWith(".md") &&
-    !dest.includes("/.system/policy/decision-policy.md")
+    !dest.includes("/_system/policy/decision-policy.md")
   ) {
     return dest;
   }
-  // agent .system json / schema.json (NOT events.jsonl — those are runtime)
+  // agent _system json / schema.json (NOT events.jsonl — those are runtime).
+  // build.js framework-agent-system-data rule. ADR-0007 renamed .system →
+  // _system; the pre-cutover dot form matched nothing here, leaving the
+  // _system policy/schema data files un-mirrored (INC-2.5 / ED-249 sweep).
   if (
     dest.startsWith(".claude/agents/") &&
-    dest.includes("/.system/") &&
+    dest.includes("/_system/") &&
     (dest.endsWith(".json") || dest.endsWith(".schema.json"))
   ) {
     return dest;
   }
+  // org-governance machine-readable data under _org/_principles/_evals
+  // (build.js framework-manager-data rule, ADR-0007) — the .json data files not
+  // caught by the agents-.md case above. Framework view; mirrored to _warpos/.
+  if (/^\.claude\/agents\/_(org|principles|evals)\//.test(dest)) return dest;
   return null;
 }
 

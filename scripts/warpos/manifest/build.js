@@ -617,6 +617,53 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
+      // WarpOS 1.0 kernel (`paths.kernel`, SP-20260718-001 Phase 0): the
+      // Top-Level Runtime Contract (top-level-runtime-contract.md), its JSON
+      // companions (role-binding.json, support-matrix.json,
+      // workorder-min.schema.json), and the kernel-conformance fixtures/ tree.
+      // The provider-independent trust-boundary + runtime-portability contract
+      // every WarpOS 1.0 install binds to — SHIPPED framework content. The
+      // legacy generate-framework-manifest.js already classifies `.claude/kernel`
+      // as owner=framework (replace_if_unmodified) and ships it as a root; this
+      // is the SP-20260522-001-taxonomy equivalent for the ownership manifest.
+      // Source is self-referential in canonical; in a product install the
+      // framework source lives under _warpos/ (same model as framework-claude-
+      // command / framework-claude-agent / framework-claude-reference).
+      name: "framework-kernel",
+      match: (rel) => rel.startsWith(".claude/kernel/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        kind: rel.endsWith(".md")
+          ? "md"
+          : rel.endsWith(".json")
+            ? "json"
+            : undefined,
+      }),
+    },
+    {
+      // `.claude/schemas/` — WarpOS 1.0 machine-readable schema contracts (e.g.
+      // workorder-min.schema.json). Shipped framework content, same class as the
+      // top-level `schemas/` root (framework-schemas) and the kernel's own
+      // schema companion. Source self-referential in canonical; _warpos-mirrored
+      // in products (same model as the .claude/** framework rules above).
+      name: "framework-claude-schemas",
+      match: (rel) => rel.startsWith(".claude/schemas/"),
+      entry: (rel) => ({
+        owner: "framework",
+        managed: true,
+        source:
+          sourcePrefix === "framework"
+            ? rel
+            : `${sourcePrefix}/${rel.replace(/^\.claude\//, "")}`,
+        kind: rel.endsWith(".json") ? "json" : undefined,
+      }),
+    },
+    {
       name: "project-dreams",
       match: (rel) => rel.startsWith(".claude/dreams/"),
       entry: () => ({
