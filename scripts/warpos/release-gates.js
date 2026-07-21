@@ -46,6 +46,25 @@ function summarizeGateALegs(payload) {
   return out.slice(0, 8);
 }
 
+// Extracts failing-assertion names from an upgrade_current_to_new --json
+// payload (GATE-B), for gate `details` (bounded to a few lines). Mirrors
+// summarizeGateALegs above for the upgrade-domain assert shape
+// ({name, ok, detail, loadBearing}) instead of GATE-A's per-leg asserts.
+function summarizeGateBAsserts(payload) {
+  const out = [];
+  for (const a of (payload && payload.asserts) || []) {
+    if (!a.ok) {
+      out.push(`${a.name}${a.loadBearing === false ? " [non-load-bearing]" : ""}: ${a.detail || ""}`);
+    }
+  }
+  if (payload && payload.sandbox_isolation && !payload.sandbox_isolation.no_delta) {
+    out.push(
+      `sandbox-isolation NO-DELTA VIOLATED: onlyBefore=${(payload.sandbox_isolation.onlyBefore || []).length} onlyAfter=${(payload.sandbox_isolation.onlyAfter || []).length}`,
+    );
+  }
+  return out.slice(0, 8);
+}
+
 // GATE-A report-only ramp (SP-20260721-001 INC-2, α-ratified option b — the WarpOS report-only→enforce
 // discipline). GATE-A is BUILT + CORRECT and surfaces real findings, but Leg-3 is currently RED on a
 // PRE-EXISTING foundation issue (ED-249: scripts/warpos/manifest/build.js fails with ~43-45 unclassified
@@ -220,109 +239,103 @@ const GATES = [
   // retires, why `customized_install_fixture` retires, why
   // `update_fixture_from_previous` does NOT).
 
-  // 7. Update Fixture from previous version
-  // Fix-forward (codex Phase 4 review 2026-04-30): previously this just
-  // checked the fixture directory existed. That's cosmetic. Now we actually
-  // load the fixture's framework-installed.json, run the update.js
-  // classifier against it, and verify the plan is non-empty + has only
-  // expected categories (Class C should be 0 for an upgrade FROM a clean
-  // 0.0.0 install).
-  gate("update_fixture_from_previous", () => {
-    const fixture = path.join(REPO_ROOT, "fixtures", "update-from-0.0.0-clean");
-    const fixtureInstall = path.join(
-      fixture,
-      ".claude",
-      "framework-installed.json",
-    );
-    if (!fs.existsSync(fixtureInstall)) {
+  // 7. GATE-B `upgrade_current_to_new` (SP-20260721-001 D-4 INC-3 — upgrades,
+  // not retires, the prior `update_fixture_from_previous`). The operator's
+  // D-4 standing standard #2 ("upgrade current->new works, for real") is now
+  // a REAL, BLOCKING release gate: runs `scripts/warpos/test-upgrade-current-
+  // to-new.js`, which materializes a real N-1 install (git-tag worktree +
+  // ITS OWN install.ps1), runs the real `update.js --apply` against it (via
+  // run(), never the --json CLI — see the engine header for why that would
+  // silent-green a Class-C/preflight-block), and asserts the applied
+  // end-state CONFORMS: 3b (scan:install GREEN, schema-based) + 3c (full-tree
+  // parity vs a fresh-N oracle install) are LOAD-BEARING; 3a (version-sanity)
+  // is a cheap non-load-bearing signal only (β design->build DECIDE B/0.89 —
+  // 3a alone can never flip the verdict). Sandbox-isolated, reusing GATE-A's
+  // proven no-delta harness.
+  //
+  // COVERAGE NOTE: the classifier-only dry-run this gate replaces
+  // (`update_fixture_from_previous`) only ran the update.js CLASSIFIER (a
+  // dry-run plan) over the static `fixtures/update-from-0.0.0-clean` fixture
+  // — it never applied anything and never verified the applied end-state.
+  // That coverage is SUBSUMED here by a real N-1 -> N apply + conformance
+  // asserts. The fixture may remain as a unit fixture but no longer gates
+  // release on its own.
+  gate("upgrade_current_to_new", () => {
+    const rs = roleStatus();
+    if (!rs.canonical) {
+      if (rs.manifestExists && !rs.manifestReadable) {
+        return {
+          ok: true,
+          severity: "manual",
+          message:
+            ".claude/manifest.json exists but is unreadable — cannot resolve repoRole. upgrade_current_to_new was NOT run; verify the manifest before release.",
+        };
+      }
       return {
-        ok: false,
-        severity: "yellow",
-        message:
-          "Update-from-previous fixture missing framework-installed.json.",
+        ok: true,
+        severity: "green",
+        message: `upgrade_current_to_new is opt-in for product repos (repoRole=${rs.role || "product"}) — skipped.`,
       };
     }
-    let installed;
+    const r = runScript("scripts/warpos/test-upgrade-current-to-new.js", ["--json"]);
+    let payload = null;
     try {
-      installed = JSON.parse(fs.readFileSync(fixtureInstall, "utf8"));
-    } catch (e) {
-      return {
-        ok: false,
-        severity: "red",
-        message: `Fixture installed.json malformed: ${e.message}`,
-      };
+      payload = JSON.parse((r.stdout || "").trim() || "{}");
+    } catch {
+      /* leave payload null — the errored branch below fires */
     }
-    // Run update.js classifier directly with the fixture's installed snapshot
-    let classify;
-    try {
-      ({ classify } = require("./update"));
-    } catch (e) {
-      return {
-        ok: false,
-        severity: "red",
-        message: `Update engine not loadable: ${e.message}`,
-      };
-    }
-    const versionFile = JSON.parse(
-      fs.readFileSync(path.join(REPO_ROOT, "version.json"), "utf8"),
-    );
-    const targetVersion = versionFile.version;
-    const capsuleDir = path.join(
-      REPO_ROOT,
-      "framework",
-      "releases",
-      targetVersion,
-    );
-    const releaseFile = path.join(capsuleDir, "release.json");
-    const manifestSnap = path.join(capsuleDir, "framework-manifest.json");
-    if (!fs.existsSync(releaseFile) || !fs.existsSync(manifestSnap)) {
-      return {
-        ok: false,
-        severity: "yellow",
-        message: `Capsule ${targetVersion} not built — run /warp:release ${targetVersion} first.`,
-      };
-    }
-    const capsule = {
-      release: JSON.parse(fs.readFileSync(releaseFile, "utf8")),
-      manifest: JSON.parse(fs.readFileSync(manifestSnap, "utf8")),
-    };
-    const decisions = classify(installed, capsule);
-    const counts = {};
-    for (const d of decisions)
-      counts[d.category] = (counts[d.category] || 0) + 1;
-    const classC = decisions.filter(
-      (d) =>
-        d.category === "MERGE_CONFLICT" ||
-        d.category === "DELETE_CONFLICT" ||
-        d.category === "RENAME_CONFLICT",
-    ).length;
-    if (decisions.length === 0) {
+    // (1) SANDBOX-ISOLATION no-delta violation is checked FIRST, unconditionally
+    //     — before green/incomplete/errored — so no later branch can soften a
+    //     leak into canonical (the GATE-A branch-order lesson).
+    if (payload && payload.sandbox_isolation && payload.sandbox_isolation.no_delta === false) {
       return {
         ok: false,
         severity: "red",
         message:
-          "Fixture classifier produced 0 decisions — engine or fixture is broken.",
+          "GATE-B upgrade_current_to_new: SANDBOX-ISOLATION NO-DELTA VIOLATED — the N-1 materialize/apply run leaked into canonical. This BLOCKS unconditionally.",
+        details: summarizeGateBAsserts(payload),
       };
     }
-    if (classC > 0) {
+    // (2) clean pass — apply succeeded and every load-bearing conformance
+    //     assert (3b, 3c, + preconditions) is green.
+    if (r.status === 0 && payload && payload.ok) {
+      return {
+        ok: true,
+        severity: "green",
+        message: `GATE-B upgrade_current_to_new: ${payload.from_version} -> ${payload.to_version} applied and conforms (ps_available=${payload.ps_available}).`,
+      };
+    }
+    // (3) INCOMPLETE — no PowerShell on this host (both the N-1 install and
+    //     the fresh-N oracle need it, like GATE-A Leg 3) or a required step
+    //     never ran. Never a silent pass (R2 skip-loud). GATE-B has no
+    //     report-only ramp, so INCOMPLETE still BLOCKS (red) — it is only
+    //     distinctly flagged from a genuine conformance failure.
+    if (payload && payload.ps_available === false) {
       return {
         ok: false,
         severity: "red",
-        message: `Fixture classifier produced ${classC} Class C decision(s) for a clean 0.0.0 → ${targetVersion} upgrade — should be 0.`,
-        details: decisions
-          .filter((d) =>
-            ["MERGE_CONFLICT", "DELETE_CONFLICT", "RENAME_CONFLICT"].includes(
-              d.category,
-            ),
-          )
-          .slice(0, 5)
-          .map((d) => `${d.category} ${d.dest}`),
+        message:
+          "GATE-B upgrade_current_to_new: INCOMPLETE — no PowerShell on this host, the real N-1/N installs cannot run. Not a pass (R2 skip-loud); BLOCKS release.",
+        details: summarizeGateBAsserts(payload),
       };
     }
+    // (4) errored — engine crashed or produced no parseable payload.
+    //     Fail-closed: never a clean pass on a crash.
+    if (!payload || !payload.ran && !(payload.asserts && payload.asserts.length)) {
+      return {
+        ok: false,
+        severity: "red",
+        message: "GATE-B upgrade_current_to_new engine errored (no parseable --json payload or no asserts produced).",
+        details: payload ? summarizeGateBAsserts(payload) : (r.stderr || r.stdout || "").split(/\r?\n/).filter(Boolean).slice(-8),
+      };
+    }
+    // (5) a load-bearing assert failed (real conformance failure — apply,
+    //     3b scan:install, or 3c fresh-N parity).
     return {
-      ok: true,
-      severity: "green",
-      message: `Fixture classifier ran against 0.0.0 → ${targetVersion}: ${decisions.length} decisions, 0 Class C, counts ${JSON.stringify(counts)}.`,
+      ok: false,
+      severity: "red",
+      message: `GATE-B upgrade_current_to_new FAILED — ${payload.from_version || "?"} -> ${payload.to_version || "?"}: a load-bearing assert failed.`,
+      details: summarizeGateBAsserts(payload),
     };
   }),
 
@@ -651,11 +664,12 @@ const GATES = [
   //   - `customized_install_fixture`  RETIRED — same class, directory-exists
   //     only. Subsumed by Leg 2 (manual /warp:setup over a SEEDED pre-existing
   //     CLAUDE.md — real identity-merge + survival + backup asserts).
-  //   - `update_fixture_from_previous` STAYS — it is NOT cosmetic: it loads a
-  //     real framework-installed.json fixture and runs the update.js
-  //     classifier against it. That is UPGRADE domain (GATE-B / INC-3), not
-  //     fresh-scaffold — retiring it on adjacency to the other two would be
-  //     wrong; it covers ground GATE-A does not.
+  //   - `update_fixture_from_previous` STAYED through INC-2 (not cosmetic like
+  //     the two above — it ran the update.js classifier over a real fixture)
+  //     then was itself UPGRADED in INC-3 into `upgrade_current_to_new`
+  //     (GATE-B, below this gate in the array) — a real N-1 -> N apply +
+  //     conformance gate, not just a classifier dry-run. See GATE-B's own
+  //     comment for the full coverage note.
   //
   // Role-aware like `regression_seed`: only canonical can act as a WarpOS
   // engine SOURCE (a product/consumer repo has no framework-manifest.json and

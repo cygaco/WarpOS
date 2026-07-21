@@ -12,8 +12,12 @@
  *   3. The two retired cosmetic gates (`fresh_install_fixture`,
  *      `customized_install_fixture`) are GONE — not present, not skipped,
  *      just absent.
- *   4. `update_fixture_from_previous` is STILL present (R5: it is upgrade
- *      domain, not fresh-scaffold — must NOT be retired on adjacency).
+ *   4. (SP-20260721-001 D-4 INC-3 — GATE-B) `upgrade_current_to_new` is IN
+ *      the GATES array AND actually RUNS (same canned-spawnSync technique as
+ *      #1/#2 — the real engine does 2 real installs and must never run inside
+ *      a wiring test). `update_fixture_from_previous` (the classifier-only
+ *      dry-run it upgrades/replaces) is GONE — not present, not skipped, just
+ *      absent.
  *
  * "Actually runs" is verified by observing each gate's OWN severity is never
  * "skipped" when NOT explicitly passed via --skip (i.e. the gate function
@@ -81,11 +85,34 @@ const CANNED = {
     }),
     stderr: "",
   },
+  // GATE-B upgrade_current_to_new (SP-20260721-001 D-4 INC-3) — canned shape
+  // matches test-upgrade-current-to-new.js's real --json payload:
+  // {ok, from_version, to_version, ran, ps_available, asserts, sandbox_isolation}.
+  "test-upgrade-current-to-new.js": {
+    status: 0,
+    stdout: JSON.stringify({
+      ok: true,
+      from_version: "0.16.0",
+      to_version: "0.17.0",
+      ran: true,
+      ps_available: true,
+      asserts: [
+        { name: "n1_resolved", ok: true, detail: "", loadBearing: true },
+        { name: "apply_committed", ok: true, detail: "", loadBearing: true },
+        { name: "version_sanity_NON_LOAD_BEARING", ok: true, detail: "", loadBearing: false },
+        { name: "scan_install_green", ok: true, detail: "", loadBearing: true },
+        { name: "fresh_vs_upgraded_parity", ok: true, detail: "", loadBearing: true },
+      ],
+      sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+    }),
+    stderr: "",
+  },
 };
+const HEAVY_SCRIPT_NAMES = ["test-scaffold-all-ways.js", "test-install-matrix.js", "test-upgrade-current-to-new.js"];
 cp.spawnSync = function patchedSpawnSync(cmd, args, opts) {
-  const scriptArg = (args || []).find((a) => typeof a === "string" && (a.includes("test-scaffold-all-ways.js") || a.includes("test-install-matrix.js")));
+  const scriptArg = (args || []).find((a) => typeof a === "string" && HEAVY_SCRIPT_NAMES.some((n) => a.includes(n)));
   if (scriptArg) {
-    const key = scriptArg.includes("test-scaffold-all-ways.js") ? "test-scaffold-all-ways.js" : "test-install-matrix.js";
+    const key = HEAVY_SCRIPT_NAMES.find((n) => scriptArg.includes(n));
     return CANNED[key];
   }
   return realSpawnSync.apply(this, arguments);
@@ -94,9 +121,10 @@ cp.spawnSync = function patchedSpawnSync(cmd, args, opts) {
 delete require.cache[RELEASE_GATES_PATH];
 const { run } = require(RELEASE_GATES_PATH);
 
-// Skip every OTHER gate so this test stays fast and hermetic — only the two
-// gates under test + hook_registration/reference_integrity/update_fixture_from_previous
-// (cheap, presence-only) are left unskipped by the explicit include-list below.
+// Skip every OTHER gate so this test stays fast and hermetic — only the
+// three gates under test (fresh_scaffold_all_ways, install_matrix,
+// upgrade_current_to_new — all canned via spawnSync above) + cheap
+// presence-only gates are left unskipped by the explicit include-list below.
 const KNOWN_HEAVY_OR_UNRELATED = [
   "path_coherence",
   "framework_manifest",
@@ -117,7 +145,7 @@ const summary = run({ skip: KNOWN_HEAVY_OR_UNRELATED });
 const byName = new Map(summary.results.map((r) => [r.name, r]));
 
 // ── 1+2: present AND actually invoked (severity !== "skipped") ──
-for (const name of ["fresh_scaffold_all_ways", "install_matrix"]) {
+for (const name of ["fresh_scaffold_all_ways", "install_matrix", "upgrade_current_to_new"]) {
   const r = byName.get(name);
   ok(`${name} is present in GATES`, !!r, `not found in results: ${[...byName.keys()].join(", ")}`);
   ok(`${name} actually RAN (severity !== "skipped")`, !!r && r.severity !== "skipped", r && `severity=${r.severity}`);
@@ -129,11 +157,11 @@ for (const name of ["fresh_install_fixture", "customized_install_fixture"]) {
   ok(`${name} is RETIRED (absent from GATES entirely)`, !byName.has(name), `still present with severity=${byName.get(name) && byName.get(name).severity}`);
 }
 
-// ── 4: update_fixture_from_previous STILL present (not retired on adjacency) ──
+// ── 4: update_fixture_from_previous is GONE (SP-20260721-001 D-4 INC-3 —
+// upgraded/renamed into upgrade_current_to_new / GATE-B, asserted above) ──
 {
-  // Not in the skip list above, so it actually ran against the real fixture.
   const r = byName.get("update_fixture_from_previous");
-  ok("update_fixture_from_previous is STILL present (R5 — upgrade domain, not retired)", !!r, "missing from GATES");
+  ok("update_fixture_from_previous is RETIRED (upgraded into upgrade_current_to_new / GATE-B — not present)", !r, `still present with severity=${r && r.severity}`);
 }
 
 // ── 5: report-only ramp behavior (SP-20260721-001 INC-2 — the ratified option-(b) teeth) ──
@@ -204,6 +232,64 @@ CANNED["test-install-matrix.js"].stdout = JSON.stringify({
   const im = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("install_matrix");
   ok("install_matrix report-only: a scenario failure → YELLOW (non-blocking) during the ED-249 window", im && im.severity === "yellow", im && `severity=${im.severity}`);
   ok("install_matrix report-only message names the ED-249 flip-trigger", im && /ED-249/.test(im.message) && /FLIP-TRIGGER/.test(im.message), im && im.message);
+}
+
+// ── 8: GATE-B branch order — a sandbox-isolation leak BLOCKS unconditionally
+// (checked FIRST, before green/incomplete), same load-bearing property as
+// GATE-A (#5/#6 above), the isolation-first lesson those tests already prove. ──
+CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
+  ok: false,
+  from_version: "0.16.0",
+  to_version: "0.17.0",
+  ran: true,
+  ps_available: true,
+  asserts: [{ name: "apply_committed", ok: true, detail: "", loadBearing: true }],
+  sandbox_isolation: { no_delta: false, onlyBefore: [], onlyAfter: ["../leaked-sibling-repo"] },
+});
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: a sandbox-isolation NO-DELTA violation is RED (blocks unconditionally)", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
+  ok("GATE-B leak message names SANDBOX-ISOLATION", gb && /SANDBOX-ISOLATION/.test(gb.message), gb && gb.message);
+}
+// ── 9: GATE-B INCOMPLETE (no PowerShell) is RED, not a silent pass — GATE-B
+// has no report-only ramp, so incomplete BLOCKS (distinctly flagged from a
+// genuine conformance failure via the message text). ──
+CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
+  ok: false,
+  from_version: "0.16.0",
+  to_version: "0.17.0",
+  ran: false,
+  ps_available: false,
+  asserts: [{ name: "ps_available", ok: false, detail: "no PowerShell found on this host", loadBearing: true }],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+});
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: ps_available=false is RED (INCOMPLETE, not a silent pass — R2 skip-loud)", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
+  ok("GATE-B incomplete message names INCOMPLETE", gb && /INCOMPLETE/.test(gb.message), gb && gb.message);
+}
+// ── 10: GATE-B a load-bearing conformance assert fails (e.g. 3c parity) → RED ──
+CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
+  ok: false,
+  from_version: "0.16.0",
+  to_version: "0.17.0",
+  ran: true,
+  ps_available: true,
+  asserts: [
+    { name: "apply_committed", ok: true, detail: "", loadBearing: true },
+    { name: "fresh_vs_upgraded_parity", ok: false, detail: "content drift outside normalization", loadBearing: true },
+  ],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [] },
+});
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: a load-bearing conformance assert failure (e.g. 3c parity) is RED", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
+}
+// ── 11: GATE-B errored — no parseable payload → fail-closed RED, never a pass ──
+CANNED["test-upgrade-current-to-new.js"] = { status: 2, stdout: "", stderr: "FATAL: engine crashed" };
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok("GATE-B: an engine crash (no parseable payload) is fail-closed RED, never a clean pass", gb && gb.severity === "red", gb && `severity=${gb.severity}`);
 }
 
 cp.spawnSync = realSpawnSync;
