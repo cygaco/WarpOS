@@ -463,11 +463,16 @@ function fullTreeFileList(rootDir) {
         // is caught by path-set parity over the KEYS, type divergence and
         // TARGET divergence are judged separately by the 3c block (R3-2/R3-3).
         if (isFullTreeExcluded(relPath)) continue;
+        // FAIL-CLOSED (qa/backend 7C-004 TERMINAL): a readlinkSync failure must
+        // NOT become a comparable in-band sentinel — two unreadable links (or a
+        // real link whose target IS the literal sentinel string) would then match
+        // and false-green. THROW so the 3c block RED-fails "full-tree parity
+        // uncertifiable", mirroring fullTreeFileList's readdir fail-closed above.
         let target;
         try {
           target = fs.readlinkSync(path.join(absDir, ent.name));
         } catch (e) {
-          target = `<UNREADABLE:${e.code || e.message}>`;
+          throw new Error(`fullTreeFileList: cannot readlink ${relPath} (${e.code || e.message}) — full-tree parity uncertifiable, fail-closed`);
         }
         out.push({ rel: relPath, type: "symlink", target });
       } else if (ent.isDirectory()) {
@@ -1215,16 +1220,19 @@ function selfTest() {
 
   // ── R3-1 tooth (named-set normalization ONLY; byte-exact default — qa
   // 7C-003 / FUNC-3C-NORMALIZE-OVERBROAD) ──
-  t("R3-1: an adversarial file NOT in the named allowlist, round-trip-UTF-8-VALID, differing by one byte in a timestamp-SHAPED substring, still REDs byte-exact — binary/text classification no longer decides this", () => {
+  t("R3-1 (REGRESSION-DETECTING, qa NEW-TEST-R3-1-NONTOOTH): a NON-named file whose ONLY difference is a NORMALIZE_3C-matching TIMESTAMP value REDs byte-exact — the OLD normalize-any-round-trip-UTF-8 impl would have normalized both timestamps to EQUAL (false-green); the named-set fix REDs it because the file is not allowlisted", () => {
     const dirA = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-r31-red-a-"));
     const dirB = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-r31-red-b-"));
     try {
-      // Both are plain ASCII (round-trip UTF-8 cleanly — the OLD gate would
-      // have eagerly gone on to normalize this) and both contain a
-      // timestamp-shaped substring; "not-named.bin" is NOT in
-      // NORMALIZE_ALLOWED_RELPATHS, so it must be byte-exact regardless.
-      fs.writeFileSync(path.join(dirA, "not-named.bin"), "payload-2026-07-21T00:00:00.000Z-A");
-      fs.writeFileSync(path.join(dirB, "not-named.bin"), "payload-2026-07-21T00:00:00.000Z-B");
+      // The two files differ ONLY in an ISO-timestamp substring (a NORMALIZE_3C
+      // rule target). Under the OLD "normalize any UTF-8-round-trip file" impl
+      // both would collapse to <NORMALIZED-TS> and false-GREEN. "not-named.bin"
+      // is NOT in NORMALIZE_ALLOWED_RELPATHS, so the named-set fix compares it
+      // byte-exact -> RED. This is the case that DISTINGUISHES the fix from the
+      // regression (a trailing A/B byte with an identical timestamp — the old
+      // tooth — would RED under BOTH impls and prove nothing).
+      fs.writeFileSync(path.join(dirA, "not-named.bin"), "payload-2020-01-01T00:00:00.000Z-end");
+      fs.writeFileSync(path.join(dirB, "not-named.bin"), "payload-2026-07-21T09:12:30.500Z-end");
       const result = compareTreeContents(dirA, dirB, ["not-named.bin"], { sandboxRoots: [dirA, dirB] });
       return result.equal === false;
     } finally {
@@ -1372,6 +1380,36 @@ function selfTest() {
       const linkEntry = list.find((e) => e.rel === "the-link");
       return !!linkEntry && linkEntry.type === "symlink" && linkEntry.target === "real-target.txt";
     } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  // ── TERMINAL tooth (qa/backend 7C-004 — readlink fail-closed) ──
+  t("TERMINAL: a readlinkSync FAILURE makes fullTreeFileList THROW (full-tree uncertifiable) — never a comparable <UNREADABLE> sentinel that two unreadable links could match on to false-green", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-gateb-selftest-readlink-throw-"));
+    const realReadlink = fs.readlinkSync;
+    try {
+      fs.writeFileSync(path.join(dir, "real-target.txt"), "x");
+      try {
+        fs.symlinkSync("real-target.txt", path.join(dir, "the-link"));
+      } catch {
+        return true; // platform/privilege disallows symlinks — not this tooth's concern
+      }
+      // Force readlinkSync to fail (permission/IO error class). Fail-closed
+      // requires a THROW, not a sentinel.
+      fs.readlinkSync = () => {
+        const e = new Error("simulated readlink EACCES");
+        e.code = "EACCES";
+        throw e;
+      };
+      let threw = false;
+      try {
+        fullTreeFileList(dir);
+      } catch {
+        threw = true;
+      }
+      return threw === true;
+    } finally {
+      fs.readlinkSync = realReadlink;
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
