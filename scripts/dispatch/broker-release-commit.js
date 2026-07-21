@@ -10,13 +10,16 @@
  *   node scripts/dispatch/broker-release-commit.js -m "chore(...): manifest regen" [options]
  *
  * ── WHAT IT DOES ─────────────────────────────────────────────────────────────────────────────────────
- *   1. Optionally stage explicit pathspecs (`--add <pathspec>`, repeatable). NEVER `git add -A` on its
- *      own initiative: a bookkeeping helper that sweeps the whole worktree is how unrelated in-flight work
- *      (and other agents' temp files) ends up inside a "routine regen" commit. Default = whatever the
- *      caller already staged.
- *   2. Build a SINGLE-PARENT commit from the index via `write-tree` + `commit-tree`, parent = the live tip
- *      of the target ref. NO REF IS WRITTEN — same discipline as broker-merge.js: the object is built, the
- *      broker judges it, and only the broker's CAS moves the ref. A refusal leaves the repo untouched.
+ *   1. Name the explicit pathspecs to commit (`--add <pathspec>`, repeatable; REQUIRED on the build path).
+ *      NEVER `git add -A`: a bookkeeping helper that sweeps the whole worktree is how unrelated in-flight
+ *      work (and other agents' temp files) ends up inside a "routine regen" commit. The ambient real index
+ *      is NOT read — only the named pathspecs are staged (see step 2).
+ *   2. Build a SINGLE-PARENT commit in an ISOLATED index SEEDED FROM the target head (GF-2): read-tree the
+ *      target head, `git add` ONLY the named pathspecs (each path's working-tree content on top of head),
+ *      then `write-tree` + `commit-tree` (parent = the live tip of the target ref). The tree is therefore
+ *      head + only the named paths — a run from the wrong branch cannot smuggle a foreign snapshot onto the
+ *      commit. NO REF IS WRITTEN: the object is built, the broker judges it, only the broker's CAS moves the
+ *      ref. A refusal leaves the repo untouched.
  *   3. Hold the conductor lease, then call `integrateReleaseCommit({release_commit, target_ref}, opts)`.
  *   4. LANDED → receipt. BLOCKED → classify; security/usage surface and stop, operational MAY fall back
  *      with the full LOGGED + COUNTED + SURFACED treatment (broker-dogfood.js `attemptFallback`).
@@ -113,7 +116,14 @@ function brokerReleaseCommit(input = {}, opts = {}, seams = {}) {
   if (!releaseCommit) {
     const message = input.message;
     if (!message) return { ok: false, route: "none", decision: "BLOCKED", reason: "nothing-to-commit", detail: "a commit message is required (-m)", classification: "usage" };
-    const built = buildReleaseCommit({ gitRoot, head, message, add: input.add });
+    // R2-F3: the isolated head-seeded index commits ONLY the named pathspecs — the ambient real index is
+    // deliberately NOT swept (that is the GF-2 foreign-snapshot vector). So a build-path invocation MUST
+    // name at least one --add pathspec; there is otherwise provably nothing for this helper to commit.
+    const addSpecs = Array.isArray(input.add) ? input.add.filter(Boolean) : [];
+    if (addSpecs.length === 0) {
+      return { ok: false, route: "none", decision: "BLOCKED", reason: "nothing-to-commit", detail: "name the pathspec(s) to commit with --add — the brokered release-commit builds ONLY the named paths on top of the target head; the ambient index is NOT swept (GF-2)", classification: "usage" };
+    }
+    const built = buildReleaseCommit({ gitRoot, head, message, add: addSpecs });
     if (!built.ok) {
       // finish() derives the class from the reason: nothing-to-commit -> usage, result-tree-materialize-failed
       // -> security (GF-1) — both no-fallback, so a base-mismatch/build failure never reaches the ordinary route.
@@ -159,6 +169,9 @@ function brokerReleaseCommit(input = {}, opts = {}, seams = {}) {
         process.stdout.write(`✔ BROKERED RELEASE COMMIT — ${targetRef} ${head.slice(0, 8)} → ${releaseCommit.slice(0, 8)} (suite ${res.receipt.suite_version}, bundle ${String(res.receipt.bundle_digest).slice(0, 12)}, hook_active=${res.receipt.hook_active})\n`);
         if (onTarget) process.stdout.write(`  ⓘ ${targetRef} is checked out: the ref moved, the index/worktree did not. Refresh deliberately.\n`);
       }
+      // GF-3b: the release commit has ALREADY landed — read the informational count SAFELY so an unreadable
+      // ledger cannot cause a false failure + unsafe retry pressure (nor substitute a false zero).
+      const fbCount = dog.fallbackCountSafe(seams.logPath || dog.defaultLogPath(opts.root));
       return {
         ok: true,
         route: "brokered",
@@ -168,7 +181,8 @@ function brokerReleaseCommit(input = {}, opts = {}, seams = {}) {
         target_ref: targetRef,
         receipt: res.receipt,
         lease: held.state,
-        fallback_count: dog.fallbackCount(seams.logPath || dog.defaultLogPath(opts.root)),
+        fallback_count: fbCount.count,
+        fallback_count_unreadable: fbCount.unreadable,
         worktree_refresh_required: onTarget,
       };
     }
@@ -219,7 +233,7 @@ function finish(refusal, ctx) {
       classification: fb.classification || classification,
       detail: refusal.detail || refusal.offending || null,
       fallback_refused: fb.reason || null,
-      fallback_count: dog.fallbackCount(ctx.seams.logPath || dog.defaultLogPath(ctx.opts.root)),
+      fallback_count: dog.fallbackCountSafe(ctx.seams.logPath || dog.defaultLogPath(ctx.opts.root)).count, // GF-3b: never throw on an already-decided refusal
     };
   }
 
@@ -243,7 +257,9 @@ const USAGE = [
   'usage: node scripts/dispatch/broker-release-commit.js -m "<message>" [options]',
   "",
   "  Lands a routine regen/bookkeeping commit onto the target ref THROUGH the INC-1 brokered transport",
-  "  (integrateReleaseCommit). Commits the CURRENT INDEX unless --add is given.",
+  "  (integrateReleaseCommit). Commits ONLY the pathspecs named with --add, built on top of the target",
+  "  head in an isolated index — the ambient working index is NOT swept (GF-2). --add is REQUIRED unless",
+  "  --release-commit is given.",
   "",
   "  -m, --message <msg>      commit message (required unless --release-commit)",
   "  --add <pathspec>         stage a pathspec first (repeatable; never `git add -A`)",

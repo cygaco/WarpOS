@@ -201,9 +201,25 @@ function readFallbacks(logPath) {
     });
 }
 
-/** fallbackCount(logPath) -> number. Derived FROM the ledger, so the count and the evidence cannot drift. */
+/** fallbackCount(logPath) -> number. Derived FROM the ledger, so the count and the evidence cannot drift.
+ *  THROWS on a present-but-unreadable ledger (GF-3) — used on the SECURITY path, where an unreadable ledger
+ *  must REFUSE the fallback (recordFallback catches it). Never use it where a throw could undo a completed
+ *  write — use fallbackCountSafe for that. */
 function fallbackCount(logPath) {
   return readFallbacks(logPath).length;
+}
+
+/** fallbackCountSafe(logPath) -> {count, unreadable}. A NON-throwing read for INFORMATIONAL success-path
+ *  result fields (GF-3b): once a brokered write has LANDED (or a refusal is already decided), an unreadable
+ *  ledger must not turn that outcome into an uncaught exception + unsafe retry pressure. Returns
+ *  {count:null, unreadable:true} rather than substituting a false zero (the very under-count lie GF-3 closes).
+ *  The SECURITY decision path stays on the throwing fallbackCount. */
+function fallbackCountSafe(logPath) {
+  try {
+    return { count: fallbackCount(logPath), unreadable: false };
+  } catch {
+    return { count: null, unreadable: true };
+  }
 }
 
 /**
@@ -429,14 +445,21 @@ function loadBroker(injected) {
  * resolveBundleConfig(opts) -> {ok, bundleManifestPath, bundleRoot} | {ok:false, reason}.
  *
  * A promoted pinned bundle lives OUT of tree by construction (see pinned-checker-bundle.js), so its
- * location must be supplied — by flag or by env. Absent ⇒ `no-pinned-bundle-configured`, an OPERATIONAL
- * miss: the broker never ran, so the ordinary route bypasses no judgement (but is still logged+counted).
+ * location must be supplied — by flag or by env.
+ *
+ * TWO DISTINCT failures, split by GF-1b (conservative-by-construction — the lead's "split the overlapping
+ * reason, do not re-bucket"):
+ *   - NO configuration supplied at all ⇒ `no-pinned-bundle-configured`, an OPERATIONAL miss (the honest
+ *     pre-flip dogfood state — no promoted bundle yet; the ordinary route bypasses no judgement).
+ *   - A manifest path IS configured but is MISSING / unstatable ⇒ `bundle-load-failed`, a SECURITY reason:
+ *     a promoted pinned bundle that was configured and then vanished (deleted / access-denied / tampered)
+ *     is suspicious and must NOT fall back to the ordinary route.
  */
 function resolveBundleConfig(opts = {}, env = process.env) {
   const manifest = opts.bundleManifestPath || env.WARPOS_PINNED_BUNDLE_MANIFEST || null;
   const bundleRoot = opts.bundleRoot || env.WARPOS_PINNED_BUNDLE_ROOT || (manifest ? path.dirname(manifest) : null);
   if (!manifest) return { ok: false, reason: "no-pinned-bundle-configured", detail: "set --bundle-manifest or WARPOS_PINNED_BUNDLE_MANIFEST (a PROMOTED, out-of-tree bundle)" };
-  if (!fs.existsSync(manifest)) return { ok: false, reason: "no-pinned-bundle-configured", detail: `bundle manifest not found: ${manifest}` };
+  if (!fs.existsSync(manifest)) return { ok: false, reason: "bundle-load-failed", detail: `configured bundle manifest is missing or unstatable: ${manifest}` };
   return { ok: true, bundleManifestPath: manifest, bundleRoot };
 }
 
@@ -611,6 +634,7 @@ module.exports = {
   defaultLogPath,
   readFallbacks,
   fallbackCount,
+  fallbackCountSafe,
   recordFallback,
   resolveEventsPath,
   fallbackBanner,

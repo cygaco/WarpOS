@@ -607,3 +607,31 @@ test("GF-4 positive — a clean release reports released:true; a pre-existing le
   assert.equal(pre.state, "pre-existing");
   assert.deepEqual(pre.release(), { ok: true, released: false });
 });
+
+// ══ 8. ROUND-2 fast unit teeth (R2-F1 taxonomy split · R2-F2 safe success-path count) ════════════════
+
+test("R2-F1 — resolveBundleConfig SPLITS the overlap: configured-but-missing is SECURITY, true-absence is operational", () => {
+  const missing = dog.resolveBundleConfig({ bundleManifestPath: path.join(os.tmpdir(), `absent-${Date.now()}.json`) });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.reason, "bundle-load-failed", "a configured-but-missing bundle is the SECURITY reason");
+  assert.equal(dog.fallbackAllowed(missing.reason), false, "and so it can never fall back");
+  const absent = dog.resolveBundleConfig({});
+  assert.equal(absent.reason, "no-pinned-bundle-configured");
+  assert.equal(dog.fallbackAllowed(absent.reason), true, "genuine absence stays an operational fallback");
+});
+
+test("R2-F2 — fallbackCountSafe never throws + never fabricates 0 on an unreadable ledger; fallbackCount still throws", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "r2f2-"));
+  const logPath = path.join(dir, "dogfood-fallbacks.jsonl");
+  try {
+    fs.mkdirSync(logPath, { recursive: true }); // present-but-unreadable (a directory)
+    assert.deepEqual(dog.fallbackCountSafe(logPath), { count: null, unreadable: true });
+    assert.throws(() => dog.fallbackCount(logPath), "the security-path read still throws on unreadable");
+    // a readable (absent) ledger reports a real count with unreadable:false
+    const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), "r2f2b-"));
+    assert.deepEqual(dog.fallbackCountSafe(path.join(dir2, "dogfood-fallbacks.jsonl")), { count: 0, unreadable: false });
+    fs.rmSync(dir2, { recursive: true, force: true });
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

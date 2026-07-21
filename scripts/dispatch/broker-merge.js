@@ -158,6 +158,9 @@ function brokerMerge(input = {}, opts = {}, seams = {}) {
 
     if (res && res.ok === true) {
       const onTarget = dog.currentBranchRef(gitRoot) === targetRef;
+      // GF-3b: the ref has ALREADY moved — read the informational count SAFELY so an unreadable ledger can
+      // never turn a landed merge into an uncaught exception (nor substitute a false zero).
+      const fbCount = dog.fallbackCountSafe(seams.logPath || dog.defaultLogPath(opts.root));
       const r = {
         ok: true,
         route: "brokered",
@@ -168,7 +171,8 @@ function brokerMerge(input = {}, opts = {}, seams = {}) {
         branch,
         receipt: res.receipt,
         lease: held.state,
-        fallback_count: dog.fallbackCount(seams.logPath || dog.defaultLogPath(opts.root)),
+        fallback_count: fbCount.count,
+        fallback_count_unreadable: fbCount.unreadable,
         worktree_refresh_required: onTarget,
       };
       if (emit) {
@@ -232,7 +236,7 @@ function finish(refusal, ctx) {
       classification: fb.classification || classification,
       detail: refusal.detail || refusal.offending || null,
       fallback_refused: fb.reason || null,
-      fallback_count: dog.fallbackCount(ctx.seams.logPath || dog.defaultLogPath(ctx.opts.root)),
+      fallback_count: dog.fallbackCountSafe(ctx.seams.logPath || dog.defaultLogPath(ctx.opts.root)).count, // GF-3b: never throw on an already-decided refusal
     };
   }
 
