@@ -28,7 +28,10 @@ test("G4.2 head-advanced-after-check — a live head that moved between check an
   // to acceptance-record.js#commitIntegration's own `opts.liveHead` (never used by production callers, who
   // let commitIntegration resolve the real live head fresh).
   const movedHead = "d".repeat(40); // any commit that is NOT fx.base — simulates a race
-  const result = ctl.integrate(standardInput(fx), standardOpts(fx, { liveHead: movedHead }));
+  // S2 (R2): `liveHead` is no longer a caller-suppliable `opts` key — the production `integrate()` cannot
+  // reach it at all. It is driven through the SANCTIONED test-producer export `integrateForTest(input,
+  // opts, seams)` (same pattern as acceptance-record.js#produceForTest).
+  const result = ctl.integrateForTest(standardInput(fx), standardOpts(fx), { liveHead: movedHead });
 
   assert.strictEqual(result.ok, false, "MUST-BLOCK: a moved live head must refuse the CAS");
   assert.strictEqual(result.decision, "BLOCKED");

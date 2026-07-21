@@ -55,8 +55,9 @@ test("AC-9 trusted-controller-cas-integration — an integration that is NOT aut
 
   // A superseded/never-current lease fencing token fails authorizesIntegration's mandatory lease-currency
   // gate (e) — the run genuinely reaches reconcile + produce(), but is refused BEFORE commitIntegration.
-  const badOpts = standardOpts(fx, { leaseTokenResolver: () => 999999 }); // a token that will never verify as current
-  const result = ctl.integrate(standardInput(fx), badOpts);
+  // S2 (R2): `leaseTokenResolver` is no longer a caller-suppliable `opts` key — driven via the sanctioned
+  // `integrateForTest(input, opts, seams)` test-producer export instead.
+  const result = ctl.integrateForTest(standardInput(fx), standardOpts(fx), { leaseTokenResolver: () => 999999 }); // a token that will never verify as current
   assert.strictEqual(result.ok, false, "MUST-BLOCK: an invalid lease fencing token must never authorize");
   assert.strictEqual(headSha(fx.dir, fx.targetRef), fx.base, "the ref must remain untouched — commitIntegration was never reached");
 });

@@ -56,6 +56,14 @@ function writeSyntheticCheckLib(srcRoot) {
     "",
   ].join("\n");
   fs.writeFileSync(path.join(srcRoot, "checks", "mutator.js"), mutatorSrc);
+
+  // S3(3) (R2): the bundle-completeness cross-check is now UNCONDITIONAL — a pinned bundle MUST declare
+  // `lib/registry.js` and pin `lib/checks/<name>.js` for every registered CHECK_NAME. Synthetic fixtures
+  // conform to the STRICT production rule (the rule is never weakened for a fixture's convenience).
+  fs.writeFileSync(
+    path.join(srcRoot, "registry.js"),
+    '"use strict";\nmodule.exports = { SUITE_VERSION: "synthetic-mutator-suite/v1", CHECK_NAMES: Object.freeze(["mutator"]), REQUIRED_CHECKS: Object.freeze(["mutator"]) };\n',
+  );
 }
 
 test("AC-16 checker-self-modification — a checker mutating its own pinned file mid-run is detected and BLOCKS", (t) => {

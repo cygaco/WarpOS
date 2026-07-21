@@ -29,6 +29,20 @@ function writeDriftedCheckLib(srcRoot) {
     "",
   ].join("\n");
   fs.writeFileSync(path.join(srcRoot, "index.js"), indexSrc);
+
+  // S3(3) (R2): the bundle-completeness cross-check is now UNCONDITIONAL — a pinned bundle MUST declare
+  // `lib/registry.js` and pin `lib/checks/<name>.js` for every registered CHECK_NAME. This fixture is made
+  // COMPLETE so the EXPORT-DRIFT defect (the thing under test) stays the sole differentiator — never by
+  // weakening the production completeness rule.
+  fs.writeFileSync(
+    path.join(srcRoot, "registry.js"),
+    '"use strict";\nmodule.exports = { SUITE_VERSION: "drift-suite/v1", CHECK_NAMES: Object.freeze(["noop"]), REQUIRED_CHECKS: Object.freeze(["noop"]) };\n',
+  );
+  fs.mkdirSync(path.join(srcRoot, "checks"), { recursive: true });
+  fs.writeFileSync(
+    path.join(srcRoot, "checks", "noop.js"),
+    '"use strict";\nfunction run(){ return { status: "pass", reason: "ok", evidence: {} }; }\nmodule.exports = { name: "noop", run };\n',
+  );
 }
 
 test("AC-18 shared-check-library-export-drift — a renamed/missing required export is CAUGHT, not silently skipped", (t) => {

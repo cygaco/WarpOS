@@ -32,6 +32,7 @@
  */
 
 const fs = require("fs");
+const path = require("path");
 
 // SHARED CONSTANTS — trusted-controller.js requires THIS module (not the other way around) to read these
 // three names, so there is exactly one place they are defined. Keep the literal values stable: any change
@@ -149,6 +150,49 @@ function main(argv, env, deps = {}) {
   return 0;
 }
 
+// ── S4 (QA-SP002-001 / QA-SP002-R2-001) — the CANONICAL `reference-transaction` wrapper. ──────────────────
+//
+// A git hook is a FILE git executes; this module is the LOGIC that file must invoke. R1's liveness verifier
+// accepted any hook whose CONTENT merely matched `/protected-ref-transaction(\.js)?/` — so a mis-generated /
+// truncated / corrupted installer output that kept the name as a COMMENT (`# protected-ref-transaction.js`
+// + `exit 0`) verified as "pinned" while enforcing NOTHING. Shipping the wrapper's exact text from ONE
+// in-repo source means the installer and the verifier can never drift: `installReferenceTransactionHook`
+// writes exactly `renderReferenceTransactionHook(...)`, and `verifyActiveHookInstalled`
+// (trusted-controller.js) proves the ACTIVE file genuinely INVOKES this module — content-hash-equal to the
+// canonical render, or (for a hand-installed variant) carrying a real, resolvable invocation of this exact
+// file. A name in a comment is not an invocation.
+//
+// HONEST CEILING (unchanged, operator-DROPPED): a hostile shell can still delete the hook, redirect
+// `core.hooksPath`, or plant matching content elsewhere. This closes the MISTAKE class, not containment.
+
+/** The absolute, canonical on-disk path of THIS module — what an active hook must actually invoke. */
+const PINNED_HOOK_MODULE = __filename;
+
+/**
+ * renderReferenceTransactionHook(pinnedHookSrcAbs) -> the EXACT canonical wrapper text. Deterministic given
+ * the pinned module path (POSIX-normalized so a Windows path produces byte-identical text to its git-bash
+ * form). This is the ONE definition of "a correctly installed reference-transaction hook".
+ */
+function renderReferenceTransactionHook(pinnedHookSrcAbs) {
+  const p = String(pinnedHookSrcAbs || PINNED_HOOK_MODULE).replace(/\\/g, "/");
+  return `#!/usr/bin/env bash\nexec node "${p}" "$@"\n`;
+}
+
+/** Write the canonical wrapper into `hooksDir` as `reference-transaction` (0755 best-effort). Returns the
+ *  absolute path written. The ONE sanctioned installer — every caller (including test fixtures) uses it, so
+ *  "what gets installed" and "what gets verified" cannot drift. */
+function installReferenceTransactionHook(hooksDir, pinnedHookSrcAbs) {
+  fs.mkdirSync(hooksDir, { recursive: true });
+  const target = path.join(hooksDir, "reference-transaction");
+  fs.writeFileSync(target, renderReferenceTransactionHook(pinnedHookSrcAbs || PINNED_HOOK_MODULE));
+  try {
+    fs.chmodSync(target, 0o755);
+  } catch {
+    /* best-effort on platforms without a meaningful chmod */
+  }
+  return target;
+}
+
 if (require.main === module) {
   process.exit(main(process.argv, process.env));
 }
@@ -157,6 +201,9 @@ module.exports = {
   main,
   evaluate,
   parseTransactionLines,
+  renderReferenceTransactionHook,
+  installReferenceTransactionHook,
+  PINNED_HOOK_MODULE,
   touchesProtectedRef,
   isProtectedRef,
   verifyFence,

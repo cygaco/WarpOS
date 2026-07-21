@@ -279,15 +279,19 @@ function loadBundleManifest(manifestPath) {
  * (1) UNCONDITIONAL floor: `manifest.files` must be non-empty AND include `lib/index.js` — this alone
  *     closes the "empty/self-authored external-bundle falsifier" (files:{}) attack for ANY check-lib-
  *     shaped bundle, generic or real.
- * (2) CONDITIONAL deep cross-check: when the pinned bundle ALSO ships a `lib/registry.js` (the REAL
- *     production check-lib's own convention — a separate frozen `CHECK_NAMES` source, see
- *     check-lib/registry.js's module doc), this cross-checks that registry's `CHECK_NAMES` against
+ * (2) UNCONDITIONAL deep cross-check (S3(2), R2 — BE-CQ-P4-R2-002 + SR-R2-001): the pinned bundle MUST
+ *     declare `lib/registry.js`, and that registry's `CHECK_NAMES` is cross-checked against
  *     `manifest.files`, requiring `lib/checks/<name>.js` to be pinned for EVERY registered name (never a
  *     manifest that pins the index but silently omits one checker module — R-2's "every checker, helper,
- *     dependency" promise). A bundle that does NOT declare a `lib/registry.js` at all (a generic/synthetic
- *     check-lib-shaped module used by OTHER falsifiers to prove the choke-point mechanism independent of
- *     any specific production check) is not held to this REAL-layout-specific convention — floor (1)
- *     already proves it non-vacuous.
+ *     dependency" promise).
+ *
+ *     R1 made (2) CONDITIONAL: a bundle with no `lib/registry.js` on disk was WAIVED as "generic/synthetic".
+ *     That was a false-green escape hatch — a self-authored bundle simply omits `registry.js`, and the whole
+ *     every-checker-present cross-check is skipped (security's confirmed end-to-end repro: a hand-written
+ *     `lib/index.js` exporting `CHECK_NAMES:['totally-fine']` + an all-pass `runSuite`, no registry, was
+ *     ACCEPTED and minted `expected_checks:['totally-fine']` with ZERO real checks executed). The waiver is
+ *     REMOVED. Synthetic test fixtures now ship COMPLETE bundles (index + registry + the check modules they
+ *     declare) — the fixtures conform to the strict production rule, never the reverse.
  */
 function assertBundleCompleteness(manifest, opts = {}) {
   const files = (manifest && manifest.files) || {};
@@ -296,15 +300,10 @@ function assertBundleCompleteness(manifest, opts = {}) {
   }
   const bundleRoot = path.resolve(opts.bundleRoot || "");
   const registryPath = path.join(bundleRoot, "lib", "registry.js");
-  const registryOnDisk = !!opts.bundleRoot && fs.existsSync(registryPath);
   if (!("lib/registry.js" in files)) {
-    // A manifest whose bundleRoot GENUINELY has no lib/registry.js on disk at all is a generic/synthetic
-    // check-lib-shaped bundle (used by other falsifiers to prove the choke-point mechanism independent of
-    // any specific production check) — floor (1) above already proves it non-vacuous, not held to this
-    // REAL-layout-specific convention. But a bundleRoot that DOES have registry.js on disk, with the
-    // manifest simply never PINNING it, is an omission — the manifest is silently unverifying a file that
-    // exists and could be tampered with zero detection — flagged, never a free pass.
-    return registryOnDisk ? { ok: false, missing: ["lib/registry.js"] } : { ok: true, missing: [] };
+    // UNCONDITIONAL (S3(2)): a bundle that does not pin its own frozen CHECK_NAMES source cannot be
+    // cross-checked for completeness at all — REFUSED, never waived.
+    return { ok: false, missing: ["lib/registry.js"] };
   }
   const missing = [];
   try {

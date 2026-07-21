@@ -36,12 +36,17 @@ test("AC-21 helm-runner-clean-install — a PASS panel calls the injected integr
   ];
   const res = hr.runHelms(
     { profile: "panel-2family", lanes, integrate: { base_commit: "base-x", result_commit: "y-result", target_ref: "refs/heads/main" } },
-    { integrateFn, controllerOpts: { foo: "bar" } },
+    // S2 (R2): `controllerOpts` is no longer spread VERBATIM — it is filtered to CONTROLLER_OPT_ALLOWLIST.
+    // An allowlisted coordinate (`bundleRoot`) must transit; an arbitrary key (`foo`) — and, critically, any
+    // trust-predicate seam — must NOT (see controller-di-seam-creep.falsifier.test.js for the full set).
+    { integrateFn, controllerOpts: { bundleRoot: "/b", foo: "bar", hookLivenessCheckFn: () => ({ ok: true }) } },
   );
 
   assert.strictEqual(calls, 1, "exactly ONE integration must be driven on a PASS — never zero, never more than one");
   assert.strictEqual(seenInput.result_commit, "y-result");
-  assert.strictEqual(seenOpts.foo, "bar");
+  assert.strictEqual(seenOpts.bundleRoot, "/b", "an ALLOWLISTED controllerOpts coordinate must still reach the controller");
+  assert.ok(!("foo" in seenOpts), "a non-allowlisted controllerOpts key must be DROPPED, never forwarded verbatim");
+  assert.ok(!("hookLivenessCheckFn" in seenOpts), "MUST-BLOCK: a trust-predicate seam must never transit helm-runner into the controller");
   assert.strictEqual(seenOpts.performRefUpdate, true, "AC-21/FIX-5a: the runner must FORCE performRefUpdate:true — never forward an absent/false value verbatim");
   assert.strictEqual(res.status, "PASS");
 });

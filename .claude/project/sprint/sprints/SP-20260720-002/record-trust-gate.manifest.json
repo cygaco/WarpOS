@@ -22,7 +22,10 @@
         "scripts/dispatch/falsifiers/precommit-bypass-harmless.falsifier.test.js",
         "scripts/dispatch/falsifiers/result-tree-materialization.falsifier.test.js",
         "scripts/dispatch/falsifiers/reftxn-stdin-fail-closed.falsifier.test.js",
-        "scripts/dispatch/falsifiers/reftxn-hook-not-installed.falsifier.test.js"
+        "scripts/dispatch/falsifiers/reftxn-hook-not-installed.falsifier.test.js",
+        "scripts/dispatch/falsifiers/reftxn-hook-noop-content.falsifier.test.js",
+        "scripts/dispatch/falsifiers/controller-di-seam-injection.falsifier.test.js",
+        "scripts/dispatch/falsifiers/controller-di-seam-creep.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/self-asserted-accept.positive.test.js",
@@ -43,7 +46,8 @@
         "scripts/dispatch/falsifiers/checker-self-modification.falsifier.test.js",
         "scripts/dispatch/falsifiers/pinned-bundle-path-symlink.falsifier.test.js",
         "scripts/dispatch/falsifiers/bundle-hash-mismatch.falsifier.test.js",
-        "scripts/dispatch/falsifiers/empty-bundle-manifest.falsifier.test.js"
+        "scripts/dispatch/falsifiers/empty-bundle-manifest.falsifier.test.js",
+        "scripts/dispatch/falsifiers/self-authored-bundle.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/checker-poisoning.positive.test.js"
@@ -63,7 +67,8 @@
         "scripts/dispatch/falsifiers/shared-check-library-export-drift.falsifier.test.js",
         "scripts/dispatch/falsifiers/bundle-lineage-mismatch.falsifier.test.js",
         "scripts/dispatch/falsifiers/empty-check-set.falsifier.test.js",
-        "scripts/dispatch/falsifiers/check-lib-consumer-runner-error.falsifier.test.js"
+        "scripts/dispatch/falsifiers/check-lib-consumer-runner-error.falsifier.test.js",
+        "scripts/dispatch/falsifiers/self-authored-bundle.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/shared-check-library-3consumer.positive.test.js"
@@ -87,7 +92,8 @@
         "scripts/dispatch/falsifiers/default-deny-timedout-check.falsifier.test.js",
         "scripts/dispatch/falsifiers/default-deny-skipped-required-check.falsifier.test.js",
         "scripts/dispatch/falsifiers/default-deny-crashed-check.falsifier.test.js",
-        "scripts/dispatch/falsifiers/caller-cannot-shrink-check-set.falsifier.test.js"
+        "scripts/dispatch/falsifiers/caller-cannot-shrink-check-set.falsifier.test.js",
+        "scripts/dispatch/falsifiers/controller-di-seam-creep.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/run-manifest-satisfied.positive.test.js"
@@ -149,9 +155,10 @@
       "new_in_phase3": true,
       "choke_point": "scripts/checks/record-trust-gate.js#checkVerifiedByPaths",
       "structural_guard": "scripts/checks/record-trust-gate.js",
-      "trust_anchor": "every fully-qualified verified_by path (incl. brace-expanded lists) resolves to an existing file; a manifest with no sibling prd.md is unaffected",
+      "trust_anchor": "EVERY verified_by form resolves to a real file — fully-qualified paths (incl. brace-expanded lists) by existence, BARE filenames by repo basename resolution, fail-closed on unresolvable (S5/R2: class_closer_enforced true for all forms); a manifest with no sibling prd.md is unaffected",
       "falsifier_fixtures": [
-        "scripts/dispatch/falsifiers/verified-by-dangling-reference.falsifier.test.js"
+        "scripts/dispatch/falsifiers/verified-by-dangling-reference.falsifier.test.js",
+        "scripts/dispatch/falsifiers/verified-by-bare-filename.falsifier.test.js"
       ],
       "positive_companions": []
     }

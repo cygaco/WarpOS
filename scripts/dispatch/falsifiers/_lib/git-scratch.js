@@ -37,15 +37,33 @@ function makeBareRemote(tag) {
   return dir;
 }
 
-/** Install the REAL protected-ref-transaction hook into `dir`'s `.git/hooks/` (or a bare repo's `hooks/`). */
+/** Resolve `dir`'s hooks directory (`.git/hooks` for a normal repo, `hooks/` for a bare one). */
+function hooksDirOf(dir) {
+  return fs.existsSync(path.join(dir, ".git")) ? path.join(dir, ".git", "hooks") : path.join(dir, "hooks");
+}
+
+/**
+ * Install the REAL protected-ref-transaction hook into `dir`'s hooks directory. S4 (R2): the wrapper text
+ * comes from the ONE in-repo canonical source (`protected-ref-transaction.js#installReferenceTransactionHook`
+ * -> `#renderReferenceTransactionHook`), the same definition `trusted-controller.js#verifyActiveHookInstalled`
+ * verifies against — so "what the installer writes" and "what the verifier accepts" cannot drift.
+ */
 function installHook(dir) {
-  const hooksDir = path.join(dir, ".git", "hooks");
-  const bareHooksDir = path.join(dir, "hooks");
-  const hooksTarget = fs.existsSync(path.join(dir, ".git")) ? hooksDir : bareHooksDir;
+  // eslint-disable-next-line global-require
+  const reftxn = require(HOOK_SRC);
+  return reftxn.installReferenceTransactionHook(hooksDirOf(dir), HOOK_SRC);
+}
+
+/**
+ * installNoopHook(dir) -> the hook path. S4 teeth: a name-BEARING NO-OP hook — the plausible MISTAKE case
+ * (a mis-generated / truncated / corrupted installer output that keeps the module name as a COMMENT while
+ * enforcing nothing). It must NOT satisfy the liveness precondition.
+ */
+function installNoopHook(dir, body) {
+  const hooksTarget = hooksDirOf(dir);
   fs.mkdirSync(hooksTarget, { recursive: true });
   const target = path.join(hooksTarget, "reference-transaction");
-  const body = `#!/usr/bin/env bash\nexec node "${HOOK_SRC.replace(/\\/g, "/")}" "$@"\n`;
-  fs.writeFileSync(target, body);
+  fs.writeFileSync(target, body || "#!/usr/bin/env bash\n# protected-ref-transaction.js\nexit 0\n");
   try {
     fs.chmodSync(target, 0o755);
   } catch {
@@ -93,6 +111,8 @@ module.exports = {
   makeScratchRepo,
   makeBareRemote,
   installHook,
+  installNoopHook,
+  hooksDirOf,
   headSha,
   fenceEnv,
   noFenceEnv,

@@ -29,6 +29,29 @@ const controller = require("./trusted-controller");
 
 const DEFAULT_PROFILE = "panel-2family";
 
+/**
+ * CONTROLLER_OPT_ALLOWLIST (S2 / BE-CQ-P4-R2-001 + SR-R2-002, ED-225-227 class) — the EXACT set of keys this
+ * module will forward into `trusted-controller.js#integrate`. Previously `opts.controllerOpts` was spread
+ * VERBATIM, which meant any caller of `runHelms` could hand the controller a whole-predicate override seam
+ * (`hookLivenessCheckFn`, `materializeResultTreeFn`, `checkLibSrcRoot`, `liveHead`, …) and bypass the trust
+ * preconditions from OUTSIDE the trusted layer. `integrate()` itself no longer reads any such seam, but
+ * forwarding an arbitrary caller object into the sole integration principal is the wrong SHAPE regardless —
+ * defense in depth, and a structural statement of what a helm run is allowed to influence.
+ * `performRefUpdate` is deliberately ABSENT: it is FORCED to `true` below (FIX-5a), never caller-supplied.
+ */
+const CONTROLLER_OPT_ALLOWLIST = Object.freeze(["bundleManifestPath", "bundleRoot", "candidateRoot", "spId", "leaseRoot", "gitRoot"]);
+
+/** sanitizeControllerOpts(o) -> a NEW object carrying ONLY CONTROLLER_OPT_ALLOWLIST keys present on `o`.
+ *  Function seams, prototype keys, and symbol keys can never survive this copy. */
+function sanitizeControllerOpts(o) {
+  const out = {};
+  if (!o || typeof o !== "object") return out;
+  for (const k of CONTROLLER_OPT_ALLOWLIST) {
+    if (Object.prototype.hasOwnProperty.call(o, k)) out[k] = o[k];
+  }
+  return out;
+}
+
 // FIX-5a (QA-005/BE-CQ-P4-001+002/SR-TRUSTROOT-004): a distinct, non-PASS top-level status for "the panel
 // itself was PASS-worthy, but the ONE integration this run was supposed to drive through the controller
 // was refused/blocked/didn't actually mutate the ref" — never silently collapsed back into panel.status
@@ -91,38 +114,12 @@ function runHelms(input = {}, opts = {}) {
   const rawLanes = Array.isArray(input.lanes) ? input.lanes : [];
   const perHelm = rawLanes.map((l) => collectLaneEvidence(l, l && l.runResult));
 
-  let panel = panelLanes.panelStatus(profile, perHelm, { agyOperatorOwned });
-
-  // FIX-5b (QA-005/BE-CQ-P4-001+002/SR-TRUSTROOT-004, β rider 5 BINDING): `panelStatus` only evaluates
-  // lanes named in `profile.required` — an OPTIONAL lane (e.g. agy on panel-2family) that is PRESENT in
-  // `perHelm` but NOT in `profile.required` is never even looked at by that reducer, so a present-and-
-  // FAILED optional lane was silently DROPPED and the panel still read PASS. β rider 5 is explicit: "an
-  // optional lane that RAN and FAILED BINDS" — absence is tolerated, a real failure is NOT. This closes
-  // that gap WITHOUT touching panel-lanes.js's own required/optional reduction authority: it reuses the
-  // SAME evidence shape (`hasEvidence`/`alive`/`verdict`) panelStatus itself gates on, applied ONLY to the
-  // lanes panelStatus's required-only loop never visited.
-  if (panel.status === panelLanes.STATUS.PASS) {
-    const requiredIds = new Set((profile && profile.required) || []);
-    const optionalRanAndFailed = perHelm.filter((l) => {
-      if (!l || !l.laneId || requiredIds.has(l.laneId)) return false; // required lanes already reduced above
-      if (l.hasEvidence !== true) return false; // ABSENT (or unprovable) optional lane — tolerated, never binds
-      const coerced = l.fallback === true || !l.observedProvider || (!!l.contractedProvider && l.observedProvider !== l.contractedProvider);
-      if (coerced) return false; // a coerced/fallback optional lane is not "ran and failed" — panel-lanes' own coercion semantics stay authoritative for required lanes only; an optional coerced lane is simply not proof of anything, not a bind
-      if (l.alive !== true) return false; // a dead optional lane is unprovable, not a proven failure
-      return String(l.verdict || "").toLowerCase() === "fail";
-    });
-    if (optionalRanAndFailed.length) {
-      const failedIds = optionalRanAndFailed.map((l) => l.laneId);
-      const laneStatus = { ...panel.laneStatus };
-      for (const id of failedIds) laneStatus[id] = "fail";
-      panel = {
-        ...panel,
-        status: panelLanes.STATUS.FAIL,
-        reason: `optional lane(s) RAN and FAILED (binds, β rider 5): ${failedIds.join(", ")}`,
-        laneStatus,
-      };
-    }
-  }
+  // FIX-5b R2 (BE-CQ-P4-001): `panelStatus` is the SINGLE lane-reduction authority — required AND present-
+  // optional. The R1 bolt-on reducer that used to live here (binding only the CLEAN alive-uncoerced
+  // `verdict:'fail'` optional sub-case) has been DELETED: a second reduction authority is exactly how the
+  // coerced/dead/malformed present-optional cases got silently dropped. This module now consumes
+  // `panelStatus`'s verdict verbatim and never re-derives a lane status of its own.
+  const panel = panelLanes.panelStatus(profile, perHelm, { agyOperatorOwned });
 
   let integration;
   if (panel.status === panelLanes.STATUS.PASS && input.integrate) {
@@ -132,7 +129,7 @@ function runHelms(input = {}, opts = {}) {
     // this runner must never reproduce). `performRefUpdate:true` is FORCED here, the one and only place
     // this module ever decides that. A throwing integrateFn is caught — never a silent pass.
     try {
-      integration = integrateFn(input.integrate, { ...(opts.controllerOpts || {}), performRefUpdate: true });
+      integration = integrateFn(input.integrate, { ...sanitizeControllerOpts(opts.controllerOpts), performRefUpdate: true });
     } catch (e) {
       integration = { ok: false, decision: "BLOCKED", reason: "integrate-threw", detail: e && e.message ? e.message : String(e) };
     }
@@ -158,6 +155,8 @@ function runHelms(input = {}, opts = {}) {
 module.exports = {
   runHelms,
   collectLaneEvidence,
+  sanitizeControllerOpts,
+  CONTROLLER_OPT_ALLOWLIST,
   DEFAULT_PROFILE,
   INTEGRATION_BLOCKED,
 };

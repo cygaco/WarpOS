@@ -168,11 +168,40 @@ function loadPinnedCheckLib(bundleManifest, opts = {}) {
     throw err;
   }
 
-  // FIX-4b (QA-004/RT-602/RT-603, β R2 load-bearing at merge-time): promotion.from_src_digest MUST match a
-  // FRESH digest of the LIVE check-lib source — never adopted from the manifest's own self-report and never
-  // left a dormant, optional CLI-only check (check-lib-single-source.js's own `checkLineage`). A pinned
-  // bundle whose promoted source has DRIFTED from the live check-lib (an edit since the last promotion) is
-  // refused here, on the merge path itself, before the pinned suite ever executes.
+  // FIX-4b (QA-004/RT-602/RT-603, β R2 load-bearing at merge-time) + S3(1) R2 (BE-CQ-P4-R2-002 +
+  // SR-R2-001, SELF-AUTHENTICATING BUNDLE): lineage is a THREE-way identity, and the first leg binds the
+  // bundle's OWN `lib/` CONTENTS:
+  //
+  //     sourceDigestOf(bundleRoot/lib) === manifest.promotion.from_src_digest === sourceDigestOf(live src)
+  //
+  // R1 compared ONLY the last two — and `promotion.from_src_digest` is a CALLER-AUTHORED manifest field.
+  // An attacker just SETS it to the (publicly readable) live-source digest while shipping an arbitrary
+  // `lib/index.js`: the claim matched, nothing ever bound the bundle's actual bytes, and a self-authored
+  // check-lib exporting an all-pass `runSuite` was accepted (security's confirmed end-to-end repro). Binding
+  // the RECOMPUTED digest of what is actually on disk under `bundleRoot/lib` makes the manifest's claim
+  // unforgeable: to satisfy it, the bundle's contents must genuinely BE the live check-lib source.
+  //
+  // NOTE the digest-domain identity this relies on: `buildBundle` promotes via `copyTreeInto(srcRoot, lib/)`
+  // — a faithful, relative-structure-preserving copy — and `sourceDigestOf` is a pure walk of a root, so
+  // `sourceDigestOf(bundleRoot/lib) === sourceDigestOf(srcRoot)` for any honestly-promoted bundle, BY
+  // CONSTRUCTION. A drifted-but-honestly-promoted bundle (the FIX-4b falsifier) still fails on the SECOND
+  // leg with the distinct `bundle-lineage-mismatch` code; a self-authored bundle fails on the FIRST with
+  // `bundle-content-lineage-mismatch`.
+  const bundleLibRoot = path.join(bundleRoot, "lib");
+  if (!fs.existsSync(bundleLibRoot) || !fs.statSync(bundleLibRoot).isDirectory()) {
+    const err = new Error(`trusted-controller: pinned bundle has no lib/ directory at ${bundleLibRoot} — cannot bind bundle contents to the promotion claim`);
+    err.code = "bundle-lineage-unresolvable";
+    throw err;
+  }
+  let bundleLibDigest;
+  try {
+    bundleLibDigest = pcb.sourceDigestOf(bundleLibRoot);
+  } catch (e) {
+    const err = new Error(`trusted-controller: cannot compute the pinned bundle's own lib/ content digest: ${e.message}`);
+    err.code = "bundle-lineage-unresolvable";
+    throw err;
+  }
+
   const checkLibSrcRoot = opts.checkLibSrcRoot || pcb.DEFAULT_LIB_SRC;
   let freshSrcDigest;
   try {
@@ -183,7 +212,18 @@ function loadPinnedCheckLib(bundleManifest, opts = {}) {
     throw err;
   }
   const pinnedSrcDigest = bundleManifest.promotion && bundleManifest.promotion.from_src_digest;
-  if (!pinnedSrcDigest || pinnedSrcDigest !== freshSrcDigest) {
+
+  // LEG 1 — the bundle's ACTUAL contents must equal what its promotion record CLAIMS it was promoted from.
+  // A caller-authored `from_src_digest` that does not describe the bytes on disk is a forged provenance.
+  if (!pinnedSrcDigest || pinnedSrcDigest !== bundleLibDigest) {
+    const err = new Error(
+      "trusted-controller: pinned bundle's OWN lib/ contents do not hash to its promotion.from_src_digest — the promotion claim is not backed by the bundle's actual bytes (self-authored/forged bundle, S3(1))",
+    );
+    err.code = "bundle-content-lineage-mismatch";
+    throw err;
+  }
+  // LEG 2 — and that promoted source must still be the LIVE check-lib source (no drift since promotion).
+  if (pinnedSrcDigest !== freshSrcDigest) {
     const err = new Error(
       "trusted-controller: pinned bundle promotion.from_src_digest does not match the LIVE check-lib source (β R2 lineage — re-promote the bundle before integrating)",
     );
@@ -512,10 +552,61 @@ function defaultLeaseTokenResolver(spId, leaseRoot) {
  * the pinned `scripts/hooks/protected-ref-transaction.js` module (which must itself exist on disk), and —
  * on POSIX — carries an executable bit. An absent/wrong/un-wired ACTIVE hook REFUSES integration.
  *
- * HONEST CEILING (unchanged): hook file DELETION by a hostile shell, or a hostile `core.hooksPath`
- * redirect performed WITH matching hook content planted at the new location, stay operator-DROPPED — this
- * closes the MISTAKE-class defect (not-installed), never adversarial containment.
+ * S4 R2 (QA-SP002-001 / QA-SP002-R2-001) — "references" is now PROVEN INVOCATION, not a name substring.
+ * R1 accepted any hook whose content matched `/protected-ref-transaction(\.js)?/`, so a no-op hook
+ * (`# protected-ref-transaction.js` + `exit 0`) — a plausible MISTAKE (a mis-generated / truncated /
+ * corrupted installer output that keeps the name comment) — verified as "pinned" while enforcing NOTHING.
+ * The predicate is now two-tier, and BOTH tiers prove the pinned module is actually EXECUTED:
+ *   (a) FAST PATH — the active hook's content is byte-identical to the canonical wrapper
+ *       `protected-ref-transaction.js#renderReferenceTransactionHook(pinnedHookSrc)` (the exact text the
+ *       sanctioned installer writes). One in-repo source for install AND verify: they cannot drift.
+ *   (b) STRUCTURAL PATH — for a hand-installed/legacy variant, `extractPinnedHookInvocation` parses the
+ *       hook for a real INVOCATION line (comment lines are stripped first — a name in a comment proves
+ *       nothing) naming a path that ends in `protected-ref-transaction.js`, resolves that path (absolute,
+ *       or relative to hooksDir/gitRoot/PROJECT_ROOT), and requires its REALPATH to equal the realpath of
+ *       the pinned module. A hook that invokes nothing, or invokes a DIFFERENT file, is REFUSED.
+ *
+ * HONEST CEILING (unchanged): hook file DELETION by a hostile shell, a hostile `core.hooksPath` redirect
+ * performed WITH matching hook content planted at the new location, or a hostile rewrite of the pinned
+ * module itself, stay operator-DROPPED — this closes the MISTAKE-class defects (not-installed, no-op/
+ * corrupted content, wrong module), never adversarial containment.
  */
+
+/** Lines that are entirely a shell comment prove nothing about what the hook EXECUTES. */
+function stripHookComments(content) {
+  return String(content || "")
+    .split(/\r?\n/)
+    .filter((raw) => {
+      const line = raw.trim();
+      return line && !line.startsWith("#");
+    });
+}
+
+/**
+ * extractPinnedHookInvocation(content) -> {line, rawPath} | null. Finds the first NON-COMMENT line that
+ * both (i) looks like an invocation (`exec`, `node`, `source`, a leading `.`, or a JS `require(`) and
+ * (ii) names a path token ending in `protected-ref-transaction.js`. Exported for the S4 teeth.
+ */
+function extractPinnedHookInvocation(content) {
+  const INVOKES = /(^|\s)(exec|source|node(\.exe)?|\.)(\s|$)|require\s*\(/;
+  const PATHTOK = /["']?([^"'\s]*protected-ref-transaction\.js)["']?/;
+  for (const line of stripHookComments(content)) {
+    if (!INVOKES.test(line)) continue;
+    const m = line.match(PATHTOK);
+    if (!m) continue;
+    return { line, rawPath: m[1] };
+  }
+  return null;
+}
+
+function realpathOrNull(p) {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return null;
+  }
+}
+
 function verifyActiveHookInstalled(opts = {}) {
   const gitRoot = opts.gitRoot;
   const pinnedHookSrc = opts.pinnedHookSrcPath || path.resolve(__dirname, "..", "hooks", "protected-ref-transaction.js");
@@ -544,8 +635,34 @@ function verifyActiveHookInstalled(opts = {}) {
   } catch (e) {
     return { ok: false, reason: "active-hook-unreadable", hooksDir, hookPath, detail: e.message };
   }
-  if (!/protected-ref-transaction(\.js)?/.test(content)) {
-    return { ok: false, reason: "active-hook-not-pinned", hooksDir, hookPath };
+  // (a) FAST PATH — byte-identical to the canonical wrapper the sanctioned installer writes.
+  const canonical = reftxn.renderReferenceTransactionHook(pinnedHookSrc);
+  const contentIsCanonical = content.replace(/\r\n/g, "\n") === canonical;
+
+  if (!contentIsCanonical) {
+    // (b) STRUCTURAL PATH — prove the hook genuinely INVOKES the pinned module (never a name substring).
+    const invocation = extractPinnedHookInvocation(content);
+    if (!invocation) {
+      // The exact case QA-SP002-001 named: a name-bearing NO-OP (`# protected-ref-transaction.js` + `exit 0`)
+      // — the name appears, nothing is ever executed.
+      return { ok: false, reason: "active-hook-not-pinned", hooksDir, hookPath, detail: "no resolvable invocation of the pinned protected-ref-transaction.js module (a name/comment is not an invocation)" };
+    }
+    const raw = invocation.rawPath;
+    const candidates = path.isAbsolute(raw) ? [raw] : [path.resolve(hooksDir, raw), path.resolve(gitRoot || PROJECT_ROOT, raw), path.resolve(PROJECT_ROOT, raw)];
+    const pinnedReal = realpathOrNull(pinnedHookSrc) || path.resolve(pinnedHookSrc);
+    const matched = candidates.some((c) => {
+      const real = realpathOrNull(c);
+      return !!real && real === pinnedReal;
+    });
+    if (!matched) {
+      return {
+        ok: false,
+        reason: "active-hook-not-pinned-module",
+        hooksDir,
+        hookPath,
+        detail: `the active hook invokes '${raw}', which does not resolve to the pinned module ${pinnedReal}`,
+      };
+    }
   }
   if (process.platform !== "win32") {
     let st;
@@ -564,37 +681,94 @@ function verifyActiveHookInstalled(opts = {}) {
 // ── the ONE public entrypoint. ──────────────────────────────────────────────────────────────────────────
 
 /**
- * integrate(input, opts) -> {ok, decision, reason?, receipt?, runManifest, offending?}.
+ * PRODUCTION_OPT_KEYS — the EXACT, FROZEN set of `opts` keys the production entrypoint is allowed to read.
+ *
+ * S2 R2 (BE-CQ-P4-R2-001 + SR-R2-002, the ED-225-227 settable-label class): R1 removed ONE caller-suppliable
+ * seam (`opts.checkContext`) and left NINE strictly more powerful ones — `hookLivenessCheckFn`,
+ * `materializeResultTreeFn`, `materializedTreeResolver`, `treeResolver`, `commitResolver`,
+ * `ancestryResolver`, `leaseTokenResolver`, `checkLibSrcRoot`, `liveHead` — each a WHOLE-PREDICATE override
+ * gated only by a docstring saying "test-only". A comment is not a boundary: any caller of `integrate()`
+ * (and, via a verbatim `controllerOpts` spread, any caller of `helm-runner.js#runHelms`) could hand in
+ * `hookLivenessCheckFn: () => ({ok:true})` and bypass the FIX-3 hook precondition, or
+ * `materializeResultTreeFn` to substitute the scanned tree (re-opening FIX-1), or `checkLibSrcRoot`/
+ * `liveHead` to spoof lineage / the CAS TOCTOU head. Trust was being decided by caller-settable inputs.
+ *
+ * THE STRUCTURAL FIX (the repo's own sanctioned `acceptance-record.js#produceForTest` /
+ * `forgeInvalidRecordForTest` pattern): the seams are no longer reachable through `opts` AT ALL. Production
+ * `integrate()` is hard-wired to the REAL implementations; tests that need to drive a seam call the
+ * SEPARATE `integrateForTest(input, opts, seams)` export directly. `sanitizeOpts` picks only the keys below
+ * — so even `integrateForTest` cannot smuggle a seam through `opts`, and `integrateInternal` reads seams
+ * ONLY from its third parameter. Creep-back is caught by the structural guard teeth
+ * (`controller-di-seam-creep.falsifier.test.js`), which asserts the exact key set AND source-scans
+ * `integrateInternal` for any opts read outside this allowlist.
+ */
+const PRODUCTION_OPT_KEYS = Object.freeze(["bundleManifestPath", "bundleRoot", "candidateRoot", "spId", "leaseRoot", "gitRoot", "performRefUpdate"]);
+
+/** sanitizeOpts(opts) -> a NEW plain object carrying ONLY PRODUCTION_OPT_KEYS. Function seams, unknown
+ *  keys, prototype-chain keys and Symbol keys can never survive this copy. */
+function sanitizeOpts(opts) {
+  const out = {};
+  if (!opts || typeof opts !== "object") return out;
+  for (const k of PRODUCTION_OPT_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(opts, k)) out[k] = opts[k];
+  }
+  return out;
+}
+
+/** REAL_SEAMS — the production wiring. `null`/`undefined` means "let the callee use its own real default". */
+const REAL_SEAMS = Object.freeze({
+  hookLivenessCheck: verifyActiveHookInstalled,
+  materializeResultTree,
+  treeResolver: null,
+  materializedTreeResolver: null,
+  commitResolver: null,
+  ancestryResolver: null,
+  leaseTokenResolver: defaultLeaseTokenResolver,
+  checkLibSrcRoot: null,
+  liveHead: undefined,
+});
+
+/**
+ * integrate(input, opts) -> {ok, decision, reason?, receipt?, runManifest, offending?}. THE production
+ * entrypoint. Hard-wired to REAL_SEAMS — there is NO caller-suppliable override of any trust predicate.
  *
  * `input`: {workorder, base_commit, result_commit, target_ref, result_envelope, expected_checks?} —
  *   `result_envelope` is UNTRUSTED DATA (never read to decide anything, β rider 1); `base_commit`/
  *   `result_commit` are CLAIMS re-resolved from real git before anything else happens.
- * `opts`: {bundleManifestPath, bundleRoot, candidateRoot?, spId, leaseRoot, gitRoot, performRefUpdate,
- *   treeResolver?, commitResolver?, ancestryResolver?, leaseTokenResolver?, liveHead?,
- *   materializedTreeResolver?, materializeResultTreeFn?, checkLibSrcRoot?, hookLivenessCheckFn?} — the
- *   resolver seams mirror acceptance-record.js's own injectables for hermetic falsifiers; `liveHead` is an
- *   OPTIONAL test-only seam forwarded straight to acceptance-record.js#commitIntegration's own
- *   `opts.liveHead` (a TOCTOU simulation hook — production callers never set it, letting commitIntegration
- *   resolve the real live head). `materializeResultTreeFn`/`materializedTreeResolver` are the FIX-1
- *   test-only seams over `materializeResultTree`; `hookLivenessCheckFn` is the FIX-3 test-only seam over
- *   `verifyActiveHookInstalled` (production callers never set any of these — there is deliberately NO
- *   boolean skip flag for the hook-liveness precondition; only a full function-override seam, same shape
- *   as every other resolver injectable in this module).
+ * `opts`: EXACTLY {bundleManifestPath, bundleRoot, candidateRoot?, spId, leaseRoot, gitRoot,
+ *   performRefUpdate} (PRODUCTION_OPT_KEYS) — anything else a caller passes is DROPPED by `sanitizeOpts`.
  *
  * `decision` is always one of `"INTEGRATED"` (ok:true) or `"BLOCKED"` (ok:false); `reason` is a machine-
  * checkable, distinct string per failure mode (see reconcileRunManifest / acceptance-record.js's own reason
  * vocabulary, which this function surfaces verbatim rather than re-wrapping).
  */
 function integrate(input = {}, opts = {}) {
-  const gitRoot = opts.gitRoot || PROJECT_ROOT;
-  const resolveCommit = typeof opts.commitResolver === "function" ? opts.commitResolver : acceptanceRecord.resolveCommitSha;
-  const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : acceptanceRecord.resolveTreeHash;
+  return integrateInternal(input, sanitizeOpts(opts), REAL_SEAMS);
+}
+
+/**
+ * integrateForTest(input, opts, seams) -> same shape as `integrate()`. The SANCTIONED test-producer seam
+ * (same pattern as `acceptance-record.js#produceForTest` / `#forgeInvalidRecordForTest`): a SEPARATE named
+ * export the falsifier corpus calls DIRECTLY, deliberately NOT reachable through the production API. `opts`
+ * is still sanitized to PRODUCTION_OPT_KEYS — a seam can only ever arrive via the explicit third parameter,
+ * so a production-shaped caller holding only `(input, opts)` can never reach one.
+ */
+function integrateForTest(input = {}, opts = {}, seams = {}) {
+  return integrateInternal(input, sanitizeOpts(opts), { ...REAL_SEAMS, ...(seams && typeof seams === "object" ? seams : {}) });
+}
+
+/** integrateInternal(input, o, seams) — `o` is ALWAYS a sanitized opts object (PRODUCTION_OPT_KEYS only);
+ *  every trust predicate comes from `seams`, never from `o`. */
+function integrateInternal(input = {}, o = {}, seams = REAL_SEAMS) {
+  const gitRoot = o.gitRoot || PROJECT_ROOT;
+  const resolveCommit = typeof seams.commitResolver === "function" ? seams.commitResolver : acceptanceRecord.resolveCommitSha;
+  const resolveTree = typeof seams.treeResolver === "function" ? seams.treeResolver : acceptanceRecord.resolveTreeHash;
 
   // (0) FIX-3 (QA-001/RT-604) FAIL-CLOSED PRECONDITION: the sole-route hook (Seam E) must be genuinely
   //     ACTIVE for THIS repo — never merely "a falsifier installed a scratch hook somewhere else". Checked
   //     BEFORE anything else so an un-fenced repo can never even reach a commit-resolution/bundle-load
   //     error message that might look like "everything else passed."
-  const hookCheckFn = typeof opts.hookLivenessCheckFn === "function" ? opts.hookLivenessCheckFn : verifyActiveHookInstalled;
+  const hookCheckFn = typeof seams.hookLivenessCheck === "function" ? seams.hookLivenessCheck : verifyActiveHookInstalled;
   const hookCheck = hookCheckFn({ gitRoot });
   if (!hookCheck.ok) {
     return { ok: false, decision: "BLOCKED", reason: hookCheck.reason || "hook-not-installed", detail: hookCheck };
@@ -611,17 +785,23 @@ function integrate(input = {}, opts = {}) {
   // (2) Seam B — load + verify the pinned bundle, peek its frozen CHECK_NAMES/REQUIRED_CHECKS for the mint.
   let bundleManifest, pinnedIndex;
   try {
-    bundleManifest = pcb.loadBundleManifest(opts.bundleManifestPath);
-    pinnedIndex = loadPinnedCheckLib(bundleManifest, opts);
+    bundleManifest = pcb.loadBundleManifest(o.bundleManifestPath);
+    pinnedIndex = loadPinnedCheckLib(bundleManifest, {
+      bundleRoot: o.bundleRoot,
+      candidateRoot: o.candidateRoot,
+      // `checkLibSrcRoot` is a SEAM, never an opts key — production passes undefined so loadPinnedCheckLib
+      // uses pcb.DEFAULT_LIB_SRC (the real live check-lib source).
+      checkLibSrcRoot: seams.checkLibSrcRoot || undefined,
+    });
   } catch (e) {
     return { ok: false, decision: "BLOCKED", reason: e.code || "bundle-load-failed", detail: e.message };
   }
 
   // (3) Resolve the CURRENT lease-fencing token — never caller-asserted.
-  const resolveLeaseToken = typeof opts.leaseTokenResolver === "function" ? opts.leaseTokenResolver : defaultLeaseTokenResolver;
+  const resolveLeaseToken = typeof seams.leaseTokenResolver === "function" ? seams.leaseTokenResolver : defaultLeaseTokenResolver;
   let leaseToken = null;
   try {
-    leaseToken = resolveLeaseToken(opts.spId, opts.leaseRoot);
+    leaseToken = resolveLeaseToken(o.spId, o.leaseRoot);
   } catch {
     leaseToken = null;
   }
@@ -629,7 +809,7 @@ function integrate(input = {}, opts = {}) {
   // (4) Mint the nonce-bound run manifest (β R1 — check-set provenance).
   let runManifest;
   try {
-    runManifest = mintRunManifest(input, opts, { bundleManifest, pinnedIndex, baseCommit, resultCommit, targetRef, leaseToken });
+    runManifest = mintRunManifest(input, o, { bundleManifest, pinnedIndex, baseCommit, resultCommit, targetRef, leaseToken });
   } catch (e) {
     return { ok: false, decision: "BLOCKED", reason: e.code || "run-manifest-mint-failed", detail: e.message };
   }
@@ -637,14 +817,13 @@ function integrate(input = {}, opts = {}) {
   // (5) FIX-1 (QA-003/RT-601): materialize EXACTLY result_commit's tree into a trusted, OUT-of-candidate
   //     path — NEVER scan `gitRoot` (the caller's mutable working tree, which may not even be checked out
   //     at resultCommit). `checkContext` (a caller-suppliable ctx override) has been REMOVED from this
-  //     production entrypoint entirely — there is no longer any opts-level seam that can substitute what
-  //     files the suite scans; only the resolver-level test seams below (`treeResolver`,
-  //     `materializedTreeResolver`, `materializeResultTreeFn`) remain, matching every other injectable in
-  //     this module.
-  const materializeFn = typeof opts.materializeResultTreeFn === "function" ? opts.materializeResultTreeFn : materializeResultTree;
+  //     production entrypoint entirely, and S2 (R2) removed the resolver-level seams from `opts` too —
+  //     `materializeResultTree`/`treeResolver`/`materializedTreeResolver` now arrive ONLY via the internal
+  //     `seams` parameter, which no caller of `integrate()` can populate.
+  const materializeFn = typeof seams.materializeResultTree === "function" ? seams.materializeResultTree : materializeResultTree;
   let materialized;
   try {
-    materialized = materializeFn(resultCommit, { gitRoot, treeResolver: opts.treeResolver, materializedTreeResolver: opts.materializedTreeResolver });
+    materialized = materializeFn(resultCommit, { gitRoot, treeResolver: seams.treeResolver, materializedTreeResolver: seams.materializedTreeResolver });
   } catch (e) {
     return { ok: false, decision: "BLOCKED", reason: e.code || "result-tree-materialize-failed", detail: e.message, runManifest };
   }
@@ -660,11 +839,11 @@ function integrate(input = {}, opts = {}) {
     pinnedResult = pcb.runPinnedSuite(
       bundleManifest,
       { envelope: input.result_envelope, root: materialized.dir },
-      { bundleRoot: opts.bundleRoot, candidateRoot: opts.candidateRoot || gitRoot, nonce: runManifest.nonce },
+      { bundleRoot: o.bundleRoot, candidateRoot: o.candidateRoot || gitRoot, nonce: runManifest.nonce },
     );
     // Post-run re-verify (mirrors pinned-checker-bundle's own pre/post fence): the MATERIALIZED tree's own
     // hash must be UNCHANGED after the suite ran.
-    const postVerify = typeof opts.materializedTreeResolver === "function" ? opts.materializedTreeResolver : acceptanceRecord.resolveTreeHash;
+    const postVerify = typeof seams.materializedTreeResolver === "function" ? seams.materializedTreeResolver : acceptanceRecord.resolveTreeHash;
     const postTree = postVerify("HEAD", { gitRoot: materialized.dir });
     if (!postTree || String(postTree).toLowerCase() !== String(materialized.treeHash).toLowerCase()) {
       return { ok: false, decision: "BLOCKED", reason: "result-tree-mutated-mid-run", runManifest };
@@ -719,29 +898,29 @@ function integrate(input = {}, opts = {}) {
 
   const authorized = acceptanceRecord.authorizesIntegration(record, targetRef, {
     integrationHead: baseCommit,
-    spId: opts.spId,
-    leaseRoot: opts.leaseRoot,
+    spId: o.spId,
+    leaseRoot: o.leaseRoot,
     gitRoot,
-    treeResolver: opts.treeResolver,
-    commitResolver: opts.commitResolver,
-    ancestryResolver: opts.ancestryResolver,
+    treeResolver: seams.treeResolver,
+    commitResolver: seams.commitResolver,
+    ancestryResolver: seams.ancestryResolver,
   });
   if (!authorized) {
     return { ok: false, decision: "BLOCKED", reason: "not-authorized", runManifest };
   }
 
   // Seam E: the controller fence is set ONLY around this call — the ONE sanctioned mutating write.
-  const commit = withControllerFence(opts.spId, leaseToken, opts.leaseRoot, () =>
+  const commit = withControllerFence(o.spId, leaseToken, o.leaseRoot, () =>
     acceptanceRecord.commitIntegration(record, targetRef, {
       expectedHead: baseCommit,
       newHead: resultCommit,
-      performRefUpdate: opts.performRefUpdate === true,
-      spId: opts.spId,
-      leaseRoot: opts.leaseRoot,
+      performRefUpdate: o.performRefUpdate === true,
+      spId: o.spId,
+      leaseRoot: o.leaseRoot,
       gitRoot,
-      treeResolver: opts.treeResolver,
+      treeResolver: seams.treeResolver,
       integrationHead: baseCommit,
-      liveHead: opts.liveHead, // test-only TOCTOU seam; undefined in production (real resolve applies)
+      liveHead: seams.liveHead, // internal TOCTOU seam (integrateForTest only); undefined in production
     }),
   );
   if (!commit.ok) {
@@ -753,6 +932,10 @@ function integrate(input = {}, opts = {}) {
 
 module.exports = {
   integrate,
+  integrateForTest,
+  PRODUCTION_OPT_KEYS,
+  sanitizeOpts,
+  extractPinnedHookInvocation,
   assertAcceptanceRecordContract,
   mintRunManifest,
   reconcileRunManifest,
