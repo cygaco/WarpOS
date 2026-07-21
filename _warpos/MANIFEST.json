@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-21T23:10:30.240Z",
+  "generatedAt": "2026-07-21T23:11:18.053Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
