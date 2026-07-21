@@ -101,6 +101,21 @@ const ALLOWLIST = Object.freeze({
     reason:
       "The unit-path CAS (commitIntegration) — the OTHER sanctioned mutating write, fenced + acceptance-bound. A merge/release write has no AcceptanceRecord, which is why the transport CAS is a separate site.",
   },
+  "scripts/dispatch/broker-merge.js": {
+    kind: "alpha-hand",
+    reason:
+      "self-brokering: calls integrateBranchMerge. #5, the α-merge dogfood helper (D-4 INC-1 MIG) — builds the merge object with commit-tree (moves NO ref), holds the conductor lease, and hands the object to the broker, which owns the only CAS. Its ordinary-route lines are the PRE-FLIP fallback, reachable only through broker-dogfood.js#attemptFallback: operational-only, refused on any security verdict, and never performed unless a ledger record was written first.",
+  },
+  "scripts/dispatch/broker-release-commit.js": {
+    kind: "alpha-hand",
+    reason:
+      "self-brokering: calls integrateReleaseCommit. #6, the regen/bookkeeping commit route (D-4 INC-1 MIG) — same shape as broker-merge.js: single-parent commit built with commit-tree (moves NO ref), brokered CAS, audited pre-flip fallback.",
+  },
+  "scripts/dispatch/broker-dogfood.js": {
+    kind: "alpha-hand",
+    reason:
+      "self-brokering support layer for the two helpers above (D-4 INC-1 MIG). Owns `ordinaryLand` — the ONLY un-brokered write in the dogfood path — behind the `attemptFallback` gate that classifies the broker's refusal (security/usage ⇒ never fall back) and refuses to write at all unless the fallback was LOGGED + COUNTED first. Post-flip the Seam E hook refuses this route outright, which is what ends the dogfood period.",
+  },
   "scripts/hooks/protected-ref-transaction.js": {
     kind: "broker",
     reason: "The Seam E reference-transaction hook itself — the runtime fence that refuses un-brokered writes.",
