@@ -24,6 +24,13 @@
  *    A null run_id means no orchestrator exported WARPOS_RUN_ID — the gate
  *    correctly rejects it, making run-scoped coverage unsatisfiable for null runs.
  *
+ *  ED-231 (SP-20260718-005): coverage-gate.evaluate defaults requireSignature:true,
+ *  so a TRUSTED same-session liveness record must carry a valid origin-proof
+ *  signature. The case-D fixture record is signed via the SANCTIONED signer
+ *  (attest-signing.signRecord) — the same seam the live dispatch wrappers use — so
+ *  it satisfies coverage; the run_id-scoping planted cases remain FAIL (run_id is
+ *  not a signed field, so they fail via the run_id filter, not the signature).
+ *
  *   node scripts/dispatch/run-context-n8.test.js
  */
 
@@ -32,6 +39,7 @@ const { harness } = require("../checks/lib/fixture-harness");
 const { runContext } = require("../dispatch-agent");
 const { evaluate } = require("./coverage-gate");
 const { ARGV_SCHEMA_VERSION } = require("./dispatch-contract");
+const { signRecord } = require("./attest-signing");
 
 const h = harness("run-context-n8");
 
@@ -111,7 +119,7 @@ h.test("inherited WARPOS_RUN_ID is not overwritten by the generation guard", () 
 const RUN = "run-n8test-cafef00d";
 
 function rec(over) {
-  return {
+  const record = {
     dispatch_id: "d-n8-1",
     cmdline_checksum: "sha256:cafef00d",
     run_id: RUN,
@@ -124,6 +132,14 @@ function rec(over) {
     phase_id: "gauntlet",
     ...over,
   };
+  // ED-231 (SP-20260718-005): coverage-gate.evaluate defaults requireSignature:true — a TRUSTED
+  // same-session liveness record must carry a valid origin-proof signature, or it is rejected as a
+  // forged/unsigned row. Sign over the FINAL record via the SANCTIONED signer (attest-signing.signRecord)
+  // — the exact seam the live dispatch wrappers use (dispatch-agent.recordCompletion) — never a hand-rolled
+  // HMAC. run_id is NOT a signed field (the ED-232 named residual), so the run_id-override planted cases
+  // below still fail via the coverage-gate run_id filter, not via the signature.
+  record.attest_sig = signRecord(record);
+  return record;
 }
 
 // Simulate what a child dispatch writes after spawnAgent sets env.WARPOS_RUN_ID.
