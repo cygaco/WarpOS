@@ -13,20 +13,32 @@ const { execFileSync } = require("child_process");
 
 const pcb = require("../../pinned-checker-bundle");
 const lease = require("../../conductor-lease");
+const { installHook } = require("./git-scratch");
 
 function sh(cmd, args, cwd) {
   return execFileSync(cmd, args, { cwd, encoding: "utf8", windowsHide: true }).trim();
 }
 
 /**
- * makeControllerFixture(tag) -> {dir, outRoot, base, result, targetRef, manifestPath, bundleRoot, spId,
- * leaseRoot, leaseToken, cleanup()}. `targetRef` (`refs/heads/integ`) is pre-created pointing at `base`.
+ * makeControllerFixture(tag, opts) -> {dir, outRoot, base, result, targetRef, manifestPath, bundleRoot,
+ * spId, leaseRoot, leaseToken, cleanup()}. `targetRef` (`refs/heads/integ`) is pre-created pointing at
+ * `base`. FIX-3 (QA-001/RT-604): installs the REAL `reference-transaction` hook into `dir`'s (default)
+ * `.git/hooks/` by default — `ctl.integrate()`'s new hook-liveness precondition (`verifyActiveHookInstalled`)
+ * refuses integration for ANY fixture repo that isn't genuinely fenced, so every full-flow controller
+ * falsifier needs this by default. `opts.skipHookInstall:true` opts a fixture OUT (used by the ONE new
+ * teeth test that specifically proves the absent-hook refusal).
  */
-function makeControllerFixture(tag) {
+function makeControllerFixture(tag, opts = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `sp002-ctl-${tag}-`));
-  sh("git", ["init", "-q", "-b", "main"], dir);
+  // NOTE: the default branch is deliberately "trunk", NOT "main" — PROTECTED_REFS (protected-ref-
+  // transaction.js) fences exactly `refs/heads/main`, and every fixture-setup commit below (base/result/
+  // poison) happens BEFORE any controller fence is ever set. Naming the scratch default branch "main"
+  // would make the FIXTURE'S OWN SETUP trip the just-installed real hook. `fx.targetRef` (the ref
+  // integrate() actually authorizes into) stays `refs/heads/integ`, unaffected either way.
+  sh("git", ["init", "-q", "-b", "trunk"], dir);
   sh("git", ["config", "user.email", "scratch@example.com"], dir);
   sh("git", ["config", "user.name", "Scratch"], dir);
+  if (opts.skipHookInstall !== true) installHook(dir);
   fs.writeFileSync(path.join(dir, "f.txt"), "base\n");
   sh("git", ["add", "."], dir);
   sh("git", ["commit", "-q", "-m", "base"], dir);
@@ -56,6 +68,22 @@ function makeControllerFixture(tag) {
     spId,
     leaseRoot,
     leaseToken: acquired.token,
+    /**
+     * poisonResultCommit({relPath, bytes}) -> the new poisoned commit SHA. FIX-1 (QA-003/RT-601): commits a
+     * genuinely NUL-byte-poisoned file on top of the current HEAD (the result commit) — replaces the old
+     * `checkContext`-based in-memory poisoning now that the controller materializes+scans the REAL
+     * result_commit tree (a `checkContext` override can no longer substitute what files get scanned).
+     */
+    poisonResultCommit(poisonOpts = {}) {
+      const rel = poisonOpts.relPath || "scripts/checks/poison.js";
+      const bytes = poisonOpts.bytes || Buffer.from([0x2f, 0x2f, 0x00, 0x0a]);
+      const abs = path.join(dir, ...rel.split("/"));
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, bytes);
+      sh("git", ["add", "."], dir);
+      sh("git", ["commit", "-q", "-m", "poison"], dir);
+      return sh("git", ["rev-parse", "HEAD"], dir);
+    },
     cleanup() {
       for (const d of [dir, outRoot, leaseRoot]) {
         try {
@@ -109,8 +137,4 @@ function standardOpts(fx, overrides = {}) {
   };
 }
 
-/** A `checkContext` that forces the no-nul-bytes REQUIRED check to FAIL deterministically (a poisoned
- *  in-memory file — never touches real disk). */
-const POISONED_CHECK_CONTEXT = { files: [{ path: "poison.bin", buf: Buffer.from([0x41, 0x00, 0x42]) }] };
-
-module.exports = { makeControllerFixture, standardInput, standardOpts, POISONED_CHECK_CONTEXT };
+module.exports = { makeControllerFixture, standardInput, standardOpts };

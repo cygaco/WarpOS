@@ -253,12 +253,76 @@ function loadBundleManifest(manifestPath) {
     !manifest.bundle_digest ||
     !manifest.files ||
     typeof manifest.files !== "object" ||
+    Array.isArray(manifest.files) ||
     !manifest.executables ||
     typeof manifest.executables !== "object"
   ) {
     throw new Error(`loadBundleManifest: manifest at ${manifestPath} is missing required fields (fail-closed)`);
   }
+  // FIX-4a (QA-004/RT-602): a manifest that is otherwise self-consistent but carries an EMPTY (or
+  // index-less) `files` map is a vacuous pin — `verifyBundle` would trivially report ok:true (zero
+  // mismatches over zero entries) and let the controller execute NOTHING under the appearance of a
+  // verified bundle. Require `files` to be non-empty AND to include the check-lib entrypoint itself.
+  if (Object.keys(manifest.files).length === 0) {
+    throw new Error(`loadBundleManifest: manifest at ${manifestPath} has an EMPTY 'files' map (fail-closed — a vacuous pin proves nothing)`);
+  }
+  if (!Object.prototype.hasOwnProperty.call(manifest.files, "lib/index.js")) {
+    throw new Error(`loadBundleManifest: manifest at ${manifestPath} 'files' does not include 'lib/index.js' (fail-closed — incomplete pin)`);
+  }
   return manifest;
+}
+
+/**
+ * assertBundleCompleteness(manifest, {bundleRoot}) -> {ok, missing:[]}. FIX-4a (QA-004): the DEEPER
+ * completeness check — beyond the loader's cheap "files is non-empty and names lib/index.js" floor.
+ *
+ * (1) UNCONDITIONAL floor: `manifest.files` must be non-empty AND include `lib/index.js` — this alone
+ *     closes the "empty/self-authored external-bundle falsifier" (files:{}) attack for ANY check-lib-
+ *     shaped bundle, generic or real.
+ * (2) CONDITIONAL deep cross-check: when the pinned bundle ALSO ships a `lib/registry.js` (the REAL
+ *     production check-lib's own convention — a separate frozen `CHECK_NAMES` source, see
+ *     check-lib/registry.js's module doc), this cross-checks that registry's `CHECK_NAMES` against
+ *     `manifest.files`, requiring `lib/checks/<name>.js` to be pinned for EVERY registered name (never a
+ *     manifest that pins the index but silently omits one checker module — R-2's "every checker, helper,
+ *     dependency" promise). A bundle that does NOT declare a `lib/registry.js` at all (a generic/synthetic
+ *     check-lib-shaped module used by OTHER falsifiers to prove the choke-point mechanism independent of
+ *     any specific production check) is not held to this REAL-layout-specific convention — floor (1)
+ *     already proves it non-vacuous.
+ */
+function assertBundleCompleteness(manifest, opts = {}) {
+  const files = (manifest && manifest.files) || {};
+  if (Object.keys(files).length === 0 || !("lib/index.js" in files)) {
+    return { ok: false, missing: ["lib/index.js"] };
+  }
+  const bundleRoot = path.resolve(opts.bundleRoot || "");
+  const registryPath = path.join(bundleRoot, "lib", "registry.js");
+  const registryOnDisk = !!opts.bundleRoot && fs.existsSync(registryPath);
+  if (!("lib/registry.js" in files)) {
+    // A manifest whose bundleRoot GENUINELY has no lib/registry.js on disk at all is a generic/synthetic
+    // check-lib-shaped bundle (used by other falsifiers to prove the choke-point mechanism independent of
+    // any specific production check) — floor (1) above already proves it non-vacuous, not held to this
+    // REAL-layout-specific convention. But a bundleRoot that DOES have registry.js on disk, with the
+    // manifest simply never PINNING it, is an omission — the manifest is silently unverifying a file that
+    // exists and could be tampered with zero detection — flagged, never a free pass.
+    return registryOnDisk ? { ok: false, missing: ["lib/registry.js"] } : { ok: true, missing: [] };
+  }
+  const missing = [];
+  try {
+    if (fs.existsSync(registryPath)) {
+      delete require.cache[registryPath];
+      // eslint-disable-next-line global-require, import/no-dynamic-require
+      const pinnedRegistry = require(registryPath);
+      for (const name of (pinnedRegistry && pinnedRegistry.CHECK_NAMES) || []) {
+        const rel = `lib/checks/${name}.js`;
+        if (!(rel in files)) missing.push(rel);
+      }
+    } else {
+      missing.push("lib/registry.js (pinned copy unreadable on disk)");
+    }
+  } catch (e) {
+    missing.push(`lib/registry.js (unreadable: ${e && e.message ? e.message : e})`);
+  }
+  return { ok: missing.length === 0, missing };
 }
 
 /**
@@ -391,6 +455,22 @@ function runPinnedSuite(manifest, ctx = {}, opts = {}) {
     }
   }
 
+  // (0.5) FIX-4a (QA-004/RT-602): the manifest must be a NON-EMPTY, COMPLETE pin — every registered check
+  // module present, never a vacuous/self-authored manifest that would let `verifyBundle` trivially report
+  // ok:true over zero (or a hand-picked subset of) entries.
+  const completeness = assertBundleCompleteness(manifest, { bundleRoot });
+  if (!completeness.ok) {
+    return {
+      ok: false,
+      verified: false,
+      reason: "incomplete-bundle-manifest",
+      ...empty,
+      missing: completeness.missing,
+      preDigest: null,
+      postDigest: null,
+    };
+  }
+
   // (1) verify BEFORE execute.
   const pre = verifyBundle(manifest, { bundleRoot });
   if (!pre.ok) {
@@ -474,6 +554,7 @@ module.exports = {
   buildBundle,
   loadBundleManifest,
   verifyBundle,
+  assertBundleCompleteness,
   resolveExecutable,
   runPinnedSuite,
   bundleContentDigest,

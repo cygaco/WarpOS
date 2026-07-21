@@ -111,26 +111,30 @@ function evaluate({ state, stdinText, env }) {
   return { allow: true, reason: "fence-verified" };
 }
 
+/**
+ * readStdin() -> string. THROWS (never swallows) on any fs.readFileSync failure — FIX-2 / QA-002: a hook
+ * whose stdin read fails must not silently become "no lines read" -> "no protected ref touched" ->
+ * allow:true. The caller (main()) is the ONE place that decides what a read failure MEANS per phase; this
+ * function's job is only to surface the failure, never to mask it behind a fallback "" value.
+ */
 function readStdin() {
-  try {
-    return fs.readFileSync(0, "utf8");
-  } catch {
-    return "";
-  }
+  return fs.readFileSync(0, "utf8");
 }
 
-function main(argv, env) {
+function main(argv, env, deps = {}) {
   const state = argv[2];
+  const doReadStdin = typeof deps.readStdin === "function" ? deps.readStdin : readStdin;
   let stdinText = "";
   try {
-    stdinText = readStdin();
+    stdinText = doReadStdin();
   } catch (e) {
-    // A stdin read failure on the 'prepared' phase for a protected ref must fail CLOSED — but we cannot
-    // know yet whether this transaction even touches a protected ref without the lines, so treat an
-    // unreadable stdin as touching-protected + refuse only in 'prepared' (never silently allow a write we
-    // could not even inspect).
+    // FIX-2 (QA-002, sole-route fail-open): a stdin read (or parse) failure on the 'prepared' phase for a
+    // protected ref must fail CLOSED — we cannot know yet whether this transaction even touches a
+    // protected ref without the lines, so an unreadable stdin is treated as touching-protected and the
+    // transaction is REFUSED (non-zero) for EVERY prepared-phase read failure. Only the purely
+    // informational, non-aborting phases ('committed'/'aborted') tolerate an unreadable stdin.
     if (state === "prepared") {
-      process.stderr.write(`protected-ref-transaction: stdin unreadable (fail-closed): ${e && e.message}\n`);
+      process.stderr.write(`protected-ref-transaction: stdin unreadable (fail-closed, prepared phase ABORTS): ${e && e.message}\n`);
       return 1;
     }
     return 0;
@@ -156,6 +160,7 @@ module.exports = {
   touchesProtectedRef,
   isProtectedRef,
   verifyFence,
+  readStdin,
   PROTECTED_REFS,
   FENCE_TOKEN_ENV,
   FENCE_SPID_ENV,

@@ -13,6 +13,11 @@
  * skips are NOT this hook's authority to escalate; that is the controller's job (its run-manifest
  * reconciliation treats a skipped REQUIRED check as fatal, a materially stricter bar appropriate to an
  * irreversible merge, not to an in-session keystroke).
+ *
+ * Exit 0 = clean · 2 = BLOCKED (a required check genuinely failed) · 3 = RUNNER ERROR (FIX-7/QA-007: the
+ * runner itself threw — a broken registry/runner is a DISTINCT non-zero status, never a silent exit-0 pass;
+ * this hook stays non-authoritative for merge-into-main, but non-authoritative never means "an execution
+ * failure reads as success").
  */
 
 const checkLib = require("../dispatch/check-lib");
@@ -48,36 +53,51 @@ function ctxFromHookEvent(event) {
   };
 }
 
+/**
+ * computeExitCode(inputText, opts) -> number. FIX-7 (QA-007): the PURE decision core, extracted out of the
+ * stdin-event-driven main() so a runner exception is a deterministic, testable, DISTINCT exit code — never
+ * silently read as success. `opts.runPreventionFn` is a test-only injectable seam (defaults to the real
+ * `runPrevention`) so a falsifier can force a runner exception without corrupting the real check-lib.
+ *
+ * Exit contract: 0 = clean · 2 = BLOCKED (a required check genuinely failed) · 3 = RUNNER ERROR (the
+ * runner itself threw — a broken registry/runner is NEVER treated as "nothing to block", closing the
+ * integrity false-green QA-007 named: this gate stays explicitly NON-AUTHORITATIVE for merge-into-main
+ * (Seam B / the controller's out-of-tree pinned run is the real gate) — but non-authoritative does not
+ * mean "an execution failure reads as a clean pass."
+ */
+function computeExitCode(inputText, opts = {}) {
+  const runFn = typeof opts.runPreventionFn === "function" ? opts.runPreventionFn : runPrevention;
+  let ctx = {};
+  try {
+    const event = JSON.parse(inputText || "{}");
+    ctx = ctxFromHookEvent(event);
+  } catch {
+    // malformed/absent event JSON — proceed with an empty ctx; checks fail closed on missing input
+    // themselves (e.g. 'no-envelope-in-context' -> skipped), this hook never treats a parse failure
+    // as an implicit pass of anything it hasn't actually evaluated.
+  }
+  let result;
+  try {
+    result = runFn(ctx);
+  } catch (e) {
+    process.stderr.write(`check-lib-prevention: RUNNER ERROR (distinct non-zero exit 3 — NEVER a silent pass): ${e && e.message ? e.message : e}\n`);
+    return 3;
+  }
+  if (result.blocked) {
+    process.stderr.write(`check-lib-prevention: BLOCKED — ${JSON.stringify(result.blockingReasons)}\n`);
+    return 2;
+  }
+  return 0;
+}
+
 function main() {
   let input = "";
   process.stdin.on("data", (chunk) => (input += chunk));
   process.stdin.on("end", () => {
-    let ctx = {};
-    try {
-      const event = JSON.parse(input || "{}");
-      ctx = ctxFromHookEvent(event);
-    } catch {
-      // malformed/absent event JSON — proceed with an empty ctx; checks fail closed on missing input
-      // themselves (e.g. 'no-envelope-in-context' -> skipped), this hook never treats a parse failure
-      // as an implicit pass of anything it hasn't actually evaluated.
-    }
-    let result;
-    try {
-      result = runPrevention(ctx);
-    } catch (e) {
-      // A hook RUNNER crash must not silently BLOCK every write forever — this gate is non-authoritative
-      // by design (Seam D), so fail OPEN here (exit 0) while still surfacing the error loudly on stderr.
-      process.stderr.write(`check-lib-prevention: runner error (fail-open, non-blocking gate): ${e && e.message ? e.message : e}\n`);
-      process.exit(0);
-    }
-    if (result.blocked) {
-      process.stderr.write(`check-lib-prevention: BLOCKED — ${JSON.stringify(result.blockingReasons)}\n`);
-      process.exit(2);
-    }
-    process.exit(0);
+    process.exit(computeExitCode(input));
   });
 }
 
-module.exports = { runPrevention, ctxFromHookEvent };
+module.exports = { runPrevention, ctxFromHookEvent, computeExitCode };
 
 if (require.main === module) main();

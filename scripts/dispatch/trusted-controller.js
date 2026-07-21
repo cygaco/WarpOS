@@ -54,6 +54,9 @@
 
 const crypto = require("crypto");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const { spawnSync } = require("child_process");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -146,10 +149,45 @@ function loadPinnedCheckLib(bundleManifest, opts = {}) {
   const bundleRoot = path.resolve(opts.bundleRoot || "");
   const candidateRoot = opts.candidateRoot;
 
+  // FIX-4a (QA-004/RT-602): reject a non-empty-but-INCOMPLETE manifest before any hashing — a manifest
+  // missing a registered check module is not "self-consistent," it is a hole the empty-set attack also
+  // exploits (a manifest naming only `lib/index.js` with no `lib/checks/*.js` entries).
+  const completeness = pcb.assertBundleCompleteness(bundleManifest, { bundleRoot });
+  if (!completeness.ok) {
+    const err = new Error(
+      `trusted-controller: pinned bundle manifest is incomplete — missing: ${completeness.missing.join(", ")} (empty/incomplete-bundle-manifest)`,
+    );
+    err.code = "incomplete-bundle-manifest";
+    throw err;
+  }
+
   const pre = pcb.verifyBundle(bundleManifest, { bundleRoot });
   if (!pre.ok) {
     const err = new Error("trusted-controller: pinned bundle failed verification before mint (bundle-pin-mismatch)");
     err.code = "bundle-pin-mismatch";
+    throw err;
+  }
+
+  // FIX-4b (QA-004/RT-602/RT-603, β R2 load-bearing at merge-time): promotion.from_src_digest MUST match a
+  // FRESH digest of the LIVE check-lib source — never adopted from the manifest's own self-report and never
+  // left a dormant, optional CLI-only check (check-lib-single-source.js's own `checkLineage`). A pinned
+  // bundle whose promoted source has DRIFTED from the live check-lib (an edit since the last promotion) is
+  // refused here, on the merge path itself, before the pinned suite ever executes.
+  const checkLibSrcRoot = opts.checkLibSrcRoot || pcb.DEFAULT_LIB_SRC;
+  let freshSrcDigest;
+  try {
+    freshSrcDigest = pcb.sourceDigestOf(checkLibSrcRoot);
+  } catch (e) {
+    const err = new Error(`trusted-controller: cannot compute the live check-lib source digest for lineage verification: ${e.message}`);
+    err.code = "bundle-lineage-unresolvable";
+    throw err;
+  }
+  const pinnedSrcDigest = bundleManifest.promotion && bundleManifest.promotion.from_src_digest;
+  if (!pinnedSrcDigest || pinnedSrcDigest !== freshSrcDigest) {
+    const err = new Error(
+      "trusted-controller: pinned bundle promotion.from_src_digest does not match the LIVE check-lib source (β R2 lineage — re-promote the bundle before integrating)",
+    );
+    err.code = "bundle-lineage-mismatch";
     throw err;
   }
 
@@ -203,6 +241,16 @@ function mintRunManifest(input, opts, ctx) {
   const bundleCheckNames = ctx.pinnedIndex.CHECK_NAMES.slice();
   const bundleRequired = ctx.pinnedIndex.REQUIRED_CHECKS.slice();
 
+  // FIX-4d (empty-expected-check-set floor): a pinned bundle whose frozen CHECK_NAMES is empty must never
+  // mint a vacuous run manifest — reconcile would trivially "pass" over zero expected checks. check-lib's
+  // own load-time guard (FIX-4c) should make this unreachable for the real registry, but mintRunManifest is
+  // also driven directly by falsifiers with synthetic `ctx.pinnedIndex` — defense-in-depth, not redundant.
+  if (!Array.isArray(bundleCheckNames) || bundleCheckNames.length === 0) {
+    const err = new Error("trusted-controller: pinned bundle's CHECK_NAMES is empty — refusing to mint a vacuous run manifest");
+    err.code = "empty-expected-check-set";
+    throw err;
+  }
+
   const requested = Array.isArray(input.expected_checks) ? input.expected_checks : [];
   const invalid = requested.filter((n) => !bundleCheckNames.includes(n));
   if (invalid.length) {
@@ -254,6 +302,14 @@ function reconcileRunManifest(runManifest, results) {
     !runManifest.nonce
   ) {
     return { ok: false, reason: "malformed-run-manifest" };
+  }
+  // FIX-4d (empty-expected-check-set floor): an empty `expected_checks` array is well-formed (passes the
+  // Array.isArray checks above) but VACUOUS — the `for (const name of expected)` loop below would simply
+  // never iterate, so `reconcileRunManifest` would silently return `{ok:true}` over zero obligations. Fail
+  // closed explicitly, with its own distinct reason code, rather than relying on an empty loop's incidental
+  // pass-through.
+  if (runManifest.expected_checks.length === 0) {
+    return { ok: false, reason: "empty-expected-check-set" };
   }
 
   const expected = runManifest.expected_checks;
@@ -340,6 +396,72 @@ function recomputeBoundDigests(args = {}) {
   return { workorder_digest, checker_digests, evidence_digests, policy_digest };
 }
 
+// ── result-tree materialization (FIX-1 / QA-003 / RT-601). ─────────────────────────────────────────────────
+
+/**
+ * materializeResultTree(resultCommit, {gitRoot, treeResolver}) -> {dir, treeHash, cleanup()}. FIX-1
+ * (QA-003/RT-601): materializes EXACTLY `resultCommit`'s git tree into a FRESH, OUT-of-candidate temp
+ * directory via `git worktree add --detach` — the pinned suite scans THIS materialized tree, never the
+ * caller's mutable `gitRoot` working tree (which may not even be checked out AT resultCommit at all, or
+ * may have been mutated since the caller last touched it). Verifies the materialized checkout's OWN tree
+ * hash === the resolved `resultCommit` tree hash BEFORE returning; the caller (`integrate()`) re-verifies
+ * AFTER the pinned suite runs, closing the same mid-run tamper window `pinned-checker-bundle.js`'s own
+ * pre/post verify already closes for the checker bundle itself. THROWS (fail-closed, `.code` set) on any
+ * git failure or a hash mismatch — never returns a directory the caller hasn't confirmed is the right tree.
+ */
+function materializeResultTree(resultCommit, opts = {}) {
+  const gitRoot = opts.gitRoot;
+  const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : acceptanceRecord.resolveTreeHash;
+  const expectedTree = resolveTree(resultCommit, { gitRoot });
+  if (!expectedTree) {
+    const err = new Error(`trusted-controller: result_commit's tree hash is unresolvable — cannot materialize (${resultCommit})`);
+    err.code = "result-tree-unresolvable";
+    throw err;
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "sp002-materialize-"));
+  const cleanup = () => {
+    try {
+      spawnSync("git", ["worktree", "remove", "--force", tmpDir], { cwd: gitRoot, encoding: "utf8", windowsHide: true });
+    } catch {
+      /* best-effort */
+    }
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* best-effort */
+    }
+  };
+
+  const add = spawnSync("git", ["worktree", "add", "--detach", "-q", tmpDir, resultCommit], {
+    cwd: gitRoot,
+    encoding: "utf8",
+    windowsHide: true,
+  });
+  if (!add || add.status !== 0) {
+    cleanup();
+    const err = new Error(
+      `trusted-controller: 'git worktree add --detach' failed to materialize result_commit ${resultCommit}: ${(add && (add.stderr || add.error)) || "unknown error"}`,
+    );
+    err.code = "result-tree-materialize-failed";
+    throw err;
+  }
+
+  // Verify the materialized checkout's OWN tree hash === the resolved result_commit tree — belt-and-
+  // suspenders over git worktree's own guarantee, and the SAME resolver seam so a hermetic test can drive
+  // both sides deterministically.
+  const verifyResolver = typeof opts.materializedTreeResolver === "function" ? opts.materializedTreeResolver : acceptanceRecord.resolveTreeHash;
+  const observedTree = verifyResolver("HEAD", { gitRoot: tmpDir });
+  if (!observedTree || String(observedTree).toLowerCase() !== String(expectedTree).toLowerCase()) {
+    cleanup();
+    const err = new Error(`trusted-controller: materialized tree hash mismatch for result_commit ${resultCommit} (expected ${expectedTree}, observed ${observedTree})`);
+    err.code = "result-tree-materialize-mismatch";
+    throw err;
+  }
+
+  return { dir: tmpDir, treeHash: expectedTree, cleanup };
+}
+
 // ── Seam E fence scoping — set ONLY around this module's own commitIntegration call. ───────────────────────
 
 /**
@@ -376,6 +498,69 @@ function defaultLeaseTokenResolver(spId, leaseRoot) {
   }
 }
 
+// ── hook install-liveness precondition (FIX-3 / QA-001 / RT-604). ──────────────────────────────────────────
+
+/**
+ * verifyActiveHookInstalled({gitRoot, pinnedHookSrcPath}) -> {ok, reason?, hooksDir?, hookPath?}. FIX-3
+ * (QA-001/RT-604): a FAIL-CLOSED PRECONDITION of integration. The falsifier corpus proving Seam E's
+ * `reference-transaction` mechanism (unbrokered-merge-bypass, write-surface-delegation-completeness, etc.)
+ * installs a SCRATCH hook into a throwaway repo — that proves the MECHANISM works, never that THIS repo's
+ * ACTUAL, currently-configured hooks directory is genuinely fenced. This function resolves the repo's REAL
+ * active hooks directory via `git rev-parse --git-path hooks` (the ONE git-native way to honor
+ * `core.hooksPath`, a worktree's separate gitdir, and every other resolution rule — never a hardcoded
+ * `.git/hooks` guess), then verifies a `reference-transaction` file EXISTS there, is readable, references
+ * the pinned `scripts/hooks/protected-ref-transaction.js` module (which must itself exist on disk), and —
+ * on POSIX — carries an executable bit. An absent/wrong/un-wired ACTIVE hook REFUSES integration.
+ *
+ * HONEST CEILING (unchanged): hook file DELETION by a hostile shell, or a hostile `core.hooksPath`
+ * redirect performed WITH matching hook content planted at the new location, stay operator-DROPPED — this
+ * closes the MISTAKE-class defect (not-installed), never adversarial containment.
+ */
+function verifyActiveHookInstalled(opts = {}) {
+  const gitRoot = opts.gitRoot;
+  const pinnedHookSrc = opts.pinnedHookSrcPath || path.resolve(__dirname, "..", "hooks", "protected-ref-transaction.js");
+  if (!fs.existsSync(pinnedHookSrc)) {
+    return { ok: false, reason: "pinned-hook-source-missing", pinnedHookSrc };
+  }
+
+  let gitPathOut;
+  try {
+    const r = spawnSync("git", ["rev-parse", "--git-path", "hooks"], { cwd: gitRoot, encoding: "utf8", windowsHide: true });
+    if (!r || r.status !== 0) return { ok: false, reason: "hooks-dir-unresolvable" };
+    gitPathOut = String(r.stdout || "").trim();
+  } catch {
+    return { ok: false, reason: "hooks-dir-unresolvable" };
+  }
+  if (!gitPathOut) return { ok: false, reason: "hooks-dir-unresolvable" };
+  const hooksDir = path.isAbsolute(gitPathOut) ? gitPathOut : path.resolve(gitRoot, gitPathOut);
+  const hookPath = path.join(hooksDir, "reference-transaction");
+
+  if (!fs.existsSync(hookPath)) {
+    return { ok: false, reason: "active-hook-not-installed", hooksDir, hookPath };
+  }
+  let content;
+  try {
+    content = fs.readFileSync(hookPath, "utf8");
+  } catch (e) {
+    return { ok: false, reason: "active-hook-unreadable", hooksDir, hookPath, detail: e.message };
+  }
+  if (!/protected-ref-transaction(\.js)?/.test(content)) {
+    return { ok: false, reason: "active-hook-not-pinned", hooksDir, hookPath };
+  }
+  if (process.platform !== "win32") {
+    let st;
+    try {
+      st = fs.statSync(hookPath);
+    } catch (e) {
+      return { ok: false, reason: "active-hook-unreadable", hooksDir, hookPath, detail: e.message };
+    }
+    if ((st.mode & 0o111) === 0) {
+      return { ok: false, reason: "active-hook-not-executable", hooksDir, hookPath };
+    }
+  }
+  return { ok: true, hooksDir, hookPath };
+}
+
 // ── the ONE public entrypoint. ──────────────────────────────────────────────────────────────────────────
 
 /**
@@ -385,10 +570,16 @@ function defaultLeaseTokenResolver(spId, leaseRoot) {
  *   `result_envelope` is UNTRUSTED DATA (never read to decide anything, β rider 1); `base_commit`/
  *   `result_commit` are CLAIMS re-resolved from real git before anything else happens.
  * `opts`: {bundleManifestPath, bundleRoot, candidateRoot?, spId, leaseRoot, gitRoot, performRefUpdate,
- *   treeResolver?, commitResolver?, ancestryResolver?, leaseTokenResolver?, liveHead?} — the resolver seams
- *   mirror acceptance-record.js's own injectables for hermetic falsifiers; `liveHead` is an OPTIONAL test-
- *   only seam forwarded straight to acceptance-record.js#commitIntegration's own `opts.liveHead` (a TOCTOU
- *   simulation hook — production callers never set it, letting commitIntegration resolve the real live head).
+ *   treeResolver?, commitResolver?, ancestryResolver?, leaseTokenResolver?, liveHead?,
+ *   materializedTreeResolver?, materializeResultTreeFn?, checkLibSrcRoot?, hookLivenessCheckFn?} — the
+ *   resolver seams mirror acceptance-record.js's own injectables for hermetic falsifiers; `liveHead` is an
+ *   OPTIONAL test-only seam forwarded straight to acceptance-record.js#commitIntegration's own
+ *   `opts.liveHead` (a TOCTOU simulation hook — production callers never set it, letting commitIntegration
+ *   resolve the real live head). `materializeResultTreeFn`/`materializedTreeResolver` are the FIX-1
+ *   test-only seams over `materializeResultTree`; `hookLivenessCheckFn` is the FIX-3 test-only seam over
+ *   `verifyActiveHookInstalled` (production callers never set any of these — there is deliberately NO
+ *   boolean skip flag for the hook-liveness precondition; only a full function-override seam, same shape
+ *   as every other resolver injectable in this module).
  *
  * `decision` is always one of `"INTEGRATED"` (ok:true) or `"BLOCKED"` (ok:false); `reason` is a machine-
  * checkable, distinct string per failure mode (see reconcileRunManifest / acceptance-record.js's own reason
@@ -398,6 +589,16 @@ function integrate(input = {}, opts = {}) {
   const gitRoot = opts.gitRoot || PROJECT_ROOT;
   const resolveCommit = typeof opts.commitResolver === "function" ? opts.commitResolver : acceptanceRecord.resolveCommitSha;
   const resolveTree = typeof opts.treeResolver === "function" ? opts.treeResolver : acceptanceRecord.resolveTreeHash;
+
+  // (0) FIX-3 (QA-001/RT-604) FAIL-CLOSED PRECONDITION: the sole-route hook (Seam E) must be genuinely
+  //     ACTIVE for THIS repo — never merely "a falsifier installed a scratch hook somewhere else". Checked
+  //     BEFORE anything else so an un-fenced repo can never even reach a commit-resolution/bundle-load
+  //     error message that might look like "everything else passed."
+  const hookCheckFn = typeof opts.hookLivenessCheckFn === "function" ? opts.hookLivenessCheckFn : verifyActiveHookInstalled;
+  const hookCheck = hookCheckFn({ gitRoot });
+  if (!hookCheck.ok) {
+    return { ok: false, decision: "BLOCKED", reason: hookCheck.reason || "hook-not-installed", detail: hookCheck };
+  }
 
   // (1) Re-derive real commit identity from git — input.base_commit/result_commit are CLAIMS (β rider 1).
   const baseCommit = resolveCommit(input.base_commit, { gitRoot });
@@ -433,21 +634,44 @@ function integrate(input = {}, opts = {}) {
     return { ok: false, decision: "BLOCKED", reason: e.code || "run-manifest-mint-failed", detail: e.message };
   }
 
-  // (5) Seam B — execute the pinned suite (the AUTHORITATIVE checker run), stamping this run's nonce.
-  //     `ctx.envelope` is forwarded so the false-green-envelope check can inspect its SHAPE (file/commit/
-  //     test/evidence counts) — a narrow structural tripwire, NOT a re-adoption of any self-claimed verdict
-  //     field (β rider 1: the envelope's `success`/`verdict` fields are never read by this module; only the
-  //     check-lib's OWN independent shape evaluation of the envelope is ever consulted, via its result).
-  // opts.checkContext is an ADDITIVE, test-only seam (falsifiers only — production callers never set it)
-  // letting a hermetic test control individual checks' inputs (e.g. inject a poisoned `files` array to force
-  // a deterministic no-nul-bytes failure) without touching real files — it can only ADD ctx keys, never
-  // override `envelope`/`root` below.
-  const extraCtx = opts.checkContext && typeof opts.checkContext === "object" ? opts.checkContext : {};
-  const pinnedResult = pcb.runPinnedSuite(
-    bundleManifest,
-    { ...extraCtx, envelope: input.result_envelope, root: gitRoot },
-    { bundleRoot: opts.bundleRoot, candidateRoot: opts.candidateRoot || gitRoot, nonce: runManifest.nonce },
-  );
+  // (5) FIX-1 (QA-003/RT-601): materialize EXACTLY result_commit's tree into a trusted, OUT-of-candidate
+  //     path — NEVER scan `gitRoot` (the caller's mutable working tree, which may not even be checked out
+  //     at resultCommit). `checkContext` (a caller-suppliable ctx override) has been REMOVED from this
+  //     production entrypoint entirely — there is no longer any opts-level seam that can substitute what
+  //     files the suite scans; only the resolver-level test seams below (`treeResolver`,
+  //     `materializedTreeResolver`, `materializeResultTreeFn`) remain, matching every other injectable in
+  //     this module.
+  const materializeFn = typeof opts.materializeResultTreeFn === "function" ? opts.materializeResultTreeFn : materializeResultTree;
+  let materialized;
+  try {
+    materialized = materializeFn(resultCommit, { gitRoot, treeResolver: opts.treeResolver, materializedTreeResolver: opts.materializedTreeResolver });
+  } catch (e) {
+    return { ok: false, decision: "BLOCKED", reason: e.code || "result-tree-materialize-failed", detail: e.message, runManifest };
+  }
+
+  // Seam B — execute the pinned suite (the AUTHORITATIVE checker run) over the MATERIALIZED tree, stamping
+  // this run's nonce. `ctx.envelope` is forwarded so the false-green-envelope check can inspect its SHAPE
+  // (file/commit/test/evidence counts) — a narrow structural tripwire, NOT a re-adoption of any self-
+  // claimed verdict field (β rider 1: the envelope's `success`/`verdict` fields are never read by this
+  // module; only the check-lib's OWN independent shape evaluation of the envelope is ever consulted, via
+  // its result).
+  let pinnedResult;
+  try {
+    pinnedResult = pcb.runPinnedSuite(
+      bundleManifest,
+      { envelope: input.result_envelope, root: materialized.dir },
+      { bundleRoot: opts.bundleRoot, candidateRoot: opts.candidateRoot || gitRoot, nonce: runManifest.nonce },
+    );
+    // Post-run re-verify (mirrors pinned-checker-bundle's own pre/post fence): the MATERIALIZED tree's own
+    // hash must be UNCHANGED after the suite ran.
+    const postVerify = typeof opts.materializedTreeResolver === "function" ? opts.materializedTreeResolver : acceptanceRecord.resolveTreeHash;
+    const postTree = postVerify("HEAD", { gitRoot: materialized.dir });
+    if (!postTree || String(postTree).toLowerCase() !== String(materialized.treeHash).toLowerCase()) {
+      return { ok: false, decision: "BLOCKED", reason: "result-tree-mutated-mid-run", runManifest };
+    }
+  } finally {
+    materialized.cleanup();
+  }
   if (!pinnedResult.ok) {
     return { ok: false, decision: "BLOCKED", reason: pinnedResult.reason || "pinned-suite-failed", runManifest };
   }
@@ -536,5 +760,7 @@ module.exports = {
   loadPinnedCheckLib,
   withControllerFence,
   defaultLeaseTokenResolver,
+  materializeResultTree,
+  verifyActiveHookInstalled,
   REQUIRED_ACCEPTANCE_EXPORTS,
 };

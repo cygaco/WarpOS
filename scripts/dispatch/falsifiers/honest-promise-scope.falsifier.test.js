@@ -14,33 +14,10 @@ const path = require("path");
 const CONTRACT_DOC = path.join(__dirname, "..", "..", "..", ".claude", "kernel", "top-level-runtime-contract.md");
 const CONTROLLER = path.join(__dirname, "..", "trusted-controller.js");
 
-const REQUIRED_SCOPE_TERMS = [/artifact-verification/i, /integration-to-main|integration into `?main`?/i];
-const REQUIRED_EXCLUSION_TERMS = [/capability grant/i, /protected mutation/i];
-const EXCLUSION_MARKER_RE = /NOT\s+(?:covered|this adapter's job)/i;
-// An overclaim: a statement that mentions capability-grant/protected-mutation coverage WITHOUT any nearby
-// exclusion marker — i.e. it reads as claiming those two powers are ALSO enforced by this adapter.
-const OVERCLAIM_ALL_FOUR_RE = /all\s+four\s+core-?2\s+powers|capability grants?\s+and\s+protected mutation\s+(?:are|is)\s+(?:now\s+)?(?:enforced|live|covered)/i;
-
-/**
- * assertScopedHonestly(text) -> {ok, reason?}. The mechanical S7 evaluator: `ok:true` iff `text` (a) names
- * BOTH scoped powers (verification, integration-to-main), (b) names BOTH excluded powers WITH an explicit
- * exclusion marker nearby (never silently omitting them), and (c) does NOT contain an overclaim phrase.
- */
-function assertScopedHonestly(text) {
-  for (const re of REQUIRED_SCOPE_TERMS) {
-    if (!re.test(text)) return { ok: false, reason: "promise-missing-scoped-power-claim" };
-  }
-  if (OVERCLAIM_ALL_FOUR_RE.test(text)) {
-    return { ok: false, reason: "promise-overclaims-beyond-artifact-verification+integration-slice" };
-  }
-  for (const re of REQUIRED_EXCLUSION_TERMS) {
-    if (!re.test(text)) return { ok: false, reason: "promise-silently-omits-uncovered-power" };
-  }
-  if (!EXCLUSION_MARKER_RE.test(text)) {
-    return { ok: false, reason: "promise-overclaims-beyond-artifact-verification+integration-slice" };
-  }
-  return { ok: true };
-}
+// AC-1's evaluator lives in _lib/ (NOT inline here) so trusted-enforcement-scope.test.js (AC-1's OWN
+// declared verified_by file) can reuse the exact same logic without require()-ing this sibling .test.js
+// file as a plain module.
+const { assertScopedHonestly } = require("./_lib/honest-promise-scope-evaluator");
 
 test("rider-CORE2-slice honest-promise-scope — the REAL shipped statement is honestly scoped (verification + integration-to-main ONLY)", (t) => {
   if (!fs.existsSync(CONTROLLER)) return t.skip("pending backend-builder — controller not yet built (falsifier RED)");

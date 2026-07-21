@@ -68,10 +68,9 @@ test("G4.4 precommit-bypass-harmless — a --no-verify candidate (skipping pre-c
   git(fx.dir, ["commit", "-q", "-m", "poisoned candidate", "--no-verify"], { env: noFenceEnv() });
   const poisonedResult = headSha(fx.dir);
 
-  const ctlResult = ctl.integrate(
-    standardInput(fx, { result_commit: poisonedResult }),
-    standardOpts(fx, { checkContext: { root: fx.dir, scanRoots: ["scripts"] } }),
-  );
+  // FIX-1 (QA-003/RT-601): the controller materializes + scans the REAL result_commit tree — the poison
+  // committed above (into fx.dir, the real result_commit) is picked up naturally, no ctx override needed.
+  const ctlResult = ctl.integrate(standardInput(fx, { result_commit: poisonedResult }), standardOpts(fx));
   assert.strictEqual(ctlResult.ok, false, "MUST-BLOCK: the controller's OWN fresh pinned run must re-derive and catch the poison — a --no-verify commit authorizes NOTHING");
   assert.strictEqual(ctlResult.decision, "BLOCKED");
   assert.strictEqual(ctlResult.reason, "check-failed");

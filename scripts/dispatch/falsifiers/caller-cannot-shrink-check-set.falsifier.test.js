@@ -16,7 +16,7 @@ const CONTROLLER = path.join(__dirname, "..", "trusted-controller.js");
 test("β R1 caller-cannot-shrink-check-set — expected_checks:[] over a FAILING tree is still REFUSED (the pinned required check FIRED)", (t) => {
   if (!fs.existsSync(CONTROLLER)) return t.skip("pending backend-builder — controller not yet built (falsifier RED)");
 
-  const { makeControllerFixture, standardInput, standardOpts, POISONED_CHECK_CONTEXT } = require("./_lib/controller-fixtures");
+  const { makeControllerFixture, standardInput, standardOpts } = require("./_lib/controller-fixtures");
   const { headSha } = require("./_lib/git-scratch");
   const ctl = require("../trusted-controller");
 
@@ -27,8 +27,10 @@ test("β R1 caller-cannot-shrink-check-set — expected_checks:[] over a FAILING
     const fx = makeControllerFixture(`shrink-${attackShape.label.replace(/[^a-z0-9]/gi, "").slice(0, 12)}`);
     t.after(() => fx.cleanup());
 
-    const input = standardInput(fx, { expected_checks: attackShape.expected_checks });
-    const result = ctl.integrate(input, standardOpts(fx, { checkContext: POISONED_CHECK_CONTEXT }));
+    // FIX-1: poison a REAL result_commit (checkContext can no longer substitute what files get scanned).
+    const poisonedResult = fx.poisonResultCommit();
+    const input = standardInput(fx, { result_commit: poisonedResult, expected_checks: attackShape.expected_checks });
+    const result = ctl.integrate(input, standardOpts(fx));
 
     assert.strictEqual(result.ok, false, `MUST-BLOCK (${attackShape.label}): a shrunk/empty expected_checks must not vacuously pass`);
     assert.strictEqual(result.decision, "BLOCKED");

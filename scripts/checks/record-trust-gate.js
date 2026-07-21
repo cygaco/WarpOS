@@ -19,6 +19,13 @@
  *      unshapen falsifier BLOCKS build-entry.
  *   4. NEW-SURFACE COVERAGE — every surface introduced this phase (new_in_phase3:true) that gates
  *      an irreversible action must carry at least one falsifier fixture.
+ *   5. VERIFIED_BY CLAIMS-VS-DISK (FIX-6 class-closer, SP-20260720-002 R1; ED-056/G0.1 claims-vs-disk
+ *      false-green class) — when a `prd.md` sits alongside the manifest, every `verified_by:` reference
+ *      it declares (a fully-qualified `scripts/**\/*.js`/`.md` path, including brace-expanded
+ *      `{a,b,c}`-shaped lists) must resolve to an EXISTING file on disk. A dangling verified_by pointer —
+ *      an AC that claims a test file that was never created — is a hand-authored claim that rots silently
+ *      without a structural check; this makes it self-detect FOREVER, not just once by hand. A manifest
+ *      with no sibling `prd.md` is unaffected (`checked:0`, not a violation — not every manifest ships one).
  *
  * MODES:
  *   default    — the design->build EXIT gate (presence + shape; fixtures may be RED pre-build).
@@ -88,6 +95,57 @@ function checkFalsifier(fixtureRel) {
   return { ok: true };
 }
 
+/**
+ * extractVerifiedByFilePaths(prdText) -> string[]. FIX-6 class-closer. Extracts every FULLY-QUALIFIED
+ * (contains a `/`) file path ending `.js` or `.md` named inside a `` `verified_by:` `` block, INCLUDING
+ * brace-expanded lists (`scripts/dispatch/falsifiers/{a,b,c}-check.falsifier.test.js` -> 3 paths). Bare
+ * filenames with no directory component are intentionally NOT extracted (too ambiguous to resolve
+ * generically across every sprint's prose conventions) — this stays a conservative, low-false-positive
+ * detector for the concrete bug class (a fully-qualified dangling path), not an exhaustive prose parser.
+ */
+function extractVerifiedByFilePaths(prdText) {
+  const found = new Set();
+  const text = String(prdText || "");
+  const blocks = text.split(/\n(?=-\s+\*\*AC)/);
+  for (const block of blocks) {
+    const vbMatch = block.match(/`verified_by:`([\s\S]*?)(?=\n\n|$)/);
+    if (!vbMatch) continue;
+    const vbText = vbMatch[1];
+
+    const braceRe = /([\w./-]*)\{([^}]+)\}([\w./-]*\.(?:js|md))\b/g;
+    let bm;
+    while ((bm = braceRe.exec(vbText))) {
+      const [, pre, alts, post] = bm;
+      for (const alt of alts.split(",")) {
+        const p = `${pre}${alt.trim()}${post}`;
+        if (p.includes("/")) found.add(p);
+      }
+    }
+
+    const plainRe = /\b([\w.-]+\/[\w./-]+\.(?:js|md))\b/g;
+    let pm;
+    while ((pm = plainRe.exec(vbText))) {
+      found.add(pm[1]);
+    }
+  }
+  return Array.from(found);
+}
+
+/** checkVerifiedByPaths(root, prdPath) -> {ok, checked, missing:[]}. Skips (ok:true, checked:0) when no
+ *  prd.md sits alongside the manifest — not every manifest ships one. */
+function checkVerifiedByPaths(root, prdPath) {
+  if (!fs.existsSync(prdPath)) return { ok: true, checked: 0, missing: [] };
+  let text;
+  try {
+    text = fs.readFileSync(prdPath, "utf8");
+  } catch (e) {
+    return { ok: false, checked: 0, missing: [], error: e.message };
+  }
+  const paths = extractVerifiedByFilePaths(text);
+  const missing = paths.filter((p) => !fs.existsSync(path.join(root, p)));
+  return { ok: missing.length === 0, checked: paths.length, missing };
+}
+
 function evaluate(manifest, opts = {}) {
   const forbidden = (manifest.trust_anchor_forbidden_for_cross_session || []).map((s) =>
     String(s).toLowerCase(),
@@ -145,6 +203,20 @@ function evaluate(manifest, opts = {}) {
     }
   }
 
+  // 6. VERIFIED_BY CLAIMS-VS-DISK (FIX-6 class-closer) — manifest-level, not per-surface: a sibling
+  // prd.md's `verified_by:` pointers must all resolve to an existing file. Checked in BOTH modes.
+  if (opts.manifestPath) {
+    const prdPath = path.join(path.dirname(opts.manifestPath), "prd.md");
+    const vb = checkVerifiedByPaths(opts.root || ROOT, prdPath);
+    if (!vb.ok) {
+      for (const m of vb.missing) {
+        violations.push(
+          `verified_by dangling reference: ${m} (named in ${path.relative(opts.root || ROOT, prdPath)} but absent on disk — FIX-6 class-closer)`,
+        );
+      }
+    }
+  }
+
   return { ok: violations.length === 0, violations, surfacesChecked };
 }
 
@@ -161,7 +233,7 @@ function main(argv) {
     return 2;
   }
 
-  const res = evaluate(loaded.manifest, { built });
+  const res = evaluate(loaded.manifest, { built, manifestPath });
   if (json) {
     process.stdout.write(
       JSON.stringify(
@@ -183,4 +255,12 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { loadManifest, evaluate, checkFalsifier, filePart, DEFAULT_MANIFEST };
+module.exports = {
+  loadManifest,
+  evaluate,
+  checkFalsifier,
+  filePart,
+  extractVerifiedByFilePaths,
+  checkVerifiedByPaths,
+  DEFAULT_MANIFEST,
+};

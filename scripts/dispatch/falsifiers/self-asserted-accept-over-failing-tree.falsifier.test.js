@@ -14,15 +14,19 @@ const fs = require("fs");
 test("rider-1 self-asserted-accept-over-failing-tree — an envelope claiming accept over a FAILING tree is REFUSED (reachability: bundle ran + check-failed FIRED)", (t) => {
   if (!fs.existsSync(CONTROLLER)) return t.skip("pending backend-builder — controller not yet built (falsifier RED)");
 
-  const { makeControllerFixture, standardInput, standardOpts, POISONED_CHECK_CONTEXT } = require("./_lib/controller-fixtures");
+  const { makeControllerFixture, standardInput, standardOpts } = require("./_lib/controller-fixtures");
   const ctl = require("../trusted-controller");
 
   const fx = makeControllerFixture("self-asserted");
   t.after(() => fx.cleanup());
 
-  // ATTACK: the envelope SELF-ASSERTS success/accept over a tree the pinned run WILL fail (poisoned files
-  // context forces the REQUIRED no-nul-bytes check to fail) — the controller must never read this claim.
+  // ATTACK: the envelope SELF-ASSERTS success/accept over a tree the pinned run WILL fail — a REAL
+  // NUL-byte-poisoned file committed into result_commit itself (FIX-1: the controller materializes +
+  // scans the real result_commit tree, so the poison must be a genuine commit, not an in-memory override)
+  // forces the REQUIRED no-nul-bytes check to fail; the controller must never read the envelope's claim.
+  const poisonedResult = fx.poisonResultCommit();
   const input = standardInput(fx, {
+    result_commit: poisonedResult,
     result_envelope: {
       success: true,
       verdict: "accept",
@@ -31,7 +35,7 @@ test("rider-1 self-asserted-accept-over-failing-tree — an envelope claiming ac
       files: ["fake-evidence.txt"], // even a shaped, non-hollow self-claim must not matter
     },
   });
-  const opts = standardOpts(fx, { checkContext: POISONED_CHECK_CONTEXT });
+  const opts = standardOpts(fx);
 
   const result = ctl.integrate(input, opts);
 

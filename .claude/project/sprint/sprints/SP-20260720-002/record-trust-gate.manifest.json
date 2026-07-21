@@ -19,7 +19,10 @@
         "scripts/dispatch/falsifiers/head-advanced-after-check.falsifier.test.js",
         "scripts/dispatch/falsifiers/unbrokered-merge-bypass.falsifier.test.js",
         "scripts/dispatch/falsifiers/write-surface-delegation-completeness.falsifier.test.js",
-        "scripts/dispatch/falsifiers/precommit-bypass-harmless.falsifier.test.js"
+        "scripts/dispatch/falsifiers/precommit-bypass-harmless.falsifier.test.js",
+        "scripts/dispatch/falsifiers/result-tree-materialization.falsifier.test.js",
+        "scripts/dispatch/falsifiers/reftxn-stdin-fail-closed.falsifier.test.js",
+        "scripts/dispatch/falsifiers/reftxn-hook-not-installed.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/self-asserted-accept.positive.test.js",
@@ -39,7 +42,8 @@
         "scripts/dispatch/falsifiers/checker-poisoning.falsifier.test.js",
         "scripts/dispatch/falsifiers/checker-self-modification.falsifier.test.js",
         "scripts/dispatch/falsifiers/pinned-bundle-path-symlink.falsifier.test.js",
-        "scripts/dispatch/falsifiers/bundle-hash-mismatch.falsifier.test.js"
+        "scripts/dispatch/falsifiers/bundle-hash-mismatch.falsifier.test.js",
+        "scripts/dispatch/falsifiers/empty-bundle-manifest.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/checker-poisoning.positive.test.js"
@@ -56,7 +60,10 @@
       "trust_anchor": "one shared module + pinned-bundle from_src_digest lineage",
       "falsifier_fixtures": [
         "scripts/dispatch/falsifiers/shared-check-library-reachability.falsifier.test.js",
-        "scripts/dispatch/falsifiers/shared-check-library-export-drift.falsifier.test.js"
+        "scripts/dispatch/falsifiers/shared-check-library-export-drift.falsifier.test.js",
+        "scripts/dispatch/falsifiers/bundle-lineage-mismatch.falsifier.test.js",
+        "scripts/dispatch/falsifiers/empty-check-set.falsifier.test.js",
+        "scripts/dispatch/falsifiers/check-lib-consumer-runner-error.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/shared-check-library-3consumer.positive.test.js"
@@ -98,7 +105,9 @@
       "falsifier_fixtures": [
         "scripts/dispatch/falsifiers/sol-a3-required-lane-killed.falsifier.test.js",
         "scripts/dispatch/falsifiers/sol-a3-optional-lane-semantics.falsifier.test.js",
-        "scripts/dispatch/falsifiers/sol-a3-agy-route-not-served-proof.falsifier.test.js"
+        "scripts/dispatch/falsifiers/sol-a3-agy-route-not-served-proof.falsifier.test.js",
+        "scripts/dispatch/falsifiers/helm-runner-integration-false-green.falsifier.test.js",
+        "scripts/dispatch/falsifiers/sol-a3-optional-lane-present-and-failed-panel2family.falsifier.test.js"
       ],
       "positive_companions": [
         "scripts/dispatch/falsifiers/sol-a3-absent-optional-agy.positive.test.js"
@@ -129,6 +138,20 @@
       "trust_anchor": "scoped CORE-2 artifact-verification+integration SLICE only (evaluateCore2Live + --flip-gate --scope=core2)",
       "falsifier_fixtures": [
         "scripts/dispatch/falsifiers/honest-promise-scope.falsifier.test.js"
+      ],
+      "positive_companions": []
+    },
+    {
+      "id": "S8-verified-by-claims-vs-disk",
+      "reader": "scripts/checks/record-trust-gate.js",
+      "action_gated": "prd.md verified_by claim -> a REAL file on disk (FIX-6 class-closer, ED-056/G0.1)",
+      "scope": "same-session",
+      "new_in_phase3": true,
+      "choke_point": "scripts/checks/record-trust-gate.js#checkVerifiedByPaths",
+      "structural_guard": "scripts/checks/record-trust-gate.js",
+      "trust_anchor": "every fully-qualified verified_by path (incl. brace-expanded lists) resolves to an existing file; a manifest with no sibling prd.md is unaffected",
+      "falsifier_fixtures": [
+        "scripts/dispatch/falsifiers/verified-by-dangling-reference.falsifier.test.js"
       ],
       "positive_companions": []
     }

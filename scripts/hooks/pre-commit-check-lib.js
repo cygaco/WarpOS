@@ -14,8 +14,10 @@
  * precommit-bypass-harmless.falsifier.test.js for the proof that a `--no-verify` candidate still requires a
  * brand-new controller-run AcceptanceRecord to integrate.
  *
- * Exit 0 = clean (or non-authoritative issues found and reported, per opts). Exit 1 = a required check
- * failed/skipped-required/timed-out — a signal, not a gate; `git commit --no-verify` sails right past it.
+ * Exit 0 = clean. Exit 1 = a required check failed/skipped-required/timed-out — a signal, not a gate;
+ * `git commit --no-verify` sails right past it. Exit 2 = RUNNER ERROR (FIX-7/QA-007: the runner itself
+ * threw — a broken registry/runner is a DISTINCT non-zero status, never silently indistinguishable from
+ * exit 0's "ran clean").
  */
 
 const checkLib = require("../dispatch/check-lib");
@@ -39,15 +41,26 @@ function runCheckLibSuite(ctx = {}) {
   return { ...suite, blocked: blockingReasons.length > 0, blockingReasons };
 }
 
-function main() {
+/**
+ * computeExitCode(opts) -> number. FIX-7 (QA-007): the PURE decision core, extracted out of main() so a
+ * runner exception is a deterministic, testable, DISTINCT exit code — never silently read as a clean pass.
+ * `opts.runCheckLibSuiteFn` is a test-only injectable seam (defaults to the real `runCheckLibSuite`).
+ *
+ * Exit contract: 0 = clean · 1 = a required check failed/skipped-required/timed-out (a SIGNAL, bypassable
+ * via `--no-verify`; the real gate is trusted-controller.js's out-of-tree pinned run, Seam E) ·
+ * 2 = RUNNER ERROR (the runner itself threw). This hook's NON-AUTHORITATIVE scope is a property of WHICH
+ * write-surfaces reach it at all (a `--no-verify` commit skips it entirely, R-8/AC-12) — it is NOT license
+ * to treat an execution failure that DID run as if it were a clean pass; those are two different claims,
+ * and QA-007 named the old code conflating them (an exception → exit 0, indistinguishable from "ran clean").
+ */
+function computeExitCode(opts = {}) {
+  const runFn = typeof opts.runCheckLibSuiteFn === "function" ? opts.runCheckLibSuiteFn : runCheckLibSuite;
   let result;
   try {
-    result = runCheckLibSuite({ root: process.cwd() });
+    result = runFn({ root: opts.root || process.cwd() });
   } catch (e) {
-    // A hook RUNNER crash must not permanently strangle every local commit — this gate is explicitly
-    // non-authoritative (Seam D); fail OPEN (exit 0) while surfacing the error loudly on stderr.
-    process.stderr.write(`pre-commit-check-lib: runner error (fail-open, non-authoritative gate): ${e && e.message ? e.message : e}\n`);
-    return 0;
+    process.stderr.write(`pre-commit-check-lib: RUNNER ERROR (distinct non-zero exit 2 — NEVER a silent pass): ${e && e.message ? e.message : e}\n`);
+    return 2;
   }
   if (result.blocked) {
     process.stderr.write(
@@ -63,6 +76,10 @@ function main() {
   return 0;
 }
 
+function main() {
+  return computeExitCode();
+}
+
 if (require.main === module) process.exit(main());
 
-module.exports = { runCheckLibSuite, main };
+module.exports = { runCheckLibSuite, main, computeExitCode };

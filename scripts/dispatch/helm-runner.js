@@ -29,6 +29,12 @@ const controller = require("./trusted-controller");
 
 const DEFAULT_PROFILE = "panel-2family";
 
+// FIX-5a (QA-005/BE-CQ-P4-001+002/SR-TRUSTROOT-004): a distinct, non-PASS top-level status for "the panel
+// itself was PASS-worthy, but the ONE integration this run was supposed to drive through the controller
+// was refused/blocked/didn't actually mutate the ref" — never silently collapsed back into panel.status
+// (which stays PASS; `integration` carries the real controller verdict for anyone reading it).
+const INTEGRATION_BLOCKED = "INTEGRATION-BLOCKED";
+
 /**
  * collectLaneEvidence(helm, runResult) -> lane {laneId, contractedProvider, observedProvider, fallback,
  * alive, verdict, hasEvidence, controlPlane}. Reads ONLY from the dispatch control-plane record the caller
@@ -85,11 +91,65 @@ function runHelms(input = {}, opts = {}) {
   const rawLanes = Array.isArray(input.lanes) ? input.lanes : [];
   const perHelm = rawLanes.map((l) => collectLaneEvidence(l, l && l.runResult));
 
-  const panel = panelLanes.panelStatus(profile, perHelm, { agyOperatorOwned });
+  let panel = panelLanes.panelStatus(profile, perHelm, { agyOperatorOwned });
+
+  // FIX-5b (QA-005/BE-CQ-P4-001+002/SR-TRUSTROOT-004, β rider 5 BINDING): `panelStatus` only evaluates
+  // lanes named in `profile.required` — an OPTIONAL lane (e.g. agy on panel-2family) that is PRESENT in
+  // `perHelm` but NOT in `profile.required` is never even looked at by that reducer, so a present-and-
+  // FAILED optional lane was silently DROPPED and the panel still read PASS. β rider 5 is explicit: "an
+  // optional lane that RAN and FAILED BINDS" — absence is tolerated, a real failure is NOT. This closes
+  // that gap WITHOUT touching panel-lanes.js's own required/optional reduction authority: it reuses the
+  // SAME evidence shape (`hasEvidence`/`alive`/`verdict`) panelStatus itself gates on, applied ONLY to the
+  // lanes panelStatus's required-only loop never visited.
+  if (panel.status === panelLanes.STATUS.PASS) {
+    const requiredIds = new Set((profile && profile.required) || []);
+    const optionalRanAndFailed = perHelm.filter((l) => {
+      if (!l || !l.laneId || requiredIds.has(l.laneId)) return false; // required lanes already reduced above
+      if (l.hasEvidence !== true) return false; // ABSENT (or unprovable) optional lane — tolerated, never binds
+      const coerced = l.fallback === true || !l.observedProvider || (!!l.contractedProvider && l.observedProvider !== l.contractedProvider);
+      if (coerced) return false; // a coerced/fallback optional lane is not "ran and failed" — panel-lanes' own coercion semantics stay authoritative for required lanes only; an optional coerced lane is simply not proof of anything, not a bind
+      if (l.alive !== true) return false; // a dead optional lane is unprovable, not a proven failure
+      return String(l.verdict || "").toLowerCase() === "fail";
+    });
+    if (optionalRanAndFailed.length) {
+      const failedIds = optionalRanAndFailed.map((l) => l.laneId);
+      const laneStatus = { ...panel.laneStatus };
+      for (const id of failedIds) laneStatus[id] = "fail";
+      panel = {
+        ...panel,
+        status: panelLanes.STATUS.FAIL,
+        reason: `optional lane(s) RAN and FAILED (binds, β rider 5): ${failedIds.join(", ")}`,
+        laneStatus,
+      };
+    }
+  }
 
   let integration;
   if (panel.status === panelLanes.STATUS.PASS && input.integrate) {
-    integration = integrateFn(input.integrate, opts.controllerOpts || {});
+    // FIX-5a (QA-005/BE-CQ-P4-001+002/SR-TRUSTROOT-004): a PASS panel driving an integration is a REQUIRED
+    // real-write flow — never forward the caller's `controllerOpts.performRefUpdate` verbatim (an absent/
+    // false value would let the controller return INTEGRATED without ever mutating the ref, a false-green
+    // this runner must never reproduce). `performRefUpdate:true` is FORCED here, the one and only place
+    // this module ever decides that. A throwing integrateFn is caught — never a silent pass.
+    try {
+      integration = integrateFn(input.integrate, { ...(opts.controllerOpts || {}), performRefUpdate: true });
+    } catch (e) {
+      integration = { ok: false, decision: "BLOCKED", reason: "integrate-threw", detail: e && e.message ? e.message : String(e) };
+    }
+
+    // Integration is REQUIRED to have genuinely succeeded AND genuinely bound the ref to the accepted
+    // result_commit — a controller refusal/throw/mismatched receipt must NEVER let the overall helm status
+    // stay PASS (that would be exactly the "integration BLOCKED but helm reads PASS" false-green QA-005/
+    // BE-CQ-P4-001+002/SR-TRUSTROOT-004 named).
+    const committedCorrectly =
+      integration &&
+      integration.ok === true &&
+      integration.decision === "INTEGRATED" &&
+      integration.receipt &&
+      integration.receipt.committed_head === input.integrate.result_commit;
+    if (!committedCorrectly) {
+      return { status: INTEGRATION_BLOCKED, perHelm, panel, integration };
+    }
   }
 
   return { status: panel.status, perHelm, panel, integration };
@@ -99,4 +159,5 @@ module.exports = {
   runHelms,
   collectLaneEvidence,
   DEFAULT_PROFILE,
+  INTEGRATION_BLOCKED,
 };

@@ -32,6 +32,17 @@ const REGISTRY = Object.freeze({
   "suite-completeness": require("./checks/suite-completeness"),
 });
 
+// FIX-4c (empty-check-set floor): CHECK_NAMES/REQUIRED_CHECKS must be non-empty at load time — a registry
+// that silently drifted to `[]` (a botched edit, a bad merge) would let every downstream reconcile
+// (trusted-controller's default-deny run-manifest, this module's own runSuite) vacuously "pass" over zero
+// checks. Caught HERE, at require time, before any consumer (hook/pre-commit/controller) can even load.
+if (!Array.isArray(CHECK_NAMES) || CHECK_NAMES.length === 0) {
+  throw new Error("check-lib registry drift: CHECK_NAMES must be a non-empty array (empty-check-set floor)");
+}
+if (!Array.isArray(REQUIRED_CHECKS) || REQUIRED_CHECKS.length === 0) {
+  throw new Error("check-lib registry drift: REQUIRED_CHECKS must be a non-empty array (empty-check-set floor)");
+}
+
 // Anti-drift self-check at load time: every CHECK_NAMES entry must have a matching REGISTRY module whose
 // declared `name` field equals the key, and every REQUIRED_CHECKS entry must be a member of CHECK_NAMES. A
 // copy-paste/rename mistake is caught HERE, at require time, not silently later at runCheck time.
