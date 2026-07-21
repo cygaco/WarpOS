@@ -26,9 +26,24 @@ mutation, which would trip model-chain drift + fight ADR-0031 point-3):
   `getProviderForRole(redteam) === getProviderForRole(security-reviewer)` (redteam is a 1-hop alias — it
   can never resolve to a divergent provider).
 
-Plus an **AC-14 single-pass creep-back guard**: RED if any non-test, non-panel caller routes
-security-reviewer as a single-pass `dispatch-agent` binding dispatch (bypassing dispatch-review's panel
-gate). Findings name the invariant, the offending key, and the fix.
+Plus an **AC-14 single-pass creep-back guard** (defense-in-depth): RED if any non-test file references the
+`dispatch-agent.js` transport + a security-reviewer/redteam role, UNLESS audited-allowlisted. Conservative-
+by-construction (fail-closed on unrecognized callers); the allowlist is typed — `reference-only` entries are
+content-qualified (a reference-only file that GAINS the spawn-args caller shape is FLAGGED, not file-wide
+hidden), and the `tracked-caller` (delta) is suppressed ONLY while ED-230 is open (FLAGGED once ED-230 closes
+— the mechanical re-open trigger). Catches literal/dynamic/bound-first/multi-line/template-literal forms;
+exact-path exclusion (a spoof at `scripts/evil/dispatch-review.js` is scanned). Findings name the invariant,
+the offending key, and the fix.
+
+**HONEST CEILING (β bounded-final, SP-20260720-003 gauntlet R-1..R-4).** This is a BEST-EFFORT STATIC scan,
+NOT a complete guard. Its FUNDAMENTAL residual (the AST ceiling): a **dynamically-constructed** `dispatch-agent.js`
+path or role string, a bound-first/multi-line caller **inside a reference-only file**, or a caller **outside
+`scripts/`** (a `.claude` hook / `.md` skill that shells the transport) are NOT statically detectable. The
+STRUCTURAL close is a **dispatch-time guard** that refuses a single-pass security-reviewer binding at the
+runtime choke-point — tracked as a follow-up ED. The **PRIMARY** ED-244 defense is the panel binding invariant
+(P1∧P2∧P3, above), which is ground-truth-verified; AC-14 is defense-in-depth over a latent path that is safe
+today (agy blocked-advisory + delta fails-closed + the mechanical ED-230 re-open trigger). Do NOT read AC-14
+as a complete single-pass guard.
 
 ### ED-230 record-trust gate (fail-closed + closure-receipt)
 
