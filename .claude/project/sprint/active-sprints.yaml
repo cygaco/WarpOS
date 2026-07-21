@@ -1158,7 +1158,7 @@ sprints:
     updated_at: "2026-07-19T04:30:00.000Z"
   - id: SP-20260718-005
     title: "Phase 3 — WorkOrder / ResultEnvelope (adapt packet 06 onto the EXISTING dispatch ledger: schema version + correlation id + effective role/provider/model + immutable base + result-tree hash + capabilities/paths + retry lineage + evidence refs + 5 terminal states; failure-classification + reaper signal-ranking; ED-069 started-row + ED-070 quota + ED-071 stall fold-back; sprint leases + do-not-reopen ledger [packet 07 / ED-228]; ED-218 workorder provenance validator; ED-232 cross-session key-distribution; ED-221 Option-2 impl; Unit-B instruction-projection follow-up)"
-    status: planning
+    status: closed
     lane:
       type: default
       value: null

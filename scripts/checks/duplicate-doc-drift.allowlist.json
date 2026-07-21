@@ -23,8 +23,8 @@
     },
     {
       "basename": "README.md",
-      "dirGlobs": ["patterns/", "_guides/", "_knowledge/*/"],
-      "reason": "Per-directory README — each library/knowledge-domain directory ships its own README describing THAT directory; identical content would be the bug, not drift."
+      "dirGlobs": ["patterns/", "_guides/", "_knowledge/*/", "scripts/dispatch/benchmark-pack/"],
+      "reason": "Per-directory README — each library/knowledge-domain/tooling directory ships its own README describing THAT directory (NOT one canonical doc duplicated); identical content would be the bug, not drift. D-4 INC-4: added scripts/dispatch/benchmark-pack/ — it is a distinct per-dir README, the 12th path in the group, previously the sole un-globbed member that (a) flagged the group and (b) left the rule matching no full group ('stale-allowlist-pair')."
     }
   ]
 }
