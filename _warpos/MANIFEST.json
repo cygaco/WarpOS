@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-21T23:11:18.053Z",
+  "generatedAt": "2026-07-21T23:27:37.122Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -10459,8 +10459,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "9dccff10a5368d8f9ed557c722cc67fa81b34aaf304301e8e8ffe9e21de8ebc7",
-      "installedSha": "9dccff10a5368d8f9ed557c722cc67fa81b34aaf304301e8e8ffe9e21de8ebc7"
+      "sha256": "fcce8afd662009788bdd81efb2006ef18c85d3f4cc660842ed95e153048961b8",
+      "installedSha": "fcce8afd662009788bdd81efb2006ef18c85d3f4cc660842ed95e153048961b8"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -10529,8 +10529,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-gate-wiring.js",
-      "sha256": "0c9f02ec5d23e400adcc519ff14127a716e74d7c21bba57c35502f1df4556a8e",
-      "installedSha": "0c9f02ec5d23e400adcc519ff14127a716e74d7c21bba57c35502f1df4556a8e"
+      "sha256": "154e7ec120a1ee1a5afed81b6729429b39de4db608c684774702dc37b8dd9455",
+      "installedSha": "154e7ec120a1ee1a5afed81b6729429b39de4db608c684774702dc37b8dd9455"
     },
     "scripts/warpos/test-hash-back-compat.js": {
       "owner": "framework",
@@ -10609,12 +10609,26 @@
       "sha256": "4eb836b6e944d99f374c2274463cd389efdf09687a60931e44a49fdf22f06cf1",
       "installedSha": "4eb836b6e944d99f374c2274463cd389efdf09687a60931e44a49fdf22f06cf1"
     },
+    "scripts/warpos/test-update-json-loud-fail.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-update-json-loud-fail.js",
+      "sha256": "803d84645d8258681cf00eb88fa351fa6451e7baf5e060a38aa6cf888a5be330",
+      "installedSha": "803d84645d8258681cf00eb88fa351fa6451e7baf5e060a38aa6cf888a5be330"
+    },
     "scripts/warpos/test-update-scaffold.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-update-scaffold.js",
       "sha256": "805ab945a19216af64686fd013f1287433424d4b23c05877707d7b00332857e0",
       "installedSha": "805ab945a19216af64686fd013f1287433424d4b23c05877707d7b00332857e0"
+    },
+    "scripts/warpos/test-upgrade-current-to-new.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/test-upgrade-current-to-new.js",
+      "sha256": "d0f7f6c0524df21bec01948a2c4171905c7b4b004428874fca24d47db17f244a",
+      "installedSha": "d0f7f6c0524df21bec01948a2c4171905c7b4b004428874fca24d47db17f244a"
     },
     "scripts/warpos/transaction.js": {
       "owner": "framework",
@@ -10627,8 +10641,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/update.js",
-      "sha256": "f30cb2e48785260037c90ee85ea53b985b440253b03b4b4418c64d68325765ad",
-      "installedSha": "f30cb2e48785260037c90ee85ea53b985b440253b03b4b4418c64d68325765ad"
+      "sha256": "b2f0556643c51f003cc65ef51a0ef87f01ff31bc17bf136bf8ee1d2dd0257106",
+      "installedSha": "b2f0556643c51f003cc65ef51a0ef87f01ff31bc17bf136bf8ee1d2dd0257106"
     },
     "scripts/warpos/worktree-audit.js": {
       "owner": "framework",
