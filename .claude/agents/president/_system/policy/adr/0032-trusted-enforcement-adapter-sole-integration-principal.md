@@ -31,3 +31,23 @@ Supporting invariants: a nonce-bound run manifest (default-deny over every expec
 - Lexical-guard-only (acceptance-read-choke-point): its own docstring names the ceiling — a no-op call satisfies the scan; the pinned external checker is the definitive close.
 - Greenfield dispatch/merge rewrite (packet 08): rejected in the ratified plan — adapt onto the existing ledger + CAS primitive.
 - Waiting for agy/panel-3lab: violates the operator 2026-07-20 defer directive; the exit proof runs on the panel-2family floor.
+
+## Amendment 2026-07-21 — live-install deferral (beta rider R2, DECIDE B/0.90)
+
+**Precision on "goes live":** the mechanism is BUILT + FALSIFIER-PROVEN (52 falsifier
+files / 108 teeth green at merge cbf6ab4e; CORE-2 fixture flip `report_only:false`
+stands, gated by `conformance-matrix.js --flip-gate`). However the Seam E
+reference-transaction hook's LIVE-install on the canonical repo is **DEFERRED to D-4**:
+once installed it fences EVERY `refs/heads/main` write behind the controller fence
+token, and `trusted-controller.integrate()` accepts only unit-shaped inputs — there is
+NO brokered transport for branch merges or release commits yet
+(ED-controller-no-live-release-transport, high, open). Installing before the transport
+exists forces disable-per-release, which is sole-route theater, not protection.
+
+**Flip-trigger (recorded):** D-4 builds the brokered merge/release-commit transport as
+its FIRST work item → install the hook via `scripts/install-git-hooks.sh` → verify
+`.git/hooks/reference-transaction` wiring → record the flip. Until then the
+mistake-class defense is carried by the falsifier suite + record-trust gate
+(honest-ceiling-with-named-enabler; QA-001 documented in merge cbf6ab4e).
+The unfenced-write window {Phase-4 merge cbf6ab4e, n8 merge 58545214, R5 regen commit}
+is documented per beta rider R3.
