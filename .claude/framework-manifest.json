@@ -7,7 +7,7 @@
     "skill": 235,
     "kernel": 42,
     "reference": 29,
-    "maps_baseline": 25,
+    "maps_baseline": 26,
     "hook": 82,
     "hook_lib": 25,
     "tool": 2,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1665,
+  "total": 1666,
   "assets": {
     "agent": [
       {
@@ -1073,7 +1073,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0033-brokered-transport-live-fence.md",
         "dest": ".claude/agents/president/_system/policy/adr/0033-brokered-transport-live-fence.md",
         "kind": "agent",
-        "sha256": "30fd98fd9dad3135b0aed1b1c2e32df967aa40502403fac4055541bcd1ab4fef",
+        "sha256": "e0376b1c53c95a162fd12fc3f47e5656ccb79fdd2b5eb7b3d2e9c5168f5fea8c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -5330,6 +5330,18 @@
         "dest": ".claude/project/maps/SPEC_GRAPH.json",
         "kind": "maps_baseline",
         "sha256": "10de4c7ef6ba4b6fd1baa7ff9864ccaf09739d38bcb1dba9a2236ff2ebc862cf",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",
