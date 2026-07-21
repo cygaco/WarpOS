@@ -7,7 +7,7 @@
     "skill": 235,
     "kernel": 42,
     "reference": 29,
-    "maps_baseline": 26,
+    "maps_baseline": 25,
     "hook": 82,
     "hook_lib": 25,
     "tool": 2,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1666,
+  "total": 1665,
   "assets": {
     "agent": [
       {
@@ -233,7 +233,7 @@
         "src": ".claude/agents/_system/guides/agent-dispatch-guide.md",
         "dest": ".claude/agents/_system/guides/agent-dispatch-guide.md",
         "kind": "agent",
-        "sha256": "df9254bb7a8c5e3f9e8289d1853a3c418d1b15666e9c8b5716eb169a9eb1428a",
+        "sha256": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -293,7 +293,7 @@
         "src": ".claude/agents/_system/guides/teammate-stall-rules.md",
         "dest": ".claude/agents/_system/guides/teammate-stall-rules.md",
         "kind": "agent",
-        "sha256": "d49670c9cc92ce27de933a43ba940b718c35f53bef7aa41a46b972ed1aa8d5ff",
+        "sha256": "a23f0fb5f62dd4eebf7050d2cc75b469b6afc7e65db384cf2e4eef32c465d7b5",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1277,7 +1277,7 @@
         "src": ".claude/agents/president/epsilon.md",
         "dest": ".claude/agents/president/epsilon.md",
         "kind": "agent",
-        "sha256": "2074cac01806f0dd47fdb9f78e2b715e1074490d41fe3964c72e3f648aae91a2",
+        "sha256": "a5612cb1e11fe77c9d1d525f7bf5967b07a3d4f13d928b101978bfee1f36ab64",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -5330,18 +5330,6 @@
         "dest": ".claude/project/maps/SPEC_GRAPH.json",
         "kind": "maps_baseline",
         "sha256": "10de4c7ef6ba4b6fd1baa7ff9864ccaf09739d38bcb1dba9a2236ff2ebc862cf",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",

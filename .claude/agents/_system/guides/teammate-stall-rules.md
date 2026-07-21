@@ -61,6 +61,60 @@ wake event entirely: the poller drives the clock itself and observes the
 durable artifact (a posted signal, or a completion record) directly. You are
 never parked on an event the harness will not deliver.
 
+## The paired-waiter protocol — the lead-side accelerator (wake-drop kill)
+
+Fire-and-poll closes the wake-gap from the *teammate's* side, but a teammate's
+own poll interval is coarse (10s–minutes) and the harness re-wake it leans on for
+a lead relay can itself DROP — measured **2026-07-21 as ~5 dropped re-wakes
+costing ~45–60 min**. The structural accelerator is a **paired waiter on the
+lead's side**, so a completion relays in *seconds* rather than on the teammate's
+next poll tick. Four rings, each independent:
+
+1. **The dispatch envelope MUST carry the `dispatch_id` + the expected artifact
+   path.** Every time a teammate fires a background dispatch, its status
+   `SendMessage` to the team-lead names (a) the `dispatch_id` and (b) the absolute
+   path of the completion record / evidence artifact the dispatch will write. An
+   envelope missing these two fields **cannot be waited on** — it is a silent-drop
+   waiting to happen. (This is the arming input; without it, ring 2 is impossible.)
+2. **The team-lead immediately arms a harness-tracked bg waiter.** On receiving
+   the envelope the lead launches a background Bash loop that blocks on the durable
+   artifact and relays the instant it appears:
+   ```bash
+   until grep -q '"dispatch_id":"<id>".*"completed_at"' "$COMPLETIONS_LEDGER"; do sleep 10; done
+   # then: SendMessage the teammate "<id> completed → <artifact path>"
+   ```
+   (`$COMPLETIONS_LEDGER` = `paths.dispatchCompletionsFile`.) Because the lead's bg
+   Bash is **harness-tracked**, its exit re-wakes the lead deterministically, and
+   the lead's relay `SendMessage` re-wakes the idle teammate deterministically —
+   **two reliable wakes replacing the one that drops.**
+3. **The teammate keeps its own in-turn poller (defense-in-depth).** The lead's
+   waiter is primary; the teammate's fire-and-poll (above) is the backup, so a
+   dropped lead relay still resolves on the teammate's next tick. Neither path is
+   trusted alone; together they are two independent routes to the same signal.
+4. **Watchdog ticks remain the OUTER fallback.** The adaptive watchdog cadence
+   (below) is the third ring — it catches the case where BOTH the lead waiter and
+   the teammate poll somehow miss.
+
+**Evidence (2026-07-21):** where the lead armed an `until`-loop waiter, completion
+relayed in ~seconds (the DUMP's "α until-loops fired instantly" note); where a bare
+harness re-wake was relied on, ~5 drops cost ~45–60 min. The paired waiter converts
+a single fragile wake into a redundant pair — the wake-drop kill.
+
+**Enforcer (debt, ED-256):** the arm-a-waiter half is behavioral — nothing asserts
+the lead armed a waiter for each outstanding dispatch, nor that the envelope carried
+the two required fields. Candidate: a **waiter-armed check in the sprint liveness
+scan** (`scripts/checks/epsilon-liveness.js`) that, for each outstanding teammate bg
+dispatch in `paths.dispatchCompletionsFile`, asserts either a lead-armed waiter
+process is live OR the envelope recorded `dispatch_id` + artifact path — flagging
+idle-with-outstanding-dispatch-and-no-waiter. **Residual to name when built
+(DP-gap #41b, field-present ≠ behavior-fires):** the envelope-field assertion is
+the deterministic write-time firing part; "a waiter process is live" is a weaker
+runtime signal, and the `OR` lets the field-path satisfy the check alone — so this
+enforces the envelope CONTRACT, not the waiter-ARMING BEHAVIOR. The behavior-signal
+wants a **wake-drop telemetry counter** (alert when drops exceed a threshold), not
+just a field check. (Ledger is gitignored/machine-local — split-durability: the
+future enforcer resolves the cited ED id from THIS committed doc, not the ledger.)
+
 ## Poll patience — the 540s clamp bound (live evidence, 2026-07-16)
 
 Do not declare a dispatch dead early. Tonight's ledger gave three deterministic
