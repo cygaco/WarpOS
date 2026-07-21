@@ -635,3 +635,20 @@ test("R2-F2 — fallbackCountSafe never throws + never fabricates 0 on an unread
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("R2 addendum — a PRODUCTION dry-run (seams={}, no logPath) PROJECTS the count, never misreports as unrecordable", () => {
+  // The common pre-flip state: α holds the lease, no bundle promoted yet, --dry-run rehearsal. With seams={}
+  // ctx.logPath is undefined; the dry-run must DEFAULT the ledger path (like recordFallback) and project —
+  // not surface a type error as fallback-unrecordable.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "r2dry-"));
+  try {
+    const r = dog.attemptFallback({ reason: "no-pinned-bundle-configured", transport: "branch-merge", targetRef: "refs/heads/main", gitRoot: root, dryRun: true, root, emit: false });
+    assert.equal(r.ok, true, "a legitimate production dry-run must PROJECT, not error");
+    assert.equal(r.route, "dry-run");
+    assert.equal(r.performed, false);
+    assert.equal(r.count, 0, "the real count is untouched (absent ledger = 0)");
+    assert.equal(r.projected_count, 1, "projects what the count WOULD become");
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

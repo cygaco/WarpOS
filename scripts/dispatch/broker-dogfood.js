@@ -481,7 +481,12 @@ function ordinaryLand(args = {}) {
     const r = git(["merge", "--no-ff", "-m", message || `merge ${branch}`, branch], gitRoot);
     return r.ok ? { ok: true, route: "git merge --no-ff" } : { ok: false, route: "git merge --no-ff", reason: "ordinary-merge-failed", detail: r.stderr };
   }
-  // Otherwise land the already-built commit by the ordinary compare-and-swap.
+  // Otherwise land the already-built commit by the ordinary compare-and-swap. Guard a null newHead (an
+  // unreachable finish() edge — merge-tree unsupported AND the target ref not the checked-out branch) so we
+  // return a coded failure rather than crashing spawnSync on a null argument (R2 addendum).
+  if (!newHead) {
+    return { ok: false, route: "git update-ref", reason: "ordinary-update-ref-failed", detail: "no commit object to land (newHead is null)" };
+  }
   const r = git(["update-ref", targetRef, newHead, expectedHead], gitRoot);
   return r.ok ? { ok: true, route: "git update-ref" } : { ok: false, route: "git update-ref", reason: "ordinary-update-ref-failed", detail: r.stderr };
 }
@@ -527,9 +532,14 @@ function attemptFallback(ctx = {}) {
   // fallback #3" is unanswerable if #3 never actually happened. Report the PROJECTION instead: what the
   // record would say, and what the count would become. Nothing is written.
   if (ctx.dryRun === true) {
+    // Default the ledger path exactly like recordFallback (R2 addendum): in production the CLI passes
+    // seams={} so ctx.logPath is undefined, and reading it raw would make a legitimate dry-run rehearsal
+    // (α holds the lease, no bundle promoted yet — the common pre-flip state) misreport a type error as
+    // fallback-unrecordable instead of PROJECTING the count. The live path defaults inside recordFallback.
+    const dryLogPath = logPath || defaultLogPath(ctx.root);
     let currentCount;
     try {
-      currentCount = fallbackCount(logPath);
+      currentCount = fallbackCount(dryLogPath);
     } catch (e) {
       // A rehearsal against an unreadable ledger (GF-3): give the SAME refusal the live path would, rather
       // than throwing — a dry run must never crash, and must not pretend it could record a fallback.
@@ -537,7 +547,7 @@ function attemptFallback(ctx = {}) {
     }
     const projected = currentCount + 1;
     const preview = { schema: FALLBACK_SCHEMA, seq: projected, ts: null, dry_run: true, ...draft };
-    const dryBanner = fallbackBanner({ ...preview, transport: `${preview.transport} (DRY RUN — nothing written)` }, projected, logPath);
+    const dryBanner = fallbackBanner({ ...preview, transport: `${preview.transport} (DRY RUN — nothing written)` }, projected, dryLogPath);
     if (ctx.emit !== false) process.stderr.write(`${dryBanner}\n`);
     return {
       ok: true,
