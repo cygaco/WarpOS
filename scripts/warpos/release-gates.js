@@ -77,7 +77,13 @@ function summarizeGateBAsserts(payload) {
 // independently re-verifies the SPECIFIC asserts the trust model requires are
 // present and green, mirroring the engine's own `ok` computation
 // (test-upgrade-current-to-new.js's REQUIRED_NAMED_LOAD_BEARING_ASSERTS).
-const GATE_B_REQUIRED_NAMED_ASSERTS = ["scan_install_green_3b", "fresh_n_parity_pathset_3c", "fresh_n_parity_content_3c"];
+const GATE_B_REQUIRED_NAMED_ASSERTS = [
+  "scan_install_green_3b",
+  "fresh_n_parity_pathset_3c",
+  "fresh_n_parity_type_3c",
+  "fresh_n_parity_symlink_target_3c",
+  "fresh_n_parity_content_3c",
+];
 function gateBNamedEvidencePresent(payload) {
   const asserts = (payload && payload.asserts) || [];
   return GATE_B_REQUIRED_NAMED_ASSERTS.every((name) => {

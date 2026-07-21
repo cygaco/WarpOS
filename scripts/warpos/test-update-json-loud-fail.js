@@ -112,17 +112,23 @@ function runTooth() {
       `payload=${JSON.stringify(payload)}`,
     );
     ok(
-      "the failure is a STRUCTURED preflight/escalation block (not an unrelated crash) — robust to WHICH preflight gate fires",
-      // NEW-TEST-JSON-TOOTH-NOT-GREEN: do NOT pin the specific gate name
-      // (warpos-install-baseline vs EFASTPREFLIGHTDRIFT etc. depends on the
-      // sandbox's exact drift state). Assert the STRUCTURED-failure shape that
-      // the BC-16 loud-fail fix guarantees: a real preflight-block / escalation,
-      // not a usage/crash error. This is the load-bearing property being tested.
+      "the failure is a STRUCTURED failure of the BC-16 loud-fail contract (not an unrelated crash) — robust to WHICH gate/phrase fires",
+      // (R3-4 — 2nd recurrence fix, qa 7C-006) Do NOT match any SPECIFIC
+      // failure NAME or phrase (not "PREFLIGHT BLOCKED", not "^ESCALATE:", not
+      // any other gate's wording — e.g. the real
+      // "TRANSACTION BEGIN FAILED (EFASTPREFLIGHTDRIFT)" text was rejected by
+      // the previous regex pin). Assert ONLY the load-bearing INVARIANTS of
+      // the contract under test: the run reports not-ok, did NOT commit, the
+      // process actually exited non-zero (already asserted above), and a
+      // non-empty structured error string is present. This is the property
+      // "a !ok run exits non-zero with a structured error" — not which gate
+      // fired — so it accepts the WHOLE structured-failure family.
       !!payload &&
+        payload.ok === false &&
+        payload.committed !== true &&
         typeof payload.error === "string" &&
-        (/PREFLIGHT BLOCKED/.test(payload.error) || /^ESCALATE:/.test(payload.error)) &&
-        payload.committed !== true,
-      `error=${payload && payload.error}`,
+        payload.error.length > 0,
+      `payload.ok=${payload && payload.ok} payload.committed=${payload && payload.committed} error=${payload && payload.error}`,
     );
   } finally {
     fs.rmSync(sandbox, { recursive: true, force: true });

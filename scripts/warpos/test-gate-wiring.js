@@ -93,9 +93,11 @@ const CANNED = {
   // TRACE-TEETH-COVERAGE flagged a prior drift here: "scan_install_green" /
   // "fresh_vs_upgraded_parity" do not exist — the real names are
   // scan_install_green_3b / fresh_n_parity_pathset_3c /
-  // fresh_n_parity_content_3c) — release-gates.js's F2 named-evidence check
-  // requires the REAL names, so a stale fixture here would false-red this
-  // suite's own "ran GREEN against the canned success payload" test.
+  // fresh_n_parity_type_3c / fresh_n_parity_symlink_target_3c /
+  // fresh_n_parity_content_3c (the type/symlink-target pair added by R3-2/
+  // R3-3, gauntlet-r3)) — release-gates.js's F2 named-evidence check requires
+  // the REAL names, so a stale fixture here would false-red this suite's own
+  // "ran GREEN against the canned success payload" test.
   "test-upgrade-current-to-new.js": {
     status: 0,
     stdout: JSON.stringify({
@@ -110,6 +112,8 @@ const CANNED = {
         { name: "version_sanity_NON_LOAD_BEARING", ok: true, detail: "", loadBearing: false },
         { name: "scan_install_green_3b", ok: true, detail: "", loadBearing: true },
         { name: "fresh_n_parity_pathset_3c", ok: true, detail: "", loadBearing: true },
+        { name: "fresh_n_parity_type_3c", ok: true, detail: "", loadBearing: true },
+        { name: "fresh_n_parity_symlink_target_3c", ok: true, detail: "", loadBearing: true },
         { name: "fresh_n_parity_content_3c", ok: true, detail: "", loadBearing: true },
         { name: "dirty_set_content_unchanged", ok: true, detail: "", loadBearing: true },
       ],
@@ -375,6 +379,33 @@ CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
   const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
   ok(
     "GATE-B: payload missing ONLY fresh_n_parity_content_3c (partial named evidence) is still NEVER green",
+    gb && gb.severity !== "green",
+    gb && `severity=${gb.severity}`,
+  );
+}
+// A payload missing ONLY the R3-2/R3-3 type-or-symlink-target named evidence
+// (pathset + content present, type/symlink-target absent) must also not
+// green — the named-evidence requirement covers the FULL R3-3 typed-entry
+// judgment, not just the pre-existing pathset/content pair.
+CANNED["test-upgrade-current-to-new.js"].stdout = JSON.stringify({
+  ok: true,
+  from_version: "0.16.0",
+  to_version: "0.17.0",
+  ran: true,
+  ps_available: true,
+  asserts: [
+    { name: "apply_committed", ok: true, detail: "", loadBearing: true },
+    { name: "scan_install_green_3b", ok: true, detail: "", loadBearing: true },
+    { name: "fresh_n_parity_pathset_3c", ok: true, detail: "", loadBearing: true },
+    // fresh_n_parity_type_3c / fresh_n_parity_symlink_target_3c deliberately absent
+    { name: "fresh_n_parity_content_3c", ok: true, detail: "", loadBearing: true },
+  ],
+  sandbox_isolation: { no_delta: true, onlyBefore: [], onlyAfter: [], dirty_set_content_unchanged: true, dirty_set_changed_files: [] },
+});
+{
+  const gb = new Map(run({ skip: KNOWN_HEAVY_OR_UNRELATED }).results.map((r) => [r.name, r])).get("upgrade_current_to_new");
+  ok(
+    "GATE-B: payload missing the R3-2/R3-3 type/symlink-target named evidence is still NEVER green",
     gb && gb.severity !== "green",
     gb && `severity=${gb.severity}`,
   );
