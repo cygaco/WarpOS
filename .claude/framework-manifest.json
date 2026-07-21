@@ -3,7 +3,7 @@
   "version": "0.17.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 110,
+    "agent": 111,
     "skill": 235,
     "kernel": 42,
     "reference": 29,
@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 59,
-    "check_tool": 173,
+    "check_tool": 177,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -29,7 +29,7 @@
     "paths_engine": 4,
     "sprint_engine": 44,
     "tracker_tool": 2,
-    "dispatch_engine": 166,
+    "dispatch_engine": 179,
     "check_runner_tool": 4,
     "docs_tool": 1,
     "events_tool": 4,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1644,
+  "total": 1662,
   "assets": {
     "agent": [
       {
@@ -1074,6 +1074,18 @@
         "dest": ".claude/agents/president/_system/policy/adr/0032-trusted-enforcement-adapter-sole-integration-principal.md",
         "kind": "agent",
         "sha256": "254bd15a1160bc7d4853780302d5a76a9fd3be2da9cd44b6ae093e8b9ac84581",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "agent.president._system.policy.adr.0033-brokered-transport-live-fence.md",
+        "src": ".claude/agents/president/_system/policy/adr/0033-brokered-transport-live-fence.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0033-brokered-transport-live-fence.md",
+        "kind": "agent",
+        "sha256": "30fd98fd9dad3135b0aed1b1c2e32df967aa40502403fac4055541bcd1ab4fef",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -3187,7 +3199,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "baca870fe8de1801e591696071c65426eeabcbb89d2b934d912645132833c74e",
+        "sha256": "42a2f607a2ecd7309613d2d00407f35731d16503f1f10e86bc1dd703facdb267",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -8735,6 +8747,30 @@
         "replaces": null
       },
       {
+        "id": "check_tool.main-write-broker-completeness.js",
+        "src": "scripts/checks/main-write-broker-completeness.js",
+        "dest": "scripts/checks/main-write-broker-completeness.js",
+        "kind": "check_tool",
+        "sha256": "8fe21ce39ae0ccb33fdb0bc1c4913f6f84b10166557235bab784a4fd8f351605",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.main-write-broker-completeness.test.js",
+        "src": "scripts/checks/main-write-broker-completeness.test.js",
+        "dest": "scripts/checks/main-write-broker-completeness.test.js",
+        "kind": "check_tool",
+        "sha256": "7f154bb720ba0870aa0498beaaf17a4b0cb9c1f73b9c143559e1c7af844c8e80",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.manager-principles-scan.js",
         "src": "scripts/checks/manager-principles-scan.js",
         "dest": "scripts/checks/manager-principles-scan.js",
@@ -9592,6 +9628,30 @@
         "dest": "scripts/checks/tracker-reality-drift.test.js",
         "kind": "check_tool",
         "sha256": "41772b17311ffc8ca3df47d298590295fcf605c67f4facf9ee288d95ac103250",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.transport-record-trust-guard.js",
+        "src": "scripts/checks/transport-record-trust-guard.js",
+        "dest": "scripts/checks/transport-record-trust-guard.js",
+        "kind": "check_tool",
+        "sha256": "0b50529d0e11d8dad29c8f718dad861c5c02d2ce7a2242362a9f845dce2ebb8e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.transport-record-trust-guard.test.js",
+        "src": "scripts/checks/transport-record-trust-guard.test.js",
+        "dest": "scripts/checks/transport-record-trust-guard.test.js",
+        "kind": "check_tool",
+        "sha256": "eff798bec806401b83f4b70465415177936cd0451fb61ac006c6c6ecf5a87524",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -10949,6 +11009,42 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.broker-dogfood.js",
+        "src": "scripts/dispatch/broker-dogfood.js",
+        "dest": "scripts/dispatch/broker-dogfood.js",
+        "kind": "dispatch_engine",
+        "sha256": "60cc7c0d60c3179b8b8d57c4b0e8751653b508c6f2bf8214daf4016bcd5d3ad3",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.broker-merge.js",
+        "src": "scripts/dispatch/broker-merge.js",
+        "dest": "scripts/dispatch/broker-merge.js",
+        "kind": "dispatch_engine",
+        "sha256": "2028bf136618f74a2c8fbef3ef34b345dd573706163c7e813ee0c341eda6d4e2",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.broker-release-commit.js",
+        "src": "scripts/dispatch/broker-release-commit.js",
+        "dest": "scripts/dispatch/broker-release-commit.js",
+        "kind": "dispatch_engine",
+        "sha256": "9fa3ea2af83d7487a8ea1e7ddf478aaa401d0c5b6b205a84a053b9e0df3f210e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.bump-model.js",
         "src": "scripts/dispatch/bump-model.js",
         "dest": "scripts/dispatch/bump-model.js",
@@ -11345,6 +11441,18 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers._lib.transport-fixtures.js",
+        "src": "scripts/dispatch/falsifiers/_lib/transport-fixtures.js",
+        "dest": "scripts/dispatch/falsifiers/_lib/transport-fixtures.js",
+        "kind": "dispatch_engine",
+        "sha256": "fb4966cca135582022dd2a3811165cdd11f06f1aa3f83d7f87794977547bd605",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.acceptance-choke-point-bypass.falsifier.test.js",
         "src": "scripts/dispatch/falsifiers/acceptance-choke-point-bypass.falsifier.test.js",
         "dest": "scripts/dispatch/falsifiers/acceptance-choke-point-bypass.falsifier.test.js",
@@ -11381,11 +11489,35 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers.broker-acceptance.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/broker-acceptance.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/broker-acceptance.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "5de2cc04d642bcf01a24e2babcfb5848cdae51ffd3a99f001f1fe58409d84000",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.brokered-merge.positive.test.js",
         "src": "scripts/dispatch/falsifiers/brokered-merge.positive.test.js",
         "dest": "scripts/dispatch/falsifiers/brokered-merge.positive.test.js",
         "kind": "dispatch_engine",
         "sha256": "ea91875f096e6e02e369d9e63d98f1958a4b270ef8b3ab426774f09b4ae26cb9",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.falsifiers.bundle-corrupt-configured-refused-no-fallback.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/bundle-corrupt-configured-refused-no-fallback.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/bundle-corrupt-configured-refused-no-fallback.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "17b4f69195490b1e4f1a340e0b22ccd0d3ef35f41b5cc23298af9b6c23a357db",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -11429,11 +11561,35 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers.cas-anchor-caller-adopted-ignored.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/cas-anchor-caller-adopted-ignored.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/cas-anchor-caller-adopted-ignored.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "fa483f9ca314990bc8a19a9902d142374d92e5cd54bce0a92de0b9d280542d29",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.check-lib-consumer-runner-error.falsifier.test.js",
         "src": "scripts/dispatch/falsifiers/check-lib-consumer-runner-error.falsifier.test.js",
         "dest": "scripts/dispatch/falsifiers/check-lib-consumer-runner-error.falsifier.test.js",
         "kind": "dispatch_engine",
         "sha256": "4ad7e33511a6169eb891b43ee3d7160dd2637bc066a07ef46b96df24beeea4e0",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.falsifiers.checked-equals-landed.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/checked-equals-landed.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/checked-equals-landed.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "f2b2169101200e767d771d8078b0b169648eff133206ffc719253182f43046b8",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -11633,6 +11789,18 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers.fence-token-forged-stale-injected.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "b434a3fc9ca28a7e7565d9ee1d86e65dd0148f04bae741d722f785cc93ad9452",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.forged-acceptance-record.falsifier.test.js",
         "src": "scripts/dispatch/falsifiers/forged-acceptance-record.falsifier.test.js",
         "dest": "scripts/dispatch/falsifiers/forged-acceptance-record.falsifier.test.js",
@@ -11705,6 +11873,18 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers.ledger-unreadable-refuses-not-count-zero.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/ledger-unreadable-refuses-not-count-zero.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/ledger-unreadable-refuses-not-count-zero.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "173f42da68cd58c9d688fa521fe55a8a3db76e5f9e6fa2467b50910cd093ee47",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.non-success-terminal.falsifier.test.js",
         "src": "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js",
         "dest": "scripts/dispatch/falsifiers/non-success-terminal.falsifier.test.js",
@@ -11770,6 +11950,18 @@
         "dest": "scripts/dispatch/falsifiers/reftxn-stdin-fail-closed.falsifier.test.js",
         "kind": "dispatch_engine",
         "sha256": "16e6778c43b1952c0750170cb4b703df4c5fd64690bbbd2c076a055272dcaa03",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.falsifiers.release-index-feature-snapshot-excluded.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/release-index-feature-snapshot-excluded.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/release-index-feature-snapshot-excluded.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "4657a4e3f895809b9f0201c6b77175aabb1949bdb6cf0b3d68313fec932eec94",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -12209,6 +12401,18 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.inc1-transport.test.js",
+        "src": "scripts/dispatch/inc1-transport.test.js",
+        "dest": "scripts/dispatch/inc1-transport.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "7bb856b03c4f1ed6a06b8dfcb0a4dfaec4def9add4ec0792d0c401f014accfbd",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.legacy-cutoff.js",
         "src": "scripts/dispatch/legacy-cutoff.js",
         "dest": "scripts/dispatch/legacy-cutoff.js",
@@ -12226,6 +12430,18 @@
         "dest": "scripts/dispatch/manifest-patch.js",
         "kind": "dispatch_engine",
         "sha256": "222d8c1071739827c5af3151e08fcf54e3585330953ba702154004dbf5f4959d",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.mig-dogfood.test.js",
+        "src": "scripts/dispatch/mig-dogfood.test.js",
+        "dest": "scripts/dispatch/mig-dogfood.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "003694fa97b478d639ffd943419461648fdd15dc4d3f0efcc6c689c696b2f9d2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -12645,7 +12861,7 @@
         "src": "scripts/dispatch/trusted-controller.js",
         "dest": "scripts/dispatch/trusted-controller.js",
         "kind": "dispatch_engine",
-        "sha256": "e6e11ac83ff8773690e85cce11af18c0bee598af6936ef1dc9e538df94133462",
+        "sha256": "a650cf292955ec2948c923baa8b791ad869bd1ce7839d79e56381e699d9175b0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
