@@ -940,6 +940,20 @@ function brokerSyncFinish(refusal, ctx) {
   const classification = dog.classifyRefusal(reason);
   const expected = gitC(ctx.gitRoot, ["rev-parse", ctx.targetRef]);
 
+  // 2nd-review blocker (anchor-pinning, β R1 class one level down): the ancestry (local main ⊂ origin/main)
+  // was validated in syncMainFromOrigin BEFORE the broker refusal. This fallback re-resolves main's CURRENT
+  // head as the CAS expectedHead — but a race could have moved main to a NON-ancestor of newHead (origin) in
+  // between, which would make the "fast-forward" a REWIND (data loss). Re-validate that the freshly-resolved
+  // head is STILL a strict ancestor of newHead before adopting it for the CAS; refuse the rewind otherwise.
+  if (expected.ok) {
+    const stillAncestor = gitC(ctx.gitRoot, ["merge-base", "--is-ancestor", expected.stdout.trim(), ctx.newHead]);
+    if (!stillAncestor.ok) {
+      const detail = `local main advanced to a NON-ancestor of the sync target between validation and CAS (main ${expected.stdout.trim().slice(0, 8)} ⊄ ${String(ctx.newHead).slice(0, 8)}) — refusing (a fast-forward here would be a rewind)`;
+      process.stderr.write(`${dog.refusalBanner("main-sync-ff", "sync-head-moved-non-ancestor", classification, detail)}\n`);
+      return { ok: false, decision: "BLOCKED", reason: "sync-head-moved-non-ancestor", detail };
+    }
+  }
+
   const fb = dog.attemptFallback({
     reason,
     detail: refusal.detail || null,
@@ -1061,6 +1075,25 @@ function stageMergeAndPush(opts, canonical, next, branch) {
       "Reconcile canonical main with origin (rebase/merge upstream first); --resume-from 9",
       sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
     );
+  }
+
+  // 2nd-review blocker: a brokered sync ff moves refs/heads/main via the fenced CAS but NEVER the
+  // checked-out index/worktree (they stay at the pre-sync main). brokerMerge()'s ordinary-merge FALLBACK
+  // (pre-flip / post-refusal) merges against the WORKING TREE, so it MUST see the synced content first, or
+  // it merges against a stale tree. Refresh the index+worktree up to the already-moved main ref —
+  // working-tree only (restore, no ref write), exactly like the post-land refresh below.
+  if (sync.synced) {
+    const syncRefresh = gitC(canonical, ["restore", "--source=main", "--staged", "--worktree", "--", "."]);
+    if (!syncRefresh.ok) {
+      return receipt(
+        9,
+        false,
+        `synced local main via the broker but the pre-land working-tree refresh failed: ${syncRefresh.stderr.slice(0, 200)}`,
+        canonical,
+        `git -C ${canonical} restore --source=main --staged --worktree -- .`,
+        sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
+      );
+    }
   }
 
   // 7G-004: idempotent resume. `--resume-from 9` after a land-succeeded-but-push-failed run re-enters this
