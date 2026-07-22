@@ -28,13 +28,14 @@ Call it `$DEFAULT`. Record the current branch as `$BRANCH`.
 Follow `/commit:remote`: pre-push checks, show what will be pushed, push `$BRANCH` to origin. Invoking `/commit:land` is the confirmation — no second prompt.
 - If `$BRANCH == $DEFAULT`, there is no branch to merge: the push already updated the default branch. Skip Step 4, go to Step 5.
 
-### Step 4 — Merge into the default branch
-1. `git checkout $DEFAULT` then `git pull --ff-only origin $DEFAULT` to sync.
-2. Merge `$BRANCH`: prefer fast-forward; if a FF isn't possible, `git merge --no-ff $BRANCH` with a clear merge message.
-3. **Conflicts → STOP.** If the merge conflicts, do NOT force or auto-resolve: report the conflicted files, leave the repo on `$DEFAULT` mid-merge, and hand back to the operator.
+### Step 4 — Merge into the default branch (brokered)
+Route the merge through the broker. A raw local `refs/heads/$DEFAULT` write — `git merge $BRANCH`, or `git pull --ff-only origin $DEFAULT` (which fast-forwards the checked-out `$DEFAULT` directly) — is REFUSED by the `reference-transaction` hook once the Seam-E fence is armed. It works today unbrokered via the LOGGED fallback; post-flip the raw form is REFUSED by the reference-transaction hook, and only the brokered path lands.
+1. Sync `$DEFAULT` from origin WITHOUT moving the local ref: `git fetch origin $DEFAULT` (a fetch is never a protected-ref write). Do NOT `git pull --ff-only origin $DEFAULT` — that is an un-brokered `$DEFAULT` ref-move; the broker re-resolves the live `$DEFAULT` head and lands onto it (fetch + brokered-ff, the F2 pattern).
+2. Broker the merge: `node scripts/dispatch/broker-merge.js $BRANCH --sp-id <sprint-id> [--bundle-manifest <promoted>]` (`--sp-id` defaults to `$WARPOS_SP_ID`). It holds the conductor lease, raises the fence, and performs the SINGLE fenced ref move — no `git checkout $DEFAULT`, no raw `git merge`; the working tree is never touched, so you stay on `$BRANCH`. Exit 0 = landed (brokered, or the logged pre-flip fallback); exit 1 = refused/failed (classify + STOP); exit 2 = usage.
+3. **Conflict / refusal → STOP.** If the broker reports a merge conflict or a security/usage refusal, do NOT force or auto-resolve: report its classification + detail and hand back to the operator.
 4. Before pushing the default branch, ensure the gate is green — the commit hooks already ran in Step 1; if the repo has a `/scan:full` (or equivalent) gate and this is a substantial change, run it. **Never push a broken default branch.**
-5. `git push origin $DEFAULT`.
-6. Return to `$BRANCH` (`git checkout $BRANCH`) so the session continues where it was — unless the operator asked to stay on `$DEFAULT`.
+5. `git push origin $DEFAULT` — pushing the REMOTE ref is not a local-`$DEFAULT` write (the fence covers `refs/heads/$DEFAULT`), so it stays as-is (still autonomy-gated per Notes).
+6. No checkout dance: the broker moved `$DEFAULT` without touching your working tree, so you are already on `$BRANCH` — the session continues where it was.
 
 ### Step 5 — Report
 ```

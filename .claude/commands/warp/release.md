@@ -1,5 +1,5 @@
 ---
-description: "Drive a full WarpOS release of the canonical clone from this product repo — promote, bump, regen, build capsule, run gates, commit, ff-merge to main, push, tag. One command, no cd into canonical."
+description: "Drive a full WarpOS release of the canonical clone from this product repo — promote, bump, regen, build capsule, run gates, commit, brokered ff-merge to main, push, tag. One command, no cd into canonical."
 user-invocable: true
 ---
 
@@ -42,7 +42,7 @@ The orchestrator runs 11 stages (0-10). Each emits a receipt `{stage, ok, what, 
 | 6 | build-capsule | Run release-build.js — manifest snapshot + checksums |
 | 7 | run-gates | release-gates.js (block on RED, warn on yellow/manual) |
 | 8 | commit-release-branch | git -C <canonical> checkout -b release/<v> + commit |
-| 9 | merge-to-main-and-push | ff-merge to main + push origin main |
+| 9 | merge-to-main-and-push | **brokered** ff-merge to main + push origin main (`release-canonical.js` routes stage 9 through the broker's `integrateBranchMerge` / `syncMainFromOrigin` fetch+brokered-ff; a raw `git merge` / `git pull --ff-only origin main` works today via the logged fallback but is REFUSED by the reference-transaction hook post-flip) |
 | 10 | tag-and-push | git tag warpos@<v> + push (--no-tag skips) |
 
 ## How it differs from the canonical-side `/warp:release`
