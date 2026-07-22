@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-22T01:04:47.208Z",
+  "generatedAt": "2026-07-22T01:16:11.294Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -28157,8 +28157,8 @@
       "managed": true,
       "source": ".claude/commands/warp/release.md",
       "kind": "md",
-      "sha256": "566f6ec810543239d72f7ba9b2a8ec6227d3345247e30f65baaca5d31343b6ba",
-      "installedSha": "566f6ec810543239d72f7ba9b2a8ec6227d3345247e30f65baaca5d31343b6ba"
+      "sha256": "a08d410ad1e4f5704fa72873fbfb5ee46f420463f14f08a81c879053081202ff",
+      "installedSha": "a08d410ad1e4f5704fa72873fbfb5ee46f420463f14f08a81c879053081202ff"
     },
     ".claude/commands/warp/setup.md": {
       "owner": "framework",
@@ -28357,8 +28357,8 @@
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "aedd3b21c504b1f6efdf445308942828ca943097cad921f8e931f02e4d80c28d",
-      "installedSha": "aedd3b21c504b1f6efdf445308942828ca943097cad921f8e931f02e4d80c28d"
+      "sha256": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1",
+      "installedSha": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
@@ -28413,8 +28413,8 @@
       "managed": true,
       "source": ".claude/commands/session/turbo.md",
       "kind": "md",
-      "sha256": "d96166b814f443e2ebb33a967dedc5e3d50a83c6f1704f10703d16c7d203afd2",
-      "installedSha": "d96166b814f443e2ebb33a967dedc5e3d50a83c6f1704f10703d16c7d203afd2"
+      "sha256": "a5c25059a058e8f2e891e54d6baff22b7f3adabc9dde7ac36aa7265d8769206c",
+      "installedSha": "a5c25059a058e8f2e891e54d6baff22b7f3adabc9dde7ac36aa7265d8769206c"
     },
     ".claude/commands/session/write.md": {
       "owner": "framework",
@@ -29805,8 +29805,8 @@
       "managed": true,
       "source": ".claude/commands/commit/land.md",
       "kind": "md",
-      "sha256": "9d99dbf7e81da0d55ec33ddfbb6a70860b0762d8afa8c2ebdd92cd65f25ecb9c",
-      "installedSha": "9d99dbf7e81da0d55ec33ddfbb6a70860b0762d8afa8c2ebdd92cd65f25ecb9c"
+      "sha256": "b022d1e436c303ba0c148e625c315d18a21d892be559d965d1dc89d161a8d4ad",
+      "installedSha": "b022d1e436c303ba0c148e625c315d18a21d892be559d965d1dc89d161a8d4ad"
     },
     ".claude/commands/commit/local.md": {
       "owner": "framework",
