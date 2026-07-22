@@ -1080,20 +1080,26 @@ function stageMergeAndPush(opts, canonical, next, branch) {
   // 2nd-review blocker: a brokered sync ff moves refs/heads/main via the fenced CAS but NEVER the
   // checked-out index/worktree (they stay at the pre-sync main). brokerMerge()'s ordinary-merge FALLBACK
   // (pre-flip / post-refusal) merges against the WORKING TREE, so it MUST see the synced content first, or
-  // it merges against a stale tree. Refresh the index+worktree up to the already-moved main ref —
-  // working-tree only (restore, no ref write), exactly like the post-land refresh below.
-  if (sync.synced) {
-    const syncRefresh = gitC(canonical, ["restore", "--source=main", "--staged", "--worktree", "--", "."]);
-    if (!syncRefresh.ok) {
-      return receipt(
-        9,
-        false,
-        `synced local main via the broker but the pre-land working-tree refresh failed: ${syncRefresh.stderr.slice(0, 200)}`,
-        canonical,
-        `git -C ${canonical} restore --source=main --staged --worktree -- .`,
-        sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
-      );
-    }
+  // it merges against a stale tree.
+  //
+  // r3 blocker (TERMINAL): this refresh MUST NOT be gated on `sync.synced` (did THIS invocation move
+  // main). A prior invocation can move main via the fenced CAS and then crash — or have its restore fail —
+  // BEFORE the refresh completes; on `--resume-from 9` the sync sees local===origin, returns synced:false,
+  // and a gated refresh would be skipped, leaving brokerMerge to merge against the stale pre-sync tree.
+  // Because the refresh is working-tree-only (restore --source=main, no ref write) it is safe to run
+  // UNCONDITIONALLY: a no-op when the tree already matches main, and it recovers the crashed-before-refresh
+  // case regardless of which invocation moved the ref. Same working-tree-only shape as the post-land
+  // refresh below.
+  const syncRefresh = gitC(canonical, ["restore", "--source=main", "--staged", "--worktree", "--", "."]);
+  if (!syncRefresh.ok) {
+    return receipt(
+      9,
+      false,
+      `refreshing the pre-land working tree up to local main failed: ${syncRefresh.stderr.slice(0, 200)}`,
+      canonical,
+      `git -C ${canonical} restore --source=main --staged --worktree -- .`,
+      sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
+    );
   }
 
   // 7G-004: idempotent resume. `--resume-from 9` after a land-succeeded-but-push-failed run re-enters this
