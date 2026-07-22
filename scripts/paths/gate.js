@@ -307,7 +307,7 @@ function checkDeprecatedAliases() {
   ];
   const accept = (f) => {
     const rel = path.relative(ROOT, f).replace(/\\/g, "/");
-    if (SKIP_SUBSTRINGS.some((s) => rel.includes(s))) return false;
+    if (rel.startsWith("runtime/") || SKIP_SUBSTRINGS.some((s) => rel.includes(s))) return false;
     return /\.(md|js|json)$/.test(f);
   };
   const findings = [];
@@ -395,7 +395,7 @@ function checkDocsTokens() {
   ];
   const accept = (f) => {
     const rel = path.relative(ROOT, f).replace(/\\/g, "/");
-    if (SKIP_SUBSTRINGS.some((s) => rel.includes(s))) return false;
+    if (rel.startsWith("runtime/") || SKIP_SUBSTRINGS.some((s) => rel.includes(s))) return false;
     return /\.md$/.test(f);
   };
 

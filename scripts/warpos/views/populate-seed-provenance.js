@@ -263,10 +263,36 @@ function populateSeedProvenance(opts) {
     try {
       if (fs.existsSync(markerAbs)) {
         const current = fs.readFileSync(markerAbs, "utf8");
-        // Compare against the expected body. Equal → idempotent no-op. Differs →
-        // operator-modified; leave it untouched (preserve), never clobber.
-        if (current === expected) result.unchanged.push(zoneRel);
-        else result.preserved.push(zoneRel);
+        // Equal → idempotent no-op.
+        if (current === expected) {
+          result.unchanged.push(zoneRel);
+          continue;
+        }
+        // Body differs. (a3) ED-264 / GATE-B 3c: distinguish a STALE framework_version (framework-OWNED
+        // field — the marker is otherwise the PRISTINE framework default at an OLDER version, so RECONVERGE
+        // it to the target version) from a genuine OPERATOR modification (preserve, never clobber). A
+        // pristine older-version marker EQUALS expectedMarker(zone, <its OWN recorded framework_version>).
+        // Without this, an upgrade left the .provenance framework_version stale (a "1.0.0" install stamped
+        // 0.17.0 across 16 zones), classified here as "operator-modified" and preserved.
+        let staleFrameworkVersionOnly = false;
+        try {
+          const cur = JSON.parse(current);
+          if (
+            cur &&
+            typeof cur.framework_version === "string" &&
+            current === expectedMarker(zoneRel, cur.framework_version)
+          ) {
+            staleFrameworkVersionOnly = true;
+          }
+        } catch {
+          /* unparseable → treat as operator-modified (preserve) */
+        }
+        if (staleFrameworkVersionOnly) {
+          fs.writeFileSync(markerAbs, expected);
+          result.written.push(zoneRel);
+        } else {
+          result.preserved.push(zoneRel);
+        }
         continue;
       }
       fs.mkdirSync(markerDir, { recursive: true });

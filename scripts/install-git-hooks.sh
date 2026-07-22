@@ -94,23 +94,37 @@ cat > "$REFTXN_TARGET" <<'HOOK'
 # core.hooksPath redirect, hook deletion, a direct .git/refs/** filesystem write.
 set -e
 
-REPO_ROOT=$(git rev-parse --show-toplevel)
+# ED-261: resolve the verifier via the COMMON git dir (shared across ALL worktrees), NOT the active
+# worktree toplevel. Worktrees share this hook (common .git/hooks) but each has its own toplevel; a
+# pre-fence-era worktree checkout lacks scripts/hooks/protected-ref-transaction.js, so the old
+# "git rev-parse --show-toplevel" + exit-0-on-missing SILENTLY SKIPPED the fence for a refs/heads/main
+# write issued from that cwd. The common git dir points at the canonical checkout that installed it.
+REPO_ROOT_COMMON=$(cd -- "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd)
+REPO_ROOT=$(dirname -- "$REPO_ROOT_COMMON")
 SCRIPT="$REPO_ROOT/scripts/hooks/protected-ref-transaction.js"
 
-if [ ! -f "$SCRIPT" ]; then
-  # A fresh clone without scripts/ checked out must not strangle every ref write to
-  # main — but this DOES mean the mechanism is not installed: an honest ceiling, not a
-  # silent gap (see the honest-promise statement, top-level-runtime-contract.md §1 P1.2).
-  echo "reference-transaction: $SCRIPT missing — skipping protected-ref check" >&2
+# reference-transaction feeds old/new/ref lines on stdin -- a SINGLE-READ stream. Buffer it once so
+# we can both (a) decide protected-vs-not when the verifier is unavailable and (b) re-feed it below.
+STDIN_BUF=$(cat)
+touches_protected() {
+  printf '%s\n' "$STDIN_BUF" | grep -qE '(^|[[:space:]])refs/heads/main([[:space:]]|$)'
+}
+
+if [ ! -f "$SCRIPT" ] || ! command -v node >/dev/null 2>&1; then
+  # Verifier unavailable (missing script -- pre-fence-era/bare checkout -- or no node on PATH).
+  # FAIL CLOSED for a protected ref; graceful-skip ONLY for non-protected (a bare clone must not
+  # strangle non-main writes -- the honest ceiling stays honest for the non-protected case only).
+  if touches_protected; then
+    echo "reference-transaction: verifier unavailable AND a protected ref (refs/heads/main) touched -- REFUSING (fail-closed, ED-261)" >&2
+    exit 1
+  fi
+  echo "reference-transaction: verifier unavailable (no protected ref touched) -- skipping" >&2
   exit 0
 fi
 
-if ! command -v node >/dev/null 2>&1; then
-  echo "reference-transaction: node not found on PATH — refusing protected-ref write (fail-closed)" >&2
-  exit 1
-fi
-
-exec node "$SCRIPT" "$@"
+# Re-feed the buffered stdin to the verifier (the stream was consumed above). node's exit is the hook
+# exit; a non-zero in the 'prepared' phase ABORTS the write.
+printf '%s\n' "$STDIN_BUF" | node "$SCRIPT" "$@"
 HOOK
 
 chmod +x "$REFTXN_TARGET"

@@ -327,7 +327,9 @@ const warnings = [];
 let filesScanned = 0;
 
 function shouldSkip(rel) {
-  return SKIP_SUBSTRINGS.some((s) => rel.includes(s));
+  // Anchored: root-level runtime/ is ephemeral per-run scratch. A bare "runtime/"
+  // substring would also skip the SHIPPED scripts/runtime/ tools, so anchor to root.
+  return rel.startsWith("runtime/") || SKIP_SUBSTRINGS.some((s) => rel.includes(s));
 }
 
 function lintContent(rel, content) {
