@@ -22,7 +22,12 @@ const EXPECTED_SUBTREES = [
   "app-scaffold", "canonical", "lastmile", "portfolio", "product-bootstrap",
   "product-clone", "product-import", "report", "sprint",
 ];
-const EXPECTED_FILE_COUNT = 122; // 108 + 14 input-composer reference files (SP-20260716-003)
+// No hardcoded EXPECTED_FILE_COUNT: it rotted (was 122, the tree grew to 138) every time a
+// template was added, and a hardcode-to-today's-number just re-arms the same rot. The real
+// invariant is a BIJECTION between what's on disk and what the shipping manifest enumerates
+// (asserted below): every on-disk template ships AND every shipped template is on disk. That
+// derives the count from the manifest, self-updates as templates are added/removed, and is
+// strictly stronger — it names WHICH file drifted, not merely that a count changed.
 
 function toRel(p) {
   return p.split(path.sep).join("/");
@@ -70,9 +75,16 @@ function main() {
     failures.push(`POSITIVE: ${TEMPLATES_REL} does not exist on disk`);
   } else {
     const onDisk = listFiles(tmplAbs, TEMPLATES_REL, []).map(toRel);
-    // (a) file count
-    if (onDisk.length !== EXPECTED_FILE_COUNT) {
-      failures.push(`POSITIVE: expected ${EXPECTED_FILE_COUNT} files under ${TEMPLATES_REL}, found ${onDisk.length}`);
+    const onDiskSet = new Set(onDisk);
+    const shippedTemplates = new Set([...shipped].filter((p) => p.startsWith(`${TEMPLATES_REL}/`)));
+    // (a) BIJECTION (derive-from-manifest, no magic count): every SHIPPED template must be on
+    // disk. Paired with (b) below (every on-disk template ships), this is a bijection between
+    // disk and the shipping manifest — self-updating as templates are added/removed, and it
+    // catches a stale manifest (a shipped path whose file was deleted) that a bare count would
+    // miss.
+    const shippedNotOnDisk = [...shippedTemplates].filter((p) => !onDiskSet.has(p));
+    if (shippedNotOnDisk.length) {
+      failures.push(`POSITIVE: ${shippedNotOnDisk.length} shipped ${TEMPLATES_REL} path(s) NOT on disk (stale manifest), e.g.:\n    - ${shippedNotOnDisk.slice(0, 5).join("\n    - ")}`);
     }
     // (b) every on-disk template file is in the shipped set (membership, not single-string)
     const missing = onDisk.filter((p) => !shipped.has(p));
