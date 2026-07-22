@@ -20211,7 +20211,7 @@
         "src": "CLAUDE.md",
         "dest": "CLAUDE.md",
         "kind": "framework_doc",
-        "sha256": "3ea7f897750a9ec0b415d6d8972090489fa4e2cc8cbe5996176ed6b67793945e",
+        "sha256": "4a6a613bff9cd5222a5606a425000a389ffead6808712e82d459fa6155b9c5fd",
         "owner": "framework",
         "mergeStrategy": "append-if-exists",
         "introducedIn": "0.0.0",

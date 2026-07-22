@@ -179,6 +179,13 @@ read it, and a reconstructed `old_string` that doesn't match causes a silent no-
 lives in WarpOS's own scripts (`startsWith(".")` skips in manifest walkers), not in the harness
 tools.
 
+**Never pipe a gate's exit through tail/head in a `&&` chain:** `node gate.js | tail -1 && next`
+runs `next` even when the gate exits non-zero — the pipeline's status is tail's 0, so the chain
+silently proceeds past a RED gate (bit α with a stale-manifest commit AND ε2's recon rc-read in
+ONE session, 2026-07-21/22). Run each gate as its own command and read its real exit code;
+truncate output separately if needed. Enforcer candidate: a shell-lint over skill/doc command
+blocks (fold into the ED-256/257 enforcer sprint).
+
 Enforcer: `scan:tools` self-test (seeded fixture at `runtime/agent-system-plan/tooltest/`).
 Enforcement debt logged: ED-033.
 
