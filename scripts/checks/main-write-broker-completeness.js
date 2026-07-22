@@ -258,7 +258,12 @@ function isLocalWrite(line, isMarkdown = true) {
 }
 
 /** A reference to a BROKERED entrypoint — evidence the file was migrated. */
-const BROKER_CALL = /integrateBranchMerge|integrateReleaseCommit|fencedRefUpdate|brokeredMerge|brokered-merge/;
+// `brokerMerge` is broker-merge.js's wrapper: it builds the 2-parent merge object via plumbing (no ref
+// write) and calls integrateBranchMerge — the SAME fenced-CAS route the entrypoints below take. Recognizing
+// it lets a caller that routes through the wrapper (release-canonical.js stage-9) classify MIGRATED
+// (positive broker-routing evidence) rather than merely "clean" (absence of a raw verb — which would still
+// green if the broker call were later removed, leaving a broken land undetected).
+const BROKER_CALL = /integrateBranchMerge|integrateReleaseCommit|fencedRefUpdate|brokerMerge|brokeredMerge|brokered-merge/;
 
 /**
  * SCRATCH-REPO evidence. Tests + falsifiers legitimately drive `git merge/commit/update-ref` against a
