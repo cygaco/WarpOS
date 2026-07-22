@@ -58,6 +58,12 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+// Lock-step source of "what is a framework VIEW" — the SAME predicate
+// populate-source.js uses to decide which .claude/** dests get mirrored into a
+// product's _warpos/. Imported (not re-derived) so the canonical manifest's
+// view-mirror exclusion below can never drift from what the installer generates.
+// test-build.js §F enforces the buildRules ↔ isFrameworkViewDest lock-step.
+const { isFrameworkViewDest } = require("../views/populate-source");
 
 const SCHEMA_ID = "warpos/manifest/v1";
 
@@ -686,6 +692,35 @@ function buildRules(sourcePrefix) {
       }),
     },
     {
+      // RI-003 CLOSURE (SP-20260721-001 D-4 GATE-A Leg-3 lane): the _warpos/ VIEW
+      // MIRROR — agents/, commands/, project/reference/, kernel/, schemas/ — is the
+      // COMPILED .claude/ view, NOT canonical-shipped framework source. In an
+      // installed product it is re-materialized by scaffold-core Stage-2.5
+      // (views/populate-source.js) from canonical's .claude/* at /warp:setup; a
+      // fresh CANONICAL checkout does not carry it. Enumerating it in the CANONICAL
+      // manifest (framework-warpos-zone did, as a broad catch-all) makes the manifest
+      // PROMISE owner=framework files that a clean canonical tree lacks — BC-02
+      // "missing" AND warpos-ship-coverage "not shipped" both red on a clean
+      // checkout, while the mirror is regenerated in the product regardless. This
+      // rule SKIPS (does not enumerate) exactly those paths, ONLY in canonical mode:
+      //   - Canonical (sourcePrefix=framework): the view mirror is generated-not-
+      //     shipped → skip. The manifest stays honest on a clean AND a dirty tree
+      //     (a re-materialized mirror is skipped by the rule, not merely absent — so
+      //     it can never re-enter the manifest; deletion alone would regress).
+      //   - Product (sourcePrefix=_warpos): the _warpos/ mirror IS the shipped
+      //     source → this rule does NOT fire; framework-warpos-zone enumerates it.
+      // "is a view" is decided by the SAME predicate populate-source uses
+      // (isFrameworkViewDest over the .claude/ equivalent), imported above so the
+      // exclusion is lock-step with the installer's mirror set by construction.
+      name: "warpos-generated-view-mirror",
+      skip: true,
+      match: (rel) =>
+        sourcePrefix === "framework" &&
+        rel.startsWith("_warpos/") &&
+        rel !== "_warpos/MANIFEST.json" &&
+        !!isFrameworkViewDest(".claude/" + rel.slice("_warpos/".length)),
+    },
+    {
       name: "framework-warpos-zone",
       match: (rel) => rel.startsWith("_warpos/") && rel !== "_warpos/MANIFEST.json",
       entry: (rel) => ({
@@ -701,6 +736,11 @@ function buildRules(sourcePrefix) {
 function classify(rel, rules) {
   for (const rule of rules) {
     if (rule.match(rel)) {
+      // A `skip:true` rule MATCHES a path but deliberately does NOT enumerate it
+      // (e.g. the canonical-side generated view mirror — see
+      // warpos-generated-view-mirror). It is a matched-and-excluded verdict, NOT
+      // an "unclassified" one, so the build does not fail on it.
+      if (rule.skip) return { rule: rule.name, skip: true };
       const e = rule.entry(rel);
       return { rule: rule.name, entry: e };
     }
@@ -784,6 +824,13 @@ function build(opts) {
     const classification = classify(rel, rules);
     if (!classification) {
       unclassified.push(rel);
+      continue;
+    }
+    if (classification.skip) {
+      // Matched a skip:true rule — intentionally NOT enumerated. Counted for
+      // observability, but never written to paths (so the manifest cannot promise
+      // a generated/not-shipped path that a clean checkout lacks).
+      ruleHits[classification.rule] = (ruleHits[classification.rule] || 0) + 1;
       continue;
     }
     const entry = { ...classification.entry };

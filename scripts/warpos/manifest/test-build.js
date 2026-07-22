@@ -228,6 +228,90 @@ ok(
   `${notShipped.length} un-shipped: ${JSON.stringify(notShipped.slice(0, 5))}`,
 );
 
+// G. RI-003 CLOSURE (SP-20260721-001 D-4 GATE-A Leg-3 lane) — the CANONICAL manifest
+// MUST NOT enumerate the install-time-GENERATED _warpos/ VIEW MIRROR
+// (agents/commands/project-reference/kernel/schemas), which scaffold-core Stage-2.5
+// re-materializes in products from .claude/*. Enumerating it made the manifest promise
+// owner=framework files a clean canonical checkout lacks — BC-02 "missing" AND
+// warpos-ship-coverage "not shipped" both red on a clean tree. The
+// warpos-generated-view-mirror skip rule excludes exactly those, ONLY in canonical mode.
+// The exclusion is a classify() verdict keyed on the PATH (never on disk presence), so a
+// re-materialized mirror on a DIRTY tree is skipped too — it can never re-enter the
+// manifest (deletion alone would regress). Product mode still enumerates the mirror
+// (there the _warpos/ file IS the shipped source).
+process.stdout.write("G. RI-003 — canonical excludes the generated _warpos view mirror\n");
+const canonRules = buildRules("framework");
+for (const rel of [
+  "_warpos/agents/president/beta.md",
+  "_warpos/commands/warp/release.md",
+  "_warpos/project/reference/evolution.md",
+  "_warpos/kernel/role-binding.json",
+  "_warpos/schemas/workorder-min.schema.json",
+]) {
+  const c = classify(rel, canonRules);
+  ok(
+    `canonical SKIPS the view-mirror path ${rel}`,
+    !!c && c.skip === true && c.rule === "warpos-generated-view-mirror",
+    `got ${JSON.stringify(c)}`,
+  );
+}
+for (const rel of ["_warpos/templates/sprint/README.md", "_warpos/settings/defaults.json"]) {
+  const c = classify(rel, canonRules);
+  ok(
+    `canonical still ENUMERATES non-view _warpos content ${rel} (owner=framework)`,
+    !!c && !c.skip && c.entry && c.entry.owner === "framework",
+    `got ${JSON.stringify(c)}`,
+  );
+}
+{
+  const c = classify("_warpos/MANIFEST.json", canonRules);
+  ok(
+    "_warpos/MANIFEST.json is enumerated (generated), never skipped",
+    !!c && !c.skip && c.entry && c.entry.owner === "generated",
+    `got ${JSON.stringify(c)}`,
+  );
+}
+{
+  const c = classify("_warpos/agents/president/beta.md", prodRules);
+  ok(
+    "PRODUCT mode ENUMERATES the _warpos view mirror (there it is the shipped source)",
+    !!c && !c.skip && c.entry && c.entry.owner === "framework",
+    `got ${JSON.stringify(c)}`,
+  );
+}
+{
+  const viewEntries = Object.keys(manifest.paths || {}).filter((k) =>
+    /^_warpos\/(agents|commands|project|kernel|schemas)\//.test(k),
+  );
+  ok(
+    "the built canonical manifest has ZERO _warpos view-mirror entries",
+    viewEntries.length === 0,
+    `${viewEntries.length} leaked: ${JSON.stringify(viewEntries.slice(0, 5))}`,
+  );
+}
+// Integration (dirty-tree robustness): materialize a view-mirror file in a temp root and
+// build — the skip rule fires and NOTHING is enumerated, proving disk presence is
+// irrelevant (a re-materialized mirror does not re-enter the manifest).
+{
+  const os = require("os");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "warpos-viewmirror-tooth-"));
+  try {
+    const vf = path.join(tmp, "_warpos", "agents", "sample.md");
+    fs.mkdirSync(path.dirname(vf), { recursive: true });
+    fs.writeFileSync(vf, "# a materialized view-mirror file\n");
+    const r = build({ root: tmp, sourcePrefix: "framework", warposVersion: "0.0.0", dryRun: true });
+    ok(
+      "a re-materialized _warpos view file on disk is NOT enumerated (dirty-tree robustness)",
+      r.ok === true &&
+        r.pathCount === 0 &&
+        (r.ruleHits || {})["warpos-generated-view-mirror"] === 1,
+      `pathCount=${r.pathCount} skipHits=${(r.ruleHits || {})["warpos-generated-view-mirror"]} r.ok=${r.ok}`,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
 // Cleanup
 try {
   fs.unlinkSync(tmpManifest);
