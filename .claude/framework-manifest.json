@@ -7237,7 +7237,7 @@
         "src": "scripts/warpos/manifest/test-build.js",
         "dest": "scripts/warpos/manifest/test-build.js",
         "kind": "warpos_script",
-        "sha256": "08c7c4a445ce06b3eca26dbb3733973b30592a638517e9bb203a370ad8cc629c",
+        "sha256": "1c5dcba40f1e7c0c796fc853f03e32604bc94ff4fdf634b9e3e1a70a6733f5b2",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

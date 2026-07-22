@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-22T01:38:09.200Z",
+  "generatedAt": "2026-07-22T01:53:32.564Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -7864,8 +7864,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/test-build.js",
-      "sha256": "08c7c4a445ce06b3eca26dbb3733973b30592a638517e9bb203a370ad8cc629c",
-      "installedSha": "08c7c4a445ce06b3eca26dbb3733973b30592a638517e9bb203a370ad8cc629c"
+      "sha256": "1c5dcba40f1e7c0c796fc853f03e32604bc94ff4fdf634b9e3e1a70a6733f5b2",
+      "installedSha": "1c5dcba40f1e7c0c796fc853f03e32604bc94ff4fdf634b9e3e1a70a6733f5b2"
     },
     "scripts/warpos/manifest/test-installer-hook.js": {
       "owner": "framework",
