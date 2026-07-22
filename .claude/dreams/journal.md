@@ -528,3 +528,36 @@ than pruning.
 - System strength: trending stronger — the independent GPT cross-check caught a real scan/rule regression the green build gate missed; the fix closed a class (contract taxonomy symmetry) + regression-locked it.
 - Biggest leverage point: a meta-lockstep enforcer — 'broadening a scan's scope filter requires the paired class_derivation/rule table to gain the matching rule(s)'. The deep-clean violated exactly this.
 - Morning briefing appended to coaching.md.
+
+# Sleep Journal — 2026-07-22 (QUICK nap — NREM + cleanup only; post D-4 sprint close + 1.0 fence-flip ceremony)
+
+*`/sleep:quick` (phases 1-2 only) run as the session-end cognitive-consolidation pass for the ~9h `57569f2a` session (D-4 sprint + most of the 1.0 ceremony prep). Constraint-bound: read-before-write, append-only on jsonl ledgers (learnings NOT rewritten — importance classified here in-journal, not stamped onto the ledger lines), nothing deleted, no git commits.*
+
+## NREM Consolidation
+- Learnings: **141 → 146** (5 new session-end conversation learnings at the tail, all dated 2026-07-22; 0 pruned, 0 merged — all fresh + session-specific). Store far under the 1000 max → bias to keep. The 5 are status-less/unscored (raw conversation-source) — NOT self-rated or promoted here (promotion needs validation evidence, per the skill).
+- **Importance audit: 3 HIGH / 2 MEDIUM / 0 LOW** (classified inline; ledger lines left untouched per the append-only constraint):
+  - **HIGH — TERMINAL-CALL byte-verify** (fix-cycle): validated 2× (INC-3 readlink, ceremony-step1 refresh-gate); error-prevention (drops the Nth review dispatch) + the surprising β move (refuse-to-bless-unreachable code, snapshot-to-runtime UPFRONT). → mined as **P-081**.
+  - **HIGH — ORACLE-IDENTITY + capsule-freshness at DESIGN-LOCK** (gate-design): prevented-repeated-error (burned 2 slow GATE-B runs); dev-tree-oracle vs frozen-capsule identity inconsistency; version fields the apply self-writes = settable-labels (ED-225 class). → mined as **P-083** (reinforces SP-003).
+  - **HIGH — auto-mode classifier is a SEPARATE authorization frame** (classifier-frames): surprising + safety-relevant; β-GO + α-assignment + `permissions.allow` do NOT clear it; correct handling = escalate-not-tunnel + route to operator per-action clearance at a natural boundary. → maps to `feedback_turbo_broad_scope_denied` + never-launder-a-peer's-denied-action.
+  - **MEDIUM — Generated-file merge-conflict → REGEN on the merged tree** (merge-discipline): validated 2× (framework-manifest/_warpos); detached-worktree merge --no-commit → checkout --theirs the generated file → regen both manifests → BC-02 strict → commit-tree → broker-merge --merge-commit via CAS. Repeatable project-specific technique; broker refusing the conflict (not falling back) is correct.
+  - **MEDIUM — MERGE-FIRST-then-archive for path-keyed manifest exclusions** (ledger-discipline): a path-keyed skip makes on-disk presence harmless, so archiving-before-merge only opens a pointless transient-red window; + canonical dirty-tree BC-02 'N unmanifested' right after a merge is usually fresh runtime/ artifacts → settle by regen, not diagnose. → mined into the GATE-A Leg-3 rider (P-084 neighborhood).
+- Dedup / conflict: **0 duplicates, 0 conflicts.** The 5 reinforce/extend existing memory (settable-label SP-003 · beta-gate-persistent-teammate-only · turbo-broad-scope-denied · regen-both-manifests) with no contradiction.
+- Decay (SHY): **0 entries** hit the 14d/21d stale thresholds (all fresh); nothing removed.
+
+## Alex β Decision Review (part of NREM 1h)
+- **22 reasoned β verdict/directive records this arc** (`beta/events.jsonl` 2026-07-21T03:25Z → 2026-07-22T02:45Z): 20 DECIDE + **2 course-correcting DIRECTIVEs**, **0 ESCALATE, 0 override**, confidence tightly banded **0.89–0.92**.
+- The 2 DIRECTIVEs are the health signal (the reasoned lane discriminated, did not rubber-stamp): (1) **ED-258 dedup HOLD** — β caught its OWN recommended enforcer false-positive (bare-id dup lint false-REDs on every append-only closure pair) → re-keyed to genesis-count; (2) **INC-3 reachability refuse-to-bless** — refused to bless an unread terminal fix substituting for a review round, until ε snapshotted it reachable, then byte-verified independently.
+- Also fired the terminal **fence-flip GO** (`beta-ceremony-flip-final-go-b090`) with GATING post-flip self-verification (falsifier suite + un-brokered-refused + brokered-lands + rollback-immediately-never-half-armed).
+- Confidence recommendation: **keep 0.89–0.92 as-is** (do NOT raise from the streak; the 2 DIRECTIVEs, not the streak, are why the band is healthy). New maturation marker this arc: an explicit `verification_depth_split` field (byte-verified-by-β vs attested-by-ε).
+- **CAVEAT (standing, unclosed): AP-1/P-043** — the *automated* `sprint_full_beta_consult` audit stream was again NOT re-checked this pass; do not mark it resolved. Recorded in the recs cycle + here.
+
+## Cleanup (Glymphatic — report-only; no deletions, no git ops)
+- Requirement drift: **0 pending** (`requirements-staged.jsonl` absent) → no `/scan:requirements review` warning needed.
+- Uncommitted: tracked tree **CLEAN** (0 tracked changes) on `session/2026-07-22 @a9109c40`; **52 untracked** (runtime/ evidence + operator dirty tree, gitignored/kept). Includes the 2 build.js-breaking transients β flagged as operator/lead-owned (a July-20 session dump + a superseded `events.jsonl.bak-premirror`) — β's rider: clear via git-clean/remove or a WALK_SKIP hygiene item, NOT gitignore (build.js walks on-disk via WALK_SKIP, ignores .gitignore).
+- Orphan branches: **0** `agent/wt-*`. **15 active worktrees** = the D-4 / ceremony lanes — NOT orphans (ceremony in flight; cleanup is the conductor/lead's call post-flip).
+- Enforcement debt filed this arc (all with named enforcers per policy-hygiene): **ED-256** (paired-waiter envelope-field assertion), **ED-257** (builder prompt-size floor + savepoint telemetry), **ED-258** (ledger dup-id genesis-count lint, LOW, deferred to 2nd-collision/data-loss). **RI-003** (warpos view-mirror manifest phantom entries) closing via the GATE-A Leg-3 SKIP rule.
+
+## Session-end integrate review (conservative — item 3, recorded here; no judgment-model / no code writes)
+- **β side:** staging-only per task scope — the new 2026-07-21→22 cycle (P-081..P-084 / AP-13 / G-24 / DP-gap #43 + the phase-boundary confidence extension) is STAGED in `judgement-model-recommendations.md`; **0 applied** to `judgement-model.md`.
+- **Learnings side:** **0 applied / 5 deferred.** The 5 fresh learnings are status-less/unscored (below the `/learn:integrate` `validated` + score≥0.7 bar) and each is behavioral/design doctrine or needs a code enforcer + operator action (e.g. classifier-frames → operator runs the hook-install at release-session start) → all left staged, none auto-integrated.
+- **Already-landed (verified, NOT duplicated):** the session's big integrations are live on 2026-07-21 — `c1076e71` (paired-waiter + builder right-sizing doctrine) + `333e4ace` (ledger-discipline addendum) + `29c984ed` (CLAUDE.md pipe-masks-gate-exit rule). Confirmed present via git log; no re-integration attempted.
