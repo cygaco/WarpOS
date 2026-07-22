@@ -719,6 +719,13 @@ function buildInstalledSnapshot(
     : [];
   const userModified = Array.from(new Set([...priorUserModified, ...newlyUserModified])).sort();
 
+  // (b) ED-264: derive pathRegistryVersion from the target's (freshly-applied) version.json#pathRegistrySchema
+  // — the SAME source of truth fresh-install uses (fresh writes "v5"). Was a hardcoded "v4" literal that went
+  // stale and diverged from a fresh-N install (GATE-B 3c parity).
+  const targetVersionJson = readJSON(path.join(targetRoot, "version.json"), {});
+  const derivedPathRegistryVersion =
+    (String(targetVersionJson.pathRegistrySchema || "").match(/v\d+$/) || [])[0] || "v5";
+
   return {
     $schema: "warpos/framework-installed/v2",
     installedVersion: version,
@@ -730,14 +737,25 @@ function buildInstalledSnapshot(
     installedAt: new Date().toISOString(),
     source: capsule.dir,
     target: root,
-    pathRegistryVersion: "v4",
+    pathRegistryVersion: derivedPathRegistryVersion,
     manifestSchema: "warpos/framework-manifest/v2",
     assets,
     generated: [
       ".claude/paths.json",
       ".claude/manifest.json",
       ".claude/settings.json",
+      // PRESERVE-BY-DESIGN (bundle-3 / ED-264): store.json is listed as installer-generated, but its
+      // CONTENT is mutable RUNTIME BUILD-STATE (features/tasks/cycle/circuitBreaker/heartbeat/runLog —
+      // no version field). update must NEVER regenerate it (that WIPES live state); it is created once at
+      // fresh install (scaffold-core#writeAgentStore, if-not-exists) and PRESERVED thereafter. A future
+      // "regenerate every generated file on update" implementer MUST exclude store.json. Its membership in
+      // this list is a mild mislabel (no readers of this field today) — reclassification tracked in ED-264.
       ".claude/agents/store.json",
+      // GATE-B 3c (β (a) ruling): match fresh-install.ps1's generated[] list EXACTLY (it lists
+      // framework-installed.json as its 5th entry). The framework-installed.json structured comparator now
+      // byte-checks the `generated` field, so update's snapshot must carry the same 5 entries or the
+      // framework-owned-field compare REDs on `generated` (fresh 5 vs update 4).
+      ".claude/framework-installed.json",
     ],
     applyCounts: applyResult.counts,
     migrationsApplied,
@@ -869,16 +887,28 @@ function runPostUpdateChecks(checks, targetRoot) {
 // but does not fail the update — the post-update --check gate is the
 // authority on whether the result is acceptable. Returns a per-generator log.
 function runGenerators(targetRoot, decisions) {
-  const hasGenerated =
-    Array.isArray(decisions) &&
-    decisions.some((d) => d.category === "GENERATED_REBUILD");
-  if (!hasGenerated) {
-    return { ran: false, reason: "no GENERATED_REBUILD decisions", log: [] };
-  }
+  // ALWAYS regenerate the generated set on --apply (bundle-3 / ED-264 class-fix). The prior gate (run
+  // ONLY when a GENERATED_REBUILD decision was present) MISSED the case where a generator's SOURCE
+  // changed but its OUTPUT was not itself a GENERATED_REBUILD decision — leaving paths.json (and
+  // settings.json) STALE against the target's freshly-applied sources. Concretely: a frozen N-1 capsule
+  // ships a paths.json carrying a since-removedIn key; the update never regenerated it -> 3c
+  // non-convergence vs a fresh-N install. paths/build.js + hooks/build.js are IDEMPOTENT against the
+  // target's sources, so an unconditional run CONVERGES every generated file (this makes the
+  // settings.json "converges" property REAL, not incidental). Only reached on --apply (the dry-run path
+  // returns before the finalization), so dry-run semantics are preserved. Per-generator failure stays a
+  // WARN — the post-update --check gate is the authority on acceptability.
+  const generatedRebuilds = Array.isArray(decisions)
+    ? decisions.filter((d) => d.category === "GENERATED_REBUILD").length
+    : 0;
   // Ordered: paths first (settings/hooks may reference path keys), then hooks.
   const generators = [
     "scripts/paths/build.js",
     "scripts/hooks/build.js",
+    // (a1) ED-264 / GATE-B 3c: regenerate framework-manifest.json IN-TARGET, symmetric with fresh-install
+    // (install.ps1 runs the target's generate-framework-manifest.js against the installed tree — it does
+    // NOT copy the capsule snapshot; a copy's asset-sha list diverges from the regen's). Runs LAST so it
+    // hashes the freshly-regenerated paths.json/settings.json/hook artifacts.
+    "scripts/generate-framework-manifest.js",
   ];
   const log = [];
   for (const rel of generators) {
@@ -899,7 +929,7 @@ function runGenerators(targetRoot, decisions) {
       stderr: (r.stderr || "").slice(0, 200),
     });
   }
-  return { ran: true, log };
+  return { ran: true, generatedRebuilds, log };
 }
 
 // ── Auto-create dirs for newly-introduced path keys (G5.10c) ─
@@ -1388,6 +1418,24 @@ async function run(opts) {
     );
   }
 
+  // Restamp the project manifest's framework-managed warpos.version to the update TARGET — symmetric
+  // with fresh-install stamping. scaffoldProduct above does blocks A+B+C but NOT the manifest, which is
+  // a project-owned identity card written once at install; without this its warpos.version stays at the
+  // install-era version while version.json advances (scan:install version-match FAIL). Pass `target`
+  // explicitly so the restamp is independent of __dirname/version.json resolution.
+  try {
+    const sc = require("./scaffold-core");
+    if (sc && typeof sc.writeProductManifest === "function") {
+      sc.writeProductManifest({ target: targetRoot, warposVersion: target, log: scaffoldLog });
+    }
+  } catch (err) {
+    console.warn(`warp:update: manifest warpos.version restamp skipped (${err.message}).`);
+  }
+
+  // (a1) ED-264 / GATE-B 3c: framework-manifest.json is reconverged by generate-framework-manifest.js in
+  // runGenerators above (IN-TARGET regen, symmetric with fresh-install's install.ps1 — a capsule-snapshot
+  // COPY diverges from fresh's regenerated asset-sha list).
+
   // SP-20260525-024: also refresh the _warpos/ framework SOURCE mirror on update,
   // not just fresh install. populateWarposMirror is content-addressed + idempotent
   // and is explicitly "the migration path for existing products" (scaffold-core.js)
@@ -1408,6 +1456,33 @@ async function run(opts) {
     console.warn(
       `warp:update: _warpos/ mirror skipped (${err.message}) — regenerate.js may stay inert downstream.`,
     );
+  }
+
+  // (a2 → EXPANSION: ED-264 / GATE-B 3c SYSTEMIC reconvergence): REGENERATE _warpos/MANIFEST.json in-target
+  // instead of hand-patching only warposVersion. The prior surgical patch fixed the version FIELD but left the
+  // per-asset sha256/installedSha LIST STALE — it carried the N-1 capsule's manifest, NOT the freshly-mirrored
+  // on-disk _warpos/ sources populateWarposMirror just laid down (GATE-B 3c ground truth: identical _warpos/
+  // source files, divergent MANIFEST sha lists → the hand-patch never recomputed them). A fresh-N install builds
+  // this manifest by running scripts/warpos/manifest/build.js against the target
+  // (scaffold-core#regenerateWarposManifest, invoked from its CLI); running the SAME function here makes the
+  // upgraded MANIFEST byte-symmetric with fresh. Both design cautions: PRODUCT-mode (--source-prefix _warpos —
+  // the classifier path fresh exercises, install-matrix-tested) and warposVersion read from the TARGET's own
+  // version.json (manifest/build.js default; never a passed-in literal that can drift). warposRoot=targetRoot →
+  // the reconvergence loads the freshly-applied target's own build.js (IN-TARGET, consistent with runGenerators),
+  // and manifest/build.js output is deterministic on (--root, --source-prefix), so the identical copy is
+  // symmetric-with-fresh. Must run AFTER populateWarposMirror (mirror source must exist first). Fail-open — the
+  // post-update --check gate is the authority on acceptability.
+  try {
+    const sc = require("./scaffold-core");
+    if (sc && typeof sc.regenerateWarposManifest === "function") {
+      sc.regenerateWarposManifest({
+        target: targetRoot,
+        warposRoot: targetRoot,
+        log: scaffoldLog,
+      });
+    }
+  } catch (err) {
+    console.warn(`warp:update: _warpos/MANIFEST regeneration skipped (${err.message}).`);
   }
 
   // Run per-capsule post-update checks (release.json#postUpdateChecks).

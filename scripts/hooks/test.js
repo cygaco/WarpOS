@@ -266,6 +266,13 @@ function testAll() {
   const results = [];
   const enabledRegistryBasenames = new Set();
   const enabledHooks = registry.hooks.filter((h) => h.enabled !== false);
+  // Full registry set (incl. disabled). build.js emits disabled hooks into
+  // hook-manifest.json BY DESIGN (introspection; build.js L81), so a disabled
+  // entry there is a KNOWN hook, not a phantom — rule (4b) below validates the
+  // manifest against this set, not the enabled-only set.
+  const allRegistryBasenames = new Set(
+    registry.hooks.map((h) => path.basename(h.script)),
+  );
 
   // (1)+(2) Registry → script + fixture contract
   for (const h of enabledHooks) {
@@ -353,7 +360,7 @@ function testAll() {
     }
   }
   for (const basename of manifestBasenames) {
-    if (!enabledRegistryBasenames.has(basename)) {
+    if (!allRegistryBasenames.has(basename)) {
       results.push({
         hook: basename,
         severity: "red",

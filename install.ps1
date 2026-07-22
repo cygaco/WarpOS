@@ -36,7 +36,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 # Fallback only - version.json is the source of truth, read below.
-$Script:WARPOS_VERSION = "0.17.0"
+$Script:WARPOS_VERSION = "1.0.0"
 
 function Write-Step($msg) { Write-Host "[install] $msg" -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host "[install] WARN: $msg" -ForegroundColor Yellow }
@@ -249,6 +249,23 @@ if (Test-Path $ScaffoldCore) {
         Write-Warn "scaffold-core.js exited $LASTEXITCODE - product scaffold may be incomplete (paths.json/zones/ROADMAP/PROJECT.md/maps/_warpos). Re-run /warp:setup from inside the project to complete it."
     } else {
         Write-Step "Stage 2.5/3 - product scaffold complete (paths.json, _requirements/_docs zones, ROADMAP, PROJECT.md, maps nudge, _warpos/ mirror)"
+        # GATE-B 3c (beta-ceremony-freshpath-go-b089): the Stage-2 manifest regen ran BEFORE this scaffold, so it
+        # did NOT count the scaffolded maps nudge (.claude/project/maps/README.md); an upgraded tree (whose
+        # baseline pre-had it) does. Re-run the generator now the tree is fully scaffolded so the manifest
+        # reflects it (fresh-vs-upgrade parity). Idempotent; the Stage-2 regen stays for the copy-fallback path.
+        if (Test-Path -LiteralPath $GeneratorPath) {
+            Push-Location $Target
+            try {
+                & node $GeneratorPath 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Step "Stage 2.5/3 - framework-manifest.json regenerated post-scaffold (counts scaffolded assets)"
+                } else {
+                    Write-Warn "post-scaffold framework-manifest regen returned $LASTEXITCODE"
+                }
+            } finally {
+                Pop-Location
+            }
+        }
     }
 } else {
     Write-Warn "scaffold-core.js not found at $ScaffoldCore - skipping product scaffold. The manifest may predate it; regenerate the framework manifest and re-run, or run /warp:setup from inside the project."

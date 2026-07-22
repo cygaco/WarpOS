@@ -878,6 +878,34 @@ const GATES = [
     };
   }),
 
+  // Seam-E protected-ref fence STANDING falsifier suite (ED-264 / ADR-0035, 1.0 ceremony).
+  // falsifier-liveness runs the manifest-enumerated fence falsifier set PER-FILE (>=1 test,
+  // skipped===0, fail===0) and BLOCKS on any missing/skipped/red file — so the fence guard set
+  // can never pass graceful-empty (a deleted/renamed fence falsifier fails liveness, not silently
+  // drops). The manifest IS the expected-set.
+  gate("fence_falsifier_liveness", () => {
+    const r = runScript("scripts/checks/falsifier-liveness.js", [
+      "--manifest",
+      "scripts/dispatch/falsifiers/fence-suite.manifest.json",
+    ]);
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: "Fence falsifier suite: all Seam-E fence falsifiers executed per-file (0 skipped, 0 fail).",
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message:
+        "Fence falsifier liveness FAILED — a Seam-E fence falsifier is missing, skipped, or red. The protected-ref fence guard set is not fully live. Block release.",
+      details: (r.stdout || r.stderr || "")
+        .split(/\r?\n/)
+        .filter((l) => /BLOCK|violation|MISSING|fail|skipped/i.test(l))
+        .slice(0, 8),
+    };
+  }),
+
   // Sealed-capsule consumer-contract gate (ADR-0006 / SP-20260602-001 / keystone).
   // The named `sealed-capsule-contract-gate` enforcer: materialize the CURRENT
   // bill-of-materials into a self-contained payload, install it into a disposable

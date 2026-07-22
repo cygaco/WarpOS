@@ -13,7 +13,6 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -23,23 +22,23 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-start-of-work.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ],
     "UserPromptSubmit": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-logger.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -77,10 +76,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/version-bump-guard.js\""
           }
-        ]
+        ],
+        "matcher": "Bash"
       },
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -146,10 +145,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/lint-hook-output.js\""
           }
-        ]
+        ],
+        "matcher": "Edit|Write"
       },
       {
-        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",
@@ -183,37 +182,37 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/prompt-validator.js\""
           }
-        ]
+        ],
+        "matcher": "Agent"
       },
       {
-        "matcher": "Read|Grep|Glob",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/boss-boundary.js\""
           }
-        ]
+        ],
+        "matcher": "Read|Grep|Glob"
       },
       {
-        "matcher": "mcp__claude_ai_Excalidraw__*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/excalidraw-guard.js\""
           }
-        ]
+        ],
+        "matcher": "mcp__claude_ai_Excalidraw__*"
       },
       {
-        "matcher": "AskUserQuestion",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/beta-gate.js\""
           }
-        ]
+        ],
+        "matcher": "AskUserQuestion"
       },
       {
-        "matcher": "SlashCommand|Skill",
         "hooks": [
           {
             "type": "command",
@@ -223,12 +222,12 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/mode-lifecycle-guard.js\""
           }
-        ]
+        ],
+        "matcher": "SlashCommand|Skill"
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -238,10 +237,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/ledger-presence-guard.js\""
           }
-        ]
+        ],
+        "matcher": "Bash"
       },
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -315,10 +314,10 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/memory-enforcement-guard.js\""
           }
-        ]
+        ],
+        "matcher": "Edit|Write"
       },
       {
-        "matcher": "Agent",
         "hooks": [
           {
             "type": "command",
@@ -328,41 +327,41 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/response-size-guard.js\""
           }
-        ]
+        ],
+        "matcher": "Agent"
       },
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-tracker.js\""
           }
-        ]
+        ],
+        "matcher": ""
       },
       {
-        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/untrusted-content-firewall.js\""
           }
-        ]
+        ],
+        "matcher": "WebFetch|WebSearch|mcp__.*|ListMcpResourcesTool|ReadMcpResourceTool"
       }
     ],
     "PostCompact": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/compact-saver.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ],
     "Stop": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -370,27 +369,19 @@
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-completion-gate.js\""
           },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
-          },
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/tracker-completion-gate.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ],
     "SessionEnd": [
       {
-        "matcher": "*",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
-          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
@@ -399,22 +390,19 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-end-team-teardown.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ],
     "StopFailure": [
       {
-        "matcher": "*",
         "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/handoff-live.js\""
-          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/session-stop.js\""
           }
-        ]
+        ],
+        "matcher": ""
       }
     ]
   },

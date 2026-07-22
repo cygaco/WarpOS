@@ -90,6 +90,7 @@ try {
     /[._-]test[._-]|test-|\.test\./, // test files replay old versions
     /scripts\/schemas\/validate\.js$/, // accept-list lists multiple by design
     /\.md$/,                         // docs/changelogs name historical versions
+    /(^|\/)\.claude\/project\/sprint\/sprints\//, // closed-sprint manifests replay their era's schema (same class as migrations/fixtures/tests)
   ];
   const fams = {}; // family -> { version -> [files] }
   for (const f of tracked) {

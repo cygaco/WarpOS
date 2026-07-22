@@ -188,10 +188,19 @@ function evaluate(manifestPath, opts = {}) {
   // H1 gauntlet fix: run EACH fixture file individually and prove it executed. `opts.runFile(absPath)`
   // is the injectable seam (defaults to a real per-file node:test run); tests drive it deterministically.
   const runFile = opts.runFile || runFalsifierFile;
-  const runBuilt = opts.runBuilt || (() => runRecordTrustGateBuilt(manifestPath));
 
   const loaded = loadManifest(manifestPath);
   if (!loaded.ok) return { code: 2, ok: false, error: loaded.error };
+
+  // record-trust-gate --built applies ONLY to a record-trust manifest; other falsifier manifests
+  // (e.g. the Seam-E fence suite, schema warpos/fence-falsifier-suite) reuse the per-file liveness
+  // CORE (presence + per-file execution + skipped===0/fail===0) WITHOUT the record-trust --built step.
+  const isRecordTrust = /record-trust-gate/.test(loaded.manifest.schema || "");
+  const runBuilt =
+    opts.runBuilt ||
+    (isRecordTrust
+      ? () => runRecordTrustGateBuilt(manifestPath)
+      : () => ({ ok: true, detail: "non-record-trust manifest — record-trust-gate --built not applicable" }));
 
   const { falsifiers, companions } = collectFixtures(loaded.manifest);
   const fixtures = [...falsifiers, ...companions];
@@ -262,7 +271,7 @@ function main(argv) {
   if (res.ok) {
     process.stdout.write(
       `falsifier-liveness: PASS — ${res.falsifiers.length} falsifiers + ${res.companions.length} positive companion(s) each EXECUTED PER-FILE ` +
-        `(>=1 test, 0 skipped, 0 fail); ${res.counts.files} files, ${res.counts.tests} tests total; record-trust-gate --built green.\n`,
+        `(>=1 test, 0 skipped, 0 fail); ${res.counts.files} files, ${res.counts.tests} tests total; ${(res.built && res.built.detail) || "record-trust-gate --built green"}.\n`,
     );
     return 0;
   }

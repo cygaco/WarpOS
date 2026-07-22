@@ -98,31 +98,54 @@ function scaffoldProduct({ target, warposRoot, log }) {
   }
   const _regEntries = _registry ? _registry.paths || _registry : null;
   if (_regEntries) {
-    const flat = { version: 3 };
-    for (const [key, entry] of Object.entries(_regEntries)) {
-      if (entry && typeof entry === "object" && typeof entry.path === "string") {
-        flat[key] = entry.path;
+    // GATE-B 3c convergence (β beta-ceremony-freshpath-go-b089): generate paths.json via the SINGLE canonical
+    // generator scripts/paths/build.js — the SAME one /warp:update runs (runGenerators) — instead of a forked
+    // hand-rolled projection. The old inline map hardcoded `version: 3` (stale; build.js is v5), omitted
+    // `$schema`, and included removedIn keys (re-adding the dead portfolioRegistry that build.js drops,
+    // build.js:68), so a fresh install diverged from an upgraded tree at 3c. Delegating makes both byte-identical
+    // by construction (proven on the preserved trees). build.js also (re)writes PATH_KEYS.md + paths.schema.json
+    // — symmetric with the upgrade, deterministic. This fixes BOTH forks: the fresh create AND the upgrade's
+    // scaffoldProduct backfill (both are THIS block) now route through build.js, so the dead key stays gone on
+    // the upgrade side too. Falls back to an inline (removedIn-filtered, v5-header) projection only when build.js
+    // is absent (very old capsule).
+    const buildScript = path.join(TARGET, "scripts", "paths", "build.js");
+    let built = false;
+    if (fs.existsSync(buildScript)) {
+      const r = spawnSync(process.execPath, [buildScript], { cwd: TARGET, encoding: "utf8" });
+      if (r.status === 0) {
+        built = true;
+        log("ok", "Generated paths.json via scripts/paths/build.js (canonical generator)");
+        installed++;
+      } else {
+        log("warn", `paths/build.js exited ${r.status} — inline fallback. stderr: ${(r.stderr || "").trim().slice(0, 200)}`);
       }
     }
-    if (!fs.existsSync(pathsFile)) {
-      fs.writeFileSync(pathsFile, JSON.stringify(flat, null, 2) + "\n");
-      log("ok", `Created paths.json from registry (${Object.keys(flat).length} keys)`);
-      installed++;
-    } else {
-      // Idempotent backfill — add only keys the existing file is missing.
-      const existing = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
-      let added = 0;
-      for (const [k, v] of Object.entries(flat)) {
-        if (!(k in existing)) {
-          existing[k] = v;
-          added++;
+    if (!built) {
+      // Fallback (build.js absent/failed): inline registry projection, v5 header + removedIn EXCLUDED so it
+      // stays as close to the canonical output as possible.
+      const flat = { $schema: "warpos/paths/v5", version: 5 };
+      for (const [key, entry] of Object.entries(_regEntries)) {
+        if (entry && typeof entry === "object" && typeof entry.path === "string" && !entry.removedIn) {
+          flat[key] = entry.path;
         }
       }
-      if (added > 0) {
-        fs.writeFileSync(pathsFile, JSON.stringify(existing, null, 2) + "\n");
-        log("ok", `Backfilled paths.json (+${added} missing keys incl. sprint infra)`);
+      if (!fs.existsSync(pathsFile)) {
+        fs.writeFileSync(pathsFile, JSON.stringify(flat, null, 2) + "\n");
+        log("ok", `Created paths.json (inline fallback, ${Object.keys(flat).length} keys)`);
+        installed++;
       } else {
-        log("ok", "paths.json already complete");
+        const existing = JSON.parse(fs.readFileSync(pathsFile, "utf8"));
+        let added = 0;
+        for (const [k, v] of Object.entries(flat)) {
+          if (!(k in existing)) {
+            existing[k] = v;
+            added++;
+          }
+        }
+        if (added > 0) {
+          fs.writeFileSync(pathsFile, JSON.stringify(existing, null, 2) + "\n");
+          log("ok", `Backfilled paths.json inline fallback (+${added} keys)`);
+        }
       }
     }
     // Scaffold every runtime dir the registry declares (kind=dir) so the sprint
@@ -664,6 +687,30 @@ function writeProductManifest({ target, interview = {}, stack = "unknown", frame
     fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + "\n");
     log("ok", `Created manifest.json for "${projectName}"`);
     installed++;
+  } else {
+    // UPDATE-side restamp — symmetric with the create branch's version stamping. manifest.json is a
+    // project-owned identity card written ONCE at fresh install, so update must NOT recreate it — but its
+    // framework-managed warpos.version MUST track the installed version, else it stays at the install-era
+    // version while version.json advances (scan:install version-match FAIL — scripts/check/install.js:89).
+    // SURGICAL: touch ONLY warpos.version; preserve every project-owned field. Engine-level, NOT a per-pair
+    // migration (which would need a restamp entry for every version pair).
+    try {
+      const existing = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
+      const want = resolveWarposVersion(warposVersion);
+      if (
+        existing &&
+        existing.warpos &&
+        typeof existing.warpos === "object" &&
+        existing.warpos.version !== want
+      ) {
+        existing.warpos.version = want;
+        fs.writeFileSync(manifestFile, JSON.stringify(existing, null, 2) + "\n");
+        log("ok", `Restamped manifest.json warpos.version → ${want}`);
+        installed++;
+      }
+    } catch (e) {
+      log("warn", `manifest.json restamp skipped (${e.message})`);
+    }
   }
 
   return { installedDelta: installed };
