@@ -21,18 +21,34 @@
  *   5  Create <canonical>/framework/releases/<v>/ skeleton
  *   6  Build capsule (release-build.js)
  *   7  Run release gates
- *   8  Commit on release/<v> branch in canonical
- *   9  Fast-forward main + push origin main
+ *   8  Build the release commit for release/<v> IN CANONICAL, entirely by
+ *      plumbing (write-tree + commit-tree) — no ref besides release/<v>
+ *      itself moves, and main is never touched by this stage.
+ *   9  Land release/<v> → main THROUGH the INC-1 brokered transport
+ *      (scripts/dispatch/broker-merge.js's brokerMerge(), which calls the
+ *      broker's integrateBranchMerge entrypoint) + push origin main.
  *  10  Tag warpos@<v> + push                                  [--no-tag skips]
  *
  * Each stage emits a receipt {stage, ok, what, where, rollback}. On failure
  * the report tells you which stages did/didn't run + how to resume.
+ *
+ * SP-20260721-001 D-4 INC-1 (ceremony step 1): stages 8-9 are the MIGRATED
+ * main-write call-site (scripts/checks/main-write-broker-completeness.js) —
+ * no raw local commit/merge/ref-move remains anywhere in this file; every
+ * object is built with plumbing and the only ref-move onto main happens
+ * inside the broker's own fenced compare-and-swap. This path is
+ * PRE-FLIP-SAFE: with no pinned bundle promoted yet it falls back to the
+ * ordinary route, LOGGED + COUNTED + SURFACED (scripts/dispatch/
+ * broker-dogfood.js) — it is never gated on whether the Seam E hook is
+ * installed, so it works unchanged before and after the flip.
  *
  * Usage:
  *   node scripts/warpos/release-canonical.js --canonical ../WarpOS --version patch
  *   node scripts/warpos/release-canonical.js --version patch --apply
  *   node scripts/warpos/release-canonical.js --canonical ../WarpOS --version 0.2.0 --apply --no-tag
  *   node scripts/warpos/release-canonical.js --resume-from 7 --apply
+ *   node scripts/warpos/release-canonical.js --apply --sp-id my-release \
+ *     --bundle-manifest <promoted-manifest> --bundle-root <promoted-root>
  *
  * Slash entry point: /warp:release (see .claude/commands/warp/release.md).
  */
@@ -40,6 +56,12 @@
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
+
+const { brokerMerge } = require("../dispatch/broker-merge");
+// 7G-002: the pre-land origin sync's brokered fast-forward reuses the SAME dogfood plumbing
+// (lease/bundle/classify+fallback) broker-merge.js and broker-release-commit.js already dogfood — see
+// syncMainFromOrigin()/brokerFastForwardMain() below.
+const dog = require("../dispatch/broker-dogfood");
 
 const PRODUCT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -59,6 +81,14 @@ function parseArgs(argv) {
     noTag: argv.includes("--no-tag"),
     resumeFrom: get("--resume-from") ? parseInt(get("--resume-from"), 10) : 0,
     json: argv.includes("--json"),
+    // Threaded through to brokerMerge() (stage 9) — the INC-1 brokered land onto main. spId defaults to a
+    // fixed pseudo-sprint id (not tied to any sprint ceremony) so an ad-hoc release run always holds a
+    // lease without requiring the operator to be mid-sprint.
+    spId: get("--sp-id") || process.env.WARPOS_SP_ID || "warpos-release-canonical",
+    leaseRoot: get("--lease-root") || null,
+    bundleManifestPath: get("--bundle-manifest") || process.env.WARPOS_PINNED_BUNDLE_MANIFEST || null,
+    bundleRoot: get("--bundle-root") || process.env.WARPOS_PINNED_BUNDLE_ROOT || null,
+    noBrokerFallback: argv.includes("--no-broker-fallback"),
   };
 }
 
@@ -677,13 +707,19 @@ function stageGates(opts, canonical) {
   );
 }
 
-// ── stage 8: commit on release branch ─────────────────────
+// ── stage 8: build the release commit (plumbing; main untouched) ──────────
+// SP-20260721-001 D-4 INC-1 ceremony step 1: this stage NEVER moves refs/heads/main and never runs a
+// porcelain commit — every git object is built with plumbing (write-tree + commit-tree) on top of
+// canonical's CURRENT tip, and the resulting object is only reachable through the release/<v> branch
+// pointer (set with `branch -f`, a non-default-branch ref move the Seam E fence does not gate — the fence
+// protects main; see the ALLOWLIST/recognizer notes in main-write-broker-completeness.js). The commit is
+// landed onto main only in stage 9, through the brokered transport.
 function stageCommit(opts, canonical, next) {
   if (!opts.apply) {
     return receipt(
       8,
       true,
-      `[dry-run] Would create release/${next} branch in canonical and commit capsule + manifest + version.json`,
+      `[dry-run] Would build a release commit on top of canonical's current tip and point release/${next} at it (plumbing; main untouched)`,
       canonical,
       "n/a — dry-run",
     );
@@ -708,32 +744,25 @@ function stageCommit(opts, canonical, next) {
       "Verify stages 3-6 actually ran and produced diff; --resume-from 3 to redo",
     );
   }
-  // Branch: create or reuse release/<v>.
-  const branch = `release/${next}`;
-  const branchExists = gitC(canonical, ["rev-parse", "--verify", branch]).ok;
-  if (!branchExists) {
-    const create = gitC(canonical, ["checkout", "-b", branch]);
-    if (!create.ok) {
-      return receipt(
-        8,
-        false,
-        `Could not create branch ${branch}: ${create.stderr.slice(0, 200)}`,
-        canonical,
-        `git -C ${canonical} branch -D ${branch} (if partial) then --resume-from 8`,
-      );
-    }
-  } else {
-    const sw = gitC(canonical, ["checkout", branch]);
-    if (!sw.ok) {
-      return receipt(
-        8,
-        false,
-        `Could not checkout existing branch ${branch}: ${sw.stderr.slice(0, 200)}`,
-        canonical,
-        "Resolve git state in canonical, then --resume-from 8",
-      );
-    }
+  // Guard the assumption stage 9 relies on: the release commit's parent is canonical's CURRENT tip, which
+  // stage 9 will land onto main as a real 2-parent merge. This script never switches canonical's checkout,
+  // so canonical must already BE on main when a release starts.
+  const onBranch = gitC(canonical, ["symbolic-ref", "-q", "HEAD"]);
+  if (!onBranch.ok || onBranch.stdout.trim() !== "refs/heads/main") {
+    return receipt(
+      8,
+      false,
+      `canonical must be checked out on main to start a release (found ${onBranch.stdout.trim() || "detached HEAD"})`,
+      canonical,
+      "Check canonical out onto main (resolve any in-progress git state first), then --resume-from 8",
+    );
   }
+  const parentRes = gitC(canonical, ["rev-parse", "HEAD"]);
+  if (!parentRes.ok || !/^[0-9a-f]{40}$/i.test(parentRes.stdout.trim())) {
+    return receipt(8, false, `git rev-parse HEAD failed: ${(parentRes.stderr || parentRes.stdout).slice(0, 200)}`, canonical, "Verify canonical HEAD is resolvable; --resume-from 8");
+  }
+  const parentSha = parentRes.stdout.trim();
+
   // Stage exactly what the stage-7 gates verified on the working tree. The
   // 2026-05-30 fix grew an explicit allowlist (version.json, manifests, paths,
   // install.ps1, RELEASES.md, capsule), but ANY allowlist silently DROPS gate-fix
@@ -766,71 +795,369 @@ function stageCommit(opts, canonical, next) {
       `git -C ${canonical} reset && --resume-from 8`,
     );
   }
-  const commit = gitC(canonical, [
-    "commit",
-    "-m",
-    `release(warpos): ${next} — built by scripts/warpos/release-canonical.js`,
-  ]);
-  if (!commit.ok) {
+
+  // Build the tree + commit OBJECTS via plumbing — no ref is written by either call.
+  const treeRes = gitC(canonical, ["write-tree"]);
+  if (!treeRes.ok || !/^[0-9a-f]{40}$/i.test(treeRes.stdout.trim())) {
     return receipt(
       8,
       false,
-      `git commit failed: ${commit.stderr.slice(0, 200)}`,
+      `git write-tree failed: ${(treeRes.stderr || treeRes.stdout).slice(0, 200)}`,
       canonical,
-      `git -C ${canonical} reset HEAD~ then --resume-from 8`,
+      `git -C ${canonical} reset && --resume-from 8`,
     );
   }
+  const treeSha = treeRes.stdout.trim();
+  const branch = `release/${next}`;
+  const ctRes = gitC(canonical, [
+    "commit-tree",
+    treeSha,
+    "-p",
+    parentSha,
+    "-m",
+    `release(warpos): ${next} — built by scripts/warpos/release-canonical.js`,
+  ]);
+  if (!ctRes.ok || !/^[0-9a-f]{40}$/i.test(ctRes.stdout.trim())) {
+    return receipt(
+      8,
+      false,
+      `git commit-tree failed: ${(ctRes.stderr || ctRes.stdout).slice(0, 200)}`,
+      canonical,
+      `git -C ${canonical} reset && --resume-from 8`,
+    );
+  }
+  const releaseCommit = ctRes.stdout.trim();
+
+  // Point release/<v> at the built object. `branch -f` moves a NON-main local ref directly, without a
+  // checkout — main's tip (parentSha) is untouched by this call.
+  const branchRes = gitC(canonical, ["branch", "-f", branch, releaseCommit]);
+  if (!branchRes.ok) {
+    return receipt(
+      8,
+      false,
+      `git branch -f ${branch} failed: ${branchRes.stderr.slice(0, 200)}`,
+      canonical,
+      `git -C ${canonical} reset && --resume-from 8`,
+    );
+  }
+
+  // The staged diff is now safely reachable ONLY from release/<v> (main's tip did not move). Discard the
+  // staged/working diff so canonical's checkout is clean going into stage 9 — required for the pre-flip
+  // fallback route's plain merge to succeed; harmless for the brokered route, which materializes its own
+  // detached worktree and never reads canonical's working tree at all.
+  // 7G-001: `git reset --hard` is a probe-verified protected-ref write surface (it emits a
+  // reference-transaction even when the target sha equals the current HEAD) — REFUSED post-flip on a
+  // checked-out main. The intent here is WORKING-TREE-ONLY (HEAD/refs/heads/main never moved in this
+  // stage — only release/<v> did), so `git restore --staged --worktree -- .` gives the identical
+  // index+worktree-back-to-HEAD result (including dropping the newly-staged capsule dir, which HEAD does
+  // not have) without writing to any ref at all.
+  const cleanRes = gitC(canonical, ["restore", "--staged", "--worktree", "--", "."]);
+  if (!cleanRes.ok) {
+    return receipt(
+      8,
+      false,
+      `post-build working-tree restore failed: ${cleanRes.stderr.slice(0, 200)}`,
+      canonical,
+      `git -C ${canonical} status; manually reconcile; --resume-from 8`,
+    );
+  }
+
   return receipt(
     8,
     true,
-    `Committed on branch ${branch}`,
+    `Built release commit ${releaseCommit.slice(0, 8)} (parent ${parentSha.slice(0, 8)}) and pointed ${branch} at it — main untouched, landed via the broker in stage 9`,
     canonical,
-    `git -C ${canonical} reset --soft HEAD~ && git -C ${canonical} checkout main && git -C ${canonical} branch -D ${branch}`,
-    { branch },
+    `git -C ${canonical} branch -D ${branch} (the commit is otherwise unreferenced and will be garbage-collected; main was never touched)`,
+    { branch, releaseCommit, parentSha },
   );
 }
 
-// ── stage 9: merge to main + push ─────────────────────────
+/**
+ * brokerFastForwardMain(gitRoot, newHead, opts) — 7G-002. Mirrors broker-merge.js's brokerMerge()/finish()
+ * shape (lease -> bundle -> broker -> CAS -> classify+fallback), but for a GENERIC fast-forward of
+ * refs/heads/main onto an ALREADY-EXISTING commit (origin/main's tip) — no new commit object to build. This
+ * is deliberately `fencedRefUpdate` rather than `integrateReleaseCommit`: the latter requires a SINGLE-parent
+ * commit whose immediate parent is the live head (a one-commit-ahead shape only), whereas an origin catch-up
+ * may be N commits ahead — `fencedRefUpdate`'s ancestry check (isAncestor(liveHead, newHead)) is correct for
+ * either. Pre-flip (no promoted bundle) this falls back to a plain CAS ref-update (the ordinary route in
+ * broker-dogfood.js#ordinaryLand), LOGGED + COUNTED + SURFACED exactly like the other D-4 INC-1 dogfood
+ * routes; post-flip the fallback route is itself refused by the Seam E hook (by design — the escape hatch
+ * only ever worked pre-flip).
+ */
+function brokerFastForwardMain(gitRoot, newHead, opts) {
+  const targetRef = "refs/heads/main";
+  const spId = opts.spId || process.env.WARPOS_SP_ID || null;
+  const held = dog.ensureLease(spId, opts.leaseRoot);
+  if (!held.ok) {
+    return brokerSyncFinish(
+      { reason: "lease-not-held", detail: `conductor lease unavailable for ${spId || "(no --sp-id)"}: ${held.state}` },
+      { gitRoot, targetRef, newHead, opts },
+    );
+  }
+  try {
+    const bundle = dog.resolveBundleConfig(opts);
+    if (!bundle.ok) return brokerSyncFinish({ reason: bundle.reason, detail: bundle.detail }, { gitRoot, targetRef, newHead, opts });
+    const loaded = dog.loadBroker();
+    if (!loaded.ok) return brokerSyncFinish({ reason: loaded.reason, detail: loaded.detail }, { gitRoot, targetRef, newHead, opts });
+
+    let res;
+    try {
+      res = loaded.broker.fencedRefUpdate(newHead, targetRef, {
+        bundleManifestPath: bundle.bundleManifestPath,
+        bundleRoot: bundle.bundleRoot,
+        spId,
+        leaseRoot: opts.leaseRoot,
+        gitRoot,
+      });
+    } catch (e) {
+      res = { ok: false, decision: "BLOCKED", reason: "broker-threw", detail: e.message };
+    }
+    if (res && res.ok === true) {
+      return {
+        ok: true,
+        route: "brokered",
+        decision: res.decision,
+        transport: "main-sync-ff",
+        target_ref: targetRef,
+        new_head: newHead,
+        receipt: res.receipt,
+        lease: held.state,
+      };
+    }
+    return brokerSyncFinish(res || { reason: "broker-threw", detail: "no result" }, { gitRoot, targetRef, newHead, opts });
+  } finally {
+    const rel = held.release();
+    if (rel && rel.ok === false) {
+      process.stderr.write(`  ⓘ lease cleanup did not confirm for ${spId || "(sprint)"} — see the orphan warning above.\n`);
+    }
+  }
+}
+
+/** brokerSyncFinish(refusal, ctx) — the ONE fallback gate for brokerFastForwardMain (mirrors
+ *  broker-merge.js#finish, scoped to the plain CAS ref-update fallback route — never a merge). */
+function brokerSyncFinish(refusal, ctx) {
+  const reason = refusal.reason || "broker-threw";
+  const classification = dog.classifyRefusal(reason);
+  const expected = gitC(ctx.gitRoot, ["rev-parse", ctx.targetRef]);
+
+  // 2nd-review blocker (anchor-pinning, β R1 class one level down): the ancestry (local main ⊂ origin/main)
+  // was validated in syncMainFromOrigin BEFORE the broker refusal. This fallback re-resolves main's CURRENT
+  // head as the CAS expectedHead — but a race could have moved main to a NON-ancestor of newHead (origin) in
+  // between, which would make the "fast-forward" a REWIND (data loss). Re-validate that the freshly-resolved
+  // head is STILL a strict ancestor of newHead before adopting it for the CAS; refuse the rewind otherwise.
+  if (expected.ok) {
+    const stillAncestor = gitC(ctx.gitRoot, ["merge-base", "--is-ancestor", expected.stdout.trim(), ctx.newHead]);
+    if (!stillAncestor.ok) {
+      const detail = `local main advanced to a NON-ancestor of the sync target between validation and CAS (main ${expected.stdout.trim().slice(0, 8)} ⊄ ${String(ctx.newHead).slice(0, 8)}) — refusing (a fast-forward here would be a rewind)`;
+      process.stderr.write(`${dog.refusalBanner("main-sync-ff", "sync-head-moved-non-ancestor", classification, detail)}\n`);
+      return { ok: false, decision: "BLOCKED", reason: "sync-head-moved-non-ancestor", detail };
+    }
+  }
+
+  const fb = dog.attemptFallback({
+    reason,
+    detail: refusal.detail || null,
+    transport: "main-sync-ff",
+    targetRef: ctx.targetRef,
+    gitRoot: ctx.gitRoot,
+    newHead: ctx.newHead,
+    expectedHead: expected.ok ? expected.stdout.trim() : null,
+    eventsPath: dog.resolveEventsPath(),
+    allowFallback: !ctx.opts.noBrokerFallback,
+    dryRun: false,
+    emit: true,
+    actor: "release-canonical-sync",
+  });
+
+  if (fb.refused) {
+    process.stderr.write(`${dog.refusalBanner("main-sync-ff", reason, fb.classification || classification, refusal.detail)}\n`);
+    return {
+      ok: false,
+      route: "none",
+      decision: "BLOCKED",
+      transport: "main-sync-ff",
+      reason,
+      classification: fb.classification || classification,
+      detail: refusal.detail || null,
+      fallback_refused: fb.reason || null,
+    };
+  }
+
+  return {
+    ok: fb.ok,
+    route: fb.route,
+    decision: fb.route === "dry-run" ? "DRY-RUN-WOULD-FALL-BACK" : fb.ok ? "LANDED-BY-FALLBACK" : "FALLBACK-FAILED",
+    transport: "main-sync-ff",
+    broker_reason: reason,
+    classification,
+    fallback_record: fb.record,
+    fallback_count: fb.count,
+    reason: fb.reason,
+    detail: fb.detail,
+  };
+}
+
+/**
+ * syncMainFromOrigin(opts, canonical) -> {ok, synced, detail?, brokerResult?} — 7G-002. Replaces the
+ * un-brokered `git pull --ff-only origin main`. `git fetch origin main` only ever moves
+ * refs/remotes/origin/main (never a protected-ref write — safe pre- and post-flip). If local main turns out
+ * to be BEHIND the fetched origin/main, advancing refs/heads/main to catch up IS a main-write, so that
+ * advance — and ONLY that advance — is routed through brokerFastForwardMain(). Diverged histories still
+ * REFUSE outright (the same safety `pull --ff-only` gave); local-ahead/up-to-date is a no-op.
+ */
+function syncMainFromOrigin(opts, canonical) {
+  const fetch = gitC(canonical, ["fetch", "origin", "main"]);
+  if (!fetch.ok) return { ok: false, detail: `git fetch origin main failed: ${fetch.stderr.slice(0, 200)}` };
+
+  const localRes = gitC(canonical, ["rev-parse", "refs/heads/main"]);
+  const originRes = gitC(canonical, ["rev-parse", "refs/remotes/origin/main"]);
+  if (!localRes.ok || !originRes.ok) {
+    return { ok: false, detail: `resolving local/origin main failed: ${(localRes.stderr || originRes.stderr || "").slice(0, 200)}` };
+  }
+  const local = localRes.stdout.trim();
+  const origin = originRes.stdout.trim();
+  if (local === origin) return { ok: true, synced: false };
+
+  // Local is already at/ahead of origin — nothing to sync (same no-op `pull --ff-only` would report).
+  if (gitC(canonical, ["merge-base", "--is-ancestor", origin, local]).ok) {
+    return { ok: true, synced: false };
+  }
+  // Neither is an ancestor of the other — diverged. Refuse rather than silently reconcile.
+  if (!gitC(canonical, ["merge-base", "--is-ancestor", local, origin]).ok) {
+    return { ok: false, detail: "local main and origin/main have DIVERGED — fast-forward-only sync refuses; reconcile (rebase/merge upstream) manually" };
+  }
+
+  // Local main is a strict ancestor of origin/main: the catch-up ff is a main-write. Route it through the broker.
+  const res = brokerFastForwardMain(canonical, origin, opts);
+  if (!res.ok) {
+    return {
+      ok: false,
+      detail: `brokered sync ff to origin/main failed: ${res.reason || "unknown"}${res.detail ? ` (${String(res.detail).slice(0, 200)})` : ""}`,
+      brokerResult: res,
+    };
+  }
+  return { ok: true, synced: true, brokerResult: res };
+}
+
+// ── stage 9: land release/<v> onto main (brokered) + push ─────────────────
+// SP-20260721-001 D-4 INC-1 ceremony step 1: every main-write in this file happens exclusively inside the
+// broker's fenced compare-and-swap. The pre-land sync (syncMainFromOrigin, above) brokers a catch-up
+// fast-forward through fencedRefUpdate when local main is behind origin; the land itself uses
+// broker-merge.js's brokerMerge(), which builds a real 2-parent merge object with plumbing (merge-tree
+// --write-tree + commit-tree — no ref is written by the build) with canonical's re-resolved LIVE main tip as
+// first parent and release/<v>'s tip as second parent, then calls the broker's integrateBranchMerge
+// ({merge_commit, target_ref}) entrypoint, which re-resolves main's live head itself and performs the one
+// fenced ref move. Called UNCONDITIONALLY — pre-flip (no pinned bundle promoted yet) it falls back to the
+// ordinary route, LOGGED + COUNTED + SURFACED in the dogfood ledger (scripts/dispatch/broker-dogfood.js);
+// post-flip the same call runs the real pinned check suite over the materialized merge result. Never gated
+// on whether the Seam E hook is installed.
 function stageMergeAndPush(opts, canonical, next, branch) {
   if (!opts.apply) {
     return receipt(
       9,
       true,
-      `[dry-run] Would ff-merge release/${next} → main in canonical and push origin main`,
+      `[dry-run] Would land release/${next} onto main through the brokered transport (integrateBranchMerge) and push origin main`,
       canonical,
       "n/a — dry-run",
     );
   }
-  const sw = gitC(canonical, ["checkout", "main"]);
-  if (!sw.ok) {
+  // Sync local main with origin BEFORE landing, fast-forward-only (refuses rather than silently diverging).
+  // 7G-002: `git pull --ff-only origin main` fast-forwards the CHECKED-OUT branch directly — an un-brokered
+  // refs/heads/main write, REFUSED post-flip. syncMainFromOrigin() fetches (never a protected-ref write) and
+  // routes any necessary catch-up ff through the broker.
+  const sync = syncMainFromOrigin(opts, canonical);
+  if (!sync.ok) {
     return receipt(
       9,
       false,
-      `Could not checkout main: ${sw.stderr.slice(0, 200)}`,
-      canonical,
-      "Resolve canonical git state; --resume-from 9",
-    );
-  }
-  const pull = gitC(canonical, ["pull", "--ff-only", "origin", "main"]);
-  if (!pull.ok) {
-    return receipt(
-      9,
-      false,
-      `git pull --ff-only origin main failed: ${pull.stderr.slice(0, 200)}`,
+      `syncing local main from origin (fast-forward only) failed: ${sync.detail || "unknown"}`,
       canonical,
       "Reconcile canonical main with origin (rebase/merge upstream first); --resume-from 9",
+      sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
     );
   }
-  const merge = gitC(canonical, ["merge", "--ff-only", branch]);
-  if (!merge.ok) {
+
+  // 2nd-review blocker: a brokered sync ff moves refs/heads/main via the fenced CAS but NEVER the
+  // checked-out index/worktree (they stay at the pre-sync main). brokerMerge()'s ordinary-merge FALLBACK
+  // (pre-flip / post-refusal) merges against the WORKING TREE, so it MUST see the synced content first, or
+  // it merges against a stale tree.
+  //
+  // r3 blocker (TERMINAL): this refresh MUST NOT be gated on `sync.synced` (did THIS invocation move
+  // main). A prior invocation can move main via the fenced CAS and then crash — or have its restore fail —
+  // BEFORE the refresh completes; on `--resume-from 9` the sync sees local===origin, returns synced:false,
+  // and a gated refresh would be skipped, leaving brokerMerge to merge against the stale pre-sync tree.
+  // Because the refresh is working-tree-only (restore --source=main, no ref write) it is safe to run
+  // UNCONDITIONALLY: a no-op when the tree already matches main, and it recovers the crashed-before-refresh
+  // case regardless of which invocation moved the ref. Same working-tree-only shape as the post-land
+  // refresh below.
+  const syncRefresh = gitC(canonical, ["restore", "--source=main", "--staged", "--worktree", "--", "."]);
+  if (!syncRefresh.ok) {
     return receipt(
       9,
       false,
-      `ff-merge failed: ${merge.stderr.slice(0, 200)}`,
+      `refreshing the pre-land working tree up to local main failed: ${syncRefresh.stderr.slice(0, 200)}`,
       canonical,
-      "Inspect canonical history (probably non-linear); resolve manually; --resume-from 9",
+      `git -C ${canonical} restore --source=main --staged --worktree -- .`,
+      sync.brokerResult ? { brokerResult: sync.brokerResult } : {},
     );
   }
+
+  // 7G-004: idempotent resume. `--resume-from 9` after a land-succeeded-but-push-failed run re-enters this
+  // stage; brokerMerge() itself already refuses an already-landed branch as `already-merged` (a USAGE
+  // refusal — see broker-merge.js), which would otherwise regress the documented recovery. Detect that
+  // SUCCESS case up front and skip straight to the (idempotent) push.
+  let res;
+  const alreadyLanded = gitC(canonical, ["merge-base", "--is-ancestor", branch, "refs/heads/main"]);
+  if (alreadyLanded.ok) {
+    res = { ok: true, route: "already-landed", decision: "ALREADY-LANDED", branch, target_ref: "refs/heads/main" };
+  } else {
+    res = brokerMerge(
+      { branch, target_ref: "refs/heads/main" },
+      {
+        gitRoot: canonical,
+        spId: opts.spId,
+        leaseRoot: opts.leaseRoot,
+        bundleManifestPath: opts.bundleManifestPath,
+        bundleRoot: opts.bundleRoot,
+        allowFallback: !opts.noBrokerFallback,
+        actor: "release-canonical",
+        emit: true,
+      },
+      {},
+    );
+  }
+
+  if (!res.ok) {
+    return receipt(
+      9,
+      false,
+      `landing release/${next} onto main failed: ${res.reason || "unknown"}${res.detail ? ` (${String(res.detail).slice(0, 200)})` : ""}`,
+      canonical,
+      "Inspect the refusal above (security/usage refusals never fall back); resolve, then --resume-from 9",
+      { brokerResult: res },
+    );
+  }
+
+  // The ref moved; refresh the checkout if it was pointing at the branch that just moved underneath it
+  // (broker-merge.js's `worktree_refresh_required` — the CAS moves the ref, never the working tree).
+  // 7G-001: the refresh's INTENT is working-tree-only (main's ref already moved via the broker's fenced
+  // CAS — refreshing it AGAIN with `reset --hard main` would be a second, un-brokered, REFUSED-post-flip
+  // write to the very ref this stage just landed through the broker). `git restore --source=main --staged
+  // --worktree -- .` pulls the index+worktree up to main's new content without touching any ref.
+  if (res.worktree_refresh_required) {
+    const refresh = gitC(canonical, ["restore", "--source=main", "--staged", "--worktree", "--", "."]);
+    if (!refresh.ok) {
+      return receipt(
+        9,
+        false,
+        `landed release/${next} → main (${res.route}) but the post-land working-tree refresh failed: ${refresh.stderr.slice(0, 200)}`,
+        canonical,
+        `git -C ${canonical} restore --source=main --staged --worktree -- .`,
+        { brokerResult: res },
+      );
+    }
+  }
+
   const push = gitC(canonical, ["push", "origin", "main"]);
   if (!push.ok) {
     return receipt(
@@ -838,15 +1165,17 @@ function stageMergeAndPush(opts, canonical, next, branch) {
       false,
       `push origin main failed: ${push.stderr.slice(0, 200)}`,
       canonical,
-      "Authenticate or reconcile; --resume-from 9 (merge already done; only push pending)",
+      "Authenticate or reconcile; --resume-from 9 (merge already landed; only push pending)",
+      { brokerResult: res },
     );
   }
   return receipt(
     9,
     true,
-    `Merged ${branch} → main and pushed origin main`,
+    `Landed ${branch} → main via ${res.route} (${res.decision}) and pushed origin main`,
     canonical,
     `git -C ${canonical} reset --hard origin/main~1 + git -C ${canonical} push --force-with-lease origin main (DESTRUCTIVE — only if not yet consumed downstream)`,
+    { brokerResult: res },
   );
 }
 

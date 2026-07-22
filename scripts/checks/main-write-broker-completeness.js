@@ -154,6 +154,38 @@ const ALLOWLIST = Object.freeze({
     reason:
       "Commits on the freshly-created skeleton branch (Step 2.3 branches off CURRENT and explicitly warns when on master/main); no default-branch write. Verified 2026-07-21 (D-4 INC-1 census).",
   },
+  // ── ceremony step 1 (SP-20260721-001 D-4 INC-1, MIG flip-trigger) — the 4 deferred guidance docs + 2 ──
+  // scratch-repo falsifiers named in the ceremony brief. release-canonical.js itself is MIGRATED, not
+  // allowlisted — see its own header comment for the brokered-transport routing.
+  ".claude/commands/commit/land.md": {
+    kind: "doc-prose",
+    reason:
+      "Skill GUIDANCE a human/agent follows, not an executable call-site (the Step-4 raw `git merge --no-ff $BRANCH` teaches the land flow). Allowlisted; its brokered-aware guidance rewrite is a NAMED ceremony follow-up, not this step.",
+  },
+  ".claude/commands/session/end.md": {
+    kind: "doc-prose",
+    reason: "Guidance doc; Step-7 Land delegates to the land flow. Allowlisted; brokered-aware rewrite is a named follow-up.",
+  },
+  ".claude/commands/session/turbo.md": {
+    kind: "doc-prose",
+    reason:
+      "Guidance doc describing turbo-close ff-merge + a push-to-main opt-in; not an executable call-site. Allowlisted; brokered-aware rewrite is a named follow-up.",
+  },
+  ".claude/commands/warp/release.md": {
+    kind: "doc-prose",
+    reason:
+      "Guidance doc describing the release ceremony stages that release-canonical.js IMPLEMENTS. Allowlisted; once #1 is migrated its stage-9 description rewrite is a named follow-up.",
+  },
+  "scripts/dispatch/falsifiers/broker-acceptance.falsifier.test.js": {
+    kind: "scratch",
+    reason:
+      "Falsifier test: intentionally contains a NON-brokered git merge/commit/update-ref as the NEGATIVE case the fence must REFUSE, on a SCRATCH repo with the real hook. Never touches canonical main — pure conservative-recognizer over-flag.",
+  },
+  "scripts/dispatch/falsifiers/release-index-feature-snapshot-excluded.falsifier.test.js": {
+    kind: "scratch",
+    reason:
+      "Falsifier test (GF-2 teeth) for brokerReleaseCommit on a transport fixture; the non-brokered pattern IS the test subject, on a scratch-repo, not real main.",
+  },
 });
 
 // ── FOLD 1 recognizer ────────────────────────────────────────────────────────────────────────────────

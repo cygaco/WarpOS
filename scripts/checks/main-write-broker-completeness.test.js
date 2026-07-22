@@ -186,12 +186,31 @@ test("an UNREADABLE in-scope file is FAIL-CLOSED (never silently clean)", () => 
 
 // ── 6. LIVE REPO — the census state this enforcer was built to report ───────────────────────────────────
 
-test("LIVE — the enforcer recognizes the two flagship DEFERRED writers (#2 release + #4 commit:land)", () => {
+// Ceremony step 1 (SP-20260721-001 D-4 INC-1) landed: #2 release-canonical.js is MIGRATED (stages 8-9
+// route the only main-write through brokerMerge()/integrateBranchMerge, plumbing-built, zero raw
+// commit/merge/update-ref call-sites left in the file) and #4 commit/land.md is ALLOWLISTED (guidance doc,
+// its brokered-aware rewrite is a named follow-up, not this step). The two flagship writers this enforcer
+// was built to catch are still individually asserted below — what changed is the DISPOSITION, not whether
+// the recognizer sees them. This is the FIRST-GREEN the flip-trigger exists to report.
+test("LIVE — the flip-trigger is GREEN, and the two flagship writers are handled (not silently dropped)", () => {
   const res = scan();
-  const rels = relOf(res);
-  // These are DEFERRED to the release ceremony by design (build-spec "DEFER to the RELEASE CEREMONY"),
-  // so this enforcer is EXPECTED RED right now. What must never happen is a FALSE GREEN on them.
-  assert.ok(rels.includes(".claude/commands/commit/land.md"), "#4 commit/land.md must be recognized (the FOLD-1 grounding case)");
-  assert.ok(rels.includes("scripts/warpos/release-canonical.js"), "#2 release-canonical.js stage 9 must be recognized");
-  assert.strictEqual(res.ok, false, "pre-ceremony the flip-trigger is EXPECTED RED — the fence must not be armed yet");
+  assert.strictEqual(res.ok, true, "post-ceremony-step-1 the flip-trigger must be GREEN — zero un-brokered main-writers remain");
+  assert.deepStrictEqual(relOf(res), [], "no violations may remain");
+
+  // #4 commit/land.md — ALLOWLISTED (doc-prose guidance, not an executable call-site), not silently "clean".
+  const land = res.allowlisted.find((a) => a.rel === ".claude/commands/commit/land.md");
+  assert.ok(land, "#4 commit/land.md must still be recognized by FOLD 1 and be visible as an ALLOWLIST decision, not vanish");
+  assert.strictEqual(land.status, "doc-prose");
+
+  // #2 release-canonical.js — every raw commit/merge/update-ref call-site is gone (migrated to the brokered
+  // transport); classifyFile therefore reports it writes.length===0. It still SELECTS main (mainLines>0),
+  // proving the recognizer still sees the file — it is genuinely clean, not a false negative.
+  const relCanon = classifyFile(path.resolve("scripts/warpos/release-canonical.js"), process.cwd());
+  assert.strictEqual(relCanon.writes.length, 0, "#2 release-canonical.js must have ZERO raw write call-sites left");
+  assert.ok(relCanon.mainLines.length > 0, "#2 release-canonical.js must still be recognized as main-selecting (not a scan miss)");
+  assert.match(
+    fs.readFileSync(path.resolve("scripts/warpos/release-canonical.js"), "utf8"),
+    /integrateBranchMerge/,
+    "#2 release-canonical.js must document routing through integrateBranchMerge (the brokered transport)",
+  );
 });
