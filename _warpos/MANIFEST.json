@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-22T02:02:31.932Z",
+  "generatedAt": "2026-07-22T02:03:41.700Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -4927,6 +4927,26 @@
       "class": "data"
     },
     "_docs/imports/roundtrip-skipped/roundtrip-skipped.answers.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "data"
+    },
+    "_docs/clones/.gitkeep": {
+      "owner": "project",
+      "managed": false,
+      "class": "data"
+    },
+    "_docs/clones/.provenance.json": {
+      "owner": "project",
+      "managed": false,
+      "class": "data"
+    },
+    "_docs/briefs/.gitkeep": {
+      "owner": "project",
+      "managed": false,
+      "class": "data"
+    },
+    "_docs/briefs/.provenance.json": {
       "owner": "project",
       "managed": false,
       "class": "data"
@@ -14559,6 +14579,14 @@
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
     },
+    ".claude/.agent-result-hashes.json": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/.last-checkpoint": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/framework-installed.json": {
       "owner": "generated",
       "managed": false,
@@ -16115,6 +16143,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260721-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260721-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -24618,6 +24654,30 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
+    ".claude/project/memory/beta-honesty-waivers.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/enforcement-debt.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/learnings.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/recurring-issues.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/systems.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/memory/traces.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -24714,7 +24774,31 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/maps/tools.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/maps/tools.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/events.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/events.jsonl.1": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/manager-consult.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/requirements.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/tools.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -24727,6 +24811,14 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/decisions/provider-trace.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -25103,6 +25195,18 @@
       "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
     },
     ".claude/dreams/2026-06-17.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "guide",
+      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
+    },
+    ".claude/dreams/2026-07-18.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "guide",
+      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
+    },
+    ".claude/dreams/2026-07-20.md": {
       "owner": "project",
       "managed": false,
       "class": "guide",
@@ -27686,6 +27790,11 @@
       "sha256": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012",
       "installedSha": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012"
     },
+    ".claude/agents/president/_system/gamma/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
+    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -27693,6 +27802,11 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
+    },
+    ".claude/agents/president/_system/beta/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -27717,6 +27831,11 @@
       "kind": "md",
       "sha256": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f",
       "installedSha": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f"
+    },
+    ".claude/agents/president/_system/alpha/events.jsonl": {
+      "owner": "runtime",
+      "managed": false,
+      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",
