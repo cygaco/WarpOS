@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-21T23:27:37.122Z",
+  "generatedAt": "2026-07-22T01:04:47.208Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "0.17.0",
   "migrations": [],
@@ -10448,12 +10448,19 @@
       "sha256": "e9cdde0b3c094961490ba18eba7fcbf458f2d1b52ba585b347b7890a12857ffe",
       "installedSha": "e9cdde0b3c094961490ba18eba7fcbf458f2d1b52ba585b347b7890a12857ffe"
     },
+    "scripts/warpos/release-canonical-preland-refresh.tooth.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/warpos/release-canonical-preland-refresh.tooth.test.js",
+      "sha256": "0ec968df2993b818ca0c8b45bf472c51f7ccadc2003c241a5239e36e28843a80",
+      "installedSha": "0ec968df2993b818ca0c8b45bf472c51f7ccadc2003c241a5239e36e28843a80"
+    },
     "scripts/warpos/release-canonical.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-canonical.js",
-      "sha256": "ef8cdc2aaa67e1eef3c8dd383692769863c8c1a7caa2b798c086e9a05d868f3a",
-      "installedSha": "ef8cdc2aaa67e1eef3c8dd383692769863c8c1a7caa2b798c086e9a05d868f3a"
+      "sha256": "623c29edde3e4c616f3d7a71d759aff7d33b0afe07aa5d88a595f0a4b01bba40",
+      "installedSha": "623c29edde3e4c616f3d7a71d759aff7d33b0afe07aa5d88a595f0a4b01bba40"
     },
     "scripts/warpos/release-gates.js": {
       "owner": "framework",
@@ -14582,15 +14589,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/main-write-broker-completeness.js",
-      "sha256": "8fe21ce39ae0ccb33fdb0bc1c4913f6f84b10166557235bab784a4fd8f351605",
-      "installedSha": "8fe21ce39ae0ccb33fdb0bc1c4913f6f84b10166557235bab784a4fd8f351605"
+      "sha256": "a3b2906ec56cc7b7e7b79cccebe0e554d67dae6f7cfbbbfe4160c4f58423132d",
+      "installedSha": "a3b2906ec56cc7b7e7b79cccebe0e554d67dae6f7cfbbbfe4160c4f58423132d"
     },
     "scripts/checks/main-write-broker-completeness.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/main-write-broker-completeness.test.js",
-      "sha256": "7f154bb720ba0870aa0498beaaf17a4b0cb9c1f73b9c143559e1c7af844c8e80",
-      "installedSha": "7f154bb720ba0870aa0498beaaf17a4b0cb9c1f73b9c143559e1c7af844c8e80"
+      "sha256": "e444ed737e64ed12eb4a110163d20528c07589d8d3ec6a5ebb7ba826c1d534bd",
+      "installedSha": "e444ed737e64ed12eb4a110163d20528c07589d8d3ec6a5ebb7ba826c1d534bd"
     },
     "scripts/checks/manager-principles-scan.js": {
       "owner": "framework",

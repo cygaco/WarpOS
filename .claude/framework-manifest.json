@@ -13,7 +13,7 @@
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
-    "warpos_script": 64,
+    "warpos_script": 65,
     "check_tool": 177,
     "agent_tool": 3,
     "decision_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 4
   },
-  "total": 1668,
+  "total": 1669,
   "assets": {
     "agent": [
       {
@@ -7401,11 +7401,23 @@
         "replaces": null
       },
       {
+        "id": "warpos_script.release-canonical-preland-refresh.tooth.test.js",
+        "src": "scripts/warpos/release-canonical-preland-refresh.tooth.test.js",
+        "dest": "scripts/warpos/release-canonical-preland-refresh.tooth.test.js",
+        "kind": "warpos_script",
+        "sha256": "0ec968df2993b818ca0c8b45bf472c51f7ccadc2003c241a5239e36e28843a80",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "warpos_script.release-canonical.js",
         "src": "scripts/warpos/release-canonical.js",
         "dest": "scripts/warpos/release-canonical.js",
         "kind": "warpos_script",
-        "sha256": "ef8cdc2aaa67e1eef3c8dd383692769863c8c1a7caa2b798c086e9a05d868f3a",
+        "sha256": "623c29edde3e4c616f3d7a71d759aff7d33b0afe07aa5d88a595f0a4b01bba40",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8811,7 +8823,7 @@
         "src": "scripts/checks/main-write-broker-completeness.js",
         "dest": "scripts/checks/main-write-broker-completeness.js",
         "kind": "check_tool",
-        "sha256": "8fe21ce39ae0ccb33fdb0bc1c4913f6f84b10166557235bab784a4fd8f351605",
+        "sha256": "a3b2906ec56cc7b7e7b79cccebe0e554d67dae6f7cfbbbfe4160c4f58423132d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8823,7 +8835,7 @@
         "src": "scripts/checks/main-write-broker-completeness.test.js",
         "dest": "scripts/checks/main-write-broker-completeness.test.js",
         "kind": "check_tool",
-        "sha256": "7f154bb720ba0870aa0498beaaf17a4b0cb9c1f73b9c143559e1c7af844c8e80",
+        "sha256": "e444ed737e64ed12eb4a110163d20528c07589d8d3ec6a5ebb7ba826c1d534bd",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
