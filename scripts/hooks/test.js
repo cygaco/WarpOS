@@ -6,6 +6,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -135,7 +136,15 @@ function discover() {
   return {
     $schema: "warpos/hook-manifest/v1",
     generatedFrom: ".claude/settings.json",
-    updatedAt: new Date().toISOString(),
+    // Content-derived, never wall-clock — same determinism contract as
+    // build.js#updatedAt (GATE-B 3c): regen == copy on identical sources.
+    updatedAt:
+      "sha256:" +
+      crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(SETTINGS))
+        .digest("hex")
+        .slice(0, 16),
     hooks,
   };
 }

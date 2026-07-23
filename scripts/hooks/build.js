@@ -27,6 +27,7 @@
  */
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const REGISTRY_FILE = path.join(ROOT, "framework", "hooks.registry.json");
@@ -81,13 +82,21 @@ function buildHookManifest(registry) {
       enabled: h.enabled !== false,
     };
   }
-  // updatedAt is derived from the registry's mtime, NOT Date.now(), so
-  // back-to-back build runs produce identical output and `--check` does
-  // not flap. (Date.now() in the manifest made every check stale because
-  // the timestamp moved between writes.)
+  // updatedAt is derived from the registry CONTENT (sha256), NOT Date.now()
+  // and NOT fs mtime: wall-clock made every `--check` flap, and mtime was
+  // still fs-state-dependent — an upgrade-time in-target regen byte-diverged
+  // from fresh-install's verbatim copy of the same sources (GATE-B 3c,
+  // caught at the 1.1.0 mint). Content-derived means regen == copy whenever
+  // the sources match, on any machine at any time.
   let updatedAt = null;
   try {
-    updatedAt = fs.statSync(REGISTRY_FILE).mtime.toISOString();
+    updatedAt =
+      "sha256:" +
+      crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(REGISTRY_FILE))
+        .digest("hex")
+        .slice(0, 16);
   } catch {
     /* fall through */
   }
