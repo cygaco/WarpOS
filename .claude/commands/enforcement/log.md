@@ -36,7 +36,7 @@ If any required field is missing from the natural-language input, ask once for t
 ## Steps
 
 1. Resolve `paths.enforcementDebt` (`.claude/project/memory/enforcement-debt.jsonl`). If the file does not exist, create it empty.
-2. Count existing lines to determine the next `ED-NNN` id (zero-padded to 3 digits).
+2. Get the next id by running `node scripts/enforcement/next-ed-id.js` (prints `ED-NNN` = the true max existing ED id + 1, malformed-line-safe). Do **NOT** count lines — append-only closure/amendment rows inflate the line count above the id count, so line-count minting re-issues a live id (ED-267b: the register is 141 lines but the max id is ED-269). The genesis-keyed `scripts/enforcement/ed-dup-id-lint.js` (in `/scan:full`) is the backstop if a collision slips in anyway.
 3. Build the record. Required keys: `id`, `ts` (ISO 8601 UTC), `policy`, `source`, `severity`, `status: "open"`. Optional: `missing_enforcer`, `candidate_enforcers` (array), `note`.
 4. Append the JSON record as a single line to `paths.enforcementDebt`.
 5. Echo back: `Logged ED-NNN. Policy: <short summary>. Severity: <s>. Status: open.`
