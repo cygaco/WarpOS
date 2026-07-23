@@ -51,7 +51,10 @@ function stripQuotedAndComments(s) {
   return String(s)
     .replace(/"(?:[^"\\]|\\.)*"/g, '""')
     .replace(/'(?:[^'\\]|\\.)*'/g, "''")
-    .replace(/#.*$/, "");
+    // Only a SYNTACTIC comment marker starts a comment: a `#` at line-start OR whitespace-preceded (qa/
+    // backend r2 — an UNQUOTED mid-word `#` like `out#tag` is LITERAL in shell, and `\#` is escaped). A
+    // mid-word `#` (preceded by a non-space, non-`\`) is kept so `| tee out#tag && next` still matches.
+    .replace(/(^|\s)#.*$/, "$1");
 }
 
 /**

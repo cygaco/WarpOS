@@ -77,27 +77,28 @@ function analyze({ betaText, eventsText }) {
   const dups = duplicateKeys(rows, (r) => (typeof r.msg_id === "string" && r.msg_id ? r.msg_id : null));
   const missingMsgId = rows.filter((r) => !(typeof r.msg_id === "string" && r.msg_id)).length;
   let unresolved = [];
-  let resolutionSkipped = false;
-  if (eventsText == null) {
-    resolutionSkipped = true; // message log unreachable -> fail-open advisory (β rider #2)
+  let resolutionSkipped = false; // report-only fail-open (β rider #2) when the log isn't the message log
+  let lowConfidence = false;
+  const logUnreachable = eventsText == null;
+  if (logUnreachable) {
+    resolutionSkipped = true; // truly no log — fail-open in BOTH modes (nothing to check against)
   } else {
     const msgIds = extractMsgIds(eventsText); // EXACT-match set (not substring — qa r2 #4 / security r2 #3)
     const withId = rows.map((r) => r.msg_id).filter((id) => typeof id === "string" && id);
     const notFound = withId.filter((id) => !msgIds.has(id));
     const resolvedFraction = withId.length ? (withId.length - notFound.length) / withId.length : 1;
-    // Fail-open heuristic (β rider #2 generalized): a REAL SendMessage log resolves ~every delivered
-    // msg_id. If the candidate log resolves a LOW fraction (< THRESHOLD), it is NOT the message log (e.g.
-    // paths.eventsFile logs a TRUNCATED preview, not full UUIDs) — treat it as unreachable and
-    // SKIP-with-note rather than emit a wall of false "unresolved". Only a log that resolves a strong
-    // majority is trusted as authoritative, and then the specific few missing are flagged.
+    // A REAL SendMessage log resolves ~every delivered msg_id; a LOW fraction (< THRESHOLD) means the
+    // candidate log is NOT the message log (e.g. paths.eventsFile logs a TRUNCATED preview, not full
+    // UUIDs). security r2 #3: `unresolved` is ALWAYS the full notFound set — NEVER zeroed on low
+    // confidence (zeroing let an attacker fabricate >20% rows to push resolution <80% and skip the whole
+    // check under --enforce). low confidence only SKIPS the REPORT-ONLY advisory (avoid the truncated-log
+    // noise); under --enforce the CLI fails CLOSED on any unresolved (reachable log), never on skip alone.
     const THRESHOLD = 0.8;
-    if (withId.length > 0 && resolvedFraction < THRESHOLD) {
-      resolutionSkipped = true;
-    } else {
-      unresolved = notFound;
-    }
+    lowConfidence = withId.length > 0 && resolvedFraction < THRESHOLD;
+    unresolved = notFound;
+    resolutionSkipped = lowConfidence; // report-only advisory skips; enforce does NOT (uses unresolved)
   }
-  return { skipped: false, dupMsgIds: dups.map((d) => d.key), missingMsgId, unresolved, resolutionSkipped };
+  return { skipped: false, dupMsgIds: dups.map((d) => d.key), missingMsgId, unresolved, resolutionSkipped, lowConfidence, logUnreachable };
 }
 
 if (require.main === module) {
@@ -116,20 +117,22 @@ if (require.main === module) {
   try { eventsText = fs.readFileSync(events, "utf8"); } catch { eventsText = null; }
 
   const res = analyze({ betaText, eventsText });
+  // Under --enforce: a DEDUP finding blocks; and ANY unresolved verdict row blocks when the log is
+  // REACHABLE (security r2 #3 — low confidence must NOT be an escape hatch: fabricating >20% rows to push
+  // resolution <80% used to skip the whole check). Only a TRULY UNREACHABLE eventsText fails open under
+  // enforce. In report-only, low-confidence still skips the unresolved advisory (avoid the truncated-log noise).
+  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.logUnreachable && res.unresolved.length > 0));
+  const showUnresolved = res.unresolved.length > 0 && (blocking || !res.resolutionSkipped);
   const lines = [];
   if (res.dupMsgIds.length) lines.push(`  DUPLICATE msg_id on >1 verdict row (a delivery logged twice): ${res.dupMsgIds.join(", ")}`);
   if (res.missingMsgId) lines.push(`  ${res.missingMsgId} verdict row(s) carry NO msg_id (advisory — β should stamp its delivery msg_id).`);
-  if (res.resolutionSkipped) lines.push("  msg_id-resolution: SKIPPED — message log unreachable (fail-open advisory).");
-  else if (res.unresolved.length) lines.push(`  msg_id(s) not resolving in the message log (advisory): ${res.unresolved.join(", ")}`);
+  if (showUnresolved) lines.push(`  ${res.unresolved.length} msg_id(s) not resolving in the message log${res.lowConfidence ? " (LOW-confidence log — under --enforce this fails closed)" : " (advisory)"}: ${res.unresolved.join(", ")}`);
+  else if (res.resolutionSkipped) lines.push(`  msg_id-resolution: SKIPPED (report-only) — ${res.logUnreachable ? "message log unreachable" : "low-confidence log (<80% resolve, likely a truncated preview)"} (fail-open advisory).`);
 
   if (!lines.length) {
     console.log("betaevents-dedup-lint: OK — no duplicate verdict msg_id; all msg_ids resolve.");
     process.exit(0);
   }
-  // Under --enforce: a DEDUP finding blocks; and when the resolution check is ACTIVE (the log is trusted,
-  // not <80%-skipped), an UNRESOLVED verdict row is a fabricated/unverifiable row and blocks too (security
-  // r2 #3). The resolution-skipped path (untrusted/unreachable log) NEVER blocks (β rider #2 fail-open).
-  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.resolutionSkipped && res.unresolved.length > 0));
   console[blocking ? "error" : "log"](`betaevents-dedup-lint: ${blocking ? "FAIL" : "findings (report-only)"}:`);
   for (const l of lines) console[blocking ? "error" : "log"](l);
   process.exit(blocking ? 1 : 0);

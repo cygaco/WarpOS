@@ -77,6 +77,14 @@ t("backend r2 #8: a `;`/`&&` inside a trailing # comment -> GREEN (comment strip
   assert.deepStrictEqual(scanText(fenced("node gate.js | tail -1   # note: use ; or && carefully")), []);
 });
 
+t("qa/backend r2 (literal #): mid-word `| tee out#tag && next` -> RED (the # is literal, not a comment)", () => {
+  assert.strictEqual(scanText(fenced("false | tee /tmp/result#literal && node next.js")).length, 1);
+});
+
+t("qa/backend r2 (escaped #): `| tee out\\#tag && next` -> RED (\\# is a literal #, tail kept)", () => {
+  assert.strictEqual(scanText(fenced("false | tee out\\#tag && node next.js")).length, 1);
+});
+
 t("multiple offending lines in one block -> all flagged", () => {
   const md = fenced("node a.js | tail && b", "clean.js && c", "node d.js | head -1 ; e");
   assert.strictEqual(scanText(md).length, 2);

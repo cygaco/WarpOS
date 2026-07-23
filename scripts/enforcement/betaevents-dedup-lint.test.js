@@ -80,14 +80,16 @@ t("strong-majority resolve + one missing -> the missing one is flagged (log prov
   assert.strictEqual(r.resolutionSkipped, false);
 });
 
-t("LOW resolution rate -> resolution SKIPPED (log isn't the SendMessage log; fail-open, no noise)", () => {
-  // Only 1 of 5 resolves (20%) -> the candidate log isn't the message log (e.g. truncated-preview
-  // events.jsonl) -> skip-with-note rather than emit 4 false "unresolved".
+t("security r2 #3: LOW resolution -> report-only SKIPS the advisory BUT unresolved SURVIVES (enforce fails closed)", () => {
+  // 1 of 5 resolves (20%) -> low confidence. In report-only the advisory is skipped (truncated-log noise),
+  // BUT unresolved is NOT zeroed — so --enforce fails closed on the fabricated-row swamp (the r1 hole).
   const ids = ["zqa1", "zqb2", "zqc3", "zqd4", "onlyoneresolves"];
   const beta = ids.map((id) => row({ decision: "DECIDE", sprint: "SP-1", boundary: id, msg_id: id })).join("\n");
-  const r = analyze({ betaText: beta, eventsText: "the log only contains onlyoneresolves and nothing else matching" });
-  assert.strictEqual(r.resolutionSkipped, true, JSON.stringify(r));
-  assert.deepStrictEqual(r.unresolved, []);
+  const r = analyze({ betaText: beta, eventsText: '{"msg_id":"onlyoneresolves"}' });
+  assert.strictEqual(r.lowConfidence, true, JSON.stringify(r));
+  assert.strictEqual(r.resolutionSkipped, true, "report-only skips the advisory");
+  assert.strictEqual(r.logUnreachable, false);
+  assert.strictEqual(r.unresolved.length, 4, "the 4 unresolved must SURVIVE for --enforce to fail closed: " + JSON.stringify(r));
 });
 
 t("msg_id present in the message log -> resolved", () => {

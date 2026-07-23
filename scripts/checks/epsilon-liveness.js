@@ -162,11 +162,12 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
  * session kept hitting). No resolvable artifact ⇒ flag idle-with-outstanding-dispatch-no-waiter.
  */
 function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 * 1000, artifactProduced, isVerified } = {}) {
-  // Completion suppression must be a REAL, VERIFIED completion (security r2 #1): parity with the primary
-  // evaluate() (signature-verified). Default to the real verifier; tests inject a mock.
+  // Success suppression requires a VERIFIED completion — ALWAYS require a signature (QA-R2-001: the
+  // WARPOS_LIVENESS_REQUIRE_SIG=0 runtime env is a settable unsigned-record opt-out that reopened the
+  // hole; test-injection via the isVerified param is the ONLY bypass, never an ambient env flag).
   const verify = typeof isVerified === "function"
     ? isVerified
-    : (r) => isVerifiedLivenessRecord(r, { requireSignature: process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0" });
+    : (r) => isVerifiedLivenessRecord(r, { requireSignature: true });
   const byId = new Map();
   for (const r of records || []) {
     if (!r || !r.dispatch_id) continue;
@@ -177,15 +178,17 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
   for (const [dispatchId, rows] of byId) {
     const started = rows.find((r) => r.phase === "started");
     if (!started) continue;
-    // backend r2 #4: ONLY a BACKGROUND / waiter-required dispatch is subject to the paired-waiter
-    // protocol — a foreground stale started row (a synchronous dispatch that reaped) must NOT false-flag
-    // as an outstanding bg dispatch. Evaluate only rows that explicitly declare themselves background.
-    if (started.background !== true && started.waiter_required !== true) continue;
-    // A completion suppresses the finding ONLY if it is phase:"completion" AND ok:true AND VERIFIED —
-    // an unsigned / non-completion ok:true row must NOT suppress (security r2 #1: forged-row suppression).
-    // liveness-verified: `verify()` routes the ok:true read through isVerifiedLivenessRecord (its default;
+    // SCOPE FROM LEDGER STATE, not a row-settable opt-in field (security r2 #4 / DoE design-lock:
+    // `background`/`waiter_required` were stamped by NO production writer → the check was inert on 103/103
+    // real started rows). OUTSTANDING = a started row with NO terminal completion. A terminal completion
+    // means the wrapper LIVED to write it → not a stall: an honest ok:FALSE death suppresses unconditionally
+    // (backend r2 #4 — a handled foreground reap writes its death record), while a SUCCESS (ok:true) must be
+    // VERIFIED (security r2 #1: an unsigned ok:true could be forged to hide a stall). Started-with-NO-terminal
+    // is the WG-6 / T-322 kill-before-record stall — the case this check exists to catch.
+    // liveness-verified: `verify()` routes the ok:true read through isVerifiedLivenessRecord (default;
     // a test may inject a mock) — origin-proof verified, parity with the primary evaluate() (choke-point).
-    if (rows.some((r) => r.phase === "completion" && r.ok === true && verify(r))) continue;
+    const terminated = rows.some((r) => r.phase === "completion" && (r.ok === false || (r.ok === true && verify(r))));
+    if (terminated) continue;
     const startedMs = Date.parse(started.started_at || "") || 0;
     if (!startedMs) continue;
     const age = nowMs - startedMs;
@@ -198,12 +201,12 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     const produced = !!(artifactPath && typeof artifactProduced === "function" && artifactProduced(artifactPath, startedMs));
     if (produced) continue;
     findings.push({
-      type: "outstanding-dispatch-no-waiter",
+      type: "outstanding-dispatch-no-terminal",
       dispatch_id: dispatchId,
       role: started.role || null,
       reason: artifactPath
-        ? `outstanding bg dispatch aged ${Math.round(age / 60000)}m: artifact_path '${artifactPath}' is not a real non-empty file produced after start — a reaped dispatch records a path but produces nothing (β settable-label close)`
-        : `outstanding bg dispatch aged ${Math.round(age / 60000)}m recorded NO artifact_path (expected_artifact/aliases are intent, not proof) — the paired-waiter envelope is incomplete`,
+        ? `outstanding dispatch aged ${Math.round(age / 60000)}m with NO terminal completion record, and artifact_path '${artifactPath}' is not a real non-empty file produced after start — probable WG-6 stall / kill-before-record (T-322)`
+        : `outstanding dispatch aged ${Math.round(age / 60000)}m with NO terminal completion record (no ok:false death, no verified ok:true) and no produced artifact — probable WG-6 stall / kill-before-record (T-322)`,
     });
   }
   return { findings };
@@ -217,7 +220,7 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
  */
 function artifactProducedFs(p, startedMs) {
   try {
-    const st = fs.statSync(p);
+    const st = fs.lstatSync(p); // lstat (not stat): a SYMLINK to a concurrently-written file must NOT spoof
     return st.isFile() && st.size > 0 && st.mtimeMs >= (typeof startedMs === "number" ? startedMs : 0);
   } catch {
     return false;
