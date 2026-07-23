@@ -21,11 +21,13 @@
 
 // These fixtures inject UNSIGNED synthetic ledger records to exercise the stall-DETECTION MATCHING logic
 // (sha256 + filename fallback), so they opt out of the SP-20260718-004 same-session signature requirement
-// (WARPOS_LIVENESS_REQUIRE_SIG=0). The signature gate itself is covered by the verified-liveness-read suite.
-process.env.WARPOS_LIVENESS_REQUIRE_SIG = "0";
+// via TEST-INJECTION (requireSignature:false) — NOT the old ambient WARPOS_LIVENESS_REQUIRE_SIG=0 runtime
+// env, which was killed (hunter r3 #2: an ambient-env unsigned opt-out is a settable-label false-green).
+// The signature gate itself is covered by the verified-liveness-read suite.
 const crypto = require("crypto");
 const { harness } = require("./lib/fixture-harness");
-const { evaluate } = require("./epsilon-liveness");
+const { evaluate: _evaluate } = require("./epsilon-liveness");
+const evaluate = (args) => _evaluate({ requireSignature: false, ...args });
 
 const h = harness("epsilon-liveness");
 

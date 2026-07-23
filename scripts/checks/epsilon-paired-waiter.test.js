@@ -24,7 +24,9 @@ const NOW = Date.parse("2026-07-23T08:00:00.000Z");
 const STALE = 10 * 60 * 1000;
 const min = (m) => new Date(NOW - m * 60 * 1000).toISOString();
 const started = (o) => ({ phase: "started", ok: false, dispatch_id: o.id, role: o.role || "backend-builder", started_at: o.at, ...o.extra });
-const completion = (id, ok, extra) => ({ phase: "completion", ok, dispatch_id: id, role: "backend-builder", completed_at: min(20), ...extra });
+// A REAL production completion record: recordCompletion stamps NO `phase` field, HAS completed_at
+// (hunter r3 — the earlier fabricated phase:"completion" masked the over-fire on the real shape).
+const completion = (id, ok, extra) => ({ ok, dispatch_id: id, role: "backend-builder", provider: "openai", completed_at: min(20), ...extra });
 const verifyAll = () => true;
 const verifyNone = () => false;
 const producedOnly = (real) => (p) => p === real;
@@ -118,6 +120,15 @@ t("INTEGRATION (DoE): a REAL startedRow (production shape) stale + no terminal -
   assert.strictEqual(realRow.artifact_path, undefined);
   const r = evaluatePairedWaiter({ records: [realRow], nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyNone });
   assert.strictEqual(r.findings.length, 1, "must fire on the real writer shape: " + JSON.stringify(r));
+});
+
+t("hunter r3 OVER-FIRE regression: REAL startedRow + REAL completion shape (no phase) -> NOT flagged", () => {
+  // The r3 bug: `terminated` keyed on phase:"completion" which recordCompletion never stamps → a completed
+  // dispatch over-fired as a stall. The real completion has NO phase + HAS completed_at.
+  const realRow = startedRow({ role: "backend-reviewer", provider: "openai", dispatch_id: "ddone", started_at: min(30) });
+  const realCompletion = { ok: true, dispatch_id: "ddone", role: "backend-reviewer", provider: "openai", completed_at: min(20) }; // NO phase field
+  const r = evaluatePairedWaiter({ records: [realRow, realCompletion], nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.deepStrictEqual(r.findings, [], "a completed+verified dispatch must NOT over-fire as a stall: " + JSON.stringify(r));
 });
 
 // ── artifactProducedFs (real filesystem resolver, incl. ED-270 lstat) ─────────────────────────────────

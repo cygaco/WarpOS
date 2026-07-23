@@ -31,6 +31,7 @@
 
 const fs = require("fs");
 const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
+const { isStartedRow } = require("../dispatch/dispatch-record-fields");
 const path = require("path");
 const crypto = require("crypto");
 
@@ -71,7 +72,7 @@ const JSON_OUT = process.argv.includes("--json");
  *   Reference "now" in milliseconds (enables deterministic tests via --now).
  * @returns {{ ok:boolean, findings:Array, malformedLines:number, ledgerUnreadable:boolean }}
  */
-function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
+function evaluate({ evidenceFiles, ledgerLines, nowMs, requireSignature = true }) {
   // Fail-closed: unreadable ledger + evidence present = cannot confirm completions.
   if (ledgerLines === null && evidenceFiles.length > 0) {
     return {
@@ -122,8 +123,10 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
 
     // Primary: sha256-based match — the ledger records evidence_sha for in-process spawns. The matching
     // record must be a VERIFIED liveness record (SP-20260718-004 R4 same-session choke-point) — a forged
-    // ok:true record can't hide a stall. Default-on (WARPOS_LIVENESS_REQUIRE_SIG=0 for the fixture tests).
-    const _reqSig = process.env.WARPOS_LIVENESS_REQUIRE_SIG !== "0";
+    // ok:true record can't hide a stall. requireSignature is an INJECTED param (default true) — the old
+    // ambient WARPOS_LIVENESS_REQUIRE_SIG=0 runtime env was a settable unsigned-record opt-out (hunter r3
+    // #2: reachable false-green in this evidence-file path); test-injection is now the only bypass.
+    const _reqSig = requireSignature;
     const shaMatch = records.find(
       (r) => r.evidence_sha === ef.sha256 && isVerifiedLivenessRecord(r, { requireSignature: _reqSig }),
     );
@@ -187,7 +190,14 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     // is the WG-6 / T-322 kill-before-record stall — the case this check exists to catch.
     // liveness-verified: `verify()` routes the ok:true read through isVerifiedLivenessRecord (default;
     // a test may inject a mock) — origin-proof verified, parity with the primary evaluate() (choke-point).
-    const terminated = rows.some((r) => r.phase === "completion" && (r.ok === false || (r.ok === true && verify(r))));
+    // A TERMINAL completion matches the REAL production writer shape (hunter r3 HIGH): recordCompletion
+    // stamps NO `phase` field — a completion is a NON-started row (isStartedRow false) with `completed_at`
+    // (the startedRowSuperseded predicate), NOT `phase:"completion"` (which no producer emits, so keying
+    // on it over-fired on every completed dispatch). An ok:FALSE death suppresses unconditionally; a
+    // SUCCESS (ok:true) only when VERIFIED.
+    const terminated = rows.some(
+      (r) => !isStartedRow(r) && typeof r.completed_at !== "undefined" && (r.ok === false || (r.ok === true && verify(r))),
+    );
     if (terminated) continue;
     const startedMs = Date.parse(started.started_at || "") || 0;
     if (!startedMs) continue;
