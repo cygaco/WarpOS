@@ -322,6 +322,26 @@ try {
 }
 if (!promptStr.trim()) usage("Empty prompt.");
 
+// ── ED-257: builder right-sizing heuristic — WARN by default, BLOCK only under WARPOS_BUILDER_SIZE_ENFORCE.
+// A build-chain prompt implying a >15-min unit reaps read-only with zero diff (SP-20260721-002 monolith).
+try {
+  const { assessBuilderPrompt, enforceEnabled, ENFORCE_ENV } = require("./enforcement/builder-right-size");
+  const a = assessBuilderPrompt({
+    role,
+    promptBytes: Buffer.byteLength(promptStr, "utf8"),
+    isBuildChain: BUILD_CHAIN_ROLES.has(role),
+    enforce: enforceEnabled(process.env),
+  });
+  if (a.level === "warn") {
+    process.stderr.write(`[dispatch-claude] WARN (ED-257 right-sizing): ${a.reason}\n`);
+  } else if (a.level === "block") {
+    process.stderr.write(`[dispatch-claude] BLOCKED (ED-257 right-sizing, ${ENFORCE_ENV} set): ${a.reason}\n`);
+    process.exit(2);
+  }
+} catch {
+  /* right-sizing heuristic module unavailable — non-fatal (never break dispatch on the advisory) */
+}
+
 // ── Derived role binding + worker-identity neutralization (SP-20260718-004 Phase 2, G2.1 + G2.4) ──
 // Derive the worker's binding from the CHANNEL (this bridge) PRE-SPAWN — the worker does not exist yet,
 // so it cannot forge its actor_kind. (1) REFUSE the President-leak class fail-closed (CORE-1). (2) For a
