@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-22T22:37:10.228Z",
+  "generatedAt": "2026-07-23T01:34:35.572Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -27885,8 +27885,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "0742b5e6a8142fd8b4b23b8d56e762bba3a910cac9009c538ea2557f48589e2f",
-      "installedSha": "0742b5e6a8142fd8b4b23b8d56e762bba3a910cac9009c538ea2557f48589e2f"
+      "sha256": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524",
+      "installedSha": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",

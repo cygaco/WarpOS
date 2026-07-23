@@ -561,3 +561,53 @@ than pruning.
 - **β side:** staging-only per task scope — the new 2026-07-21→22 cycle (P-081..P-084 / AP-13 / G-24 / DP-gap #43 + the phase-boundary confidence extension) is STAGED in `judgement-model-recommendations.md`; **0 applied** to `judgement-model.md`.
 - **Learnings side:** **0 applied / 5 deferred.** The 5 fresh learnings are status-less/unscored (below the `/learn:integrate` `validated` + score≥0.7 bar) and each is behavioral/design doctrine or needs a code enforcer + operator action (e.g. classifier-frames → operator runs the hook-install at release-session start) → all left staged, none auto-integrated.
 - **Already-landed (verified, NOT duplicated):** the session's big integrations are live on 2026-07-21 — `c1076e71` (paired-waiter + builder right-sizing doctrine) + `333e4ace` (ledger-discipline addendum) + `29c984ed` (CLAUDE.md pipe-masks-gate-exit rule). Confirmed present via git log; no re-integration attempted.
+
+# Sleep Journal — 2026-07-23 (QUICK nap — NREM consolidation only; post WarpOS **1.0 ceremony**: fence flip + GATE-B honesty loop + `warpos@1.0.0` release + GATE-A enforce flip)
+
+*`/session:end` cognitive-consolidation pass for the 2026-07-22→23 "1.0 ceremony" session, run by the delegated CONSOLIDATOR on behalf of α (precedent: the 2026-07-21 session's delegated consolidator). NREM depth only (Phases 1–2), not the full 6-phase deep cycle. Constraint-bound: read-before-write, append-only on the jsonl ledgers (learnings NOT rewritten — importance classified here in-journal), nothing deleted, no git commits, and NO hooks/CLAUDE.md/agent-spec edits (α reserves fold-ins — see Integration Proposals below).*
+
+## NREM Consolidation
+- Learnings: **146 → 156** (10 new ceremony-EXECUTION learnings at the tail, dated **2026-07-23**, source-tag **`1.0-ceremony`**; 0 pruned, 0 merged). Store far under the 1000 max → bias to keep. The 10 are status-less/unscored raw conversation-source — NOT self-rated or promoted here (promotion needs validation evidence, per the skill).
+- **Dedup / conflict: 0 duplicates, 0 conflicts.** Checked against the 5 prior 2026-07-22 entries (TERMINAL-CALL / merge-discipline / gate-design-oracle / ledger-discipline / classifier-frames). Only overlap: L9 **EXTENDS** the 2026-07-22 classifier-frames entry — it is NOT a dup, it adds the *operator one-liner cadence* (exhaust agent-frame prep → surface ONE one-liner → agents absorb) + the *transient-Stage-2-error-is-retryable* nuance; phrased explicitly as an extension.
+- **Importance audit (classified inline; ledger lines untouched):**
+  - **HIGH — L1 pipe-masks-gate-exit (repeat offender, 3× in one session)**: the CLAUDE.md rule (29c984ed) did NOT stop it — behavioral rule alone is insufficient. The single strongest enforcer-promotion candidate this arc.
+  - **HIGH — L4 gates-got-honest (full false-green/false-red taxonomy)** + **L2 verify-the-active-artifact**: the GATE-B honesty loop's spine; green is necessary-not-sufficient, prove the tooth is reachable, byte-read the ACTIVE artifact.
+  - **HIGH — L7 the fence proved BOTH directions in production**: defense-in-depth validated exactly as designed (broker degraded → fallback tried → runtime fence REFUSED an un-brokered merge); the refusal was the payoff.
+  - **HIGH — L6 β self-correction culture**: β reversed itself ≥4× on evidence; verify-don't-inherit applied to VERDICTS, not just trackers, is what made the loop converge.
+  - **MEDIUM — L3 forked/divergent-generators** (3 instances; unify-now-vs-defer + grep-for-a-third), **L5 ownership-discriminator** (framework-owned-generated reconverges vs project-owned-config persists), **L8 capsule-re-cut + single-apply control**, **L9 classifier one-liner cadence**, **L10 bg-task rc discipline**.
+- Decay (SHY): **0 entries** hit the 14d/21d stale thresholds (all fresh); nothing removed.
+
+### The night, consolidated — three load-bearing themes
+1. **The GATE-B honesty loop.** Stage-7/GATE-B exercised the FULL false-green/false-red taxonomy in one arc: 3 false-RED gates narrowed to declared intent (each with a tooth-still-bites proof), 2 lying-gate shapes rejected (bind-while-red-on-history; whole-file CONTENT_PRESERVE on convergence-signal files), dead-accept removal (accept-lists carry only LIVE accepts), an allowlist-fails-open flip candidate, a reachable-tooth restore (a CONTENT_PRESERVE short-circuit had SHADOWED the F3 tooth), and a diagnostic-lie fix (ED-262 blind slice(-400) named the wrong failing check, cost two triage detours). The through-line: **green is necessary, never sufficient — every gate must prove its tooth is REACHABLE and byte-read the ACTIVE artifact.**
+2. **The fence production proof.** The ADR-0032/0033/0035 reference-transaction fence — the sole-route runtime main-write fence — was FLIPPED to enforce and immediately proved both directions in production: Stage-9's degraded fallback (no bundle env in the operator's shell) attempted an ordinary merge and the ARMED fence REFUSED it (zero un-brokered writes), while brokered writes landed. The honest bar held via an explained outcome record. Residual: the broker receipt's `hook_active=false` honest-observation bug (ED-264) — the strict-hash scorer and the lenient name-token acceptor disagree on the bash-installed shim (the same forked-generator class).
+3. **β self-correction culture.** β corrected its OWN prior position ≥4× on evidence (armed-state fail-open miss; "regenerate all 4" store-wipe; "check 3 untouched" proxy; framework-installed "pure install-record" premise; "3 converge post-re-cut" _warpos-inventory), and ε corrected α twice + itself once (ED-249, unprompted). On an EXECUTION arc the health signal is NOT the (correctly 0) ESCALATE count — it is this in-band self-correction rate. Verify-don't-inherit, applied at consult grain, is what made the honesty loop converge instead of rubber-stamp.
+
+## Alex β Decision Review (part of NREM)
+- **~20 ceremony β verdict rows** (`beta/events.jsonl`, msg_ids **b088–b092**, `beta-ceremony-*` boundaries through `beta-ceremony-terminal-flip-go-b092`): **all DECIDE, 0 ESCALATE, 0 override.**
+- Health signal = β's **≥4 in-arc self-corrections** (see theme 3), plus the terminal `beta-ceremony-flip-final-go` with GATING post-flip self-verification (falsifier suite + un-brokered-refused + brokered-lands + rollback-immediately-never-half-armed). New maturation marker carried forward from last cycle: `verification_depth_split` (byte-verified-by-β vs attested-by-ε).
+- Confidence recommendation: **keep the reasoned-lane band as-is** — do NOT inflate from the all-DECIDE streak; the self-corrections, not the streak, are why the lane is healthy.
+- **CAVEAT (standing, unclosed): AP-1/P-043** — the *automated* `sprint_full_beta_consult` audit stream was again NOT re-checked; do NOT mark it resolved.
+
+## Cleanup (Glymphatic — report-only; no deletions, no git ops)
+- Released: **`warpos@1.0.0`** (main lineage `d975d05c → aec7120d → 7c718e34`, tag pushed, repo PUBLIC, `minUpgradeableFrom 0.1.2`). GATE-B caught **6 real defects pre-ship** (version restamp; generated-set regen un-gate + in-target fm; pathRegistryVersion hardcode; forked paths generator; install.ps1 manifest ordering) + surfaced the fence worktree fail-open (ED-261).
+- Enforcement debt filed this arc (all named-enforcer per policy-hygiene): **ED-259/260/263/264(+4 riders)/265/266**; **ED-249 + ED-262 RESOLVED** (amendments on disk). 51 historical beta-honesty findings **audited + count-pinned + waived**. ED-251 documented as a known-gap.
+- Untracked `runtime/ceremony/**` + `runtime/cert-attest/**` = per-run ceremony evidence (gitignored/kept). $0 metered spend; 4 operator one-liners ran the release chain.
+
+---
+
+## Integration Proposals (Phase 4 — recorded here only; NO hooks/CLAUDE.md/agent-spec edits, α reserves fold-ins)
+
+**Learnings → enforcement-promotion candidates (for `/learn:integrate`, ranked by leverage):**
+1. **HIGHEST — L1 pipe-masks-gate-exit → a shell-lint enforcer.** The behavioral CLAUDE.md rule (29c984ed) is proven insufficient (bit 3× in ONE session after landing). Promote to a mechanical **shell-lint over skill/doc/command blocks that flags `| tail` / `| head` after gate-shaped commands** (the enforcer candidate the CLAUDE.md rule itself names). Fold into the **ED-256/257/258 enforcer sprint**. This is the arc's single strongest promotion.
+2. **MEDIUM — L4/L2/P-089 reachable-tooth + verify-the-active-artifact → a gate meta-check.** The concrete win (a standing fence-falsifier release-gate) already LANDED via ED-264 sub-item (iii). The GENERAL bar — *every gate proves its tooth is REACHABLE via a positive-control fixture, and byte-reads the ACTIVE artifact* — is a candidate for a `scan:*` meta-check (composes with the existing `scan:sprint-beta-honesty` false-green lineage). Not yet enforced generally.
+3. **MEDIUM — L8 + ED-263 frozen-tag runtime-pollution → a release-cut gate** that REFUSES runtime-class/per-run paths from the shipped tag tree (the ED-263 trigger already specifies it). Pairs with L8's single-apply-on-clean-sandbox control (β made it a standing GATE-B regression).
+4. **DOCTRINE (not yet an enforcer) — L3/P-087 forked-generators.** The concrete unification is ED-264 riders (i)/(ii)/(renderer-unification-includes-receipt-hash-scorer); the "grep-for-a-THIRD-fork after unifying two" is a hygiene doctrine addition (candidate for the refactor-hygiene section α owns), not a standalone gate.
+
+**β recs → `/beta:integrate` next session (high-confidence, AUTO-INTEGRATABLE = compose existing principles, no NEW authority):**
+- **P-085** (verify-the-active-artifact), **P-088** (accept-lists carry only live accepts), **P-089** (green-necessary-not-sufficient / reachable-tooth) — verification-rigor bars composing P-055/P-081/P-083 + DP-gap #38. Auto-integratable.
+- **P-086** (ownership-discriminator) — auto-integratable as the HETEROGENEOUS-SET refinement of P-084's complete-the-class; NOTE the *named* ownership-discrimination CONTRACT (framework-owned-reconverge vs project-owned-preserve, both-way honesty) is ED-265(iii) ADR work (ADR-0035 sibling — operator/ADR grain, not a β-integrate).
+- **P-087** (unify-now-vs-defer) — extends P-058/P-059 (source-vs-generated + detector-scoping). Auto-integratable.
+- **Confidence adjustment** (keep the reasoned-lane band; the ≥4 self-corrections, not the all-DECIDE streak, are the health signal). Auto-integratable.
+- **HELD / do-NOT-auto-close: AP-1/P-043** — the automated `sprint_full_beta_consult` stream was never re-checked; closure waits on that separate check.
+
+---
