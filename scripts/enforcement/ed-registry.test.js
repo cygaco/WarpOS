@@ -48,10 +48,24 @@ t("nextEdId: malformed line skipped, never crashes/collides", () => {
 });
 
 // ── resolveRegisterText (backend 7C-001: ENOENT-only fail-closed) ─────────────────────────────────────
-t("7C-001: an ABSENT register (ENOENT) -> empty text (=> ED-001), not fail-closed", () => {
-  const read = () => { const e = new Error("no such file"); e.code = "ENOENT"; throw e; };
-  assert.strictEqual(resolveRegisterText("/nope", read), "");
-  assert.strictEqual(nextEdId(resolveRegisterText("/nope", read)), "ED-001");
+t("7C-001: an ABSENT register (ENOENT read + ENOENT lstat) -> empty text (=> ED-001), not fail-closed", () => {
+  const enoent = (m) => { const e = new Error(m); e.code = "ENOENT"; throw e; };
+  const read = () => enoent("no file"); const lstat = () => enoent("no path");
+  assert.strictEqual(resolveRegisterText("/nope", read, lstat), "");
+  assert.strictEqual(nextEdId(resolveRegisterText("/nope", read, lstat)), "ED-001");
+});
+
+t("7C-002: a DANGLING symlink (read ENOENT via follow, but lstat SUCCEEDS) -> fail-closed, NOT ED-001", () => {
+  const read = () => { const e = new Error("target absent"); e.code = "ENOENT"; throw e; };
+  const lstat = () => ({ isSymbolicLink: () => true }); // the link itself EXISTS (readFileSync followed it to an absent target)
+  assert.throws(() => resolveRegisterText("/dangling", read, lstat), (err) => err && err.failClosed === true,
+    "a dangling-symlink register path EXISTS -> must fail-closed, never mint a colliding ED-001");
+});
+
+t("7C-002: an lstat that fails for a NON-ENOENT reason -> fail-closed (cannot confirm absence)", () => {
+  const read = () => { const e = new Error("t"); e.code = "ENOENT"; throw e; };
+  const lstat = () => { const e = new Error("perm"); e.code = "EACCES"; throw e; };
+  assert.throws(() => resolveRegisterText("/x", read, lstat), (err) => err && err.failClosed === true);
 });
 
 t("7C-001: a PRESENT-but-unreadable register (EACCES/EISDIR) -> throws failClosed (NEVER empty/ED-001)", () => {

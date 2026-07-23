@@ -11073,7 +11073,7 @@
         "src": "scripts/dispatch/attest-signing.test.js",
         "dest": "scripts/dispatch/attest-signing.test.js",
         "kind": "dispatch_engine",
-        "sha256": "0cb8f1860c3d53e7923736373360cb39172deb64855755c14d8b0f15bbfd6569",
+        "sha256": "661d692d03b41ac4f0648fe4417a0551d29b3af85b443955db60dabfc99c569b",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

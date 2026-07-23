@@ -71,8 +71,8 @@ function signedRecord(overrides = {}) {
 }
 
 // ── general signing seam sanity (round out this fresh file with the core contract) ────────────────
-test("SIGNED_FIELDS ends with workorder_digest (BE-3: appended at the END, existing order untouched)", () => {
-  assert.strictEqual(SIGNED_FIELDS[SIGNED_FIELDS.length - 1], "workorder_digest");
+test("SIGNED_FIELDS tail is [workorder_digest, dispatch_id] (SP-20260723-003 r3e: dispatch_id appended at the END after workorder_digest, prior order untouched)", () => {
+  assert.deepStrictEqual(SIGNED_FIELDS.slice(-2), ["workorder_digest", "dispatch_id"]);
 });
 test("SIGNED_FIELDS retains every pre-existing field in its original relative order", () => {
   const preExisting = [
@@ -121,6 +121,19 @@ test("tampering ANY pre-existing signed field after signing invalidates the sign
   const r = signedRecord();
   r.verdict = "fail";
   assert.strictEqual(verifyRecord(r), false);
+});
+test("SP-20260723-003 r3e KEYSTONE (7G-011): a post-sign dispatch_id SWAP invalidates the signature — the QA-7G-007 correlation-key replay is closed", () => {
+  // The replay: a validly-signed ok:false death for dispatch A, re-pointed to B by swapping the (previously
+  // UNSIGNED) dispatch_id, must NO LONGER verify now that dispatch_id is in SIGNED_FIELDS.
+  const r = signedRecord({ dispatch_id: "d-A", ok: false });
+  assert.strictEqual(verifyRecord(r), true, "the genuine signed record verifies");
+  r.dispatch_id = "d-B"; // re-point the death at a different outstanding dispatch
+  assert.strictEqual(verifyRecord(r), false, "a swapped dispatch_id must break the signature (verified===this-dispatch)");
+});
+test("SP-20260723-003 r3e: dispatch_id is covered by canonicalIdentityString (distinct ids -> distinct canonical)", () => {
+  const a = canonicalIdentityString(baseRecord({ dispatch_id: "d-A" }));
+  const b = canonicalIdentityString(baseRecord({ dispatch_id: "d-B" }));
+  assert.notStrictEqual(a, b, "distinct dispatch_ids must produce distinct canonical strings");
 });
 test("canonicalIdentityString is stable for missing fields (serializes as empty)", () => {
   const s = canonicalIdentityString({});

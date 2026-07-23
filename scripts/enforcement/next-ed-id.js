@@ -27,11 +27,28 @@ function registerPath() {
  * -> "" (empty), else throw an error tagged failClosed so the CLI exits non-zero instead of printing a
  * bogus id. Injectable reader for the teeth.
  */
-function resolveRegisterText(p, read = fs.readFileSync) {
+function resolveRegisterText(p, read = fs.readFileSync, lstat = fs.lstatSync) {
   try {
     return read(p, "utf8");
   } catch (e) {
-    if (e && e.code === "ENOENT") return ""; // absent register -> ED-001 (legit fresh start)
+    if (e && e.code === "ENOENT") {
+      // 7C-002 (r3f): readFileSync FOLLOWS symlinks, so a DANGLING symlink (link present, target absent) ALSO
+      // throws ENOENT while the register PATH exists — minting ED-001 there is the same fail-OPEN as 7C-001.
+      // lstat WITHOUT following: path itself absent (lstat ENOENT) -> genuinely empty register ("" -> ED-001);
+      // path EXISTS as a dangling symlink/special file -> fail-closed. An lstat that fails otherwise also
+      // fails-closed (cannot confirm absence).
+      try {
+        lstat(p);
+      } catch (le) {
+        if (le && le.code === "ENOENT") return ""; // the path itself is absent -> genuinely empty register
+        const lerr = new Error(`enforcement-debt register lstat failed, cannot confirm absence (${(le && (le.code || le.message)) || "unknown"}): ${p}`);
+        lerr.failClosed = true;
+        throw lerr;
+      }
+      const err = new Error(`enforcement-debt register path EXISTS but readFileSync could not read it (dangling symlink or special file): ${p}`);
+      err.failClosed = true;
+      throw err;
+    }
     const err = new Error(`enforcement-debt register unreadable (${(e && (e.code || e.message)) || "unknown"}): ${p}`);
     err.failClosed = true;
     throw err;

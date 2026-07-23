@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T10:12:24.393Z",
+  "generatedAt": "2026-07-23T10:28:39.367Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9916,15 +9916,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-registry.test.js",
-      "sha256": "014a070ae1e197ea7e9b8aaff0650e9155d520c40f49f0a779dbbeeb518009d2",
-      "installedSha": "014a070ae1e197ea7e9b8aaff0650e9155d520c40f49f0a779dbbeeb518009d2"
+      "sha256": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
+      "installedSha": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678"
     },
     "scripts/enforcement/next-ed-id.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/next-ed-id.js",
-      "sha256": "25be7134213e3eb87d91cb6664a42bde16a822a769d29e3c4333be8377df710d",
-      "installedSha": "25be7134213e3eb87d91cb6664a42bde16a822a769d29e3c4333be8377df710d"
+      "sha256": "ecae038b4d913ffdfec2ead7e78eaeea04e5102da53b747d51167fb509adb72b",
+      "installedSha": "ecae038b4d913ffdfec2ead7e78eaeea04e5102da53b747d51167fb509adb72b"
     },
     "scripts/enforcement/pipe-masks-gate-lint.js": {
       "owner": "framework",
@@ -9993,8 +9993,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/attest-signing.test.js",
-      "sha256": "0cb8f1860c3d53e7923736373360cb39172deb64855755c14d8b0f15bbfd6569",
-      "installedSha": "0cb8f1860c3d53e7923736373360cb39172deb64855755c14d8b0f15bbfd6569"
+      "sha256": "661d692d03b41ac4f0648fe4417a0551d29b3af85b443955db60dabfc99c569b",
+      "installedSha": "661d692d03b41ac4f0648fe4417a0551d29b3af85b443955db60dabfc99c569b"
     },
     "scripts/dispatch/auth-resolver.js": {
       "owner": "framework",
