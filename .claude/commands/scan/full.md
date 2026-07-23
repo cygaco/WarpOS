@@ -169,6 +169,17 @@ node scripts/checks/entry-preamble-parity.js   # exists + region-present + canon
 
 A non-zero exit names the drifted/dropped/oversized/missing entry file; exit 2 (canonical unreadable) is fail-closed, never a silent green. Also a hard-blocking release gate (`scripts/warpos/release-gates.js` -> `entry_preamble_parity`, 0->green / 1|2->RED). Test: `scripts/checks/entry-preamble-parity.test.js` (9 planted cases incl. the one-char-semantic-edit->RED / CRLF-reformat->GREEN boundary + fail-closed exit 2).
 
+**agy auth-fallback record honesty — the sequence-aware tell detector + (c)-close gate** *(default + `--deep`)*
+
+SP-20260723-002 / ADR-0037: an UNauthenticated agy serve exits 0 with output but writes its tells to the cli.log NOT stdout, so a naive record false-greened `fallback:false`. The detector (`scripts/dispatch/agy-auth-tells.js`) is POSITIVE-PROOF-ONLY + PID-SCOPED (a code-site auth-success in this serve's pid-scoped cli.log DELTA, `expired=true` demoted to soft, stdout NOT scanned); the ED-060(c) LIVENESS close has a NAMED consumer gate requiring `auth_fallback === false` (`true`/`"indeterminate"`/absent all FAIL — the fail-open trap). Both teeth run here (deterministic, no external deps):
+
+```bash
+node scripts/dispatch/agy-auth-tells.test.js    # 21 cases incl. the byte-real genuine-serve regression (auth->false) + the concurrency false-green (interleaved-pid->true) + clean-no-signal->indeterminate
+node scripts/checks/ed060c-close-gate.test.js   # 8 cases incl. the DoE fail-open trap: auth_fallback:"indeterminate"/absent must NOT close
+```
+
+A non-zero exit means the auth-honesty contract regressed (a genuine serve false-RED'd, an unauth serve false-greened, or the close gate went fail-open). The keyring-expired residual (confirm child.pid === agy's logged pid on a live serve) is login-gated ED-268. Detector single-sources `NON_AUTH_SIGNAL`/`filterAgyLogToRunWindow`/`norm` into `cert-attest.js` (the pure-move — a byte-identity test freezes `NON_AUTH_SIGNAL`).
+
 **Log-sink caps gate — rotation is firing on every known sink** *(default + `--deep`)*
 
 SP-20260717-001 AC6 (F-ENF-1): the retention/rotation gate. `log-sink-caps.js` imports the SAME `SINK_CAPS` map the write-time rotation trigger uses (single source of truth) and flags any known sink grown past **2× its cap** — a breach means rotation is not firing on that sink — AND validates the SINK_CAPS INVENTORY itself (every declared descriptor well-formed) whether or not the sink exists yet. Fail-closed: an unrecognized `kind`, an `existsSync` fault, a non-finite `actual`, or a stat/read error is an offender, never a silent pass. This invocation was the AC6 wiring the original build skipped (builder hit the 540s clamp) — it is now delegated here:

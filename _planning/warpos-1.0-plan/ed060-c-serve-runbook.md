@@ -19,11 +19,26 @@ token expired at 04:52Z and a login attempt did not take.
 tools, so the blocked-advisory tool-permission wall is irrelevant here.)
 
 ## LIVENESS close criteria (ADR-0027 rider-3, liveness facet only — ED-230 served-model proof stays OPEN)
+Run the NAMED consumer gate against the SIGNED ledger record — do NOT eyeball the cli.log:
+    node scripts/checks/ed060c-close-gate.js --since <serve-start-ISO>
+It picks the latest antigravity completion record ≥ that time, VERIFIES its origin-proof signature FIRST
+(an unsigned/tampered/cross-session record is skipped — record-trust), then applies the field gate. It
+exits 0 ONLY when all of the below hold; read its real exit code (never pipe through tail/head). (`--record
+<file>` also works but MUST point at a SIGNED ledger record — the raw dispatch stdout is unsigned and will
+fail origin-proof by design.)
 1. Exit 0 + real output bytes: a genuine review, `ok:true` in the JSON (NOT a 9-byte "PROBE OK" eval default).
 2. Completion record (`.claude/runtime/dispatch-completions.jsonl`): the antigravity record has `ok:true` AND
-   **`fallback:false`** AND `tool_id:"agy"`.
-3. NO terminal-fallback tell in the agy cli.log: MUST NOT contain "You are not logged into Antigravity",
-   "defaulting to CCPA", "Model resolved via default", or "local chrome mode … eval mode".
+   **`fallback:false`** AND **`auth_fallback:false`** (the POSITIVE-proof auth bit) AND `tool_id:"agy"`.
+   `auth_fallback` must be EXACTLY `false` — `true` / `"indeterminate"` / ABSENT all FAIL the close
+   (the DoE fail-open trap: `!== true` would pass "indeterminate"/absent).
+3. auth-fallback detection (SP-20260723-002 / ADR-0037) is SEQUENCE-AWARE + PID-SCOPED, NOT a denylist:
+   a code-site AUTH_SUCCESS (`ChainedAuth: authenticated via keyring` / `OAuth: authenticated
+   successfully` / `silent auth succeeded`) after the startup tells and no HARD terminal
+   (`authentication-failed` / `unauthorized`, or `expired=true` un-followed-by-success) in THIS serve's
+   pid-scoped run window ⇒ `auth_fallback:false`. The STARTUP transients ("You are not logged into
+   Antigravity", "defaulting to CCPA", "Model resolved via default", "local chrome mode … eval mode")
+   are NON-terminal — they appear on a GENUINE serve BEFORE auth completes, so they MUST NOT be treated
+   as a close-blocker on their own (the r1 taxonomy error). The detector, not this prose, adjudicates them.
 4. Keyring VALID at serve time (precondition above).
 
 ## What it closes / does NOT close (β honesty split, DECIDE B/0.90)

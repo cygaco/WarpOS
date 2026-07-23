@@ -764,6 +764,20 @@ function runProvider(role, prompt, opts = {}) {
       e.kernelMissing = true;
       throw e;
     }
+    // SP-20260723-002: mark the agy run-window START + snapshot the shared cli.log PRE-spawn so the
+    // auth-fallback detector reads only THIS serve's DELTA (a stale tell from a prior serve, or a
+    // concurrent agy process's rotation, must not false-RED/false-GREEN — DoE r1 finding #2). The
+    // detector further pid-scopes the delta to this serve's child.pid.
+    const antigravityStartMs = providerName === "antigravity" ? Date.now() : null;
+    const agyLogPath =
+      providerName === "antigravity"
+        ? require("path").join(require("os").homedir(), ".gemini", "antigravity-cli", "cli.log")
+        : null;
+    let agyLogPre = null;
+    if (providerName === "antigravity") {
+      const { snapshotAgyLog } = require("../../dispatch/agy-auth-tells");
+      agyLogPre = snapshotAgyLog(agyLogPath);
+    }
     const spawned = safeSpawn.safeSpawnSync(toolId, argv, {
       cwd: PROJECT,
       env: childEnv,
@@ -805,6 +819,26 @@ function runProvider(role, prompt, opts = {}) {
     const output = rawOutput;
     const actualModel = null;
 
+    // SP-20260723-002 / ADR-0037 — agy auth-fallback detection. An UNauthenticated agy serve (expired
+    // keyring) exits 0 with output but writes its tells to the cli.log NOT stdout — so a naive record
+    // false-greens fallback:false. POSITIVE-PROOF-ONLY + PID-SCOPED: read only THIS serve's cli.log
+    // DELTA (pre/post snapshot, rotation-aware), scope to the spawned child.pid, and require a code-site
+    // AUTH_SUCCESS to score clean; anything unprovable is "indeterminate" → dispatch-agent forces
+    // fallback:true so the binding verdict routes to the verifiable openai/claude lane. stdout is NOT
+    // scanned (DoE C4: a reviewer serve quoting a tell in its answer must not veto). NOTE: --log-file is
+    // deliberately NOT used — it breaks agy's keyring auth (cert-attest ~L494, DoE-confirmed).
+    let authFallback;
+    if (providerName === "antigravity") {
+      const { detectAgyAuthFallback, readAgyLogDelta } = require("../../dispatch/agy-auth-tells");
+      const delta = readAgyLogDelta(agyLogPath, agyLogPre);
+      authFallback = detectAgyAuthFallback({
+        agyLog: delta.ok ? delta.delta : null,
+        agyLogReadError: !delta.ok,
+        startedMs: antigravityStartMs,
+        runPid: spawned.pid,
+      }).auth_fallback;
+    }
+
     // Strict assertion — detect silent downgrade.
     // actualModel comes from the CLI's own stats (authoritative); compare to requested.
     if (strict && !modelsMatch(model, actualModel)) {
@@ -828,6 +862,9 @@ function runProvider(role, prompt, opts = {}) {
       output,
       stderrBytes,
       cmd: [toolId, ...argv].join(" ").slice(0, 200),
+      // SP-20260723-002: present ONLY for antigravity; true | "indeterminate" => an unauth/unverifiable
+      // agy serve (dispatch-agent forces fallback:true). undefined for non-agy providers (no field).
+      ...(authFallback !== undefined ? { auth_fallback: authFallback } : {}),
     };
   } catch (err) {
     // WI-18: detect a quota/429 failure and surface it LOUDLY rather than

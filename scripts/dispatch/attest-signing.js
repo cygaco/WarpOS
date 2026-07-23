@@ -65,6 +65,7 @@ const SIGNED_FIELDS = Object.freeze([
   "fallback", // gauntlet R2 SR-R2-001 — ran-vs-fell-back classification
   "sprint_id", // gauntlet R3 SR-R3-002 — the sprint-correlation field gauntlet-verify filters on
   "started_at", // gauntlet R3 SR-R3-002 — window-membership fallback (completed_at ?? started_at); un-signed → replayable
+  "auth_fallback", // SP-20260723-002 / ADR-0037 (security r1 BINDING) — the agy auth-honesty bit; APPENDED at END (BE-3 byte-agree: never reorder). Unsigned, an unauthenticated agy serve's true/"indeterminate" could be edited to false with the sig still valid — the ED-225/227 settable-label class.
   // NAMED RESIDUAL (gauntlet R6 SR-R6-003 → ED-232): the BROADER correlation SELECTORS the converted readers
   // match on (run_id / phase_id / plan_item_id / skill / sprint / step) are NOT yet signed. Binding them
   // tamper-proofs re-correlation of a valid signed record — BUT `run_id` collides with the panel attestation's

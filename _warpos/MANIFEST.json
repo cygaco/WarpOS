@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T03:42:16.965Z",
+  "generatedAt": "2026-07-23T06:12:01.164Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -141,8 +141,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "afae16349360264f41e2e2a549d457dfee272b34310bab023fc8a2588e4c7726",
-      "installedSha": "afae16349360264f41e2e2a549d457dfee272b34310bab023fc8a2588e4c7726"
+      "sha256": "a36ed265cecc74ce1b5056ac6a232161d9d331878ed9af691a7d4e2ac94d0cce",
+      "installedSha": "a36ed265cecc74ce1b5056ac6a232161d9d331878ed9af691a7d4e2ac94d0cce"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -6500,8 +6500,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "9e72b381dcb755646df9e8b65f34466fd7818771d1d5fdcb4bb5f0686c74e366",
-      "installedSha": "9e72b381dcb755646df9e8b65f34466fd7818771d1d5fdcb4bb5f0686c74e366"
+      "sha256": "a2d3eb2336649f4a65d034cb37d172bf7bbf305355d106224db3de3002323a49",
+      "installedSha": "a2d3eb2336649f4a65d034cb37d172bf7bbf305355d106224db3de3002323a49"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
@@ -9706,8 +9706,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "fcbbdf71e756d936a315d4220597362c8db8351112829e636372283d63acfe93",
-      "installedSha": "fcbbdf71e756d936a315d4220597362c8db8351112829e636372283d63acfe93"
+      "sha256": "6674121ce3c59bcf7c31a645a868d771c69bb3079f02c35d21be7166d46bdfb7",
+      "installedSha": "6674121ce3c59bcf7c31a645a868d771c69bb3079f02c35d21be7166d46bdfb7"
     },
     "scripts/hooks/lib/retention.js": {
       "owner": "framework",
@@ -9891,12 +9891,26 @@
       "sha256": "952082d780f54b29ce30836fc300dd8997a7769061b4b0995efcc38e56be9a7f",
       "installedSha": "952082d780f54b29ce30836fc300dd8997a7769061b4b0995efcc38e56be9a7f"
     },
+    "scripts/dispatch/agy-auth-tells.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/agy-auth-tells.js",
+      "sha256": "3b74376bfc3f07ee196b2e74e465a9d56cde32afeaf598afeee38790a159502d",
+      "installedSha": "3b74376bfc3f07ee196b2e74e465a9d56cde32afeaf598afeee38790a159502d"
+    },
+    "scripts/dispatch/agy-auth-tells.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/agy-auth-tells.test.js",
+      "sha256": "f00fc7fb0e4892cf56451e2cdfb6e976926432ee89dd45edd54293edefccee01",
+      "installedSha": "f00fc7fb0e4892cf56451e2cdfb6e976926432ee89dd45edd54293edefccee01"
+    },
     "scripts/dispatch/attest-signing.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/attest-signing.js",
-      "sha256": "162433bf46cddb36a76d66b9c6580fe5f85a264a1ce6553c84882874a73b174f",
-      "installedSha": "162433bf46cddb36a76d66b9c6580fe5f85a264a1ce6553c84882874a73b174f"
+      "sha256": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449",
+      "installedSha": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449"
     },
     "scripts/dispatch/attest-signing.test.js": {
       "owner": "framework",
@@ -10322,8 +10336,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/provider-tool-id.test.js",
-      "sha256": "3194a4f23446252be2c7d77649df3118d69ef0dfb588a056bc3b50e7f67a0540",
-      "installedSha": "3194a4f23446252be2c7d77649df3118d69ef0dfb588a056bc3b50e7f67a0540"
+      "sha256": "6b8532734842d426435943063302b8a776742e1dcc686144d05e7398ce69da37",
+      "installedSha": "6b8532734842d426435943063302b8a776742e1dcc686144d05e7398ce69da37"
     },
     "scripts/dispatch/prune-dead-locks.js": {
       "owner": "framework",
@@ -10413,8 +10427,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/safe-spawn.js",
-      "sha256": "14d95fd00dcc1b85ed6b521739f8129777162f777e7147144eae92ade3f89608",
-      "installedSha": "14d95fd00dcc1b85ed6b521739f8129777162f777e7147144eae92ade3f89608"
+      "sha256": "1b50b925806a7e1773b8c7c3cf8f2e7ffdb8fefa755569d0e23bde6d4367e053",
+      "installedSha": "1b50b925806a7e1773b8c7c3cf8f2e7ffdb8fefa755569d0e23bde6d4367e053"
     },
     "scripts/dispatch/safe-spawn.test.js": {
       "owner": "framework",
@@ -10555,6 +10569,27 @@
       "source": "scripts/dispatch/workorder-validator.test.js",
       "sha256": "d0c6a571330a14988b5a36f26b6c81636e08a598b3dc783a3b08f4dfd1a6ff33",
       "installedSha": "d0c6a571330a14988b5a36f26b6c81636e08a598b3dc783a3b08f4dfd1a6ff33"
+    },
+    "scripts/dispatch/fixtures/agy/authenticated-serve.log": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/fixtures/agy/authenticated-serve.log",
+      "sha256": "e7aa30393f61dbe731e2ffe62b44e83c3d9b6d3c5a1599c23cce64761c8e7e12",
+      "installedSha": "e7aa30393f61dbe731e2ffe62b44e83c3d9b6d3c5a1599c23cce64761c8e7e12"
+    },
+    "scripts/dispatch/fixtures/agy/PROVENANCE.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/fixtures/agy/PROVENANCE.md",
+      "sha256": "bf77d2f8bcaa04fb71351a946616c4cc3545197e11e0bba82c30a310a1e2b403",
+      "installedSha": "bf77d2f8bcaa04fb71351a946616c4cc3545197e11e0bba82c30a310a1e2b403"
+    },
+    "scripts/dispatch/fixtures/agy/unauthenticated-serve.log": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/dispatch/fixtures/agy/unauthenticated-serve.log",
+      "sha256": "ca591bc2bf716121354c6534e2d8a48ac9887cb552ece00f0d0bc73c667a2254",
+      "installedSha": "ca591bc2bf716121354c6534e2d8a48ac9887cb552ece00f0d0bc73c667a2254"
     },
     "scripts/dispatch/falsifiers/acceptance-choke-point-bypass.falsifier.test.js": {
       "owner": "framework",
@@ -11351,8 +11386,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/cert-attest.js",
-      "sha256": "c554d675c62fbab17d4d73bb7c302f9c57067bd88264d47e8c35d5cacf335a20",
-      "installedSha": "c554d675c62fbab17d4d73bb7c302f9c57067bd88264d47e8c35d5cacf335a20"
+      "sha256": "82e423a7f1b325410e5b401c7862aff7df58ab7b9ca524f3891534463f9b6283",
+      "installedSha": "82e423a7f1b325410e5b401c7862aff7df58ab7b9ca524f3891534463f9b6283"
     },
     "scripts/checks/cert-attest.test.js": {
       "owner": "framework",
@@ -11612,6 +11647,20 @@
       "source": "scripts/checks/ed060-sunset.test.js",
       "sha256": "8f61e8e83c53152fea031d6eb6324bc5d23cf32f2d4fe0091e0cd388e832c154",
       "installedSha": "8f61e8e83c53152fea031d6eb6324bc5d23cf32f2d4fe0091e0cd388e832c154"
+    },
+    "scripts/checks/ed060c-close-gate.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/ed060c-close-gate.js",
+      "sha256": "f75687219666f80ce17de9223018932979570d19dc3b1368815a4ffeafd28cfd",
+      "installedSha": "f75687219666f80ce17de9223018932979570d19dc3b1368815a4ffeafd28cfd"
+    },
+    "scripts/checks/ed060c-close-gate.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/ed060c-close-gate.test.js",
+      "sha256": "3c1b15e32ee5f616184af15bbc4daf684371c42c9d58fa1af373b508e557110e",
+      "installedSha": "3c1b15e32ee5f616184af15bbc4daf684371c42c9d58fa1af373b508e557110e"
     },
     "scripts/checks/entry-preamble-parity.js": {
       "owner": "framework",
@@ -16229,6 +16278,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260723-002/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260723-002/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -25799,8 +25856,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "2e620a88e2e8b5d11ab2dc4a04d0926a05a3d2eba5614a1528d1429f70164c98",
-      "installedSha": "2e620a88e2e8b5d11ab2dc4a04d0926a05a3d2eba5614a1528d1429f70164c98"
+      "sha256": "b68e66a8a5980bf0cbf8ae423117d4a326254890036ea7fbf3c649db955d46df",
+      "installedSha": "b68e66a8a5980bf0cbf8ae423117d4a326254890036ea7fbf3c649db955d46df"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
@@ -27864,13 +27921,21 @@
       "sha256": "815a031d7aed90add26741443656071103db9aac0c22d2ee7c219cde764a6476",
       "installedSha": "815a031d7aed90add26741443656071103db9aac0c22d2ee7c219cde764a6476"
     },
+    ".claude/agents/president/_system/policy/adr/0037-agy-auth-fallback-record-honesty.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0037-agy-auth-fallback-record-honesty.md",
+      "kind": "md",
+      "sha256": "02e9f9c6c83246b125b7502eb8ee36b2cbeef2daba03307650ccf2ad25d08918",
+      "installedSha": "02e9f9c6c83246b125b7502eb8ee36b2cbeef2daba03307650ccf2ad25d08918"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "ef671c7a90eea25df8b97fd92135938247912b6265b77ec2316c8fd59fc2f8be",
-      "installedSha": "ef671c7a90eea25df8b97fd92135938247912b6265b77ec2316c8fd59fc2f8be"
+      "sha256": "165eb4f9da2d8709c2c90a000b3d0442661b489dc97a10ea39f61d8ebf9ac846",
+      "installedSha": "165eb4f9da2d8709c2c90a000b3d0442661b489dc97a10ea39f61d8ebf9ac846"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
