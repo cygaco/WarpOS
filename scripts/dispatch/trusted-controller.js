@@ -988,14 +988,14 @@ function sanitizeTransportOpts(opts) {
 
 /**
  * TRANSPORT_SKIP_ALLOWED — the ONE explicitly-named, reason-pinned skip the transport tolerates.
- *
- * A brokered merge/release write has NO ResultEnvelope by construction (fabricating one is the false-green
- * genesis this whole design refuses), so `false-green-envelope` — an envelope-shape tripwire — reports
- * `skipped` with the reason `no-envelope-in-context`. Tolerating that EXACT name+reason pair is honest;
- * tolerating "skips" generally would be a dead gate. Every other skip, and any skip of this check for any
- * OTHER reason, is REFUSED (`required-check-skipped`). Frozen, so a silent widening is a visible diff.
+ * RE-HOUSED (2026-07-23, β DECIDE B/0.90 precommit-skip-alignment): the frozen pair now lives in
+ * ./transport-skip-allowlist.js — ONE single-source definition bound by BOTH this authoritative
+ * reconcile AND the non-authoritative pre-commit feedback hook (which is aligned-to, never
+ * stricter-than, this gate on tolerable skips). Semantics unchanged: still frozen, still exactly
+ * one name+reason pair, every other skip REFUSED (`required-check-skipped`); inc1-transport.test.js
+ * still pins the allowance at exactly one name. Full rationale lives with the definition.
  */
-const TRANSPORT_SKIP_ALLOWED = Object.freeze({ "false-green-envelope": "no-envelope-in-context" });
+const { TRANSPORT_SKIP_ALLOWED } = require("./transport-skip-allowlist");
 
 /** gitRead(args, gitRoot) -> trimmed stdout, or null on any failure. READ-ONLY (rev-list/cat-file only). */
 function gitRead(args, gitRoot) {
