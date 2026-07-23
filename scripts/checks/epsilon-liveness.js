@@ -155,14 +155,15 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs, requireSignature = true }
 }
 
 /**
- * evaluatePairedWaiter({ records, nowMs, staleMs, windowMs, artifactExists }) -> { findings }
- * ED-256 (SP-20260723-003, β LOAD-BEARING rider): the paired-waiter protocol for teammate bg dispatches
- * (WG-6). For each OUTSTANDING dispatch (a phase:"started" row whose dispatch_id has NO ok:true
- * completion) that is STALE (started_at older than staleMs) and RECENT (within windowMs — beyond that it
- * is historical, not an active stall), require POSITIVE liveness: the recorded artifact_path must RESOLVE
- * TO A REAL FILE (artifactExists), NOT merely be a stamped field. A reaped RI-004 dispatch records a path
- * but produces nothing — a field-presence check would GREEN a stall (the settable-label class this whole
- * session kept hitting). No resolvable artifact ⇒ flag idle-with-outstanding-dispatch-no-waiter.
+ * evaluatePairedWaiter({ records, nowMs, staleMs, windowMs, artifactProduced, isVerified }) -> { findings }
+ * ED-256 (SP-20260723-003, DoE design-lock): the WG-6 stall check, scoped from LEDGER STATE — NOT a
+ * row-settable opt-in (the earlier `background` predicate stamped by no producer left the check inert on
+ * production). OUTSTANDING = a phase:"started" row whose dispatch_id has NO TERMINAL completion (a
+ * non-started row with completed_at); an ok:FALSE honest death OR a VERIFIED ok:true completion suppresses.
+ * For a STALE (older than staleMs) + RECENT (within windowMs) outstanding row, require POSITIVE liveness:
+ * a recorded artifact_path that RESOLVES to a real non-empty file produced after start (artifactProduced),
+ * never a stamped field. No terminal completion + no produced artifact ⇒ probable stall / kill-before-
+ * record (T-322).
  */
 function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 * 1000, artifactProduced, isVerified } = {}) {
   // Success suppression requires a VERIFIED completion — ALWAYS require a signature (QA-R2-001: the
@@ -321,7 +322,7 @@ function emit({ result, pw, waiterEnforce }, evidenceDir, ledgerPath) {
       if (result.ledgerUnreadable) console.error(`     fix: check dispatch-completions.jsonl is readable; run record-inprocess if conductor ran`);
     }
     if (pw.findings.length) {
-      console.error(`${waiterBlocking ? "FAIL" : "WARN"} [${NAME}] (ED-256 paired-waiter) ${pw.findings.length} outstanding bg dispatch(es):`);
+      console.error(`${waiterBlocking ? "FAIL" : "WARN"} [${NAME}] (ED-256 paired-waiter) ${pw.findings.length} outstanding dispatch(es) with no terminal completion:`);
       for (const f of pw.findings) console.error(`     - ${f.dispatch_id} (${f.role || "?"}): ${f.reason}`);
     }
     if (result.malformedLines > 0) console.error(`     (${result.malformedLines} malformed ledger line(s) skipped)`);

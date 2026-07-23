@@ -48,13 +48,28 @@ function findMdFiles(absRoot, out, unreadable) {
  * it), then the trailing comment. The PRAGMA is checked on the RAW line before this, so stripping is safe.
  */
 function stripQuotedAndComments(s) {
-  return String(s)
+  const noQuotes = String(s)
     .replace(/"(?:[^"\\]|\\.)*"/g, '""')
-    .replace(/'(?:[^'\\]|\\.)*'/g, "''")
-    // Only a SYNTACTIC comment marker starts a comment: a `#` at line-start OR whitespace-preceded (qa/
-    // backend r2 — an UNQUOTED mid-word `#` like `out#tag` is LITERAL in shell, and `\#` is escaped). A
-    // mid-word `#` (preceded by a non-space, non-`\`) is kept so `| tee out#tag && next` still matches.
-    .replace(/(^|\s)#.*$/, "$1");
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''");
+  return stripComment(noQuotes);
+}
+
+/**
+ * stripComment(s) — cut a SHELL comment: a `#` is a comment marker only at line-start OR after UNESCAPED
+ * token-separating whitespace (backend r3 7G-003). A backslash escapes the FOLLOWING char, so `\#` is a
+ * literal `#` AND `out\ #tag` is an escaped SPACE (the `#` is mid-token, part of the filename) — neither
+ * starts a comment. A regex `(^|\s)#` mis-read the escaped space as a boundary; this walks the string
+ * tracking backslash-escape (quotes are already blanked upstream) so backslash-parity is exact.
+ */
+function stripComment(s) {
+  let prevBoundary = true; // start-of-line is a token boundary
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "\\") { i++; prevBoundary = false; continue; } // skip the escaped char; it is NOT a boundary
+    if (c === "#" && prevBoundary) return s.slice(0, i);
+    prevBoundary = /\s/.test(c);
+  }
+  return s;
 }
 
 /**

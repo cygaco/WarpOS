@@ -14,11 +14,16 @@ const path = require("path");
 const { evaluatePairedWaiter, artifactProducedFs } = require("./epsilon-liveness.js");
 const { startedRow } = require("../dispatch/dispatch-record-fields.js");
 
-let pass = 0, fail = 0;
+let pass = 0, fail = 0, skip = 0;
 function t(name, fn) {
   try { fn(); pass++; console.log("  PASS  " + name); }
-  catch (e) { fail++; console.error("  FAIL  " + name + " — " + (e && e.message ? e.message : e)); }
+  catch (e) {
+    // A LOUD skip (not a silent PASS — backend r3: a green-on-skip is the honesty class this sprint kills).
+    if (e && e.__skip) { skip++; console.log("  SKIP  " + name + " — " + e.message); return; }
+    fail++; console.error("  FAIL  " + name + " — " + (e && e.message ? e.message : e));
+  }
 }
+function skipTest(msg) { const e = new Error(msg); e.__skip = true; throw e; }
 
 const NOW = Date.parse("2026-07-23T08:00:00.000Z");
 const STALE = 10 * 60 * 1000;
@@ -160,7 +165,7 @@ t("ED-270: a SYMLINK to a real produced file -> false (lstat rejects it)", () =>
   const link = path.join(os.tmpdir(), "pw-link-" + process.pid + ".txt");
   try {
     fs.writeFileSync(target, "concurrently-written");
-    try { fs.symlinkSync(target, link); } catch (e) { console.log("    (skip — symlink unavailable: " + e.code + ")"); return; }
+    try { fs.symlinkSync(target, link); } catch (e) { skipTest("symlink unavailable (" + e.code + ") — not a PASS"); }
     assert.strictEqual(artifactProducedFs(link, fs.statSync(target).mtimeMs - 1000), false, "a symlink must not spoof a produced artifact");
   } finally { try { fs.unlinkSync(link); } catch {} try { fs.unlinkSync(target); } catch {} }
 });
@@ -169,5 +174,5 @@ t("artifactProducedFs: absent path -> false", () => {
   assert.strictEqual(artifactProducedFs(path.join(os.tmpdir(), "pw-absent-" + process.pid), 0), false);
 });
 
-console.log("\n" + pass + "/" + (pass + fail) + " passed");
+console.log("\n" + pass + "/" + (pass + fail) + " passed" + (skip ? " (" + skip + " skipped)" : ""));
 process.exit(fail ? 1 : 0);

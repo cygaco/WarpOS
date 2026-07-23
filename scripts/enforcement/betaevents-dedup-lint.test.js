@@ -98,10 +98,21 @@ t("msg_id present in the message log -> resolved", () => {
   assert.deepStrictEqual(r.unresolved, []);
 });
 
-t("verdict row with NO msg_id -> counted as missingMsgId (advisory)", () => {
-  const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b" });
-  const r = analyze({ betaText: beta, eventsText: "" });
+t("security r3 RR3-SEC-001: a verdict-shaped row that OMITS msg_id -> missingMsgId (blocks under enforce)", () => {
+  // The fabricated-row attack dropped to omitting msg_id entirely (no id -> dodges the unresolved set).
+  const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b" }); // verdict-shaped, no msg_id
+  const r = analyze({ betaText: beta, eventsText: '{"msg_id":"other"}' });
   assert.strictEqual(r.missingMsgId, 1);
+  assert.strictEqual(r.logUnreachable, false);
+  // The CLI blocking predicate: enforce && !logUnreachable && missingMsgId>0 -> would block.
+  const wouldBlockUnderEnforce = !r.logUnreachable && r.missingMsgId > 0;
+  assert.strictEqual(wouldBlockUnderEnforce, true, "a verdict row without msg_id must be blockable under --enforce");
+});
+
+t("β reconcile-row exemption: a NON-verdict row (no decision) with no msg_id -> NOT counted", () => {
+  const beta = [row({ record_kind: "reconcile", sprint: "SP-1", boundary: "b" }), row({ sprint: "SP-1", note: "housekeeping" })].join("\n");
+  const r = analyze({ betaText: beta, eventsText: "" });
+  assert.strictEqual(r.missingMsgId, 0, "only verdict-shaped (decision) rows require a msg_id");
 });
 
 t("betaText null -> skipped (gitignored advisory ledger absent)", () => {

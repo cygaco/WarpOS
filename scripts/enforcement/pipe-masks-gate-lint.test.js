@@ -85,6 +85,16 @@ t("qa/backend r2 (escaped #): `| tee out\\#tag && next` -> RED (\\# is a literal
   assert.strictEqual(scanText(fenced("false | tee out\\#tag && node next.js")).length, 1);
 });
 
+t("backend r3 7G-003 (escaped SPACE before #): `| tee out\\ #tag && next` -> RED (the # is mid-token)", () => {
+  // `out\ #tag` is a filename "out #tag" (the space is escaped) — the # is NOT a comment marker, and the
+  // real `&& next` must NOT be swallowed. A regex `(^|\s)#` mis-read the escaped space as a boundary.
+  assert.strictEqual(scanText(fenced("false | tee out\\ #tag && node next.js")).length, 1);
+});
+
+t("a GENUINE comment after unescaped whitespace still strips -> GREEN", () => {
+  assert.deepStrictEqual(scanText(fenced("node gate.js | tail -1  # real comment && next")), []);
+});
+
 t("multiple offending lines in one block -> all flagged", () => {
   const md = fenced("node a.js | tail && b", "clean.js && c", "node d.js | head -1 ; e");
   assert.strictEqual(scanText(md).length, 2);

@@ -117,15 +117,16 @@ if (require.main === module) {
   try { eventsText = fs.readFileSync(events, "utf8"); } catch { eventsText = null; }
 
   const res = analyze({ betaText, eventsText });
-  // Under --enforce: a DEDUP finding blocks; and ANY unresolved verdict row blocks when the log is
-  // REACHABLE (security r2 #3 — low confidence must NOT be an escape hatch: fabricating >20% rows to push
-  // resolution <80% used to skip the whole check). Only a TRULY UNREACHABLE eventsText fails open under
-  // enforce. In report-only, low-confidence still skips the unresolved advisory (avoid the truncated-log noise).
-  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.logUnreachable && res.unresolved.length > 0));
+  // Under --enforce: a DEDUP finding blocks; and when the log is REACHABLE, ANY unresolved msg_id (security
+  // r2 #3 — low confidence is not an escape hatch) AND any verdict-shaped row that OMITS msg_id entirely
+  // (security r3 RR3-SEC-001 — the fabricated-row attack dropped one level to omitting the field: a
+  // well-formed verdict MUST carry a resolvable msg_id) both block. Only a TRULY UNREACHABLE eventsText
+  // fails open under enforce. In report-only, low-confidence still skips the unresolved advisory (no noise).
+  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.logUnreachable && (res.unresolved.length > 0 || res.missingMsgId > 0)));
   const showUnresolved = res.unresolved.length > 0 && (blocking || !res.resolutionSkipped);
   const lines = [];
   if (res.dupMsgIds.length) lines.push(`  DUPLICATE msg_id on >1 verdict row (a delivery logged twice): ${res.dupMsgIds.join(", ")}`);
-  if (res.missingMsgId) lines.push(`  ${res.missingMsgId} verdict row(s) carry NO msg_id (advisory — β should stamp its delivery msg_id).`);
+  if (res.missingMsgId) lines.push(`  ${res.missingMsgId} verdict-shaped row(s) OMIT msg_id — a well-formed verdict must carry a resolvable msg_id${enforce && !res.logUnreachable ? " (BLOCKING under --enforce)" : " (advisory — β should stamp its delivery msg_id)"}.`);
   if (showUnresolved) lines.push(`  ${res.unresolved.length} msg_id(s) not resolving in the message log${res.lowConfidence ? " (LOW-confidence log — under --enforce this fails closed)" : " (advisory)"}: ${res.unresolved.join(", ")}`);
   else if (res.resolutionSkipped) lines.push(`  msg_id-resolution: SKIPPED (report-only) — ${res.logUnreachable ? "message log unreachable" : "low-confidence log (<80% resolve, likely a truncated preview)"} (fail-open advisory).`);
 
