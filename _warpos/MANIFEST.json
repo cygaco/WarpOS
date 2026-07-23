@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T11:13:40.571Z",
+  "generatedAt": "2026-07-23T11:28:48.366Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9867,15 +9867,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.js",
-      "sha256": "54a6d59bf37f7adbd954acf1f885452056229642f20057ecab712a36f87b020c",
-      "installedSha": "54a6d59bf37f7adbd954acf1f885452056229642f20057ecab712a36f87b020c"
+      "sha256": "f37c04640c88516484fc7c0dc9dde23611c2f08951be3e4a4e0082cf32019458",
+      "installedSha": "f37c04640c88516484fc7c0dc9dde23611c2f08951be3e4a4e0082cf32019458"
     },
     "scripts/enforcement/betaevents-dedup-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
-      "sha256": "b1d23227c20773a52777d798ba34892674a8d2dadc57f093dd1d38e2c064f573",
-      "installedSha": "b1d23227c20773a52777d798ba34892674a8d2dadc57f093dd1d38e2c064f573"
+      "sha256": "640d42b286ea1f3c8e9f4a9083f071bde267d3c3175895c6edb3eb2fd0407635",
+      "installedSha": "640d42b286ea1f3c8e9f4a9083f071bde267d3c3175895c6edb3eb2fd0407635"
     },
     "scripts/enforcement/builder-right-size.js": {
       "owner": "framework",
@@ -11757,8 +11757,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.js",
-      "sha256": "c2bb193233473afa2f7be01cddd72ee5473e3cbf2133fa2881acf9223b2e11d1",
-      "installedSha": "c2bb193233473afa2f7be01cddd72ee5473e3cbf2133fa2881acf9223b2e11d1"
+      "sha256": "8f98fede779f8374b5023eee33059e11c1a25b046bfa129e75cbc0b7466898cc",
+      "installedSha": "8f98fede779f8374b5023eee33059e11c1a25b046bfa129e75cbc0b7466898cc"
     },
     "scripts/checks/epsilon-liveness.test.js": {
       "owner": "framework",
@@ -11771,8 +11771,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-paired-waiter.test.js",
-      "sha256": "8e948be1fd1333fc3db26c6f297c12b4cfaea083e1d97a4837452c0f4ef7b65f",
-      "installedSha": "8e948be1fd1333fc3db26c6f297c12b4cfaea083e1d97a4837452c0f4ef7b65f"
+      "sha256": "42a6a977992aeb19392228cb1e8924077133283ede375fa344648ef7188ef8f2",
+      "installedSha": "42a6a977992aeb19392228cb1e8924077133283ede375fa344648ef7188ef8f2"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",

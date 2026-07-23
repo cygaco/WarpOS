@@ -80,14 +80,17 @@ function extractMsgIds(eventsText) {
 // by construction, unlike the blocklist (same allowlist-the-valid-form lesson as ED-274, but cheap+complete here).
 const MSGID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 /**
- * realMsgId(r) -> the TRIMMED msg_id iff it matches the valid id shape, else null. trim() tolerates
- * surrounding regular whitespace on an otherwise-valid id; the allowlist rejects any id containing a
- * whitespace/invisible/control char (a real id has none), so a blank/invisible/control/wrapped msg_id is MISSING.
+ * realMsgId(r) -> the RAW msg_id iff it matches the valid id shape, else null. NO trim/canonicalization
+ * (r3h, backend-7G-014 / QA-7G-013): JS .trim() strips 11+ non-ASCII invisibles (U+FEFF/00A0/1680/2000/
+ * 2028/2029/202F/205F/3000/000C/000B) BEFORE the allowlist, so a wrapped id leaked through. Real msg_ids —
+ * SendMessage UUIDs, dispatch d-... ids, beta-... slugs — NEVER carry surrounding whitespace (verified: 0 of
+ * 55 real ids), so trimming buys nothing and the trim step IS the leak surface. Matching the RAW id
+ * eliminates the entire canonicalization-hole class: any surrounding/interior whitespace, invisible, or
+ * control char fails the allowlist -> MISSING. Truly bounded-complete (no pre-processing layer to exploit).
  */
 function realMsgId(r) {
   if (!r || typeof r.msg_id !== "string") return null;
-  const trimmed = r.msg_id.trim();
-  return MSGID_RE.test(trimmed) ? trimmed : null;
+  return MSGID_RE.test(r.msg_id) ? r.msg_id : null;
 }
 
 function analyze({ betaText, eventsText }) {

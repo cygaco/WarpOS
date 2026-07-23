@@ -98,6 +98,41 @@ t("backend-7G-012: a calendar-INVALID completed_at (2026-02-31, shape-valid) doe
   assert.strictEqual(r.findings.length, 1, "a calendar-invalid completed_at must not suppress (exact toISOString round-trip): " + JSON.stringify(r));
 });
 
+t("backend-7G-013: a FUTURE completed_at (2099, valid ISO + >= start) does NOT suppress -> FLAGGED (temporal upper bound)", () => {
+  const recs = [started({ id: "dfut", at: min(30) }), { ok: false, dispatch_id: "dfut", role: "backend-builder", completed_at: "2099-01-01T00:00:00.000Z" }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a future completed_at must not suppress (bounded [start, now+skew]): " + JSON.stringify(r));
+});
+
+t("backend-7G-013: within-skew completed_at (now+3m) SUPPRESSES; beyond-skew (now+1h) does NOT", () => {
+  const near = new Date(NOW + 3 * 60000).toISOString();
+  const far = new Date(NOW + 60 * 60000).toISOString();
+  const okRecs = [started({ id: "dnear", at: min(30) }), { ok: false, dispatch_id: "dnear", role: "backend-builder", completed_at: near }];
+  assert.deepStrictEqual(evaluatePairedWaiter({ records: okRecs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings, [], "within-skew completion suppresses");
+  const farRecs = [started({ id: "dfar", at: min(30) }), { ok: false, dispatch_id: "dfar", role: "backend-builder", completed_at: far }];
+  assert.strictEqual(evaluatePairedWaiter({ records: farRecs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings.length, 1, "beyond-skew completion must not suppress");
+});
+
+t("backend-7G-013 SYMMETRIC: a calendar-INVALID started_at -> FLAGGED malformed-start (never silent-skip)", () => {
+  const recs = [{ phase: "started", ok: false, dispatch_id: "dbadstart", role: "backend-builder", started_at: "2026-02-31T00:00:00.000Z" }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a malformed started_at must FLAG, never silent-skip: " + JSON.stringify(r));
+  assert.strictEqual(r.findings[0].type, "outstanding-dispatch-malformed-start");
+});
+
+t("backend-7G-013 SYMMETRIC: an unparseable started_at -> FLAGGED (not silent-skip)", () => {
+  const recs = [{ phase: "started", ok: false, dispatch_id: "dgarbage", role: "backend-builder", started_at: "not-a-timestamp" }];
+  assert.strictEqual(evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings.length, 1);
+});
+
+t("backend-7G-013 SYMMETRIC: a FUTURE started_at (now+1h) -> FLAGGED future-start", () => {
+  const future = new Date(NOW + 60 * 60000).toISOString();
+  const recs = [{ phase: "started", ok: false, dispatch_id: "dfutstart", role: "backend-builder", started_at: future }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a future started_at must FLAG: " + JSON.stringify(r));
+  assert.strictEqual(r.findings[0].type, "outstanding-dispatch-future-start");
+});
+
 t("QA-7G-012 (encoding): a signed NUMERIC death re-pointed to a STRING dispatch_id does NOT suppress its target", () => {
   const { signRecord } = require("../dispatch/attest-signing.js");
   const startedR = started({ id: "123", at: min(30) }); // started row keyed on the STRING "123"

@@ -65,6 +65,10 @@ function isCanonicalIso(x) {
   const d = new Date(x);
   return Number.isFinite(d.getTime()) && d.toISOString() === x;
 }
+// Clock-skew tolerance for the temporal bound (backend-7G-013): a completion/start at most SKEW_MS in the
+// FUTURE of the scan clock is allowed (minor cross-host skew); beyond it is impossible -> fail-closed. nowMs
+// is the SCAN clock (Date.now() at the CLI, or --now for tests), NEVER a record-supplied field.
+const SKEW_MS = 5 * 60 * 1000;
 
 function arg(flag) {
   const i = process.argv.indexOf(flag);
@@ -223,14 +227,34 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     // suppressed — so require typeof "string" + an ISO shape, AND completedMs >= startedMs (a death CANNOT
     // precede its own start; combined with dispatch_id now being SIGNED, a replayed signed death can't be
     // re-pointed at an earlier-started dispatch). verify() = verifyRecord for ok:false / isVerifiedLivenessRecord ok:true.
-    const startedMs = Date.parse(started.started_at || "") || 0;
-    if (!startedMs) continue; // an unparseable start gives no ordering floor — cannot reason about it
+    // started_at gets the SAME complete validation as completed_at (backend-7G-013 SYMMETRIC: the r3e/r3g
+    // timestamp guards were applied to completed_at ONLY — a calendar-invalid/unparseable/future started_at
+    // coercively normalized or SILENTLY skipped the row, hiding an outstanding dispatch). A malformed or
+    // future started_at is NOT a free pass — FLAG it (fail-closed), never silent-continue.
+    if (!isCanonicalIso(started.started_at)) {
+      findings.push({
+        type: "outstanding-dispatch-malformed-start", dispatch_id: dispatchId, role: started.role || null,
+        reason: `started_at '${started.started_at}' is not a canonical ISO timestamp — cannot establish the stall window (fail-closed, backend-7G-013)`,
+      });
+      continue;
+    }
+    const startedMs = Date.parse(started.started_at);
+    if (startedMs > nowMs + SKEW_MS) {
+      findings.push({
+        type: "outstanding-dispatch-future-start", dispatch_id: dispatchId, role: started.role || null,
+        reason: `started_at '${started.started_at}' is in the future (> now + ${SKEW_MS / 60000}m skew) — impossible (fail-closed, backend-7G-013)`,
+      });
+      continue;
+    }
     const terminated = rows.some((r) => {
-      // completed_at must be a CANONICAL producer timestamp — exact toISOString() round-trip (backend-7G-012:
-      // a shape-valid-but-calendar-invalid "2026-02-31" normalizes-and-suppresses); isCanonicalIso subsumes
-      // the string/shape/finite checks (7G-004) and rejects the impossible-date.
+      // A terminal completion = a non-started row with a CANONICAL producer completion timestamp BOUNDED in
+      // [startedMs, nowMs+skew] (backend-7G-012 exact toISOString round-trip rejects calendar-invalid;
+      // backend-7G-013 the interval rejects a FUTURE completion — "2099" is a valid ISO and >= start, so an
+      // ordering-only check suppressed it), a boolean ok, AND origin verification. verify() = verifyRecord
+      // for ok:false / isVerifiedLivenessRecord ok:true.
       if (isStartedRow(r) || !isCanonicalIso(r.completed_at)) return false;
-      if (Date.parse(r.completed_at) < startedMs) return false; // no death before its own start (ordering)
+      const completedMs = Date.parse(r.completed_at);
+      if (completedMs < startedMs || completedMs > nowMs + SKEW_MS) return false; // bounded interval
       return typeof r.ok === "boolean" && verify(r);
     });
     if (terminated) continue;

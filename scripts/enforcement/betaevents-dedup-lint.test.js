@@ -183,15 +183,28 @@ t("7G-008 (r3e whitespace, qa+backend cross-lane): a WHITESPACE-only msg_id coun
   assert.strictEqual(r.missingMsgId, 1, "a whitespace-only msg_id must be MISSING, not present: " + JSON.stringify(r));
 });
 
-t("r3e realMsgId: a padded msg_id resolves on its TRIMMED value (no false-unresolved)", () => {
-  const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "  pad-1  " });
+t("r3h raw-match: a padded msg_id is INVALID -> MISSING (real ids never carry whitespace; no trim surface)", () => {
+  const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: "  pad-1  " });
   const r = analyze({ betaText: beta, eventsText: '{"msg_id":"pad-1"}' });
-  assert.deepStrictEqual(r.unresolved, [], "a padded msg_id must resolve on its trimmed value: " + JSON.stringify(r));
-  assert.strictEqual(r.missingMsgId, 0);
+  assert.strictEqual(r.missingMsgId, 1, "a padded msg_id is invalid under raw-match -> MISSING: " + JSON.stringify(r));
 });
 
-t("realMsgId: trims; null on blank/absent/non-string; strips zero-width (hunter r3e #3)", () => {
-  assert.strictEqual(realMsgId({ msg_id: "  x  " }), "x");
+t("QA-7G-013/backend-7G-014 (r3h): every non-ASCII invisible that JS .trim() would strip -> MISSING (raw-match, no trim leak)", () => {
+  // These 11 are stripped by JS .trim() (the r3g leak surface); raw-match leaves them in -> fail the allowlist.
+  const invis = [0xFEFF, 0x00A0, 0x1680, 0x2000, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0x000C, 0x000B, 0x200B, 0x2060];
+  for (const cp of invis) {
+    const c = String.fromCharCode(cp);
+    // wrapped AND interior placement both invalid:
+    for (const id of [c + "knownid" + c, "known" + c + "id"]) {
+      const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: id });
+      assert.strictEqual(analyze({ betaText: beta, eventsText: null }).missingMsgId, 1, "U+" + cp.toString(16) + " (wrap/interior) must be MISSING");
+    }
+  }
+});
+
+t("realMsgId: RAW-match (r3h) — null on blank/absent/non-string/padded/invisible; bare ids valid", () => {
+  assert.strictEqual(realMsgId({ msg_id: "  x  " }), null); // r3h raw-match: ANY surrounding whitespace -> MISSING (no trim)
+  assert.strictEqual(realMsgId({ msg_id: "x" }), "x"); // a bare valid id passes
   assert.strictEqual(realMsgId({ msg_id: "   " }), null);
   assert.strictEqual(realMsgId({ msg_id: "" }), null);
   assert.strictEqual(realMsgId({}), null);
