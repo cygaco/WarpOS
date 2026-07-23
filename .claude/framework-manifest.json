@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 182,
+    "check_tool": 184,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1693,
+  "total": 1695,
   "assets": {
     "agent": [
       {
@@ -3235,7 +3235,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e",
+        "sha256": "905e40dfb4ec9284c854e3d689a75b9862f1263284d1b631001b7157aed39ee9",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -9388,6 +9388,30 @@
         "dest": "scripts/checks/reader-discipline.test.js",
         "kind": "check_tool",
         "sha256": "4dd8b7a57a844a37c0ed991aaf29dffde8f93a868b6d6fccc792c30ba0181788",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.reasoned-consult-honesty.js",
+        "src": "scripts/checks/reasoned-consult-honesty.js",
+        "dest": "scripts/checks/reasoned-consult-honesty.js",
+        "kind": "check_tool",
+        "sha256": "3be03ff01f0018982996aba48bcf26fc4eb27dac1f6224f06235de347b4c348c",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.reasoned-consult-honesty.test.js",
+        "src": "scripts/checks/reasoned-consult-honesty.test.js",
+        "dest": "scripts/checks/reasoned-consult-honesty.test.js",
+        "kind": "check_tool",
+        "sha256": "b063a9696b808be10630142fa3fd77f8b43c3acdcee57b9b0fc3314603c1a71a",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

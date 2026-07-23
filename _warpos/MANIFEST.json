@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T12:10:14.839Z",
+  "generatedAt": "2026-07-23T13:27:46.962Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -12193,6 +12193,20 @@
       "source": "scripts/checks/reader-discipline.test.js",
       "sha256": "4dd8b7a57a844a37c0ed991aaf29dffde8f93a868b6d6fccc792c30ba0181788",
       "installedSha": "4dd8b7a57a844a37c0ed991aaf29dffde8f93a868b6d6fccc792c30ba0181788"
+    },
+    "scripts/checks/reasoned-consult-honesty.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/reasoned-consult-honesty.js",
+      "sha256": "3be03ff01f0018982996aba48bcf26fc4eb27dac1f6224f06235de347b4c348c",
+      "installedSha": "3be03ff01f0018982996aba48bcf26fc4eb27dac1f6224f06235de347b4c348c"
+    },
+    "scripts/checks/reasoned-consult-honesty.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/reasoned-consult-honesty.test.js",
+      "sha256": "b063a9696b808be10630142fa3fd77f8b43c3acdcee57b9b0fc3314603c1a71a",
+      "installedSha": "b063a9696b808be10630142fa3fd77f8b43c3acdcee57b9b0fc3314603c1a71a"
     },
     "scripts/checks/record-trust-gate.js": {
       "owner": "framework",
@@ -25956,8 +25970,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e",
-      "installedSha": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e"
+      "sha256": "905e40dfb4ec9284c854e3d689a75b9862f1263284d1b631001b7157aed39ee9",
+      "installedSha": "905e40dfb4ec9284c854e3d689a75b9862f1263284d1b631001b7157aed39ee9"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
