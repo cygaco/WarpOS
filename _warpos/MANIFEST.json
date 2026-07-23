@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T03:07:28.932Z",
+  "generatedAt": "2026-07-23T03:21:07.735Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -11617,15 +11617,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/entry-preamble-parity.js",
-      "sha256": "2f6011bbddd3e055e70e77703e488c4556a500935bb7bcb9283aed8cad743c2d",
-      "installedSha": "2f6011bbddd3e055e70e77703e488c4556a500935bb7bcb9283aed8cad743c2d"
+      "sha256": "d104e0dff099853b3dda6a3f3048eea8b88b14932fb4c1e972774fdf4ab76483",
+      "installedSha": "d104e0dff099853b3dda6a3f3048eea8b88b14932fb4c1e972774fdf4ab76483"
     },
     "scripts/checks/entry-preamble-parity.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/entry-preamble-parity.test.js",
-      "sha256": "b58232ae94d2f1f9e87d5341b1ea925ef8543e1d599fdad7aac281ed13dcf101",
-      "installedSha": "b58232ae94d2f1f9e87d5341b1ea925ef8543e1d599fdad7aac281ed13dcf101"
+      "sha256": "1d2ad8bde10dc48f60f5e04c9bd54d7cc41bfa52b9f47a9b06c12bf33d91f442",
+      "installedSha": "1d2ad8bde10dc48f60f5e04c9bd54d7cc41bfa52b9f47a9b06c12bf33d91f442"
     },
     "scripts/checks/epsilon-liveness.js": {
       "owner": "framework",

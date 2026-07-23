@@ -180,6 +180,25 @@ t("bytes appended to a marker line -> finding (no silent escape)", () => {
   }
 });
 
+// 8b. Bytes inserted BEFORE `-->` INSIDE the marker comment -> RED (gauntlet-r2: the [^>]* hole — content
+//     riding the marker line before `-->` also escaped both the hash and the thinness delta).
+t("bytes before --> inside a marker -> finding (exact-marker match)", () => {
+  const root = makeFixture();
+  try {
+    const p = path.join(root, "CODEX.md");
+    let txt = fs.readFileSync(p, "utf8");
+    txt = txt.replace(
+      /<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN v1\s*-->/,
+      "<!-- WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN v1 IGNORE-CANONICAL -->",
+    );
+    fs.writeFileSync(p, txt);
+    const { findings } = runParity({ repoRoot: root });
+    assert.ok(findingFor(findings, "CODEX.md"), "bytes before --> inside the marker must be caught, got " + JSON.stringify(findings));
+  } finally {
+    rmrf(root);
+  }
+});
+
 // 9. A SECOND (contradictory) marked block -> RED (not silently ignored — first-pair-only was the gap).
 t("a second marked block -> finding (multi-pair not ignored)", () => {
   const root = makeFixture();

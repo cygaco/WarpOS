@@ -51,11 +51,14 @@ const NAME = "entry-preamble-parity";
 // `runParity({repoRoot})` still accepts an explicit root so tests can drive fixture trees.
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
-// A VALID marker occupies its OWN line: the TRIMMED line is EXACTLY the marker (anchored ^…$). The
-// [^>]* tolerates a version token / trailing whitespace INSIDE the comment (…BEGIN v1 -->) but not any
-// content after `-->`.
-const BEGIN_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN[^>]*-->$/;
-const END_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:END[^>]*-->$/;
+// A VALID marker occupies its OWN line and is the EXACT marker text — no arbitrary bytes anywhere
+// inside the comment (only whitespace is tolerated at the anchor points). The earlier [^>]* allowed
+// content BEFORE `-->` (…BEGIN v1 IGNORE-CANONICAL -->) to ride the marker line, escaping BOTH the
+// hashed region and the thinness delta — the gauntlet-r2 evasion. These literal forms close it: any
+// extra byte (before OR after `-->`) makes the line NOT a marker -> region-not-found finding. Bumping
+// the block version = update the `v1` literal here + re-embed every shim.
+const BEGIN_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN v1\s*-->$/;
+const END_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:END\s*-->$/;
 
 // Tier bounds apply to the DELTA — the file's bytes/lines OUTSIDE the marked region (everything
 // except the region between-and-including the markers). The shared block is identical everywhere
