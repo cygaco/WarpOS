@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 181,
+    "check_tool": 182,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1692,
+  "total": 1693,
   "assets": {
     "agent": [
       {
@@ -8607,7 +8607,7 @@
         "src": "scripts/checks/epsilon-liveness.js",
         "dest": "scripts/checks/epsilon-liveness.js",
         "kind": "check_tool",
-        "sha256": "0cdb3d7123e64958fbb56514eed6bfa1dff48eebae8e54c4014d1b92867bf98f",
+        "sha256": "dac1067a65deebe4573371ad777946eac6c1a1e20ed4bc98e0d546b6b23c73e0",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8620,6 +8620,18 @@
         "dest": "scripts/checks/epsilon-liveness.test.js",
         "kind": "check_tool",
         "sha256": "3eabd2db27577fffc99f402b39c869960627840868d9433b00b43d2eef2ca46f",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.epsilon-paired-waiter.test.js",
+        "src": "scripts/checks/epsilon-paired-waiter.test.js",
+        "dest": "scripts/checks/epsilon-paired-waiter.test.js",
+        "kind": "check_tool",
+        "sha256": "1c37b970cffc676df4acdd69206c8a5cd45c019388c6c181012b75517ce58a86",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

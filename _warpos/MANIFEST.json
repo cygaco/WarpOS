@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T07:06:17.136Z",
+  "generatedAt": "2026-07-23T07:11:12.879Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -11757,8 +11757,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.js",
-      "sha256": "0cdb3d7123e64958fbb56514eed6bfa1dff48eebae8e54c4014d1b92867bf98f",
-      "installedSha": "0cdb3d7123e64958fbb56514eed6bfa1dff48eebae8e54c4014d1b92867bf98f"
+      "sha256": "dac1067a65deebe4573371ad777946eac6c1a1e20ed4bc98e0d546b6b23c73e0",
+      "installedSha": "dac1067a65deebe4573371ad777946eac6c1a1e20ed4bc98e0d546b6b23c73e0"
     },
     "scripts/checks/epsilon-liveness.test.js": {
       "owner": "framework",
@@ -11766,6 +11766,13 @@
       "source": "scripts/checks/epsilon-liveness.test.js",
       "sha256": "3eabd2db27577fffc99f402b39c869960627840868d9433b00b43d2eef2ca46f",
       "installedSha": "3eabd2db27577fffc99f402b39c869960627840868d9433b00b43d2eef2ca46f"
+    },
+    "scripts/checks/epsilon-paired-waiter.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/epsilon-paired-waiter.test.js",
+      "sha256": "1c37b970cffc676df4acdd69206c8a5cd45c019388c6c181012b75517ce58a86",
+      "installedSha": "1c37b970cffc676df4acdd69206c8a5cd45c019388c6c181012b75517ce58a86"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",

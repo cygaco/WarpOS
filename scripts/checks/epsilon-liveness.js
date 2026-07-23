@@ -151,6 +151,48 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs }) {
   return { ok: findings.length === 0, findings, malformedLines, ledgerUnreadable: false };
 }
 
+/**
+ * evaluatePairedWaiter({ records, nowMs, staleMs, windowMs, artifactExists }) -> { findings }
+ * ED-256 (SP-20260723-003, β LOAD-BEARING rider): the paired-waiter protocol for teammate bg dispatches
+ * (WG-6). For each OUTSTANDING dispatch (a phase:"started" row whose dispatch_id has NO ok:true
+ * completion) that is STALE (started_at older than staleMs) and RECENT (within windowMs — beyond that it
+ * is historical, not an active stall), require POSITIVE liveness: the recorded artifact_path must RESOLVE
+ * TO A REAL FILE (artifactExists), NOT merely be a stamped field. A reaped RI-004 dispatch records a path
+ * but produces nothing — a field-presence check would GREEN a stall (the settable-label class this whole
+ * session kept hitting). No resolvable artifact ⇒ flag idle-with-outstanding-dispatch-no-waiter.
+ */
+function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 * 1000, artifactExists } = {}) {
+  const byId = new Map();
+  for (const r of records || []) {
+    if (!r || !r.dispatch_id) continue;
+    if (!byId.has(r.dispatch_id)) byId.set(r.dispatch_id, []);
+    byId.get(r.dispatch_id).push(r);
+  }
+  const findings = [];
+  for (const [dispatchId, rows] of byId) {
+    const started = rows.find((r) => r.phase === "started");
+    if (!started) continue;
+    if (rows.some((r) => r.phase !== "started" && r.ok === true)) continue; // has a completion → not outstanding
+    const startedMs = Date.parse(started.started_at || "") || 0;
+    if (!startedMs) continue;
+    const age = nowMs - startedMs;
+    if (age < staleMs || age > windowMs) continue; // not stale yet, or historical
+    // β LOAD-BEARING: derive liveness from the artifact's EXISTENCE, never the field's presence.
+    const artifactPath = started.artifact_path || started.expected_artifact || started.artifact || null;
+    const resolved = !!(artifactPath && typeof artifactExists === "function" && artifactExists(artifactPath));
+    if (resolved) continue;
+    findings.push({
+      type: "outstanding-dispatch-no-waiter",
+      dispatch_id: dispatchId,
+      role: started.role || null,
+      reason: artifactPath
+        ? `outstanding bg dispatch aged ${Math.round(age / 60000)}m stamped artifact_path '${artifactPath}' that does NOT resolve to a real file — a reaped dispatch records a path but produces nothing (β settable-label close)`
+        : `outstanding bg dispatch aged ${Math.round(age / 60000)}m recorded NO artifact_path — the paired-waiter envelope is incomplete (dispatch_id + artifact_path are required so a waiter can be armed)`,
+    });
+  }
+  return { findings };
+}
+
 // ── Filesystem helpers ────────────────────────────────────────────────────
 
 function sha256ofFile(buf) {
@@ -279,7 +321,28 @@ if (require.main === module) {
     );
   }
 
+  // ED-256 paired-waiter check (ADVISORY by default; contributes to exit 1 under WARPOS_WAITER_ENFORCE=1).
+  // Additive to the evidence-file stall check above; scoped to RECENT outstanding dispatches so it can't
+  // flood /scan:full with historical reaps. Liveness is derived from the artifact's real existence.
+  if (ledgerLines) {
+    const records = [];
+    for (const line of ledgerLines) {
+      const t = (line || "").trim();
+      if (!t) continue;
+      try { records.push(JSON.parse(t)); } catch { /* malformed already counted above */ }
+    }
+    const staleMs2 = staleMinutes * 60 * 1000;
+    const pw = evaluatePairedWaiter({ records, nowMs, staleMs: staleMs2, artifactExists: (p) => { try { return fs.statSync(p).size >= 0; } catch { return false; } } });
+    if (pw.findings.length) {
+      const enforce = process.env.WARPOS_WAITER_ENFORCE === "1" || process.env.WARPOS_WAITER_ENFORCE === "true";
+      const tag = enforce ? "FAIL" : "WARN";
+      process.stderr.write(`[${NAME}] ${tag} (ED-256 paired-waiter): ${pw.findings.length} outstanding bg dispatch(es) with no resolvable artifact:\n`);
+      for (const f of pw.findings) process.stderr.write(`     - ${f.dispatch_id} (${f.role || "?"}): ${f.reason}\n`);
+      if (enforce && result.ok) { process.exit(1); }
+    }
+  }
+
   emit(result, evidenceDir, ledgerPath);
 }
 
-module.exports = { evaluate };
+module.exports = { evaluate, evaluatePairedWaiter };
