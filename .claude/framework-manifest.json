@@ -67,9 +67,9 @@
     "version_file": 1,
     "installer_script": 1,
     "module_scope": 1,
-    "framework_doc": 4
+    "framework_doc": 6
   },
-  "total": 1682,
+  "total": 1684,
   "assets": {
     "agent": [
       {
@@ -20213,7 +20213,7 @@
         "src": "scripts/generate-framework-manifest.js",
         "dest": "scripts/generate-framework-manifest.js",
         "kind": "top_script",
-        "sha256": "ac4518c4990a4dad5e418dbcce638bca446aaca30988329a79f43a835313f778",
+        "sha256": "c10e5df676953406144725fd588c478a39b36d50e20b32af293d19a0e0add8c8",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -20363,6 +20363,19 @@
         "merge": "append-if-exists"
       },
       {
+        "id": "framework_doc.ANTIGRAVITY.md",
+        "src": "ANTIGRAVITY.md",
+        "dest": "ANTIGRAVITY.md",
+        "kind": "framework_doc",
+        "sha256": "2ff23a2cef254a85bc4db61d89aad77aa5c5dfa8fc6a27975f65679c092a11da",
+        "owner": "framework",
+        "mergeStrategy": "append-if-exists",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null,
+        "merge": "append-if-exists"
+      },
+      {
         "id": "framework_doc.CLAUDE.md",
         "src": "CLAUDE.md",
         "dest": "CLAUDE.md",
@@ -20381,6 +20394,19 @@
         "dest": "CODEX.md",
         "kind": "framework_doc",
         "sha256": "03c6841096e8d186e07165304191e49d13c49e43d4145865577d2e344ff1c8dc",
+        "owner": "framework",
+        "mergeStrategy": "append-if-exists",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null,
+        "merge": "append-if-exists"
+      },
+      {
+        "id": "framework_doc.GEMINI.md",
+        "src": "GEMINI.md",
+        "dest": "GEMINI.md",
+        "kind": "framework_doc",
+        "sha256": "695feaf587c0936d0e2b602204bde5245624dc098a8b18ba56e190aa00963074",
         "owner": "framework",
         "mergeStrategy": "append-if-exists",
         "introducedIn": "0.0.0",

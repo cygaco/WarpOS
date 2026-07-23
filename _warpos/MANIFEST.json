@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T03:21:07.735Z",
+  "generatedAt": "2026-07-23T03:33:42.567Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -6626,8 +6626,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "ac4518c4990a4dad5e418dbcce638bca446aaca30988329a79f43a835313f778",
-      "installedSha": "ac4518c4990a4dad5e418dbcce638bca446aaca30988329a79f43a835313f778"
+      "sha256": "c10e5df676953406144725fd588c478a39b36d50e20b32af293d19a0e0add8c8",
+      "installedSha": "c10e5df676953406144725fd588c478a39b36d50e20b32af293d19a0e0add8c8"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",

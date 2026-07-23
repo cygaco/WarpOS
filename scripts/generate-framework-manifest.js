@@ -384,9 +384,14 @@ const TOP_LEVEL_FRAMEWORK_FILES = [
 const FRAMEWORK_DOCS = [
   { src: "CLAUDE.md", dest: "CLAUDE.md", merge: "append-if-exists" },
   { src: "AGENTS.md", dest: "AGENTS.md", merge: "append-if-exists" },
-  // Provider-entrypoint shim for Codex/GPT executors. Ownership manifest treats
-  // it as the same root-doc class as CLAUDE.md/AGENTS.md, so it must ship too.
+  // Provider-entrypoint shims for non-Claude executors. The ownership manifest treats
+  // them as the same root-doc class as CLAUDE.md/AGENTS.md, so they must ship too.
   { src: "CODEX.md", dest: "CODEX.md", merge: "append-if-exists" },
+  // ANTIGRAVITY.md (agy) + GEMINI.md (sunset-redirect) — SP-20260723-001 / ADR-0036,
+  // same executor-entrypoint class as CODEX.md. Remove GEMINI.md here when it is
+  // deleted per the ADR-0036 removal-trigger.
+  { src: "ANTIGRAVITY.md", dest: "ANTIGRAVITY.md", merge: "append-if-exists" },
+  { src: "GEMINI.md", dest: "GEMINI.md", merge: "append-if-exists" },
   // ADR-0007: org-structure companion to AGENTS.md, referenced from CLAUDE.md.
   // Ships to consumer roots like AGENTS.md so the agent-tree doc travels with
   // the org doc it complements.
