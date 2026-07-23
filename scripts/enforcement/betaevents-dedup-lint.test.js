@@ -7,7 +7,7 @@
  * SKIPS the msg_id-resolution sub-check (fail-open advisory), never blocks.
  */
 const assert = require("assert");
-const { analyze, parseVerdictRows } = require("./betaevents-dedup-lint.js");
+const { analyze, parseVerdictRows, extractMsgIds } = require("./betaevents-dedup-lint.js");
 const { duplicateKeys } = require("./dedup-util.js");
 
 let pass = 0, fail = 0;
@@ -74,7 +74,8 @@ t("strong-majority resolve + one missing -> the missing one is flagged (log prov
   // resolution is exact-substring, not accidental.
   const ids = ["mmid1", "mmid2", "mmid3", "mmid4", "ghostxyz"];
   const beta = ids.map((id) => row({ decision: "DECIDE", sprint: "SP-1", boundary: id, msg_id: id })).join("\n");
-  const r = analyze({ betaText: beta, eventsText: "log has mmid1 mmid2 mmid3 mmid4 and no fifth" });
+  const eventsText = ["mmid1", "mmid2", "mmid3", "mmid4"].map((x) => `{"msg_id":"${x}"}`).join("\n");
+  const r = analyze({ betaText: beta, eventsText });
   assert.deepStrictEqual(r.unresolved, ["ghostxyz"], JSON.stringify(r));
   assert.strictEqual(r.resolutionSkipped, false);
 });
@@ -103,6 +104,23 @@ t("verdict row with NO msg_id -> counted as missingMsgId (advisory)", () => {
 
 t("betaText null -> skipped (gitignored advisory ledger absent)", () => {
   assert.strictEqual(analyze({ betaText: null, eventsText: null }).skipped, true);
+});
+
+// ── qa r2 #4 / security r2 #3: EXACT msg_id match, not substring ───────────────────────────────────────
+t("extractMsgIds parses msg_id field VALUES for exact membership (no substring leak)", () => {
+  const set = extractMsgIds('{"decision":"DECIDE","msg_id":"abc"}\n{"msg_id":"abcd"}');
+  assert.strictEqual(set.has("abc"), true);
+  assert.strictEqual(set.has("abcd"), true);
+  assert.strictEqual(set.has("ab"), false, "a substring must NOT be a member");
+});
+
+t("PREFIX COLLISION: verdict m1 is NOT resolved by a log containing only m10 (exact, not substring)", () => {
+  const beta = ["r1", "r2", "r3", "r4", "m1"].map((id) => row({ decision: "DECIDE", sprint: "S", boundary: id, msg_id: id })).join("\n");
+  // 4 exact-resolve (r1-r4) keeps the log >=80% trusted; m1's only near-entry is m10 (a substring, not exact).
+  const eventsText = ['r1', 'r2', 'r3', 'r4', 'm10'].map((x) => `{"msg_id":"${x}"}`).join("\n");
+  const r = analyze({ betaText: beta, eventsText });
+  assert.deepStrictEqual(r.unresolved, ["m1"], "m1 must NOT be resolved by m10 (substring): " + JSON.stringify(r));
+  assert.strictEqual(r.resolutionSkipped, false);
 });
 
 console.log("\n" + pass + "/" + (pass + fail) + " passed");

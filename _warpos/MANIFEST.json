@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T07:11:12.879Z",
+  "generatedAt": "2026-07-23T07:43:35.243Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -6507,8 +6507,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "4112844fb70f3dcea5eae7ba65e2a0c0b806603edba152ed560dd74258b56fc2",
-      "installedSha": "4112844fb70f3dcea5eae7ba65e2a0c0b806603edba152ed560dd74258b56fc2"
+      "sha256": "3e0e50646bc51e20e0f05e6a1668b57ea6f8de904378c447771cd17cf4c38843",
+      "installedSha": "3e0e50646bc51e20e0f05e6a1668b57ea6f8de904378c447771cd17cf4c38843"
     },
     "scripts/dispatch-review.js": {
       "owner": "framework",
@@ -9867,15 +9867,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.js",
-      "sha256": "a8a57994fe5c3d3a9373082a42a175978306a61cdebeb11b5e4b5ab2d943cebc",
-      "installedSha": "a8a57994fe5c3d3a9373082a42a175978306a61cdebeb11b5e4b5ab2d943cebc"
+      "sha256": "67a421ac6b200e4b934ca1d3cef371ad4eefad429d1f15cc2e3ce78261506993",
+      "installedSha": "67a421ac6b200e4b934ca1d3cef371ad4eefad429d1f15cc2e3ce78261506993"
     },
     "scripts/enforcement/betaevents-dedup-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
-      "sha256": "50ffdb3678b215ef666a6e0cb1d6aaf547bb468604e0c43cb3977f4e43aa909f",
-      "installedSha": "50ffdb3678b215ef666a6e0cb1d6aaf547bb468604e0c43cb3977f4e43aa909f"
+      "sha256": "788aed08765a9e0549c8ec1b3598ed931e165805d8102705fdf098ba5e783a64",
+      "installedSha": "788aed08765a9e0549c8ec1b3598ed931e165805d8102705fdf098ba5e783a64"
     },
     "scripts/enforcement/builder-right-size.js": {
       "owner": "framework",
@@ -9902,22 +9902,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-dup-id-lint.js",
-      "sha256": "098ca24643f6afc84e5b9b4aee58fa645cccffd788bc06c0c0cff26c07db258e",
-      "installedSha": "098ca24643f6afc84e5b9b4aee58fa645cccffd788bc06c0c0cff26c07db258e"
+      "sha256": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf",
+      "installedSha": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf"
     },
     "scripts/enforcement/ed-registry.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-registry.js",
-      "sha256": "5f110c0c1a54d06321f969c1a45735621dc72b0b363987cc45d815fc2bb0f400",
-      "installedSha": "5f110c0c1a54d06321f969c1a45735621dc72b0b363987cc45d815fc2bb0f400"
+      "sha256": "f8a43a27e53b12ae5dd0bfd1eb85e47c4f9e1e6c2822d98a0812ddfe150b6121",
+      "installedSha": "f8a43a27e53b12ae5dd0bfd1eb85e47c4f9e1e6c2822d98a0812ddfe150b6121"
     },
     "scripts/enforcement/ed-registry.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-registry.test.js",
-      "sha256": "6ba171793a1447114cbde4c9f8b19707e173f947c0ed4391c2badb31ce2c436f",
-      "installedSha": "6ba171793a1447114cbde4c9f8b19707e173f947c0ed4391c2badb31ce2c436f"
+      "sha256": "54e325559075d0e9e92d741c22e8c7570d60cf5c98dfb2ff446ae92a9736a04b",
+      "installedSha": "54e325559075d0e9e92d741c22e8c7570d60cf5c98dfb2ff446ae92a9736a04b"
     },
     "scripts/enforcement/next-ed-id.js": {
       "owner": "framework",
@@ -9930,15 +9930,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.js",
-      "sha256": "8ee7a4ff38e06be504fdba2b238d3eba71cfec169acb364122043eb1cd42dd92",
-      "installedSha": "8ee7a4ff38e06be504fdba2b238d3eba71cfec169acb364122043eb1cd42dd92"
+      "sha256": "0eff70a94fd3e5c5acad7c1068ea3bbd5eb504c42885cad1ffea49b645e04a14",
+      "installedSha": "0eff70a94fd3e5c5acad7c1068ea3bbd5eb504c42885cad1ffea49b645e04a14"
     },
     "scripts/enforcement/pipe-masks-gate-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.test.js",
-      "sha256": "97cfc620356252a4229d3a7ae74a5c1fd0f5e68055f24428e5684b3d7732a8e6",
-      "installedSha": "97cfc620356252a4229d3a7ae74a5c1fd0f5e68055f24428e5684b3d7732a8e6"
+      "sha256": "a6e8ca58bcb756835c09c2383efc2188e8ab6fff426d253a89afd51cbb30947d",
+      "installedSha": "a6e8ca58bcb756835c09c2383efc2188e8ab6fff426d253a89afd51cbb30947d"
     },
     "scripts/docs/catalog.js": {
       "owner": "framework",
@@ -11757,8 +11757,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.js",
-      "sha256": "dac1067a65deebe4573371ad777946eac6c1a1e20ed4bc98e0d546b6b23c73e0",
-      "installedSha": "dac1067a65deebe4573371ad777946eac6c1a1e20ed4bc98e0d546b6b23c73e0"
+      "sha256": "3f3f091661b36ea8765e64fd50689c39019e9cb5f6554fc9472af875279485d1",
+      "installedSha": "3f3f091661b36ea8765e64fd50689c39019e9cb5f6554fc9472af875279485d1"
     },
     "scripts/checks/epsilon-liveness.test.js": {
       "owner": "framework",
@@ -11771,8 +11771,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-paired-waiter.test.js",
-      "sha256": "1c37b970cffc676df4acdd69206c8a5cd45c019388c6c181012b75517ce58a86",
-      "installedSha": "1c37b970cffc676df4acdd69206c8a5cd45c019388c6c181012b75517ce58a86"
+      "sha256": "e86c9884c6c53ed7ba7c67e5fd5b844903d33005ebcecd067bcc2cd0617fcd8f",
+      "installedSha": "e86c9884c6c53ed7ba7c67e5fd5b844903d33005ebcecd067bcc2cd0617fcd8f"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",
@@ -25948,8 +25948,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "77fcabec27afcc8034b052e19f4878a18e4f34e26017a4d236fd21d606505ac0",
-      "installedSha": "77fcabec27afcc8034b052e19f4878a18e4f34e26017a4d236fd21d606505ac0"
+      "sha256": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e",
+      "installedSha": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",

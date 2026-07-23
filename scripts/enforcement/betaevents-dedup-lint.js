@@ -1,10 +1,12 @@
 "use strict";
 /**
- * betaevents-dedup-lint.js (SP-20260723-003 / ED-267a) — the betaEvents verdict-row integrity lint,
- * /scan:full-scoped ONLY (β: never CI/fresh-clone — betaEvents is a GITIGNORED advisory ledger, absent
- * on a clean checkout). Enforces the standing β-writes-at-delivery pattern (adopted after the
- * SP-20260723-002 recipient-side silent logging drop, where a verdict row got stamped with the OUTGOING
- * consult msg_id instead of β's DELIVERY msg_id).
+ * betaevents-dedup-lint.js (SP-20260723-003 / ED-267a) — the betaEvents verdict-row dedup + msg_id-
+ * resolution HYGIENE lint (NOT a verdict AUTHENTICATOR — a verdict's authenticity comes from β's
+ * persistent-teammate delivery + the recipient verifying the msg_id, security r2 #3; this lint only
+ * flags duplicate/unresolvable rows). /scan:full-scoped ONLY (β: never CI/fresh-clone — betaEvents is a
+ * GITIGNORED advisory ledger, absent on a clean checkout). Supports the standing β-writes-at-delivery
+ * pattern (adopted after the SP-20260723-002 recipient-side silent logging drop, where a verdict row got
+ * stamped with the OUTGOING consult msg_id instead of β's DELIVERY msg_id).
  *
  * Two checks over VERDICT rows (decision ∈ DECIDE|DIRECTIVE|ESCALATE; a REQUESTED row is a request, not
  * a verdict):
@@ -53,6 +55,19 @@ function parseVerdictRows(text) {
 }
 
 /**
+ * extractMsgIds(eventsText) -> Set<string> — the msg_id field VALUES in the message log, for EXACT match.
+ * (qa r2 #4 / security r2 #3: a substring `includes()` "resolved" verdict m1 against a log containing only
+ * m10 — a prefix-collision false-positive. Exact set membership closes it.)
+ */
+function extractMsgIds(eventsText) {
+  const set = new Set();
+  const re = /"msg_id"\s*:\s*"([^"]+)"/g;
+  let m;
+  while ((m = re.exec(String(eventsText || ""))) !== null) set.add(m[1]);
+  return set;
+}
+
+/**
  * analyze({ betaText, eventsText }) -> { skipped, dupMsgIds, missingMsgId, unresolved, resolutionSkipped }.
  * Pure — the CLI supplies the file contents (eventsText null ⇒ message log unreachable ⇒ resolution skipped).
  */
@@ -66,8 +81,9 @@ function analyze({ betaText, eventsText }) {
   if (eventsText == null) {
     resolutionSkipped = true; // message log unreachable -> fail-open advisory (β rider #2)
   } else {
+    const msgIds = extractMsgIds(eventsText); // EXACT-match set (not substring — qa r2 #4 / security r2 #3)
     const withId = rows.map((r) => r.msg_id).filter((id) => typeof id === "string" && id);
-    const notFound = withId.filter((id) => !eventsText.includes(id));
+    const notFound = withId.filter((id) => !msgIds.has(id));
     const resolvedFraction = withId.length ? (withId.length - notFound.length) / withId.length : 1;
     // Fail-open heuristic (β rider #2 generalized): a REAL SendMessage log resolves ~every delivered
     // msg_id. If the candidate log resolves a LOW fraction (< THRESHOLD), it is NOT the message log (e.g.
@@ -110,10 +126,13 @@ if (require.main === module) {
     console.log("betaevents-dedup-lint: OK — no duplicate verdict msg_id; all msg_ids resolve.");
     process.exit(0);
   }
-  const blocking = enforce && res.dupMsgIds.length > 0; // only a real DEDUP finding can block (under --enforce)
+  // Under --enforce: a DEDUP finding blocks; and when the resolution check is ACTIVE (the log is trusted,
+  // not <80%-skipped), an UNRESOLVED verdict row is a fabricated/unverifiable row and blocks too (security
+  // r2 #3). The resolution-skipped path (untrusted/unreachable log) NEVER blocks (β rider #2 fail-open).
+  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.resolutionSkipped && res.unresolved.length > 0));
   console[blocking ? "error" : "log"](`betaevents-dedup-lint: ${blocking ? "FAIL" : "findings (report-only)"}:`);
   for (const l of lines) console[blocking ? "error" : "log"](l);
   process.exit(blocking ? 1 : 0);
 }
 
-module.exports = { analyze, parseVerdictRows };
+module.exports = { analyze, parseVerdictRows, extractMsgIds };

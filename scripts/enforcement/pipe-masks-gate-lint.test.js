@@ -43,6 +43,19 @@ t("grep-as-gate (non-passthrough filter) then && -> GREEN (grep's exit IS the in
   assert.deepStrictEqual(scanText(fenced("echo x | grep needle && echo found")), []);
 });
 
+t("security r2 #5: MID-STAGE passthrough `| tail | grep x && next` -> RED (not just last-stage)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | tail -1 | grep OK && node next.js")).length, 1);
+});
+
+t("security r2 #5: passthrough split across a \\ line-continuation -> RED (lines joined)", () => {
+  const md = ["```bash", "node gate.js | tail -1 \\", "  && node next.js", "```"].join("\n");
+  assert.strictEqual(scanText(md).length, 1);
+});
+
+t("mid-stage: `| head | awk … ;` -> RED (semicolon + mid-stage passthrough)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | head -5 | awk '{print}' ; node next.js")).length, 1);
+});
+
 t("the pattern OUTSIDE a fenced block (prose) -> GREEN (fenced-only; no self-trip on the rule's example)", () => {
   const md = "The rule warns: `node gate.js | tail -1 && next` runs next even on a RED gate.\n";
   assert.deepStrictEqual(scanText(md), []);
@@ -50,6 +63,18 @@ t("the pattern OUTSIDE a fenced block (prose) -> GREEN (fenced-only; no self-tri
 
 t("a sanctioned line with the pragma -> GREEN", () => {
   assert.deepStrictEqual(scanText(fenced("node gate.js | tail -1 && next   # pipe-masks-gate-lint:allow")), []);
+});
+
+t("backend r2 #8: a QUOTED semicolon `| tee \"a;b\"` (no real chain) -> GREEN (false-positive closed)", () => {
+  assert.deepStrictEqual(scanText(fenced('node gate.js | tee "a;b"')), []);
+});
+
+t("backend r2 #8: a quoted separator but a REAL && after -> RED (the real chain still flagged)", () => {
+  assert.strictEqual(scanText(fenced('node gate.js | tee "a;b" && node next.js')).length, 1);
+});
+
+t("backend r2 #8: a `;`/`&&` inside a trailing # comment -> GREEN (comment stripped)", () => {
+  assert.deepStrictEqual(scanText(fenced("node gate.js | tail -1   # note: use ; or && carefully")), []);
 });
 
 t("multiple offending lines in one block -> all flagged", () => {

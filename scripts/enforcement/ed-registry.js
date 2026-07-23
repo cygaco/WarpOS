@@ -70,4 +70,24 @@ function findDuplicateGenesisIds(text) {
   return dups.map((d) => ({ id: d.key, count: d.count }));
 }
 
-module.exports = { parseRegister, nextEdId, findDuplicateGenesisIds, ED_ID_RE };
+/**
+ * findGenesisEvadingUpdates(text) -> [{ id }] sorted by id — UPDATE-marked rows
+ * (amendment:true / record_kind / amends) that ALSO carry a fresh genesis DESCRIPTION (policy/origin/gap).
+ * A legit amendment updates via `note`; a fresh description under an update marker is a SECOND GENESIS
+ * hiding from the dup count (security r2 #2 — the settable-marker bypass of findDuplicateGenesisIds).
+ * Verified: zero legit amendments on the live register carry a description field, so this does not
+ * false-RED real data.
+ */
+function findGenesisEvadingUpdates(text) {
+  const out = [];
+  for (const r of parseRegister(text)) {
+    if (r.malformed || !r.id || !ED_ID_RE.test(r.id)) continue;
+    const o = r.obj || {};
+    const isUpdate = o.amendment === true || o.record_kind !== undefined || o.amends !== undefined;
+    const hasDesc = DESCRIPTION_FIELDS.some((k) => typeof o[k] === "string" && o[k].length > 0);
+    if (isUpdate && hasDesc) out.push({ id: r.id });
+  }
+  return out.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+module.exports = { parseRegister, nextEdId, findDuplicateGenesisIds, findGenesisEvadingUpdates, ED_ID_RE };

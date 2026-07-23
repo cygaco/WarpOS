@@ -329,7 +329,7 @@ try {
   const a = assessBuilderPrompt({
     role,
     promptBytes: Buffer.byteLength(promptStr, "utf8"),
-    isBuildChain: BUILD_CHAIN_ROLES.has(role),
+    isBuildChain: isBuildChainRole(role), // robust (lowercased + registry-derived), NOT the raw case-sensitive Set (security r2 #4 / R6)
     enforce: enforceEnabled(process.env),
   });
   if (a.level === "warn") {
@@ -338,8 +338,16 @@ try {
     process.stderr.write(`[dispatch-claude] BLOCKED (ED-257 right-sizing, ${ENFORCE_ENV} set): ${a.reason}\n`);
     process.exit(2);
   }
-} catch {
-  /* right-sizing heuristic module unavailable — non-fatal (never break dispatch on the advisory) */
+} catch (e) {
+  // backend r2 #7: a missing/broken heuristic module must NOT silently disable the BLOCKING gate under
+  // enforce — report + exit non-zero (fail-closed). Advisory (non-enforce) stays fail-open: never break a
+  // live dispatch on the advisory. Read the env directly (the module that exposes enforceEnabled failed).
+  const enforceOn = process.env.WARPOS_BUILDER_SIZE_ENFORCE === "1" || process.env.WARPOS_BUILDER_SIZE_ENFORCE === "true";
+  if (enforceOn) {
+    process.stderr.write(`[dispatch-claude] BLOCKED (ED-257 right-sizing): enforce is ON but the heuristic module failed to load (${e && e.message ? e.message : e}) — refusing (fail-closed).\n`);
+    process.exit(2);
+  }
+  /* non-enforce: right-sizing heuristic unavailable — advisory fail-open, continue the dispatch */
 }
 
 // ── Derived role binding + worker-identity neutralization (SP-20260718-004 Phase 2, G2.1 + G2.4) ──

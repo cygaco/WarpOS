@@ -25,51 +25,83 @@ const PRAGMA = "pipe-masks-gate-lint:allow";
 const FENCE_RE = /^```(bash|sh|shell)\b/i;
 // A gate piped to a passthrough filter (exits 0, masking upstream) then chained with && or ;.
 const PASSTHROUGH = "tail|head|tee|cat|less|more";
-const MASK_RE = new RegExp("\\|\\s*(?:" + PASSTHROUGH + ")\\b[^|]*?(?:&&|;)\\s*\\S");
+// A passthrough stage ANYWHERE in the pipeline (not just the last stage — security r2 #5: `gate | tail |
+// grep x && next` masks too), followed EVENTUALLY by a && or ; chain. `.*?` (not `[^|]`) so a filter after
+// the passthrough (grep) doesn't hide it. grep-as-gate stays exempt: a pipeline with NO passthrough token
+// never matches.
+const MASK_RE = new RegExp("\\|\\s*(?:" + PASSTHROUGH + ")\\b.*?(?:&&|;)\\s*\\S");
 
-function findMdFiles(absRoot, out) {
+function findMdFiles(absRoot, out, unreadable) {
   let entries;
-  try { entries = fs.readdirSync(absRoot, { withFileTypes: true }); } catch { return; }
+  try { entries = fs.readdirSync(absRoot, { withFileTypes: true }); }
+  catch (e) { unreadable.push(`${absRoot} (${e.code || e.message})`); return; } // qa r2 #3: never silent
   for (const e of entries) {
-    if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) findMdFiles(path.join(absRoot, e.name), out); }
+    if (e.isDirectory()) { if (!SKIP_DIRS.has(e.name)) findMdFiles(path.join(absRoot, e.name), out, unreadable); }
     else if (e.isFile() && e.name.endsWith(".md")) out.push(path.join(absRoot, e.name));
   }
 }
 
-/** scanText(text) -> [{ line, code }] — offending lines inside fenced bash/sh/shell blocks. */
+/**
+ * stripQuotedAndComments(s) — blank out single/double-quoted spans + a trailing `#` comment so a `;` or
+ * `&&` INSIDE a string/comment is not counted as a shell separator (backend r2 #8: `| tee "a;b"` false-
+ * positive — the quoted `;` matched as a chain). Quotes are stripped FIRST (a `#` inside a quote goes with
+ * it), then the trailing comment. The PRAGMA is checked on the RAW line before this, so stripping is safe.
+ */
+function stripQuotedAndComments(s) {
+  return String(s)
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''")
+    .replace(/#.*$/, "");
+}
+
+/**
+ * scanText(text) -> [{ line, code }] — offending lines inside fenced bash/sh/shell blocks. Shell
+ * line-continuations (`\` at end of line) are JOINED into one logical line first (security r2 #5: a
+ * passthrough split from its `&&` across a continuation), reported at the FIRST physical line. Quoted/
+ * comment spans are stripped before matching (backend r2 #8).
+ */
 function scanText(text) {
   const findings = [];
   const lines = String(text || "").split("\n");
   let inFence = false;
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (FENCE_RE.test(line.trim())) { inFence = true; continue; }
-    if (inFence && line.trim().startsWith("```")) { inFence = false; continue; }
-    if (!inFence) continue;
-    if (line.includes(PRAGMA)) continue;
-    if (MASK_RE.test(line)) findings.push({ line: i + 1, code: line.trim().slice(0, 200) });
+  let i = 0;
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (FENCE_RE.test(raw.trim())) { inFence = true; i++; continue; }
+    if (inFence && raw.trim().startsWith("```")) { inFence = false; i++; continue; }
+    if (!inFence) { i++; continue; }
+    const startLine = i;
+    let logical = raw;
+    while (/\\\s*$/.test(logical) && i + 1 < lines.length) { logical = logical.replace(/\\\s*$/, " ") + lines[i + 1]; i++; }
+    if (!logical.includes(PRAGMA) && MASK_RE.test(stripQuotedAndComments(logical))) {
+      findings.push({ line: startLine + 1, code: logical.trim().slice(0, 200) });
+    }
+    i++;
   }
   return findings;
 }
 
-function collectFiles() {
+function collectFiles(unreadable) {
   const files = [];
-  for (const r of SCAN_ROOTS) findMdFiles(path.join(ROOT, r), files);
+  for (const r of SCAN_ROOTS) findMdFiles(path.join(ROOT, r), files, unreadable);
   for (const d of ROOT_DOCS) { const p = path.join(ROOT, d); if (fs.existsSync(p)) files.push(p); }
   return files;
 }
 
 if (require.main === module) {
-  let files;
-  try { files = collectFiles(); } catch (e) {
-    process.stderr.write(`pipe-masks-gate-lint: scan roots unreadable (${e.message}) — fail-closed.\n`);
-    process.exit(2);
-  }
+  const unreadable = [];
+  const files = collectFiles(unreadable);
   const hits = [];
   for (const f of files) {
     let text;
-    try { text = fs.readFileSync(f, "utf8"); } catch { continue; }
+    try { text = fs.readFileSync(f, "utf8"); } catch (e) { unreadable.push(`${path.relative(ROOT, f)} (${e.code || e.message})`); continue; }
     for (const h of scanText(text)) hits.push({ file: path.relative(ROOT, f), ...h });
+  }
+  // qa r2 #3: an unreadable mandated scan surface is FAIL-CLOSED (exit 2) — never a silent OK.
+  if (unreadable.length) {
+    process.stderr.write(`pipe-masks-gate-lint: FAIL-CLOSED — ${unreadable.length} scan root/file unreadable (mandated surface not scanned):\n`);
+    for (const u of unreadable) process.stderr.write(`  ${u}\n`);
+    process.exit(2);
   }
   if (hits.length === 0) {
     process.stdout.write(`pipe-masks-gate-lint: OK — no pipe-masks-gate patterns in ${files.length} scanned command doc(s).\n`);
