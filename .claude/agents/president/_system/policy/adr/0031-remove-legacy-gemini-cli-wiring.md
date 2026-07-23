@@ -120,3 +120,17 @@ attested as live.
   advisory-lab architecture.
 - ED-060 (c) real serve (`-p` → `fallback:false`, contracted model) remains gated on a valid keyring (operator
   interactive `agy` login — ADR-0027 mitigation-3); ED-230 served-model proof stays OPEN.
+
+## AMENDMENT — 2026-07-23 (SP-20260723-005, α ground-truth-verified): the re-open trigger FIRED — agy bumped 1.1.4 → 1.1.5, which HAS a per-tool permission model. The 2026-07-20 "no mechanism / BLOCKED-ADVISORY" read is SUPERSEDED for 1.1.5.
+
+The 2026-07-20 amendment above named the re-open trigger as **an agy version bump**. It fired: `agy --version` = **1.1.5** on the installed binary (2026-07-23), NOT 1.1.4. The stronger claim in that amendment — "agy 1.1.4 exposes NO per-tool permission mechanism at all" — is now STALE; do NOT re-inherit the 1.1.4 read.
+
+**Ground truth (α, verified against the INSTALLED agy 1.1.5, 2026-07-23):** agy 1.1.5 HAS a per-tool permission model — a `settings.json` `{ "permissions": { "allow": [], "deny": [], "ask": [] } }` block with `action(target)` rules (`read_file`/`write_file`/`read_url`/`command`/`unsandboxed`/`mcp`), plus the `--dangerously-skip-permissions` flag (auto-approves all — NEVER use). Proven three ways: the skip-flag (a skip implies permissions to skip); the headless wall denied the specific **command** permission (per-tool); agy's own error points at **`permissions.allow` in `settings.json`** (its own schema); and the official docs (antigravity.google/docs/cli/permissions) describe the model. So the permission model is REAL and agy-referenced — NOT "no mechanism," NOT "agy ignores settings.json," NOT folder-trust-only.
+
+**CORRECTED terminal state (the honest posture, replacing BLOCKED-ADVISORY-no-mechanism):**
+- (a) The per-tool permission MODEL EXISTS in agy 1.1.5.
+- (b) Whether a scoped `permissions.allow` allow-rule actually ENFORCES headless is **UNVERIFIED** (empirically untested this session). Do NOT rely on it; do NOT add a `permissions` block speculatively until an enforcement probe confirms it.
+- (c) Cross-provider REVIEW is UNAFFECTED and works today: the dispatch `-p` PRINT path inlines the review content (toolless) and invokes no agentic tools (ADR-0023), so a normal review needs no permission grant (bounded ~32KB by the safe-spawn CreateProcess cap).
+- (d) agy READING files headlessly (needed only for a big diff > ~32KB) would require BOTH a scoped read-only allow-rule AND an enforcement probe — an OPTIONAL operator-machine **Class C** security-posture decision, out of scope until requested. Recommendation when opened: a pure file-reader floor (allow reads, deny writes/destructive); NEVER `--dangerously-skip-permissions`; NEVER folder-trust as the seam.
+
+**New re-open/action trigger:** an empirical **enforcement probe** (does a scoped `permissions.allow` rule actually gate headless tool use?) → THEN, if a big-diff file-read review is wanted, the Class C operator sign-off. Never a speculative permissions block, never a false-posture sign-off before the enforcement probe. The live-doc statement of this is `ANTIGRAVITY.md` §4 (α-ground-truth-corrected 2026-07-23). β's 2026-07-20 "theater" ruling (betaEvents e30a2774) rested on this now-stale premise; β logged an append-only `beta-premise-correction` (outcome held — F6-CONFIG stays deferred; corrected reason = enforcement-unverified, not agy-ignores-it).

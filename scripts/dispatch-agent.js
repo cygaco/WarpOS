@@ -3,16 +3,17 @@
  * dispatch-agent.js — Cross-provider agent dispatch.
  *
  * Used by γ (adhoc orchestrator) and δ (oneshot orchestrator) to dispatch
- * review-layer and security agents that run on GPT or Gemini instead of Claude.
+ * review-layer and security agents that run on GPT (codex) or the Gemini family
+ * via Antigravity (agy) instead of Claude.
  *
  * Usage:
  *   node scripts/dispatch-agent.js <role> <prompt-file>
  *   node scripts/dispatch-agent.js <role> -              # read prompt from stdin
  *
  * Reads manifest.agentProviders[<role>] to determine provider:
- *   - "claude"  → errors (caller should dispatch natively via Claude Code Agent tool or `claude -p`)
- *   - "openai"  → shells out to `codex`
- *   - "gemini"  → shells out to `gemini`
+ *   - "claude"       → errors (caller should dispatch natively via Claude Code Agent tool or `claude -p`)
+ *   - "openai"       → shells out to `codex` (prompt on stdin)
+ *   - "antigravity"  → shells out to `agy` (prompt on the `-p` argv value; the sunset-`gemini`-CLI migration target, ADR-0031)
  *
  * Output on stdout:
  *   JSON: { ok, provider, model, role, output, fallback?, error? }
@@ -52,10 +53,10 @@ const {
 } = require("./dispatch/dispatch-record-fields");
 
 // ── provider-id → tool-id (D2, SP-20260718-003 / I-2) ────────────────────────
-// The dispatch CONTRACT keys on tool-id (`codex`/`gemini`/`agy`); the registry +
-// callers speak provider-id (`openai`/`gemini`/`antigravity`). ONE map, used at
-// BOTH the validate call and the completion record — an inlined ternary that
-// omitted `antigravity`→`agy` tripped dispatch-contract on security-reviewer.
+// The dispatch CONTRACT keys on tool-id (`codex`/`agy`; `gemini` is the SUNSET tool-id per ADR-0031 —
+// the live Gemini-family route is provider `antigravity` → tool `agy`); callers speak provider-id
+// (`openai`/`antigravity`). ONE map, used at BOTH the validate call and the completion record — an
+// inlined ternary that omitted `antigravity`→`agy` tripped dispatch-contract on security-reviewer.
 // Refactor-hygiene: replace EVERY occurrence, not just the one you remember.
 const PROVIDER_TOOL_ID = { openai: "codex", antigravity: "agy" };
 function providerToolId(provider) {
@@ -646,7 +647,7 @@ if (require.main !== module) {
 const [, , role, promptArg, ...restArgs] = process.argv;
 
 // Optional overrides — used by the SECOND GPT security pass and manual reruns:
-//   --provider <claude|openai|gemini>   force a provider regardless of manifest
+//   --provider <claude|openai|antigravity>   force a provider regardless of manifest (gemini is sunset → antigravity/agy)
 //   --model <id>                         force a model
 // e.g. node scripts/dispatch-agent.js redteam prompt.txt --provider openai --model gpt-5.5
 function parseFlag(name) {

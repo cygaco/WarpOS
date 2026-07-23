@@ -840,6 +840,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260723-005](.claude/project/sprint/sprints/SP-20260723-005/) | Per-provider dispatch-language audit + fix — correct docs/code to each provider's REAL syntax (F1 AGENTS.md agy stdin->argv, F2 codex --ask-for-approval doc/code, F3 dispatch-agent gemini->agy, F4 agy 32KB bound, F6-DOC agy permission-model) + provider-invocation-parity enforcer; F6-CONFIG agy settings.json read-only allow-list beta-gated/operator-signed; then mint release | planning | 2026-07-23T17:59:04.520Z |  |  |
 | [SP-20260723-004](.claude/project/sprint/sprints/SP-20260723-004/) | Follow-up: SP-003 named fail-closed ceilings (ED-269/270/271/272 env-reader residuals, ED-274 pipe-masks shell-lexer, ED-275 betaevents delivery-record resolution, ED-276 fixed-skew) + earlier-cut ED-264/265/266/234 | planning | 2026-07-23T12:08:03.386Z |  |  |
 | [SP-20260723-003](.claude/project/sprint/sprints/SP-20260723-003/) | Post-1.0 mechanical-enforcer hardening batch (ED-256 waiter-armed liveness / ED-257 builder right-sizing lint / ED-258 dup-id + pipe-masks-gate shell-lint / ED-267 betaEvents dedup + enforcement:log allocator fix) | planning | 2026-07-23T06:36:30.698Z |  |  |
 | [SP-20260723-002](.claude/project/sprint/sprints/SP-20260723-002/) | agy auth-fallback tell-detector — fail-closed record honesty (ED-060 anti-false-green seam) | planning | 2026-07-23T03:57:57.167Z |  |  |
