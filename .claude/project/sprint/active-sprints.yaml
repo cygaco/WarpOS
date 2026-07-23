@@ -1256,8 +1256,8 @@ sprints:
     created_at: "2026-07-23T12:08:03.386Z"
     updated_at: "2026-07-23T12:08:03.386Z"
   - id: SP-20260723-005
-    title: "Per-provider dispatch-language audit + fix — correct docs/code to each provider's REAL syntax (F1 AGENTS.md agy stdin->argv, F2 codex --ask-for-approval doc/code, F3 dispatch-agent gemini->agy, F4 agy 32KB bound, F6-DOC agy permission-model) + provider-invocation-parity enforcer; F6-CONFIG agy settings.json read-only allow-list beta-gated/operator-signed; then mint release"
-    status: planning
+    title: "Per-provider dispatch-language audit — docs/code corrected to each provider's REAL syntax (F1-F4 + G3 gemini-language + 4 stale-agy-1.1.5 fact corrections in ANTIGRAVITY.md §2-§4 + the effort-flag grep-ALL) + a derive-from-code provider-invocation-parity enforcer. F6-CONFIG dropped (agy 1.1.5 HAS the permission model; enforcement unverified — see ADR-0031 amendment); follow-up ED-277 (agy --effort wire-up, unverified headless)"
+    status: done
     lane:
       type: default
       value: null
