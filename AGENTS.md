@@ -77,7 +77,7 @@ The roster runs a **provider-by-department** model spread (ADR-0016 / DISPATCH.m
 | Provider id | CLI | Invocation | Auth |
 |---|---|---|---|
 | `openai` | `codex` | `codex exec --sandbox workspace-write -c model_reasoning_effort=<lvl> -m <model> -` (prompt on stdin) | metered API key |
-| `antigravity` | `agy` | `agy [--model <model>]` (prompt on stdin) | self-auth (`~/.gemini/antigravity-cli`) |
+| `antigravity` | `agy` | `agy --model <DISPLAY-name> --print-timeout <dur> -p '<prompt>'` (prompt on the `-p` argv value, NOT stdin — `agy` has no stdin `-`; bounded ~32KB by CreateProcess) | self-auth (`~/.gemini/antigravity-cli`) |
 | `claude` | `claude` | `claude -p [--agent <role>] [--model <model>]` | harness session |
 
 The individual-tier `gemini` CLI is **sunset** — all Gemini routes through Antigravity `agy`.
@@ -88,7 +88,7 @@ The individual-tier `gemini` CLI is **sunset** — all Gemini routes through Ant
 |---|---|---|
 | OpenAI (`codex`) | `gpt-5.6-sol` (flagship) · `gpt-5.6-terra` (mid) · `gpt-5.6-luna` (cheap) | Product + Growth judgment/authoring; cross-lab reviewers. Never the bare `gpt-5.6` alias (400s + silently degrades). |
 | Anthropic (`claude`) | `claude-fable-5` (top brain) · `claude-opus-4-8` (conductors/leads/hunters + THE fallback target) · `claude-sonnet-5` (builders/fixers/legwork) | Engineering; in-process judgment. Retired: `claude-sonnet-4-6`, any Opus < 4.8. |
-| Gemini via Antigravity (`agy`) | `gemini-3.1-pro-high` (thinking always-on, no effort flag; verified live 2026-07-16 — supersedes the DISPATCH.md spec's `-preview` id) | Security Gemini hunter lane · Growth research-lead. |
+| Gemini via Antigravity (`agy`) | `gemini-3.1-pro-high` (thinking always-on; our dispatch passes no `--effort`, so `agy`'s default applies — `agy` 1.1.5 DOES expose `--effort low\|medium\|high`, see ANTIGRAVITY.md §2; verified live 2026-07-16 — supersedes the DISPATCH.md spec's `-preview` id) | Security Gemini hunter lane · Growth research-lead. |
 
 **Effort ladder:** `low · medium · high · xhigh · max · ultra`. `max` + `ultra` are for `sol`/`terra` only (`luna` caps at `max`). **Authors** (design/product/copy/conversion leads, qa-reviewer) run `xhigh`; **overseers/judges** (Directors, β, security judge, marketing-lead) run `high`. `ultra` = fans out parallel subagents (Cabinet, Ops-Analyst); `max` = maximum time on the single hardest indivisible problem (the Claude security-hunter lane).
 

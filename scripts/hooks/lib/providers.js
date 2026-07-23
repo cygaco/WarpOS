@@ -301,7 +301,7 @@ const DEFAULT_PROVIDERS = {
     //   `-o <file>` writes last-message response for reliable capture.
     // `{reasoning}` is replaced with `-c model_reasoning_effort=<level>` if a
     // role-specific level is set; otherwise empty.
-    syntax: `codex exec --sandbox workspace-write --ask-for-approval never {reasoning} -m {model} -`,
+    syntax: `codex exec --sandbox workspace-write {reasoning} -m {model} -`,
   },
   // D6 (SP-20260718-003, ED-060): Antigravity CLI (`agy`) — the migration target for the SUNSET
   // gemini individual CLI (IneligibleTierError → "migrate to Antigravity", 2026-06-18). This is the
@@ -318,8 +318,13 @@ const DEFAULT_PROVIDERS = {
     fallback: "openai",
     // Headless contract (UNPROVEN): `agy --model <id> --print-timeout <dur> -p '<prompt>'`. The prompt
     // is the `-p` argv VALUE (agy has no stdin '-' positional) — safe-spawn's agy ARG_POLICY (#27
-    // carve-out) bounds it (200k cap + newline-tolerant injection refusal + native-exe ONLY, so a
-    // .cmd shim cannot reparse the multi-line arg). thinking is always-on (no reasoning-effort flag).
+    // carve-out) injection-checks it (newline-tolerant refusal + native-exe ONLY, so a .cmd shim
+    // cannot reparse the multi-line arg). The ASSEMBLED command line is bounded by CMDLINE_MAX
+    // (safe-spawn.js: 32000 — the Windows CreateProcess ceiling minus margin): a >32KB prompt is
+    // BLOCKED, never truncated-and-sent (SP-002), so a big diff cannot ride -p. thinking is always-on;
+    // our dispatch passes no effort flag (agy default). NOTE: agy 1.1.5 DOES expose `--effort
+    // low|medium|high` — wiring it to the high-effort authority-inflation policy is a candidate follow-up
+    // (unverified headless; needs an `agy --effort` probe + gauntlet before wiring), NOT done here.
     // `{reasoning}` is empty for agy (kept for syntax uniformity).
     syntax: `agy {reasoning} --model {model} --print-timeout 90s -p`,
   },
@@ -410,7 +415,10 @@ function buildReasoningFlag(providerName, role) {
   if (!level) return "";
   if (providerName === "openai") return `-c model_reasoning_effort=${level}`;
   if (providerName === "claude") return `--effort ${level}`;
-  // antigravity (agy) — thinking is always-on; no reasoning-effort flag
+  // antigravity (agy) — our dispatch passes no effort flag (agy default). agy 1.1.5 DOES expose
+  // `--effort ${level}` (the SAME flag claude uses, above); wiring agy to the high-effort authority-
+  // inflation policy is a CANDIDATE follow-up — unverified headless (needs an `agy --effort` probe +
+  // gauntlet before wiring), deliberately NOT done here (SP-005 is doc/language scope, not functional).
   return "";
 }
 

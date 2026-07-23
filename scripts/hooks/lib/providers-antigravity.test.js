@@ -70,18 +70,19 @@ test("catalog.agyModelName: slug→display for antigravity, UNCHANGED otherwise"
   assert.equal(catalog.agyModelName("some-unmapped-id"), "some-unmapped-id", "unmapped id unchanged");
 });
 
-// ── openai/gemini branches unchanged (behavior-neutral extraction). ──
+// ── openai branch unchanged (behavior-neutral extraction); the individual gemini CLI is RETIRED (ADR-0031). ──
 test("buildProviderArgv(openai) unchanged — codex stdin", () => {
   const b = buildProviderArgv("openai", "gpt-5.6-sol", ["-c", "model_reasoning_effort=high"]);
   assert.equal(b.toolId, "codex");
   assert.equal(b.usesStdin, true);
   assert.ok(b.argv.includes("exec") && b.argv.includes("-m") && b.argv.includes("gpt-5.6-sol") && b.argv.includes("-"));
 });
-test("buildProviderArgv(gemini) unchanged — gemini stdin", () => {
+test("buildProviderArgv(gemini) → FAIL-CLOSED (the individual gemini CLI is retired, ADR-0031)", () => {
+  // The sunset `gemini` provider-id has no ARG_POLICY carve-out; buildProviderArgv must refuse the
+  // unvetted spawn rather than emit a live gemini invocation (the Gemini family routes via antigravity/agy).
   const b = buildProviderArgv("gemini", "gemini-3.1-pro-preview");
-  assert.equal(b.toolId, "gemini");
-  assert.equal(b.usesStdin, true);
-  assert.ok(b.argv.includes("-o") && b.argv.includes("json"));
+  assert.equal(b.fail, true);
+  assert.match(b.error, /gemini|ARG_POLICY|safety kernel/i);
 });
 test("buildProviderArgv(unknown) → fail-closed (no unvetted spawn)", () => {
   const b = buildProviderArgv("mystery-provider", "x");

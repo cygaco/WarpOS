@@ -26,13 +26,13 @@
 
 **2. Invocation — non-interactive, prompt on stdin.**
 ```
-codex exec --sandbox workspace-write --ask-for-approval never [-c model_reasoning_effort=<low|medium|high>] -m <model> -
+codex exec --sandbox workspace-write [-c model_reasoning_effort=<low|medium|high>] -m <model> -
 ```
 The trailing `-` reads the prompt from **stdin** (`cat prompt.txt | codex exec … -`; a large prompt via argv overflows the arg limit). `exec` is non-interactive: `--ask-for-approval` is interactive-only and `--full-auto` is deprecated (≥0.135) → use `--sandbox workspace-write`. Do NOT pipe a secret via a PowerShell pipe (it prepends a UTF-8 BOM that corrupts the value); install credentials via `cmd /c 'tool < keyfile'`.
 
 **3. NO HOOKS FIRE → the guards are YOUR manual responsibility.** Every WarpOS guard is a Claude-harness hook (`scripts/hooks/*`, wired in `.claude/settings.json`); under Codex they are INERT. So you self-enforce: no secrets in tracked files (secret-guard); real file writes, not `node -e` fs-writes, and `\s` not a literal space before `]` in a regex char class (no-nul-bytes/merge-guard); reference paths via the registry, not stale literals (path-guard); builder dispatches still carry an explicit `allowedFiles`/`forbiddenFiles` scope in the brief (scope-contract-guard); run `node scripts/trackers/validate.js` yourself before claiming done (tracker-completion-gate); read `TRACKER.md` + `DUMP.md` + the relevant `runtime/notes/*` explicitly (no auto memory injection).
 
-**4. NO HARNESS AGENT TOOL → CLI dispatch only.** You are not a Claude-harness agent, so you have no in-process `Agent` tool and cannot summon α/β/ε/directors/leads as teammates. Dispatch via the CLI routes only: `node scripts/dispatch-claude.js <role> <prompt-file> -w` (build-chain Claude roles — a Claude builder is a cross-family worker for you; the wrapper handles auth) and `node scripts/dispatch-agent.js <role> <prompt-file>` (cross-provider reviewers; pin the family with `--provider openai|gemini` when a re-review must match the prior FAIL's family).
+**4. NO HARNESS AGENT TOOL → CLI dispatch only.** You are not a Claude-harness agent, so you have no in-process `Agent` tool and cannot summon α/β/ε/directors/leads as teammates. Dispatch via the CLI routes only: `node scripts/dispatch-claude.js <role> <prompt-file> -w` (build-chain Claude roles — a Claude builder is a cross-family worker for you; the wrapper handles auth) and `node scripts/dispatch-agent.js <role> <prompt-file>` (cross-provider reviewers; pin the family with `--provider openai|antigravity` when a re-review must match the prior FAIL's family — `gemini` is sunset, the Gemini family is `antigravity`/`agy`).
 
 **5. THE REAP (read before dispatching ANY builder).** A headless `claude -p` builder launched from a BACKGROUND shell is silently killed at the CLI buffer (~45s in, before any output or death record — RI-004). Always dispatch builders FOREGROUND (`-w`, no backgrounding, no `WARPOS_DISPATCH_BACKGROUND=1`); foreground survives past the reap point. After each dispatch, independently verify the worktree diff + commit + the worker's envelope — never trust a self-report.
 
