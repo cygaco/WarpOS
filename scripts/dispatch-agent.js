@@ -399,6 +399,17 @@ function recordCompletion(record) {
     appendJsonl(file, enriched);
     return;
   }
+  // QA-7G-012 (r3g, defense-in-depth): dispatch_id is the paired-waiter's correlation KEY and is signed —
+  // it MUST be a string (makeDispatchId always produces "d-..."). A non-string dispatch_id is a producer
+  // bug/attack surface (a signed numeric id could be string-aliased at the Map correlation); refuse to SIGN
+  // it — written UNSIGNED + flagged, cannot attest (the injective canonical encoding closes the aliasing at
+  // VERIFY; this stops a non-string id ever getting a signature at the PRODUCER).
+  if (enriched.dispatch_id != null && typeof enriched.dispatch_id !== "string") {
+    enriched.dispatch_id_type_invalid = true;
+    try { process.stderr.write(`[recordCompletion] non-string dispatch_id (${typeof enriched.dispatch_id}) — record written UNSIGNED, cannot attest (QA-7G-012)\n`); } catch { /* noop */ }
+    appendJsonl(file, enriched);
+    return;
+  }
   // ORIGIN-PROOF (ED-231 / ADR-0025): sign the canonical IDENTITY fields with the per-session secret. A
   // hand-authored record (never through this writer) has no valid signature → cert-attest fails it closed.
   // Fail-open on a signing error (unsigned → cannot attest, but never blocks the dispatch — telemetry stays

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T06:12:01.164Z",
+  "generatedAt": "2026-07-23T11:47:27.801Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -141,8 +141,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a36ed265cecc74ce1b5056ac6a232161d9d331878ed9af691a7d4e2ac94d0cce",
-      "installedSha": "a36ed265cecc74ce1b5056ac6a232161d9d331878ed9af691a7d4e2ac94d0cce"
+      "sha256": "90fd59c7eb28363ed509873d416809e6817d4d29b350bd4c69923ec68961c6bc",
+      "installedSha": "90fd59c7eb28363ed509873d416809e6817d4d29b350bd4c69923ec68961c6bc"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -6500,15 +6500,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-agent.js",
-      "sha256": "a2d3eb2336649f4a65d034cb37d172bf7bbf305355d106224db3de3002323a49",
-      "installedSha": "a2d3eb2336649f4a65d034cb37d172bf7bbf305355d106224db3de3002323a49"
+      "sha256": "c887e00646d5b0eeeb1e6fcde4c2f911f3ec6e727cc10bd743e54b415ed4a593",
+      "installedSha": "c887e00646d5b0eeeb1e6fcde4c2f911f3ec6e727cc10bd743e54b415ed4a593"
     },
     "scripts/dispatch-claude.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch-claude.js",
-      "sha256": "6635ddbfe0033785919baf19ccce723f529b2d678ce666d1a1d538f312c43516",
-      "installedSha": "6635ddbfe0033785919baf19ccce723f529b2d678ce666d1a1d538f312c43516"
+      "sha256": "3e0e50646bc51e20e0f05e6a1668b57ea6f8de904378c447771cd17cf4c38843",
+      "installedSha": "3e0e50646bc51e20e0f05e6a1668b57ea6f8de904378c447771cd17cf4c38843"
     },
     "scripts/dispatch-review.js": {
       "owner": "framework",
@@ -9863,6 +9863,83 @@
       "sha256": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c",
       "installedSha": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c"
     },
+    "scripts/enforcement/betaevents-dedup-lint.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/betaevents-dedup-lint.js",
+      "sha256": "f37c04640c88516484fc7c0dc9dde23611c2f08951be3e4a4e0082cf32019458",
+      "installedSha": "f37c04640c88516484fc7c0dc9dde23611c2f08951be3e4a4e0082cf32019458"
+    },
+    "scripts/enforcement/betaevents-dedup-lint.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
+      "sha256": "24f6d76632d1b4c18d2dc88b2be96d202e6151d0093add0ee2dc7d6deb5f4310",
+      "installedSha": "24f6d76632d1b4c18d2dc88b2be96d202e6151d0093add0ee2dc7d6deb5f4310"
+    },
+    "scripts/enforcement/builder-right-size.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/builder-right-size.js",
+      "sha256": "31efa5069943aa0abc5fc951c7d9fb2a95ed7d7372d9200cb534edd312e95fed",
+      "installedSha": "31efa5069943aa0abc5fc951c7d9fb2a95ed7d7372d9200cb534edd312e95fed"
+    },
+    "scripts/enforcement/builder-right-size.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/builder-right-size.test.js",
+      "sha256": "ec5ac267ae8f359e27d3974cbfba4b5c53e2bbc73626de0e51585dc6beb23f27",
+      "installedSha": "ec5ac267ae8f359e27d3974cbfba4b5c53e2bbc73626de0e51585dc6beb23f27"
+    },
+    "scripts/enforcement/dedup-util.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/dedup-util.js",
+      "sha256": "d6f6213e57355d604bc9a0f8fc1023ba8fd87dd1ecfebb555957a27d7ed4c639",
+      "installedSha": "d6f6213e57355d604bc9a0f8fc1023ba8fd87dd1ecfebb555957a27d7ed4c639"
+    },
+    "scripts/enforcement/ed-dup-id-lint.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/ed-dup-id-lint.js",
+      "sha256": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf",
+      "installedSha": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf"
+    },
+    "scripts/enforcement/ed-registry.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/ed-registry.js",
+      "sha256": "f8a43a27e53b12ae5dd0bfd1eb85e47c4f9e1e6c2822d98a0812ddfe150b6121",
+      "installedSha": "f8a43a27e53b12ae5dd0bfd1eb85e47c4f9e1e6c2822d98a0812ddfe150b6121"
+    },
+    "scripts/enforcement/ed-registry.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/ed-registry.test.js",
+      "sha256": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
+      "installedSha": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678"
+    },
+    "scripts/enforcement/next-ed-id.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/next-ed-id.js",
+      "sha256": "ecae038b4d913ffdfec2ead7e78eaeea04e5102da53b747d51167fb509adb72b",
+      "installedSha": "ecae038b4d913ffdfec2ead7e78eaeea04e5102da53b747d51167fb509adb72b"
+    },
+    "scripts/enforcement/pipe-masks-gate-lint.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/pipe-masks-gate-lint.js",
+      "sha256": "6db2ef771863fd66dbf90c47af66566f51439b5b14548c8eff8ace1751ef7ea6",
+      "installedSha": "6db2ef771863fd66dbf90c47af66566f51439b5b14548c8eff8ace1751ef7ea6"
+    },
+    "scripts/enforcement/pipe-masks-gate-lint.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/pipe-masks-gate-lint.test.js",
+      "sha256": "5b0e5617ea38369158b837aa1c3dde06e24b886d010bb4751f726381eda5eb15",
+      "installedSha": "5b0e5617ea38369158b837aa1c3dde06e24b886d010bb4751f726381eda5eb15"
+    },
     "scripts/docs/catalog.js": {
       "owner": "framework",
       "managed": true,
@@ -9909,15 +9986,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/attest-signing.js",
-      "sha256": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449",
-      "installedSha": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449"
+      "sha256": "a74d2c268b745ed8812acf6cecd831c09a760a4ee470e7a36e9a43eab5685b73",
+      "installedSha": "a74d2c268b745ed8812acf6cecd831c09a760a4ee470e7a36e9a43eab5685b73"
     },
     "scripts/dispatch/attest-signing.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/attest-signing.test.js",
-      "sha256": "0cb8f1860c3d53e7923736373360cb39172deb64855755c14d8b0f15bbfd6569",
-      "installedSha": "0cb8f1860c3d53e7923736373360cb39172deb64855755c14d8b0f15bbfd6569"
+      "sha256": "2f915a4f83cdad9d5a9dbae9146b5a70a669ce29420b5b865baa5ec376b21fee",
+      "installedSha": "2f915a4f83cdad9d5a9dbae9146b5a70a669ce29420b5b865baa5ec376b21fee"
     },
     "scripts/dispatch/auth-resolver.js": {
       "owner": "framework",
@@ -11680,15 +11757,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.js",
-      "sha256": "0cdb3d7123e64958fbb56514eed6bfa1dff48eebae8e54c4014d1b92867bf98f",
-      "installedSha": "0cdb3d7123e64958fbb56514eed6bfa1dff48eebae8e54c4014d1b92867bf98f"
+      "sha256": "8f98fede779f8374b5023eee33059e11c1a25b046bfa129e75cbc0b7466898cc",
+      "installedSha": "8f98fede779f8374b5023eee33059e11c1a25b046bfa129e75cbc0b7466898cc"
     },
     "scripts/checks/epsilon-liveness.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.test.js",
-      "sha256": "3eabd2db27577fffc99f402b39c869960627840868d9433b00b43d2eef2ca46f",
-      "installedSha": "3eabd2db27577fffc99f402b39c869960627840868d9433b00b43d2eef2ca46f"
+      "sha256": "021c093cdb9cc64a28345b014493edb3f88e9322968ea981ac4c77678d7dac81",
+      "installedSha": "021c093cdb9cc64a28345b014493edb3f88e9322968ea981ac4c77678d7dac81"
+    },
+    "scripts/checks/epsilon-paired-waiter.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/epsilon-paired-waiter.test.js",
+      "sha256": "f8a7a4e0c4e1d0caa5e3a0d6ff44eac706fff29bf8f922650b7191b665d62b67",
+      "installedSha": "f8a7a4e0c4e1d0caa5e3a0d6ff44eac706fff29bf8f922650b7191b665d62b67"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",
@@ -16278,6 +16362,14 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260723-003/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260723-003/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -25856,8 +25948,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "b68e66a8a5980bf0cbf8ae423117d4a326254890036ea7fbf3c649db955d46df",
-      "installedSha": "b68e66a8a5980bf0cbf8ae423117d4a326254890036ea7fbf3c649db955d46df"
+      "sha256": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e",
+      "installedSha": "23d7471198f497b3ee4c9dfbec9c2a26674cbda10ca878fbf328f7175c49118e"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
@@ -27064,8 +27156,8 @@
       "managed": true,
       "source": ".claude/commands/enforcement/log.md",
       "kind": "md",
-      "sha256": "1256c2b52b2bf749fea6c526e932ed246608afd342f9702893c945b129ce7ed2",
-      "installedSha": "1256c2b52b2bf749fea6c526e932ed246608afd342f9702893c945b129ce7ed2"
+      "sha256": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
+      "installedSha": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26"
     },
     ".claude/commands/docs/catalog.md": {
       "owner": "framework",

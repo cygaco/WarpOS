@@ -83,6 +83,12 @@ const SIGNED_FIELDS = Object.freeze([
   // correct trust anchor here (unlike the cross-session AcceptanceRecord/lease, which must NOT use it). A
   // post-hoc workorder_digest swap on an already-signed record invalidates the signature.
   "workorder_digest",
+  // APPENDED (SP-20260723-003 r3e — qa QA-7G-007 CRITICAL / ED-273): dispatch_id is the SOLE correlation key
+  // evaluatePairedWaiter groups+suppresses by (epsilon-liveness.js byId map). UNSIGNED, a validly-signed
+  // ok:false death could be REPLAYED with a swapped dispatch_id to suppress a DIFFERENT dispatch's stall — the
+  // signature proved "a real death happened" but NOT "THIS dispatch's death." Signing it binds the correlation
+  // key so a dispatch_id swap invalidates the signature (verified===this-dispatch). END-only, byte-agree.
+  "dispatch_id",
 ]);
 
 let _cachedSecret;
@@ -111,7 +117,15 @@ function sessionSecret() {
 /** The deterministic canonical string a record's signature covers, over `fields` (default = the current
  *  SIGNED_FIELDS). Missing fields → empty (stable). PURE. */
 function canonicalIdentityString(record, fields = SIGNED_FIELDS) {
-  return fields.map((f) => `${f}=${record && record[f] != null ? String(record[f]) : ""}`).join("\x1f");
+  // TYPE-PRESERVING encoding (QA-7G-012, r3g): String(123)===String("123") aliased numeric<->string on EVERY
+  // signed field — a signed numeric value could be mutated to its string form (or vice versa) with the
+  // signature STILL valid, and the paired-waiter's dispatch_id Map-correlation then flips to the string-keyed
+  // started row and suppresses its stall. JSON.stringify encodes the TYPE (123 -> "123", "123" -> "\"123\"",
+  // true -> "true"), so distinct types/values yield distinct canonical strings. Missing/null -> "" (a sentinel
+  // no JSON.stringify output equals). This changes the canonical encoding, so records signed under the old
+  // String() form fail verification and are treated as unsigned (fail-CLOSED in-window — the same fail-safe
+  // transition as a SIGNED_FIELDS change).
+  return fields.map((f) => `${f}=${record && record[f] != null ? JSON.stringify(record[f]) : ""}`).join("\x1f");
 }
 
 /** HMAC-SHA256(secret, canonicalIdentityString(record)) → hex, or null if the secret is unavailable

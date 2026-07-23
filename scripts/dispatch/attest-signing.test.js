@@ -71,8 +71,8 @@ function signedRecord(overrides = {}) {
 }
 
 // ── general signing seam sanity (round out this fresh file with the core contract) ────────────────
-test("SIGNED_FIELDS ends with workorder_digest (BE-3: appended at the END, existing order untouched)", () => {
-  assert.strictEqual(SIGNED_FIELDS[SIGNED_FIELDS.length - 1], "workorder_digest");
+test("SIGNED_FIELDS tail is [workorder_digest, dispatch_id] (SP-20260723-003 r3e: dispatch_id appended at the END after workorder_digest, prior order untouched)", () => {
+  assert.deepStrictEqual(SIGNED_FIELDS.slice(-2), ["workorder_digest", "dispatch_id"]);
 });
 test("SIGNED_FIELDS retains every pre-existing field in its original relative order", () => {
   const preExisting = [
@@ -121,6 +121,42 @@ test("tampering ANY pre-existing signed field after signing invalidates the sign
   const r = signedRecord();
   r.verdict = "fail";
   assert.strictEqual(verifyRecord(r), false);
+});
+test("SP-20260723-003 r3e KEYSTONE (7G-011): a post-sign dispatch_id SWAP invalidates the signature — the QA-7G-007 correlation-key replay is closed", () => {
+  // The replay: a validly-signed ok:false death for dispatch A, re-pointed to B by swapping the (previously
+  // UNSIGNED) dispatch_id, must NO LONGER verify now that dispatch_id is in SIGNED_FIELDS.
+  const r = signedRecord({ dispatch_id: "d-A", ok: false });
+  assert.strictEqual(verifyRecord(r), true, "the genuine signed record verifies");
+  r.dispatch_id = "d-B"; // re-point the death at a different outstanding dispatch
+  assert.strictEqual(verifyRecord(r), false, "a swapped dispatch_id must break the signature (verified===this-dispatch)");
+});
+test("SP-20260723-003 r3e: dispatch_id is covered by canonicalIdentityString (distinct ids -> distinct canonical)", () => {
+  const a = canonicalIdentityString(baseRecord({ dispatch_id: "d-A" }));
+  const b = canonicalIdentityString(baseRecord({ dispatch_id: "d-B" }));
+  assert.notStrictEqual(a, b, "distinct dispatch_ids must produce distinct canonical strings");
+});
+test("SP-20260723-003 r3g QA-7G-012: canonicalIdentityString is TYPE-PRESERVING — numeric 123 and string \"123\" differ", () => {
+  const a = canonicalIdentityString(baseRecord({ dispatch_id: 123 }));   // number
+  const b = canonicalIdentityString(baseRecord({ dispatch_id: "123" })); // string
+  assert.notStrictEqual(a, b, "String()-coercion aliased 123 and \"123\"; JSON.stringify must keep them distinct");
+});
+test("SP-20260723-003 r3g QA-7G-012: a signed NUMERIC field mutated to its STRING form fails verification", () => {
+  const r = signedRecord({ dispatch_id: 123 }); // signs with numeric 123
+  assert.strictEqual(verifyRecord(r), true, "the genuine numeric-signed record verifies");
+  r.dispatch_id = "123"; // mutate number -> string (the type-coercion alias attack)
+  assert.strictEqual(verifyRecord(r), false, "String(123)===String(\"123\") must NOT let the numeric->string swap verify");
+});
+test("SP-20260723-003 r3g QA-7G-012: canonicalIdentityString is FIELD-BOUNDARY injective (a value cannot forge a field boundary)", () => {
+  // The \x1f join is option (a): a control-char delimiter JSON.stringify always emits ESCAPED (as ),
+  // never raw — so a value can neither move a field boundary nor forge one. (i) boundary-ambiguous vectors
+  // that a NAIVE concat would collide must differ:
+  const a = canonicalIdentityString(baseRecord({ role: "ab", shape: "c" }));
+  const b = canonicalIdentityString(baseRecord({ role: "a", shape: "bc" }));
+  assert.notStrictEqual(a, b, "boundary-ambiguous field vectors must not collide");
+  // (ii) a value EMBEDDING the raw \x1f delimiter + a fake field prefix must NOT alias a real field split:
+  const forge = canonicalIdentityString(baseRecord({ role: "x" + String.fromCharCode(31) + "shape=INJECTED" }));
+  const real = canonicalIdentityString(baseRecord({ role: "x", shape: "INJECTED" }));
+  assert.notStrictEqual(forge, real, "a value embedding the raw \\x1f must not forge a real field split (JSON escapes it)");
 });
 test("canonicalIdentityString is stable for missing fields (serializes as empty)", () => {
   const s = canonicalIdentityString({});

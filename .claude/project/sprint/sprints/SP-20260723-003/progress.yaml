@@ -1,0 +1,53 @@
+schema: warpos/sprint/sprint-progress/v1
+sprint: "SP-20260723-003"
+updated_at: "2026-07-23T07:15:00.000Z"
+current_phase: execute
+current_command: none
+current_ticket: null
+current_task: "SP-003 gauntlet r3d BUILT+tested (UNCOMMITTED on 5d479cf1) — backend r3c FAIL(3) fixed: 7G-004 signed-death-verify / 7G-005 missing-msgid-independent-block / 7G-006 basename; holding r3d commit for qa+security r3c"
+current_loop: 5
+status: running
+last_completed_step: "r2_committed_84699efd + hunter_r2_PASS (d-mrx7s6l3) + ED-270_residuals_logged. Gauntlet r1: hunter PASS + qa FAIL(4) + security FAIL(5) + backend FAIL(10 incl. 2 live gate breaks). r2 closed ALL 19: ED-256 composed (alias-drop/isFile/size>0/mtime/ROOT-relative/verified-completion/background-predicate/unreadable-failclosed/single-emit) + ED-258a evading-update + ED-267a exact-match/enforce + ED-258b mid-stage/continuation/quoted-strip/unreadable-exit2 + ED-257 isBuildChainRole/enforce-failclosed + scan:full reword. ALL live gates re-run GREEN (scan-coverage/choke-point were the 2 breaks, now 0; epsilon-liveness green after archiving June stale evidence). Tests: ed-registry 16/16, betaevents 13/13, pipe-masks 16/16, builder-right-size 6/6, paired-waiter 15/15."
+next_action: "Team-lead fires backend/qa/security-GPT re-fire (staged runtime/gauntlet/SP-20260723-003/r2/*-prompt.txt @ 84699efd). On relay: apply the queued lstat hardening (ED-270 symlink) if a lane surfaces it (else fold into a final small commit before β), gauntlet-verify all 4 roles, β gauntlet→release gate (ED-270 named residuals visible), brokered land, tracker reconcile, closing envelope. Do NOT auto-continue past this sprint."
+next_action: "Team-lead fires backend/qa/security-GPT re-fire (re-staged runtime/gauntlet/SP-20260723-003/r3/*-prompt.txt @ 5d479cf1, 84699efd..5d479cf1 delta). Hunter PASS in (d-mrx9iu61). On relay: gauntlet-verify all 4 roles, β gauntlet→release gate (named residuals: ED-270 mtime-heuristic + passthrough-allowlist; ED-271 4 other env readers; VERDICT_RE case-sensitivity pre-existing), brokered land, tracker reconcile, closing envelope. Do NOT auto-continue past this sprint. Commit chain: beb0c5f7(build) → 84699efd(r2) → 97ee42f0(r3) → a0145e70(r3b) → 5d479cf1(r3c). ED-270 amended + ED-271 logged (dogfooded via next-ed-id.js). 6 hunter-vs-GPT divergences logged (5 cross-provider + 1 intra-lane qa-vs-backend-holdout)."
+active_files:
+  - "scripts/enforcement/ed-registry.js (shared scan — extend for ED-267a betaEvents dedup)"
+modified_files:
+  - "scripts/enforcement/ed-registry.js"
+  - "scripts/enforcement/next-ed-id.js"
+  - "scripts/enforcement/ed-dup-id-lint.js"
+  - "scripts/enforcement/ed-registry.test.js"
+  - ".claude/commands/enforcement/log.md"
+  - ".claude/commands/scan/full.md"
+checks_last_run: "2026-07-23T07:10:00.000Z"
+checks_passing:
+  - "ed-registry.test 11/11 (real genesis-dup RED + 3 benign-closure GREEN + allocator max-not-line-count + malformed-safe + live control)"
+  - "ed-dup-id-lint against live register: OK exit 0 (genesis-dup-free after the ED-244 discriminator fix)"
+  - "next-ed-id against live register: ED-270"
+  - "no-nul clean; framework-manifest --check current"
+checks_failing: []
+blockers: []
+approvals_needed:
+  - "β gauntlet→release gate at batch completion (persistent Beta teammate). β plan→design already DECIDE B/0.88 (msg_id a30122d3): concur with the cut (6-unit core; split 264/265/266/234 to SP-004) + 6 precision riders."
+external_services_needed: []
+issues_opened: []
+tickets_updated: []
+ralph_checkpoint: null
+resume_command: "continue build: ED-256 (waiter-armed liveness) / ED-257 (builder right-size lint) / ED-258b (pipe-masks shell-lint) / ED-267a (betaEvents dedup)"
+resume_notes: >
+  SP-003 = post-1.0 mechanical-enforcer hardening batch. β DECIDE B/0.88 concurred with the 6-unit
+  must-ship core (ED-256/257/258a/258b/267a/267b), split ED-264/265/266/234 to a follow-up SP-004.
+  UNITS 1-2 DONE + savepointed b87b7b4d. β's per-unit riders for the REMAINING 4 (all HOW, verify each
+  at the β gauntlet gate): ED-256 LOAD-BEARING settable-label close — the waiter-armed liveness check
+  must verify the artifact RESOLVES TO A REAL FILE / a well-formed ok:true record, NEVER mere
+  field-presence (a reaped RI-004 dispatch stamps a path but produces nothing). ED-257 warn-by-default /
+  enforce-only-under-env (">15-min" is a heuristic proxy); test a large-but-legit prompt stays WARN. ED-258b
+  flag the GENERAL pipe-masks-gate shape (|tail, |head, |tee, any gate piped before &&/;), grounded in the
+  CLAUDE.md Tool-Use rule; test |tail AND |head → RED, bare-gate-then-&& → GREEN. ED-267a betaEvents dedup
+  /scan:full-scoped ONLY (gitignored-ledger class): (1) treat "plan->design" and "plan->design-correction"
+  as DISTINCT boundaries (both were written this session); (2) if the SendMessage log is unreachable at
+  scan-time, the msg_id-resolves check SKIPS-with-note (fail-open advisory), not block. ED-267a + ED-258a
+  are the same dedup-over-jsonl shape → reuse/extend ed-registry.js (P-034 one-implementer). Each unit
+  ships a planted-violation test with real-RED + hardest-benign-GREEN teeth. Then gauntlet + β gate + brokered land.
+safe_to_continue: true
+stop_reason: null
