@@ -1,16 +1,16 @@
 schema: warpos/sprint/current-sprint/v1
 id: "SP-20260723-004"
-title: "Follow-up: SP-003 named fail-closed ceilings (ED-269/270/271/272 env-reader residuals, ED-274 pipe-masks shell-lexer, ED-275 betaevents delivery-record resolution, ED-276 fixed-skew) + earlier-cut ED-264/265/266/234"
-objective: "Run /sprint:plan to set this."
-status: not_started
+title: "SP-003 hardening tail — ED-234 reasoned-consult structural-honesty enforcer (tight β cut-line; ED-264(i) fence-renderer + ED-265/266 + ED-269-276 ceilings carried to a fresh session)"
+objective: "Close the two β-ratified closed-form cores: (1) ED-264(i) eliminate the fence-shim renderer divergence (install-git-hooks.sh heredoc vs renderReferenceTransactionHook) to ONE source so a live bash-installed fence scores hook_active=true honestly; (2) ED-234 a structural-honesty enforcer over the reasoned-consult lane (betaEvents + runtime/beta-consult). ED-266 (upgrade-side post-scaffold regen symmetry) is repro-gated in design: latent->fix, else drop-to-ceiling."
+status: done
 created_at: "2026-07-23T12:08:03.386Z"
 updated_at: "2026-07-23T12:08:03.386Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+source_request: "team-lead SP-004 hand-off: TIGHT-scope mandate — β-consult the cut-line FIRST, ship a small coherent core, defer the rest. GATE THE BUILD not the plan (checkpoint before build-start; may be preempted by GPT-5.6-helm ratification)."
+interpreted_intent: "Take the SP-003 named ceilings + earlier-cut EDs, hold a β cut-line at plan->design, build only the small closed-form core, defer genuine ceilings that need a lexer/authenticator/sig-model."
+plan_contract: "β DECIDE B/0.87 (msg_id 2b53cd3d-c2ff-4f53-ac43-68a1c7ff3ca2, betaEvents plan->design, Cut-line CONCUR). CORE = ED-264(i) + ED-234. CONDITIONAL = ED-266 (design-repro-gated). DEFER = ED-265 (bigger model), ED-274/275/276 (ceilings: need lexer/authenticator/sig-model), ED-269-272 (assess in design; cheap-closed-form MAY join). Riders folded: ED-264 prefer ELIMINATION over two-copy divergence-guard + compare RENDERED BYTES + falsifier plants a real divergence; ED-234 STRUCTURAL-only (semantic=ED-275 deferred), recognize beta-consult/beta-ledger-reconcile/self_correction/supersedes/ts_approx shapes, GREEN!=verified-honest, /scan:full-only never-CI (gitignored ledger)."
+risk_level: medium
 approval_state: none_required
-current_phase: idle
+current_phase: release
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -74,10 +74,15 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
-  active_files: []
+  last_checkpoint: "design-locked; awaiting build checkpoint with team-lead (gate the build not the plan)"
+  resume_command: "SendMessage team-lead — confirm build checkpoint clears (or helm-preempt redirect), then enter build"
+  resume_summary: "β cut-line DECIDE B/0.87 (msg_id 2b53cd3d) ratified CORE=ED-264(i)+ED-234, CONDITIONAL=ED-266 (repro-gated), DEFER=ED-265/269-276. Design LOCKED: ED-264(i) elimination toward the rich shim (upgrade renderReferenceTransactionHook to emit the ED-261 runtime-resolving fail-closed shim; install-git-hooks.sh drops its heredoc + renders via the JS source; verifyActiveHookInstalled FAST-PATH byte-check then matches the bash-installed shim; trusted-controller receipt hookCheckFn auto-fixed since it delegates to verifyActiveHookInstalled; falsifier plants a real divergence). ED-234 new scripts/checks/reasoned-consult-honesty.js structural-honesty over betaEvents+runtime/beta-consult, /scan:full-only. HELD at build-start per team-lead."
+  active_files:
+    - "scripts/hooks/protected-ref-transaction.js"
+    - "scripts/install-git-hooks.sh"
+    - "scripts/dispatch/trusted-controller.js"
+    - "scripts/checks/sprint-beta-honesty.js"
   dirty_state: false
-  blockers: []
+  blockers:
+    - "HELD at build-start (team-lead checkpoint gate); possible GPT-5.6-helm preempt"
   safe_to_continue: true

@@ -1,26 +1,31 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260723-004"
 updated_at: "2026-07-23T12:08:03.386Z"
-current_phase: idle
+current_phase: release
 current_command: none
 current_ticket: null
 current_task: null
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
-active_files: []
+status: done
+last_completed_step: "ed234_landed_main_7f50056b_gauntlet_green_beta_decide_b092"
+next_action: "SP-004 DONE (ED-234 enforcer landed). Fresh session: ED-264(i) fence-renderer single-source (design-lock in current.yaml crash_recovery), ED-265/266, ED-269-276 ceilings."
+active_files:
+  - "scripts/hooks/protected-ref-transaction.js"
+  - "scripts/install-git-hooks.sh"
+  - "scripts/dispatch/trusted-controller.js"
+  - "scripts/checks/sprint-beta-honesty.js"
 modified_files: []
 checks_last_run: null
 checks_passing: []
 checks_failing: []
-blockers: []
+blockers:
+  - "HELD at build-start per team-lead checkpoint; possible GPT-5.6-helm preempt"
 approvals_needed: []
 external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "SendMessage team-lead — confirm build checkpoint (or helm-preempt), then enter build"
+resume_notes: "β DECIDE B/0.87 (msg_id 2b53cd3d) CORE=ED-264(i)+ED-234, CONDITIONAL=ED-266 repro-gated, DEFER=ED-265/269-276. Design locked; held at build-start."
 safe_to_continue: true
 stop_reason: null
