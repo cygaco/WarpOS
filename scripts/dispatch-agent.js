@@ -88,8 +88,15 @@ function observedCompletionFields(requestedProvider, result) {
   // fallback logic previously saw only provider/quota fallback, never agy's INTERNAL auth-fallback). The
   // explicit auth_fallback field is stamped on every agy serve so downstream (cert-attest, the ED-060(c)
   // close, gauntlet-verify --strict-fallback) can tell an AUTH fallback apart from a provider fallback (ADR-0025).
-  const authFallback = result && result.auth_fallback;
-  const authFallbackActive = authFallback === true || authFallback === "indeterminate";
+  // agy-ONLY invariant (backend r1 LOW #4): auth_fallback is meaningful ONLY on the antigravity lane
+  // (runProvider sets it there and nowhere else). Honor + stamp it ONLY when the RESOLVED provider is
+  // antigravity — a stray auth_fallback riding a non-agy result is ignored (defense in depth). Under an
+  // agy→openai provider-fallback the resolved provider is openai and no auth_fallback is present anyway.
+  const isAgy = provider === "antigravity";
+  const authFallback = isAgy ? (result && result.auth_fallback) : undefined;
+  // FAIL-CLOSED: any PRESENT non-false auth_fallback value forces fallback:true (not a whitelist of
+  // true|"indeterminate") — so a future detector sentinel (e.g. an "error" state) cannot fail-OPEN.
+  const authFallbackActive = authFallback !== undefined && authFallback !== false;
   const fallback = !!(result && (result.fallback || result.quotaFallbackFrom)) || !hasObserved || authFallbackActive;
   return {
     provider,

@@ -602,6 +602,10 @@ function safeSpawnSync(toolId, args, opts = {}) {
     reaped,
     reason: reason || undefined,
     exitCode: typeof status === "number" ? status : null,
+    // The spawned child's pid. For agy (native-exe only — a .cmd-shim is refused above), `bin` IS the
+    // agy exe, so this is agy's OWN process pid — which agy stamps on every cli.log line (glog field 3).
+    // SP-20260723-002: the auth-fallback detector scopes the shared rotating cli.log to THIS serve by pid.
+    pid: typeof sp.pid === "number" ? sp.pid : null,
     stdout: reaped ? "" : stdout,
     stderr: stderr.slice(0, 4000),
     tool: { id: toolId, path: tool.path, kind: tool.kind },

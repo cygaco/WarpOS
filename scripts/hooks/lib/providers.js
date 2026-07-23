@@ -764,9 +764,20 @@ function runProvider(role, prompt, opts = {}) {
       e.kernelMissing = true;
       throw e;
     }
-    // SP-20260723-002: mark the agy run-window START so the auth-fallback detector can bound the
-    // shared cli.log to THIS serve — a stale tell from a prior serve must not false-RED (β caution #1).
+    // SP-20260723-002: mark the agy run-window START + snapshot the shared cli.log PRE-spawn so the
+    // auth-fallback detector reads only THIS serve's DELTA (a stale tell from a prior serve, or a
+    // concurrent agy process's rotation, must not false-RED/false-GREEN — DoE r1 finding #2). The
+    // detector further pid-scopes the delta to this serve's child.pid.
     const antigravityStartMs = providerName === "antigravity" ? Date.now() : null;
+    const agyLogPath =
+      providerName === "antigravity"
+        ? require("path").join(require("os").homedir(), ".gemini", "antigravity-cli", "cli.log")
+        : null;
+    let agyLogPre = null;
+    if (providerName === "antigravity") {
+      const { snapshotAgyLog } = require("../../dispatch/agy-auth-tells");
+      agyLogPre = snapshotAgyLog(agyLogPath);
+    }
     const spawned = safeSpawn.safeSpawnSync(toolId, argv, {
       cwd: PROJECT,
       env: childEnv,
@@ -809,25 +820,23 @@ function runProvider(role, prompt, opts = {}) {
     const actualModel = null;
 
     // SP-20260723-002 / ADR-0037 — agy auth-fallback detection. An UNauthenticated agy serve (expired
-    // keyring) exits 0 with output but writes its terminal tells (eval-mode / expired=true / resolved-
-    // via-default) to the cli.log, NOT stdout — so the completion record false-greens fallback:false.
-    // Scan the UNION of stdout + stderr + the run-window log-delta (agy-auth-tells#detectAgyAuthFallback);
-    // a terminal tell => auth_fallback, which dispatch-agent turns into fallback:true so the binding
-    // verdict routes to the verifiable openai/claude lane. Fail-CLOSED ("indeterminate") on an unreadable
-    // log. NOTE: --log-file is deliberately NOT used — it breaks agy's keyring auth (cert-attest ~L494,
-    // DoE-confirmed), which would make EVERY agy serve a false-RED.
+    // keyring) exits 0 with output but writes its tells to the cli.log NOT stdout — so a naive record
+    // false-greens fallback:false. POSITIVE-PROOF-ONLY + PID-SCOPED: read only THIS serve's cli.log
+    // DELTA (pre/post snapshot, rotation-aware), scope to the spawned child.pid, and require a code-site
+    // AUTH_SUCCESS to score clean; anything unprovable is "indeterminate" → dispatch-agent forces
+    // fallback:true so the binding verdict routes to the verifiable openai/claude lane. stdout is NOT
+    // scanned (DoE C4: a reviewer serve quoting a tell in its answer must not veto). NOTE: --log-file is
+    // deliberately NOT used — it breaks agy's keyring auth (cert-attest ~L494, DoE-confirmed).
     let authFallback;
     if (providerName === "antigravity") {
-      const { detectAgyAuthFallback } = require("../../dispatch/agy-auth-tells");
-      const agyLogPath = require("path").join(require("os").homedir(), ".gemini", "antigravity-cli", "cli.log");
-      let agyLog = null;
-      let agyLogReadError = false;
-      try {
-        agyLog = require("fs").readFileSync(agyLogPath, "utf8");
-      } catch {
-        agyLogReadError = true;
-      }
-      authFallback = detectAgyAuthFallback({ stdout: rawOutput, stderr: stderrText, agyLog, agyLogReadError, startedMs: antigravityStartMs }).auth_fallback;
+      const { detectAgyAuthFallback, readAgyLogDelta } = require("../../dispatch/agy-auth-tells");
+      const delta = readAgyLogDelta(agyLogPath, agyLogPre);
+      authFallback = detectAgyAuthFallback({
+        agyLog: delta.ok ? delta.delta : null,
+        agyLogReadError: !delta.ok,
+        startedMs: antigravityStartMs,
+        runPid: spawned.pid,
+      }).auth_fallback;
     }
 
     // Strict assertion — detect silent downgrade.

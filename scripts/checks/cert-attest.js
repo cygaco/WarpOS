@@ -31,7 +31,7 @@ const NAME = "cert-attest";
 // SP-20260723-002 / ADR-0037: the agy TERMINAL tell set + the run-window filter are SINGLE-SOURCED in
 // scripts/dispatch/agy-auth-tells.js so the dispatch-record detector, cert-attest, and the ED-060 serve
 // runbook key on ONE source (no drifting copy — the refactor-hygiene bug class). cert-attest consumes them.
-const { NON_AUTH_SIGNAL, filterAgyLogToRunWindow } = require("../dispatch/agy-auth-tells");
+const { NON_AUTH_SIGNAL, filterAgyLogToRunWindow, norm } = require("../dispatch/agy-auth-tells");
 const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 
 // The SINGLE provenance-verifier choke-point (α round-6 / ED-225): the hunter-identity predicate + the
@@ -88,7 +88,9 @@ const PROBE_PROMPT =
   "Reply with EXACTLY: PROBE OK. Do not add anything else.";
 
 // Normalize a model id for tolerant containment matching (case/underscore/space → hyphen).
-const norm = (s) => String(s || "").toLowerCase().replace(/[_\s]+/g, "-");
+// norm — SINGLE-SOURCED in scripts/dispatch/agy-auth-tells.js (required at the top). Was a local copy
+// with an identical char-class; imported so the record detector + cert-attest can never desync (the
+// refactor-drift the module docstring closes — hunter MEDIUM, SP-20260723-002 fix cycle).
 
 /**
  * ATTRIBUTION (α/β ruling 2026-07-19, directive #3): keep only the agy cli.log lines that belong to THIS
