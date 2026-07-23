@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260723-001"
 title: "Helm entry-file refresh + single-source shim projection + parity enforcer (CODEX/ANTIGRAVITY/GEMINI/AGENTS)"
 objective: "Run /sprint:plan to set this."
-status: not_started
+status: done
 created_at: "2026-07-23T02:03:18.321Z"
-updated_at: "2026-07-23T02:03:18.321Z"
+updated_at: "2026-07-23T03:40:00.000Z"
 source_request: ""
 interpreted_intent: ""
 plan_contract: null
 risk_level: low
 approval_state: none_required
-current_phase: idle
+current_phase: released
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -75,8 +75,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  resume_command: "none — sprint complete"
+  resume_summary: "Sprint COMPLETE + landed to main d08bcd94 (brokered). Gauntlet GREEN-on-merit; beta DECIDE B/0.91 at gauntlet->release. Retro deferred to milestone (RI-001). Not pushed to origin (operator per-action)."
   active_files: []
   dirty_state: false
   blockers: []
