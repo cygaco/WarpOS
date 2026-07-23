@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T19:03:35.211Z",
+  "generatedAt": "2026-07-23T19:39:39.618Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -6626,8 +6626,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/generate-framework-manifest.js",
-      "sha256": "c10e5df676953406144725fd588c478a39b36d50e20b32af293d19a0e0add8c8",
-      "installedSha": "c10e5df676953406144725fd588c478a39b36d50e20b32af293d19a0e0add8c8"
+      "sha256": "d0a341bb2c0f220aedddd0f9895a08a9a90b436c2c8589ff5371def5459991e3",
+      "installedSha": "d0a341bb2c0f220aedddd0f9895a08a9a90b436c2c8589ff5371def5459991e3"
     },
     "scripts/generate-maps.js": {
       "owner": "framework",
@@ -9902,8 +9902,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-dup-id-lint.js",
-      "sha256": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf",
-      "installedSha": "c95427a7c9c6d75b98ef68dc520eca3eefa89aacf4cb801b8a6ea78afab08cdf"
+      "sha256": "729c888df1433492a460490bac5e0e1da92d22f2057e547a2c4a7961cf5c196b",
+      "installedSha": "729c888df1433492a460490bac5e0e1da92d22f2057e547a2c4a7961cf5c196b"
     },
     "scripts/enforcement/ed-registry.js": {
       "owner": "framework",
@@ -12590,8 +12590,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/warpos-ship-coverage.js",
-      "sha256": "7e4565a0d597a715e7a2986e29f58c8945319cc55bb4acbcc50ef30647033f17",
-      "installedSha": "7e4565a0d597a715e7a2986e29f58c8945319cc55bb4acbcc50ef30647033f17"
+      "sha256": "a90b58b3e97e0d851518d749d575163df372dd9210cfbd83c77fbd37387a371b",
+      "installedSha": "a90b58b3e97e0d851518d749d575163df372dd9210cfbd83c77fbd37387a371b"
     },
     "scripts/checks/warpos-staleness.js": {
       "owner": "framework",

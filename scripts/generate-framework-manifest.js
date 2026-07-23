@@ -56,6 +56,11 @@ const MANIFEST_SCHEMA_VERSION = "warpos/framework-manifest/v2";
 const EXCLUDE_RELATIVE_PREFIXES = [
   // Existing exclusions
   ".claude/agents/.system/dispatch-backups/",
+  // SP-20260723-005 (β B/0.88): builder-right-size is canonical-only (a build-chain prompt-size heuristic,
+  // dev-tooling, NOT invoked by any shipped skill) — exclude it from the scripts/enforcement dir-ship so it
+  // stays out of product installs. Classified in KNOWN_NOT_SHIPPED (warpos-ship-coverage.js). The prefix
+  // covers both builder-right-size.js and builder-right-size.test.js.
+  "scripts/enforcement/builder-right-size",
   // ADR-0007: oneshot runtime state moved under president/_system/oneshot/.
   ".claude/agents/president/_system/oneshot/retros/",
   ".claude/agents/president/_system/oneshot/store.json", // per-project state
@@ -196,6 +201,12 @@ const ASSET_DIRS = [
   // manifest. Now they are.
   { src: "scripts/warpos", kind: "warpos_script" },
   { src: "scripts/checks", kind: "check_tool" },
+  // SP-20260723-005 (β B/0.88): ship the /scan:full-invoked enforcement lints so a product's scaffolded
+  // full.md (which invokes betaevents-dedup-lint / ed-dup-id-lint / pipe-masks-gate-lint) + /enforcement:log
+  // (invokes next-ed-id) don't reference a missing script. They SKIP on an absent WarpOS ledger (product
+  // state). builder-right-size (a build-chain prompt-size heuristic, NOT invoked by any shipped skill) is
+  // EXCLUDED below + KNOWN_NOT_SHIPPED (canonical-only, dev-tooling).
+  { src: "scripts/enforcement", kind: "check_tool" },
   { src: "scripts/agents", kind: "agent_tool" },
   { src: "scripts/decisions", kind: "decision_tool" },
   { src: "scripts/runtime", kind: "runtime_tool" },
