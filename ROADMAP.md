@@ -840,6 +840,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260723-002](.claude/project/sprint/sprints/SP-20260723-002/) | agy auth-fallback tell-detector — fail-closed record honesty (ED-060 anti-false-green seam) | planning | 2026-07-23T03:57:57.167Z |  |  |
 | [SP-20260723-001](.claude/project/sprint/sprints/SP-20260723-001/) | Helm entry-file refresh + single-source shim projection + parity enforcer (CODEX/ANTIGRAVITY/GEMINI/AGENTS) | planning | 2026-07-23T02:03:18.321Z |  |  |
 | [SP-20260721-001](.claude/project/sprint/sprints/SP-20260721-001/) | D-4 release-gates standing sprint (WarpOS 1.0): brokered branch-merge+release-commit transport -> Seam-E hook live-install as a release gate (ED-controller-no-live-release-transport flip); GATE-A fresh-scaffold-all-ways (portfolio:new/warp:setup/install.ps1 3-leg + wire orphaned test-install-matrix); GATE-B upgrade-current-to-new (N-1 capsule -> real update --apply -> conformance); 2-family Phase-4 re-run on codex recovery; triage 4 enforcer reds + SP-20260718-005 stale-status ledger hygiene | planning | 2026-07-21T08:13:07.141Z |  |  |
 | [SP-20260720-003](.claude/project/sprint/sprints/SP-20260720-003/) | META-LOCKSTEP enforcer + ED-230-open binding-provider scan + ED-244/RI-008 reconciliation | planning | 2026-07-20T20:14:12.257Z |  |  |
