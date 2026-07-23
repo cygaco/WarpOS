@@ -2,7 +2,7 @@ schema: warpos/sprint/current-sprint/v1
 id: "SP-20260723-005"
 title: "Per-provider dispatch-language audit + fix — correct docs/code to each provider's REAL syntax (F1 AGENTS.md agy stdin->argv, F2 codex --ask-for-approval doc/code, F3 dispatch-agent gemini->agy, F4 agy 32KB bound, F6-DOC agy permission-model) + provider-invocation-parity enforcer; F6-CONFIG agy settings.json read-only allow-list beta-gated/operator-signed; then mint release"
 objective: "Run /sprint:plan to set this."
-status: not_started
+status: done
 created_at: "2026-07-23T17:59:04.520Z"
 updated_at: "2026-07-23T17:59:04.520Z"
 source_request: ""

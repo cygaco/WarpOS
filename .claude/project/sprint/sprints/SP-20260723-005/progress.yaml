@@ -6,7 +6,7 @@ current_command: none
 current_ticket: null
 current_task: null
 current_loop: null
-status: starting
+status: done
 last_completed_step: "tracker_initialized"
 next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
 active_files: []
