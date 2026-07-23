@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T09:56:06.680Z",
+  "generatedAt": "2026-07-23T10:12:24.393Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9867,15 +9867,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.js",
-      "sha256": "db5f10aa27b34aed5da805d59acf16d557290c29b2138f8c5fbd22a863950341",
-      "installedSha": "db5f10aa27b34aed5da805d59acf16d557290c29b2138f8c5fbd22a863950341"
+      "sha256": "2cddc90a27b06ca7f654e376b3da79487e347db16158e07a4662999bca296814",
+      "installedSha": "2cddc90a27b06ca7f654e376b3da79487e347db16158e07a4662999bca296814"
     },
     "scripts/enforcement/betaevents-dedup-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
-      "sha256": "6161492ad0d2b34d5fc9b89b35999dfca5cc15cbe4efe6ea0cba085bc77a2454",
-      "installedSha": "6161492ad0d2b34d5fc9b89b35999dfca5cc15cbe4efe6ea0cba085bc77a2454"
+      "sha256": "358d39da71963a0052dd6fbf69416855faf4c0385fd4d393350e3ce2a54a5bcf",
+      "installedSha": "358d39da71963a0052dd6fbf69416855faf4c0385fd4d393350e3ce2a54a5bcf"
     },
     "scripts/enforcement/builder-right-size.js": {
       "owner": "framework",
@@ -9930,15 +9930,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.js",
-      "sha256": "6920c9556230946126b8557500e35edd7aed652f75075a574fab0b8d77550f56",
-      "installedSha": "6920c9556230946126b8557500e35edd7aed652f75075a574fab0b8d77550f56"
+      "sha256": "6db2ef771863fd66dbf90c47af66566f51439b5b14548c8eff8ace1751ef7ea6",
+      "installedSha": "6db2ef771863fd66dbf90c47af66566f51439b5b14548c8eff8ace1751ef7ea6"
     },
     "scripts/enforcement/pipe-masks-gate-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.test.js",
-      "sha256": "df5258e519e2c71556bc01d9bd8c5ef2941fdd649c3afe4d70915af432ea5abd",
-      "installedSha": "df5258e519e2c71556bc01d9bd8c5ef2941fdd649c3afe4d70915af432ea5abd"
+      "sha256": "5b0e5617ea38369158b837aa1c3dde06e24b886d010bb4751f726381eda5eb15",
+      "installedSha": "5b0e5617ea38369158b837aa1c3dde06e24b886d010bb4751f726381eda5eb15"
     },
     "scripts/docs/catalog.js": {
       "owner": "framework",

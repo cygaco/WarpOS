@@ -71,14 +71,21 @@ function extractMsgIds(eventsText) {
  * analyze({ betaText, eventsText }) -> { skipped, dupMsgIds, missingMsgId, unresolved, resolutionSkipped }.
  * Pure — the CLI supplies the file contents (eventsText null ⇒ message log unreachable ⇒ resolution skipped).
  */
+// Unicode "format" chars (Cf): zero-width space/joiner/non-joiner (U+200B-200F), word-joiner (U+2060-2064),
+// BOM/ZWNBSP (U+FEFF), bidi marks — all INVISIBLE and carry no id, and `.trim()` does NOT remove them
+// (hunter r3e #3: a msg_id of only U+200B failed OPEN exactly like the 7G-008 whitespace bug it "closed").
+const INVISIBLE_RE = /\p{Cf}/gu;
 /**
- * realMsgId(r) -> the row's msg_id TRIMMED, or null if absent/blank (qa QA-7G-005 + backend 7G-008, r3e): a
- * WHITESPACE-only msg_id ("   ") is a truthy string but carries no id — treated as present it dodged BOTH
- * missingMsgId and unresolved, failing OPEN under --enforce with an unreachable log. Trim+empty-check so a
- * blank msg_id counts as MISSING and a padded id resolves on its trimmed value.
+ * realMsgId(r) -> the row's msg_id with invisible (Cf) chars removed and whitespace trimmed, or null if the
+ * result is empty (qa QA-7G-005 + backend 7G-008 + hunter r3e #3): a whitespace-OR-zero-width-only msg_id is
+ * a truthy string but no id — treated as present it dodged BOTH missingMsgId and unresolved, failing OPEN
+ * under --enforce. Strip+trim so a blank/invisible msg_id counts as MISSING and a padded/wrapped id resolves
+ * on its real content.
  */
 function realMsgId(r) {
-  return r && typeof r.msg_id === "string" && r.msg_id.trim() ? r.msg_id.trim() : null;
+  if (!r || typeof r.msg_id !== "string") return null;
+  const cleaned = r.msg_id.replace(INVISIBLE_RE, "").trim();
+  return cleaned || null;
 }
 
 function analyze({ betaText, eventsText }) {

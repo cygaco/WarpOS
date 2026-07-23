@@ -190,12 +190,36 @@ t("r3e realMsgId: a padded msg_id resolves on its TRIMMED value (no false-unreso
   assert.strictEqual(r.missingMsgId, 0);
 });
 
-t("realMsgId: trims; null on blank/absent/non-string", () => {
+t("realMsgId: trims; null on blank/absent/non-string; strips zero-width (hunter r3e #3)", () => {
   assert.strictEqual(realMsgId({ msg_id: "  x  " }), "x");
   assert.strictEqual(realMsgId({ msg_id: "   " }), null);
   assert.strictEqual(realMsgId({ msg_id: "" }), null);
   assert.strictEqual(realMsgId({}), null);
   assert.strictEqual(realMsgId({ msg_id: 5 }), null);
+  // zero-width / format (Cf) chars carry no id and .trim() misses them:
+  assert.strictEqual(realMsgId({ msg_id: "​" }), null); // ZWSP
+  assert.strictEqual(realMsgId({ msg_id: "﻿⁠‌‍" }), null); // BOM + word-joiner + ZWNJ + ZWJ
+  assert.strictEqual(realMsgId({ msg_id: "​keep​" }), "keep"); // wrapped real id resolves on content
+});
+
+t("hunter r3e #3 (zero-width): a msg_id of only U+200B counts as MISSING (blocks under enforce)", () => {
+  const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: "​" });
+  const r = analyze({ betaText: beta, eventsText: null });
+  assert.strictEqual(r.missingMsgId, 1, "a zero-width-only msg_id must be MISSING: " + JSON.stringify(r));
+});
+
+t("hunter r3e #3: U+FEFF/U+2060/U+200C/U+200D zero-width msg_ids also MISSING", () => {
+  for (const zw of ["﻿", "⁠", "‌", "‍"]) {
+    const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: zw });
+    assert.strictEqual(analyze({ betaText: beta, eventsText: null }).missingMsgId, 1, "zero-width U+" + zw.charCodeAt(0).toString(16) + " must be MISSING");
+  }
+});
+
+t("hunter r3e #3: a zero-width-WRAPPED real id resolves on its real content (no false-unresolved)", () => {
+  const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "​zwid-1​" });
+  const r = analyze({ betaText: beta, eventsText: '{"msg_id":"zwid-1"}' });
+  assert.deepStrictEqual(r.unresolved, [], "a zw-wrapped id must resolve on its real content: " + JSON.stringify(r));
+  assert.strictEqual(r.missingMsgId, 0);
 });
 
 t("β reconcile-row exemption: a NON-verdict row (no decision) with no msg_id -> NOT counted", () => {

@@ -133,6 +133,27 @@ t("r3e || guard: `cat x || tail y && next` -> GREEN (a passthrough after logical
   assert.deepStrictEqual(scanText(fenced("cat x.txt || tail y.txt && node next.js")), []);
 });
 
+// ── hunter r3e #5 (abutting operator regression): an operator gluing onto the basename must still RED ─────
+t("hunter r3e #5 (abutting ;): `| tail;next` -> RED (no space between passthrough and ;)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | tail;node next.js")).length, 1);
+});
+
+t("hunter r3e #5 (abutting &&): `| tail&&next` -> RED", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | tail&&node next.js")).length, 1);
+});
+
+t("hunter r3e #5 (; then space): `| head; node next.js` -> RED", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | head; node next.js")).length, 1);
+});
+
+t("hunter r3e #5 (redirection abuts): `| tail>out && next` -> RED (> ends the command word)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | tail>out.log && node next.js")).length, 1);
+});
+
+t("hunter r3e #5 control: `| tail-wrapper;next` -> GREEN (over-match stays closed even with an abutting op)", () => {
+  assert.deepStrictEqual(scanText(fenced("node gate.js | tail-wrapper;node next.js")), []);
+});
+
 t("multiple offending lines in one block -> all flagged", () => {
   const md = fenced("node a.js | tail && b", "clean.js && c", "node d.js | head -1 ; e");
   assert.strictEqual(scanText(md).length, 2);

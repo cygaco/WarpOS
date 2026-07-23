@@ -102,7 +102,11 @@ function stageCommandBasename(stage) {
     const c = s[i];
     if (q) { if (c === q) q = null; else tok += c; continue; }
     if (c === '"' || c === "'") { q = c; continue; }
-    if (/\s/.test(c) || c === "|") break;
+    // The command word ends at ANY unquoted shell metacharacter, not just whitespace/`|` (hunter r3e #5:
+    // an ABUTTING operator `| tail;next` / `| tail&&next` / `| tail>out &&` glued onto the basename, so
+    // "tail;next" != "tail" false-GREENED a mainstream masked-gate form the r3d regex caught). `;`/`&`/`<`/
+    // `>`/`(`/`)` terminate the word so the basename is the real command.
+    if (/[\s|;&<>()]/.test(c)) break;
     tok += c;
   }
   const base = (tok.match(/[^/\\]+$/) || [tok])[0];
