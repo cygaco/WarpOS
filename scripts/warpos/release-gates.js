@@ -208,6 +208,33 @@ const GATES = [
     };
   }),
 
+  // 2d. Entry-preamble parity (SP-20260723-001 / ADR-0036) — the single-source helm
+  // entry-file guarantee. Every executor entry doc (CODEX/ANTIGRAVITY/GEMINI + an
+  // AGENTS.md section) embeds the canonical entering-agent preamble verbatim
+  // (hash-parity vs .claude/project/reference/entry-preamble.md, keyed on REAL FILE
+  // BYTES) and each thin shim stays within its size tier. A drifted/dropped/oversized
+  // shim or a missing entry file is a single-source LIE — RED, NO yellow tier. exit 2
+  // (canonical unreadable / internal error) is also RED (fail-closed, never a silent
+  // pass). Its own test plants the semantic-edit->RED / CRLF-reformat->GREEN boundary.
+  gate("entry_preamble_parity", () => {
+    const r = runScript("scripts/checks/entry-preamble-parity.js", []);
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: "Entry-file preamble: canonical hash-parity + shim thinness clean.",
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message:
+        r.status === 2
+          ? "Entry-preamble parity could not run (fail-closed) — canonical oracle unreadable / internal error."
+          : "Entry-preamble parity FAILED — a shim drifted/dropped/oversized or an entry file is missing.",
+      details: (r.stdout || r.stderr || "").split("\n").filter((l) => /-\s|FAIL/.test(l)).slice(0, 10),
+    };
+  }),
+
   // 3. Reference Integrity
   // 0.1.2 honesty fix: this gate cannot run automatically (it needs a running
   // Claude Code agent to invoke /scan:references). Pre-0.1.2 it returned
