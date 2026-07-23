@@ -7,8 +7,34 @@
  * SKIPS the msg_id-resolution sub-check (fail-open advisory), never blocks.
  */
 const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { execFileSync } = require("child_process");
 const { analyze, parseVerdictRows, extractMsgIds } = require("./betaevents-dedup-lint.js");
 const { duplicateKeys } = require("./dedup-util.js");
+
+// QA-TEETH-006: exercise the REAL CLI --enforce path (not a reimplemented predicate). Writes fixture files
+// and spawns `node betaevents-dedup-lint.js --enforce --beta <f> [--events <f>]`, returning the real exit code.
+function runCli(betaContent, { eventsContent, eventsUnreachable } = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "be-cli-"));
+  const betaFile = path.join(dir, "beta.jsonl");
+  fs.writeFileSync(betaFile, betaContent);
+  const argv = [path.join(__dirname, "betaevents-dedup-lint.js"), "--enforce", "--beta", betaFile];
+  if (eventsUnreachable) {
+    argv.push("--events", path.join(dir, "no-such-events.jsonl")); // absent → genuine log-unreachable path
+  } else if (eventsContent != null) {
+    const eventsFile = path.join(dir, "events.jsonl");
+    fs.writeFileSync(eventsFile, eventsContent);
+    argv.push("--events", eventsFile);
+  }
+  let code = 0, out = "", err = "";
+  try {
+    out = execFileSync("node", argv, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } catch (e) { code = typeof e.status === "number" ? e.status : 1; out = String(e.stdout || ""); err = String(e.stderr || ""); }
+  try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  return { code, out, err };
+}
 
 let pass = 0, fail = 0;
 function t(name, fn) {
@@ -104,9 +130,28 @@ t("security r3 RR3-SEC-001: a verdict-shaped row that OMITS msg_id -> missingMsg
   const r = analyze({ betaText: beta, eventsText: '{"msg_id":"other"}' });
   assert.strictEqual(r.missingMsgId, 1);
   assert.strictEqual(r.logUnreachable, false);
-  // The CLI blocking predicate: enforce && !logUnreachable && missingMsgId>0 -> would block.
-  const wouldBlockUnderEnforce = !r.logUnreachable && r.missingMsgId > 0;
-  assert.strictEqual(wouldBlockUnderEnforce, true, "a verdict row without msg_id must be blockable under --enforce");
+  assert.strictEqual(r.missingMsgId > 0, true, "a verdict row without msg_id must be blockable under --enforce");
+});
+
+t("security r3 7G-005 (QA-TEETH-006): a missing-msg_id verdict blocks via the REAL CLI --enforce even when the log is UNREACHABLE", () => {
+  // 7G-005: gating missingMsgId on !logUnreachable let the fabricated-row hole reopen — a verdict missing
+  // its OWN msg_id is malformed regardless of whether OTHER ids resolve. QA-TEETH-006: the blocking is
+  // asserted from the REAL CLI exit code (spawned with --enforce + an absent --events → genuine
+  // log-unreachable), NOT a reimplemented predicate. The pure analyze() check below documents the state.
+  const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b" }); // no msg_id
+  const r = analyze({ betaText: beta, eventsText: null }); // log unreachable
+  assert.strictEqual(r.logUnreachable, true);
+  assert.strictEqual(r.missingMsgId, 1);
+  const { code, err, out } = runCli(beta + "\n", { eventsUnreachable: true });
+  assert.strictEqual(code, 1, "the REAL CLI --enforce must exit 1 on a missing-msg_id verdict even with an unreachable log: " + (err || out));
+});
+
+t("QA-TEETH-006: the REAL CLI --enforce exits 0 on a clean verdict row (resolvable msg_id)", () => {
+  // The positive control for the CLI seam: a well-formed verdict whose msg_id resolves in the log must NOT
+  // block — proves the exit-1 above is the missing-msg_id finding, not the CLI always failing.
+  const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "cli-ok-1234" });
+  const { code, err, out } = runCli(beta + "\n", { eventsContent: '{"msg_id":"cli-ok-1234"}\n' });
+  assert.strictEqual(code, 0, "a clean resolvable verdict must not block under --enforce: " + (err || out));
 });
 
 t("β reconcile-row exemption: a NON-verdict row (no decision) with no msg_id -> NOT counted", () => {

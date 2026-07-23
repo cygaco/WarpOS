@@ -32,6 +32,7 @@
 const fs = require("fs");
 const { isVerifiedLivenessRecord } = require("../dispatch/verified-liveness-read");
 const { isStartedRow } = require("../dispatch/dispatch-record-fields");
+const { verifyRecord } = require("../dispatch/attest-signing");
 const path = require("path");
 const crypto = require("crypto");
 
@@ -166,12 +167,16 @@ function evaluate({ evidenceFiles, ledgerLines, nowMs, requireSignature = true }
  * record (T-322).
  */
 function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 * 1000, artifactProduced, isVerified } = {}) {
-  // Success suppression requires a VERIFIED completion — ALWAYS require a signature (QA-R2-001: the
-  // WARPOS_LIVENESS_REQUIRE_SIG=0 runtime env is a settable unsigned-record opt-out that reopened the
-  // hole; test-injection via the isVerified param is the ONLY bypass, never an ambient env flag).
+  // BOTH terminal branches require ORIGIN VERIFICATION (7G-004: a forged UNSIGNED ok:false suppressed a
+  // stall — the settable-label asymmetry). But the verifier DIFFERS by ok value: an ok:TRUE SUCCESS needs
+  // a verified LIVENESS record (isVerifiedLivenessRecord = ok:true + signature); an ok:FALSE DEATH needs
+  // only a valid SIGNATURE (verifyRecord) — recordCompletion signs both, but isVerifiedLivenessRecord
+  // REQUIRES ok:true so it wrongly rejects a real signed death (verified on 144 production deaths → all
+  // fail the liveness check; a same-session signed ok:false passes verifyRecord). Always require the sig
+  // (QA-R2-001: no WARPOS_LIVENESS_REQUIRE_SIG env downgrade); test-injection via isVerified is the only bypass.
   const verify = typeof isVerified === "function"
     ? isVerified
-    : (r) => isVerifiedLivenessRecord(r, { requireSignature: true });
+    : (r) => (r.ok === false ? verifyRecord(r) : isVerifiedLivenessRecord(r, { requireSignature: true }));
   const byId = new Map();
   for (const r of records || []) {
     if (!r || !r.dispatch_id) continue;
@@ -196,8 +201,11 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     // (the startedRowSuperseded predicate), NOT `phase:"completion"` (which no producer emits, so keying
     // on it over-fired on every completed dispatch). An ok:FALSE death suppresses unconditionally; a
     // SUCCESS (ok:true) only when VERIFIED.
+    // A terminal completion = a non-started row with a VALID completion timestamp (7G-004: reject
+    // completed_at:null/garbage, which typeof!==="undefined" wrongly accepted), a boolean ok, AND origin
+    // verification (verify() picks verifyRecord for ok:false / isVerifiedLivenessRecord for ok:true).
     const terminated = rows.some(
-      (r) => !isStartedRow(r) && typeof r.completed_at !== "undefined" && (r.ok === false || (r.ok === true && verify(r))),
+      (r) => !isStartedRow(r) && Number.isFinite(Date.parse(r.completed_at)) && typeof r.ok === "boolean" && verify(r),
     );
     if (terminated) continue;
     const startedMs = Date.parse(started.started_at || "") || 0;

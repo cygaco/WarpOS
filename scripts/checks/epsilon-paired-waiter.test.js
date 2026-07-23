@@ -44,10 +44,32 @@ t("security r2 #4: a production-shape started row with NO terminal + stale -> FI
   assert.strictEqual(r.findings.length, 1, "the check must fire on a real-shape outstanding row: " + JSON.stringify(r));
 });
 
-t("backend r2 #4: an ok:FALSE terminal completion (honest death) SUPPRESSES -> NOT flagged", () => {
+t("backend r2 #4: a VERIFIED ok:FALSE death (signed) SUPPRESSES -> NOT flagged", () => {
   const recs = [started({ id: "d1", at: min(30) }), completion("d1", false)];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.deepStrictEqual(r.findings, [], "a verified ok:false death means the wrapper lived: " + JSON.stringify(r));
+});
+
+t("7G-004: a FORGED UNSIGNED ok:FALSE does NOT suppress -> FLAGGED (settable-label asymmetry closed)", () => {
+  const recs = [started({ id: "d1f", at: min(30) }), completion("d1f", false)];
   const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyNone });
-  assert.deepStrictEqual(r.findings, [], "an honest ok:false death means the wrapper lived: " + JSON.stringify(r));
+  assert.strictEqual(r.findings.length, 1, "an UNVERIFIED ok:false must not suppress a stall: " + JSON.stringify(r));
+});
+
+t("7G-004 (default verifier): a REAL-SIGNED ok:false death suppresses; an UNSIGNED one does not", () => {
+  const { signRecord } = require("../dispatch/attest-signing.js");
+  const startedR = started({ id: "sig1", at: min(30) });
+  const deathBase = { ok: false, dispatch_id: "sig1", role: "backend-builder", provider: "openai", completed_at: min(20) };
+  const signedDeath = { ...deathBase, attest_sig: signRecord(deathBase) };
+  // NO isVerified injected -> the default (verifyRecord for ok:false) runs.
+  assert.deepStrictEqual(evaluatePairedWaiter({ records: [startedR, signedDeath], nowMs: NOW, staleMs: STALE, artifactProduced: () => false }).findings, [], "a real signed ok:false death suppresses");
+  assert.strictEqual(evaluatePairedWaiter({ records: [started({ id: "sig2", at: min(30) }), { ...deathBase, dispatch_id: "sig2" }], nowMs: NOW, staleMs: STALE, artifactProduced: () => false }).findings.length, 1, "an UNSIGNED ok:false does NOT suppress");
+});
+
+t("7G-004: completed_at:null does NOT count as a terminal completion -> FLAGGED", () => {
+  const recs = [started({ id: "dnull", at: min(30) }), { ok: false, dispatch_id: "dnull", role: "backend-builder", completed_at: null }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "completed_at:null is not a valid completion timestamp: " + JSON.stringify(r));
 });
 
 t("security r2 #1: a VERIFIED ok:true completion SUPPRESSES -> NOT flagged", () => {
@@ -127,13 +149,34 @@ t("INTEGRATION (DoE): a REAL startedRow (production shape) stale + no terminal -
   assert.strictEqual(r.findings.length, 1, "must fire on the real writer shape: " + JSON.stringify(r));
 });
 
-t("hunter r3 OVER-FIRE regression: REAL startedRow + REAL completion shape (no phase) -> NOT flagged", () => {
-  // The r3 bug: `terminated` keyed on phase:"completion" which recordCompletion never stamps → a completed
-  // dispatch over-fired as a stall. The real completion has NO phase + HAS completed_at.
-  const realRow = startedRow({ role: "backend-reviewer", provider: "openai", dispatch_id: "ddone", started_at: min(30) });
-  const realCompletion = { ok: true, dispatch_id: "ddone", role: "backend-reviewer", provider: "openai", completed_at: min(20) }; // NO phase field
-  const r = evaluatePairedWaiter({ records: [realRow, realCompletion], nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
-  assert.deepStrictEqual(r.findings, [], "a completed+verified dispatch must NOT over-fire as a stall: " + JSON.stringify(r));
+t("hunter r3 OVER-FIRE regression (QA-TEETH-005): a REAL recordCompletion completion (production writer) -> NOT flagged", () => {
+  // QA-TEETH-005 (qa r3c): the earlier version HAND-CONSTRUCTED the completion + injected verifyAll — the
+  // exact synthetic≠production gap that caused the r3 over-fire, sitting IN the test meant to prove
+  // production-correctness. This drives the REAL production writer (dispatch-agent#recordCompletion) into an
+  // isolated ledger (DISPATCH_LEDGER_DIR test seam), reads the record it ACTUALLY wrote, and evaluates with
+  // the DEFAULT verifier (NO isVerified injection) — so the test proves BOTH the real completion shape (no
+  // `phase`, signed, quota-stamped) AND the real signature-verify path (isVerifiedLivenessRecord) suppress
+  // the stall. The r3 over-fire bug (keying on phase:"completion") and a broken signature path are both caught.
+  const { recordCompletion } = require("../dispatch-agent.js");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pw-ledger-"));
+  const prevDir = process.env.DISPATCH_LEDGER_DIR;
+  process.env.DISPATCH_LEDGER_DIR = dir;
+  try {
+    recordCompletion({ ok: true, dispatch_id: "ddone", role: "backend-reviewer", provider: "openai", completed_at: min(20) });
+    const written = fs.readFileSync(path.join(dir, "dispatch-completions.jsonl"), "utf8").trim().split(/\r?\n/).map((l) => JSON.parse(l));
+    const realCompletion = written.find((r) => r.dispatch_id === "ddone");
+    assert.ok(realCompletion, "recordCompletion must have written a record for ddone");
+    assert.strictEqual(realCompletion.phase, undefined, "the REAL production completion stamps NO phase field (the r3 over-fire root)");
+    assert.strictEqual(typeof realCompletion.attest_sig, "string", "the REAL production completion is signed — the default verifier must accept it");
+    const realRow = startedRow({ role: "backend-reviewer", provider: "openai", dispatch_id: "ddone", started_at: min(30) });
+    // NO isVerified injected -> the DEFAULT verifier (isVerifiedLivenessRecord for ok:true) runs against the
+    // REAL signature — this is the production-shape integration the earlier over-fire test was faking.
+    const r = evaluatePairedWaiter({ records: [realRow, realCompletion], nowMs: NOW, staleMs: STALE, artifactProduced: () => false });
+    assert.deepStrictEqual(r.findings, [], "a REAL recordCompletion ok:true completion must suppress (not over-fire): " + JSON.stringify(r));
+  } finally {
+    if (prevDir === undefined) delete process.env.DISPATCH_LEDGER_DIR; else process.env.DISPATCH_LEDGER_DIR = prevDir;
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  }
 });
 
 // ── artifactProducedFs (real filesystem resolver, incl. ED-270 lstat) ─────────────────────────────────

@@ -28,8 +28,10 @@ const PASSTHROUGH = "tail|head|tee|cat|less|more";
 // A passthrough stage ANYWHERE in the pipeline (not just the last stage — security r2 #5: `gate | tail |
 // grep x && next` masks too), followed EVENTUALLY by a && or ; chain. `.*?` (not `[^|]`) so a filter after
 // the passthrough (grep) doesn't hide it. grep-as-gate stays exempt: a pipeline with NO passthrough token
-// never matches.
-const MASK_RE = new RegExp("\\|\\s*(?:" + PASSTHROUGH + ")\\b.*?(?:&&|;)\\s*\\S");
+// never matches. `(?:\S*/)?` canonicalizes a PATH-qualified basename (backend r3 7G-006: `| /usr/bin/tail
+// && next`). NAMED CEILING (β-residual): a WRAPPER-invoked passthrough (`| command tail`, `| env tail`,
+// `| xargs tail`) still evades — a full shell tokenizer/exec-canonicalizer is out of scope for a doc-lint.
+const MASK_RE = new RegExp("\\|\\s*(?:\\S*/)?(?:" + PASSTHROUGH + ")\\b.*?(?:&&|;)\\s*\\S");
 
 function findMdFiles(absRoot, out, unreadable) {
   let entries;

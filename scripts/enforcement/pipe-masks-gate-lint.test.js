@@ -95,6 +95,10 @@ t("a GENUINE comment after unescaped whitespace still strips -> GREEN", () => {
   assert.deepStrictEqual(scanText(fenced("node gate.js | tail -1  # real comment && next")), []);
 });
 
+t("backend r3 7G-006 (PATH-qualified): `| /usr/bin/tail -1 && next` -> RED (basename canonicalized)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | /usr/bin/tail -1 && node next.js")).length, 1);
+});
+
 t("multiple offending lines in one block -> all flagged", () => {
   const md = fenced("node a.js | tail && b", "clean.js && c", "node d.js | head -1 ; e");
   assert.strictEqual(scanText(md).length, 2);

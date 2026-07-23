@@ -103,9 +103,16 @@ function analyze({ betaText, eventsText }) {
 
 if (require.main === module) {
   const enforce = process.argv.includes("--enforce");
+  const argVal = (flag) => { const i = process.argv.indexOf(flag); return i === -1 ? null : (process.argv[i + 1] || null); };
   const { betaEvents, eventsFile } = paths();
-  const beta = path.isAbsolute(betaEvents) ? betaEvents : path.join(ROOT, betaEvents);
-  const events = path.isAbsolute(eventsFile) ? eventsFile : path.join(ROOT, eventsFile);
+  // TEST-ONLY input overrides (QA-TEETH-006): the --enforce blocking path is exercised via the REAL CLI
+  // exit code, not a reimplemented predicate. Absent → production behavior is byte-identical (the canonical
+  // paths() values are used). A non-existent --events path resolves to null (readFileSync throws) → the
+  // genuine log-unreachable path, so the missing-msg_id-blocks-when-unreachable teeth run through real code.
+  const betaOverride = argVal("--beta");
+  const eventsOverride = argVal("--events");
+  const beta = betaOverride ? path.resolve(betaOverride) : (path.isAbsolute(betaEvents) ? betaEvents : path.join(ROOT, betaEvents));
+  const events = eventsOverride ? path.resolve(eventsOverride) : (path.isAbsolute(eventsFile) ? eventsFile : path.join(ROOT, eventsFile));
 
   let betaText = null;
   try { betaText = fs.readFileSync(beta, "utf8"); } catch { betaText = null; }
@@ -117,16 +124,17 @@ if (require.main === module) {
   try { eventsText = fs.readFileSync(events, "utf8"); } catch { eventsText = null; }
 
   const res = analyze({ betaText, eventsText });
-  // Under --enforce: a DEDUP finding blocks; and when the log is REACHABLE, ANY unresolved msg_id (security
-  // r2 #3 — low confidence is not an escape hatch) AND any verdict-shaped row that OMITS msg_id entirely
-  // (security r3 RR3-SEC-001 — the fabricated-row attack dropped one level to omitting the field: a
-  // well-formed verdict MUST carry a resolvable msg_id) both block. Only a TRULY UNREACHABLE eventsText
-  // fails open under enforce. In report-only, low-confidence still skips the unresolved advisory (no noise).
-  const blocking = enforce && (res.dupMsgIds.length > 0 || (!res.logUnreachable && (res.unresolved.length > 0 || res.missingMsgId > 0)));
+  // Under --enforce: a DUPLICATE msg_id AND a verdict-shaped row that OMITS msg_id both block
+  // INDEPENDENTLY of message-log reachability (security r3 7G-005: a verdict missing its OWN msg_id is
+  // malformed regardless of whether OTHER ids resolve — gating it on !logUnreachable reopened the
+  // fabricated-row hole one level down). Only the RESOLUTION of PRESENT ids fails open when the log is
+  // truly unreachable (security r2 #3 — low confidence is not an escape hatch when reachable). Report-only
+  // still skips the unresolved advisory on low-confidence (no truncated-log noise).
+  const blocking = enforce && (res.dupMsgIds.length > 0 || res.missingMsgId > 0 || (!res.logUnreachable && res.unresolved.length > 0));
   const showUnresolved = res.unresolved.length > 0 && (blocking || !res.resolutionSkipped);
   const lines = [];
   if (res.dupMsgIds.length) lines.push(`  DUPLICATE msg_id on >1 verdict row (a delivery logged twice): ${res.dupMsgIds.join(", ")}`);
-  if (res.missingMsgId) lines.push(`  ${res.missingMsgId} verdict-shaped row(s) OMIT msg_id — a well-formed verdict must carry a resolvable msg_id${enforce && !res.logUnreachable ? " (BLOCKING under --enforce)" : " (advisory — β should stamp its delivery msg_id)"}.`);
+  if (res.missingMsgId) lines.push(`  ${res.missingMsgId} verdict-shaped row(s) OMIT msg_id — a well-formed verdict must carry a resolvable msg_id${enforce ? " (BLOCKING under --enforce, independent of log reachability)" : " (advisory — β should stamp its delivery msg_id)"}.`);
   if (showUnresolved) lines.push(`  ${res.unresolved.length} msg_id(s) not resolving in the message log${res.lowConfidence ? " (LOW-confidence log — under --enforce this fails closed)" : " (advisory)"}: ${res.unresolved.join(", ")}`);
   else if (res.resolutionSkipped) lines.push(`  msg_id-resolution: SKIPPED (report-only) — ${res.logUnreachable ? "message log unreachable" : "low-confidence log (<80% resolve, likely a truncated preview)"} (fail-open advisory).`);
 
