@@ -159,6 +159,16 @@ node scripts/checks/no-nul-bytes.js   # scans scripts/** + .claude/** text sourc
 
 A non-zero exit names the corrupted file + byte offset. The fix is `\u0000` (the escape) not a literal NUL. This is the enforcer pairing for the regex-charclass-space-becomes-NUL learning; it caught a real latent NUL in `scripts/trackers/validate.js` on first run.
 
+**Helm entry-file parity — the single-source preamble gate** *(default + `--deep`)*
+
+SP-20260723-001 / ADR-0036: the entering-agent preamble is single-sourced at `.claude/project/reference/entry-preamble.md` and embedded verbatim in every executor entry doc (`CODEX.md`, `ANTIGRAVITY.md`, `GEMINI.md`, and an `AGENTS.md` section). This enforcer keys on REAL FILE BYTES: every required entry file exists, each embedder's marked region hash-matches the canonical oracle (canonical = the sole hash source; a shim can never grade itself), and each thin shim's provider-delta stays within its size tier. Runs as a direct script invocation (a source-integrity script, not a `/scan:*` skill):
+
+```bash
+node scripts/checks/entry-preamble-parity.js   # exists + region-present + canonical hash-parity + tier-thinness; exit 0 clean / 1 finding / 2 could-not-run (fail-closed)
+```
+
+A non-zero exit names the drifted/dropped/oversized/missing entry file; exit 2 (canonical unreadable) is fail-closed, never a silent green. Also a hard-blocking release gate (`scripts/warpos/release-gates.js` -> `entry_preamble_parity`, 0->green / 1|2->RED). Test: `scripts/checks/entry-preamble-parity.test.js` (9 planted cases incl. the one-char-semantic-edit->RED / CRLF-reformat->GREEN boundary + fail-closed exit 2).
+
 **Log-sink caps gate — rotation is firing on every known sink** *(default + `--deep`)*
 
 SP-20260717-001 AC6 (F-ENF-1): the retention/rotation gate. `log-sink-caps.js` imports the SAME `SINK_CAPS` map the write-time rotation trigger uses (single source of truth) and flags any known sink grown past **2× its cap** — a breach means rotation is not firing on that sink — AND validates the SINK_CAPS INVENTORY itself (every declared descriptor well-formed) whether or not the sink exists yet. Fail-closed: an unrecognized `kind`, an `existsSync` fault, a non-finite `actual`, or a stat/read error is an offender, never a silent pass. This invocation was the AC6 wiring the original build skipped (builder hit the 540s clamp) — it is now delegated here:

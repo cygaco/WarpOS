@@ -500,6 +500,10 @@ function buildRules(sourcePrefix) {
         // class as CLAUDE.md/AGENTS.md.
         rel === "CODEX.md" ||
         rel === "ANTIGRAVITY.md" ||
+        // GEMINI.md — sunset-tombstone executor shim (SP-20260723-001 / ADR-0036); same
+        // framework-root-doc class as CODEX/ANTIGRAVITY. Remove this line when GEMINI.md is
+        // deleted per the ADR-0036 removal-trigger (last gemini-CLI consumer rerouted to agy).
+        rel === "GEMINI.md" ||
         rel === "PROJECT.md" ||
         rel === "README.md" ||
         rel === "USER_GUIDE.md" ||

@@ -5,6 +5,27 @@
 
 ---
 
+## Entering-agent preamble
+
+New here? Read this block first, then act. It is single-sourced from `.claude/project/reference/entry-preamble.md` and hash-parity-checked by `scripts/checks/entry-preamble-parity.js` (edit the canonical source, not this copy). Per-executor entrypoints: `CODEX.md` (Codex/GPT), `ANTIGRAVITY.md` (Antigravity/`agy`), `GEMINI.md` (sunset → `agy`).
+
+<!-- WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN v1 -->
+**What this repo is.** WarpOS is a framework for running an autonomous AI software company. Work is delivered by mode-selected *faces* of a single operator persona, plus departmental agents (Product, Engineering, Growth). Identity, the autonomy ceilings, and the full operating doctrine live in `CLAUDE.md` — this preamble asserts none of them; it points you there.
+
+**Read order — once, then act.**
+1. `DUMP.md` (repo root, local) — the session handoff: next action, in-flight state, verbatim payloads. Read once, then execute.
+2. `TRACKER.md` (repo root) — the ENFORCED source of truth. It OUTRANKS `DUMP.md`, this preamble, and your own assumptions. Validate with `node scripts/trackers/validate.js` (must exit 0) before AND after meaningful work; on any disagreement, the tracker wins.
+3. `CLAUDE.md` (repo root) — the operating doctrine: autonomy, dispatch, and policy/enforcement + refactor/rename hygiene. Its RULES apply to every executor; the harness-specific mechanics may not.
+
+**Dispatch is CLI-first.** Agent dispatch runs through the CLI wrappers — `node scripts/dispatch-claude.js <role> <prompt-file> -w` for build-chain Claude roles, `node scripts/dispatch-agent.js <role> <prompt-file>` for cross-provider reviewers. CLI is mandatory; a provider API is used ONLY where there is no CLI equivalent. Cross-provider review diversity is required, and a binding FAIL cannot be overridden.
+
+**Guards, gates, and output destinations.** The repo's guarantees are enforced: the `refs/heads/main` reference-transaction fence (every write to main goes through the broker), `/scan:full`, and the release gates. Every policy names an enforcer or logs the debt. Write per-run output under `runtime/`, never a manifest-tracked project dir. Orchestrators hold envelopes, not content — heavy work goes to a subprocess that writes its full output to a file and returns a short envelope. Regenerate both manifests after editing any hash-tracked file.
+
+**For identity, authority, and the complete rules, read `CLAUDE.md`.**
+<!-- WARPOS:ENTERING-AGENT-PREAMBLE:END -->
+
+---
+
 ## Agent Team — Alex (the President) and his faces
 
 **Alex is the President** — one identity, shown in different faces by mode. ("Alex" = name; "President" = role.)
