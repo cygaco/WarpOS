@@ -71,21 +71,23 @@ function extractMsgIds(eventsText) {
  * analyze({ betaText, eventsText }) -> { skipped, dupMsgIds, missingMsgId, unresolved, resolutionSkipped }.
  * Pure — the CLI supplies the file contents (eventsText null ⇒ message log unreachable ⇒ resolution skipped).
  */
-// Unicode "format" chars (Cf): zero-width space/joiner/non-joiner (U+200B-200F), word-joiner (U+2060-2064),
-// BOM/ZWNBSP (U+FEFF), bidi marks — all INVISIBLE and carry no id, and `.trim()` does NOT remove them
-// (hunter r3e #3: a msg_id of only U+200B failed OPEN exactly like the 7G-008 whitespace bug it "closed").
-const INVISIBLE_RE = /\p{Cf}/gu;
+// A valid msg_id is a POSITIVE SHAPE, not "anything minus bad categories". The msg_id whack-a-mole proved a
+// BLOCKLIST can't be complete: it closed whitespace (7G-008) -> zero-width (hunter r3e#3) -> control chars
+// (security R3F-CTRL-001) and would keep inviting the next Unicode category (Cc, Cn unassigned, Co private-use,
+// surrogate halves...). r3g flips to an ALLOWLIST: a real msg_id is a SendMessage UUID / a slug / a dispatch
+// d-... id — ASCII alphanumerics + `-`/`_`, starting alphanumeric. Validated against ALL 55 real betaEvents
+// ids (0 rejected). Anything else (whitespace/zero-width/control/wrapped/empty) -> null (MISSING). Complete
+// by construction, unlike the blocklist (same allowlist-the-valid-form lesson as ED-274, but cheap+complete here).
+const MSGID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 /**
- * realMsgId(r) -> the row's msg_id with invisible (Cf) chars removed and whitespace trimmed, or null if the
- * result is empty (qa QA-7G-005 + backend 7G-008 + hunter r3e #3): a whitespace-OR-zero-width-only msg_id is
- * a truthy string but no id — treated as present it dodged BOTH missingMsgId and unresolved, failing OPEN
- * under --enforce. Strip+trim so a blank/invisible msg_id counts as MISSING and a padded/wrapped id resolves
- * on its real content.
+ * realMsgId(r) -> the TRIMMED msg_id iff it matches the valid id shape, else null. trim() tolerates
+ * surrounding regular whitespace on an otherwise-valid id; the allowlist rejects any id containing a
+ * whitespace/invisible/control char (a real id has none), so a blank/invisible/control/wrapped msg_id is MISSING.
  */
 function realMsgId(r) {
   if (!r || typeof r.msg_id !== "string") return null;
-  const cleaned = r.msg_id.replace(INVISIBLE_RE, "").trim();
-  return cleaned || null;
+  const trimmed = r.msg_id.trim();
+  return MSGID_RE.test(trimmed) ? trimmed : null;
 }
 
 function analyze({ betaText, eventsText }) {

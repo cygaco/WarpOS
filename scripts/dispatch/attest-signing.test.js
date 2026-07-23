@@ -135,6 +135,17 @@ test("SP-20260723-003 r3e: dispatch_id is covered by canonicalIdentityString (di
   const b = canonicalIdentityString(baseRecord({ dispatch_id: "d-B" }));
   assert.notStrictEqual(a, b, "distinct dispatch_ids must produce distinct canonical strings");
 });
+test("SP-20260723-003 r3g QA-7G-012: canonicalIdentityString is TYPE-PRESERVING — numeric 123 and string \"123\" differ", () => {
+  const a = canonicalIdentityString(baseRecord({ dispatch_id: 123 }));   // number
+  const b = canonicalIdentityString(baseRecord({ dispatch_id: "123" })); // string
+  assert.notStrictEqual(a, b, "String()-coercion aliased 123 and \"123\"; JSON.stringify must keep them distinct");
+});
+test("SP-20260723-003 r3g QA-7G-012: a signed NUMERIC field mutated to its STRING form fails verification", () => {
+  const r = signedRecord({ dispatch_id: 123 }); // signs with numeric 123
+  assert.strictEqual(verifyRecord(r), true, "the genuine numeric-signed record verifies");
+  r.dispatch_id = "123"; // mutate number -> string (the type-coercion alias attack)
+  assert.strictEqual(verifyRecord(r), false, "String(123)===String(\"123\") must NOT let the numeric->string swap verify");
+});
 test("canonicalIdentityString is stable for missing fields (serializes as empty)", () => {
   const s = canonicalIdentityString({});
   assert.strictEqual(typeof s, "string");

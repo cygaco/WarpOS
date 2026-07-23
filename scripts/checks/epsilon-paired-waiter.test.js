@@ -91,6 +91,40 @@ t("backend-7G-007: a completion BEFORE its own start (ordering) does NOT suppres
   assert.strictEqual(r.findings.length, 1, "a death before its own start must not suppress: " + JSON.stringify(r));
 });
 
+t("backend-7G-012: a calendar-INVALID completed_at (2026-02-31, shape-valid) does NOT suppress -> FLAGGED", () => {
+  // Feb 31 passes ISO_TS_RE (shape) but Date-normalizes to Mar 3 — not a canonical toISOString round-trip.
+  const recs = [started({ id: "dcal", at: min(30) }), { ok: false, dispatch_id: "dcal", role: "backend-builder", completed_at: "2026-02-31T00:00:00.000Z" }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a calendar-invalid completed_at must not suppress (exact toISOString round-trip): " + JSON.stringify(r));
+});
+
+t("QA-7G-012 (encoding): a signed NUMERIC death re-pointed to a STRING dispatch_id does NOT suppress its target", () => {
+  const { signRecord } = require("../dispatch/attest-signing.js");
+  const startedR = started({ id: "123", at: min(30) }); // started row keyed on the STRING "123"
+  const deathNum = { ok: false, dispatch_id: 123, role: "backend-builder", provider: "openai", completed_at: min(20) };
+  const signed = { ...deathNum, attest_sig: signRecord(deathNum) }; // signed with NUMERIC 123
+  signed.dispatch_id = "123"; // mutate number -> string so byId correlates to the started row
+  const r = evaluatePairedWaiter({ records: [startedR, signed], nowMs: NOW, staleMs: STALE, artifactProduced: () => false });
+  assert.strictEqual(r.findings.length, 1, "a numeric->string dispatch_id-mutated death must NOT suppress (type-coercion alias closed): " + JSON.stringify(r));
+});
+
+t("QA-7G-012 (producer): recordCompletion REFUSES to sign a non-string dispatch_id (unsigned, cannot suppress)", () => {
+  const { recordCompletion } = require("../dispatch-agent.js");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pw-num-"));
+  const prev = process.env.DISPATCH_LEDGER_DIR;
+  process.env.DISPATCH_LEDGER_DIR = dir;
+  try {
+    recordCompletion({ ok: false, dispatch_id: 777, role: "backend-builder", provider: "openai", completed_at: min(20) });
+    const rec = fs.readFileSync(path.join(dir, "dispatch-completions.jsonl"), "utf8").trim().split(/\r?\n/).map((l) => JSON.parse(l)).find((x) => x.dispatch_id === 777);
+    assert.ok(rec, "the record was written");
+    assert.strictEqual(rec.attest_sig, undefined, "a non-string dispatch_id must NOT be signed");
+    assert.strictEqual(rec.dispatch_id_type_invalid, true, "flagged type-invalid");
+  } finally {
+    if (prev === undefined) delete process.env.DISPATCH_LEDGER_DIR; else process.env.DISPATCH_LEDGER_DIR = prev;
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+  }
+});
+
 t("security r2 #1: a VERIFIED ok:true completion SUPPRESSES -> NOT flagged", () => {
   const recs = [started({ id: "d2", at: min(30) }), completion("d2", true)];
   const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });

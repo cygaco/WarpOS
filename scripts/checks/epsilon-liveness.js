@@ -54,6 +54,17 @@ const DEFAULT_STALE_MINUTES = 10;
 // backend-7G-007 (r3e): Date.parse COERCES non-strings (completed_at:0 → a finite ms), so the terminal
 // check must require a real ISO STRING, not merely a Date.parse-able value.
 const ISO_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+// backend-7G-012 (r3g): ISO_TS_RE validates SHAPE, not CALENDAR validity — a signed "2026-02-31T00:00:00.000Z"
+// (Feb 31, impossible) passes the regex, Date-normalizes to Mar 3, and suppresses the waiter. The EXACT
+// toISOString() ROUND-TRIP accepts ONLY a real producer timestamp: a calendar-invalid (or non-canonical, e.g.
+// non-Z-offset) value normalizes to a DIFFERENT string and fails. Validated: 0 round-trip failures across all
+// 760 completed_at + 753 started_at real production timestamps. Same positive/exact-validation lesson as the
+// msg_id allowlist — accept only the producer's exact canonical form, never shape-only.
+function isCanonicalIso(x) {
+  if (typeof x !== "string" || !ISO_TS_RE.test(x)) return false;
+  const d = new Date(x);
+  return Number.isFinite(d.getTime()) && d.toISOString() === x;
+}
 
 function arg(flag) {
   const i = process.argv.indexOf(flag);
@@ -215,9 +226,11 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     const startedMs = Date.parse(started.started_at || "") || 0;
     if (!startedMs) continue; // an unparseable start gives no ordering floor — cannot reason about it
     const terminated = rows.some((r) => {
-      if (isStartedRow(r) || typeof r.completed_at !== "string" || !ISO_TS_RE.test(r.completed_at)) return false;
-      const completedMs = Date.parse(r.completed_at);
-      if (!Number.isFinite(completedMs) || completedMs < startedMs) return false; // no death before its own start
+      // completed_at must be a CANONICAL producer timestamp — exact toISOString() round-trip (backend-7G-012:
+      // a shape-valid-but-calendar-invalid "2026-02-31" normalizes-and-suppresses); isCanonicalIso subsumes
+      // the string/shape/finite checks (7G-004) and rejects the impossible-date.
+      if (isStartedRow(r) || !isCanonicalIso(r.completed_at)) return false;
+      if (Date.parse(r.completed_at) < startedMs) return false; // no death before its own start (ordering)
       return typeof r.ok === "boolean" && verify(r);
     });
     if (terminated) continue;

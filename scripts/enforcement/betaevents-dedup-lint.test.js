@@ -199,7 +199,13 @@ t("realMsgId: trims; null on blank/absent/non-string; strips zero-width (hunter 
   // zero-width / format (Cf) chars carry no id and .trim() misses them:
   assert.strictEqual(realMsgId({ msg_id: "​" }), null); // ZWSP
   assert.strictEqual(realMsgId({ msg_id: "﻿⁠‌‍" }), null); // BOM + word-joiner + ZWNJ + ZWJ
-  assert.strictEqual(realMsgId({ msg_id: "​keep​" }), "keep"); // wrapped real id resolves on content
+  assert.strictEqual(realMsgId({ msg_id: "​keep​" }), null); // r3g allowlist: a wrapped/invisible id is INVALID (a real id has no invisibles) -> null
+  assert.strictEqual(realMsgId({ msg_id: " " }), null); // NUL (R3F-CTRL-001)
+  assert.strictEqual(realMsgId({ msg_id: "" }), null); // BEL
+  assert.strictEqual(realMsgId({ msg_id: "" }), null); // ESC
+  assert.strictEqual(realMsgId({ msg_id: "" }), null); // DEL
+  assert.strictEqual(realMsgId({ msg_id: "d-mrxar16n-034d5bd3" }), "d-mrxar16n-034d5bd3"); // real dispatch id valid
+  assert.strictEqual(realMsgId({ msg_id: "b4c273fe-4bea-4d29-9c2f-bbde8a99fee2" }), "b4c273fe-4bea-4d29-9c2f-bbde8a99fee2"); // real UUID valid
 });
 
 t("hunter r3e #3 (zero-width): a msg_id of only U+200B counts as MISSING (blocks under enforce)", () => {
@@ -215,11 +221,27 @@ t("hunter r3e #3: U+FEFF/U+2060/U+200C/U+200D zero-width msg_ids also MISSING", 
   }
 });
 
-t("hunter r3e #3: a zero-width-WRAPPED real id resolves on its real content (no false-unresolved)", () => {
+t("r3g allowlist: a zero-width-WRAPPED id is INVALID -> MISSING (a real id has no invisibles)", () => {
   const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "​zwid-1​" });
   const r = analyze({ betaText: beta, eventsText: '{"msg_id":"zwid-1"}' });
-  assert.deepStrictEqual(r.unresolved, [], "a zw-wrapped id must resolve on its real content: " + JSON.stringify(r));
-  assert.strictEqual(r.missingMsgId, 0);
+  assert.strictEqual(r.missingMsgId, 1, "a zw-wrapped id is invalid (has invisibles) -> MISSING: " + JSON.stringify(r));
+  assert.deepStrictEqual(r.unresolved, [], "a MISSING id is not in the resolution set: " + JSON.stringify(r));
+});
+
+t("R3F-CTRL-001: a control-char-only msg_id (NUL/BEL/ESC/DEL) counts as MISSING under enforce", () => {
+  for (const cc of [" ", "", "", ""]) {
+    const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: cc });
+    assert.strictEqual(analyze({ betaText: beta, eventsText: null }).missingMsgId, 1, "control U+" + cc.charCodeAt(0).toString(16) + " must be MISSING");
+  }
+});
+
+t("r3g allowlist: a real UUID / dispatch-id / slug msg_id is VALID (not falsely rejected)", () => {
+  for (const id of ["b4c273fe-4bea-4d29-9c2f-bbde8a99fee2", "d-mrxar16n-034d5bd3", "beta-design-build-verdict"]) {
+    const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: id });
+    const r = analyze({ betaText: beta, eventsText: `{"msg_id":"${id}"}` });
+    assert.strictEqual(r.missingMsgId, 0, id + " must be a valid id");
+    assert.deepStrictEqual(r.unresolved, [], id + " must resolve");
+  }
 });
 
 t("β reconcile-row exemption: a NON-verdict row (no decision) with no msg_id -> NOT counted", () => {
