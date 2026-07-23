@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-22T20:41:33.788Z",
+  "generatedAt": "2026-07-22T22:37:10.228Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -7618,8 +7618,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "1e9f49843f321c9bc8baa94c5a500810ab8af6b264e1b74e8c0eae1a0befe2fa",
-      "installedSha": "1e9f49843f321c9bc8baa94c5a500810ab8af6b264e1b74e8c0eae1a0befe2fa"
+      "sha256": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095",
+      "installedSha": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
