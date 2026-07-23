@@ -1358,6 +1358,27 @@ async function run(opts) {
   }
   const applyDurationMs = Date.now() - applyStartedAt;
 
+  // ── GATE-B 3c (RC1, caught at the 1.1.0 mint): materialize the applied
+  // capsule's own metadata. A fresh-N install carries
+  // framework/releases/<to>/{checksums,framework-manifest}.json on disk, but a
+  // capsule structurally cannot list its own manifest + checksums, so the
+  // apply loop never delivers them — upgraded trees then diverge from fresh
+  // (onlyInFreshN). Copy them from the source tree so the in-target regens
+  // below see the same file-set fresh install does. FAIL-CLOSED: a missing
+  // source file is a broken release layout — throw, never skip (a silent skip
+  // reintroduces the divergence undetected). Idempotent: plain overwrite copy.
+  for (const capsuleMetaFile of ["checksums.json", "framework-manifest.json"]) {
+    const srcMeta = path.join(sourceTreeRoot, "framework", "releases", target, capsuleMetaFile);
+    const dstMeta = path.join(targetRoot, "framework", "releases", target, capsuleMetaFile);
+    if (!fs.existsSync(srcMeta)) {
+      throw new Error(
+        `warp:update: capsule metadata missing at ${srcMeta} — broken release layout (GATE-B 3c fail-closed)`,
+      );
+    }
+    fs.mkdirSync(path.dirname(dstMeta), { recursive: true });
+    fs.copyFileSync(srcMeta, dstMeta);
+  }
+
   // ── G5.10a Regenerate owner=generated artifacts ─────────
   //
   // Run the generators against the target so .claude/paths.json, settings.json,
