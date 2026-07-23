@@ -89,7 +89,25 @@ function latestVerifiedAgyRecord(completionsFile, sinceMs, verifyRecord = loadVe
   return { record: best, skippedUnverified };
 }
 
-module.exports = { evaluateEd060cClose, latestVerifiedAgyRecord };
+/**
+ * resolveSinceMs(args) -> { ok:true, sinceMs } | { ok:false, reason } — parse the `--since` argv floor.
+ * FLAG-PRESENCE is distinguished from a MISSING value (R3-BE-001): a BARE `--since` (flag present with no
+ * following value, or the next token is itself a flag) is INVALID, never "absent" — otherwise a bare flag
+ * silently disables the time floor and an older signed clean record closes. Absent flag -> no floor (0).
+ */
+function resolveSinceMs(args) {
+  const idx = args.indexOf("--since");
+  if (idx < 0) return { ok: true, sinceMs: 0 }; // flag absent -> no floor
+  const val = args[idx + 1];
+  const missing = val === undefined || String(val).startsWith("--");
+  const sinceMs = missing ? NaN : Date.parse(val);
+  if (!Number.isFinite(sinceMs)) {
+    return { ok: false, reason: missing ? "--since is present with no value (bare flag)" : `--since "${val}" is not a valid date` };
+  }
+  return { ok: true, sinceMs };
+}
+
+module.exports = { evaluateEd060cClose, latestVerifiedAgyRecord, resolveSinceMs };
 
 if (require.main === module) {
   const args = process.argv.slice(2);
@@ -115,21 +133,19 @@ if (require.main === module) {
       catch { completions = path.join(".claude", "runtime", "dispatch-completions.jsonl"); }
     }
     if (!path.isAbsolute(completions)) completions = path.join(ROOT, completions);
-    const since = get("--since");
-    let sinceMs = 0;
-    if (since !== undefined) {
-      // backend r2 #2: an INVALID --since must NOT silently disable the time floor (Date.parse -> NaN,
-      // `if (NaN && …)` is falsy -> an OLDER clean record could close). Reject it loudly, fail-closed.
-      sinceMs = Date.parse(since);
-      if (!Number.isFinite(sinceMs)) {
-        console.error(`ED-060(c) close gate: --since "${since}" is not a valid date — refusing (fail-closed; an unparseable floor would silently admit an older record).`);
-        process.exit(2);
-      }
+    // backend r2 #2 + R3-BE-001: an INVALID or BARE --since must NOT silently disable the time floor
+    // (an unparseable value -> Date.parse NaN; a bare flag -> undefined). resolveSinceMs distinguishes
+    // flag-present-no-value from flag-absent; both invalid forms fail-closed (exit 2), never "no floor".
+    const sinceRes = resolveSinceMs(args);
+    if (!sinceRes.ok) {
+      console.error(`ED-060(c) close gate: ${sinceRes.reason} — refusing (fail-closed; a bare or unparseable --since would silently admit an older record).`);
+      process.exit(2);
     }
+    const sinceMs = sinceRes.sinceMs;
     const found = latestVerifiedAgyRecord(completions, sinceMs, verifyRecord);
     if (!found.record) {
       const tail = found.skippedUnverified ? ` (${found.skippedUnverified} matched-but-unverified record(s) skipped — origin-proof required)` : "";
-      console.error("ED-060(c) close gate: NO verified antigravity record found" + (since ? ` since ${since}` : "") + tail + " — cannot close (fail-closed).");
+      console.error("ED-060(c) close gate: NO verified antigravity record found" + (sinceMs ? ` since ${new Date(sinceMs).toISOString()}` : "") + tail + " — cannot close (fail-closed).");
       process.exit(1);
     }
     record = found.record;

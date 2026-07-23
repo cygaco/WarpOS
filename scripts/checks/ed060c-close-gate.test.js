@@ -10,7 +10,7 @@ const assert = require("assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { evaluateEd060cClose, latestVerifiedAgyRecord } = require("./ed060c-close-gate.js");
+const { evaluateEd060cClose, latestVerifiedAgyRecord, resolveSinceMs } = require("./ed060c-close-gate.js");
 const { signRecord, verifyRecord } = require("../dispatch/attest-signing.js");
 
 let pass = 0, fail = 0;
@@ -127,20 +127,50 @@ t("latestVerifiedAgyRecord ignores a signed provider:'openai'+tool_id:'agy' reco
   }
 });
 
-// ── CLI: --since must reject an INVALID date, never silently disable the floor (backend r2 #2) ─────────
+// ── --since parsing: INVALID or BARE must fail-closed, never silently disable the floor ───────────────
+// (backend r2 #2 = unparseable value; R3-BE-001 = BARE flag / flag-present-no-value). These are UNIT
+// tests on resolveSinceMs (no child process) so they hold even in a spawn-restricted sandbox.
 
-t("CLI --since with an INVALID date exits 2 (fail-closed, floor not silently disabled)", () => {
+t("resolveSinceMs: absent flag -> no floor (sinceMs 0)", () => {
+  const r = resolveSinceMs(["--completions", "x"]);
+  assert.deepStrictEqual(r, { ok: true, sinceMs: 0 });
+});
+
+t("resolveSinceMs: BARE --since (no value) -> invalid (R3-BE-001 — not treated as absent)", () => {
+  const r = resolveSinceMs(["--completions", "x", "--since"]);
+  assert.strictEqual(r.ok, false, JSON.stringify(r));
+});
+
+t("resolveSinceMs: --since followed by another flag -> invalid (missing value)", () => {
+  const r = resolveSinceMs(["--since", "--completions", "x"]);
+  assert.strictEqual(r.ok, false, JSON.stringify(r));
+});
+
+t("resolveSinceMs: --since with an unparseable value -> invalid (backend r2 #2)", () => {
+  assert.strictEqual(resolveSinceMs(["--since", "not-a-date"]).ok, false);
+});
+
+t("resolveSinceMs: --since with a valid ISO date -> finite floor", () => {
+  const r = resolveSinceMs(["--since", "2026-07-22T00:00:00.000Z"]);
+  assert.strictEqual(r.ok, true);
+  assert.ok(Number.isFinite(r.sinceMs) && r.sinceMs > 0, JSON.stringify(r));
+});
+
+// CLI end-to-end (env-tolerant): proves the wiring exits 2 on invalid/bare --since and 0 on a valid one.
+// SKIPS (does not fail) if the sandbox blocks child-process spawns (ED-223 class) — the unit teeth above
+// carry the real regression; this is belt-and-suspenders only.
+t("CLI --since invalid/bare exits 2; valid closes (env-tolerant)", () => {
   const cp = require("child_process");
   const tmp = path.join(os.tmpdir(), "ed060c-cli-" + process.pid + ".jsonl");
   const gate = path.join(__dirname, "ed060c-close-gate.js");
   try {
-    // A signed clean record dated in the past — WOULD close if the floor were silently disabled.
     const base = { ...CLEAN, completed_at: "2026-07-23T00:00:00.000Z" };
-    const signed = { ...base, attest_sig: signRecord(base) };
-    fs.writeFileSync(tmp, JSON.stringify(signed) + "\n");
-    const bad = cp.spawnSync(process.execPath, [gate, "--completions", tmp, "--since", "not-a-date"], { encoding: "utf8" });
-    assert.strictEqual(bad.status, 2, "invalid --since must exit 2, not admit the old record: " + JSON.stringify({ status: bad.status, err: bad.stderr }));
-    // Sanity: a VALID past --since picks + closes it (same-session sig verifies).
+    fs.writeFileSync(tmp, JSON.stringify({ ...base, attest_sig: signRecord(base) }) + "\n");
+    const invalid = cp.spawnSync(process.execPath, [gate, "--completions", tmp, "--since", "not-a-date"], { encoding: "utf8" });
+    if (invalid.error) { console.log("    (skip — child-process env-blocked: " + invalid.error.code + ")"); return; }
+    assert.strictEqual(invalid.status, 2, "invalid --since must exit 2: " + JSON.stringify({ status: invalid.status, err: invalid.stderr }));
+    const bare = cp.spawnSync(process.execPath, [gate, "--completions", tmp, "--since"], { encoding: "utf8" });
+    assert.strictEqual(bare.status, 2, "BARE --since must exit 2 (R3-BE-001): " + JSON.stringify({ status: bare.status, err: bare.stderr }));
     const good = cp.spawnSync(process.execPath, [gate, "--completions", tmp, "--since", "2026-07-22T00:00:00.000Z"], { encoding: "utf8" });
     assert.strictEqual(good.status, 0, "valid past --since should close: " + JSON.stringify({ status: good.status, err: good.stderr }));
   } finally {

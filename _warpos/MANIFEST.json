@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T05:58:59.130Z",
+  "generatedAt": "2026-07-23T06:12:01.164Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -11652,15 +11652,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/ed060c-close-gate.js",
-      "sha256": "566c57b82c544eb1a8517d56a2549d474401f8627dbd10f833962c00d0ab8d4f",
-      "installedSha": "566c57b82c544eb1a8517d56a2549d474401f8627dbd10f833962c00d0ab8d4f"
+      "sha256": "f75687219666f80ce17de9223018932979570d19dc3b1368815a4ffeafd28cfd",
+      "installedSha": "f75687219666f80ce17de9223018932979570d19dc3b1368815a4ffeafd28cfd"
     },
     "scripts/checks/ed060c-close-gate.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/ed060c-close-gate.test.js",
-      "sha256": "76d09c89bf8fb5a1a9444b9949aa0b0790f72932395a9c53c6d45a614cdea3ac",
-      "installedSha": "76d09c89bf8fb5a1a9444b9949aa0b0790f72932395a9c53c6d45a614cdea3ac"
+      "sha256": "3c1b15e32ee5f616184af15bbc4daf684371c42c9d58fa1af373b508e557110e",
+      "installedSha": "3c1b15e32ee5f616184af15bbc4daf684371c42c9d58fa1af373b508e557110e"
     },
     "scripts/checks/entry-preamble-parity.js": {
       "owner": "framework",
