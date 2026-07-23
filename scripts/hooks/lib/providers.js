@@ -764,6 +764,9 @@ function runProvider(role, prompt, opts = {}) {
       e.kernelMissing = true;
       throw e;
     }
+    // SP-20260723-002: mark the agy run-window START so the auth-fallback detector can bound the
+    // shared cli.log to THIS serve — a stale tell from a prior serve must not false-RED (β caution #1).
+    const antigravityStartMs = providerName === "antigravity" ? Date.now() : null;
     const spawned = safeSpawn.safeSpawnSync(toolId, argv, {
       cwd: PROJECT,
       env: childEnv,
@@ -805,6 +808,28 @@ function runProvider(role, prompt, opts = {}) {
     const output = rawOutput;
     const actualModel = null;
 
+    // SP-20260723-002 / ADR-0037 — agy auth-fallback detection. An UNauthenticated agy serve (expired
+    // keyring) exits 0 with output but writes its terminal tells (eval-mode / expired=true / resolved-
+    // via-default) to the cli.log, NOT stdout — so the completion record false-greens fallback:false.
+    // Scan the UNION of stdout + stderr + the run-window log-delta (agy-auth-tells#detectAgyAuthFallback);
+    // a terminal tell => auth_fallback, which dispatch-agent turns into fallback:true so the binding
+    // verdict routes to the verifiable openai/claude lane. Fail-CLOSED ("indeterminate") on an unreadable
+    // log. NOTE: --log-file is deliberately NOT used — it breaks agy's keyring auth (cert-attest ~L494,
+    // DoE-confirmed), which would make EVERY agy serve a false-RED.
+    let authFallback;
+    if (providerName === "antigravity") {
+      const { detectAgyAuthFallback } = require("../../dispatch/agy-auth-tells");
+      const agyLogPath = require("path").join(require("os").homedir(), ".gemini", "antigravity-cli", "cli.log");
+      let agyLog = null;
+      let agyLogReadError = false;
+      try {
+        agyLog = require("fs").readFileSync(agyLogPath, "utf8");
+      } catch {
+        agyLogReadError = true;
+      }
+      authFallback = detectAgyAuthFallback({ stdout: rawOutput, stderr: stderrText, agyLog, agyLogReadError, startedMs: antigravityStartMs }).auth_fallback;
+    }
+
     // Strict assertion — detect silent downgrade.
     // actualModel comes from the CLI's own stats (authoritative); compare to requested.
     if (strict && !modelsMatch(model, actualModel)) {
@@ -828,6 +853,9 @@ function runProvider(role, prompt, opts = {}) {
       output,
       stderrBytes,
       cmd: [toolId, ...argv].join(" ").slice(0, 200),
+      // SP-20260723-002: present ONLY for antigravity; true | "indeterminate" => an unauth/unverifiable
+      // agy serve (dispatch-agent forces fallback:true). undefined for non-agy providers (no field).
+      ...(authFallback !== undefined ? { auth_fallback: authFallback } : {}),
     };
   } catch (err) {
     // WI-18: detect a quota/429 failure and surface it LOUDLY rather than

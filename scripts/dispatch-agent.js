@@ -80,11 +80,22 @@ function observedCompletionFields(requestedProvider, result) {
   const observedProvider = result && result.provider;
   const hasObserved = typeof observedProvider === "string" && observedProvider.length > 0;
   const provider = hasObserved ? observedProvider : requestedProvider;
-  const fallback = !!(result && (result.fallback || result.quotaFallbackFrom)) || !hasObserved;
+  // SP-20260723-002 / ADR-0037 — agy AUTH-fallback, DISTINCT from provider/quota fallback. runProvider
+  // sets result.auth_fallback for an antigravity serve: true (a TERMINAL not-logged-in/eval/default tell
+  // in the run window) or "indeterminate" (the cli.log was unverifiable → fail-closed). Either forces
+  // fallback:true so the binding verdict routes to the verifiable openai/claude lane — an unauthenticated
+  // agy serve can NEVER stamp fallback:false again (the exact false-green this closes; the record's
+  // fallback logic previously saw only provider/quota fallback, never agy's INTERNAL auth-fallback). The
+  // explicit auth_fallback field is stamped on every agy serve so downstream (cert-attest, the ED-060(c)
+  // close, gauntlet-verify --strict-fallback) can tell an AUTH fallback apart from a provider fallback (ADR-0025).
+  const authFallback = result && result.auth_fallback;
+  const authFallbackActive = authFallback === true || authFallback === "indeterminate";
+  const fallback = !!(result && (result.fallback || result.quotaFallbackFrom)) || !hasObserved || authFallbackActive;
   return {
     provider,
     tool_id: providerToolId(provider),
     fallback,
+    ...(authFallback !== undefined ? { auth_fallback: authFallback } : {}),
   };
 }
 
@@ -1073,6 +1084,9 @@ try {
     stderr_bytes: stderrBytes,
     // A quota-fallback that ran another lab is STILL a fallback for attestation (contracted lab didn't run).
     fallback: observedRec.fallback,
+    // SP-20260723-002 / ADR-0037: agy AUTH-fallback (true | "indeterminate"), DISTINCT from provider/quota
+    // fallback — present only on an antigravity serve (undefined → omitted, so non-agy records are unchanged).
+    ...(observedRec.auth_fallback !== undefined ? { auth_fallback: observedRec.auth_fallback } : {}),
     ok: !!result.ok,
     // N-1 (§17.4): run-context + shape + tool + prompt digest for the coverage gate.
     ...runContext(),

@@ -71,6 +71,26 @@ h.test("observedCompletionFields (R2-D): MISSING result.provider → unattestabl
   assert.strictEqual(empty.fallback, true, "an empty-string provider is also unattestable");
 });
 
+h.test("observedCompletionFields (SP-20260723-002): agy AUTH-fallback tell forces fallback:true + stamps the explicit field", () => {
+  const f = observedCompletionFields("antigravity", { provider: "antigravity", ok: true, fallback: false, auth_fallback: true });
+  assert.strictEqual(f.fallback, true, "an unauthenticated agy serve (terminal tell) must be unattestable (fallback:true) — the false-green this closes");
+  assert.strictEqual(f.auth_fallback, true, "the explicit auth_fallback field distinguishes an AUTH fallback from a provider/quota fallback (ADR-0025/0037)");
+});
+h.test("observedCompletionFields (SP-20260723-002): agy indeterminate (unverifiable log) fails closed to fallback:true", () => {
+  const f = observedCompletionFields("antigravity", { provider: "antigravity", ok: true, fallback: false, auth_fallback: "indeterminate" });
+  assert.strictEqual(f.fallback, true, "an unverifiable agy serve fails closed");
+  assert.strictEqual(f.auth_fallback, "indeterminate");
+});
+h.test("observedCompletionFields (SP-20260723-002): a CLEAN agy serve is NOT demoted (no false-RED)", () => {
+  const f = observedCompletionFields("antigravity", { provider: "antigravity", ok: true, fallback: false, auth_fallback: false });
+  assert.strictEqual(f.fallback, false, "a clean agy serve must not be false-RED'd by the auth detector");
+  assert.strictEqual(f.auth_fallback, false);
+});
+h.test("observedCompletionFields (SP-20260723-002): a non-agy serve carries NO auth_fallback field", () => {
+  const f = observedCompletionFields("openai", { provider: "openai", ok: true, fallback: false });
+  assert.strictEqual("auth_fallback" in f, false, "auth_fallback is agy-only; non-agy records must not carry it");
+});
+
 h.violation("negative control: recording the REQUESTED provider on quota-fallback would false-attest agy", () => {
   // The OLD shape stamped the requested provider/tool_id with fallback:false — an openai run recorded as
   // agy/agy/false, which cert-attest (provider===agy && tool_id===agy && fallback:false) would ACCEPT.

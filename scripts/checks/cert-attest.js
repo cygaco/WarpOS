@@ -28,6 +28,10 @@ const crypto = require("crypto");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "cert-attest";
+// SP-20260723-002 / ADR-0037: the agy TERMINAL tell set + the run-window filter are SINGLE-SOURCED in
+// scripts/dispatch/agy-auth-tells.js so the dispatch-record detector, cert-attest, and the ED-060 serve
+// runbook key on ONE source (no drifting copy — the refactor-hygiene bug class). cert-attest consumes them.
+const { NON_AUTH_SIGNAL, filterAgyLogToRunWindow } = require("../dispatch/agy-auth-tells");
 const ARTIFACT_DIR = path.join(ROOT, "runtime", "cert-attest");
 
 // The SINGLE provenance-verifier choke-point (α round-6 / ED-225): the hunter-identity predicate + the
@@ -96,22 +100,8 @@ const norm = (s) => String(s || "").toLowerCase().replace(/[_\s]+/g, "-");
  * PURE + exported for the bite-test. A false-RED (dropping a genuine but skewed line) is safe (re-probe);
  * a false-GREEN (a stale serve marker leaking in) is the class this closes.
  */
-function filterAgyLogToRunWindow(agyLog, startedMs, marginMs = 5000) {
-  if (!agyLog) return "";
-  const lo = startedMs - marginMs;
-  const hi = Date.now() + 1000;
-  const year = new Date().getFullYear();
-  const kept = [];
-  for (const line of agyLog.split("\n")) {
-    const m = line.match(/^[IWEF](\d{2})(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/);
-    if (!m) continue; // no run-attributable timestamp → drop (never leaks a stale serve marker)
-    const [, mo, da, hh, mm, ss, frac] = m;
-    const ms = frac ? Number(frac.slice(0, 3).padEnd(3, "0")) : 0;
-    const t = new Date(year, Number(mo) - 1, Number(da), Number(hh), Number(mm), Number(ss), ms).getTime();
-    if (t >= lo && t <= hi) kept.push(line);
-  }
-  return kept.join("\n");
-}
+// filterAgyLogToRunWindow — SINGLE-SOURCED in scripts/dispatch/agy-auth-tells.js (required at the top).
+// (Was defined here; extracted SP-20260723-002 so cert-attest + the dispatch detector share ONE impl.)
 
 /**
  * Decide the attestation from the raw CLI output + the requested model. The KEY check: the requested
@@ -142,7 +132,7 @@ function evaluateAttestation({ requestedModel, providerId, output, exitOk, catal
   // GATE-2 positive proof + attribution} closes the false-green with NO false-RED risk. ADR-0025 amendment:
   // AUTH_LINE-match != genuine auth; "genuine authed run = clean log" is an OPEN assumption resolved against
   // the FIRST real authed serve post-login — NOT enshrined as fact.
-  const NON_AUTH_SIGNAL = /(resolved-via-default|resolved-via-fallback|local-chrome-mode|eval-mode|authentication-failed|unauthorized|expired=true)/;
+  // NON_AUTH_SIGNAL — SINGLE-SOURCED in scripts/dispatch/agy-auth-tells.js (required at the top).
   if (NON_AUTH_SIGNAL.test(out))
     return {
       attested: false,
