@@ -840,6 +840,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260723-003](.claude/project/sprint/sprints/SP-20260723-003/) | Post-1.0 mechanical-enforcer hardening batch (ED-256 waiter-armed liveness / ED-257 builder right-sizing lint / ED-258 dup-id + pipe-masks-gate shell-lint / ED-267 betaEvents dedup + enforcement:log allocator fix) | planning | 2026-07-23T06:36:30.698Z |  |  |
 | [SP-20260723-002](.claude/project/sprint/sprints/SP-20260723-002/) | agy auth-fallback tell-detector — fail-closed record honesty (ED-060 anti-false-green seam) | planning | 2026-07-23T03:57:57.167Z |  |  |
 | [SP-20260723-001](.claude/project/sprint/sprints/SP-20260723-001/) | Helm entry-file refresh + single-source shim projection + parity enforcer (CODEX/ANTIGRAVITY/GEMINI/AGENTS) | planning | 2026-07-23T02:03:18.321Z |  |  |
 | [SP-20260721-001](.claude/project/sprint/sprints/SP-20260721-001/) | D-4 release-gates standing sprint (WarpOS 1.0): brokered branch-merge+release-commit transport -> Seam-E hook live-install as a release gate (ED-controller-no-live-release-transport flip); GATE-A fresh-scaffold-all-ways (portfolio:new/warp:setup/install.ps1 3-leg + wire orphaned test-install-matrix); GATE-B upgrade-current-to-new (N-1 capsule -> real update --apply -> conformance); 2-family Phase-4 re-run on codex recovery; triage 4 enforcer reds + SP-20260718-005 stale-status ledger hygiene | planning | 2026-07-21T08:13:07.141Z |  |  |

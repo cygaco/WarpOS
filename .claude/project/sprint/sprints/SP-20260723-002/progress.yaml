@@ -1,26 +1,68 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260723-002"
-updated_at: "2026-07-23T03:57:57.167Z"
-current_phase: idle
+updated_at: "2026-07-23T06:30:00.000Z"
+current_phase: release
 current_command: none
 current_ticket: null
-current_task: null
-current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+current_task: "LANDED on main (brokered) — sprint complete; retro deferred to milestone (RI-001, engine sprint)"
+current_loop: 4
+status: completed
+last_completed_step: "brokered_land_main_c2cf51c9 (merge parents b6d3b905 + cb461f19; β DECIDE B/0.93 msg_id acf4c286)"
+next_action: "Sprint COMPLETE + landed to main c2cf51c9 (brokered, no push — push-to-main is a separate operator per-action). Retro deferred to milestone (RI-001). Do NOT auto-continue past this sprint."
 active_files: []
-modified_files: []
-checks_last_run: null
-checks_passing: []
+modified_files:
+  - "scripts/dispatch/agy-auth-tells.js"
+  - "scripts/dispatch/agy-auth-tells.test.js"
+  - "scripts/checks/ed060c-close-gate.js"
+  - "scripts/checks/ed060c-close-gate.test.js"
+  - "scripts/hooks/lib/providers.js"
+  - "scripts/dispatch/safe-spawn.js"
+  - "scripts/dispatch-agent.js"
+  - "scripts/dispatch/attest-signing.js"
+  - "scripts/checks/cert-attest.js"
+  - "scripts/dispatch/fixtures/agy/authenticated-serve.log"
+  - "scripts/dispatch/fixtures/agy/unauthenticated-serve.log"
+  - ".claude/agents/president/_system/policy/adr/0037-agy-auth-fallback-record-honesty.md"
+  - "_planning/warpos-1.0-plan/ed060-c-serve-runbook.md"
+  - ".claude/commands/scan/full.md"
+checks_last_run: "2026-07-23T06:25:00.000Z"
+checks_passing:
+  - "agy-auth-tells.test 21/21"
+  - "ed060c-close-gate.test 10/10"
+  - "cert-attest.test 24 (pure-move byte-identity holds)"
+  - "cert-attest-panel.test 35"
+  - "safe-spawn.test 53/53"
+  - "provider-tool-id 12/12"
+  - "dispatch-record-fields 34"
+  - "attest-signing / gauntlet-verify-signing / verified-liveness exit 0"
+  - "liveness-read-choke-point CLEAN"
+  - "framework-manifest --check current"
+  - "warpos-ship-coverage 0 gaps + assert-warpos-templates-shipped OK"
+  - "gauntlet security_claude_hunter PASS recorded d-mrx34dsq-d65159dd"
 checks_failing: []
 blockers: []
-approvals_needed: []
-external_services_needed: []
-issues_opened: []
+approvals_needed:
+  - "SATISFIED: beta gauntlet-to-release gate DECIDE B/0.93 (msg_id acf4c286). Push to origin is a SEPARATE operator per-action (! git push) — NOT part of this sprint; main lands locally only."
+external_services_needed:
+  - "agy interactive login (operator) — LOGIN-GATED residual only: ED-060(c) LIVENESS close + ED-268 pid-calibration. NOT required to land this seam (anti-false-green Option B)."
+issues_opened:
+  - "ED-268 (narrowed): confirm on a live spawnSync run that agy child.pid equals the pid agy stamps in cli.log (grandchild-pid mismatch degrades to indeterminate then fallback:true = false-RED, never false-green)."
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "none — sprint complete + landed to main c2cf51c9"
+resume_notes: >
+  r2 detector-CORE rebuild landed f019bbdc after gauntlet r1 + a DoE re-consult (design-lock GRANTED
+  WITH CONDITIONS). Positive-proof-only + pid-scoped + stdout-not-scanned; expired=true demoted to soft;
+  auth_fallback signed + named consumer gate (ed060c-close-gate, require ===false, origin-proof verified).
+  Two-fixture regression (byte-real authenticated then false, derived unauth then true). Hunter re-review
+  PASS (from scratch; r1 evidence invalidated by the core redesign). Keyring-expired conclusion SURVIVES
+  the new taxonomy (03:51Z window: expired=true + zero auth-success). betaEvents MSG_ID DIAGNOSIS
+  (team-lead directive): the earlier "betaEvents drop" was NOT a lost write — my rows landed but were
+  stamped with MY OUTGOING consult msg_id (bca79011) instead of beta's DELIVERY msg_id; adopted the
+  standing pattern where beta appends its own row at delivery and the recipient verifies the delivery
+  msg_id before treating a verdict load-bearing. ADR-0037 plan-to-design beta verdict = DECIDE B/0.90
+  (msg_id bca79011). Advisory residuals from the hunter (non-binding): (b) evaluateEd060cClose trusts
+  caller pre-verification by contract; (d) auth_fallback-flip-breaks-sig holds via SIGNED_FIELDS
+  membership but has no field-specific tooth — both carried to the beta gate.
 safe_to_continue: true
 stop_reason: null
