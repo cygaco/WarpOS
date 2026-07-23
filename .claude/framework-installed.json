@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.0.0",
-  "installedCommit": "13e7f4976d52d99f929539fbbb07752762bc2816",
-  "installedAt": "2026-07-22T20:41:33.252Z",
+  "installedCommit": "aec7120d04f676b82549517367cd852b6c279696",
+  "installedAt": "2026-07-22T22:37:09.718Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -6134,8 +6134,8 @@
       "dest": "scripts/warpos/release-gates.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1e9f49843f321c9bc8baa94c5a500810ab8af6b264e1b74e8c0eae1a0befe2fa",
-      "currentHashAtInstall": "1e9f49843f321c9bc8baa94c5a500810ab8af6b264e1b74e8c0eae1a0befe2fa",
+      "installedHash": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095",
+      "currentHashAtInstall": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095",
       "introducedIn": "0.0.0"
     },
     {

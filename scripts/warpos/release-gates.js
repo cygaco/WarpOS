@@ -99,7 +99,11 @@ function gateBNamedEvidencePresent(payload) {
 // the ramp a real-install LEG failure REPORTS (yellow) but does NOT block; a SANDBOX-ISOLATION leak ALWAYS
 // blocks (red), even in report-only mode — that is the load-bearing correctness property. FLIP this to
 // false once the named trigger is met: ED-249 resolved (build.js classifies clean) AND GATE-A Leg-3 green.
-const GATE_A_REPORT_ONLY = true;
+// FLIPPED 2026-07-22 (ceremony-1.0 Step-7 terminal flip): trigger MET — manifest/build.js classifies CLEAN
+// (unclassifiedCount=0, exit 0; the ED-249 43-45 unclassified-paths symptom resolved by the ceremony's
+// convergence work) AND GATE-A Leg-3 green (release run 18/0/0 — 0 yellow means no real-install leg failure,
+// so enforce = 0 red). Enforce-mode self-verify green + β terminal consult at the release→retro boundary.
+const GATE_A_REPORT_ONLY = false;
 
 function runScript(scriptRelative, args, env) {
   const full = path.join(REPO_ROOT, scriptRelative);
