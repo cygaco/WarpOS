@@ -1,18 +1,18 @@
 schema: warpos/sprint/sprint-progress/v1
 sprint: "SP-20260723-001"
-updated_at: "2026-07-23T02:03:18.321Z"
-current_phase: idle
+updated_at: "2026-07-23T03:40:00.000Z"
+current_phase: released
 current_command: none
 current_ticket: null
 current_task: null
 current_loop: null
-status: starting
-last_completed_step: "tracker_initialized"
-next_action: "Run /sprint:plan with a brief plain-language request to begin the sprint workflow."
+status: done
+last_completed_step: "brokered_land_d08bcd94"
+next_action: "Sprint complete + landed to main. Retro deferred to milestone (RI-001). Push to origin is a separate operator per-action hand-off."
 active_files: []
 modified_files: []
 checks_last_run: null
-checks_passing: []
+checks_passing: ["entry-preamble-parity 13/13", "gauntlet: backend-reviewer PASS", "gauntlet: security-reviewer(GPT) PASS", "gauntlet: security_claude_hunter PASS", "authority-pollution", "no-nul-bytes", "ship-coverage", "framework-manifest --check", "tracker validate 20/20"]
 checks_failing: []
 blockers: []
 approvals_needed: []
@@ -20,7 +20,7 @@ external_services_needed: []
 issues_opened: []
 tickets_updated: []
 ralph_checkpoint: null
-resume_command: "/sprint:plan"
-resume_notes: "Fresh sprint tracker. Provide a brief plain-language request and the planner will produce a Plan Contract."
+resume_command: "none — sprint complete"
+resume_notes: "Sprint COMPLETE + landed to main d08bcd94 (brokered). beta DECIDE B/0.91. qa AC-7 = ED-223 sandbox false-red, arbitrated. Retro deferred (RI-001)."
 safe_to_continue: true
 stop_reason: null

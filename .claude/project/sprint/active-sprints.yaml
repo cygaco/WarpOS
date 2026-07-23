@@ -1213,14 +1213,14 @@ sprints:
     updated_at: "2026-07-21T08:13:07.141Z"
   - id: SP-20260723-001
     title: "Helm entry-file refresh + single-source shim projection + parity enforcer (CODEX/ANTIGRAVITY/GEMINI/AGENTS)"
-    status: planning
+    status: done
     lane:
       type: default
       value: null
-      isolation_notes: ""
+      isolation_notes: "Engine/docs sprint (RI-001 fast-close). Conducted semantically plan->design->build->gauntlet->release with beta at the 4 boundaries (persistent Beta teammate; plan->design DECIDE B/0.89, gauntlet->release DECIDE B/0.91, logged to betaEvents). Brokered land onto main d08bcd94 (merge of 6e169769 + branch tip 27567895). Gauntlet GREEN-on-merit: backend-reviewer + security-reviewer(GPT) + security_claude_hunter PASS after r1+r2 fix cycles; qa-reviewer AC-7 = ED-223 codex-sandbox spawnSync EPERM false-red (real-env 13/13 exit0, two runners), beta-arbitrated as environmental not a code defect. 2-family security floor (agy ED-230-blocked). Not pushed to origin (operator per-action hand-off). Retro deferred to milestone (RI-001)."
     layout: per_sprint_subdir
     pointer: ".claude/project/sprint/sprints/SP-20260723-001"
     created_at: "2026-07-23T02:03:18.321Z"
-    updated_at: "2026-07-23T02:03:18.321Z"
+    updated_at: "2026-07-23T03:40:00.000Z"
 created_at: "2026-05-12T22:57:35.667Z"
 updated_at: "2026-07-23T02:03:18.321Z"
