@@ -146,6 +146,18 @@ test("SP-20260723-003 r3g QA-7G-012: a signed NUMERIC field mutated to its STRIN
   r.dispatch_id = "123"; // mutate number -> string (the type-coercion alias attack)
   assert.strictEqual(verifyRecord(r), false, "String(123)===String(\"123\") must NOT let the numeric->string swap verify");
 });
+test("SP-20260723-003 r3g QA-7G-012: canonicalIdentityString is FIELD-BOUNDARY injective (a value cannot forge a field boundary)", () => {
+  // The \x1f join is option (a): a control-char delimiter JSON.stringify always emits ESCAPED (as ),
+  // never raw — so a value can neither move a field boundary nor forge one. (i) boundary-ambiguous vectors
+  // that a NAIVE concat would collide must differ:
+  const a = canonicalIdentityString(baseRecord({ role: "ab", shape: "c" }));
+  const b = canonicalIdentityString(baseRecord({ role: "a", shape: "bc" }));
+  assert.notStrictEqual(a, b, "boundary-ambiguous field vectors must not collide");
+  // (ii) a value EMBEDDING the raw \x1f delimiter + a fake field prefix must NOT alias a real field split:
+  const forge = canonicalIdentityString(baseRecord({ role: "x" + String.fromCharCode(31) + "shape=INJECTED" }));
+  const real = canonicalIdentityString(baseRecord({ role: "x", shape: "INJECTED" }));
+  assert.notStrictEqual(forge, real, "a value embedding the raw \\x1f must not forge a real field split (JSON escapes it)");
+});
 test("canonicalIdentityString is stable for missing fields (serializes as empty)", () => {
   const s = canonicalIdentityString({});
   assert.strictEqual(typeof s, "string");

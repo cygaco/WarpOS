@@ -200,10 +200,10 @@ t("realMsgId: trims; null on blank/absent/non-string; strips zero-width (hunter 
   assert.strictEqual(realMsgId({ msg_id: "​" }), null); // ZWSP
   assert.strictEqual(realMsgId({ msg_id: "﻿⁠‌‍" }), null); // BOM + word-joiner + ZWNJ + ZWJ
   assert.strictEqual(realMsgId({ msg_id: "​keep​" }), null); // r3g allowlist: a wrapped/invisible id is INVALID (a real id has no invisibles) -> null
-  assert.strictEqual(realMsgId({ msg_id: " " }), null); // NUL (R3F-CTRL-001)
-  assert.strictEqual(realMsgId({ msg_id: "" }), null); // BEL
-  assert.strictEqual(realMsgId({ msg_id: "" }), null); // ESC
-  assert.strictEqual(realMsgId({ msg_id: "" }), null); // DEL
+  assert.strictEqual(realMsgId({ msg_id: String.fromCharCode(0) }), null); // NUL (R3F-CTRL-001)
+  assert.strictEqual(realMsgId({ msg_id: String.fromCharCode(7) }), null); // BEL
+  assert.strictEqual(realMsgId({ msg_id: String.fromCharCode(27) }), null); // ESC
+  assert.strictEqual(realMsgId({ msg_id: String.fromCharCode(127) }), null); // DEL
   assert.strictEqual(realMsgId({ msg_id: "d-mrxar16n-034d5bd3" }), "d-mrxar16n-034d5bd3"); // real dispatch id valid
   assert.strictEqual(realMsgId({ msg_id: "b4c273fe-4bea-4d29-9c2f-bbde8a99fee2" }), "b4c273fe-4bea-4d29-9c2f-bbde8a99fee2"); // real UUID valid
 });
@@ -229,7 +229,7 @@ t("r3g allowlist: a zero-width-WRAPPED id is INVALID -> MISSING (a real id has n
 });
 
 t("R3F-CTRL-001: a control-char-only msg_id (NUL/BEL/ESC/DEL) counts as MISSING under enforce", () => {
-  for (const cc of [" ", "", "", ""]) {
+  for (const cc of [0, 7, 27, 127].map((n) => String.fromCharCode(n))) {
     const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: cc });
     assert.strictEqual(analyze({ betaText: beta, eventsText: null }).missingMsgId, 1, "control U+" + cc.charCodeAt(0).toString(16) + " must be MISSING");
   }
