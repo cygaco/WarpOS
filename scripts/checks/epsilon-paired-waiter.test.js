@@ -113,6 +113,16 @@ t("backend-7G-013: within-skew completed_at (now+3m) SUPPRESSES; beyond-skew (no
   assert.strictEqual(evaluatePairedWaiter({ records: farRecs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings.length, 1, "beyond-skew completion must not suppress");
 });
 
+t("backend-7G-013 SKEW boundary (qa r3h): completed_at == now+SKEW suppresses (inclusive); == now+SKEW+1ms FLAGS", () => {
+  const SKEW = 5 * 60 * 1000; // must match epsilon-liveness.js SKEW_MS
+  const atSkew = new Date(NOW + SKEW).toISOString(); // exactly now + skew (inclusive boundary)
+  const overSkew = new Date(NOW + SKEW + 1).toISOString(); // 1ms over
+  const okRecs = [started({ id: "dskew", at: min(30) }), { ok: false, dispatch_id: "dskew", role: "backend-builder", completed_at: atSkew }];
+  assert.deepStrictEqual(evaluatePairedWaiter({ records: okRecs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings, [], "completed_at exactly at now+skew suppresses (inclusive boundary)");
+  const overRecs = [started({ id: "dover", at: min(30) }), { ok: false, dispatch_id: "dover", role: "backend-builder", completed_at: overSkew }];
+  assert.strictEqual(evaluatePairedWaiter({ records: overRecs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll }).findings.length, 1, "completed_at 1ms over now+skew must FLAG (exclusive above the boundary)");
+});
+
 t("backend-7G-013 SYMMETRIC: a calendar-INVALID started_at -> FLAGGED malformed-start (never silent-skip)", () => {
   const recs = [{ phase: "started", ok: false, dispatch_id: "dbadstart", role: "backend-builder", started_at: "2026-02-31T00:00:00.000Z" }];
   const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });

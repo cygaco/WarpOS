@@ -190,8 +190,14 @@ t("r3h raw-match: a padded msg_id is INVALID -> MISSING (real ids never carry wh
 });
 
 t("QA-7G-013/backend-7G-014 (r3h): every non-ASCII invisible that JS .trim() would strip -> MISSING (raw-match, no trim leak)", () => {
-  // These 11 are stripped by JS .trim() (the r3g leak surface); raw-match leaves them in -> fail the allowlist.
-  const invis = [0xFEFF, 0x00A0, 0x1680, 0x2000, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0x000C, 0x000B, 0x200B, 0x2060];
+  // Every whitespace/invisible JS .trim() would strip (the r3g leak surface) + the U+2001-200A space run +
+  // ASCII TAB/LF/CR (qa r3h exhaustiveness); raw-match leaves them ALL in -> fail the allowlist -> MISSING.
+  const invis = [
+    0xFEFF, 0x00A0, 0x1680,
+    0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, // U+2000-200A space run
+    0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0x000C, 0x000B, 0x200B, 0x2060,
+    0x09, 0x0A, 0x0D, // ASCII TAB / LF / CR (JS $ has no Perl trailing-newline exception -> LF/CR rejected too)
+  ];
   for (const cp of invis) {
     const c = String.fromCharCode(cp);
     // wrapped AND interior placement both invalid:
