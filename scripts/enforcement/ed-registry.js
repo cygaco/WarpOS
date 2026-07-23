@@ -15,6 +15,8 @@
  * mis-read as a second genesis and false-RED'ing a closed ED.
  */
 
+const { duplicateKeys } = require("./dedup-util");
+
 const ED_ID_RE = /^ED-(\d+)$/;
 // A row INTRODUCES debt only if it carries one of these substantive description fields (log.md requires
 // `policy`; the older schema used `origin`/`gap`).
@@ -60,17 +62,12 @@ function nextEdId(text) {
 /**
  * findDuplicateGenesisIds(text) -> [{ id, count }] sorted by id — ids with >1 GENESIS row. An append-only
  * closure/amendment row re-using an id does NOT count (genesis-keyed). Malformed/non-ED lines skipped.
+ * Uses the shared duplicateKeys finder (β P-034 one-implementer, with ED-267a).
  */
 function findDuplicateGenesisIds(text) {
-  const genesisCount = new Map();
-  for (const r of parseRegister(text)) {
-    if (r.malformed || !r.id || !ED_ID_RE.test(r.id)) continue;
-    if (!r.isGenesis) continue;
-    genesisCount.set(r.id, (genesisCount.get(r.id) || 0) + 1);
-  }
-  const dups = [];
-  for (const [id, count] of genesisCount) if (count > 1) dups.push({ id, count });
-  return dups.sort((a, b) => a.id.localeCompare(b.id));
+  const rows = parseRegister(text);
+  const dups = duplicateKeys(rows, (r) => (!r.malformed && r.isGenesis && r.id && ED_ID_RE.test(r.id) ? r.id : null));
+  return dups.map((d) => ({ id: d.key, count: d.count }));
 }
 
 module.exports = { parseRegister, nextEdId, findDuplicateGenesisIds, ED_ID_RE };

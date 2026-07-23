@@ -3235,7 +3235,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "40ddafbfa881ede37ef9b3ff3494bfda9675e26c5e98fc3b6756e3c120c6ba12",
+        "sha256": "a0979f8812009b6d896657f3fd22d7563978ffd5851f8c686e7feaee64adbec1",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

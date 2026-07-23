@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T06:48:40.363Z",
+  "generatedAt": "2026-07-23T07:01:28.828Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9863,6 +9863,27 @@
       "sha256": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c",
       "installedSha": "46d849268bc07a13b931e45863b57e38923c424560ab2fefd8ca0f50eec3602c"
     },
+    "scripts/enforcement/betaevents-dedup-lint.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/betaevents-dedup-lint.js",
+      "sha256": "a8a57994fe5c3d3a9373082a42a175978306a61cdebeb11b5e4b5ab2d943cebc",
+      "installedSha": "a8a57994fe5c3d3a9373082a42a175978306a61cdebeb11b5e4b5ab2d943cebc"
+    },
+    "scripts/enforcement/betaevents-dedup-lint.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
+      "sha256": "50ffdb3678b215ef666a6e0cb1d6aaf547bb468604e0c43cb3977f4e43aa909f",
+      "installedSha": "50ffdb3678b215ef666a6e0cb1d6aaf547bb468604e0c43cb3977f4e43aa909f"
+    },
+    "scripts/enforcement/dedup-util.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/dedup-util.js",
+      "sha256": "d6f6213e57355d604bc9a0f8fc1023ba8fd87dd1ecfebb555957a27d7ed4c639",
+      "installedSha": "d6f6213e57355d604bc9a0f8fc1023ba8fd87dd1ecfebb555957a27d7ed4c639"
+    },
     "scripts/enforcement/ed-dup-id-lint.js": {
       "owner": "framework",
       "managed": true,
@@ -9874,8 +9895,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-registry.js",
-      "sha256": "4fbaa9598024cef527e52aa8f93e1fe70cd5e02e8534c132c9c6ee6bae5d6f95",
-      "installedSha": "4fbaa9598024cef527e52aa8f93e1fe70cd5e02e8534c132c9c6ee6bae5d6f95"
+      "sha256": "5f110c0c1a54d06321f969c1a45735621dc72b0b363987cc45d815fc2bb0f400",
+      "installedSha": "5f110c0c1a54d06321f969c1a45735621dc72b0b363987cc45d815fc2bb0f400"
     },
     "scripts/enforcement/ed-registry.test.js": {
       "owner": "framework",
@@ -25892,8 +25913,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "40ddafbfa881ede37ef9b3ff3494bfda9675e26c5e98fc3b6756e3c120c6ba12",
-      "installedSha": "40ddafbfa881ede37ef9b3ff3494bfda9675e26c5e98fc3b6756e3c120c6ba12"
+      "sha256": "a0979f8812009b6d896657f3fd22d7563978ffd5851f8c686e7feaee64adbec1",
+      "installedSha": "a0979f8812009b6d896657f3fd22d7563978ffd5851f8c686e7feaee64adbec1"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
