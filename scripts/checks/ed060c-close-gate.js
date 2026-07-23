@@ -37,6 +37,11 @@ function evaluateEd060cClose(record) {
   // (latestVerifiedAgyRecord / the --record CLI path) before this pure field check — see file header.
   const okTrue = r.ok === true;
   if (!okTrue) reasons.push(`ok must be true (got ${JSON.stringify(r.ok)})`);
+  // BOTH provider AND tool_id must be the agy lane (backend r2 #4 / qa r2 #1 — verified exploitable: a
+  // signed record with provider:"openai" + tool_id:"agy" scored closeable:true when only tool_id was
+  // checked). A genuine agy record carries provider:"antigravity" AND tool_id:"agy".
+  const providerAgy = r.provider === "antigravity";
+  if (!providerAgy) reasons.push(`provider must be "antigravity" (got ${JSON.stringify(r.provider)})`);
   const toolAgy = r.tool_id === "agy";
   if (!toolAgy) reasons.push(`tool_id must be "agy" (got ${JSON.stringify(r.tool_id)})`);
   const providerFallbackClean = r.fallback === false;
@@ -49,8 +54,8 @@ function evaluateEd060cClose(record) {
       `or unstamped (absent) serve cannot close ED-060(c) (got ${JSON.stringify(r.auth_fallback)})`,
     );
   }
-  const closeable = okTrue && toolAgy && providerFallbackClean && authProven;
-  return { closeable, reasons, checks: { okTrue, toolAgy, providerFallbackClean, authProven } };
+  const closeable = okTrue && providerAgy && toolAgy && providerFallbackClean && authProven;
+  return { closeable, reasons, checks: { okTrue, providerAgy, toolAgy, providerFallbackClean, authProven } };
 }
 
 /**
@@ -68,12 +73,16 @@ function latestVerifiedAgyRecord(completionsFile, sinceMs, verifyRecord = loadVe
   }
   let best = null;
   let skippedUnverified = 0;
+  // A finite positive sinceMs is a real time floor; anything else (0 / NaN) means "no floor" (the CLI
+  // rejects an INVALID --since before calling — backend r2 #2 — so a NaN never silently disables it here).
+  const hasFloor = Number.isFinite(sinceMs) && sinceMs > 0;
   for (const ln of lines) {
     let rec;
     try { rec = JSON.parse(ln); } catch { continue; }
-    if (rec.provider !== "antigravity" && rec.tool_id !== "agy") continue;
+    // BOTH fields must be the agy lane (backend r2 #4 / qa r2 #1) — matches the evaluate gate.
+    if (!(rec.provider === "antigravity" && rec.tool_id === "agy")) continue;
     const ts = Date.parse(rec.completed_at || rec.started_at || "") || 0;
-    if (sinceMs && ts < sinceMs) continue;
+    if (hasFloor && ts < sinceMs) continue;
     if (!verifyRecord || !verifyRecord(rec)) { skippedUnverified++; continue; } // origin-proof required
     if (!best || ts >= best._ts) { best = rec; best._ts = ts; }
   }
@@ -107,7 +116,16 @@ if (require.main === module) {
     }
     if (!path.isAbsolute(completions)) completions = path.join(ROOT, completions);
     const since = get("--since");
-    const sinceMs = since ? Date.parse(since) : 0;
+    let sinceMs = 0;
+    if (since !== undefined) {
+      // backend r2 #2: an INVALID --since must NOT silently disable the time floor (Date.parse -> NaN,
+      // `if (NaN && …)` is falsy -> an OLDER clean record could close). Reject it loudly, fail-closed.
+      sinceMs = Date.parse(since);
+      if (!Number.isFinite(sinceMs)) {
+        console.error(`ED-060(c) close gate: --since "${since}" is not a valid date — refusing (fail-closed; an unparseable floor would silently admit an older record).`);
+        process.exit(2);
+      }
+    }
     const found = latestVerifiedAgyRecord(completions, sinceMs, verifyRecord);
     if (!found.record) {
       const tail = found.skippedUnverified ? ` (${found.skippedUnverified} matched-but-unverified record(s) skipped — origin-proof required)` : "";

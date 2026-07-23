@@ -6,13 +6,16 @@ genuine sample MUST be a real capture, and any derived fixture MUST document its
 hand-authored "genuine" fixture encodes author assumptions (the class that slipped ε+α+β in r1).
 
 ## authenticated-serve.log — GENUINE (byte-identical real capture)
-- Source: `runtime/cert-attest/agy-log-1784445071686.log` (a real `agy` serve by the operator,
+- Source: `runtime/cert-attest/agy-log-1784445071686.log` (a real `agy` execution by the operator,
   keyring valid). Byte-identical: sha256 `e7aa30393f61dbe731e2ffe62b44e83c3d9b6d3c5a1599c23cce64761c8e7e12`.
 - Shape: startup transients (`Model resolved via default`, `local chrome mode / eval mode`,
   `You are not logged into Antigravity`, `not authenticated`) at lines 1-53, THEN keyring load
   (`expired=false`, L54) and the three code-site auth-success lines (`ChainedAuth: authenticated
-  via keyring` L55, `OAuth: authenticated successfully` L57, `silent auth succeeded` L68), then a
-  real Gemini 3.1 Pro (High) serve. pid = 39296 on every line (glog field 3).
+  via keyring` L55, `OAuth: authenticated successfully` L57, `silent auth succeeded` L68), then
+  authenticated request execution with the resolver/request labels logged for "Gemini 3.1 Pro
+  (High)". pid = 39296 on every line (glog field 3). SERVED-MODEL identity is UNPROVEN here (ED-230:
+  the log carries the requested/resolver LABEL, not an operator-account-config served-model attestation)
+  — this fixture proves AUTHENTICATION, not which model actually served.
 - Expected classification: `auth_fallback: false` (surface `auth-success`). This is the serve the
   r1 blunt-denylist detector FALSE-RED'd — the anchor that must never regress.
 

@@ -3,13 +3,13 @@
 
 /**
  * agy-auth-tells.test.js — teeth for the agy auth-fallback tell detector
- * (SP-20260723-002 / ADR-0037, sequence-aware + pid-scoped rebuild after the r1 gauntlet + DoE re-consult).
+ * (SP-20260723-002 / ADR-0037, sequence-aware + pid-scoped + EMITTER-ANCHORED after r1 + DoE + r2).
  *
  * The regression anchor is the GENUINE capture (fixtures/agy/authenticated-serve.log, byte-identical to
- * runtime/cert-attest/agy-log-1784445071686.log) — a real authenticated serve that the FIRST detector
- * false-RED'd. DoE: "A single-fixture test proving only (unauth→true) is precisely what let the taxonomy
- * error survive — the genuine sample MUST be a committed regression fixture." Both directions are proven
- * on the real fixtures; the sequence + pid-scope + fail-closed edge cases are constructed and labeled.
+ * runtime/cert-attest/agy-log-1784445071686.log) — a real authenticated serve the r1 detector false-RED'd.
+ * r2 backend #1 added the security-critical case: AUTH_SUCCESS must be anchored to the EMITTER code-site,
+ * not the message text, so an injected `log.go:398] … ChainedAuth: authenticated via keyring` (a reviewer
+ * serve's own answer, logged) can NOT flip an unauthenticated serve to false.
  */
 
 const assert = require("assert");
@@ -22,6 +22,8 @@ const {
   snapshotAgyLog,
   readAgyLogDelta,
   glogPid,
+  parseGlog,
+  isAuthSuccessLine,
   NON_AUTH_SIGNAL,
 } = require("./agy-auth-tells.js");
 
@@ -42,118 +44,115 @@ const FIX_DIR = path.join(__dirname, "fixtures", "agy");
 const AUTH_FIXTURE = fs.readFileSync(path.join(FIX_DIR, "authenticated-serve.log"), "utf8");
 const UNAUTH_FIXTURE = fs.readFileSync(path.join(FIX_DIR, "unauthenticated-serve.log"), "utf8");
 const FIXTURE_PID = 39296; // both fixtures are the same real serve pid (glog field 3)
-// The fixtures are dated 2026-07-19 00:11:11; bind startedMs to that so the run window admits them
-// (window = [startedMs - 5s, now + 1s]; the fixture time is in the past relative to any real `now`).
 const FIXTURE_STARTED = new Date(2026, 6, 19, 0, 11, 11).getTime();
 
-// glog line builder with an EXPLICIT pid (the concurrency dimension) + fixture-window timestamp.
-function line(pid, tell, { mo = "07", da = "19", hh = "00", mm = "11", ss = "12", us = "000000", file = "log.go:398" } = {}) {
-  return `I${mo}${da} ${hh}:${mm}:${ss}.${us} ${pid} ${file}] ${tell}`;
+// glog line builder: `L MMDD HH:MM:SS.ffffff PID EMITTER] MESSAGE`. EMITTER (file:line) and MESSAGE are
+// SEPARATE — the r1 test baked the emitter into the message, which is the very ambiguity backend r2 #1
+// exploited. Default emitter is a NON-auth site so a message is never accidentally trusted.
+function line(pid, message, { emitter = "log.go:398", mo = "07", da = "19", hh = "00", mm = "11", ss = "12", us = "000000" } = {}) {
+  return `I${mo}${da} ${hh}:${mm}:${ss}.${us} ${pid} ${emitter}] ${message}`;
 }
-const AUTH_LINE = "auth.go:132] ChainedAuth: authenticated via keyring (effective: keyring)";
-const OAUTH_LINE = "server_oauth.go:221] OAuth: authenticated successfully as vlad@example.com";
+// REAL code-site auth-success lines (correct emitter + message).
+const authLine = (pid) => line(pid, "ChainedAuth: authenticated via keyring (effective: keyring)", { emitter: "auth.go:132" });
+const oauthLine = (pid) => line(pid, "OAuth: authenticated successfully as vlad@example.com", { emitter: "server_oauth.go:221" });
+const silentLine = (pid) => line(pid, "Print mode: silent auth succeeded", { emitter: "printmode.go:309" });
+const expiredLine = (pid) => line(pid, "keyringAuth: loaded token, expiry=... expired=true", { emitter: "keyring.go:64" });
+const transientLine = (pid) => line(pid, "You are not logged into Antigravity.", { emitter: "log.go:398" });
 
 // ── The two REAL-fixture regression anchors ──────────────────────────────────────────────────────────
 
-// 1. THE GENUINE authenticated serve (real capture) -> false. The exact serve the r1 detector false-RED'd.
 t("REAL authenticated serve (byte-identical capture) -> auth_fallback:false", () => {
   const r = detectAgyAuthFallback({ agyLog: AUTH_FIXTURE, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, false, JSON.stringify(r));
   assert.strictEqual(r.surface, "auth-success", JSON.stringify(r));
 });
 
-// 2. The derived UNauthenticated serve (auth-success lines removed, expired=true) -> true.
 t("derived unauthenticated serve (no auth-success, expired=true) -> auth_fallback:true", () => {
   const r = detectAgyAuthFallback({ agyLog: UNAUTH_FIXTURE, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, true, JSON.stringify(r));
 });
 
-// ── DoE must-ship sequence cases (the r1 taxonomy fixes) ──────────────────────────────────────────────
+// ── r2 backend #1: EMITTER-anchored auth-success (the security-critical false-green fix) ───────────────
 
-// 3. expired=true BEFORE a code-site success -> false (the NORMAL expire→refresh→success OAuth path;
-//    the r1 unconditional-veto bug would have false-RED'd this).
-t("expired=true then auth-success (refresh path) -> auth_fallback:false", () => {
+t("INJECTED success on a non-auth emitter (log.go) -> STILL true (backend r2 #1 false-green closed)", () => {
+  // The exact demonstrated flip: append a reviewer-quoted success to the unauthenticated fixture.
+  const injected = UNAUTH_FIXTURE + "\n" + line(FIXTURE_PID, "reviewer text: ChainedAuth: authenticated via keyring", { emitter: "log.go:398" });
+  const r = detectAgyAuthFallback({ agyLog: injected, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
+  assert.strictEqual(r.auth_fallback, true, "an injected success on a non-auth emitter must NOT grant trust: " + JSON.stringify(r));
+});
+
+t("NESTED emitter in the MESSAGE (log.go] auth.go]…) -> not trusted (positional emitter wins)", () => {
   const agyLog = [
-    line(FIXTURE_PID, "keyring.go:64] keyringAuth: loaded token, expiry=... expired=true"),
-    line(FIXTURE_PID, AUTH_LINE),
-    line(FIXTURE_PID, OAUTH_LINE),
+    expiredLine(FIXTURE_PID),
+    line(FIXTURE_PID, "auth.go:132] ChainedAuth: authenticated via keyring", { emitter: "log.go:398" }),
   ].join("\n");
+  const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
+  assert.strictEqual(r.auth_fallback, true, "a file:line] embedded in the message must not masquerade as the emitter: " + JSON.stringify(r));
+});
+
+t("isAuthSuccessLine: real emitter+message true; wrong emitter false; right emitter wrong message false", () => {
+  assert.strictEqual(isAuthSuccessLine(parseGlog(authLine(FIXTURE_PID))), true);
+  assert.strictEqual(isAuthSuccessLine(parseGlog(oauthLine(FIXTURE_PID))), true);
+  assert.strictEqual(isAuthSuccessLine(parseGlog(silentLine(FIXTURE_PID))), true);
+  assert.strictEqual(isAuthSuccessLine(parseGlog(line(FIXTURE_PID, "ChainedAuth: authenticated via keyring", { emitter: "log.go:398" }))), false);
+  assert.strictEqual(isAuthSuccessLine(parseGlog(line(FIXTURE_PID, "applyAuthResult: email=x", { emitter: "server_oauth.go:216" }))), false);
+});
+
+// ── Sequence cases (r1 taxonomy fixes) ────────────────────────────────────────────────────────────────
+
+t("expired=true then auth-success (refresh path) -> auth_fallback:false", () => {
+  const agyLog = [expiredLine(FIXTURE_PID), authLine(FIXTURE_PID), oauthLine(FIXTURE_PID)].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, false, JSON.stringify(r));
 });
 
-// 4. A startup transient AFTER auth-success -> false (a transient can NOT un-authenticate a serve;
-//    the r1 ordering-gated rule would have false-RED'd a late "resolved via default").
 t("auth-success then late transient -> auth_fallback:false (transient can't un-auth)", () => {
   const agyLog = [
-    line(FIXTURE_PID, AUTH_LINE),
-    line(FIXTURE_PID, "model_resolver.go:111] Model resolved via default"),
-    line(FIXTURE_PID, "launchmanager.go:69] Entering local chrome mode! ... eval mode"),
+    authLine(FIXTURE_PID),
+    line(FIXTURE_PID, "Model resolved via default", { emitter: "model_resolver.go:111" }),
+    line(FIXTURE_PID, "Entering local chrome mode! ... eval mode", { emitter: "launchmanager.go:69" }),
   ].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, false, JSON.stringify(r));
 });
 
-// 5. A transient with NO subsequent auth-success -> true (the unauth / eval-default serve).
 t("transient with no auth-success -> auth_fallback:true", () => {
-  const agyLog = [
-    line(FIXTURE_PID, "log.go:398] You are not logged into Antigravity."),
-    line(FIXTURE_PID, "launchmanager.go:69] Entering local chrome mode! ... eval mode"),
-  ].join("\n");
+  const agyLog = [transientLine(FIXTURE_PID), line(FIXTURE_PID, "Entering local chrome mode! ... eval mode", { emitter: "launchmanager.go:69" })].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, true, JSON.stringify(r));
 });
 
-// 6. A HARD revoking signal (unauthorized) with no success -> true.
 t("hard revoking (unauthorized) no success -> auth_fallback:true", () => {
-  const agyLog = line(FIXTURE_PID, "log.go:398] request rejected: unauthorized");
+  const agyLog = line(FIXTURE_PID, "request rejected: unauthorized", { emitter: "log.go:398" });
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, true, JSON.stringify(r));
 });
 
-// 7. A revoking signal AFTER an earlier success -> true (revoked mid-serve; fail-closed).
 t("auth-success then revoking -> auth_fallback:true (revoked after auth)", () => {
-  const agyLog = [
-    line(FIXTURE_PID, AUTH_LINE),
-    line(FIXTURE_PID, "log.go:398] authentication failed"),
-  ].join("\n");
+  const agyLog = [authLine(FIXTURE_PID), line(FIXTURE_PID, "authentication failed", { emitter: "log.go:398" })].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, true, JSON.stringify(r));
 });
 
-// ── DoE must-ship concurrency / pid-scope cases (the false-GREEN this sprint exists to close) ──────────
+// ── Concurrency / pid-scope (the false-GREEN this sprint exists to close) ──────────────────────────────
 
-// 8. THE concurrency false-green: this-pid is unauth, ANOTHER pid's auth-success lands in the window ->
-//    true (pid-scoping excludes the other process's success — the exact false-green the sprint closes).
-t("interleaved pids: this-pid unauth + other-pid auth-success -> auth_fallback:true (false-green CLOSED)", () => {
+t("interleaved pids: this-pid unauth + other-pid auth-success -> true (false-green CLOSED)", () => {
   const OTHER = 40001;
-  const agyLog = [
-    line(FIXTURE_PID, "keyring.go:64] keyringAuth: loaded token expired=true"),
-    line(FIXTURE_PID, "log.go:398] You are not logged into Antigravity."),
-    line(OTHER, AUTH_LINE), // a concurrent agy -i login — MUST NOT clean this run
-    line(OTHER, OAUTH_LINE),
-  ].join("\n");
+  const agyLog = [expiredLine(FIXTURE_PID), transientLine(FIXTURE_PID), authLine(OTHER), oauthLine(OTHER)].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, true, JSON.stringify(r));
 });
 
-// 9. The other direction: this-pid authenticated, another pid's transient in-window -> false (a foreign
-//    transient must not false-RED this run).
-t("interleaved pids: this-pid auth-success + other-pid transient -> auth_fallback:false", () => {
+t("interleaved pids: this-pid auth-success + other-pid transient -> false", () => {
   const OTHER = 40002;
-  const agyLog = [
-    line(FIXTURE_PID, AUTH_LINE),
-    line(OTHER, "launchmanager.go:69] Entering local chrome mode! ... eval mode"),
-  ].join("\n");
+  const agyLog = [authLine(FIXTURE_PID), line(OTHER, "Entering local chrome mode! ... eval mode", { emitter: "launchmanager.go:69" })].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, false, JSON.stringify(r));
 });
 
-// 10. C4 (stdout collision): the real authenticated log + a stdout that QUOTES a tell -> false. stdout is
-//     NOT a tell surface (a reviewer serve whose ANSWER quotes "unauthorized" must not veto).
-t("stdout quoting a tell + clean authenticated log -> auth_fallback:false (stdout not scanned)", () => {
+t("stdout quoting a tell + clean authenticated log -> false (stdout not scanned)", () => {
   const r = detectAgyAuthFallback({
-    stdout: "The code path returns 'unauthorized' and enters eval mode when expired=true.",
+    stdout: "The code returns 'unauthorized' and enters eval mode when expired=true.",
     agyLog: AUTH_FIXTURE,
     startedMs: FIXTURE_STARTED,
     runPid: FIXTURE_PID,
@@ -161,40 +160,34 @@ t("stdout quoting a tell + clean authenticated log -> auth_fallback:false (stdou
   assert.strictEqual(r.auth_fallback, false, JSON.stringify(r));
 });
 
-// ── Fail-closed / indeterminate cases (record-honesty > P-059) ────────────────────────────────────────
+// ── Fail-closed / indeterminate ───────────────────────────────────────────────────────────────────────
 
-// 11. No runPid -> indeterminate (cannot attribute the shared log to this serve).
-t("no runPid -> indeterminate (fail-closed)", () => {
+t("no runPid -> indeterminate", () => {
   const r = detectAgyAuthFallback({ agyLog: AUTH_FIXTURE, startedMs: FIXTURE_STARTED });
   assert.strictEqual(r.auth_fallback, "indeterminate", JSON.stringify(r));
   assert.strictEqual(r.surface, "no-run-pid", JSON.stringify(r));
 });
 
-// 12. No startedMs -> indeterminate.
-t("no startedMs -> indeterminate (fail-closed)", () => {
+t("no startedMs -> indeterminate", () => {
   const r = detectAgyAuthFallback({ agyLog: AUTH_FIXTURE, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, "indeterminate", JSON.stringify(r));
 });
 
-// 13. Log unreadable -> indeterminate.
-t("agyLogReadError -> indeterminate (fail-closed)", () => {
+t("agyLogReadError -> indeterminate", () => {
   const r = detectAgyAuthFallback({ agyLogReadError: true, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, "indeterminate", JSON.stringify(r));
 });
 
-// 14. runPid matches NO in-window line (launcher-pid / all-foreign window) -> indeterminate.
-t("runPid attributes no lines -> indeterminate (fail-closed)", () => {
+t("runPid attributes no lines -> indeterminate", () => {
   const r = detectAgyAuthFallback({ agyLog: AUTH_FIXTURE, startedMs: FIXTURE_STARTED, runPid: 99999 });
   assert.strictEqual(r.auth_fallback, "indeterminate", JSON.stringify(r));
   assert.strictEqual(r.surface, "no-pid-lines", JSON.stringify(r));
 });
 
-// 15. THE SEMANTIC FLIP: a readable window with lines for this pid but NEITHER a tell NOR an auth-success
-//     -> indeterminate (NOT false). The old blunt detector scored this "clean/false" — a false-green vector.
 t("this-pid lines with no tell and no auth-success -> indeterminate (NOT false)", () => {
   const agyLog = [
-    line(FIXTURE_PID, "model_config_manager.go:213] Propagating selected model override to backend"),
-    line(FIXTURE_PID, "http_helpers.go:228] URL: https://.../streamGenerateContent"),
+    line(FIXTURE_PID, "Propagating selected model override to backend", { emitter: "model_config_manager.go:213" }),
+    line(FIXTURE_PID, "URL: https://.../streamGenerateContent", { emitter: "http_helpers.go:228" }),
   ].join("\n");
   const r = detectAgyAuthFallback({ agyLog, startedMs: FIXTURE_STARTED, runPid: FIXTURE_PID });
   assert.strictEqual(r.auth_fallback, "indeterminate", JSON.stringify(r));
@@ -203,38 +196,32 @@ t("this-pid lines with no tell and no auth-success -> indeterminate (NOT false)"
 
 // ── Window / rotation / extraction primitives ─────────────────────────────────────────────────────────
 
-// 16. Year rollover: a Dec-31 line with a Jan-1 startedMs is kept (attributed to the prior year).
 t("filterAgyLogToRunWindow keeps a Dec31 line for a Jan1 startedMs (rollover)", () => {
   const jan1 = new Date(2026, 0, 1, 0, 0, 2).getTime();
-  const dec31 = "I1231 23:59:59.000000 39296 log.go:398] Entering ... eval mode";
-  const win = filterAgyLogToRunWindow(dec31, jan1);
-  assert.ok(/eval mode/.test(win), "the Dec31 line must survive the Jan1 window: " + JSON.stringify(win));
+  const dec31 = "I1231 23:59:59.000000 39296 launchmanager.go:69] Entering ... eval mode";
+  assert.ok(/eval mode/.test(filterAgyLogToRunWindow(dec31, jan1)), "Dec31 line must survive the Jan1 window");
 });
 
-// 17. A stale out-of-window tell (a day before the window) is dropped.
 t("filterAgyLogToRunWindow drops a day-old out-of-window tell", () => {
-  const stale = "I0718 00:11:12.000000 39296 log.go:398] Entering ... eval mode";
-  const win = filterAgyLogToRunWindow([stale, line(FIXTURE_PID, AUTH_LINE)].join("\n"), FIXTURE_STARTED);
+  const stale = "I0718 00:11:12.000000 39296 launchmanager.go:69] Entering ... eval mode";
+  const win = filterAgyLogToRunWindow([stale, authLine(FIXTURE_PID)].join("\n"), FIXTURE_STARTED);
   assert.ok(!/eval mode/.test(win), "the day-old line must be dropped: " + win);
 });
 
-// 18. snapshot/delta: append -> delta is the appended bytes; shrink/prefix-change -> rotated + whole file.
-t("snapshotAgyLog + readAgyLogDelta: append delta and rotation detection", () => {
-  const tmp = path.join(os.tmpdir(), "agy-delta-test-" + process.pid + ".log");
+t("snapshotAgyLog + readAgyLogDelta: append delta and rotation detection (ASCII)", () => {
+  const tmp = path.join(os.tmpdir(), "agy-delta-ascii-" + process.pid + ".log");
   try {
     fs.writeFileSync(tmp, "AAAA-prefix-line-1\n");
     const pre = snapshotAgyLog(tmp);
     assert.strictEqual(pre.ok, true);
     fs.appendFileSync(tmp, "APPENDED-2\n");
     const d1 = readAgyLogDelta(tmp, pre);
-    assert.strictEqual(d1.rotated, undefined, "append is not a rotation: " + JSON.stringify(d1));
+    assert.strictEqual(d1.rotated, undefined, JSON.stringify(d1));
     assert.strictEqual(d1.delta, "APPENDED-2\n", JSON.stringify(d1));
-    // rotation: rewrite smaller with a different prefix -> whole file returned, rotated:true.
     fs.writeFileSync(tmp, "ZZZZ\n");
     const d2 = readAgyLogDelta(tmp, pre);
-    assert.strictEqual(d2.rotated, true, "shrink+prefix-change must be flagged rotated: " + JSON.stringify(d2));
+    assert.strictEqual(d2.rotated, true, JSON.stringify(d2));
     assert.strictEqual(d2.delta, "ZZZZ\n", JSON.stringify(d2));
-    // absent-pre -> whole file is the delta.
     const d3 = readAgyLogDelta(tmp, { ok: false });
     assert.strictEqual(d3.delta, "ZZZZ\n", JSON.stringify(d3));
   } finally {
@@ -242,15 +229,34 @@ t("snapshotAgyLog + readAgyLogDelta: append delta and rotation detection", () =>
   }
 });
 
-// 19. glogPid extracts field 3, null on a non-glog line.
-t("glogPid extracts the field-3 pid; null on non-glog lines", () => {
-  assert.strictEqual(glogPid("I0719 00:11:11.752399 39296 resolver.go:85] x"), 39296);
-  assert.strictEqual(glogPid("not a glog line unauthorized eval mode"), null);
-  assert.strictEqual(glogPid(""), null);
+t("readAgyLogDelta is BYTE-correct for multibyte content (backend r2 #3)", () => {
+  const tmp = path.join(os.tmpdir(), "agy-delta-mb-" + process.pid + ".log");
+  try {
+    // "café-π-1\n" — 'é' (2 bytes) + 'π' (2 bytes) so byte length > char length.
+    fs.writeFileSync(tmp, "café-π-prefix-1\n");
+    const pre = snapshotAgyLog(tmp);
+    fs.appendFileSync(tmp, "wörld-λ-2\n");
+    const d = readAgyLogDelta(tmp, pre);
+    assert.strictEqual(d.rotated, undefined, "append must not be misread as rotation: " + JSON.stringify(d));
+    assert.strictEqual(d.delta, "wörld-λ-2\n", "delta must be the exact appended bytes, not char-sliced: " + JSON.stringify(d));
+    // multibyte prefix change -> rotation
+    fs.writeFileSync(tmp, "δ\n");
+    const d2 = readAgyLogDelta(tmp, pre);
+    assert.strictEqual(d2.rotated, true, JSON.stringify(d2));
+    assert.strictEqual(d2.delta, "δ\n", JSON.stringify(d2));
+  } finally {
+    try { fs.unlinkSync(tmp); } catch {}
+  }
 });
 
-// 20. PURE-MOVE GUARD (β condition): NON_AUTH_SIGNAL is byte-identical to cert-attest's GATE-1 literal.
-//     Any drift here silently changes the NON-agy cert-attest GATE-1 — this test freezes the contract.
+t("glogPid + parseGlog: field-3 pid + emitter/message; null on non-glog lines", () => {
+  assert.strictEqual(glogPid("I0719 00:11:11.752399 39296 resolver.go:85] x"), 39296);
+  const p = parseGlog("I0719 00:11:11.752399 39296 auth.go:132] ChainedAuth: authenticated via keyring");
+  assert.deepStrictEqual({ pid: p.pid, emitter: p.emitter, message: p.message }, { pid: 39296, emitter: "auth.go:132", message: "ChainedAuth: authenticated via keyring" });
+  assert.strictEqual(glogPid("not a glog line unauthorized eval mode"), null);
+  assert.strictEqual(parseGlog(""), null);
+});
+
 t("NON_AUTH_SIGNAL source is byte-identical (cert-attest GATE-1 pure-move)", () => {
   assert.strictEqual(
     NON_AUTH_SIGNAL.source,
@@ -259,8 +265,6 @@ t("NON_AUTH_SIGNAL source is byte-identical (cert-attest GATE-1 pure-move)", () 
   );
 });
 
-// 21. LIB-BYPASS GUARD (CLAUDE.md refactor-hygiene rule 3 / DoE Q3a): providers.js must use the snapshot+
-//     delta lib, pass runPid, and NOT reintroduce the whole-file readFileSync(agyLogPath) bypass.
 t("providers.js wires the delta lib + runPid and drops the whole-file read", () => {
   const src = fs.readFileSync(path.join(__dirname, "..", "hooks", "lib", "providers.js"), "utf8");
   assert.ok(/snapshotAgyLog/.test(src), "providers.js must snapshot pre-spawn");

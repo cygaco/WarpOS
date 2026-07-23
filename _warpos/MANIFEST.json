@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T05:30:49.056Z",
+  "generatedAt": "2026-07-23T05:58:59.130Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9895,15 +9895,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/agy-auth-tells.js",
-      "sha256": "da20287ebadce9f052b121bd0f506681f8021aa168bbb410cf51902fc6a84480",
-      "installedSha": "da20287ebadce9f052b121bd0f506681f8021aa168bbb410cf51902fc6a84480"
+      "sha256": "3b74376bfc3f07ee196b2e74e465a9d56cde32afeaf598afeee38790a159502d",
+      "installedSha": "3b74376bfc3f07ee196b2e74e465a9d56cde32afeaf598afeee38790a159502d"
     },
     "scripts/dispatch/agy-auth-tells.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/agy-auth-tells.test.js",
-      "sha256": "0bb219631c1ef8c9d52c3533aec5d2b26a3f577b757c3395fbe5efc795697c4c",
-      "installedSha": "0bb219631c1ef8c9d52c3533aec5d2b26a3f577b757c3395fbe5efc795697c4c"
+      "sha256": "f00fc7fb0e4892cf56451e2cdfb6e976926432ee89dd45edd54293edefccee01",
+      "installedSha": "f00fc7fb0e4892cf56451e2cdfb6e976926432ee89dd45edd54293edefccee01"
     },
     "scripts/dispatch/attest-signing.js": {
       "owner": "framework",
@@ -10581,8 +10581,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/fixtures/agy/PROVENANCE.md",
-      "sha256": "02f0863e47b079e35a048ee3c7aa4ce292d85c4a8806e0e3c33f9251f2c32d93",
-      "installedSha": "02f0863e47b079e35a048ee3c7aa4ce292d85c4a8806e0e3c33f9251f2c32d93"
+      "sha256": "bf77d2f8bcaa04fb71351a946616c4cc3545197e11e0bba82c30a310a1e2b403",
+      "installedSha": "bf77d2f8bcaa04fb71351a946616c4cc3545197e11e0bba82c30a310a1e2b403"
     },
     "scripts/dispatch/fixtures/agy/unauthenticated-serve.log": {
       "owner": "framework",
@@ -11652,15 +11652,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/ed060c-close-gate.js",
-      "sha256": "89c1ce35c8872780de5008bf18ad20706f8d8b7b909ccb5169a3a6d2d9f10d68",
-      "installedSha": "89c1ce35c8872780de5008bf18ad20706f8d8b7b909ccb5169a3a6d2d9f10d68"
+      "sha256": "566c57b82c544eb1a8517d56a2549d474401f8627dbd10f833962c00d0ab8d4f",
+      "installedSha": "566c57b82c544eb1a8517d56a2549d474401f8627dbd10f833962c00d0ab8d4f"
     },
     "scripts/checks/ed060c-close-gate.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/ed060c-close-gate.test.js",
-      "sha256": "8ecc83875ad40b4c636fa72553ebc77ddcf17b60cc77efe5707df05c7b1bc6ae",
-      "installedSha": "8ecc83875ad40b4c636fa72553ebc77ddcf17b60cc77efe5707df05c7b1bc6ae"
+      "sha256": "76d09c89bf8fb5a1a9444b9949aa0b0790f72932395a9c53c6d45a614cdea3ac",
+      "installedSha": "76d09c89bf8fb5a1a9444b9949aa0b0790f72932395a9c53c6d45a614cdea3ac"
     },
     "scripts/checks/entry-preamble-parity.js": {
       "owner": "framework",

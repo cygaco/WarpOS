@@ -42,34 +42,64 @@ const NON_AUTH_SIGNAL = /(resolved-via-default|resolved-via-fallback|local-chrom
 
 // STARTUP_TRANSIENT — noise emitted DURING agy startup on a GENUINE serve, BEFORE the keyring auth
 // completes (verified: agy-log-1784445071686.log lines 1-53). NEVER disqualifying once an AUTH_SUCCESS
-// follows; only unauth-evidence when NO auth-success exists in this serve's window at all.
+// follows; only unauth-evidence when NO auth-success exists in this serve's window at all. Matched on
+// the message text — the fail-CLOSED direction (a spurious tell only ever forces a false-RED, never a
+// false-green), so loose matching is safe here, UNLIKE AUTH_SITES below (the trust-GRANTING direction).
 const STARTUP_TRANSIENT = /(resolved-via-default|resolved-via-fallback|local-chrome-mode|eval-mode|not-logged-into-antigravity|not-authenticated)/;
 // REVOKING — a HARD login failure/denial. Terminal wherever it lands (before OR after a success line).
 const REVOKING = /(authentication-failed|unauthorized)/;
 // EXPIRED — SOFT: an expired access token is the NORMAL pre-refresh state (DoE r1 finding #1). It
 // disqualifies ONLY when no AUTH_SUCCESS follows it — i.e. treated like a transient for the sequence.
 const EXPIRED = /expired=true/;
-// AUTH_SUCCESS — POSITIVE proof, anchored to the code-site tokens (auth.go:132 ChainedAuth /
-// server_oauth.go:221 OAuth-success / printmode.go silent-auth). Deliberately EXCLUDES the generic
-// server.go:2568 "Auth succeeded" — it fires BEFORE the keyring load, interleaved with not-logged-in
-// (a FALSE success), per DoE's calibration risk.
-const AUTH_SUCCESS = /(chainedauth:-authenticated-via-keyring|oauth:-authenticated-successfully-as|silent-auth-succeeded)/;
+
+// AUTH_SITES — POSITIVE proof, STRUCTURALLY anchored to the EMITTER code-site AND the message together
+// (gauntlet r2 backend #1 — the security-critical fix). AUTH_SUCCESS is the ONLY thing that GRANTS trust,
+// so it must be forge-resistant: matching the success phrase anywhere in a line let an injected
+// `log.go:398] reviewer text: ChainedAuth: authenticated via keyring` (a reviewer serve's OWN answer,
+// logged) flip an unauthenticated serve to false. The emitter (`auth.go:132]`) is parsed POSITIONALLY (the
+// FIRST file:line] after the pid), so a file:line] embedded in the MESSAGE cannot masquerade as the
+// emitter, and only genuine agy auth code emits these three lines. Deliberately EXCLUDES the generic
+// server.go:2568 "Auth succeeded" (it fires BEFORE the keyring load, interleaved with not-logged-in — a
+// FALSE success), per DoE's calibration risk.
+const AUTH_SITES = new Map([
+  ["auth.go", /^chainedauth: authenticated via keyring\b/i],
+  ["server_oauth.go", /^oauth: authenticated successfully as \S/i],
+  ["printmode.go", /^print mode: silent auth succeeded\b/i],
+]);
 
 // Normalize for matching: lowercase + collapse whitespace/underscore runs to a single dash, so the
-// human log form ("ChainedAuth: authenticated via keyring") matches the dashed tokens.
+// human log form ("You are not logged into Antigravity") matches the dashed tokens.
 function norm(s) {
   return String(s || "").toLowerCase().replace(/[\s_]+/g, "-");
 }
 
 /**
- * glogPid(line) — extract the glog field-3 pid from a `L MMDD HH:MM:SS.ffffff PID file:line] msg` line.
- * Returns the integer pid, or null when the line is not a glog-shaped line. (Real capture: every agy
- * line carries agy's own process pid; the "Starting language server process with pid N" line shows
- * N === the logging pid, so scoping to the spawned child.pid attributes lines to this serve.)
+ * parseGlog(line) -> { pid, emitter, message } | null — structural parse of a glog line
+ * `L MMDD HH:MM:SS.ffffff PID FILE:LINE] MESSAGE`. The emitter (FILE:LINE) is the FIRST file:line] after
+ * the pid, parsed POSITIONALLY, so a file:line] embedded in the MESSAGE cannot masquerade as the emitter.
+ * Returns null for a non-glog line.
  */
+function parseGlog(line) {
+  const m = String(line).match(/^[IWEF]\d{4}\s+\d{2}:\d{2}:\d{2}(?:\.\d+)?\s+(\d+)\s+([A-Za-z0-9_.\-]+:\d+)\]\s?(.*)$/);
+  if (!m) return null;
+  return { pid: Number(m[1]), emitter: m[2], message: m[3] };
+}
+
+// glogPid(line) — the field-3 pid, or null on a non-glog line. Thin wrapper over parseGlog. (Real
+// capture: every agy line carries agy's own process pid; "Starting language server process with pid N"
+// shows N === the logging pid, so scoping to the spawned child.pid attributes lines to this serve.)
 function glogPid(line) {
-  const m = String(line).match(/^[IWEF]\d{4}\s+\d{2}:\d{2}:\d{2}(?:\.\d+)?\s+(\d+)\s/);
-  return m ? Number(m[1]) : null;
+  const p = parseGlog(line);
+  return p ? p.pid : null;
+}
+
+// isAuthSuccessLine(parsed) — true ONLY when the line's REAL (positional) emitter is one of the three
+// auth code-sites AND its message is that site's success phrase (emitter+message together — backend r2 #1).
+function isAuthSuccessLine(parsed) {
+  if (!parsed) return false;
+  const file = parsed.emitter.split(":")[0];
+  const rx = AUTH_SITES.get(file);
+  return !!rx && rx.test((parsed.message || "").trim());
 }
 
 /**
@@ -100,9 +130,10 @@ function filterAgyLogToRunWindow(agyLog, startedMs, marginMs = 5000) {
 }
 
 /**
- * snapshotAgyLog(logPath) -> { ok, size, prefix } — the PRE-spawn snapshot (byte size + first-256-byte
- * content prefix, so a later rotation is content-detectable). ok:false (log absent pre-spawn) means the
- * whole post-read is this run's delta.
+ * snapshotAgyLog(logPath) -> { ok, size, prefixBuf } — the PRE-spawn snapshot. `size` and the first-256
+ * `prefixBuf` are BYTES (fs.statSync().size is a byte count), so all offset math is byte-exact (backend
+ * r2 #3: a UTF-8 STRING length ≠ byte size for multibyte content). ok:false (log absent pre-spawn) means
+ * the whole post-read is this run's delta.
  */
 function snapshotAgyLog(logPath) {
   try {
@@ -113,7 +144,7 @@ function snapshotAgyLog(logPath) {
       const fd = fs.openSync(logPath, "r");
       try { fs.readSync(fd, buf, 0, n, 0); } finally { fs.closeSync(fd); }
     }
-    return { ok: true, size, prefix: buf.toString("utf8") };
+    return { ok: true, size, prefixBuf: buf };
   } catch {
     return { ok: false };
   }
@@ -121,21 +152,24 @@ function snapshotAgyLog(logPath) {
 
 /**
  * readAgyLogDelta(logPath, pre) -> { ok, delta, rotated? } — the POST-spawn delta relative to the pre
- * snapshot. Content-based rotation detection: if the file SHRANK or its first-256-byte prefix changed,
- * the log ROTATED under us (concurrency) → the whole current file is new-since-this-run. Otherwise read
- * from the pre-size offset. ok:false ⇒ the caller sets agyLogReadError (fail-closed → indeterminate).
+ * snapshot, computed on BYTES (backend r2 #3). Content-based rotation detection: if the file SHRANK or
+ * its first-256-BYTE prefix changed, the log ROTATED under us (concurrency) → the whole current file is
+ * new-since-this-run. Otherwise slice from the pre-size BYTE offset, decoding AFTER the slice so a
+ * multibyte boundary is never split mid-read. ok:false ⇒ the caller sets agyLogReadError.
  */
 function readAgyLogDelta(logPath, pre) {
-  let full;
+  let buf;
   try {
-    full = fs.readFileSync(logPath, "utf8");
+    buf = fs.readFileSync(logPath); // Buffer — NO encoding, so length/offsets are bytes
   } catch {
     return { ok: false };
   }
-  if (!pre || !pre.ok) return { ok: true, delta: full };
-  const curPrefix = full.slice(0, Math.min(256, pre.size));
-  if (full.length < pre.size || curPrefix !== pre.prefix) return { ok: true, delta: full, rotated: true };
-  return { ok: true, delta: full.slice(pre.size) };
+  if (!pre || !pre.ok) return { ok: true, delta: buf.toString("utf8") };
+  const preBuf = pre.prefixBuf || Buffer.alloc(0);
+  const cmpLen = Math.min(preBuf.length, buf.length);
+  const rotated = buf.length < pre.size || !buf.subarray(0, cmpLen).equals(preBuf.subarray(0, cmpLen));
+  if (rotated) return { ok: true, delta: buf.toString("utf8"), rotated: true };
+  return { ok: true, delta: buf.subarray(pre.size).toString("utf8") };
 }
 
 /**
@@ -158,20 +192,22 @@ function detectAgyAuthFallback({ agyLog = null, agyLogReadError = false, started
   }
 
   const logWindow = agyLog != null ? filterAgyLogToRunWindow(agyLog, startedMs) : "";
-  const pidLines = logWindow.split("\n").filter((l) => glogPid(l) === runPid);
+  // Structural parse + PID-SCOPE: keep only this serve's glog lines. isAuthSuccessLine reads the REAL
+  // (positional) emitter, so a success phrase quoted in another line's MESSAGE can't grant trust.
+  const pidLines = logWindow.split("\n").map(parseGlog).filter((p) => p && p.pid === runPid);
   if (pidLines.length === 0) {
     return { auth_fallback: "indeterminate", reason: "no run-window cli.log lines attributable to this serve's pid", surface: "no-pid-lines" };
   }
 
-  // Positive-proof pass: locate the last code-site auth-success, then check nothing hard-revoked after it.
+  // Positive-proof pass: locate the last EMITTER-anchored auth-success, then check nothing hard-revoked after.
   let lastSuccessIdx = -1;
   for (let i = 0; i < pidLines.length; i++) {
-    if (AUTH_SUCCESS.test(norm(pidLines[i]))) lastSuccessIdx = i;
+    if (isAuthSuccessLine(pidLines[i])) lastSuccessIdx = i;
   }
   if (lastSuccessIdx >= 0) {
     let hardAfter = false;
     for (let i = lastSuccessIdx + 1; i < pidLines.length; i++) {
-      const n = norm(pidLines[i]);
+      const n = norm(pidLines[i].message);
       if (REVOKING.test(n) || EXPIRED.test(n)) { hardAfter = true; break; }
     }
     if (!hardAfter) {
@@ -180,8 +216,8 @@ function detectAgyAuthFallback({ agyLog = null, agyLogReadError = false, started
     // A hard signal after the last success (revocation / unrefreshed expiry) → fall through → unauth.
   }
 
-  // No usable auth-success. Any terminal/transient tell in this serve's lines ⇒ unauthenticated / fell back.
-  const joined = norm(pidLines.join("\n"));
+  // No usable auth-success. Any terminal/transient tell in this serve's message lines ⇒ unauthenticated.
+  const joined = norm(pidLines.map((p) => p.message).join("\n"));
   if (REVOKING.test(joined) || EXPIRED.test(joined) || STARTUP_TRANSIENT.test(joined)) {
     return { auth_fallback: true, reason: "no code-site auth-success and a terminal/transient tell present in this serve's log", surface: "no-success-with-tell" };
   }
@@ -195,9 +231,11 @@ module.exports = {
   STARTUP_TRANSIENT,
   REVOKING,
   EXPIRED,
-  AUTH_SUCCESS,
+  AUTH_SITES,
   norm,
+  parseGlog,
   glogPid,
+  isAuthSuccessLine,
   filterAgyLogToRunWindow,
   snapshotAgyLog,
   readAgyLogDelta,
