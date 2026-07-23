@@ -11,11 +11,14 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const { analyze, parseVerdictRows, extractMsgIds } = require("./betaevents-dedup-lint.js");
+const { analyze, parseVerdictRows, extractMsgIds, realMsgId } = require("./betaevents-dedup-lint.js");
 const { duplicateKeys } = require("./dedup-util.js");
 
 // QA-TEETH-006: exercise the REAL CLI --enforce path (not a reimplemented predicate). Writes fixture files
-// and spawns `node betaevents-dedup-lint.js --enforce --beta <f> [--events <f>]`, returning the real exit code.
+// and spawns `node betaevents-dedup-lint.js --enforce --beta <f> [--events <f>]`. R3D-QA-001 (r3e): the
+// nested spawn is EPERM-blocked in the reviewer sandbox (QA-012/ED-223), so DISTINGUISH a spawn-failure
+// (no numeric e.status) from a real non-zero exit — mapping the former to exit-1 false-greened the negative
+// control AND false-red the positive one. Returns { code, out, err, spawnFailed }.
 function runCli(betaContent, { eventsContent, eventsUnreachable } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "be-cli-"));
   const betaFile = path.join(dir, "beta.jsonl");
@@ -28,19 +31,32 @@ function runCli(betaContent, { eventsContent, eventsUnreachable } = {}) {
     fs.writeFileSync(eventsFile, eventsContent);
     argv.push("--events", eventsFile);
   }
-  let code = 0, out = "", err = "";
+  let code = null, out = "", err = "", spawnFailed = false;
   try {
     out = execFileSync("node", argv, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-  } catch (e) { code = typeof e.status === "number" ? e.status : 1; out = String(e.stdout || ""); err = String(e.stderr || ""); }
+    code = 0;
+  } catch (e) {
+    // A spawned-and-ran process sets e.status (a NUMBER); a spawn failure sets e.code (EPERM/ENOENT) with
+    // NO numeric status. Keep them SEPARATE so a spawn error can never satisfy a control (it loud-skips).
+    if (typeof e.status === "number") code = e.status;
+    else spawnFailed = true;
+    out = String(e.stdout || ""); err = String(e.stderr || "");
+  }
   try { fs.rmSync(dir, { recursive: true, force: true }); } catch {}
-  return { code, out, err };
+  return { code, out, err, spawnFailed };
 }
 
-let pass = 0, fail = 0;
+let pass = 0, fail = 0, skip = 0;
 function t(name, fn) {
   try { fn(); pass++; console.log("  PASS  " + name); }
-  catch (e) { fail++; console.error("  FAIL  " + name + " — " + (e && e.message ? e.message : e)); }
+  catch (e) {
+    // LOUD skip (never a silent green-on-skip — the sprint's own honesty class): a portability-unavailable
+    // CLI tooth SKIPs, it does not PASS and does not hard-FAIL.
+    if (e && e.__skip) { skip++; console.log("  SKIP  " + name + " — " + e.message); return; }
+    fail++; console.error("  FAIL  " + name + " — " + (e && e.message ? e.message : e));
+  }
 }
+function skipTest(msg) { const e = new Error(msg); e.__skip = true; throw e; }
 const row = (o) => JSON.stringify(o);
 
 // ── dedup-util ────────────────────────────────────────────────────────────────────────────────────────
@@ -142,7 +158,10 @@ t("security r3 7G-005 (QA-TEETH-006): a missing-msg_id verdict blocks via the RE
   const r = analyze({ betaText: beta, eventsText: null }); // log unreachable
   assert.strictEqual(r.logUnreachable, true);
   assert.strictEqual(r.missingMsgId, 1);
-  const { code, err, out } = runCli(beta + "\n", { eventsUnreachable: true });
+  const { code, err, out, spawnFailed } = runCli(beta + "\n", { eventsUnreachable: true });
+  if (spawnFailed) skipTest("nested node spawn unavailable (sandbox EPERM / QA-012) — CLI tooth not exercisable here; the pure analyze() teeth above still run");
+  // Require the REAL lint output signature — a spawn error carries none, so it can NEVER satisfy this control.
+  assert.ok(/betaevents-dedup-lint:\s*FAIL/.test(err), "the CLI must produce its real FAIL output (not a spawn error): " + (err || out));
   assert.strictEqual(code, 1, "the REAL CLI --enforce must exit 1 on a missing-msg_id verdict even with an unreachable log: " + (err || out));
 });
 
@@ -150,8 +169,33 @@ t("QA-TEETH-006: the REAL CLI --enforce exits 0 on a clean verdict row (resolvab
   // The positive control for the CLI seam: a well-formed verdict whose msg_id resolves in the log must NOT
   // block — proves the exit-1 above is the missing-msg_id finding, not the CLI always failing.
   const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "cli-ok-1234" });
-  const { code, err, out } = runCli(beta + "\n", { eventsContent: '{"msg_id":"cli-ok-1234"}\n' });
+  const { code, err, out, spawnFailed } = runCli(beta + "\n", { eventsContent: '{"msg_id":"cli-ok-1234"}\n' });
+  if (spawnFailed) skipTest("nested node spawn unavailable (sandbox EPERM / QA-012) — CLI tooth not exercisable here");
+  assert.ok(/betaevents-dedup-lint:\s*OK/.test(out), "the CLI must produce its real OK output (not a spawn error): " + (err || out));
   assert.strictEqual(code, 0, "a clean resolvable verdict must not block under --enforce: " + (err || out));
+});
+
+t("7G-008 (r3e whitespace, qa+backend cross-lane): a WHITESPACE-only msg_id counts as MISSING under enforce", () => {
+  // A "   " msg_id is a truthy string but no id — treated as present it dodged both missingMsgId AND
+  // unresolved, failing OPEN under --enforce with an unreachable log. It must be MISSING now.
+  const beta = row({ decision: "DECIDE", class: "B", sprint: "SP-1", boundary: "b", msg_id: "   " });
+  const r = analyze({ betaText: beta, eventsText: null });
+  assert.strictEqual(r.missingMsgId, 1, "a whitespace-only msg_id must be MISSING, not present: " + JSON.stringify(r));
+});
+
+t("r3e realMsgId: a padded msg_id resolves on its TRIMMED value (no false-unresolved)", () => {
+  const beta = row({ decision: "DECIDE", sprint: "SP-1", boundary: "b", msg_id: "  pad-1  " });
+  const r = analyze({ betaText: beta, eventsText: '{"msg_id":"pad-1"}' });
+  assert.deepStrictEqual(r.unresolved, [], "a padded msg_id must resolve on its trimmed value: " + JSON.stringify(r));
+  assert.strictEqual(r.missingMsgId, 0);
+});
+
+t("realMsgId: trims; null on blank/absent/non-string", () => {
+  assert.strictEqual(realMsgId({ msg_id: "  x  " }), "x");
+  assert.strictEqual(realMsgId({ msg_id: "   " }), null);
+  assert.strictEqual(realMsgId({ msg_id: "" }), null);
+  assert.strictEqual(realMsgId({}), null);
+  assert.strictEqual(realMsgId({ msg_id: 5 }), null);
 });
 
 t("β reconcile-row exemption: a NON-verdict row (no decision) with no msg_id -> NOT counted", () => {
@@ -181,5 +225,5 @@ t("PREFIX COLLISION: verdict m1 is NOT resolved by a log containing only m10 (ex
   assert.strictEqual(r.resolutionSkipped, false);
 });
 
-console.log("\n" + pass + "/" + (pass + fail) + " passed");
+console.log("\n" + pass + "/" + (pass + fail) + " passed" + (skip ? " (" + skip + " skipped)" : ""));
 process.exit(fail ? 1 : 0);

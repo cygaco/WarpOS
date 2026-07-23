@@ -71,11 +71,21 @@ function extractMsgIds(eventsText) {
  * analyze({ betaText, eventsText }) -> { skipped, dupMsgIds, missingMsgId, unresolved, resolutionSkipped }.
  * Pure — the CLI supplies the file contents (eventsText null ⇒ message log unreachable ⇒ resolution skipped).
  */
+/**
+ * realMsgId(r) -> the row's msg_id TRIMMED, or null if absent/blank (qa QA-7G-005 + backend 7G-008, r3e): a
+ * WHITESPACE-only msg_id ("   ") is a truthy string but carries no id — treated as present it dodged BOTH
+ * missingMsgId and unresolved, failing OPEN under --enforce with an unreachable log. Trim+empty-check so a
+ * blank msg_id counts as MISSING and a padded id resolves on its trimmed value.
+ */
+function realMsgId(r) {
+  return r && typeof r.msg_id === "string" && r.msg_id.trim() ? r.msg_id.trim() : null;
+}
+
 function analyze({ betaText, eventsText }) {
   if (betaText == null) return { skipped: true };
   const rows = parseVerdictRows(betaText);
-  const dups = duplicateKeys(rows, (r) => (typeof r.msg_id === "string" && r.msg_id ? r.msg_id : null));
-  const missingMsgId = rows.filter((r) => !(typeof r.msg_id === "string" && r.msg_id)).length;
+  const dups = duplicateKeys(rows, realMsgId);
+  const missingMsgId = rows.filter((r) => !realMsgId(r)).length;
   let unresolved = [];
   let resolutionSkipped = false; // report-only fail-open (β rider #2) when the log isn't the message log
   let lowConfidence = false;
@@ -84,7 +94,7 @@ function analyze({ betaText, eventsText }) {
     resolutionSkipped = true; // truly no log — fail-open in BOTH modes (nothing to check against)
   } else {
     const msgIds = extractMsgIds(eventsText); // EXACT-match set (not substring — qa r2 #4 / security r2 #3)
-    const withId = rows.map((r) => r.msg_id).filter((id) => typeof id === "string" && id);
+    const withId = rows.map(realMsgId).filter(Boolean);
     const notFound = withId.filter((id) => !msgIds.has(id));
     const resolvedFraction = withId.length ? (withId.length - notFound.length) / withId.length : 1;
     // A REAL SendMessage log resolves ~every delivered msg_id; a LOW fraction (< THRESHOLD) means the
@@ -147,4 +157,4 @@ if (require.main === module) {
   process.exit(blocking ? 1 : 0);
 }
 
-module.exports = { analyze, parseVerdictRows, extractMsgIds };
+module.exports = { analyze, parseVerdictRows, extractMsgIds, realMsgId };

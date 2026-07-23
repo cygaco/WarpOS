@@ -24,14 +24,15 @@ const SKIP_DIRS = new Set(["node_modules", ".git", "runtime", "_reports"]);
 const PRAGMA = "pipe-masks-gate-lint:allow";
 const FENCE_RE = /^```(bash|sh|shell)\b/i;
 // A gate piped to a passthrough filter (exits 0, masking upstream) then chained with && or ;.
-const PASSTHROUGH = "tail|head|tee|cat|less|more";
-// A passthrough stage ANYWHERE in the pipeline (not just the last stage — security r2 #5: `gate | tail |
-// grep x && next` masks too), followed EVENTUALLY by a && or ; chain. `.*?` (not `[^|]`) so a filter after
-// the passthrough (grep) doesn't hide it. grep-as-gate stays exempt: a pipeline with NO passthrough token
-// never matches. `(?:\S*/)?` canonicalizes a PATH-qualified basename (backend r3 7G-006: `| /usr/bin/tail
-// && next`). NAMED CEILING (β-residual): a WRAPPER-invoked passthrough (`| command tail`, `| env tail`,
-// `| xargs tail`) still evades — a full shell tokenizer/exec-canonicalizer is out of scope for a doc-lint.
-const MASK_RE = new RegExp("\\|\\s*(?:\\S*/)?(?:" + PASSTHROUGH + ")\\b.*?(?:&&|;)\\s*\\S");
+// r3e — TOKENIZED (was a single MASK_RE): security R3D-PIPE-001 found the regex UNDER-matched (a quoted
+// command token `| "tail"` was blanked before matching; a backslash path `| .\tail` / `| C:\..\more.com`
+// wasn't canonicalized — the NATIVE path form on this Windows repo), and backend 7G-009 found it OVER-matched
+// (`\btail\b` flagged `tail-wrapper`/`head-helper` — distinct execs). ONE tokenizer closes BOTH: split the
+// pipeline into stages on UNQUOTED `|`, take each stage's command WORD (leading quote unwrapped, basename
+// after the last `/` OR `\`, Windows exec-ext stripped, lowercased), and require it to be EXACTLY a
+// passthrough (a real terminator, not a prefix) — then require an unquoted `&&`/`;` chain after it.
+const PASSTHROUGH_SET = new Set(["tail", "head", "tee", "cat", "less", "more"]);
+const WIN_EXEC_EXT_RE = /\.(?:exe|com|bat|cmd)$/i;
 
 function findMdFiles(absRoot, out, unreadable) {
   let entries;
@@ -44,34 +45,99 @@ function findMdFiles(absRoot, out, unreadable) {
 }
 
 /**
- * stripQuotedAndComments(s) — blank out single/double-quoted spans + a trailing `#` comment so a `;` or
- * `&&` INSIDE a string/comment is not counted as a shell separator (backend r2 #8: `| tee "a;b"` false-
- * positive — the quoted `;` matched as a chain). Quotes are stripped FIRST (a `#` inside a quote goes with
- * it), then the trailing comment. The PRAGMA is checked on the RAW line before this, so stripping is safe.
- */
-function stripQuotedAndComments(s) {
-  const noQuotes = String(s)
-    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
-    .replace(/'(?:[^'\\]|\\.)*'/g, "''");
-  return stripComment(noQuotes);
-}
-
-/**
  * stripComment(s) — cut a SHELL comment: a `#` is a comment marker only at line-start OR after UNESCAPED
- * token-separating whitespace (backend r3 7G-003). A backslash escapes the FOLLOWING char, so `\#` is a
- * literal `#` AND `out\ #tag` is an escaped SPACE (the `#` is mid-token, part of the filename) — neither
- * starts a comment. A regex `(^|\s)#` mis-read the escaped space as a boundary; this walks the string
- * tracking backslash-escape (quotes are already blanked upstream) so backslash-parity is exact.
+ * token-separating whitespace (backend r3 7G-003), and NEVER inside a quoted span (a `#` in "a # b" is data).
+ * A backslash escapes the FOLLOWING char, so `\#` is a literal `#` AND `out\ #tag` is an escaped SPACE (the
+ * `#` is mid-token, part of the filename) — neither starts a comment. Walks the string tracking quote-state +
+ * backslash-escape (r3e: quotes are no longer pre-blanked — the tokenizer needs them) so parity is exact.
  */
 function stripComment(s) {
   let prevBoundary = true; // start-of-line is a token boundary
+  let q = null;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
+    if (q) { if (c === "\\") i++; else if (c === q) q = null; prevBoundary = false; continue; }
     if (c === "\\") { i++; prevBoundary = false; continue; } // skip the escaped char; it is NOT a boundary
+    if (c === '"' || c === "'") { q = c; prevBoundary = false; continue; }
     if (c === "#" && prevBoundary) return s.slice(0, i);
     prevBoundary = /\s/.test(c);
   }
   return s;
+}
+
+/**
+ * splitPipeStages(s) — split a logical line into pipeline stages on UNQUOTED single `|`. A `|` inside quotes
+ * is data; `||` is logical-or (a control operator, NOT a pipe stage) so a passthrough after it isn't masked
+ * (prevents a `cat x || tail y && next` false-positive).
+ */
+function splitPipeStages(s) {
+  const stages = [];
+  let cur = "", q = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) { cur += c; if (c === q) q = null; continue; }
+    if (c === '"' || c === "'") { q = c; cur += c; continue; }
+    if (c === "|") {
+      if (s[i + 1] === "|") { cur += "||"; i++; continue; } // || is logical-or, not a pipe split
+      stages.push(cur); cur = "";
+      continue;
+    }
+    cur += c;
+  }
+  stages.push(cur);
+  return stages;
+}
+
+/**
+ * stageCommandBasename(stage) — the stage's command WORD reduced to a canonical basename: the first
+ * whitespace/pipe-delimited token (a LEADING quoted token is unwrapped so `"tail"` -> tail), basename after
+ * the last `/` OR `\` (both separators — backslash is native on Windows), a Windows exec ext stripped,
+ * lowercased. `C:\..\more.com` -> "more" (security under-match closed); `tail-wrapper` -> "tail-wrapper"
+ * (backend 7G-009 over-match closed by the EXACT set membership at the call site — a prefix is not a match).
+ */
+function stageCommandBasename(stage) {
+  const s = stage.replace(/^\s+/, "");
+  let tok = "", q = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) { if (c === q) q = null; else tok += c; continue; }
+    if (c === '"' || c === "'") { q = c; continue; }
+    if (/\s/.test(c) || c === "|") break;
+    tok += c;
+  }
+  const base = (tok.match(/[^/\\]+$/) || [tok])[0];
+  return base.replace(WIN_EXEC_EXT_RE, "").toLowerCase();
+}
+
+/**
+ * hasUnquotedChain(s) — is there an UNQUOTED `&&` or `;` followed by a non-empty command? A `;`/`&&` inside
+ * quotes (`| tee "a;b"`) is data, not a chain (backend r2 #8). `s` is already comment-stripped by the caller.
+ */
+function hasUnquotedChain(s) {
+  let q = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) { if (c === "\\") i++; else if (c === q) q = null; continue; }
+    if (c === "\\") { i++; continue; }
+    if (c === '"' || c === "'") { q = c; continue; }
+    if ((c === ";" || (c === "&" && s[i + 1] === "&")) && /\S/.test(s.slice(c === ";" ? i + 1 : i + 2))) return true;
+  }
+  return false;
+}
+
+/**
+ * hasPipeMask(logical) — the GENERAL masked-gate shape: a PASSTHROUGH command at some pipe stage (>=1, i.e.
+ * after a `|`), followed EVENTUALLY by an unquoted `&&`/`;` chain (the passthrough need NOT be last —
+ * security r2 #5). Comment stripped first; grep-as-gate stays exempt (its basename isn't in the set).
+ */
+function hasPipeMask(logical) {
+  const line = stripComment(logical);
+  const stages = splitPipeStages(line);
+  for (let si = 1; si < stages.length; si++) {
+    if (!PASSTHROUGH_SET.has(stageCommandBasename(stages[si]))) continue;
+    if (hasUnquotedChain(stages.slice(si).join("|"))) return true;
+  }
+  return false;
 }
 
 /**
@@ -93,7 +159,7 @@ function scanText(text) {
     const startLine = i;
     let logical = raw;
     while (/\\\s*$/.test(logical) && i + 1 < lines.length) { logical = logical.replace(/\\\s*$/, " ") + lines[i + 1]; i++; }
-    if (!logical.includes(PRAGMA) && MASK_RE.test(stripQuotedAndComments(logical))) {
+    if (!logical.includes(PRAGMA) && hasPipeMask(logical)) {
       findings.push({ line: startLine + 1, code: logical.trim().slice(0, 200) });
     }
     i++;
@@ -133,4 +199,4 @@ if (require.main === module) {
   process.exit(1);
 }
 
-module.exports = { scanText, MASK_RE };
+module.exports = { scanText, hasPipeMask, stageCommandBasename };

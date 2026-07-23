@@ -99,6 +99,40 @@ t("backend r3 7G-006 (PATH-qualified): `| /usr/bin/tail -1 && next` -> RED (base
   assert.strictEqual(scanText(fenced("node gate.js | /usr/bin/tail -1 && node next.js")).length, 1);
 });
 
+// ── R3D-PIPE-001 (security under-match): quoted + backslash-path passthroughs must be caught ──────────────
+t('R3D-PIPE-001 (double-quoted): `| "tail" -1 && next` -> RED (the quoted command token is NOT stripped away)', () => {
+  assert.strictEqual(scanText(fenced('node gate.js | "tail" -1 && node next.js')).length, 1);
+});
+
+t("R3D-PIPE-001 (single-quoted): `| 'tail' && next` -> RED", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | 'tail' -1 && node next.js")).length, 1);
+});
+
+t('R3D-PIPE-001 (quoted path): `| "/usr/bin/tail" && next` -> RED', () => {
+  assert.strictEqual(scanText(fenced('node gate.js | "/usr/bin/tail" -1 && node next.js')).length, 1);
+});
+
+t("R3D-PIPE-001 (backslash relative): `| .\\tail -1 && next` -> RED (Windows-native path form)", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | .\\tail -1 && node next.js")).length, 1);
+});
+
+t("R3D-PIPE-001 (backslash absolute + .com ext): `| C:\\..\\more.com && next` -> RED", () => {
+  assert.strictEqual(scanText(fenced("node gate.js | C:\\Windows\\System32\\more.com && node next.js")).length, 1);
+});
+
+// ── backend 7G-009 (over-match): a wrapper-NAMED exec must NOT be flagged (basename != passthrough) ──────
+t("backend 7G-009 (over-match): `| tail-wrapper && next` -> GREEN (a distinct exec, not the tail passthrough)", () => {
+  assert.deepStrictEqual(scanText(fenced("node gate.js | tail-wrapper && node next.js")), []);
+});
+
+t("backend 7G-009 (over-match): `| head-helper && next` -> GREEN", () => {
+  assert.deepStrictEqual(scanText(fenced("node gate.js | head-helper && node next.js")), []);
+});
+
+t("r3e || guard: `cat x || tail y && next` -> GREEN (a passthrough after logical-or is not a masked pipe)", () => {
+  assert.deepStrictEqual(scanText(fenced("cat x.txt || tail y.txt && node next.js")), []);
+});
+
 t("multiple offending lines in one block -> all flagged", () => {
   const md = fenced("node a.js | tail && b", "clean.js && c", "node d.js | head -1 ; e");
   assert.strictEqual(scanText(md).length, 2);

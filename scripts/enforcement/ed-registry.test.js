@@ -10,6 +10,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const { nextEdId, findDuplicateGenesisIds, findGenesisEvadingUpdates, parseRegister } = require("./ed-registry.js");
+const { resolveRegisterText } = require("./next-ed-id.js");
 
 let pass = 0, fail = 0;
 function t(name, fn) {
@@ -44,6 +45,27 @@ t("nextEdId: line count > max id (the bug) uses MAX, not the count", () => {
 t("nextEdId: malformed line skipped, never crashes/collides", () => {
   const reg = [row({ id: "ED-002" }), "{ this is not json", row({ id: "ED-004" })].join("\n");
   assert.strictEqual(nextEdId(reg), "ED-005");
+});
+
+// ── resolveRegisterText (backend 7C-001: ENOENT-only fail-closed) ─────────────────────────────────────
+t("7C-001: an ABSENT register (ENOENT) -> empty text (=> ED-001), not fail-closed", () => {
+  const read = () => { const e = new Error("no such file"); e.code = "ENOENT"; throw e; };
+  assert.strictEqual(resolveRegisterText("/nope", read), "");
+  assert.strictEqual(nextEdId(resolveRegisterText("/nope", read)), "ED-001");
+});
+
+t("7C-001: a PRESENT-but-unreadable register (EACCES/EISDIR) -> throws failClosed (NEVER empty/ED-001)", () => {
+  for (const code of ["EACCES", "EISDIR", "EPERM", "EIO"]) {
+    const read = () => { const e = new Error(code); e.code = code; throw e; };
+    assert.throws(() => resolveRegisterText("/locked", read), (err) => err && err.failClosed === true,
+      `${code} must fail-closed, not fall through to an empty register (which would mint a colliding ED-001)`);
+  }
+});
+
+t("7C-001: a readable register -> returns its text verbatim", () => {
+  const read = () => '{"id":"ED-042"}';
+  assert.strictEqual(resolveRegisterText("/ok", read), '{"id":"ED-042"}');
+  assert.strictEqual(nextEdId(resolveRegisterText("/ok", read)), "ED-043");
 });
 
 // ── findDuplicateGenesisIds (ED-258a dup-id lint) ─────────────────────────────────────────────────────

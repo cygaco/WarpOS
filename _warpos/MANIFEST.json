@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T09:02:46.789Z",
+  "generatedAt": "2026-07-23T09:56:06.680Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -9867,15 +9867,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.js",
-      "sha256": "fc102b8412dd5185411d8440b7534b5510bcdf2aa814610588ffe0b22dea434f",
-      "installedSha": "fc102b8412dd5185411d8440b7534b5510bcdf2aa814610588ffe0b22dea434f"
+      "sha256": "db5f10aa27b34aed5da805d59acf16d557290c29b2138f8c5fbd22a863950341",
+      "installedSha": "db5f10aa27b34aed5da805d59acf16d557290c29b2138f8c5fbd22a863950341"
     },
     "scripts/enforcement/betaevents-dedup-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/betaevents-dedup-lint.test.js",
-      "sha256": "51ed6073da59fa46bdf7ec0d05f94563db491928848481c9b16fab4fd16f29c4",
-      "installedSha": "51ed6073da59fa46bdf7ec0d05f94563db491928848481c9b16fab4fd16f29c4"
+      "sha256": "6161492ad0d2b34d5fc9b89b35999dfca5cc15cbe4efe6ea0cba085bc77a2454",
+      "installedSha": "6161492ad0d2b34d5fc9b89b35999dfca5cc15cbe4efe6ea0cba085bc77a2454"
     },
     "scripts/enforcement/builder-right-size.js": {
       "owner": "framework",
@@ -9916,29 +9916,29 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/ed-registry.test.js",
-      "sha256": "54e325559075d0e9e92d741c22e8c7570d60cf5c98dfb2ff446ae92a9736a04b",
-      "installedSha": "54e325559075d0e9e92d741c22e8c7570d60cf5c98dfb2ff446ae92a9736a04b"
+      "sha256": "014a070ae1e197ea7e9b8aaff0650e9155d520c40f49f0a779dbbeeb518009d2",
+      "installedSha": "014a070ae1e197ea7e9b8aaff0650e9155d520c40f49f0a779dbbeeb518009d2"
     },
     "scripts/enforcement/next-ed-id.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/next-ed-id.js",
-      "sha256": "e84bfe5423be0e8ffc7b9c9800bcc646c58f995f17788933c52746645ce0aa20",
-      "installedSha": "e84bfe5423be0e8ffc7b9c9800bcc646c58f995f17788933c52746645ce0aa20"
+      "sha256": "25be7134213e3eb87d91cb6664a42bde16a822a769d29e3c4333be8377df710d",
+      "installedSha": "25be7134213e3eb87d91cb6664a42bde16a822a769d29e3c4333be8377df710d"
     },
     "scripts/enforcement/pipe-masks-gate-lint.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.js",
-      "sha256": "a6f954a721129fdf91cd9734e05ed1812f2e18562d40a745807d2eb6e7dc1dd2",
-      "installedSha": "a6f954a721129fdf91cd9734e05ed1812f2e18562d40a745807d2eb6e7dc1dd2"
+      "sha256": "6920c9556230946126b8557500e35edd7aed652f75075a574fab0b8d77550f56",
+      "installedSha": "6920c9556230946126b8557500e35edd7aed652f75075a574fab0b8d77550f56"
     },
     "scripts/enforcement/pipe-masks-gate-lint.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/enforcement/pipe-masks-gate-lint.test.js",
-      "sha256": "bf830c9f70725aa25f14f381e13f4f432844d209e863a1095bdd2d61c3bf5b28",
-      "installedSha": "bf830c9f70725aa25f14f381e13f4f432844d209e863a1095bdd2d61c3bf5b28"
+      "sha256": "df5258e519e2c71556bc01d9bd8c5ef2941fdd649c3afe4d70915af432ea5abd",
+      "installedSha": "df5258e519e2c71556bc01d9bd8c5ef2941fdd649c3afe4d70915af432ea5abd"
     },
     "scripts/docs/catalog.js": {
       "owner": "framework",
@@ -9986,8 +9986,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/dispatch/attest-signing.js",
-      "sha256": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449",
-      "installedSha": "fb1978290c51759273f8c49f37379916cb43a5b5a7698defc4bdff6168e08449"
+      "sha256": "acdccba29c1f5ea241f5959c86272841157b9352fe4300927c2d45b793d30e5a",
+      "installedSha": "acdccba29c1f5ea241f5959c86272841157b9352fe4300927c2d45b793d30e5a"
     },
     "scripts/dispatch/attest-signing.test.js": {
       "owner": "framework",
@@ -11757,8 +11757,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-liveness.js",
-      "sha256": "8060b19484cd360d0759131de6ebc84a76748d0cfab3b422a9e5b4975053ea06",
-      "installedSha": "8060b19484cd360d0759131de6ebc84a76748d0cfab3b422a9e5b4975053ea06"
+      "sha256": "1cc934e975f59ea11a793fcdc1f40b33f0df7f3fc331560036d8b2e70f20c970",
+      "installedSha": "1cc934e975f59ea11a793fcdc1f40b33f0df7f3fc331560036d8b2e70f20c970"
     },
     "scripts/checks/epsilon-liveness.test.js": {
       "owner": "framework",
@@ -11771,8 +11771,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/epsilon-paired-waiter.test.js",
-      "sha256": "a12d493520573ab5b7615e54c420eb1a71ba47999d19496414ef4418916f70eb",
-      "installedSha": "a12d493520573ab5b7615e54c420eb1a71ba47999d19496414ef4418916f70eb"
+      "sha256": "c8a3a3c2a419706139499e49f26ad47677761201c85e565a7fb81c97b54a2294",
+      "installedSha": "c8a3a3c2a419706139499e49f26ad47677761201c85e565a7fb81c97b54a2294"
     },
     "scripts/checks/etc-harness-scan.js": {
       "owner": "framework",

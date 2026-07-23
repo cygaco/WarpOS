@@ -72,6 +72,25 @@ t("7G-004: completed_at:null does NOT count as a terminal completion -> FLAGGED"
   assert.strictEqual(r.findings.length, 1, "completed_at:null is not a valid completion timestamp: " + JSON.stringify(r));
 });
 
+t("backend-7G-007: completed_at:0 (a NUMBER, Date.parse-coercible) does NOT count as terminal -> FLAGGED", () => {
+  const recs = [started({ id: "dzero", at: min(30) }), { ok: false, dispatch_id: "dzero", role: "backend-builder", completed_at: 0 }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a numeric completed_at:0 must not suppress (Date.parse coerces a number): " + JSON.stringify(r));
+});
+
+t("backend-7G-007: a non-ISO but Date.parse-able completed_at string does NOT suppress -> FLAGGED", () => {
+  const recs = [started({ id: "dstr", at: min(30) }), { ok: false, dispatch_id: "dstr", role: "backend-builder", completed_at: "Jan 1 2099" }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a non-canonical-ISO timestamp must not suppress: " + JSON.stringify(r));
+});
+
+t("backend-7G-007: a completion BEFORE its own start (ordering) does NOT suppress -> FLAGGED", () => {
+  // started 30m ago, completed 40m ago (EARLIER than its own start) — impossible; must not suppress.
+  const recs = [started({ id: "dord", at: min(30) }), { ok: false, dispatch_id: "dord", role: "backend-builder", completed_at: min(40) }];
+  const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });
+  assert.strictEqual(r.findings.length, 1, "a death before its own start must not suppress: " + JSON.stringify(r));
+});
+
 t("security r2 #1: a VERIFIED ok:true completion SUPPRESSES -> NOT flagged", () => {
   const recs = [started({ id: "d2", at: min(30) }), completion("d2", true)];
   const r = evaluatePairedWaiter({ records: recs, nowMs: NOW, staleMs: STALE, artifactProduced: () => false, isVerified: verifyAll });

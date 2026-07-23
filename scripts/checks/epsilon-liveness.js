@@ -50,6 +50,10 @@ const DEFAULT_EVIDENCE_DIRS = [
 ];
 const DEFAULT_LEDGER = path.join(ROOT, ".claude", "runtime", "dispatch-completions.jsonl");
 const DEFAULT_STALE_MINUTES = 10;
+// A canonical ISO-8601 instant, as recordCompletion writes completed_at ("2026-07-23T09:25:47.127Z").
+// backend-7G-007 (r3e): Date.parse COERCES non-strings (completed_at:0 → a finite ms), so the terminal
+// check must require a real ISO STRING, not merely a Date.parse-able value.
+const ISO_TS_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 function arg(flag) {
   const i = process.argv.indexOf(flag);
@@ -201,15 +205,22 @@ function evaluatePairedWaiter({ records, nowMs, staleMs, windowMs = 2 * 60 * 60 
     // (the startedRowSuperseded predicate), NOT `phase:"completion"` (which no producer emits, so keying
     // on it over-fired on every completed dispatch). An ok:FALSE death suppresses unconditionally; a
     // SUCCESS (ok:true) only when VERIFIED.
-    // A terminal completion = a non-started row with a VALID completion timestamp (7G-004: reject
-    // completed_at:null/garbage, which typeof!==="undefined" wrongly accepted), a boolean ok, AND origin
-    // verification (verify() picks verifyRecord for ok:false / isVerifiedLivenessRecord for ok:true).
-    const terminated = rows.some(
-      (r) => !isStartedRow(r) && Number.isFinite(Date.parse(r.completed_at)) && typeof r.ok === "boolean" && verify(r),
-    );
-    if (terminated) continue;
+    // A terminal completion = a non-started row with a CANONICAL ISO completion timestamp AT/AFTER the
+    // dispatch's own start, a boolean ok, AND origin verification. The timestamp guard has TWO teeth:
+    // 7G-004 rejected completed_at:null/garbage (typeof!=="undefined" wrongly accepted it); backend-7G-007
+    // (r3e) adds that Date.parse COERCES NON-strings — completed_at:0/any number yielded a finite ms and
+    // suppressed — so require typeof "string" + an ISO shape, AND completedMs >= startedMs (a death CANNOT
+    // precede its own start; combined with dispatch_id now being SIGNED, a replayed signed death can't be
+    // re-pointed at an earlier-started dispatch). verify() = verifyRecord for ok:false / isVerifiedLivenessRecord ok:true.
     const startedMs = Date.parse(started.started_at || "") || 0;
-    if (!startedMs) continue;
+    if (!startedMs) continue; // an unparseable start gives no ordering floor — cannot reason about it
+    const terminated = rows.some((r) => {
+      if (isStartedRow(r) || typeof r.completed_at !== "string" || !ISO_TS_RE.test(r.completed_at)) return false;
+      const completedMs = Date.parse(r.completed_at);
+      if (!Number.isFinite(completedMs) || completedMs < startedMs) return false; // no death before its own start
+      return typeof r.ok === "boolean" && verify(r);
+    });
+    if (terminated) continue;
     const age = nowMs - startedMs;
     if (age < staleMs || age > windowMs) continue; // not stale yet, or historical
     // β LOAD-BEARING + qa r2 #1/#2 + security r2 #1: liveness = the artifact was PRODUCED, never a

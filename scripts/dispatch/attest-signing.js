@@ -83,6 +83,12 @@ const SIGNED_FIELDS = Object.freeze([
   // correct trust anchor here (unlike the cross-session AcceptanceRecord/lease, which must NOT use it). A
   // post-hoc workorder_digest swap on an already-signed record invalidates the signature.
   "workorder_digest",
+  // APPENDED (SP-20260723-003 r3e — qa QA-7G-007 CRITICAL / ED-273): dispatch_id is the SOLE correlation key
+  // evaluatePairedWaiter groups+suppresses by (epsilon-liveness.js byId map). UNSIGNED, a validly-signed
+  // ok:false death could be REPLAYED with a swapped dispatch_id to suppress a DIFFERENT dispatch's stall — the
+  // signature proved "a real death happened" but NOT "THIS dispatch's death." Signing it binds the correlation
+  // key so a dispatch_id swap invalidates the signature (verified===this-dispatch). END-only, byte-agree.
+  "dispatch_id",
 ]);
 
 let _cachedSecret;
