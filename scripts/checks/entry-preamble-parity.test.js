@@ -4,19 +4,26 @@
 /**
  * entry-preamble-parity.test.js — planted-boundary tests for the entry-preamble parity enforcer
  * (SP-20260723-001, ADR-0036). Proves the check sits EXACTLY on the line between a benign encoding
- * diff (stays GREEN) and real drift (REDs), plus every hardest failure β + DoE required.
+ * diff (stays GREEN) and real drift (REDs), plus every hardest failure β + the gauntlet required.
  *
  * Negative cases run against FIXTURE repo-roots (temp copies under the OS tmpdir) — the real entry
  * docs are never mutated. The live control runs the enforcer against the real repo (AC-6).
+ *
+ * Gauntlet fix-cycle r1 additions: marker-line evasion (append bytes to a marker line), multi-pair
+ * (a second marked block), a REAL CLI-spawn exit-2 assertion (not just `throws`), and the sole-oracle
+ * invariant lock (mutate ONLY canonical -> every embedder must mismatch).
  */
 
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const assert = require("assert");
+const { spawnSync } = require("child_process");
 
 const { runParity, CANONICAL_REL, FILES } = require("./entry-preamble-parity.js");
-const REAL_ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
+// SCRIPT-DERIVED source root (the enforcer no longer trusts CLAUDE_PROJECT_DIR; the test mirrors it,
+// so fixtures are copied from the real checkout that owns this test).
+const REAL_ROOT = path.resolve(__dirname, "..", "..");
 
 let pass = 0;
 let fail = 0;
@@ -143,7 +150,7 @@ t("oversized shim delta (tombstone tier) -> finding", () => {
   }
 });
 
-// 7. An ABSENT shared region (markers stripped) -> RED (dropped shim, distinct from thinness).
+// 7. An ABSENT shared region (markers stripped) -> RED (no well-formed region).
 t("absent shared region (markers stripped) -> finding", () => {
   const root = makeFixture();
   try {
@@ -152,18 +159,75 @@ t("absent shared region (markers stripped) -> finding", () => {
     fs.writeFileSync(p, txt);
     const { findings } = runParity({ repoRoot: root });
     const f = findingFor(findings, "CODEX.md");
-    assert.ok(f && /region|dropped/i.test(f.reason), "expected a dropped-region finding, got " + JSON.stringify(findings));
+    assert.ok(f && /region|BEGIN|END/i.test(f.reason), "expected a no-region finding, got " + JSON.stringify(findings));
   } finally {
     rmrf(root);
   }
 });
 
-// 8. The CANONICAL oracle unreadable -> throws (the CLI wrapper maps this to exit 2, fail-closed).
-t("canonical oracle missing -> throws (fail-closed, exit 2)", () => {
+// 8. Bytes APPENDED to a marker line -> RED (the evasion: escaping both the hash and the thinness delta).
+t("bytes appended to a marker line -> finding (no silent escape)", () => {
   const root = makeFixture();
   try {
-    fs.rmSync(path.join(root, CANONICAL_REL));
-    assert.throws(() => runParity({ repoRoot: root }), /canonical|oracle/i);
+    const p = path.join(root, "CODEX.md");
+    let txt = fs.readFileSync(p, "utf8");
+    txt = txt.replace(/(<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN[^>]*-->)/, "$1 SNEAKY-APPENDED-BYTES");
+    fs.writeFileSync(p, txt);
+    const { findings } = runParity({ repoRoot: root });
+    assert.ok(findingFor(findings, "CODEX.md"), "appended bytes on a marker line must be caught, got " + JSON.stringify(findings));
+  } finally {
+    rmrf(root);
+  }
+});
+
+// 9. A SECOND (contradictory) marked block -> RED (not silently ignored — first-pair-only was the gap).
+t("a second marked block -> finding (multi-pair not ignored)", () => {
+  const root = makeFixture();
+  try {
+    const p = path.join(root, "CODEX.md");
+    let txt = fs.readFileSync(p, "utf8");
+    txt += "\n\n<!-- WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN v1 -->\nCONTRADICTORY SECOND BLOCK\n<!-- WARPOS:ENTERING-AGENT-PREAMBLE:END -->\n";
+    fs.writeFileSync(p, txt);
+    const { findings } = runParity({ repoRoot: root });
+    const f = findingFor(findings, "CODEX.md");
+    assert.ok(f && /exactly one|BEGIN|END/i.test(f.reason), "a second marked block must be a finding, got " + JSON.stringify(findings));
+  } finally {
+    rmrf(root);
+  }
+});
+
+// 10. SOLE-ORACLE LOCK: mutate ONLY the canonical region -> EVERY unchanged embedder must mismatch.
+//     (If any shim graded itself, it would not mismatch a changed oracle — this proves it can't.)
+t("sole-oracle: mutating ONLY canonical makes every embedder mismatch", () => {
+  const root = makeFixture();
+  try {
+    const cp = path.join(root, CANONICAL_REL);
+    let txt = fs.readFileSync(cp, "utf8");
+    const beginIdx = txt.indexOf("BEGIN v1 -->");
+    const cut = txt.indexOf("WarpOS", beginIdx);
+    txt = txt.slice(0, cut) + "WarpOX" + txt.slice(cut + "WarpOS".length);
+    fs.writeFileSync(cp, txt);
+    const { findings } = runParity({ repoRoot: root });
+    for (const rel of ["CODEX.md", "ANTIGRAVITY.md", "GEMINI.md", "AGENTS.md"]) {
+      const f = findingFor(findings, rel);
+      assert.ok(f && /drift|mismatch/i.test(f.reason), rel + " must mismatch the mutated oracle, got " + JSON.stringify(findings));
+    }
+  } finally {
+    rmrf(root);
+  }
+});
+
+// 11. The CLI process exits 2 (fail-closed) when the canonical oracle is unreadable — asserted by a
+//     REAL spawn (not just runParity throwing). The copied script's script-derived root is the empty
+//     fixture, so its canonical read fails -> exit 2.
+t("CLI spawn exits 2 when canonical is unreadable (fail-closed)", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "epp-cli-"));
+  try {
+    const dstScript = path.join(root, "scripts", "checks", "entry-preamble-parity.js");
+    fs.mkdirSync(path.dirname(dstScript), { recursive: true });
+    fs.copyFileSync(path.join(__dirname, "entry-preamble-parity.js"), dstScript); // no canonical/entry docs alongside
+    const r = spawnSync(process.execPath, [dstScript], { encoding: "utf8" });
+    assert.strictEqual(r.status, 2, "expected exit 2 (fail-closed), got " + r.status + " / " + (r.stderr || r.stdout));
   } finally {
     rmrf(root);
   }

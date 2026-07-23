@@ -14,16 +14,26 @@
  * region. A canonical file can never grade itself — the canonical's region IS the oracle every other
  * file is checked against, so a shim can never fabricate its own pass.
  *
+ * Gauntlet-hardened (SP-20260723-001 fix cycle r1):
+ *   - Markers must occupy their OWN line (the trimmed line is EXACTLY the marker). Bytes appended to
+ *     a marker line therefore make it an INVALID marker (region not found -> finding), closing the
+ *     "append to a marker line to escape both the hashed region and the thinness delta" evasion.
+ *   - EXACTLY ONE BEGIN + ONE END is required; a second/contradictory marked block is a finding, not
+ *     a silently-ignored extra pair.
+ *   - The CLI + release gate resolve the repo root from the SCRIPT LOCATION only (never an inherited
+ *     CLAUDE_PROJECT_DIR), so a caller cannot redirect the gate at a clean tree to green real drift.
+ *
  * Checks (each failing check is a finding):
  *   1. EXISTS       — every required entry file is present.
- *   2. REGION       — every embedder has a non-empty marked region (a shim that dropped the block
- *                      entirely is a defect distinct from thinness).
- *   3. HASH-PARITY  — sha256(extractRegion(file)) === sha256(extractRegion(canonical)).
+ *   2. REGION       — every embedder has EXACTLY ONE well-formed, non-empty marked region on its own
+ *                      marker lines (a dropped/mangled/duplicated block is a defect distinct from
+ *                      thinness).
+ *   3. HASH-PARITY  — sha256(region(file)) === sha256(region(canonical)).
  *   4. THINNESS     — for files with a declared tier, the bytes/lines OUTSIDE the marked region
  *                      (never the shared block itself) must stay within the tier's bound.
  *
- * Exit: 0 clean · 1 one or more findings · 2 could-not-run (canonical unreadable, internal error —
- * NEVER a silent green). Supports `--json`.
+ * Exit: 0 clean · 1 one or more findings · 2 could-not-run (canonical unreadable / no valid canonical
+ * region / internal error — NEVER a silent green). Supports `--json`.
  *
  *   node scripts/checks/entry-preamble-parity.js [--json]
  */
@@ -33,10 +43,19 @@ const path = require("path");
 const crypto = require("crypto");
 
 const NAME = "entry-preamble-parity";
-const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 
-const BEGIN = /<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN[^>]*-->/;
-const END = /<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:END[^>]*-->/;
+// SCRIPT-DERIVED repo root — the checkout that OWNS this script (…/scripts/checks/x.js -> repo root).
+// Deliberately NOT process.env.CLAUDE_PROJECT_DIR: a release gate must verify ITS OWN tree, and an
+// inherited/hostile CLAUDE_PROJECT_DIR pointed at a clean fixture would silently green real drift in
+// the repo under release (the Phase-2 stale/hostile-CLAUDE_PROJECT_DIR fail-open class). The pure core
+// `runParity({repoRoot})` still accepts an explicit root so tests can drive fixture trees.
+const REPO_ROOT = path.resolve(__dirname, "..", "..");
+
+// A VALID marker occupies its OWN line: the TRIMMED line is EXACTLY the marker (anchored ^…$). The
+// [^>]* tolerates a version token / trailing whitespace INSIDE the comment (…BEGIN v1 -->) but not any
+// content after `-->`.
+const BEGIN_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:BEGIN[^>]*-->$/;
+const END_LINE = /^<!--\s*WARPOS:ENTERING-AGENT-PREAMBLE:END[^>]*-->$/;
 
 // Tier bounds apply to the DELTA — the file's bytes/lines OUTSIDE the marked region (everything
 // except the region between-and-including the markers). The shared block is identical everywhere
@@ -60,55 +79,45 @@ const FILES = [
 ];
 
 /**
- * Extract the marked region's INNER content (strictly between the marker lines, edge-blank-trimmed).
- * CRLF/CR are normalized to LF (Windows safety) before scanning. No further normalization — no
- * whitespace-collapse, no lowercasing: over-normalizing would mask a real word-level edit, which is
- * itself a false-green. Returns null when no complete BEGIN/END pair is found.
+ * Analyze a file's text for its marked region + the out-of-region delta. CRLF/CR are normalized to LF
+ * (Windows safety) before scanning; the marked region is trimmed of edge blank/whitespace-only lines.
+ * No further normalization — no whitespace-collapse, no lowercasing: over-normalizing would mask a
+ * real word-level edit, itself a false-green.
+ *
+ * Marker discipline: a marker is recognized ONLY when it is the whole (trimmed) line, and EXACTLY one
+ * BEGIN + one END must be present. Returns one of:
+ *   { markerError: "<reason>" }                         — no single well-formed region (a finding)
+ *   { region: "<inner>", outside: { byteLength, lineCount } }
  */
-function extractRegion(txt) {
+function analyze(txt) {
   const lines = txt.replace(/\r\n?/g, "\n").split("\n");
-  let b = -1;
-  let e = -1;
+  const begins = [];
+  const ends = [];
   for (let i = 0; i < lines.length; i++) {
-    if (b < 0 && BEGIN.test(lines[i])) {
-      b = i;
-      continue;
-    }
-    if (b >= 0 && END.test(lines[i])) {
-      e = i;
-      break;
-    }
+    const t = lines[i].trim();
+    if (BEGIN_LINE.test(t)) begins.push(i);
+    if (END_LINE.test(t)) ends.push(i);
   }
-  if (b < 0 || e < 0) return null;
+  if (begins.length !== 1 || ends.length !== 1) {
+    return {
+      markerError: `expected exactly one marked entering-agent-preamble region (1 BEGIN + 1 END, each on its own line), found ${begins.length} BEGIN / ${ends.length} END`,
+    };
+  }
+  const b = begins[0];
+  const e = ends[0];
+  if (e <= b) {
+    return { markerError: "END marker does not follow the BEGIN marker" };
+  }
   let inner = lines.slice(b + 1, e);
   while (inner.length && inner[0].trim() === "") inner.shift();
   while (inner.length && inner[inner.length - 1].trim() === "") inner.pop();
-  return inner.join("\n");
-}
-
-/**
- * Split a file's normalized text into the content OUTSIDE the marked region — i.e. everything
- * except the span from the BEGIN marker line through the END marker line, inclusive. Returns
- * { byteLength, lineCount } for the thinness check, or null when no marker pair is found.
- */
-function splitOutsideRegion(txt) {
-  const lines = txt.replace(/\r\n?/g, "\n").split("\n");
-  let b = -1;
-  let e = -1;
-  for (let i = 0; i < lines.length; i++) {
-    if (b < 0 && BEGIN.test(lines[i])) {
-      b = i;
-      continue;
-    }
-    if (b >= 0 && END.test(lines[i])) {
-      e = i;
-      break;
-    }
-  }
-  if (b < 0 || e < 0) return null;
+  const region = inner.join("\n");
   const outsideLines = lines.slice(0, b).concat(lines.slice(e + 1));
   const outsideText = outsideLines.join("\n");
-  return { byteLength: Buffer.byteLength(outsideText, "utf8"), lineCount: outsideLines.length };
+  return {
+    region,
+    outside: { byteLength: Buffer.byteLength(outsideText, "utf8"), lineCount: outsideLines.length },
+  };
 }
 
 function sha256(str) {
@@ -116,15 +125,16 @@ function sha256(str) {
 }
 
 /**
- * Pure core. `repoRoot` defaults to the live repo; a caller (the test) may pass a fixture root so
- * negative cases run against temp copies, never the real entry docs.
+ * Pure core. `repoRoot` defaults to the SCRIPT-DERIVED repo root; a caller (the test) may pass a
+ * fixture root so negative cases run against temp copies, never the real entry docs.
  *
  * Throws (fail-closed — the caller must exit 2, never a silent green) when the canonical oracle is
- * unreadable, or is readable but carries no marked region of its own (no oracle hash can be derived).
+ * unreadable, or is readable but carries no single well-formed marked region of its own (no oracle
+ * hash can be derived).
  *
  * Returns { findings: [{file, reason}], canonicalHash }.
  */
-function runParity({ repoRoot = ROOT } = {}) {
+function runParity({ repoRoot = REPO_ROOT } = {}) {
   const canonicalAbs = path.join(repoRoot, CANONICAL_REL);
   let canonicalText;
   try {
@@ -134,11 +144,13 @@ function runParity({ repoRoot = ROOT } = {}) {
       `canonical oracle unreadable at ${CANONICAL_REL}: ${e && e.message ? e.message : e}`,
     );
   }
-  const canonicalRegion = extractRegion(canonicalText);
-  if (canonicalRegion === null || canonicalRegion.length === 0) {
-    throw new Error(`canonical oracle at ${CANONICAL_REL} carries no marked preamble region`);
+  const canonicalAnalysis = analyze(canonicalText);
+  if (canonicalAnalysis.markerError || !canonicalAnalysis.region) {
+    throw new Error(
+      `canonical oracle at ${CANONICAL_REL} has no usable marked region: ${canonicalAnalysis.markerError || "empty region"}`,
+    );
   }
-  const canonicalHash = sha256(canonicalRegion);
+  const canonicalHash = sha256(canonicalAnalysis.region);
 
   const findings = [];
 
@@ -161,14 +173,14 @@ function runParity({ repoRoot = ROOT } = {}) {
       continue;
     }
 
+    const analysis = cfg.embeds || cfg.tier ? analyze(text) : null;
+
     if (cfg.embeds) {
-      const region = extractRegion(text);
-      if (region === null || region.length === 0) {
-        findings.push({
-          file: cfg.rel,
-          reason: "no marked entering-agent-preamble region found (dropped shim)",
-        });
-      } else if (!cfg.canonical && sha256(region) !== canonicalHash) {
+      if (analysis.markerError) {
+        findings.push({ file: cfg.rel, reason: analysis.markerError });
+      } else if (analysis.region.length === 0) {
+        findings.push({ file: cfg.rel, reason: "marked entering-agent-preamble region is empty (dropped shim)" });
+      } else if (!cfg.canonical && sha256(analysis.region) !== canonicalHash) {
         findings.push({
           file: cfg.rel,
           reason: "embedded preamble region has drifted from the canonical oracle (hash mismatch)",
@@ -178,14 +190,13 @@ function runParity({ repoRoot = ROOT } = {}) {
 
     if (cfg.tier) {
       const bound = TIERS[cfg.tier];
-      const outside = splitOutsideRegion(text);
-      if (outside === null) {
-        // Already reported as a dropped-region finding above; thinness cannot be evaluated without
-        // a region to measure around, so don't double-report.
-      } else if (outside.byteLength > bound.maxBytes || outside.lineCount > bound.maxLines) {
+      if (analysis.markerError) {
+        // Already reported as a marker finding above; thinness cannot be measured around a region
+        // that isn't well-formed, so don't double-report.
+      } else if (analysis.outside.byteLength > bound.maxBytes || analysis.outside.lineCount > bound.maxLines) {
         findings.push({
           file: cfg.rel,
-          reason: `oversized shim (tier "${cfg.tier}"): ${outside.byteLength} bytes / ${outside.lineCount} lines outside the marked region (bound: ${bound.maxBytes} bytes / ${bound.maxLines} lines)`,
+          reason: `oversized shim (tier "${cfg.tier}"): ${analysis.outside.byteLength} bytes / ${analysis.outside.lineCount} lines outside the marked region (bound: ${bound.maxBytes} bytes / ${bound.maxLines} lines)`,
         });
       }
     }
@@ -194,13 +205,13 @@ function runParity({ repoRoot = ROOT } = {}) {
   return { findings, canonicalHash };
 }
 
-module.exports = { runParity, extractRegion, splitOutsideRegion, FILES, TIERS, CANONICAL_REL };
+module.exports = { runParity, analyze, FILES, TIERS, CANONICAL_REL, REPO_ROOT };
 
 if (require.main === module) {
   const JSON_OUT = process.argv.includes("--json");
   let res;
   try {
-    res = runParity({});
+    res = runParity({}); // repo root is SCRIPT-DERIVED — not redirectable via env
   } catch (e) {
     const msg = e && e.message ? e.message : String(e);
     if (JSON_OUT) console.log(JSON.stringify({ check: NAME, ok: false, error: msg }));

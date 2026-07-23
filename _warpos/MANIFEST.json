@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-23T01:34:35.572Z",
+  "generatedAt": "2026-07-23T03:07:28.932Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.0.0",
   "migrations": [],
@@ -40,8 +40,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "4380cb4bc6bef28083ba328d2f6e493d7f2786ed0bad4a77e02e652d5d8435e6",
-      "installedSha": "4380cb4bc6bef28083ba328d2f6e493d7f2786ed0bad4a77e02e652d5d8435e6"
+      "sha256": "d86087dd43f2390e2fbb6667eaf8b4d9a55a87443f9391d5bdcd9f6e03c4ac29",
+      "installedSha": "d86087dd43f2390e2fbb6667eaf8b4d9a55a87443f9391d5bdcd9f6e03c4ac29"
+    },
+    "ANTIGRAVITY.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "_note": "Root document — source path same as destination (canonical-side).",
+      "sha256": "2ff23a2cef254a85bc4db61d89aad77aa5c5dfa8fc6a27975f65679c092a11da",
+      "installedSha": "2ff23a2cef254a85bc4db61d89aad77aa5c5dfa8fc6a27975f65679c092a11da"
     },
     "CLAUDE.md": {
       "owner": "framework",
@@ -56,8 +64,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "eea8d88a3dd45a3f19483ee07acc28c8c61f5e9ab0498e680c6a931859c9b06d",
-      "installedSha": "eea8d88a3dd45a3f19483ee07acc28c8c61f5e9ab0498e680c6a931859c9b06d"
+      "sha256": "03c6841096e8d186e07165304191e49d13c49e43d4145865577d2e344ff1c8dc",
+      "installedSha": "03c6841096e8d186e07165304191e49d13c49e43d4145865577d2e344ff1c8dc"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -66,6 +74,14 @@
       "_note": "Root document — source path same as destination (canonical-side).",
       "sha256": "b95dcca7beb9c180a8cb92d233ecbee55b52fcc2b8a59ff134fee9754e540ae6",
       "installedSha": "b95dcca7beb9c180a8cb92d233ecbee55b52fcc2b8a59ff134fee9754e540ae6"
+    },
+    "GEMINI.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": null,
+      "_note": "Root document — source path same as destination (canonical-side).",
+      "sha256": "695feaf587c0936d0e2b602204bde5245624dc098a8b18ba56e190aa00963074",
+      "installedSha": "695feaf587c0936d0e2b602204bde5245624dc098a8b18ba56e190aa00963074"
     },
     "GRAPH.md": {
       "owner": "runtime",
@@ -125,8 +141,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "a902ec70072cbd7249d013d462ff92ae16c30f5c5610e396b27518fd232c1650",
-      "installedSha": "a902ec70072cbd7249d013d462ff92ae16c30f5c5610e396b27518fd232c1650"
+      "sha256": "afae16349360264f41e2e2a549d457dfee272b34310bab023fc8a2588e4c7726",
+      "installedSha": "afae16349360264f41e2e2a549d457dfee272b34310bab023fc8a2588e4c7726"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -7618,8 +7634,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/release-gates.js",
-      "sha256": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095",
-      "installedSha": "fd9310bfead3c3db845a87fb3f9f74b09132cd058475dd4471cc7db641281095"
+      "sha256": "b44b9480b8672af0853f48ef848700063301cbbcd222e03617e092c61dfe562e",
+      "installedSha": "b44b9480b8672af0853f48ef848700063301cbbcd222e03617e092c61dfe562e"
     },
     "scripts/warpos/replay-bench.js": {
       "owner": "framework",
@@ -7870,8 +7886,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/build.js",
-      "sha256": "2435bcfc31d4bd39880819271db25d1d54e6488555737d4a7dd8f20c400e1849",
-      "installedSha": "2435bcfc31d4bd39880819271db25d1d54e6488555737d4a7dd8f20c400e1849"
+      "sha256": "8138e3824dd0a01cf1d75e8d183f2d630b65ae42cadf1ae8de964df958ce7016",
+      "installedSha": "8138e3824dd0a01cf1d75e8d183f2d630b65ae42cadf1ae8de964df958ce7016"
     },
     "scripts/warpos/manifest/test-bootstrap.js": {
       "owner": "framework",
@@ -11596,6 +11612,20 @@
       "source": "scripts/checks/ed060-sunset.test.js",
       "sha256": "8f61e8e83c53152fea031d6eb6324bc5d23cf32f2d4fe0091e0cd388e832c154",
       "installedSha": "8f61e8e83c53152fea031d6eb6324bc5d23cf32f2d4fe0091e0cd388e832c154"
+    },
+    "scripts/checks/entry-preamble-parity.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/entry-preamble-parity.js",
+      "sha256": "2f6011bbddd3e055e70e77703e488c4556a500935bb7bcb9283aed8cad743c2d",
+      "installedSha": "2f6011bbddd3e055e70e77703e488c4556a500935bb7bcb9283aed8cad743c2d"
+    },
+    "scripts/checks/entry-preamble-parity.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/entry-preamble-parity.test.js",
+      "sha256": "b58232ae94d2f1f9e87d5341b1ea925ef8543e1d599fdad7aac281ed13dcf101",
+      "installedSha": "b58232ae94d2f1f9e87d5341b1ea925ef8543e1d599fdad7aac281ed13dcf101"
     },
     "scripts/checks/epsilon-liveness.js": {
       "owner": "framework",
@@ -16202,6 +16232,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/SP-20260723-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260723-001/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/SP-20260721-001/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -17199,6 +17237,10 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/S-LC-01/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/SP-20260723-001/prd.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -24494,6 +24536,14 @@
       "sha256": "69c6327e715ec334a43d69d8df8ec6e1f79ad43a92ea4dbc75e4c20445d9b5b2",
       "installedSha": "69c6327e715ec334a43d69d8df8ec6e1f79ad43a92ea4dbc75e4c20445d9b5b2"
     },
+    ".claude/project/reference/entry-preamble.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/project/reference/entry-preamble.md",
+      "kind": "md",
+      "sha256": "f4ce323138fc87099d642beb6335d3db9f41e0de2c4439a94f6f4e70f68015e6",
+      "installedSha": "f4ce323138fc87099d642beb6335d3db9f41e0de2c4439a94f6f4e70f68015e6"
+    },
     ".claude/project/reference/evolution.md": {
       "owner": "framework",
       "managed": true,
@@ -25749,8 +25799,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "42a2f607a2ecd7309613d2d00407f35731d16503f1f10e86bc1dd703facdb267",
-      "installedSha": "42a2f607a2ecd7309613d2d00407f35731d16503f1f10e86bc1dd703facdb267"
+      "sha256": "2e620a88e2e8b5d11ab2dc4a04d0926a05a3d2eba5614a1528d1429f70164c98",
+      "installedSha": "2e620a88e2e8b5d11ab2dc4a04d0926a05a3d2eba5614a1528d1429f70164c98"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
@@ -27806,13 +27856,21 @@
       "sha256": "360852ac0fe3482e79b17973729254587dedd6a8a253f55f94b357e25364bea5",
       "installedSha": "360852ac0fe3482e79b17973729254587dedd6a8a253f55f94b357e25364bea5"
     },
+    ".claude/agents/president/_system/policy/adr/0036-helm-entry-file-single-source-projection.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0036-helm-entry-file-single-source-projection.md",
+      "kind": "md",
+      "sha256": "815a031d7aed90add26741443656071103db9aac0c22d2ee7c219cde764a6476",
+      "installedSha": "815a031d7aed90add26741443656071103db9aac0c22d2ee7c219cde764a6476"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "6457a5bc13796635b04561d5c2606a870e55537a7c93b5a2a9f2bb0c8c2e1e51",
-      "installedSha": "6457a5bc13796635b04561d5c2606a870e55537a7c93b5a2a9f2bb0c8c2e1e51"
+      "sha256": "ef671c7a90eea25df8b97fd92135938247912b6265b77ec2316c8fd59fc2f8be",
+      "installedSha": "ef671c7a90eea25df8b97fd92135938247912b6265b77ec2316c8fd59fc2f8be"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
