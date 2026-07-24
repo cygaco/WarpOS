@@ -47,12 +47,37 @@ const ANTHROPIC = {
       aliases: ["sonnet-5", "claude-sonnet-5"],
     },
     {
+      // claude-opus-5 — the opus WORKHORSE-tier successor to opus-4-8 (operator-directed
+      // cutover 2026-07-24). ADDED as an available member; opus-4-8 STAYS served (never
+      // deleted). Same price/ctx as 4.8 ($5/$25, 1M/128K); full effort ladder incl. max.
+      // CLI serve VERIFIED live 2026-07-24: `claude -p --output-format json --model claude-opus-5
+      // --effort max` → exit 0, envelope modelUsage.canonicalModel="claude-opus-5", provider
+      // "firstParty", contextWindow 1_000_000 (no 400, no fallback). Thinking is ON by DEFAULT
+      // on opus-5 (opus-4-8 ran without thinking unless adaptive was set); `thinking:{type:
+      // "disabled"}` at effort xhigh/max → 400 (breaking), so any claude role at xhigh/max MUST
+      // keep thinking ON (standing invariant, ADR-0016 amendment 2026-07-24; enforced by
+      // scripts/checks/model-chain.js block J). NOT harness Agent-tool-spawnable yet (α probe
+      // 2026-07-24: the in-process "opus" alias still serves opus-4-8), so the "opus" ALIAS +
+      // provider defaultModel stay on opus-4-8 below until the harness serves opus-5 (ADR-0016
+      // amendment follow-up). Bedrock form: anthropic.claude-opus-5.
+      id: "claude-opus-5",
+      label: "Claude Opus 5 (opus workhorse tier; thinking-on by default)",
+      effortLevels: ["low", "medium", "high", "xhigh", "max"],
+      contextTokens: 1_000_000,
+      maxOutputTokens: 128_000,
+      pricing: { inPerMTok: 5, outPerMTok: 25 },
+      aliases: ["claude-opus-5"],
+    },
+    {
       id: "claude-opus-4-8",
       label: "Claude Opus 4.8",
       effortLevels: ["low", "medium", "high", "xhigh", "max"],
       contextTokens: 1_000_000,
       maxOutputTokens: 128_000,
       pricing: { inPerMTok: 5, outPerMTok: 25 },
+      // NOTE: the "opus" alias + the provider defaultModel (above) INTENTIONALLY stay on 4.8 —
+      // the in-process Agent-tool channel still serves 4.8 (α probe 2026-07-24). They flip to
+      // opus-5 only once the harness serves it (ADR-0016 amendment 2026-07-24 follow-up).
       aliases: ["opus", "claude-opus-4-8"],
     },
     {

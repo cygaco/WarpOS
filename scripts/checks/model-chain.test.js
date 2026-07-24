@@ -355,6 +355,49 @@ test("scrapped names in consumer maps (the SCRAPPED_*_ALIASES shim) → NOT flag
   assert.ok(!has(errs, "[SCRAPPED]"), "shim aliases in consumer maps must not be flagged: " + errs.join(" | "));
 });
 
+// ── J. Thinking-OFF + xhigh/max on a Claude lane (ADR-0016 amendment 2026-07-24, opus-5 cutover). ──
+test("clean roster (thinking always-on/absent) → NO thinking-400 finding", () => {
+  const errs = evaluateModelChain({ reg: cleanReg(), consumers: cleanConsumers(cleanReg()) });
+  assert.ok(!has(errs, "[THINKING-400]"), `live-shape roster must be clean; got: ${errs.join(" | ")}`);
+});
+test("claude role: thinking DISABLED + effort max → THINKING-400", () => {
+  const reg = cleanReg();
+  reg.roles["backend-builder"].effort = "max"; // note: also trips other ceilings, but J must fire
+  reg.roles["backend-builder"].thinking = "disabled";
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "[THINKING-400]") && has(errs, "backend-builder"), errs.join(" | "));
+});
+test("claude role: thinking {type:'disabled'} + effort xhigh → THINKING-400", () => {
+  const reg = cleanReg();
+  reg.roles["qa-reviewer"] = { provider: "claude", model: "claude-opus-4-8", effort: "xhigh", thinking: { type: "disabled" } };
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "[THINKING-400]") && has(errs, "qa-reviewer"), errs.join(" | "));
+});
+test("claude third_pass: thinking 'off' + max → THINKING-400 (passes are scanned too)", () => {
+  const reg = cleanReg();
+  reg.roles["security-reviewer"].third_pass = { provider: "claude", model: "claude-opus-4-8", effort: "max", thinking: "off" };
+  const errs = evaluateModelChain({ reg });
+  assert.ok(has(errs, "[THINKING-400]") && has(errs, "third_pass"), errs.join(" | "));
+});
+test("claude role: thinking DISABLED + effort HIGH → NOT flagged (disabled allowed at high or below)", () => {
+  const reg = cleanReg();
+  reg.roles["backend-builder"].thinking = "disabled"; // effort stays high
+  const errs = evaluateModelChain({ reg, consumers: cleanConsumers(reg) });
+  assert.ok(!has(errs, "[THINKING-400]"), errs.join(" | "));
+});
+test("claude role: thinking always-on + max (the live hunter shape) → NOT flagged", () => {
+  const reg = cleanReg();
+  reg.roles["security-reviewer"].third_pass = { provider: "claude", model: "claude-opus-4-8", effort: "max", thinking: "always-on" };
+  const errs = evaluateModelChain({ reg });
+  assert.ok(!has(errs, "[THINKING-400]"), errs.join(" | "));
+});
+test("NON-claude role: thinking disabled + max → NOT a THINKING-400 (invariant is Claude-only)", () => {
+  const reg = cleanReg();
+  reg.roles["qa-reviewer"] = { provider: "openai", model: "gpt-5.6-sol", effort: "max", thinking: "disabled" };
+  const errs = evaluateModelChain({ reg });
+  assert.ok(!has(errs, "[THINKING-400]"), errs.join(" | "));
+});
+
 // ── parseFrontmatterEffort unit (the parser behind check H) ──
 test("parseFrontmatterEffort: both keys + null/empty/comment/quotes (W0 review HIGH-1/2, MED-3)", () => {
   const P = require("./model-chain").parseFrontmatterEffort;

@@ -14,7 +14,8 @@
 // (=opus-4.8/max, not merely "max only on alpha"), model+effort completeness, the live
 // registry↔catalog↔providers parity (the drift detector), the spec-frontmatter EFFORT parity
 // (ED-058 blind-spot — the registry↔spec effort drift that role-parity's model-pin check does NOT
-// cover, the exact gap that let beta/gamma/delta drift), and scrapped-role detection (ADR-0007).
+// cover, the exact gap that let beta/gamma/delta drift), scrapped-role detection (ADR-0007), and
+// (block J, ADR-0016 amendment 2026-07-24) the opus-5 thinking-OFF+xhigh/max 400 invariant.
 // Report-only in /scan:full.
 //
 // Exit: 0 clean · 1 findings · 2 fail-closed (unreadable/unparseable registry or internal error).
@@ -58,6 +59,21 @@ const NULL_EFFORT_ALLOW = new Set(["skeleton-builder", "security_claude_hunter"]
 // They must never reappear as a registry role or a live-consumer route key.
 const SCRAPPED_ROLES = new Set(["builder", "reviewer", "compliance", "qa", "redteam", "fixer"]);
 const fmtEffort = (x) => (x === null || x === undefined ? "null" : `"${x}"`);
+
+// ── Block J standing invariant (ADR-0016 amendment 2026-07-24, opus-5 cutover) ──
+// opus-5 makes thinking ON by DEFAULT and BREAKS `thinking:{type:"disabled"}` at effort
+// xhigh|max with a 400 (disabled thinking is allowed only at high or below). So a Claude-lane
+// config that pairs a DISABLED-thinking flag with xhigh|max would 400 at dispatch. This enforcer
+// makes that self-detecting at config-write time (the named enforcer the amendment requires).
+// A DISABLED signal = the string forms below OR an object {type:"disabled"}. "always-on"/"adaptive"/
+// "enabled"/"on"/absent are all thinking-ON (safe). Effort xhigh|max are the two 400-triggering levels.
+const THINKING_400_EFFORTS = new Set(["xhigh", "max"]);
+function thinkingDisabled(t) {
+  if (t == null) return false; // absent → default (ON on opus-5)
+  if (typeof t === "string") return /^(disabled|off|false|none|no)$/i.test(t.trim());
+  if (typeof t === "object" && typeof t.type === "string") return t.type.toLowerCase() === "disabled";
+  return false;
+}
 
 function readJSON(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -250,6 +266,25 @@ function evaluateModelChain({ reg, consumers, specs }) {
     if (SCRAPPED_ROLES.has(name))
       errors.push(`[SCRAPPED] registry role "${name}" was collapsed by ADR-0007 — it must not be a real registry role (use the pod-specific role)`);
 
+  // ── J. Thinking-OFF + xhigh/max on a Claude lane (ADR-0016 amendment 2026-07-24). A Claude config
+  //       (a role OR a second_pass/third_pass) that DISABLES thinking while running effort xhigh|max
+  //       400s on opus-5 (disabled thinking is allowed only at effort high or below). Scan every
+  //       claude-provider config unit — a role and its passes carry their own provider/effort/thinking. ──
+  for (const [name, r] of Object.entries(roles)) {
+    const units = [
+      { where: `roles.${name}`, provider: r.provider, effort: r.effort, thinking: r.thinking },
+      r.second_pass && { where: `roles.${name}.second_pass`, provider: r.second_pass.provider, effort: r.second_pass.effort, thinking: r.second_pass.thinking },
+      r.third_pass && { where: `roles.${name}.third_pass`, provider: r.third_pass.provider, effort: r.third_pass.effort, thinking: r.third_pass.thinking },
+    ].filter(Boolean);
+    for (const u of units) {
+      if (u.provider === "claude" && THINKING_400_EFFORTS.has(u.effort) && thinkingDisabled(u.thinking)) {
+        errors.push(
+          `[THINKING-400] ${u.where} is a Claude lane at effort="${u.effort}" with thinking DISABLED (${JSON.stringify(u.thinking)}) — opus-5 400s on disabled-thinking + xhigh/max; a Claude role at xhigh/max MUST keep thinking ON (ADR-0016 amendment 2026-07-24)`,
+        );
+      }
+    }
+  }
+
   return errors;
 }
 
@@ -389,4 +424,6 @@ module.exports = {
   DOER_MODELS,
   MAX_ALLOWED_ROLES,
   ULTRA_MODELS,
+  THINKING_400_EFFORTS,
+  thinkingDisabled,
 };
