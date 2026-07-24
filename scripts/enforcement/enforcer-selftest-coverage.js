@@ -38,7 +38,12 @@ const ENFORCER_DIRS = [path.join(REPO, "scripts", "checks"), path.join(REPO, "sc
 const CLI_MAIN_RE = /require\.main\s*===\s*module/;
 // A sibling test carries a PLANTED-VIOLATION signal if it asserts a negative/failing case. Lenient
 // (any of these) so a genuinely-good test is never flagged; the point is to catch a happy-path-only test.
-const PLANTED_RE = /(planted|->\s*(?:RED|red|fail|FAIL|finding|1\b)|\bRED\b|must fail|findings\.length|hard\.length|\.length,\s*[1-9]|violation|exit(?:Code)?\s*[:=]?\s*1|not.*clean)/;
+// F13 (gpt security r0, MED ReDoS): the old `not.*clean` alternative is O(n^2) on adversarial text with
+// many `not` tokens and no `clean` — a large committed test file could stall /scan:full. Bound it to a
+// same-line window `not[^\r\n]{0,160}clean` (linear), and cap the inspected text length (below).
+const PLANTED_RE = /(planted|->\s*(?:RED|red|fail|FAIL|finding|1\b)|\bRED\b|must fail|findings\.length|hard\.length|\.length,\s*[1-9]|violation|exit(?:Code)?\s*[:=]?\s*1|not[^\r\n]{0,160}clean)/;
+// F13: cap the per-test text scanned by PLANTED_RE — defense-in-depth against a hostile large fixture.
+const MAX_TEST_SCAN = 256 * 1024;
 
 /**
  * Pure core. items = [{ rel, isEnforcer, hasTest, testText }]. Only isEnforcer items are judged.
@@ -55,7 +60,7 @@ function evaluate({ items }) {
       hard.push({ enforcer: it.rel, reason: `enforcer ${it.rel} has NO sibling self-test (${it.rel.replace(/\.(js|cjs|mjs)$/, ".test.$1")}) — ED-033 requires a sealed known-answer test.` });
       continue;
     }
-    if (!PLANTED_RE.test(String(it.testText || ""))) {
+    if (!PLANTED_RE.test(String(it.testText || "").slice(0, MAX_TEST_SCAN))) {
       soft.push({ enforcer: it.rel, reason: `enforcer ${it.rel} has a sibling test but no detectable PLANTED-VIOLATION (failing-case) assertion — verify it has a known-answer negative case (ED-033).` });
     }
   }
@@ -66,10 +71,12 @@ function evaluate({ items }) {
 
 function gatherItems() {
   const items = [];
-  let anyDir = false;
+  const errors = []; // F11: present-but-unreadable dirs/sources — main() fail-closes (exit 2) on any.
+  let dirsSeen = 0;
   for (const dir of ENFORCER_DIRS) {
     let entries;
-    try { entries = fs.readdirSync(dir); anyDir = true; } catch { continue; }
+    try { entries = fs.readdirSync(dir); dirsSeen++; }
+    catch (e) { errors.push({ path: dir, error: (e && e.message) || "readdir failed" }); continue; } // F11: a required dir must be readable
     for (const n of entries) {
       if (!/\.(js|cjs|mjs)$/.test(n)) continue;
       if (/\.test\.(js|cjs|mjs)$/.test(n) || /^test-/.test(n)) continue; // the tests themselves (both conventions)
@@ -79,28 +86,42 @@ function gatherItems() {
         const st = fs.statSync(full);
         if (!st.isFile()) continue;
         content = fs.readFileSync(full, "utf8");
-      } catch { continue; }
+      } catch (e) {
+        if (e && e.code === "ENOENT") continue; // vanished between readdir and read (race) — skip
+        errors.push({ path: full, error: (e && e.message) || "read failed" }); // F11: present-but-unreadable source = fail-closed
+        continue;
+      }
       const isEnforcer = CLI_MAIN_RE.test(content);
       const rel = path.relative(REPO, full).replace(/\\/g, "/");
-      const base = n.replace(/\.(js|cjs|mjs)$/, "");
-      // Both sibling conventions: <name>.test.js AND test-<name>.js.
+      // F12: read ALL sibling test conventions (<name>.test.js AND test-<name>.js) and concatenate — a
+      // planted violation in EITHER sibling counts (was order-dependent: it stopped at the first readable
+      // test, so a happy-path dotted test masked a dash-convention planted-violation sibling).
       const testCandidates = [full.replace(/\.(js|cjs|mjs)$/, ".test.$1"), path.join(dir, `test-${n}`)];
       let hasTest = false, testText = "";
       for (const tf of testCandidates) {
-        try { testText = fs.readFileSync(tf, "utf8"); hasTest = true; break; } catch { /* try next */ }
+        try { testText += (testText ? "\n" : "") + fs.readFileSync(tf, "utf8"); hasTest = true; }
+        catch (e) { if (e && e.code !== "ENOENT") errors.push({ path: tf, error: (e && e.message) || "test read failed" }); } // F11: present-but-unreadable test = fail-closed
       }
       items.push({ rel, isEnforcer, hasTest, testText });
     }
   }
-  return { items, anyDir };
+  return { items, errors, dirsSeen, dirsRequired: ENFORCER_DIRS.length };
 }
 
 function main(argv) {
   const jsonOut = argv.includes("--json");
   const enforce = argv.includes("--enforce");
-  const { items, anyDir } = gatherItems();
-  if (!anyDir) {
-    process.stderr.write(`ERROR [${NAME}] no enforcer dirs found (fail-closed)\n`);
+  const { items, errors, dirsSeen, dirsRequired } = gatherItems();
+  // F11 (gpt qa/backend/security r0, HIGH): fail-closed (exit 2) if EITHER required enforcer directory
+  // was not readable, OR any present source/test could not be inspected — a green must never rest on an
+  // unexamined enforcer (an attacker-controlled permission/read failure could otherwise hide one).
+  if (dirsSeen < dirsRequired || errors.length) {
+    const all = [...(dirsSeen < dirsRequired ? [{ path: "(required enforcer dir)", error: `${dirsRequired - dirsSeen} of ${dirsRequired} dirs unreadable` }] : []), ...errors];
+    if (jsonOut) process.stdout.write(JSON.stringify({ name: NAME, status: "error", reason: "unreadable enforcer dir/source (fail-closed)", errors: all }) + "\n");
+    else {
+      process.stderr.write(`ERROR [${NAME}] ${all.length} unreadable enforcer dir/source(s) (fail-closed):\n`);
+      for (const er of all) process.stderr.write(`     - ${er.path}: ${er.error}\n`);
+    }
     return 2;
   }
   const { hard, soft, enforcerCount } = evaluate({ items });

@@ -53,8 +53,9 @@ const NAME = "ed-register-reality-drift";
 const ENFORCER_PATH_RE = /scripts\/(?:checks|enforcement)\/[A-Za-z0-9_.-]+\.(?:js|cjs|mjs)/g;
 
 // The row fields that may name a deliverable (trigger = "build X"; file = target; missing_enforcer
-// / gap = the described gap). We scan their concatenation — a path in ANY of them counts.
-const DELIVERABLE_FIELDS = ["trigger", "file", "missing_enforcer", "gap", "policy"];
+// / gap = the described gap; note = an amendment naming the concrete enforcer — F9). We scan their
+// concatenation across ALL rows of an open ED — a path in ANY field of ANY row counts.
+const DELIVERABLE_FIELDS = ["trigger", "file", "missing_enforcer", "gap", "policy", "note"];
 
 // Partial-resolution signal — an id carrying ANY of these is INTENTIONALLY open (residual work
 // named), not stale, so it is excluded from candidate findings. Text markers (case-insensitive):
@@ -68,7 +69,19 @@ function hasPartialSignal(objs) {
       const v = o[k];
       if (v === true || (typeof v === "string" && v.length > 0) || (Array.isArray(v) && v.length > 0)) return true;
     }
-    if (PARTIAL_MARKER_RE.test(JSON.stringify(o))) return true;
+    // F7 (gpt qa r0, HIGH false-green): match text markers ONLY against textual VALUES — NEVER
+    // JSON.stringify(o), whose serialized KEYS include "open_adr"/"partial_enforced"/"remaining_open"
+    // even when the value is FALSE. `{open_adr:false}` must NOT suppress a genuine stale-open finding
+    // (a false-valued field is handled by the structured check above and is NOT a partial signal).
+    for (const v of Object.values(o)) {
+      if (typeof v === "string" && PARTIAL_MARKER_RE.test(v)) return true;
+      if (Array.isArray(v)) {
+        for (const e of v) {
+          if (typeof e === "string" && PARTIAL_MARKER_RE.test(e)) return true;
+          if (e && typeof e === "object" && PARTIAL_MARKER_RE.test(JSON.stringify(Object.values(e)))) return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -76,6 +89,29 @@ function hasPartialSignal(objs) {
 /** Reuse the register parser so genesis/closure classification can't drift from the dup-id lint. */
 function loadParser() {
   return require(path.join(REPO, "scripts", "enforcement", "ed-registry")).parseRegister;
+}
+
+// F8 (gpt qa/backend r0, HIGH): ONE shared closure-row predicate, used for BOTH "is this ED closed?"
+// and "which rows are closure rows (for phantom-close)". Previously `closed` accepted `o.resolution`
+// but the closureRows filter did NOT — a resolution-only closure was classified closed yet excluded
+// from phantom-close, so a closed ED whose resolution named an absent enforcer produced no candidate.
+function isClosureRow(o) {
+  return o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined || o.resolution !== undefined;
+}
+
+// F10 (gpt qa r0, HIGH): distinguish a NEW enforcer (creation) from an existing enforcer an open ED
+// merely intends to MODIFY. A deliverable path in a MODIFY context — preceded by "add/wire … to|in|into
+// <path>", or a modify verb (modify/extend/harden/amend/wire) — describes changing an EXISTING file,
+// whose pre-existing file+test is NOT evidence the ED shipped. Only a CREATION context (Build/create/new
+// <path>) is a stale-open candidate. Precise > noisy: better to miss a stale-open than false-flag a
+// pending modification of a shipped enforcer.
+function isModifyContext(text, rel) {
+  const idx = text.indexOf(rel);
+  if (idx < 0) return false;
+  const before = text.slice(Math.max(0, idx - 50), idx).toLowerCase();
+  if (/\b(to|in|into)\s+$/.test(before)) return true; // "add a check to <path>", "in <path>"
+  if (/\b(modif|extend|harden|amend|wire)\b/.test(before)) return true; // explicit modify verbs
+  return false;
 }
 
 /**
@@ -99,16 +135,14 @@ function evaluate({ registerText, fileExists, parse }) {
   const phantomClose = []; // β Q2 direction (b): closed ED whose named deliverable is ABSENT.
   let skippedPartial = 0;
   for (const [id, objs] of byId) {
-    const closed = objs.some(
-      (o) => o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined || o.resolution !== undefined,
-    );
+    const closed = objs.some(isClosureRow); // F8: shared predicate (includes resolution-only closures)
     if (closed) {
       // β Q2 (b) PHANTOM-CLOSE (the more dangerous direction — hides undone work): a CLOSED ED whose
       // CLOSURE row explicitly names an enforcer deliverable that does NOT exist on disk. Tight: only a
       // path named on a CLOSURE/resolution row (not the open genesis, which may name a not-yet-built
       // target), and only scripts/(checks|enforcement)/<name>.js — a stub/rename left the closure lying.
       // Candidate-probe, NOT proof (a present-but-stub file still fools direction (a)); report-only.
-      const closureRows = objs.filter((o) => o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined);
+      const closureRows = objs.filter(isClosureRow); // F8: resolution-only rows included
       const seenC = new Set();
       for (const cr of closureRows) {
         const ctext = ["enforcer", "closure_receipt", "resolution", "note", "file"].map((k) => (typeof cr[k] === "string" ? cr[k] : "")).join("\n");
@@ -125,10 +159,10 @@ function evaluate({ registerText, fileExists, parse }) {
     }
     // Intentionally-open (named residual work) — excluded so a managed partial never false-REDs.
     if (hasPartialSignal(objs)) { skippedPartial++; continue; }
-    // The genesis row (carries the substantive description) holds the deliverable references.
-    const genesis = objs.find((o) => DELIVERABLE_FIELDS.some((k) => typeof o[k] === "string" && o[k].length > 0)) || objs[0];
-    if (!genesis) continue;
-    const text = DELIVERABLE_FIELDS.map((k) => (typeof genesis[k] === "string" ? genesis[k] : "")).join("\n");
+    // F9 (gpt backend r0, HIGH): scan the deliverable fields across ALL rows of the open ED, not just
+    // the first (genesis) row — an amendment that names the concrete enforcer must not be missed when
+    // the genesis carries only descriptive gap text. Dedup matched paths at the ED level.
+    const text = objs.map((o) => DELIVERABLE_FIELDS.map((k) => (typeof o[k] === "string" ? o[k] : "")).join("\n")).join("\n");
     const seen = new Set();
     let m;
     ENFORCER_PATH_RE.lastIndex = 0;
@@ -136,6 +170,8 @@ function evaluate({ registerText, fileExists, parse }) {
       const rel = m[0];
       if (seen.has(rel)) continue;
       seen.add(rel);
+      // F10: skip a path the ED merely intends to MODIFY (its pre-existing file+test is not "shipped").
+      if (isModifyContext(text, rel)) continue;
       // Shipped-with-teeth: the enforcer file AND a sibling <name>.test.js both exist.
       const testRel = rel.replace(/\.(js|cjs|mjs)$/, ".test.$1");
       if (fileExists(rel) && fileExists(testRel)) {
@@ -143,7 +179,7 @@ function evaluate({ registerText, fileExists, parse }) {
           id,
           deliverable: rel,
           test: testRel,
-          reason: `CANDIDATE stale-open: ED ${id} is marked open, but its named enforcer ${rel} exists on disk WITH a sibling test ${testRel} and the row carries no open-residual markers — VERIFY against the requirement, then append a closure row if resolved (or record the open residual).`,
+          reason: `CANDIDATE stale-open: ED ${id} is marked open, but its named NEW enforcer ${rel} exists on disk WITH a sibling test ${testRel}, the row carries no open-residual markers, and it is not a modify-existing reference — VERIFY against the requirement, then append a closure row if resolved (or record the open residual).`,
         });
       }
     }

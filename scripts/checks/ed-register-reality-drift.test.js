@@ -146,6 +146,58 @@ t("open genesis naming an absent target on a still-OPEN ED is not phantom-close"
   assert.strictEqual(r.phantomClose.length, 0, "an open ED's not-yet-built target is not a phantom-close");
 });
 
+// ── F7 (gpt qa r0, HIGH false-green): a FALSE-valued partial field must NOT suppress a stale-open ──
+t("F7: open ED with open_adr:false + shipped enforcer -> STILL flagged (false field does not suppress)", () => {
+  const text = row({ id: "ED-920", status: "open", open_adr: false, trigger: "Build scripts/enforcement/f7.js" });
+  const exists = mkExists(["scripts/enforcement/f7.js", "scripts/enforcement/f7.test.js"]);
+  const r = evaluate({ registerText: text, fileExists: exists });
+  assert.strictEqual(r.findings.length, 1, "open_adr:false must not suppress via a JSON-key match");
+});
+t("F7: partial_enforced:false + shipped enforcer -> STILL flagged", () => {
+  const text = row({ id: "ED-925", status: "open", partial_enforced: false, trigger: "Build scripts/enforcement/f7b.js" });
+  const exists = mkExists(["scripts/enforcement/f7b.js", "scripts/enforcement/f7b.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1);
+});
+t("F7 companion: open_adr:TRUE (real partial) still suppresses", () => {
+  const text = row({ id: "ED-926", status: "open", open_adr: true, trigger: "Build scripts/enforcement/f7c.js" });
+  const exists = mkExists(["scripts/enforcement/f7c.js", "scripts/enforcement/f7c.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "a real open_adr:true partial is excluded");
+});
+
+// ── F8 (gpt qa/backend r0, HIGH): a RESOLUTION-only closure feeds phantom-close ──
+t("F8: resolution-only closure naming an ABSENT enforcer -> phantom-close candidate", () => {
+  const text = [
+    row({ id: "ED-921", status: "open", gap: "x", trigger: "Build scripts/checks/f8.js" }),
+    row({ id: "ED-921", resolution: "resolved via scripts/checks/f8.js" }), // resolution-only closure row (no status/closure_receipt)
+  ].join("\n");
+  const r = evaluate({ registerText: text, fileExists: mkExists([]) }); // f8.js absent
+  assert.strictEqual(r.findings.length, 0, "resolution => closed, not stale-open");
+  assert.strictEqual(r.phantomClose.length, 1, "resolution-only closure + absent enforcer -> phantom-close");
+});
+
+// ── F9 (gpt backend r0, HIGH): an AMENDMENT (not genesis) names the shipped enforcer ──
+t("F9: amendment names the shipped enforcer while genesis has only gap text -> flagged", () => {
+  const text = [
+    row({ id: "ED-922", status: "open", gap: "a descriptive gap naming no concrete path" }),
+    row({ id: "ED-922", record_kind: "amendment", amends: "ED-922", note: "Build scripts/enforcement/f9.js as the enforcer" }),
+  ].join("\n");
+  const exists = mkExists(["scripts/enforcement/f9.js", "scripts/enforcement/f9.test.js"]);
+  const r = evaluate({ registerText: text, fileExists: exists });
+  assert.strictEqual(r.findings.length, 1, "amendment-named enforcer must be scanned (all rows), not just genesis");
+});
+
+// ── F10 (gpt qa r0, HIGH): a MODIFY-existing reference must NOT false-flag ──
+t("F10: open ED that MODIFIES an existing enforcer (file+test exist) -> not flagged", () => {
+  const text = row({ id: "ED-923", status: "open", trigger: "Add a waiter-armed check to scripts/checks/existing.js" });
+  const exists = mkExists(["scripts/checks/existing.js", "scripts/checks/existing.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "modify-existing must not false-flag");
+});
+t("F10 companion: a CREATION context for a new enforcer IS flagged", () => {
+  const text = row({ id: "ED-924", status: "open", trigger: "Build scripts/checks/brandnew.js" });
+  const exists = mkExists(["scripts/checks/brandnew.js", "scripts/checks/brandnew.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1);
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

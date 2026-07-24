@@ -92,6 +92,37 @@ t("SELF-COVERING: the meta-gate includes itself in its enumeration and passes it
   assert.ok(!r.hard.some((f) => /enforcer-selftest-coverage\.js$/.test(f.enforcer)), "the meta-gate must not be its own uncovered HARD finding");
 });
 
+// ── F11 (gpt qa/backend/security r0, HIGH): gatherItems is fail-closed — real tree has BOTH dirs
+//     readable + no unreadable sources; the {items,errors,dirsSeen,dirsRequired} contract is present. ──
+t("F11: gatherItems fail-closed contract — real tree: both dirs seen, zero unreadable-source errors", () => {
+  const { gatherItems } = require("./enforcer-selftest-coverage");
+  const g = gatherItems();
+  assert.ok(Array.isArray(g.items) && Array.isArray(g.errors) && typeof g.dirsSeen === "number" && typeof g.dirsRequired === "number");
+  assert.strictEqual(g.dirsSeen, g.dirsRequired, "every required enforcer dir must be readable");
+  assert.strictEqual(g.errors.length, 0, "no present-but-unreadable source on the real tree");
+});
+
+// ── F12 (gpt backend r0, MED): a planted violation in the SECOND test convention is recognized ──
+t("F12: evaluate sees a planted violation anywhere in the concatenated test text (order-independent)", () => {
+  const happyThenPlanted = "assert.ok(true); // happy path\n// --- other convention ---\nassert.strictEqual(r.findings.length, 1);";
+  const r = evaluate({ items: [{ rel: "scripts/checks/x.js", isEnforcer: true, hasTest: true, testText: happyThenPlanted }] });
+  assert.strictEqual(r.soft.length, 0, "a planted violation in the concatenated text must be recognized");
+});
+
+// ── F13 (gpt security r0, MED ReDoS): the bounded `not…clean` does not stall on adversarial input ──
+t("F13: PLANTED_RE is linear on a hostile 'not'-heavy fixture with no 'clean' (completes fast, is SOFT)", () => {
+  const hostile = "not ".repeat(50000); // ~200KB of 'not ' with no 'clean' — quadratic would stall
+  const start = Date.now();
+  const r = evaluate({ items: [{ rel: "scripts/checks/h.js", isEnforcer: true, hasTest: true, testText: hostile }] });
+  const ms = Date.now() - start;
+  assert.ok(ms < 1000, `evaluate must be fast on hostile input (took ${ms}ms)`);
+  assert.strictEqual(r.soft.length, 1, "hostile happy-path-only text has no planted violation -> SOFT");
+});
+t("F13: a real bounded 'not … clean' phrase IS recognized as a planted signal", () => {
+  const r = evaluate({ items: [{ rel: "scripts/checks/c.js", isEnforcer: true, hasTest: true, testText: "expect result is not clean" }] });
+  assert.strictEqual(r.soft.length, 0, "'not clean' within the window is a recognized planted signal");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
