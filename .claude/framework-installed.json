@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.1.0",
-  "installedCommit": "1942f64c0bf1e4691616df5e58bd7383443203ca",
-  "installedAt": "2026-07-24T21:02:54.701Z",
+  "installedCommit": "adbeb8919ccbff9a5d6f4321c2054f3ec26700a0",
+  "installedAt": "2026-07-24T21:25:02.027Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4436,6 +4436,16 @@
       "mergeStrategy": "regenerate",
       "installedHash": "10de4c7ef6ba4b6fd1baa7ff9864ccaf09739d38bcb1dba9a2236ff2ebc862cf",
       "currentHashAtInstall": "10de4c7ef6ba4b6fd1baa7ff9864ccaf09739d38bcb1dba9a2236ff2ebc862cf",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "maps_baseline.system-coherence.graph.json",
+      "kind": "maps_baseline",
+      "dest": ".claude/project/maps/system-coherence.graph.json",
+      "owner": "generated",
+      "mergeStrategy": "regenerate",
+      "installedHash": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
+      "currentHashAtInstall": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
       "introducedIn": "0.0.0"
     },
     {
@@ -10039,6 +10049,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "dispatch_engine.falsifiers.fence-suite.manifest.json",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/falsifiers/fence-suite.manifest.json",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "3f3eb0e0c1b3590d7a80e04b06e4f617ee7e6b9dbff5e2e0ee5c1432b6956a2a",
+      "currentHashAtInstall": "3f3eb0e0c1b3590d7a80e04b06e4f617ee7e6b9dbff5e2e0ee5c1432b6956a2a",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "dispatch_engine.falsifiers.fence-token-forged-stale-injected.falsifier.test.js",
       "kind": "dispatch_engine",
       "dest": "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
@@ -10046,6 +10066,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "b434a3fc9ca28a7e7565d9ee1d86e65dd0148f04bae741d722f785cc93ad9452",
       "currentHashAtInstall": "b434a3fc9ca28a7e7565d9ee1d86e65dd0148f04bae741d722f785cc93ad9452",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "dispatch_engine.falsifiers.fence-worktree-missing-script-failclosed.falsifier.test.js",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/falsifiers/fence-worktree-missing-script-failclosed.falsifier.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ada7b544776f6cb695f74ea73f3d730eccdd3de5c4f13de607df0c469ae665b1",
+      "currentHashAtInstall": "ada7b544776f6cb695f74ea73f3d730eccdd3de5c4f13de607df0c469ae665b1",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "dispatch_engine.falsifiers.fence-worktree-resolution-land.positive.test.js",
+      "kind": "dispatch_engine",
+      "dest": "scripts/dispatch/falsifiers/fence-worktree-resolution-land.positive.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "171faf53827e17f8ff0fb2f6a00fafb411577b927e72cb6e3e28711b05770e07",
+      "currentHashAtInstall": "171faf53827e17f8ff0fb2f6a00fafb411577b927e72cb6e3e28711b05770e07",
       "introducedIn": "0.0.0"
     },
     {

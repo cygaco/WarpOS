@@ -7,7 +7,7 @@
     "skill": 235,
     "kernel": 42,
     "reference": 30,
-    "maps_baseline": 25,
+    "maps_baseline": 26,
     "hook": 83,
     "hook_lib": 25,
     "tool": 2,
@@ -29,7 +29,7 @@
     "paths_engine": 4,
     "sprint_engine": 44,
     "tracker_tool": 2,
-    "dispatch_engine": 185,
+    "dispatch_engine": 188,
     "check_runner_tool": 4,
     "docs_tool": 1,
     "events_tool": 4,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1710,
+  "total": 1714,
   "assets": {
     "agent": [
       {
@@ -5390,6 +5390,18 @@
         "dest": ".claude/project/maps/SPEC_GRAPH.json",
         "kind": "maps_baseline",
         "sha256": "10de4c7ef6ba4b6fd1baa7ff9864ccaf09739d38bcb1dba9a2236ff2ebc862cf",
+        "owner": "generated",
+        "mergeStrategy": "regenerate",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "maps_baseline.system-coherence.graph.json",
+        "src": ".claude/project/maps/system-coherence.graph.json",
+        "dest": ".claude/project/maps/system-coherence.graph.json",
+        "kind": "maps_baseline",
+        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
         "owner": "generated",
         "mergeStrategy": "regenerate",
         "introducedIn": "0.0.0",
@@ -12161,11 +12173,47 @@
         "replaces": null
       },
       {
+        "id": "dispatch_engine.falsifiers.fence-suite.manifest.json",
+        "src": "scripts/dispatch/falsifiers/fence-suite.manifest.json",
+        "dest": "scripts/dispatch/falsifiers/fence-suite.manifest.json",
+        "kind": "dispatch_engine",
+        "sha256": "3f3eb0e0c1b3590d7a80e04b06e4f617ee7e6b9dbff5e2e0ee5c1432b6956a2a",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "dispatch_engine.falsifiers.fence-token-forged-stale-injected.falsifier.test.js",
         "src": "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
         "dest": "scripts/dispatch/falsifiers/fence-token-forged-stale-injected.falsifier.test.js",
         "kind": "dispatch_engine",
         "sha256": "b434a3fc9ca28a7e7565d9ee1d86e65dd0148f04bae741d722f785cc93ad9452",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.falsifiers.fence-worktree-missing-script-failclosed.falsifier.test.js",
+        "src": "scripts/dispatch/falsifiers/fence-worktree-missing-script-failclosed.falsifier.test.js",
+        "dest": "scripts/dispatch/falsifiers/fence-worktree-missing-script-failclosed.falsifier.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "ada7b544776f6cb695f74ea73f3d730eccdd3de5c4f13de607df0c469ae665b1",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "dispatch_engine.falsifiers.fence-worktree-resolution-land.positive.test.js",
+        "src": "scripts/dispatch/falsifiers/fence-worktree-resolution-land.positive.test.js",
+        "dest": "scripts/dispatch/falsifiers/fence-worktree-resolution-land.positive.test.js",
+        "kind": "dispatch_engine",
+        "sha256": "171faf53827e17f8ff0fb2f6a00fafb411577b927e72cb6e3e28711b05770e07",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
