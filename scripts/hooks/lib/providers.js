@@ -322,9 +322,13 @@ const DEFAULT_PROVIDERS = {
     // cannot reparse the multi-line arg). The ASSEMBLED command line is bounded by CMDLINE_MAX
     // (safe-spawn.js: 32000 — the Windows CreateProcess ceiling minus margin): a >32KB prompt is
     // BLOCKED, never truncated-and-sent (SP-002), so a big diff cannot ride -p. thinking is always-on;
-    // our dispatch passes no effort flag (agy default). NOTE: agy 1.1.5 DOES expose `--effort
-    // low|medium|high` — wiring it to the high-effort authority-inflation policy is a candidate follow-up
-    // (unverified headless; needs an `agy --effort` probe + gauntlet before wiring), NOT done here.
+    // our dispatch passes no effort flag (agy default) — and MUST NOT: agy exposes `--effort
+    // low|medium|high` in `--help`, but it is MODEL-GATED — the Gemini 3.1 Pro family (gemini-3.1-pro-high,
+    // the model BOTH agy lanes use) REJECTS it: `agy --model "Gemini 3.1 Pro (High)" --effort high` exits 1
+    // "--effort is not supported for model" (effort is baked into the model NAME). Probed headless
+    // 2026-07-24 (agy 1.1.6, reproducible); this confirms the ratified model_policy (antigravity effort:null,
+    // thinking always-on). ED-277 CLOSED not-wirable-by-construction — do NOT re-add `--effort` to the agy
+    // argv. Re-open trigger: an agy model that ACCEPTS `--effort` (re-probe on a version bump).
     // `{reasoning}` is empty for agy (kept for syntax uniformity).
     syntax: `agy {reasoning} --model {model} --print-timeout 90s -p`,
   },
@@ -415,10 +419,12 @@ function buildReasoningFlag(providerName, role) {
   if (!level) return "";
   if (providerName === "openai") return `-c model_reasoning_effort=${level}`;
   if (providerName === "claude") return `--effort ${level}`;
-  // antigravity (agy) — our dispatch passes no effort flag (agy default). agy 1.1.5 DOES expose
-  // `--effort ${level}` (the SAME flag claude uses, above); wiring agy to the high-effort authority-
-  // inflation policy is a CANDIDATE follow-up — unverified headless (needs an `agy --effort` probe +
-  // gauntlet before wiring), deliberately NOT done here (SP-005 is doc/language scope, not functional).
+  // antigravity (agy) — return "" (no effort flag). agy exposes `--effort low|medium|high` in `--help`,
+  // but it is MODEL-GATED: agy's Gemini 3.1 Pro family (gemini-3.1-pro-high, the model BOTH agy lanes use)
+  // REJECTS `--effort` — exit 1 "--effort is not supported for model" (effort is baked into the model NAME).
+  // Probed headless 2026-07-24 (agy 1.1.6). Wiring `--effort` here would fail-close every agy dispatch AND
+  // contradict the ratified model_policy (antigravity effort:null). ED-277 CLOSED not-wirable-by-construction;
+  // re-open only if an agy model accepts `--effort` (re-probe on a version bump).
   return "";
 }
 
