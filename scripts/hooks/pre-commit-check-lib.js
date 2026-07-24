@@ -21,6 +21,34 @@
  */
 
 const checkLib = require("../dispatch/check-lib");
+const { TRANSPORT_SKIP_ALLOWED } = require("../dispatch/transport-skip-allowlist");
+
+/**
+ * reduceBlockingReasons(results, requiredSet) -> blockingReasons[]. PURE. A required check blocks on
+ * fail/timeout/skip — EXCEPT the one frozen name+reason pair the AUTHORITATIVE transport gate itself
+ * tolerates (transport-skip-allowlist.js): `false-green-envelope: no-envelope-in-context`. A commit
+ * with no dispatch envelope in context (docs/config/reconcile commits) skips that check by
+ * construction; blocking it here made this NON-authoritative feedback hook STRICTER than its own
+ * authority (trusted-controller.js#reconcileTransportSuite) and drove routine commits toward
+ * `--no-verify` — the strictly worse pattern (whole-hook bypass). Aligned-to, never stricter-than
+ * (β DECIDE B/0.90, 2026-07-23). Any OTHER skip name/reason still blocks — pinned both directions
+ * by pre-commit-check-lib.test.js.
+ */
+function reduceBlockingReasons(results, requiredSet) {
+  return results
+    .filter(
+      (r) =>
+        r.status === "fail" ||
+        r.status === "timeout" ||
+        (r.status === "skipped" &&
+          requiredSet.has(r.name) &&
+          !(
+            Object.prototype.hasOwnProperty.call(TRANSPORT_SKIP_ALLOWED, r.name) &&
+            r.reason === TRANSPORT_SKIP_ALLOWED[r.name]
+          )),
+    )
+    .map((r) => ({ name: r.name, status: r.status, reason: r.reason }));
+}
 
 /**
  * runCheckLibSuite(ctx) -> {version, results, missing, blocked, blockingReasons}. Pure-ish: runs the FULL
@@ -32,9 +60,7 @@ const checkLib = require("../dispatch/check-lib");
 function runCheckLibSuite(ctx = {}) {
   const suite = checkLib.runSuite(checkLib.CHECK_NAMES.slice(), ctx);
   const requiredSet = new Set(checkLib.REQUIRED_CHECKS);
-  const blockingReasons = suite.results
-    .filter((r) => r.status === "fail" || r.status === "timeout" || (r.status === "skipped" && requiredSet.has(r.name)))
-    .map((r) => ({ name: r.name, status: r.status, reason: r.reason }));
+  const blockingReasons = reduceBlockingReasons(suite.results, requiredSet);
   if (suite.missing.length) {
     blockingReasons.push({ name: suite.missing.join(","), status: "missing", reason: "check-registry-drift" });
   }
@@ -82,4 +108,4 @@ function main() {
 
 if (require.main === module) process.exit(main());
 
-module.exports = { runCheckLibSuite, main, computeExitCode };
+module.exports = { runCheckLibSuite, main, computeExitCode, reduceBlockingReasons };
