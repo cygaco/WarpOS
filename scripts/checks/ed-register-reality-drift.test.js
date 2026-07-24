@@ -198,6 +198,43 @@ t("F10 companion: a CREATION context for a new enforcer IS flagged", () => {
   assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1);
 });
 
+// ── C3 (gpt backend r1, HIGH): mere-presence closure fields do NOT close an ED ──
+t("C3: resolution:null does NOT close an open ED (stale-open still detected)", () => {
+  const text = row({ id: "ED-930", status: "open", resolution: null, trigger: "Build scripts/enforcement/c3.js" });
+  const exists = mkExists(["scripts/enforcement/c3.js", "scripts/enforcement/c3.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "resolution:null is not a real closure");
+});
+t("C3: closed_ts:false / closure_receipt:'' do NOT close an ED", () => {
+  const text = row({ id: "ED-931", status: "open", closed_ts: false, closure_receipt: "", trigger: "Build scripts/enforcement/c3b.js" });
+  const exists = mkExists(["scripts/enforcement/c3b.js", "scripts/enforcement/c3b.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "false/empty closure fields do not close");
+});
+t("C3: a NON-EMPTY resolution string DOES close (regression guard)", () => {
+  const text = row({ id: "ED-932", status: "open", resolution: "fixed via scripts/enforcement/c3c.js", trigger: "Build scripts/enforcement/c3c.js" });
+  const exists = mkExists(["scripts/enforcement/c3c.js", "scripts/enforcement/c3c.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "a real non-empty resolution closes -> not stale-open");
+});
+
+// ── C4 (gpt backend r1, HIGH): occurrence-scoped creation-vs-modification ──
+t("C4: 'Create a new enforcer in <path>' -> creation (flagged), not modification", () => {
+  const text = row({ id: "ED-933", status: "open", trigger: "Create a new enforcer in scripts/checks/c4.js" });
+  const exists = mkExists(["scripts/checks/c4.js", "scripts/checks/c4.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "'create ... in' is creation despite the 'in' preposition");
+});
+t("C4: 'modify <path>' inflection is caught as modification (not flagged)", () => {
+  const text = row({ id: "ED-934", status: "open", trigger: "modify scripts/checks/c4b.js to add a case" });
+  const exists = mkExists(["scripts/checks/c4b.js", "scripts/checks/c4b.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "'modify' inflection -> modify-context");
+});
+t("C4: creation at a LATER occurrence wins over an earlier modify mention -> flagged", () => {
+  const text = [
+    row({ id: "ED-935", status: "open", gap: "extend scripts/checks/c4c.js somehow" }),
+    row({ id: "ED-935", record_kind: "amendment", amends: "ED-935", note: "actually Build scripts/checks/c4c.js as a new enforcer" }),
+  ].join("\n");
+  const exists = mkExists(["scripts/checks/c4c.js", "scripts/checks/c4c.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "a creation occurrence wins over an earlier modify mention");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

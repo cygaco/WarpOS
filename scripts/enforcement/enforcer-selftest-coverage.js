@@ -69,13 +69,13 @@ function evaluate({ items }) {
 
 // ── Filesystem gathering ──────────────────────────────────────────────────────
 
-function gatherItems() {
+function gatherItems(io = fs) {
   const items = [];
   const errors = []; // F11: present-but-unreadable dirs/sources — main() fail-closes (exit 2) on any.
   let dirsSeen = 0;
   for (const dir of ENFORCER_DIRS) {
     let entries;
-    try { entries = fs.readdirSync(dir); dirsSeen++; }
+    try { entries = io.readdirSync(dir); dirsSeen++; }
     catch (e) { errors.push({ path: dir, error: (e && e.message) || "readdir failed" }); continue; } // F11: a required dir must be readable
     for (const n of entries) {
       if (!/\.(js|cjs|mjs)$/.test(n)) continue;
@@ -83,9 +83,9 @@ function gatherItems() {
       const full = path.join(dir, n);
       let content;
       try {
-        const st = fs.statSync(full);
+        const st = io.statSync(full);
         if (!st.isFile()) continue;
-        content = fs.readFileSync(full, "utf8");
+        content = io.readFileSync(full, "utf8");
       } catch (e) {
         if (e && e.code === "ENOENT") continue; // vanished between readdir and read (race) — skip
         errors.push({ path: full, error: (e && e.message) || "read failed" }); // F11: present-but-unreadable source = fail-closed
@@ -99,7 +99,7 @@ function gatherItems() {
       const testCandidates = [full.replace(/\.(js|cjs|mjs)$/, ".test.$1"), path.join(dir, `test-${n}`)];
       let hasTest = false, testText = "";
       for (const tf of testCandidates) {
-        try { testText += (testText ? "\n" : "") + fs.readFileSync(tf, "utf8"); hasTest = true; }
+        try { testText += (testText ? "\n" : "") + io.readFileSync(tf, "utf8"); hasTest = true; }
         catch (e) { if (e && e.code !== "ENOENT") errors.push({ path: tf, error: (e && e.message) || "test read failed" }); } // F11: present-but-unreadable test = fail-closed
       }
       items.push({ rel, isEnforcer, hasTest, testText });

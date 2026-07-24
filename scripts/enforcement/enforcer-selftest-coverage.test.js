@@ -123,6 +123,39 @@ t("F13: a real bounded 'not … clean' phrase IS recognized as a planted signal"
   assert.strictEqual(r.soft.length, 0, "'not clean' within the window is a recognized planted signal");
 });
 
+// ── F11 (gpt qa r1 note): EXECUTABLE error-path teeth via injected fs (not just the contract) ──
+t("F11: an EACCES-throwing readdir -> a fail-closed error + dirsSeen < required", () => {
+  const { gatherItems } = require("./enforcer-selftest-coverage");
+  const io = {
+    readdirSync: () => { const e = new Error("EACCES"); e.code = "EACCES"; throw e; },
+    statSync: () => ({ isFile: () => true }),
+    readFileSync: () => "",
+  };
+  const g = gatherItems(io);
+  assert.ok(g.errors.length >= 1, "an unreadable enforcer dir must be a fail-closed error");
+  assert.ok(g.dirsSeen < g.dirsRequired, "a dir that failed readdir was not counted as seen");
+});
+t("F11: an unreadable SOURCE file (EACCES on read) -> a fail-closed error", () => {
+  const { gatherItems } = require("./enforcer-selftest-coverage");
+  const io = {
+    readdirSync: () => ["someenforcer.js"],
+    statSync: () => ({ isFile: () => true }),
+    readFileSync: () => { const e = new Error("EACCES"); e.code = "EACCES"; throw e; },
+  };
+  const g = gatherItems(io);
+  assert.ok(g.errors.some((x) => /someenforcer\.js/.test(x.path)), "an unreadable source is a fail-closed error");
+});
+t("F11: ENOENT on a source (race) -> skipped, NOT an error", () => {
+  const { gatherItems } = require("./enforcer-selftest-coverage");
+  const io = {
+    readdirSync: () => ["gone.js"],
+    statSync: () => { const e = new Error("ENOENT"); e.code = "ENOENT"; throw e; },
+    readFileSync: () => "",
+  };
+  const g = gatherItems(io);
+  assert.strictEqual(g.errors.length, 0, "a vanished (ENOENT) source is a benign skip, not fail-closed");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

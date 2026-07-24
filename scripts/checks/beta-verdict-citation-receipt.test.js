@@ -185,6 +185,41 @@ t("CONTROL: live docs+betaEvents — no HARD finding whose msg_id is actually pr
   assert.ok(Array.isArray(r.hard) && Array.isArray(r.soft));
 });
 
+// ── C2 (gpt backend r1, HIGH — per-line receipt laundering): two citations on ONE line ──
+t("C2: resolving citation #1 does NOT launder an unreceipted citation #2 on the same line", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id good111) then β DIRECTIVE with no receipt here" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("good111")]) });
+  assert.strictEqual(r.scannedCitations, 2, "two citations scanned per-citation, not per-line");
+  assert.strictEqual(r.hard.length, 0, "the first resolves");
+  assert.strictEqual(r.soft.length, 1, "the second (no receipt) is SOFT — not laundered by the first");
+});
+t("C2: an unrelated msg_id EARLIER on the line does not satisfy a later receiptless citation", () => {
+  const docs = [{ path: "a.md", text: "aside msg_id good111 mentioned; β DIRECTIVE needs its own receipt" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("good111")]) });
+  assert.strictEqual(r.hard.length, 0);
+  assert.strictEqual(r.soft.length, 1, "the citation's own clause has no msg_id -> SOFT");
+});
+t("C2: two UNRESOLVED citations on one line -> both HARD (each scanned)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id ghost1) and β DIRECTIVE (msg_id ghost2)" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 2, "both unresolved citations are HARD");
+});
+
+// ── C1 (gpt qa+backend r1, HIGH — F5 explicit-files): injected-fs error-path teeth ──
+t("C1: a present-but-UNREADABLE explicit file (EACCES) -> fail-closed gather error", () => {
+  const io = {
+    readFileSync: () => { const e = new Error("EACCES"); e.code = "EACCES"; throw e; },
+    readdirSync: () => { const e = new Error("ENOENT"); e.code = "ENOENT"; throw e; },
+  };
+  const g = gatherDocs([], ["/x/ROADMAP.md"], io);
+  assert.strictEqual(g.errors.length, 1, "an unreadable explicit file must be a fail-closed error, not silently omitted");
+});
+t("C1: an ABSENT explicit file (ENOENT) -> NOT an error (skipped)", () => {
+  const io = { readFileSync: () => { const e = new Error("ENOENT"); e.code = "ENOENT"; throw e; }, readdirSync: () => [] };
+  const g = gatherDocs([], ["/x/ROADMAP.md"], io);
+  assert.strictEqual(g.errors.length, 0, "ENOENT (absent) is fine, not fail-closed");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

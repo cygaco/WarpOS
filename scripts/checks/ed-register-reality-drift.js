@@ -96,21 +96,32 @@ function loadParser() {
 // but the closureRows filter did NOT — a resolution-only closure was classified closed yet excluded
 // from phantom-close, so a closed ED whose resolution named an absent enforcer produced no candidate.
 function isClosureRow(o) {
-  return o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined || o.resolution !== undefined;
+  // C3 (gpt backend r1, HIGH): require a REAL closure, not mere property PRESENCE. resolution:null /
+  // resolution:"" / closure_receipt:null / closed_ts:false all satisfied `!== undefined` and falsely
+  // closed an OPEN ED (bypassing stale-open detection). A closure is status==="closed" OR a NON-EMPTY
+  // string closure value (closure_receipt / closed_ts / resolution).
+  const nonEmpty = (x) => typeof x === "string" && x.trim().length > 0;
+  return o.status === "closed" || nonEmpty(o.closure_receipt) || nonEmpty(o.closed_ts) || nonEmpty(o.resolution);
 }
 
-// F10 (gpt qa r0, HIGH): distinguish a NEW enforcer (creation) from an existing enforcer an open ED
-// merely intends to MODIFY. A deliverable path in a MODIFY context — preceded by "add/wire … to|in|into
-// <path>", or a modify verb (modify/extend/harden/amend/wire) — describes changing an EXISTING file,
-// whose pre-existing file+test is NOT evidence the ED shipped. Only a CREATION context (Build/create/new
-// <path>) is a stale-open candidate. Precise > noisy: better to miss a stale-open than false-flag a
-// pending modification of a shipped enforcer.
-function isModifyContext(text, rel) {
-  const idx = text.indexOf(rel);
-  if (idx < 0) return false;
-  const before = text.slice(Math.max(0, idx - 50), idx).toLowerCase();
-  if (/\b(to|in|into)\s+$/.test(before)) return true; // "add a check to <path>", "in <path>"
-  if (/\b(modif|extend|harden|amend|wire)\b/.test(before)) return true; // explicit modify verbs
+// F10 (gpt qa r0, HIGH; C4 gpt backend r1, HIGH): distinguish a NEW enforcer (creation) from an
+// existing enforcer an open ED merely intends to MODIFY. OCCURRENCE-SCOPED — the caller passes the
+// index of THIS match of `rel` (not text.indexOf, which always inspects the FIRST occurrence). Within
+// the clause before this occurrence: CREATION language (build/create/new-<kind>/introduce/ship/scaffold)
+// WINS over a bare preposition (so "Create a new enforcer in <path>" is creation, not modification);
+// explicit MODIFY verbs (modify + inflections / extend / harden / amend / wire / augment / patch) mark
+// modification; and a bare "to|in|into <path>" preposition marks modification. Precise > noisy.
+function isModifyContext(text, rel, idx) {
+  const at = typeof idx === "number" && idx >= 0 ? idx : text.indexOf(rel);
+  if (at < 0) return false;
+  const before = text.slice(Math.max(0, at - 60), at).toLowerCase();
+  // Creation language takes precedence over a bare preposition.
+  if (/\b(build|create|new\s+(?:lint|check|enforcer|file|script|test)|introduce|ship|scaffold)\b/.test(before)) return false;
+  // Explicit modify verbs — \bmodif\w* matches modify/modifies/modified/modification (a trailing \b
+  // after 'modif' fails on the 'y', the r1 bug).
+  if (/\bmodif\w*|\b(extend|harden|amend|wire|augment|patch)\b/.test(before)) return true;
+  // Bare preposition immediately before the path.
+  if (/\b(to|in|into)\s+$/.test(before)) return true;
   return false;
 }
 
@@ -163,15 +174,17 @@ function evaluate({ registerText, fileExists, parse }) {
     // the first (genesis) row — an amendment that names the concrete enforcer must not be missed when
     // the genesis carries only descriptive gap text. Dedup matched paths at the ED level.
     const text = objs.map((o) => DELIVERABLE_FIELDS.map((k) => (typeof o[k] === "string" ? o[k] : "")).join("\n")).join("\n");
-    const seen = new Set();
+    // C4 (gpt backend r1, HIGH): classify EACH occurrence with its OWN match index (occurrence-scoped),
+    // then dedup the FINDINGS after classification. A path in a CREATION context at ANY occurrence is a
+    // candidate (so a later creation amendment is not masked by an earlier modify mention); a path that
+    // is modify-context at EVERY occurrence is never flagged.
+    const creationPaths = new Set();
     let m;
     ENFORCER_PATH_RE.lastIndex = 0;
     while ((m = ENFORCER_PATH_RE.exec(text)) !== null) {
-      const rel = m[0];
-      if (seen.has(rel)) continue;
-      seen.add(rel);
-      // F10: skip a path the ED merely intends to MODIFY (its pre-existing file+test is not "shipped").
-      if (isModifyContext(text, rel)) continue;
+      if (!isModifyContext(text, m[0], m.index)) creationPaths.add(m[0]);
+    }
+    for (const rel of creationPaths) {
       // Shipped-with-teeth: the enforcer file AND a sibling <name>.test.js both exist.
       const testRel = rel.replace(/\.(js|cjs|mjs)$/, ".test.$1");
       if (fileExists(rel) && fileExists(testRel)) {

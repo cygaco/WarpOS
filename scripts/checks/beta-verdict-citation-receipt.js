@@ -152,28 +152,45 @@ function evaluate({ docs, betaEventsText }) {
   const hard = [];
   const soft = [];
   let scannedCitations = 0;
+  // C2 (gpt backend r1, HIGH — per-line receipt laundering): scan PER-CITATION, not per-line. A line
+  // may carry MULTIPLE β-verdict citations; binding each to the FIRST msg_id on the line let a
+  // resolving receipt for citation #1 launder an unreceipted citation #2 (or an unrelated msg_id
+  // elsewhere on the line satisfy a no-receipt citation) — a HARD false-green. Now each citation owns
+  // its own CLAUSE (from its position to the NEXT citation, or line end) and resolves against the
+  // msg_id in THAT clause only.
+  const citationGlobal = new RegExp(CITATION_RE.source, "g");
   for (const d of docs || []) {
     const lines = String(d.text || "").split(/\r?\n/);
     const inHistory = historyMask(lines);
     for (let i = 0; i < lines.length; i++) {
       if (inHistory[i]) continue; // append-only history section — a dated past citation is a record
       const line = lines[i];
-      if (!CITATION_RE.test(line)) continue;
-      scannedCitations++;
-      const m = line.match(MSGID_IN_TEXT_RE);
-      if (m && MSGID_SHAPE_RE.test(m[1])) {
-        const mid = m[1];
-        if (!known.has(mid)) {
-          hard.push({
-            doc: d.path, line: i + 1, msg_id: mid,
-            reason: `β-verdict citation cites msg_id '${mid}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (forged/typo/stale). Citation: ${line.trim().slice(0, 120)}`,
+      // Collect every citation start index on the line.
+      const starts = [];
+      citationGlobal.lastIndex = 0;
+      let cm;
+      while ((cm = citationGlobal.exec(line)) !== null) {
+        starts.push(cm.index);
+        if (citationGlobal.lastIndex === cm.index) citationGlobal.lastIndex++; // guard against a zero-width match loop
+      }
+      for (let c = 0; c < starts.length; c++) {
+        scannedCitations++;
+        const clause = line.slice(starts[c], c + 1 < starts.length ? starts[c + 1] : line.length);
+        const m = clause.match(MSGID_IN_TEXT_RE);
+        if (m && MSGID_SHAPE_RE.test(m[1])) {
+          const mid = m[1];
+          if (!known.has(mid)) {
+            hard.push({
+              doc: d.path, line: i + 1, msg_id: mid,
+              reason: `β-verdict citation cites msg_id '${mid}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
+            });
+          }
+        } else {
+          soft.push({
+            doc: d.path, line: i + 1,
+            reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${clause.trim().slice(0, 120)}`,
           });
         }
-      } else {
-        soft.push({
-          doc: d.path, line: i + 1,
-          reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${line.trim().slice(0, 120)}`,
-        });
       }
     }
   }
@@ -187,24 +204,25 @@ function evaluate({ docs, betaEventsText }) {
  * error) is collected into `errors` so main() can exit 2 — a protected/unreadable ADR that could hold a
  * bad citation must NOT silently disappear into a green. ENOENT (absent) is fine (not an error).
  */
-function gatherDocs(dirs, files) {
+function gatherDocs(dirs, files, io = fs) {
   const out = [];
   const errors = [];
   const pushFile = (fp) => {
-    try { out.push({ path: path.relative(REPO, fp), text: fs.readFileSync(fp, "utf8") }); }
+    try { out.push({ path: path.relative(REPO, fp), text: io.readFileSync(fp, "utf8") }); }
     catch (e) { if (!e || e.code !== "ENOENT") errors.push({ path: fp, error: (e && e.message) || "read failed" }); }
   };
   for (const dir of dirs) {
     let entries;
-    try { entries = fs.readdirSync(dir); }
+    try { entries = io.readdirSync(dir); }
     catch (e) { if (!e || e.code !== "ENOENT") errors.push({ path: dir, error: (e && e.message) || "readdir failed" }); continue; }
     for (const n of entries) if (/\.md$/i.test(n)) pushFile(path.join(dir, n));
   }
-  for (const f of files) {
-    let exists = false;
-    try { exists = fs.existsSync(f); } catch (e) { errors.push({ path: f, error: (e && e.message) || "stat failed" }); continue; }
-    if (exists) pushFile(f);
-  }
+  // C1 (gpt qa+backend r1, HIGH): call pushFile DIRECTLY for every explicit file — do NOT gate on
+  // io.existsSync(f). existsSync collapses an access/stat failure (EACCES) to false, so a
+  // present-but-UNREADABLE ROADMAP.md would be treated as absent and silently omitted (a green over an
+  // unexamined citation-bearing doc). pushFile's catch already ignores ONLY ENOENT (truly absent) and
+  // records every other error → a present-but-unreadable explicit file becomes a fail-closed exit-2.
+  for (const f of files) pushFile(f);
   return { docs: out, errors };
 }
 
