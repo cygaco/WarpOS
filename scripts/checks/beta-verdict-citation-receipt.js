@@ -73,7 +73,30 @@ const CITATION_RE = /(?<![A-Za-z])(?:β|beta|Beta)[\s:\u2014\u2013-]+(?:DECIDE|D
 const MSGID_IN_TEXT_RE = /\bmsg_id[:=\s]+[`'"]?([A-Za-z0-9][A-Za-z0-9_-]*)/i;
 // A betaEvents row's own msg_id (id-shaped). ONE id-shape rule for both extraction and indexing (F2).
 const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-
+// β G1 (STRUCTURAL class-closure, NOT an enumerated instance list): normalize the DETECTION text by
+// CATEGORY before citation matching — (1) markdown emphasis/strikethrough delimiters (* _ ` ~) -> space;
+// (2) ALL Unicode FORMAT chars (\p{Cf}: every zero-width / BOM / joiner, present AND future) -> space;
+// (3) common β-HOMOGLYPHS (Greek beta symbol + the mathematical betas) folded -> β. A per-code-point
+// INDEX MAP (norm index -> raw index) keeps it robust to length changes (a 2-UTF-16-unit homoglyph/
+// format char folding to 1 char), so a citation position on `norm` slices the correct RAW clause. msg_id
+// EXTRACTION runs on the RAW clause with * / ` / ~ / \p{Cf} stripped but `_` PRESERVED (ids keep abc_def).
+// NOTE (named bounded ceiling): exhaustive Unicode-confusable folding of β is out of scope — the common
+// beta-symbol + mathematical-beta set is folded; other confusables are the ED-follow-up class.
+const EMPHASIS_OR_FORMAT_RE = /[*_`~]|\p{Cf}/u;
+const HOMOGLYPH_BETA_RE = /[\u03D0\u{1D6C3}\u{1D6FD}\u{1D737}\u{1D771}\u{1D7AB}]/u;
+const CLAUSE_STRIP_G = /[*`~]|\p{Cf}/gu; // clean the RAW clause for msg_id extraction (KEEP `_`)
+function normalizeForDetection(raw) {
+  let norm = "";
+  const map = []; // map[normIndex] = raw UTF-16 index of the source code point
+  let rawIdx = 0;
+  for (const cp of raw) { // iterates by CODE POINT (surrogate-pair-safe)
+    const out = EMPHASIS_OR_FORMAT_RE.test(cp) ? " " : HOMOGLYPH_BETA_RE.test(cp) ? "\u03b2" : cp;
+    for (const u of out) { map.push(rawIdx); norm += u; }
+    rawIdx += cp.length;
+  }
+  map.push(rawIdx); // sentinel: map[norm.length] === raw.length
+  return { norm, map };
+}
 // Verdict row types (from reasoned-consult-honesty's live corpus). A citation's receipt must resolve
 // to a POSITIVELY-classified verdict row — one of these types AND carrying a real decision/verdict.
 const VERDICT_TYPES = new Set([
@@ -162,22 +185,28 @@ function evaluate({ docs, betaEventsText }) {
     const inHistory = historyMask(rawLines);
     for (let i = 0; i < rawLines.length; i++) {
       if (inHistory[i]) continue; // append-only history section — a dated past citation is a record
-      // R2 (gpt security r2, HIGH — markdown-emphasis citation BYPASS): strip inline markdown emphasis
-      // (`*` and backtick) so "**β** **DECIDE**" / "`β DECIDE`" / a backticked/emphasized msg_id cannot
-      // hide a citation from CITATION_RE. `_` is NOT stripped — it is a VALID msg_id char (stripping it
-      // would corrupt an id like abc_def) and underscore-italic is rare.
-      const line = rawLines[i].replace(/[*`]/g, "");
-      // Collect every citation start index on the line.
+      // R2/S3 (r3 hunter HIGH — underscore-italic + zero-width citation BYPASS): DETECTION and
+      // msg_id EXTRACTION need OPPOSITE treatment of `_`. Build a DETECTION-normalized line that strips
+      // ALL inline emphasis (* ` _) AND zero-width/format unicode (U+200B–200D, U+FEFF), keeping an
+      // INDEX MAP back to the RAW line — so "_β_ _DECIDE_" / "**β** **DECIDE**" / "βDECIDE" are all
+      // detected — while msg_id EXTRACTION runs on the RAW clause (only * / backtick / zero-width
+      // stripped, `_` PRESERVED) so an id like abc_def is never corrupted. (r2 kept `_`; that left the
+      // identical bypass open for standard CommonMark underscore-italic — the r3 hunter HIGH.)
+      const raw = rawLines[i];
+      const { norm, map } = normalizeForDetection(raw);
       const starts = [];
       citationGlobal.lastIndex = 0;
       let cm;
-      while ((cm = citationGlobal.exec(line)) !== null) {
+      while ((cm = citationGlobal.exec(norm)) !== null) {
         starts.push(cm.index);
         if (citationGlobal.lastIndex === cm.index) citationGlobal.lastIndex++; // guard against a zero-width match loop
       }
       for (let c = 0; c < starts.length; c++) {
         scannedCitations++;
-        const clause = line.slice(starts[c], c + 1 < starts.length ? starts[c + 1] : line.length);
+        const rawStart = map[starts[c]];
+        const rawEnd = c + 1 < starts.length ? map[starts[c + 1]] : raw.length;
+        // RAW clause (mapped back from the normalized detect position), emphasis/format stripped, `_` kept.
+        const clause = raw.slice(rawStart, rawEnd).replace(CLAUSE_STRIP_G, "");
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
         // clause, not just the first. A resolving-first + unresolved-second inside ONE clause was a HARD
         // false-green. ANY cited receipt that does not resolve → HARD.

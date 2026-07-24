@@ -250,6 +250,46 @@ t("R2: an underscore-bearing msg_id is NOT corrupted (we do not strip '_')", () 
   assert.strictEqual(r.hard.length + r.soft.length, 0, "'_' preserved so an underscore msg_id still resolves");
 });
 
+// ── R2-hunter r3 (HIGH — underscore-italic + zero-width bypass): each must be DETECTED, not evaded ──
+for (const [label, text] of [
+  ["_β_ _DECIDE_", "We ship because _β_ _DECIDE_ (msg_id ghosthit) approved it"],
+  ["_β DECIDE_", "note: _β DECIDE_ (msg_id ghosthit) here"],
+  ["__β__ __DECIDE__", "__β__ __DECIDE__ (msg_id ghosthit) x"],
+  ["mixed *_β_* *_DECIDE_*", "*_β_* *_DECIDE_* (msg_id ghosthit) y"],
+  ["zero-width bypass", String.fromCharCode(0x200b) + "β" + String.fromCharCode(0x200b) + "DECIDE (msg_id ghosthit) z"],
+]) {
+  t(`R2-hunter: '${label}' with an UNRESOLVED receipt -> HARD (emphasis/zero-width cannot hide a citation)`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.hard.length, 1, `'${label}' must be detected + HARD, not evaded`);
+    assert.strictEqual(r.hard[0].msg_id, "ghosthit");
+  });
+}
+t("R2-hunter: underscore-italic citation with a RESOLVING underscore msg_id -> clean (id not corrupted)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "_β_ _DECIDE_ (msg_id ab_cd_ef) ok" }], betaEventsText: beta([vrow("ab_cd_ef")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "detection strips '_' but extraction preserves it");
+});
+
+// ── β G2 (r4, class-covering teeth — NOVEL variants beyond the hunter's underscore/zero-width report) ──
+t("G2 novel: strikethrough '~~β~~ ~~DECIDE~~' with an unresolved receipt -> HARD (structural class closes ~)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "~~β~~ ~~DECIDE~~ (msg_id ghosthit) x" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "strikethrough emphasis must not hide a citation");
+  assert.strictEqual(r.hard[0].msg_id, "ghosthit");
+});
+t("G2 homoglyph: a mathematical β (U+1D6FD) is folded to β -> detected -> HARD", () => {
+  const mathBeta = String.fromCodePoint(0x1D6FD);
+  const r = evaluate({ docs: [{ path: "a.md", text: mathBeta + " DECIDE (msg_id ghosthit) x" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a β-homoglyph must be folded to β and detected");
+});
+t("G2 homoglyph: the Greek beta symbol (ϐ U+03D0) is folded -> HARD", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: String.fromCharCode(0x03D0) + " DIRECTIVE (msg_id ghosthit) y" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+});
+t("G2 benign-adjacent GREEN: emphasis-heavy prose with NO verdict token is not a citation", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "The *beta* release is _ready_ and ~~stable~~; nothing decided." }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.scannedCitations, 0, "emphasis around 'beta' with no verdict token is not a citation");
+  assert.strictEqual(r.hard.length + r.soft.length, 0);
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
