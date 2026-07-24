@@ -63,44 +63,60 @@ function runShell(cmdline, input = "") {
   };
 }
 
-// Use a temp file for prompts to avoid shell-quoting hell across platforms.
-const os = require("os");
-function withTempPrompt(prompt, fn) {
-  const tmp = path.join(
-    os.tmpdir(),
-    `delta-smoke-prompt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`,
-  );
-  fs.writeFileSync(tmp, prompt);
+// Served-content predicate over a `claude -p --output-format json` envelope (ED-281). A refusal /
+// error / silent model-fallback MUST fail — the old `exit0 && /OK/i.test(stdout)` check false-greened
+// on a served REFUSAL: the model, handed a malformed `"$(cat tmp)"` argv that cmd.exe leaves literal on
+// Windows, replied "I'm not going to run that. That prompt is a shell command substitution…" and the
+// loose /OK/ substring matched an incidental "ok". Fix = pass the prompt via STDIN (no `$(cat)`) + assert
+// the STRUCTURED envelope. PURE — exported for the co-located test's planted fixtures.
+function claudeServeOk(exit, stdout, expectedModel, expectedReply) {
+  if (exit !== 0) return { ok: false, detail: `exit ${exit}` };
+  let env;
   try {
-    return fn(tmp);
-  } finally {
-    try {
-      fs.unlinkSync(tmp);
-    } catch {
-      /* ok */
-    }
+    env = JSON.parse(stdout);
+  } catch {
+    return { ok: false, detail: "non-JSON envelope" };
   }
+  if (!env || env.is_error === true) return { ok: false, detail: "is_error" };
+  if (env.subtype !== "success") return { ok: false, detail: `subtype ${env.subtype}` };
+  // The SERVED model must be the one we asked for — a silent fallback to another model is a FAIL.
+  const served =
+    env.modelUsage &&
+    typeof env.modelUsage === "object" &&
+    Object.values(env.modelUsage).some((m) => m && m.canonicalModel === expectedModel);
+  if (!served) return { ok: false, detail: `served model != ${expectedModel}` };
+  // STRICT reply match (trimmed, optional trailing punctuation). A refusal/explanation is a full
+  // sentence and can never match, so it goes RED — the ED-281 teeth the loose /OK/ substring lacked.
+  const reply = typeof env.result === "string" ? env.result.trim() : "";
+  if (!new RegExp(`^${expectedReply}[.!]?$`, "i").test(reply)) {
+    return { ok: false, detail: `reply ${JSON.stringify(reply.slice(0, 40))} != ${expectedReply}` };
+  }
+  return { ok: true, detail: "served" };
+}
+
+// Run the claude CLI serve canary for ONE model — prompt on STDIN (never a `$(cat)` argv, which cmd.exe
+// leaves literal on Windows, ED-281), `--output-format json` for a structured verdict claudeServeOk checks.
+function claudeServeCanary(model) {
+  const r = runShell(`claude -p --model ${model} --effort max --output-format json`, TEST_PROMPT);
+  const v = claudeServeOk(r.exit, r.stdout, model, "OK");
+  return { exit: v.ok ? 0 : 1, stdout: v.detail, stderr: r.stderr, ok: v.ok };
 }
 
 const providers = {
   claude: {
     cmd: "claude",
     test() {
-      // CLI top-opus canary: verify (1) the top opus model is reachable via the
-      // `claude` CLI, (2) `--effort max` is accepted. Cutover 2026-07-24: the top
-      // opus is now `claude-opus-5` (opus-4-8 stays served but the CLI top pin moved).
-      // opus-5 CLI serve is PROVEN live (json envelope modelUsage.canonicalModel=
-      // "claude-opus-5", exit 0 at --effort max; ADR-0016 amendment 2026-07-24) — this
-      // is the ONE CLI-served lane the R1 round-trip proved, so it flips; the in-process
-      // Agent-tool pins stay opus-4-8 (not harness-spawnable yet). NB: build-chain
-      // builders run claude-sonnet-5@high, NOT opus@max — this canary just proves the
-      // CLI can serve the top opus at max before Delta relies on the canonical path.
-      return withTempPrompt(TEST_PROMPT, (tmp) => {
-        const r = runShell(
-          `claude -p --model claude-opus-5 --effort max "$(cat "${tmp}")"`,
-        );
-        return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
-      });
+      // CLI opus canary (ED-281-hardened): prompt via STDIN + --output-format json + a served-content
+      // assertion (canonicalModel + STRICT reply), so a refusal / error / silent model-fallback goes RED
+      // (the old loose /OK/+exit-0 over a `"$(cat tmp)"` argv false-greened a served refusal on Windows).
+      // Canaries BOTH the CLI top pin (claude-opus-5, the 2026-07-24 cutover) AND the still-served fallback
+      // (claude-opus-4-8) — dispatch falls back to 4.8 if the opus-5 CLI serve ever fails, so both must be
+      // reachable. NB: build-chain builders run claude-sonnet-5@high, NOT opus@max — this canary just proves
+      // the CLI serves the top opus at max before Delta relies on the canonical path.
+      const top = claudeServeCanary("claude-opus-5");
+      const fb = claudeServeCanary("claude-opus-4-8");
+      const ok = top.ok && fb.ok;
+      return { exit: ok ? 0 : 1, stdout: `opus-5:${top.stdout} · opus-4-8:${fb.stdout}`, stderr: "", ok };
     },
   },
   openai: {
@@ -255,4 +271,7 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
+
+// Exported for the co-located ED-281 test (planted-fixture assertions over the served-content predicate).
+module.exports = { claudeServeOk, claudeServeCanary };
