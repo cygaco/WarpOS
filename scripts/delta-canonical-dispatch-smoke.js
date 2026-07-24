@@ -86,13 +86,18 @@ const providers = {
   claude: {
     cmd: "claude",
     test() {
-      // Verify (1) opus-4-8 model is reachable, (2) `--effort max` flag is
-      // accepted (this is what builder dispatch uses). If the account doesn't
-      // support opus-4-8 or the effort flag, smoke fails fast in Check I
-      // before Delta dispatches any builder.
+      // CLI top-opus canary: verify (1) the top opus model is reachable via the
+      // `claude` CLI, (2) `--effort max` is accepted. Cutover 2026-07-24: the top
+      // opus is now `claude-opus-5` (opus-4-8 stays served but the CLI top pin moved).
+      // opus-5 CLI serve is PROVEN live (json envelope modelUsage.canonicalModel=
+      // "claude-opus-5", exit 0 at --effort max; ADR-0016 amendment 2026-07-24) — this
+      // is the ONE CLI-served lane the R1 round-trip proved, so it flips; the in-process
+      // Agent-tool pins stay opus-4-8 (not harness-spawnable yet). NB: build-chain
+      // builders run claude-sonnet-5@high, NOT opus@max — this canary just proves the
+      // CLI can serve the top opus at max before Delta relies on the canonical path.
       return withTempPrompt(TEST_PROMPT, (tmp) => {
         const r = runShell(
-          `claude -p --model claude-opus-4-8 --effort max "$(cat "${tmp}")"`,
+          `claude -p --model claude-opus-5 --effort max "$(cat "${tmp}")"`,
         );
         return { ...r, ok: r.exit === 0 && /OK/i.test(r.stdout) };
       });

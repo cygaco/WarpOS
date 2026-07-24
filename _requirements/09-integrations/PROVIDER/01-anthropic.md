@@ -8,17 +8,20 @@
 - https://www.anthropic.com/news/claude-opus-4-8
 - https://platform.claude.com/docs/en/api/models/list (programmatic capability lookup)
 
-Last verified: 2026-04-29.
+Last verified: 2026-04-29 (opus-5 row added + CLI-serve verified 2026-07-24 — ADR-0016 amendment).
 
-## Current models (April 2026)
+## Current models (April 2026; opus-5 added 2026-07-24)
 
 | Model ID | API alias | Context | Max output | Effort levels | Pricing in/out per MTok |
 |---|---|---|---|---|---|
+| `claude-opus-5` | `claude-opus-5` | 1M | 128k | low \| medium \| high \| xhigh \| max | $5 / $25 |
 | `claude-opus-4-8` | `claude-opus-4-8` | 1M | 128k | low \| medium \| high \| xhigh \| max | $5 / $25 |
 | `claude-sonnet-4-6` | `claude-sonnet-4-6` | 1M | 64k | low \| medium \| high \| max | $3 / $15 |
 | `claude-haiku-4-5-20251001` | `claude-haiku-4-5` | 200k | 64k | (no `effort` param) | $1 / $5 |
 
-**Aliases (frontmatter shorthand):** `inherit`, `sonnet`, `opus`, `haiku`, plus the literal IDs above. The `inherit` alias means "use the parent session's model."
+**`claude-opus-5`** (opus workhorse tier; Bedrock `anthropic.claude-opus-5`) is the opus-4-8 successor (operator-directed cutover 2026-07-24). opus-4-8 STAYS served. Same ctx/out/price as 4.8. **Thinking is ON by DEFAULT** on opus-5 (opus-4-8 ran without thinking unless adaptive was set), and **`thinking:{type:"disabled"}` at effort `xhigh`/`max` → 400** (disabled thinking allowed only at `high` or below) — a Claude lane at xhigh/max must keep thinking ON (enforcer: `scripts/checks/model-chain.js` block J). CLI serve verified live 2026-07-24 (`claude -p --output-format json --model claude-opus-5 --effort max` → exit 0, `modelUsage.canonicalModel=claude-opus-5`). NOT harness Agent-tool-spawnable yet — the `opus` alias below still resolves opus-4-8.
+
+**Aliases (frontmatter shorthand):** `inherit`, `sonnet`, `opus` (still → `claude-opus-4-8` — the in-process channel serves 4.8), `haiku`, plus the literal IDs above. The `inherit` alias means "use the parent session's model."
 
 ## Thinking modes
 

@@ -123,3 +123,43 @@ to conductor presence (ED-041) and re-create the hollow-gate class. The two-tier
 construction**: when ED-060 resolves and panel-3lab binds, the binding evaluation demands the in-process
 hunter (a subprocess record can never satisfy it — identity is shape + role). See ADR-0020 "Two-tier CLAUDE
 lane contract" + the `claude_lane_reversion` note on the panel-lane-manifest sunset.
+
+## Amendment — 2026-07-24 (opus-5 workhorse cutover; operator-directed, α-ruled, β DECIDE B/0.90)
+
+**What.** The opus WORKHORSE tier moves `claude-opus-4-8` → **`claude-opus-5`** (exact API id `claude-opus-5`,
+no date suffix; Bedrock `anthropic.claude-opus-5`; 1M ctx / 128K out / $5/$25 — UNCHANGED from 4.8). The
+fable-top spread is **untouched** (α/DoE/security planner stay `claude-fable-5`; §Decision #3 stands). **`claude-opus-4-8`
+STAYS a served, valid catalog member** — it is NOT deleted; it remains the fallback / version-diversity target
+(provider-fallback.json `deep_fallback`, the providers.js Claude last-resort). The catalog now carries BOTH.
+
+**Channel partition (the load-bearing rider — never-claim-live-from-transport).** opus-5 was PROVEN served on
+ONE channel only:
+- **CLI channel — PROVEN 2026-07-24.** `claude -p --output-format json --model claude-opus-5 --effort max` →
+  exit 0, envelope `modelUsage.canonicalModel="claude-opus-5"`, `provider:"firstParty"`, `contextWindow:1000000`
+  (round-trip served, not a request-side echo, no 400). So the **CLI top-opus lane flips** (the delta canonical
+  dispatch smoke). Catalog ADDS opus-5.
+- **In-process Agent-tool channel — NOT yet servable.** α's harness-spawn probe (2026-07-24) shows the `opus`
+  alias still resolves `claude-opus-4-8[1m]`; opus-5 is not harness-spawnable. Therefore **every role whose
+  dispatch is IN-PROCESS ONLY holds at opus-4-8** — the faces γ/δ/ε, the manager/lead consults (quality-lead,
+  frontend/backend/security-lead), the claude-pinned visual judges (design-quality, visual-review), and the
+  in-process security Claude hunter lane (`security-reviewer.third_pass` + `security_claude_hunter`). Flipping
+  their registry/spec pins to opus-5 would be a **registry-overclaims-served drift** (config claiming a serve the
+  channel can't deliver). The two frozen in-process-channel surfaces — `scripts/dispatch/harness-spawn-model.js`
+  `HARNESS_FACE_MODEL` and `.claude/kernel/support-matrix.json` (Addendum A proven-set) — **stay opus-4-8**.
+
+**Follow-up (named).** When the harness serves opus-5 (re-run the harness-spawn probe), flip in lockstep:
+`HARNESS_FACE_MODEL`, the support-matrix proven-set, the in-process role registry pins + their spec `model:`
+frontmatter, and `panel-lane-manifest.json` `lanes.claude.model`. Until then they are correct at opus-4-8.
+
+**NEW standing invariant (opus-5 breaking change → enforced).** opus-5 has **thinking ON by default**, and
+`thinking:{type:"disabled"}` is a **400 at effort `xhigh` or `max`** (disabled thinking is allowed only at `high`
+or below). Therefore: **any Claude-lane config (a role or a `second_pass`/`third_pass`) at effort `xhigh`/`max`
+MUST keep thinking ON.** Named enforcer: **`scripts/checks/model-chain.js` block J** (`[THINKING-400]`), covered
+by `model-chain.test.js` (negative fixtures: disabled+max, `{type:"disabled"}`+xhigh, third_pass off+max; positive:
+always-on+max, disabled+high, non-claude). The CLI argv builders (`dispatch-claude.js`, providers.js
+`buildProviderArgv`, the delta smoke) pass **no** thinking-disable flag — thinking stays default-ON — so the live
+dispatch path is already safe (breaking-change sweep 2026-07-24: zero disabled-thinking flags in scripts/ or
+.claude/agents/). `thinking:{type:"adaptive"}` stays valid/equivalent.
+
+β records this cutover DECIDE B/0.90 with riders R0–R7 (channel partition, CLI round-trip proof, freeze set,
+provider-fallback kept at opus-4-8, this amendment + enforcer, exercised-not-string-equality battery).
