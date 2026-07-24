@@ -152,19 +152,21 @@ function evaluate({ docs, betaEventsText }) {
   const hard = [];
   const soft = [];
   let scannedCitations = 0;
-  // C2 (gpt backend r1, HIGH — per-line receipt laundering): scan PER-CITATION, not per-line. A line
-  // may carry MULTIPLE β-verdict citations; binding each to the FIRST msg_id on the line let a
-  // resolving receipt for citation #1 launder an unreceipted citation #2 (or an unrelated msg_id
-  // elsewhere on the line satisfy a no-receipt citation) — a HARD false-green. Now each citation owns
-  // its own CLAUSE (from its position to the NEXT citation, or line end) and resolves against the
-  // msg_id in THAT clause only.
+  // C2 (gpt backend r1, HIGH — per-line receipt laundering): scan PER-CITATION, not per-line. Each
+  // citation owns its own CLAUSE (from its position to the NEXT citation, or line end) and resolves
+  // against the msg_id(s) in THAT clause only.
   const citationGlobal = new RegExp(CITATION_RE.source, "g");
+  const msgidGlobal = new RegExp(MSGID_IN_TEXT_RE.source, "gi");
   for (const d of docs || []) {
-    const lines = String(d.text || "").split(/\r?\n/);
-    const inHistory = historyMask(lines);
-    for (let i = 0; i < lines.length; i++) {
+    const rawLines = String(d.text || "").split(/\r?\n/);
+    const inHistory = historyMask(rawLines);
+    for (let i = 0; i < rawLines.length; i++) {
       if (inHistory[i]) continue; // append-only history section — a dated past citation is a record
-      const line = lines[i];
+      // R2 (gpt security r2, HIGH — markdown-emphasis citation BYPASS): strip inline markdown emphasis
+      // (`*` and backtick) so "**β** **DECIDE**" / "`β DECIDE`" / a backticked/emphasized msg_id cannot
+      // hide a citation from CITATION_RE. `_` is NOT stripped — it is a VALID msg_id char (stripping it
+      // would corrupt an id like abc_def) and underscore-italic is rare.
+      const line = rawLines[i].replace(/[*`]/g, "");
       // Collect every citation start index on the line.
       const starts = [];
       citationGlobal.lastIndex = 0;
@@ -176,20 +178,29 @@ function evaluate({ docs, betaEventsText }) {
       for (let c = 0; c < starts.length; c++) {
         scannedCitations++;
         const clause = line.slice(starts[c], c + 1 < starts.length ? starts[c + 1] : line.length);
-        const m = clause.match(MSGID_IN_TEXT_RE);
-        if (m && MSGID_SHAPE_RE.test(m[1])) {
-          const mid = m[1];
-          if (!known.has(mid)) {
-            hard.push({
-              doc: d.path, line: i + 1, msg_id: mid,
-              reason: `β-verdict citation cites msg_id '${mid}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
-            });
-          }
-        } else {
+        // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
+        // clause, not just the first. A resolving-first + unresolved-second inside ONE clause was a HARD
+        // false-green. ANY cited receipt that does not resolve → HARD.
+        const mids = [];
+        msgidGlobal.lastIndex = 0;
+        let mm;
+        while ((mm = msgidGlobal.exec(clause)) !== null) {
+          if (MSGID_SHAPE_RE.test(mm[1])) mids.push(mm[1]);
+          if (msgidGlobal.lastIndex === mm.index) msgidGlobal.lastIndex++;
+        }
+        if (mids.length === 0) {
           soft.push({
             doc: d.path, line: i + 1,
             reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${clause.trim().slice(0, 120)}`,
           });
+        } else {
+          const unresolved = mids.filter((x) => !known.has(x));
+          if (unresolved.length) {
+            hard.push({
+              doc: d.path, line: i + 1, msg_id: unresolved[0],
+              reason: `β-verdict citation cites msg_id '${unresolved[0]}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (${unresolved.length} of ${mids.length} cited receipt(s) unresolved; forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
+            });
+          }
         }
       }
     }

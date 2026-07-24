@@ -220,6 +220,36 @@ t("C1: an ABSENT explicit file (ENOENT) -> NOT an error (skipped)", () => {
   assert.strictEqual(g.errors.length, 0, "ENOENT (absent) is fine, not fail-closed");
 });
 
+// ── R1 (gpt security+backend r2, HIGH): intra-clause laundering — validate ALL msg_ids in a clause ──
+t("R1: a clause with a resolving-first AND an unresolved-second msg_id -> HARD (not laundered)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id good111) (msg_id ghost222) ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("good111")]) });
+  assert.strictEqual(r.hard.length, 1, "the unresolved second receipt in the same clause must be HARD");
+  assert.strictEqual(r.hard[0].msg_id, "ghost222");
+});
+t("R1: a clause where ALL msg_ids resolve -> clean", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id good111) (msg_id good222) ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("good111"), vrow("good222")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0);
+});
+
+// ── R2 (gpt security r2, HIGH): markdown emphasis must NOT bypass citation detection ──
+t("R2: '**β** **DECIDE**' (emphasis on each token) with an unresolved receipt -> HARD", () => {
+  const docs = [{ path: "a.md", text: "**β** **DECIDE** (msg_id ghost1) shipped" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "markdown emphasis between tokens must not bypass detection");
+});
+t("R2: a backticked citation '`β DECIDE`' with an unresolved receipt -> HARD", () => {
+  const docs = [{ path: "a.md", text: "`β DECIDE` (msg_id ghost2) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a backticked citation must be detected");
+});
+t("R2: an underscore-bearing msg_id is NOT corrupted (we do not strip '_')", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id ab_cd_ef) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("ab_cd_ef")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "'_' preserved so an underscore msg_id still resolves");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

@@ -104,25 +104,28 @@ function isClosureRow(o) {
   return o.status === "closed" || nonEmpty(o.closure_receipt) || nonEmpty(o.closed_ts) || nonEmpty(o.resolution);
 }
 
-// F10 (gpt qa r0, HIGH; C4 gpt backend r1, HIGH): distinguish a NEW enforcer (creation) from an
-// existing enforcer an open ED merely intends to MODIFY. OCCURRENCE-SCOPED — the caller passes the
-// index of THIS match of `rel` (not text.indexOf, which always inspects the FIRST occurrence). Within
-// the clause before this occurrence: CREATION language (build/create/new-<kind>/introduce/ship/scaffold)
-// WINS over a bare preposition (so "Create a new enforcer in <path>" is creation, not modification);
-// explicit MODIFY verbs (modify + inflections / extend / harden / amend / wire / augment / patch) mark
-// modification; and a bare "to|in|into <path>" preposition marks modification. Precise > noisy.
-function isModifyContext(text, rel, idx) {
+// F10 (gpt qa r0, HIGH; C4 gpt backend r1, HIGH; R3/R4 gpt security+backend r2): flag a deliverable
+// path ONLY when its occurrence carries a POSITIVE CREATION signal — a NEW enforcer being built. This
+// is the 3-state fix: an occurrence is CREATION (explicit build/create/new-<kind>/introduce/ship/
+// scaffold/"add a new"), MODIFY (an existing file being changed), or NEUTRAL (a path mentioned in
+// passing). Only CREATION makes a path a stale-open candidate — so a MODIFY of a shipped enforcer AND
+// a NEUTRAL repetition (r2 backend MED false-positive) are both correctly NOT flagged.
+// OCCURRENCE-SCOPED + CLAUSE-BOUND: classification uses ONLY the path's own clause (from the last
+// clause delimiter . ; , or newline before the occurrence to the occurrence), NOT a fixed-width window
+// that could pull in an UNRELATED modify/creation verb from a previous clause (r2 security S2 bleed).
+function isCreationContext(text, rel, idx) {
   const at = typeof idx === "number" && idx >= 0 ? idx : text.indexOf(rel);
   if (at < 0) return false;
-  const before = text.slice(Math.max(0, at - 60), at).toLowerCase();
-  // Creation language takes precedence over a bare preposition.
-  if (/\b(build|create|new\s+(?:lint|check|enforcer|file|script|test)|introduce|ship|scaffold)\b/.test(before)) return false;
-  // Explicit modify verbs — \bmodif\w* matches modify/modifies/modified/modification (a trailing \b
-  // after 'modif' fails on the 'y', the r1 bug).
-  if (/\bmodif\w*|\b(extend|harden|amend|wire|augment|patch)\b/.test(before)) return true;
-  // Bare preposition immediately before the path.
-  if (/\b(to|in|into)\s+$/.test(before)) return true;
-  return false;
+  // Clause = the text from the last clause delimiter before the occurrence to the occurrence. Delimiters
+  // are ; , newline, and a SENTENCE period (a "." followed by whitespace) — NOT a bare "." (which would
+  // split on a file-extension dot like "a.js" and truncate the clause, dropping the verb).
+  let clauseStart = 0;
+  const delimRe = /[;,\n]|\.(?=\s)/g;
+  let dm;
+  const pre = text.slice(0, at);
+  while ((dm = delimRe.exec(pre)) !== null) clauseStart = dm.index + dm[0].length;
+  const clause = text.slice(clauseStart, at).toLowerCase();
+  return /\b(build|create|introduce|ship|scaffold)\b|\bnew\s+(?:lint|check|enforcer|file|script|test)\b|\badd(?:s|ed|ing)?\s+a\s+new\b/.test(clause);
 }
 
 /**
@@ -182,7 +185,9 @@ function evaluate({ registerText, fileExists, parse }) {
     let m;
     ENFORCER_PATH_RE.lastIndex = 0;
     while ((m = ENFORCER_PATH_RE.exec(text)) !== null) {
-      if (!isModifyContext(text, m[0], m.index)) creationPaths.add(m[0]);
+      // R4 (gpt backend r2, MED): require a POSITIVE creation signal — a NEUTRAL path repetition (no
+      // create AND no modify signal) is no longer defaulted to "creation" and over-flagged.
+      if (isCreationContext(text, m[0], m.index)) creationPaths.add(m[0]);
     }
     for (const rel of creationPaths) {
       // Shipped-with-teeth: the enforcer file AND a sibling <name>.test.js both exist.

@@ -235,6 +235,31 @@ t("C4: creation at a LATER occurrence wins over an earlier modify mention -> fla
   assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "a creation occurrence wins over an earlier modify mention");
 });
 
+// ── R4 (gpt backend r2, MED): a NEUTRAL path mention (no create AND no modify signal) is NOT flagged ──
+t("R4: a neutral path mention ('see <path> for reference') with file+test -> NOT flagged", () => {
+  const text = row({ id: "ED-940", status: "open", gap: "some gap", note: "see scripts/checks/r4.js for reference" });
+  const exists = mkExists(["scripts/checks/r4.js", "scripts/checks/r4.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "a neutral mention is not a creation candidate");
+});
+t("R4: a bare path with NO surrounding verb -> NOT flagged (requires positive creation signal)", () => {
+  const text = row({ id: "ED-941", status: "open", trigger: "scripts/checks/r4b.js" });
+  const exists = mkExists(["scripts/checks/r4b.js", "scripts/checks/r4b.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "no creation signal -> not flagged");
+});
+
+// ── R3/S2 (gpt security r2, HIGH): an unrelated modify verb in a PREVIOUS clause must not affect a
+//     creation occurrence — classification is CLAUSE-BOUND (split on . ; , newline). ──
+t("R3: 'modify the old thing. Build <path>' -> the Build clause is creation (flagged), unaffected by the earlier modify", () => {
+  const text = row({ id: "ED-942", status: "open", gap: "modify the old thing. Build scripts/checks/r3.js as a new enforcer" });
+  const exists = mkExists(["scripts/checks/r3.js", "scripts/checks/r3.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 1, "an earlier-clause modify verb must not suppress the creation clause");
+});
+t("R3: 'Build a helper; then wire it into <path>' -> the wire clause is modify (NOT flagged), unaffected by the earlier Build", () => {
+  const text = row({ id: "ED-943", status: "open", gap: "Build a helper; then wire it into scripts/checks/r3b.js" });
+  const exists = mkExists(["scripts/checks/r3b.js", "scripts/checks/r3b.test.js"]);
+  assert.strictEqual(evaluate({ registerText: text, fileExists: exists }).findings.length, 0, "an earlier-clause Build must not creation-flag a modify occurrence");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
