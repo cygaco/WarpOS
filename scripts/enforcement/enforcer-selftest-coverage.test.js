@@ -80,6 +80,18 @@ t("CONTROL: live enforcer dirs (real gather) — HARD findings truly have neithe
   console.log("        (live: " + r.enforcerCount + " enforcers, " + r.hard.length + " no-test, " + r.soft.length + " weak-test)");
 });
 
+// ── 8. β Q3 SELF-COVERING BASE CASE: the meta-gate enumerates ITSELF and is NOT a HARD finding ──
+t("SELF-COVERING: the meta-gate includes itself in its enumeration and passes its own check", () => {
+  const { gatherItems, evaluate: ev } = require("./enforcer-selftest-coverage");
+  const { items } = gatherItems();
+  const self = items.find((it) => /enforcer-selftest-coverage\.js$/.test(it.rel));
+  assert.ok(self, "the meta-gate must appear in its own enumeration");
+  assert.strictEqual(self.isEnforcer, true, "the meta-gate is itself a CLI enforcer");
+  assert.strictEqual(self.hasTest, true, "the meta-gate must carry its own self-test (this file)");
+  const r = ev({ items });
+  assert.ok(!r.hard.some((f) => /enforcer-selftest-coverage\.js$/.test(f.enforcer)), "the meta-gate must not be its own uncovered HARD finding");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

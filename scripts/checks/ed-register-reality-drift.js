@@ -96,12 +96,33 @@ function evaluate({ registerText, fileExists, parse }) {
     byId.get(r.id).push(r.obj);
   }
   const findings = [];
+  const phantomClose = []; // β Q2 direction (b): closed ED whose named deliverable is ABSENT.
   let skippedPartial = 0;
   for (const [id, objs] of byId) {
     const closed = objs.some(
       (o) => o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined || o.resolution !== undefined,
     );
-    if (closed) continue; // resolved — reality agrees, not a drift candidate
+    if (closed) {
+      // β Q2 (b) PHANTOM-CLOSE (the more dangerous direction — hides undone work): a CLOSED ED whose
+      // CLOSURE row explicitly names an enforcer deliverable that does NOT exist on disk. Tight: only a
+      // path named on a CLOSURE/resolution row (not the open genesis, which may name a not-yet-built
+      // target), and only scripts/(checks|enforcement)/<name>.js — a stub/rename left the closure lying.
+      // Candidate-probe, NOT proof (a present-but-stub file still fools direction (a)); report-only.
+      const closureRows = objs.filter((o) => o.status === "closed" || o.closure_receipt !== undefined || o.closed_ts !== undefined);
+      const seenC = new Set();
+      for (const cr of closureRows) {
+        const ctext = ["enforcer", "closure_receipt", "resolution", "note", "file"].map((k) => (typeof cr[k] === "string" ? cr[k] : "")).join("\n");
+        let cm; ENFORCER_PATH_RE.lastIndex = 0;
+        while ((cm = ENFORCER_PATH_RE.exec(ctext)) !== null) {
+          const rel = cm[0];
+          if (seenC.has(rel)) continue; seenC.add(rel);
+          if (!fileExists(rel)) {
+            phantomClose.push({ id, deliverable: rel, reason: `PHANTOM-CLOSE candidate: ED ${id} is marked closed citing enforcer ${rel}, but that file does NOT exist on disk — the closure may be lying (renamed/removed/never-shipped). VERIFY.` });
+          }
+        }
+      }
+      continue; // resolved — not a stale-open (direction a) candidate
+    }
     // Intentionally-open (named residual work) — excluded so a managed partial never false-REDs.
     if (hasPartialSignal(objs)) { skippedPartial++; continue; }
     // The genesis row (carries the substantive description) holds the deliverable references.
@@ -127,7 +148,7 @@ function evaluate({ registerText, fileExists, parse }) {
       }
     }
   }
-  return { skip: false, findings, malformedLines, skippedPartial };
+  return { skip: false, findings, phantomClose, malformedLines, skippedPartial };
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -161,25 +182,36 @@ function main(argv) {
     return 2;
   }
 
-  const { findings, malformedLines, skippedPartial } = evaluate({ registerText, fileExists: realFileExists });
+  const { findings, phantomClose, malformedLines, skippedPartial } = evaluate({ registerText, fileExists: realFileExists });
+  // β Q2: the HARD-gate direction is (a) stale-open only; phantom-close (b) is report-only advisory
+  // (candidate-probe, more false-positive-prone since a legit rename can absent a closure's path).
   const blocking = enforce && findings.length > 0;
+  const REALITY_DISCLAIMER = "CANDIDATE-probe, NOT proof: 'file exists' is not 'ED resolved' (a stub/unwired file fools it) and 'file absent' is not 'closure false' (a legit rename). GREEN = no candidates, NOT register-accurate; never auto-close.";
   const out = {
     name: NAME,
     status: blocking ? "red" : "green",
     register: registerPath,
     enforced: enforce,
     findings,
+    phantomClose,
     skippedPartial,
     malformedLines,
+    disclaimer: REALITY_DISCLAIMER,
   };
   if (jsonOut) {
     process.stdout.write(JSON.stringify(out) + "\n");
-  } else if (findings.length) {
-    process.stderr.write(`${blocking ? "FAIL" : "WARN"} [${NAME}] ${findings.length} open ED(s) whose enforcer shipped (register lags reality):\n`);
-    for (const f of findings) process.stderr.write(`     - ${f.id}: ${f.deliverable} (+ ${f.test}) exists — append a closure row\n`);
-    if (malformedLines) process.stderr.write(`     (${malformedLines} malformed register line(s) skipped)\n`);
   } else {
-    process.stdout.write(`OK   [${NAME}] no open ED whose named enforcer+test already shipped\n`);
+    if (findings.length) {
+      process.stderr.write(`${blocking ? "FAIL" : "WARN"} [${NAME}] ${findings.length} open ED(s) whose enforcer shipped (register lags reality — direction a):\n`);
+      for (const f of findings) process.stderr.write(`     - ${f.id}: ${f.deliverable} (+ ${f.test}) exists — verify + append a closure row\n`);
+    }
+    if (phantomClose.length) {
+      process.stderr.write(`INFO [${NAME}] ${phantomClose.length} PHANTOM-CLOSE candidate(s) (closed ED, named enforcer ABSENT — direction b, report-only):\n`);
+      for (const f of phantomClose) process.stderr.write(`     - ${f.id}: ${f.deliverable} absent\n`);
+    }
+    if (malformedLines) process.stderr.write(`     (${malformedLines} malformed register line(s) skipped)\n`);
+    if (!findings.length && !phantomClose.length) process.stdout.write(`OK   [${NAME}] no reality-drift candidates (neither stale-open nor phantom-close)\n`);
+    process.stderr.write(`     NOTE (${NAME}): ${REALITY_DISCLAIMER}\n`);
   }
   return blocking ? 1 : 0;
 }

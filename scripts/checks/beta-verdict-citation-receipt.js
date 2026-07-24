@@ -34,6 +34,12 @@ const path = require("path");
 
 const REPO = path.resolve(__dirname, "..", "..");
 const NAME = "beta-verdict-citation-receipt";
+// β Q1(b) CEILING DISCLAIMER (printed on ALL paths, like ED-234): a GREEN means the cited receipt
+// is PRESENT, not AUTHENTIC. This verifies a citation's msg_id EXISTS in betaEvents — NOT that the
+// betaEvents row is itself authentic / from the right β instance. A real msg_id pointing at a
+// forged / wrong-instance row passes BY DESIGN; that authenticity layer is ED-275 (msg-log
+// authenticator), out of scope here. Scan:full-only, never CI (betaEvents is gitignored).
+const DISCLAIMER = "receipt PRESENT, not authenticated — a cited msg_id resolving in betaEvents is NOT proof the row is authentic/right-instance (that is ED-275). /scan:full-only, never CI.";
 const DEFAULT_BETA_EVENTS = path.join(REPO, ".claude", "agents", "president", "_system", "beta", "events.jsonl");
 // Default corpus: ADRs + the roadmap + epic trackers (where a β verdict is cited as justification).
 const DEFAULT_DOC_DIRS = [
@@ -155,8 +161,8 @@ function main(argv) {
     betaEventsText = fs.readFileSync(betaEventsPath, "utf8");
   } catch (e) {
     if (e && e.code === "ENOENT") {
-      const out = { name: NAME, status: "skip", reason: `betaEvents absent (${betaEventsPath}) — gitignored ledger; receipt resolution skipped` };
-      process.stdout.write(jsonOut ? JSON.stringify(out) + "\n" : `SKIP [${NAME}] betaEvents absent (gitignored) — nothing to resolve against\n`);
+      const out = { name: NAME, status: "skip", reason: `betaEvents absent (${betaEventsPath}) — gitignored ledger; receipt resolution skipped`, disclaimer: DISCLAIMER };
+      process.stdout.write(jsonOut ? JSON.stringify(out) + "\n" : `SKIP [${NAME}] betaEvents absent (gitignored) — nothing to resolve against\n     (${DISCLAIMER})\n`);
       return 0;
     }
     process.stderr.write(`ERROR [${NAME}] betaEvents unreadable (fail-closed): ${e.message}\n`);
@@ -168,7 +174,7 @@ function main(argv) {
   const blocking = enforce && hard.length > 0;
   const out = {
     name: NAME, status: blocking ? "red" : "green", betaEvents: betaEventsPath,
-    enforced: enforce, scannedCitations, hardFindings: hard, softAdvisories: soft,
+    enforced: enforce, scannedCitations, hardFindings: hard, softAdvisories: soft, disclaimer: DISCLAIMER,
   };
   if (jsonOut) {
     process.stdout.write(JSON.stringify(out) + "\n");
@@ -183,10 +189,11 @@ function main(argv) {
       if (soft.length > 20) process.stderr.write(`     … +${soft.length - 20} more\n`);
     }
     if (!hard.length && !soft.length) process.stdout.write(`OK   [${NAME}] ${scannedCitations} β-verdict citation(s) scanned; all receipt-backed\n`);
+    process.stderr.write(`     NOTE (${NAME}): ${DISCLAIMER}\n`); // β Q1(b) — disclose the ceiling on EVERY path
   }
   return blocking ? 1 : 0;
 }
 
 if (require.main === module) process.exit(main(process.argv));
 
-module.exports = { evaluate, verdictMsgIds, NAME };
+module.exports = { evaluate, verdictMsgIds, NAME, DISCLAIMER };

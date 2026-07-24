@@ -120,6 +120,32 @@ t("CONTROL: live register — no flagged id carries a partial-resolution marker 
   assert.ok(Array.isArray(r.findings) && typeof r.skippedPartial === "number");
 });
 
+// ── 10. β Q2(b) PHANTOM-CLOSE: closed ED citing an ABSENT enforcer -> phantomClose candidate ──
+t("closed ED whose closure names an enforcer that does NOT exist -> phantom-close candidate", () => {
+  const text = [
+    row({ id: "ED-910", status: "open", gap: "x", trigger: "Build scripts/enforcement/ghost.js" }),
+    row({ id: "ED-910", status: "closed", closure_receipt: "SP-Y", enforcer: "scripts/enforcement/ghost.js", closed_ts: "2026-07-24" }),
+  ].join("\n");
+  const r = evaluate({ registerText: text, fileExists: mkExists([]) }); // ghost.js absent
+  assert.strictEqual(r.findings.length, 0, "not a stale-open (it is closed)");
+  assert.strictEqual(r.phantomClose.length, 1, "closed+absent -> phantom-close");
+  assert.strictEqual(r.phantomClose[0].id, "ED-910");
+});
+
+// ── 11. closed ED citing a PRESENT enforcer -> no phantom-close (healthy closure) ──
+t("closed ED whose closure names an enforcer that exists -> no phantom-close", () => {
+  const text = row({ id: "ED-911", status: "closed", closure_receipt: "SP-Z", enforcer: "scripts/checks/real.js", closed_ts: "2026-07-24" });
+  const r = evaluate({ registerText: text, fileExists: mkExists(["scripts/checks/real.js"]) });
+  assert.strictEqual(r.phantomClose.length, 0, "closure naming a present file is healthy");
+});
+
+// ── 12. phantom-close reads only the CLOSURE row's path, not the open genesis target ──
+t("open genesis naming an absent target on a still-OPEN ED is not phantom-close", () => {
+  const text = row({ id: "ED-912", status: "open", trigger: "Build scripts/enforcement/todo.js" });
+  const r = evaluate({ registerText: text, fileExists: mkExists([]) });
+  assert.strictEqual(r.phantomClose.length, 0, "an open ED's not-yet-built target is not a phantom-close");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

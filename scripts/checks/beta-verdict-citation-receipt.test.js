@@ -4,7 +4,7 @@
  * injected docs + betaEvents text — no disk.
  */
 const assert = require("assert");
-const { evaluate, verdictMsgIds } = require("./beta-verdict-citation-receipt");
+const { evaluate, verdictMsgIds, DISCLAIMER } = require("./beta-verdict-citation-receipt");
 
 let pass = 0, fail = 0;
 function t(desc, fn) {
@@ -105,6 +105,12 @@ t("CONTROL: live docs+betaEvents — no HARD finding whose msg_id is actually pr
   const r = evaluate({ docs, betaEventsText });
   for (const f of r.hard) assert.ok(!known.has(f.msg_id), `HARD finding msg_id ${f.msg_id} is actually present — false positive`);
   assert.ok(Array.isArray(r.hard) && Array.isArray(r.soft));
+});
+
+// ── 11. β Q1(b): the ED-275 ceiling disclaimer is present + names the boundary ──
+t("Q1(b): DISCLAIMER discloses receipt-present-not-authenticated + ED-275", () => {
+  assert.ok(typeof DISCLAIMER === "string" && DISCLAIMER.length > 0);
+  assert.ok(/not authenticated/i.test(DISCLAIMER) && /ED-275/.test(DISCLAIMER), "disclaimer must name the not-authenticated ceiling + ED-275");
 });
 
 console.log("");
