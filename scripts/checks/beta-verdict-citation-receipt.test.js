@@ -427,6 +427,25 @@ t("ED-286 ceiling (e): DOUBLE-obfuscated receipt (invisible-in-label + invisible
   assert.strictEqual(r.hard.length, 0, "the double-obfuscation compound is the disclosed ceiling (e) — abuts to msg_idghost");
   assert.strictEqual(r.soft.length, 1, "it is a receiptless SOFT (renders as no-space, not a convincing receipt)");
 });
+// DISCLOSED-CEILING (a) at the RECEIPT-LABEL position (r5 hunter MEDIUM): a cross-script confusable in
+// the literal `msg_id` label is NFKD-invariant, so MSGID_IN_TEXT_RE misses it and a forged receipt
+// downgrades HARD->SOFT — the SAME TR39 root as a confusable in a detection token. Codified so it flips
+// if a TR39 skeleton is ever added. (Cyrillic-i U+0456 renders pixel-identical to the Latin "msg_id".)
+t("ED-286 ceiling (a)/label: a CROSS-SCRIPT confusable in the msg_id LABEL is the DISCLOSED TR39 residual (SOFT)", () => {
+  const cyrI = String.fromCodePoint(0x0456); // CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_" + cyrI + "d ghost999) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 0, "a confusable in the label is the disclosed TR39 ceiling (a) — not folded by NFKD");
+  assert.strictEqual(r.soft.length, 1, "the citation is detected (ASCII DECIDE) but the confusable label yields no receipt -> SOFT");
+});
+// r5 hunter LOW (RECEIPT_SEP_INVIS_G lookahead): a bare \p{M}/\p{Cf} after the literal `msg_id` with NO
+// following id-token must NOT synthesize a separator + extract a spurious receipt.
+t("ED-286 r5: a combining mark after `msg_id` with no following id -> no synthesized false receipt", () => {
+  const acuteMark = String.fromCodePoint(0x0301);
+  const docs = [{ path: "a.md", text: "β DECIDE — the msg_id" + acuteMark + ". field is set later" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 0, "a mark with no following id must not synthesize a separator (lookahead)");
+});
 
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));

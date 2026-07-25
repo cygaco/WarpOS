@@ -126,7 +126,12 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       look-alikes (e.g. Cyrillic C/E/P/B for Latin C/E/P/B, a Cyrillic-spoofed "beta", or the Latin
 //       sharp-s ß U+00DF spoofing the Greek β): NFKD keeps them distinct code points. Closing this needs
 //       the Unicode TR39 confusables SKELETON (external data table), deliberately out of scope for a
-//       data-free enforcer. (Codified as a self-detecting test — if a TR39 pass is ever added it flips.)
+//       data-free enforcer. This residual reaches BOTH positions (r5 hunter MEDIUM): a confusable in a
+//       DETECTION token hides the whole citation (scanned=0), AND a confusable in the literal `msg_id`
+//       LABEL (e.g. Cyrillic-i U+0456, dotless-i U+0131 — pixel-identical to "msg_id") makes
+//       MSGID_IN_TEXT_RE miss the receipt so a DETECTED citation's forged receipt downgrades HARD->SOFT.
+//       Both are the same TR39 root. (Both codified as self-detecting tests — if a TR39 pass is ever
+//       added they flip.)
 //   (b) a space-rendering code point OUTSIDE \p{Zs} + {U+2800, U+3164, U+1160, U+115F, U+FFA0} — if Unicode
 //       adds a new blank glyph it must be added to BLANK_RE (a named, testable set, not a \p property).
 //       (Now enforced on BOTH the detection AND the receipt-extraction path — see BLANK_G above.)
@@ -139,8 +144,16 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       label but the two invisibles collapse to an abutment ("msg_idghost") that is INDISTINGUISHABLE
 //       from a legit `msg_ids`/`msg_identifier` word, so it stays a receiptless SOFT rather than HARD.
 //       Bounded + low-value: it renders as "msg_idghost" (NO visible space), so it does NOT read to a
-//       human as a valid "msg_id ghost" receipt — the SINGLE-obfuscation cases (a blank OR invisible
-//       separator, OR an invisible inside the label) are all closed and tested.
+//       human as a valid "msg_id ghost" receipt. Closed single-obfuscation cases (tested): a blank OR
+//       invisible SEPARATOR, and an INVISIBLE (\p{Cf}/\p{M}) inside the label. NOT closed: a CROSS-SCRIPT
+//       CONFUSABLE inside the label — that is the TR39 residual (a), not this abutment case.
+//   (f) PRECISION (over-flag, never a false-green): MSGID_IN_TEXT_RE treats any `msg_id <token>` as a
+//       cited receipt, so a benign PROSE mention ("the msg_id field must resolve") can extract the next
+//       bareword as an unresolved receipt -> a report-only HARD (blocks only under --enforce; live-corpus
+//       delta is 0). RECEIPT_SEP_INVIS_G extends this to an invisible-adjacent mention. This over-FLAGS,
+//       it never HIDES a citation or downgrades a forgery. The root tightening — require a receipt-shaped/
+//       delimited context (backtick/quote/paren) around the id — is tracked as a follow-up ED against
+//       MSGID_IN_TEXT_RE, out of scope for the ED-286 obfuscation-mechanism fix.
 const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
 const STRIP_RE = /[\p{M}\p{Cf}]/gu;             // combining marks (incl U+034F CGJ) + format (incl zero-width)
 const BLANK_RE = /[\p{Zs}\u2800\u3164\u1160\u115f\uffa0]/u; // space-rendering incl the named non-\p{Zs} blanks
@@ -159,7 +172,11 @@ const CLAUSE_STRIP_G = /[*`~]|[\p{M}\p{Cf}]/gu; // clean the RAW clause for msg_
 //       false-matches a legit `msg_ids` array (which carries an ASCII `s` after the label, not an
 //       invisible) — the reason the citation separator could be made optional but this one cannot.
 const BLANK_G = new RegExp(BLANK_RE.source, "gu");
-const RECEIPT_SEP_INVIS_G = /(msg_id)[\p{Cf}\p{M}]+/giu;
+// The boundary-space fires ONLY when an id-shaped token actually follows the invisible run (r5 hunter
+// LOW): a bare \p{M}/\p{Cf} after the literal `msg_id` in prose with no following id no longer
+// synthesizes a spurious separator. (Does not fully close the inherent `msg_id <token>` prose over-flag
+// — that is NORMALIZATION CEILING (f), rooted in MSGID_IN_TEXT_RE and tracked as a follow-up ED.)
+const RECEIPT_SEP_INVIS_G = /(msg_id)[\p{Cf}\p{M}]+(?=[`'"]?[A-Za-z0-9])/giu;
 function normalizeForDetection(raw) {
   let norm = "";
   const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
