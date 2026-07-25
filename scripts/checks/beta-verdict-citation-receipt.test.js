@@ -379,6 +379,55 @@ t("ED-286: benign astral-heavy prose with NO verdict token is still not a citati
   assert.strictEqual(r.hard.length + r.soft.length, 0);
 });
 
+// ── ED-286 gauntlet r5 (hunter HIGH — RECEIPT-path normalization asymmetry): a blank/invisible
+//    separator between the `msg_id` label and its id must NOT downgrade a forged receipt HARD->SOFT.
+//    The detection path folds these; the extraction path now does too (BLANK_G + RECEIPT_SEP_INVIS_G). ──
+const hfiller = String.fromCodePoint(0x1160); // HANGUL JUNGSEONG FILLER
+const cfiller = String.fromCodePoint(0x115F); // HANGUL CHOSEONG FILLER
+const hwfiller = String.fromCodePoint(0xFFA0); // HALFWIDTH HANGUL FILLER
+const zwsp = String.fromCodePoint(0x200B); // ZERO WIDTH SPACE (\p{Cf})
+for (const [label, sep] of [
+  ["U+2800 BRAILLE BLANK", braille],
+  ["U+3164 HANGUL FILLER", hangulFiller],
+  ["U+1160 JUNGSEONG FILLER", hfiller],
+  ["U+115F CHOSEONG FILLER", cfiller],
+  ["U+FFA0 HALFWIDTH FILLER", hwfiller],
+  ["U+200B ZWSP (invisible)", zwsp],
+  ["U+034F CGJ (invisible)", cgj],
+]) {
+  t(`ED-286 r5: '${label}' as the msg_id->id separator with a FORGED id -> HARD (no HARD->SOFT downgrade)`, () => {
+    const docs = [{ path: "a.md", text: "β DECIDE (msg_id" + sep + "ghost999) shipped" }];
+    const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.hard.length, 1, `'${label}' separator must not downgrade a forged receipt to SOFT`);
+    assert.strictEqual(r.hard[0].msg_id, "ghost999");
+  });
+}
+t("ED-286 r5: a blank-separated RESOLVING receipt stays clean (fix does not corrupt resolution)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id" + braille + "abc123def) ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("abc123def")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "a blank-separated id that resolves must be clean");
+});
+t("ED-286 r5: an invisible INSIDE the msg_id label (single obfuscation) -> HARD (repaired by strip)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg" + zwsp + "_id ghost999) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "an invisible inside the label must be stripped, not evade");
+  assert.strictEqual(r.hard[0].msg_id, "ghost999");
+});
+t("ED-286 r5: a legit `msg_ids` array mention is NOT a false-positive HARD (label boundary is precise)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE about msg_ids: [aa11, bb22] here" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 0, "`msg_ids` (ASCII s after the label) must not extract a spurious receipt");
+});
+// DISCLOSED-CEILING (e): a DOUBLE-obfuscated receipt (invisible in the label AND an invisible separator)
+// collapses to an abutment indistinguishable from `msg_ids` -> stays SOFT. Renders as "msg_idghost" (no
+// visible space), so it does NOT read as a valid receipt. Codified so the residual is self-detecting.
+t("ED-286 ceiling (e): DOUBLE-obfuscated receipt (invisible-in-label + invisible-sep) is the DISCLOSED residual (SOFT)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg" + zwsp + "_id" + zwsp + "ghost999) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 0, "the double-obfuscation compound is the disclosed ceiling (e) — abuts to msg_idghost");
+  assert.strictEqual(r.soft.length, 1, "it is a receiptless SOFT (renders as no-space, not a convincing receipt)");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

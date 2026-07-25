@@ -117,21 +117,49 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
 // The NFKD skeleton closes: \p{Cf} format/zero-width, \p{M} combining marks (incl. CGJ), markdown emphasis,
 // compatibility homoglyphs (fullwidth, math-alphanumeric, sub/superscript, ligatures), and \p{Zs} + the
-// named non-\p{Zs} blanks. It does NOT close, and these remain the honest, self-declared residual:
+// named non-\p{Zs} blanks. This normalization is applied on BOTH paths — the citation DETECTION text
+// (normalizeForDetection) AND the msg_id RECEIPT-EXTRACTION clause (BLANK_G + RECEIPT_SEP_INVIS_G +
+// CLAUSE_STRIP_G) — so a blank/invisible separator between the `msg_id` label and its id can no longer
+// downgrade a forged receipt from HARD to SOFT (ED-286 r5 hunter HIGH, closed). It does NOT close, and
+// these remain the honest, self-declared residual:
 //   (a) CROSS-SCRIPT / visual confusables that share NO NFKD decomposition — Cyrillic/Greek <-> Latin
-//       look-alikes (e.g. Cyrillic C/E/P/B look-alikes for Latin C/E/P/B, or a Cyrillic-spoofed "beta"):
-//       NFKD keeps them distinct code points. Closing this needs the Unicode TR39 confusables SKELETON
-//       (external data table), deliberately out of scope for a data-free enforcer.
+//       look-alikes (e.g. Cyrillic C/E/P/B for Latin C/E/P/B, a Cyrillic-spoofed "beta", or the Latin
+//       sharp-s ß U+00DF spoofing the Greek β): NFKD keeps them distinct code points. Closing this needs
+//       the Unicode TR39 confusables SKELETON (external data table), deliberately out of scope for a
+//       data-free enforcer. (Codified as a self-detecting test — if a TR39 pass is ever added it flips.)
 //   (b) a space-rendering code point OUTSIDE \p{Zs} + {U+2800, U+3164, U+1160, U+115F, U+FFA0} — if Unicode
 //       adds a new blank glyph it must be added to BLANK_RE (a named, testable set, not a \p property).
+//       (Now enforced on BOTH the detection AND the receipt-extraction path — see BLANK_G above.)
 //   (c) receipt AUTHENTICITY (a real msg_id resolving to a forged / wrong-instance row) — ED-275; DISCLAIMER.
 //   (d) the append-only Session-log / Change-log history skip (historyMask) — an ACTIVE citation placed
 //       under a (mislabelled) history heading is intentionally not scanned; a social-engineering evasion
 //       tracked with the history-skip feature, not a normalization gap.
+//   (e) a DOUBLE-obfuscated receipt where BOTH the `msg_id` LABEL is split by an invisible AND the
+//       label->id separator is an invisible (e.g. "msg<ZWSP>_id<ZWSP>ghost"): CLAUSE_STRIP_G repairs the
+//       label but the two invisibles collapse to an abutment ("msg_idghost") that is INDISTINGUISHABLE
+//       from a legit `msg_ids`/`msg_identifier` word, so it stays a receiptless SOFT rather than HARD.
+//       Bounded + low-value: it renders as "msg_idghost" (NO visible space), so it does NOT read to a
+//       human as a valid "msg_id ghost" receipt — the SINGLE-obfuscation cases (a blank OR invisible
+//       separator, OR an invisible inside the label) are all closed and tested.
 const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
 const STRIP_RE = /[\p{M}\p{Cf}]/gu;             // combining marks (incl U+034F CGJ) + format (incl zero-width)
 const BLANK_RE = /[\p{Zs}\u2800\u3164\u1160\u115f\uffa0]/u; // space-rendering incl the named non-\p{Zs} blanks
 const CLAUSE_STRIP_G = /[*`~]|[\p{M}\p{Cf}]/gu; // clean the RAW clause for msg_id extraction (KEEP `_`)
+// ED-286 gauntlet r5 (hunter HIGH — RECEIPT-path normalization asymmetry): the msg_id EXTRACTION path
+// must apply the SAME invisible/blank normalization the DETECTION path does, or a citation the detection
+// path scans stays HARD-less. Two closures on the SEPARATOR between the `msg_id` label and the id:
+//   (1) BLANK_G: a BLANK_RE code point (\p{Zs} + U+2800/U+3164/U+1160/U+115F/U+FFA0) as the separator
+//       renders as a VISIBLE space but is not \s and has no NFKD-to-space decomposition, so
+//       MSGID_IN_TEXT_RE's [:=\s]+ failed and a forged blank-separated receipt DOWNGRADED HARD->SOFT
+//       (a false-green: `msg_id⠀ghost` reads to a human as a valid receipt). Map -> " " so it becomes \s.
+//   (2) RECEIPT_SEP_INVIS_G: an INVISIBLE run (\p{Cf} zero-width / \p{M} mark incl. U+034F CGJ)
+//       IMMEDIATELY AFTER the `msg_id` label would otherwise be stripped to "" by CLAUSE_STRIP_G and
+//       ABUT the id (msg_id<ZWSP>ghost -> msg_idghost, [:=\s]+ fails). A TARGETED, position-specific
+//       boundary replace inserts a space there. Position-specific on the LITERAL label so it NEVER
+//       false-matches a legit `msg_ids` array (which carries an ASCII `s` after the label, not an
+//       invisible) — the reason the citation separator could be made optional but this one cannot.
+const BLANK_G = new RegExp(BLANK_RE.source, "gu");
+const RECEIPT_SEP_INVIS_G = /(msg_id)[\p{Cf}\p{M}]+/giu;
 function normalizeForDetection(raw) {
   let norm = "";
   const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
@@ -256,11 +284,19 @@ function evaluate({ docs, betaEventsText }) {
         scannedCitations++;
         const rawStart = map[starts[c]];
         const rawEnd = c + 1 < starts.length ? map[starts[c + 1]] : raw.length;
-        // RAW clause (mapped back from the normalized detect position): NFKD-fold, then strip emphasis
-        // (except `_`), \p{M} marks and \p{Cf} format — so an obfuscated `msg_id` label or id de-obfuscates
-        // to ASCII for extraction (a legit underscore id ab_cd_ef is preserved; ASCII is NFKD-invariant),
-        // keeping an invisible-obfuscated forged receipt HARD instead of a downgraded receiptless SOFT.
-        const clause = raw.slice(rawStart, rawEnd).normalize("NFKD").replace(CLAUSE_STRIP_G, "");
+        // RAW clause (mapped back from the normalized detect position): NFKD-fold, then apply the SAME
+        // invisible/blank normalization as DETECTION so the receipt path can't be desynced from it
+        // (ED-286 r5 hunter HIGH). Order: (1) BLANK_G maps blank-rendering separators -> " " (real \s);
+        // (2) RECEIPT_SEP_INVIS_G turns an invisible run right after the `msg_id` label into a space so
+        // it doesn't abut the id after stripping; (3) CLAUSE_STRIP_G strips remaining emphasis (except
+        // `_`), \p{M} marks and \p{Cf} format so an obfuscated label/id de-obfuscates to ASCII (a legit
+        // underscore id ab_cd_ef is preserved; ASCII is NFKD-invariant). Net: an invisible/blank-obfuscated
+        // forged receipt stays HARD instead of a downgraded receiptless SOFT.
+        const clause = raw.slice(rawStart, rawEnd)
+          .normalize("NFKD")
+          .replace(BLANK_G, " ")
+          .replace(RECEIPT_SEP_INVIS_G, "$1 ")
+          .replace(CLAUSE_STRIP_G, "");
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
         // clause, not just the first. A resolving-first + unresolved-second inside ONE clause was a HARD
         // false-green. ANY cited receipt that does not resolve → HARD.
