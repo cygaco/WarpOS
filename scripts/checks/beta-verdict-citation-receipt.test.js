@@ -447,6 +447,43 @@ t("ED-286 r5: a combining mark after `msg_id` with no following id -> no synthes
   assert.strictEqual(r.hard.length, 0, "a mark with no following id must not synthesize a separator (lookahead)");
 });
 
+// ── FALSE-POSITIVE direction of the OPTIONAL separator (lead ask): the `*` quantifier widens match
+//    ACCEPTANCE (a zero-separator concatenation now matches, to catch invisible-removed separators).
+//    Confirm the widening is BOUNDED — a benign `beta`-adjacent NON-citation must stay unscanned. These
+//    flip RED if the acceptance ever over-widens (the quiet-regression side hunters don't probe). ──
+for (const [label, text] of [
+  ["'beta version' (adjacent non-token word)", "the beta version ships Friday; nothing decided"],
+  ["'beta-tested' (hyphen sep + non-token)", "the decision was beta-tested by users"],
+  ["'betaVerdict' identifier (case-sensitive: capital V != verdict)", "const betaVerdict = getVerdict();"],
+  ["'β' then a NON-adjacent verdict word", "the β release was, eventually, approved by ops much later"],
+]) {
+  t(`ED-286 false-positive GREEN: ${label} is NOT a citation (optional-separator acceptance is bounded)`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.scannedCitations, 0, `${label} must not accidentally match as a citation`);
+    assert.strictEqual(r.hard.length + r.soft.length, 0);
+  });
+}
+t("ED-286 positive control: a GENUINE concatenated 'βDECIDE' (invisible-removed origin) IS scanned", () => {
+  // The reason the separator is optional — an invisible that normalized to "" leaves the tokens adjacent.
+  const r = evaluate({ docs: [{ path: "a.md", text: "the βDECIDE (msg_id ghostcat) was final" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a genuine adjacent citation with an unresolved receipt must still be HARD");
+  assert.strictEqual(r.hard[0].msg_id, "ghostcat");
+});
+// ── β design→build focus (msg_id 562ba5b6): astral char BOTH before the citation AND after the msg_id,
+//    to prove the per-UTF-16-unit index map keeps raw.slice aligned across the whole clause (the r4
+//    false-green locus). (The precomposed-accent decision token 'β DÉCIDE' U+00C9 is ED-286 #2b above —
+//    the exact case the NFKC prescription would have missed and NFKD+strip folds HARD.) ──
+t("ED-286 β-focus: astral chars BOTH before the citation AND after the msg_id -> HARD, correct id", () => {
+  // Astral chars SURROUND the receipt (before the citation + after the id) — the r4 index-map desync
+  // locus. The msg_id->id separator itself is a clean space (a visible astral char between label and id
+  // renders visibly and is not a covert receipt — out of scope; see ceiling). Proves raw.slice stays
+  // aligned across a clause with supplementary-plane chars on both sides.
+  const docs = [{ path: "a.md", text: emoji + " note " + emoji + " β DECIDE (msg_id ghostb07) " + emoji + " " + emoji + " ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "astral chars around the clause must not desync the raw-clause map");
+  assert.strictEqual(r.hard[0].msg_id, "ghostb07", "the id must slice correctly with astral chars on both sides");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
