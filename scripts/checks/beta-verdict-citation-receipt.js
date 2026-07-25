@@ -34,6 +34,13 @@
  *      (ENOENT) input is fine.
  *   F6 the ED-275 disclaimer prints on EVERY path, including the fail-closed exit-2 paths.
  *
+ * ED-286 (β DECIDE B/0.90, msg_id f1a4d7c9) — the citation-obfuscation defense is now a MECHANISM, not
+ * a category list: normalizeForDetection folds the detection text to its NFKD skeleton (compat-decompose
+ * + strip \p{M} marks incl. U+034F CGJ + strip \p{Cf} format + normalize blanks) THEN matches, closing
+ * the invisible/combining/confusable CLASS by construction (BOTH halves of the citation, not just β).
+ * The UTF-16-vs-code-point index-map desync (false-green after any astral char) is fixed (per-UTF-16-unit
+ * map). Residual explicitly disclosed at the NORMALIZATION CEILING comment below (P-059).
+ *
  * GITIGNORED-LEDGER POSTURE (mirrors betaevents-dedup-lint): betaEvents is a gitignored advisory
  * ledger, absent on a fresh clone / CI. Absent (ENOENT) => SKIP-with-note (exit 0). Present-but-
  * unreadable => fail-closed exit 2. SCOPE: /scan:full only, never CI; report-only by default.
@@ -61,40 +68,84 @@ const DEFAULT_DOC_DIRS = [
 ];
 const DEFAULT_DOC_FILES = [path.join(REPO, "ROADMAP.md")];
 
-// A β-verdict CITATION: a β/beta token, an optional punctuation/space separator (F4 — `β: DECIDE`),
-// then a canonical verdict token. NB a leading `\b` does NOT work before `β` (non-ASCII has no ASCII
-// word boundary against a preceding space) — a negative lookbehind matches both `β …` and `beta …`.
-// The separator class uses `\s` (never a literal space before `]` — the NUL-via-Write trap) + the
-// ASCII colon + em/en-dash + hyphen (hyphen last = literal).
-const CITATION_RE = /(?<![A-Za-z])(?:β|beta|Beta)[\s:\u2014\u2013-]+(?:DECIDE|DIRECTIVE|ESCALATE|ruled|verdict|approved|DECIDES)\b/;
+// A β-verdict CITATION: a β/beta token, an OPTIONAL punctuation/space separator (F4 — `β: DECIDE`), then
+// a canonical verdict token. ED-286: the separator quantifier is `*` (not `+`) so an INVISIBLE separator
+// that normalizeForDetection removes to "" (a zero-width / combining char between the tokens) still
+// matches, e.g. `β<ZWSP>DECIDE` -> `βDECIDE`; a real space or a blank-folded separator matches too. NB a
+// leading `\b` does NOT work before `β` (non-ASCII has no ASCII word boundary against a preceding space)
+// — a negative lookbehind matches both `β …` and `beta …`. The separator class uses `\s` (never a literal
+// space before `]` — the NUL-via-Write trap) + the ASCII colon + em/en-dash + hyphen (hyphen last = literal).
+// BOTH HALVES are defended identically: this regex runs on the NFKD-normalized text (normalizeForDetection),
+// so a homoglyph/combining/invisible attack on the DECISION token (DECIDE|DIRECTIVE|…) is folded away just
+// like one on the β token — the r4 "β side only" gap is closed by construction, not by a second strip-list.
+const CITATION_RE = /(?<![A-Za-z])(?:β|beta|Beta)[\s:\u2014\u2013-]*(?:DECIDE|DIRECTIVE|ESCALATE|ruled|verdict|approved|DECIDES)\b/;
 // A receipt token on the SAME line: the literal `msg_id` label, then an OPTIONAL markdown/quote
 // delimiter (F3 — `msg_id `abc``), then an id-shaped token. F2: capture ANY id-shaped token (>=1
 // char, same rule as MSGID_SHAPE_RE) — a short unresolved token must be HARD, not downgraded to SOFT.
 const MSGID_IN_TEXT_RE = /\bmsg_id[:=\s]+[`'"]?([A-Za-z0-9][A-Za-z0-9_-]*)/i;
 // A betaEvents row's own msg_id (id-shaped). ONE id-shape rule for both extraction and indexing (F2).
 const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-// β G1 (STRUCTURAL class-closure, NOT an enumerated instance list): normalize the DETECTION text by
-// CATEGORY before citation matching — (1) markdown emphasis/strikethrough delimiters (* _ ` ~) -> space;
-// (2) ALL Unicode FORMAT chars (\p{Cf}: every zero-width / BOM / joiner, present AND future) -> space;
-// (3) common β-HOMOGLYPHS (Greek beta symbol + the mathematical betas) folded -> β. A per-code-point
-// INDEX MAP (norm index -> raw index) keeps it robust to length changes (a 2-UTF-16-unit homoglyph/
-// format char folding to 1 char), so a citation position on `norm` slices the correct RAW clause. msg_id
-// EXTRACTION runs on the RAW clause with * / ` / ~ / \p{Cf} stripped but `_` PRESERVED (ids keep abc_def).
-// NOTE (named bounded ceiling): exhaustive Unicode-confusable folding of β is out of scope — the common
-// beta-symbol + mathematical-beta set is folded; other confusables are the ED-follow-up class.
-const EMPHASIS_OR_FORMAT_RE = /[*_`~]|\p{Cf}/u;
-const HOMOGLYPH_BETA_RE = /[\u03D0\u{1D6C3}\u{1D6FD}\u{1D737}\u{1D771}\u{1D7AB}]/u;
-const CLAUSE_STRIP_G = /[*`~]|\p{Cf}/gu; // clean the RAW clause for msg_id extraction (KEEP `_`)
+// ── beta G1 as the MECHANISM, not the category (ED-286 / beta DECIDE B/0.90 msg_id f1a4d7c9) ─────────
+// normalizeForDetection folds the DETECTION text to its RENDERED / canonical skeleton, THEN matches. This
+// closes the invisible/combining/confusable-obfuscation CLASS BY CONSTRUCTION — not by enumerating the
+// next bad category (the r3->r4 whack-a-mole trap ED-285/ED-286 diagnosed). Per raw CODE POINT:
+//   * markdown emphasis delimiters (* _ ` ~)  -> ""   (removed; never breaks a token, never forms a sep)
+//   * combining MARKS \p{M} (incl. INVISIBLE U+034F CGJ) + FORMAT \p{Cf} (every zero-width / BOM / joiner)
+//        -> ""  (removed — a mark/format char INSIDE a token must vanish so the token survives; between
+//               tokens it vanishes too, which is why the citation separator is OPTIONAL, see CITATION_RE)
+//   * space-rendering blanks — \p{Zs} PLUS the non-\p{Zs} blanks U+2800 BRAILLE PATTERN BLANK & the Hangul
+//        fillers (U+3164 / U+1160 / U+115F / U+FFA0)  -> " "  (a real separator the citation regex sees)
+//   * everything else -> NFKD (compatibility decomposition) with any \p{M}/\p{Cf} in the decomposition
+//        stripped. NFKD folds BOTH halves of the citation: beta-homoglyphs (math betas U+1D6C3.., Greek
+//        beta symbol U+03D0) -> beta, AND decision-token homoglyphs (fullwidth D-E-C-I-D-E, math-alphanum,
+//        and precomposed accents like E-acute = E + combining-acute once the mark is stripped) -> DECIDE.
+//        The old enumerated 6-beta-homoglyph list AND the "beta side only" defense gap are both subsumed.
+//
+// INDEX MAP (ED-286 co-residual FIX — was a false-green after any astral char): map[i] = the raw UTF-16
+// index that produced norm's UTF-16 unit i. Built PER UTF-16 UNIT of the fold output, and rawIdx advances
+// by the SOURCE code point's UTF-16 length — so an unchanged ASTRAL char (2 UTF-16 units) contributes 2
+// aligned map entries. The r4 bug iterated the fold output by CODE POINT (`for (const u of out)`) while
+// advancing by code point: an astral char appended 2 units to `norm` but only 1 map entry, desyncing every
+// later position. RegExp `.index` is a UTF-16 offset, so the raw-clause slice then pointed at the wrong
+// offset (a downgraded/misattributed finding = a false-green). Map values are always code-point starts, so
+// raw.slice(map[a], map[b]) never splits a surrogate pair.
+//
+// msg_id EXTRACTION runs on the RAW clause NFKD-folded with * / ` / ~ / \p{M} / \p{Cf} stripped but `_`
+// PRESERVED (ids keep abc_def; ASCII is NFKD-invariant) — so an invisible-obfuscated forged receipt
+// de-obfuscates to ASCII and stays HARD instead of being downgraded to a receiptless SOFT.
+//
+// ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
+// The NFKD skeleton closes: \p{Cf} format/zero-width, \p{M} combining marks (incl. CGJ), markdown emphasis,
+// compatibility homoglyphs (fullwidth, math-alphanumeric, sub/superscript, ligatures), and \p{Zs} + the
+// named non-\p{Zs} blanks. It does NOT close, and these remain the honest, self-declared residual:
+//   (a) CROSS-SCRIPT / visual confusables that share NO NFKD decomposition — Cyrillic/Greek <-> Latin
+//       look-alikes (e.g. Cyrillic C/E/P/B look-alikes for Latin C/E/P/B, or a Cyrillic-spoofed "beta"):
+//       NFKD keeps them distinct code points. Closing this needs the Unicode TR39 confusables SKELETON
+//       (external data table), deliberately out of scope for a data-free enforcer.
+//   (b) a space-rendering code point OUTSIDE \p{Zs} + {U+2800, U+3164, U+1160, U+115F, U+FFA0} — if Unicode
+//       adds a new blank glyph it must be added to BLANK_RE (a named, testable set, not a \p property).
+//   (c) receipt AUTHENTICITY (a real msg_id resolving to a forged / wrong-instance row) — ED-275; DISCLAIMER.
+//   (d) the append-only Session-log / Change-log history skip (historyMask) — an ACTIVE citation placed
+//       under a (mislabelled) history heading is intentionally not scanned; a social-engineering evasion
+//       tracked with the history-skip feature, not a normalization gap.
+const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
+const STRIP_RE = /[\p{M}\p{Cf}]/gu;             // combining marks (incl U+034F CGJ) + format (incl zero-width)
+const BLANK_RE = /[\p{Zs}\u2800\u3164\u1160\u115f\uffa0]/u; // space-rendering incl the named non-\p{Zs} blanks
+const CLAUSE_STRIP_G = /[*`~]|[\p{M}\p{Cf}]/gu; // clean the RAW clause for msg_id extraction (KEEP `_`)
 function normalizeForDetection(raw) {
   let norm = "";
-  const map = []; // map[normIndex] = raw UTF-16 index of the source code point
+  const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
   let rawIdx = 0;
-  for (const cp of raw) { // iterates by CODE POINT (surrogate-pair-safe)
-    const out = EMPHASIS_OR_FORMAT_RE.test(cp) ? " " : HOMOGLYPH_BETA_RE.test(cp) ? "\u03b2" : cp;
-    for (const u of out) { map.push(rawIdx); norm += u; }
-    rawIdx += cp.length;
+  for (const cp of raw) {              // iterate the RAW by CODE POINT (surrogate-pair-safe)
+    const cpLen = cp.length;           // 1 or 2 UTF-16 units in the SOURCE
+    let out;
+    if (EMPHASIS_RE.test(cp)) out = "";
+    else if (BLANK_RE.test(cp)) out = " ";
+    else out = cp.normalize("NFKD").replace(STRIP_RE, ""); // compat-fold + drop marks/format from the decomposition
+    for (let j = 0; j < out.length; j++) { map.push(rawIdx); norm += out[j]; } // map PER UTF-16 UNIT of the fold
+    rawIdx += cpLen;                   // advance by the SOURCE code point's UTF-16 length (astral-safe)
   }
-  map.push(rawIdx); // sentinel: map[norm.length] === raw.length
+  map.push(rawIdx); // sentinel: map[norm.length] === raw.length (raw's UTF-16 length)
   return { norm, map };
 }
 // Verdict row types (from reasoned-consult-honesty's live corpus). A citation's receipt must resolve
@@ -205,8 +256,11 @@ function evaluate({ docs, betaEventsText }) {
         scannedCitations++;
         const rawStart = map[starts[c]];
         const rawEnd = c + 1 < starts.length ? map[starts[c + 1]] : raw.length;
-        // RAW clause (mapped back from the normalized detect position), emphasis/format stripped, `_` kept.
-        const clause = raw.slice(rawStart, rawEnd).replace(CLAUSE_STRIP_G, "");
+        // RAW clause (mapped back from the normalized detect position): NFKD-fold, then strip emphasis
+        // (except `_`), \p{M} marks and \p{Cf} format — so an obfuscated `msg_id` label or id de-obfuscates
+        // to ASCII for extraction (a legit underscore id ab_cd_ef is preserved; ASCII is NFKD-invariant),
+        // keeping an invisible-obfuscated forged receipt HARD instead of a downgraded receiptless SOFT.
+        const clause = raw.slice(rawStart, rawEnd).normalize("NFKD").replace(CLAUSE_STRIP_G, "");
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
         // clause, not just the first. A resolving-first + unresolved-second inside ONE clause was a HARD
         // false-green. ANY cited receipt that does not resolve → HARD.

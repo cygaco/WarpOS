@@ -290,6 +290,95 @@ t("G2 benign-adjacent GREEN: emphasis-heavy prose with NO verdict token is not a
   assert.strictEqual(r.hard.length + r.soft.length, 0);
 });
 
+// ── ED-286 (β DECIDE B/0.90 msg_id f1a4d7c9): MECHANISM class-closure — hunter-prescribed planted REDs ──
+// The r4 halt (byte-confirmed by β): normalizeForDetection folded \p{Cf} + emphasis + 6 β-homoglyphs but
+// (1) MISSED \p{M} combining marks incl. the INVISIBLE U+034F CGJ; (2) gave the DECISION-token half of
+// CITATION_RE zero defense; (3) missed non-\s blank separators (U+2800/U+3164); (4) its per-code-point
+// index map DESYNCED after any astral char (a false-green). The NFKD-skeleton mechanism closes all four.
+const cgj = String.fromCodePoint(0x034F);          // U+034F COMBINING GRAPHEME JOINER — invisible, \p{M} (NOT \p{Cf})
+const acute = String.fromCodePoint(0x0301);        // U+0301 COMBINING ACUTE — a visible combining mark
+const eAcute = String.fromCodePoint(0x00C9);       // U+00C9 precomposed É (NFKD -> E + U+0301, then mark-stripped)
+const braille = String.fromCodePoint(0x2800);      // U+2800 BRAILLE PATTERN BLANK — non-\s blank separator
+const hangulFiller = String.fromCodePoint(0x3164); // U+3164 HANGUL FILLER — non-\s blank separator
+const fwDECIDE = [0xFF24, 0xFF25, 0xFF23, 0xFF29, 0xFF24, 0xFF25].map((c) => String.fromCodePoint(c)).join(""); // fullwidth ＤＥＣＩＤＥ
+const emoji = String.fromCodePoint(0x1F600);       // an astral (supplementary-plane) char — 2 UTF-16 units
+
+t("ED-286 #1: INVISIBLE U+034F CGJ inside the decision token ('β D<CGJ>ECIDE') -> HARD (not evaded)", () => {
+  const docs = [{ path: "a.md", text: "β D" + cgj + "ECIDE (msg_id ghostcgj) shipped" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "an invisible combining mark (\\p{M}) inside DECIDE must not hide the citation");
+  assert.strictEqual(r.hard[0].msg_id, "ghostcgj");
+});
+t("ED-286 #1b: INVISIBLE U+034F CGJ as the β<->DECIDE separator -> HARD", () => {
+  const docs = [{ path: "a.md", text: "β" + cgj + "DECIDE (msg_id ghostcgj2) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "an invisible \\p{M} separator (optional-separator regex) must not evade");
+  assert.strictEqual(r.hard[0].msg_id, "ghostcgj2");
+});
+t("ED-286 #2: VISIBLE combining mark on the decision token ('β DE<U+0301>CIDE') -> HARD", () => {
+  const docs = [{ path: "a.md", text: "β DE" + acute + "CIDE (msg_id ghostacc) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a combining accent on the decision token must be stripped, not evaded");
+  assert.strictEqual(r.hard[0].msg_id, "ghostacc");
+});
+t("ED-286 #2b: PRECOMPOSED accent on the decision token ('β DÉCIDE' U+00C9) -> HARD (NFKD decomposes then strips)", () => {
+  const docs = [{ path: "a.md", text: "β D" + eAcute + "CIDE (msg_id ghostpre) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a precomposed accent must NFKD-decompose then mark-strip, not evade");
+});
+t("ED-286 #2c: BOTH HALVES — homoglyph DECISION token (fullwidth ＤＥＣＩＤＥ) -> HARD (r4 defended only β)", () => {
+  const docs = [{ path: "a.md", text: "β " + fwDECIDE + " (msg_id ghostfw) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "the DECISION-token half must be homoglyph-folded too (single NFKD pass, both halves)");
+  assert.strictEqual(r.hard[0].msg_id, "ghostfw");
+});
+t("ED-286 #3: non-\\s BLANK separator U+2800 BRAILLE BLANK ('β<U+2800>DECIDE') -> HARD", () => {
+  const docs = [{ path: "a.md", text: "β" + braille + "DECIDE (msg_id ghostbrl) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a blank-rendering non-\\s separator must not evade the separator class");
+  assert.strictEqual(r.hard[0].msg_id, "ghostbrl");
+});
+t("ED-286 #3b: non-\\s BLANK separator U+3164 HANGUL FILLER -> HARD", () => {
+  const docs = [{ path: "a.md", text: "β" + hangulFiller + "DIRECTIVE (msg_id ghosthan) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+  assert.strictEqual(r.hard[0].msg_id, "ghosthan");
+});
+t("ED-286 #4: UTF-16 index-map — ASTRAL char(s) BEFORE an unresolved-receipt citation stay HARD (no desync)", () => {
+  const docs = [{ path: "a.md", text: emoji + " and " + emoji + " β DECIDE (msg_id ghostast) ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "an astral char must not desync the raw-clause map (the r4 false-green)");
+  assert.strictEqual(r.hard[0].msg_id, "ghostast", "the correct msg_id must be sliced from the raw clause after an astral char");
+});
+t("ED-286 #4b: UTF-16 index-map — astral char before a RESOLVING citation stays clean (map slices right id)", () => {
+  const docs = [{ path: "a.md", text: emoji + " β DECIDE (msg_id good_astral) ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("good_astral")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "the astral-aligned map must slice the resolving id correctly");
+});
+t("ED-286 #4c: astral char INSIDE the clause between citation and its receipt -> id still extracted (HARD)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE " + emoji + " (msg_id ghostmid) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+  assert.strictEqual(r.hard[0].msg_id, "ghostmid");
+});
+// DISCLOSED-CEILING documentation (P-059, residual (a)): NFKD does NOT fold CROSS-SCRIPT confusables.
+// This test CODIFIES the honest residual — a Cyrillic-spoofed decision token is NOT detected. If a future
+// change adds a Unicode TR39 confusables skeleton, this test SHOULD flip (that is the self-detecting
+// trigger for the ceiling, not a hunter finding next round). See NORMALIZATION CEILING (a) in the enforcer.
+t("ED-286 ceiling (a): a CROSS-SCRIPT (Cyrillic) confusable is the DISCLOSED, un-closed residual (documented)", () => {
+  const cyrDIRECTIVE = "DIR" + String.fromCodePoint(0x0415) + "CTIV" + String.fromCodePoint(0x0415); // Cyrillic Е U+0415
+  const docs = [{ path: "a.md", text: "β " + cyrDIRECTIVE + " (msg_id wouldbeghost) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 0, "cross-script confusables are the DISCLOSED ceiling (needs TR39) — NORMALIZATION CEILING (a)");
+  assert.strictEqual(r.scannedCitations, 0, "the spoofed decision token is not NFKD-folded to ASCII, so no citation matches");
+});
+t("ED-286: benign astral-heavy prose with NO verdict token is still not a citation (no over-match)", () => {
+  const docs = [{ path: "a.md", text: emoji + " the beta build " + emoji + " is ready; nothing decided." }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.scannedCitations, 0);
+  assert.strictEqual(r.hard.length + r.soft.length, 0);
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
