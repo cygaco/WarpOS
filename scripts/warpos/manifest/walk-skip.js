@@ -40,6 +40,7 @@ const WALK_SKIP_DIRS = new Set([
   "worktrees", // .claude/worktrees/ — agent scratch clones; not framework
   ".worktrees", // repo-root builder isolation worktrees (.worktrees/wt-*) — agent scratch; never framework, must never enter the shipping manifest nor break its build
   "_planning", // operator planning scratch for in-flight system updates; not framework, not shipped
+  "_archive", // tracked archive tier for retired root docs (archive-never-delete); kept in the repo + pushed, but never shipped framework content. Added 2026-07-26 root-cleanup.
   "WarpOS-v1", // operator's v1-rebuild charter corpus (root, in-flight planning scratch, same class as _planning / WarpOS-Update); kept local + gitignored, never shipped. Clears the 24-file --strict unmanifested delta (crud-sweep 2026-07-16).
   "_reports", // per-project report OUTPUT (sprint/milestone/session/checkpoint reports via /report); created on use like runtime/ — NOT framework content. The /report skill (.claude/commands/) + framework/templates/report/ ship and seed it; the emitted reports themselves never ship. (SP-20260531-001)
   "agent-memory", // .claude/agent-memory/<teammate>/ — per-agent teammate memory store (e.g. Beta's accumulated judgment); runtime/local like the home memory dir + gitignored, NOT framework content. Without this skip the builder can't classify it and the build fails (session-end 2026-06-05).
@@ -51,6 +52,9 @@ const WALK_SKIP_FILES = new Set([
   ".env.local",
   "DUMP.md",
   "CODEX-LOG.md",
+  // HOW2CLEANMEMORY.md — operator-facing failure-case writeup (2026-07-26, blog raw
+  // material); local per-repo doc, same class as DUMP.md, never shipped framework content.
+  "HOW2CLEANMEMORY.md",
   // Transient/local root docs — operator input specs + per-repo registers, NOT
   // shipped framework (same class as DUMP.md). WARPOS.md is a per-repo gap register
   // (products generate their own via /warp:flag; canonical's is local, never shipped);

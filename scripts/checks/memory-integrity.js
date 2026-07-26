@@ -79,7 +79,10 @@ const norm = (p) => p.replace(/\\/g, "/");
 // (that omission made a real entry look orphaned AND hid a broken pointer whose
 // parens the check never reported → --enforce false green). Index lines are
 // short / single-match / anchored, so this stays O(n). (gauntlet r2, FIX-2.)
-const INDEX_LINE_RE = /^\s*[-*]\s*\[([^\]]*)\]\((.+?)\)\s*(?:[—-]\s*(.*))?$/;
+// The hook separator REQUIRES surrounding whitespace (` — ` / ` - `) so a hyphen INSIDE the
+// filename is not mistaken for the delimiter — otherwise `](ghost(1)-copy.md) — hook` parses
+// target=`ghost(1` (the `-copy` hyphen read as the separator). (gauntlet r9, backend :82.)
+const INDEX_LINE_RE = /^\s*[-*]\s*\[([^\]]*)\]\((.+?)\)(?:\s+[—-]\s+(.*))?\s*$/;
 // A line that STARTS like an index entry (`- [..](`) but does NOT fully match the
 // pattern above must be surfaced, not dropped — parseIndex records it as `malformed`
 // so evaluate() can emit a `malformed-index-line` finding (defense-in-depth so
@@ -131,13 +134,22 @@ function decodeScalar(raw) {
   if (raw == null) return null;
   let v = String(raw).trim();
   if (v === "") return null;
-  if (/^[[{|>]/.test(v)) return null; // unsupported compound/block YAML → invalid
+  // Quoted scalar: strip ONE layer of matching quotes; content is a LITERAL string — an inline
+  // '#' or the word null INSIDE quotes is part of the value, not a comment/null.
   const q = v[0];
   if ((q === '"' || q === "'") && v.length >= 2 && v[v.length - 1] === q) {
     v = v.slice(1, -1).trim();
     return v === "" ? null : v; // quoted-empty → absent; else a literal string
   }
-  if (v === "null" || v === "~") return null; // unquoted YAML null sentinels
+  // UNQUOTED: strip a YAML-style inline comment (a '#' preceded by whitespace, to EOL), then
+  // re-trim. Use a SINGLE `\s` (not `\s+`) — `\s+#` before a mismatchable `#` backtracks O(n^2)
+  // on a long internal-whitespace scalar (a ReDoS, same class removed from extractWikilinks); a
+  // single boundary char is enough and the trailing trim() clears the rest of the run. O(n).
+  // (gauntlet r9 backend :140 + r7 self-regression ReDoS.)
+  v = v.replace(/\s#.*$/, "").trim();
+  if (v === "") return null;
+  if (/^[[{|>]/.test(v)) return null; // unsupported compound/block YAML → invalid
+  if (/^(null|~)$/i.test(v)) return null; // unquoted YAML null sentinels, ANY case (null/Null/NULL/~)
   return v;
 }
 
@@ -178,27 +190,42 @@ function parseFrontmatter(text) {
   // (gauntlet r2, backend lane :130.)
   let inMetadata = false;
   let metadataIndent = 0;
-  let metadataChildIndent = -1; // indent of metadata's DIRECT children (first one fixes it)
+  let metadataChildIndent = -1; // indent of metadata's DIRECT children (first line inside fixes it)
+  let metadataInvalid = false; // any NON-flat-mapping structure under metadata → type untrustworthy
   for (const ln of fmLines) {
     if (ln.trim() === "") continue;
-    const km = ln.match(/^[ \t]*([A-Za-z0-9_-]+):[ \t]*(.*)$/);
-    if (!km) continue; // list items / non-scalar-key lines are not fields we read
     const ind = indentOf(ln);
-    const key = km[1];
-    const val = km[2];
+    const km = ln.match(/^[ \t]*([A-Za-z0-9_-]+):[ \t]*(.*)$/);
 
     // A dedent to/above metadata's own level ends the metadata block.
     if (inMetadata && ind <= metadataIndent) {
       inMetadata = false;
       metadataChildIndent = -1;
     }
+
     if (inMetadata) {
-      if (metadataChildIndent === -1) metadataChildIndent = ind; // first child fixes the direct-child level
-      if (ind === metadataChildIndent && key === "type") out.type = decodeScalar(val);
-      continue; // stay inside metadata until a dedent; grandchildren are ignored
+      const trimmed = ln.trim();
+      if (trimmed.startsWith("#")) continue; // a YAML comment line — ignore, not a structure
+      // metadata must be a FLAT MAPPING of `key: scalar` at ONE child indent. A sequence item
+      // (`- ...`), a DEEPER (nested) line, or a non-`key:` line means metadata is NOT a simple
+      // {type: ...} mapping — so `type` cannot be trusted (a `type` nested inside a sequence/
+      // sub-mapping must NOT satisfy metadata.type). (gauntlet r2 :130 nested-mapping + r9 :196
+      // sequence-nested — closed at the mechanism: reject the whole non-flat block.)
+      if (metadataChildIndent === -1) metadataChildIndent = ind; // first line inside fixes the child indent
+      // ANY inconsistent child indent (deeper = nesting, OR shallower-but-still-inside), a sequence
+      // item, or a non-`key:` line means metadata isn't a flat mapping → type untrustworthy.
+      if (trimmed.startsWith("-") || ind !== metadataChildIndent || !km) {
+        metadataInvalid = true;
+        continue;
+      }
+      if (km[1] === "type") out.type = decodeScalar(km[2]);
+      continue; // stay inside metadata until a dedent
     }
-    // Top-level keys only (indent 0); a deeper key outside metadata is ignored.
-    if (ind !== 0) continue;
+
+    if (!km) continue; // outside metadata, only simple `key:` lines are fields we read
+    if (ind !== 0) continue; // top-level keys only; a nested `name:`/`description:` can't shadow
+    const key = km[1];
+    const val = km[2];
     if (key === "metadata") {
       inMetadata = true;
       metadataIndent = ind;
@@ -206,6 +233,7 @@ function parseFrontmatter(text) {
     } else if (key === "name") out.name = decodeScalar(val);
     else if (key === "description") out.description = decodeScalar(val);
   }
+  if (metadataInvalid) out.type = null; // a malformed (non-flat) metadata block → no trustworthy type
   return out;
 }
 
@@ -536,7 +564,17 @@ function run(opts) {
       if (e && e.code === "ENOENT") return skipResult(notes);
       throw e;
     }
-    if (!rootStat.isDirectory()) return skipResult(notes);
+    // Root EXISTS but is NOT a directory (a file/device where the agent-memory dir belongs) is a
+    // corrupt/unexpected state, NOT "absent" — fail-closed, never skip-OPEN under --enforce.
+    // (gauntlet r8, qa lane :539 — the exists-but-not-a-dir sibling of the root-stat class.)
+    if (!rootStat.isDirectory()) {
+      return {
+        ok: false,
+        fatal: true,
+        problems: [`default memory root '${DEFAULT_MEMORY_ROOT}' exists but is not a directory`],
+        notes,
+      };
+    }
     // A readdir error here must likewise NOT be swallowed as skip — let it propagate
     // to main() → exit 2 (fail-closed). (gauntlet r2, FIX-1.)
     const subdirs = fs.readdirSync(memRootAbs, { withFileTypes: true });

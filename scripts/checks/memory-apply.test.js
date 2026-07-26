@@ -381,5 +381,80 @@ ok("LIVE-SECURITY: an unreadable index (MEMORY.md is a dir) fails BEFORE any del
   assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the file was NOT deleted (pre-read failed before the mutation loop)");
 });
 
+// ── security gauntlet r8 (agy+qa): the case-insensitivity class, one canonicalization ──
+ok("PURE: canonicalStoreName resolves a case-variant plan name to the real on-disk entry", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-canon-"));
+  const store = path.join(base, "agent");
+  seedStore(store); // writes drop_one.md, keep_one.md, MEMORY.md
+  assert.strictEqual(mod.canonicalStoreName(store, "DROP_ONE.md"), "drop_one.md", "case-variant resolves to disk name");
+  assert.strictEqual(mod.canonicalStoreName(store, "drop_one.md"), "drop_one.md", "exact match");
+  assert.strictEqual(mod.canonicalStoreName(store, "nope.md"), null, "no match → null");
+});
+
+ok("LIVE-SECURITY: deleting a CASE-VARIANT name (DROP_ONE.md) removes the file AND its index line (no broken pointer)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-case-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "DROP_ONE.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, `apply should be clean, got ${r.status} :: ${r.stderr}`);
+  assert.ok(!fs.existsSync(path.join(store, "drop_one.md")), "the real (lowercase) file was deleted");
+  const idx = fs.readFileSync(path.join(store, "MEMORY.md"), "utf8");
+  assert.ok(!/drop_one\.md/i.test(idx), "the index line was removed (case-insensitive) — no broken pointer");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual((out.postFindings || []).length, 0, "post-check clean (bijection intact)");
+});
+
+ok("LIVE-SECURITY: a CORRECT-only apply with an unreadable index (MEMORY.md dir) fails BEFORE the correct (no partial)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-corr-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = fs.readFileSync(path.join(store, "drop_one.md"), "utf8");
+  fs.unlinkSync(path.join(store, "MEMORY.md"));
+  fs.mkdirSync(path.join(store, "MEMORY.md")); // index is now a dir → not a readable regular file
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody: "---\nname: drop-one\ndescription: x\nmetadata:\n  type: feedback\n---\nCORRECTED\n" }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "index pre-check fails-closed BEFORE any correct (exit 2)");
+  assert.strictEqual(fs.readFileSync(path.join(store, "drop_one.md"), "utf8"), before, "the fact file was NOT rewritten (no partial mutation)");
+});
+
+// ── security gauntlet r9 (backend): all-or-nothing rollback + malformed-plan ──────
+ok("LIVE-SECURITY: a mid-sequence apply fault ROLLS BACK op1's delete — true all-or-nothing (:322)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-rollback-"));
+  const store = path.join(base, "agent");
+  seedStore(store); // drop_one.md, keep_one.md, MEMORY.md
+  // Make keep_one.md read-only so the correct (op2) THROWS after the delete (op1) commits.
+  fs.chmodSync(path.join(store, "keep_one.md"), 0o444);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "reversed" },
+      { file: "keep_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody: "---\nname: keep-one\ndescription: x\nmetadata:\n  type: feedback\n---\nNEW\n" },
+    ],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  try { fs.chmodSync(path.join(store, "keep_one.md"), 0o644); } catch {} // restore for cleanup
+  assert.strictEqual(r.status, 2, "a mid-sequence fault fails-closed exit 2");
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "op1's deleted file was RESTORED by rollback — all-or-nothing held");
+});
+
+ok("LIVE: a non-array plan.changes is a MALFORMED plan (exit 2), not a silent empty one (:101)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-badplan-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const p = path.join(base, "plan.json");
+  fs.writeFileSync(p, JSON.stringify({ store, changes: "not-an-array" }));
+  const r = spawnSync("node", [CHECK, "--plan", p, "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "non-array changes → fatal exit 2, not a silent exit 0");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true);
+});
+
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

@@ -95,6 +95,32 @@ function isSafeStoreFilename(name) {
   return n.toLowerCase().endsWith(".md");
 }
 
+// Resolve a plan filename to its ACTUAL on-disk directory-entry name (case-exact). The ONE
+// canonicalization the whole case-insensitivity class routes through: dedup lowercases, and
+// unlink + index-removal use this canonical name, so a plan that says `DROP_ONE.md` on a
+// case-insensitive FS unlinks the real `drop_one.md` AND removes its `drop_one.md` index line
+// (otherwise the unlink succeeds via FS case-folding but the index line survives → broken
+// pointer). Returns the real entry name, null if no case-insensitive match, or throws (with
+// .ambiguous) if >1 case-variant exists (only possible on a case-SENSITIVE fs).
+// (security gauntlet — the case class, fixed once at the mechanism.)
+function canonicalStoreName(storeAbs, name) {
+  let entries;
+  try {
+    entries = fs.readdirSync(storeAbs);
+  } catch {
+    return null;
+  }
+  const lower = String(name == null ? "" : name).toLowerCase();
+  const matches = entries.filter((e) => e.toLowerCase() === lower);
+  if (matches.length === 0) return null;
+  if (matches.length > 1) {
+    const err = new Error(`ambiguous case-variant filenames for '${name}': ${matches.join(", ")}`);
+    err.ambiguous = matches;
+    throw err;
+  }
+  return matches[0];
+}
+
 function validatePlan(plan) {
   const violations = [];
   const planned = [];
@@ -163,8 +189,11 @@ function validatePlan(plan) {
  */
 function removeIndexLines(indexText, filesToRemove) {
   const { entries } = mem.parseIndex(indexText);
+  // Case-insensitive match: the index line's target may differ in case from the canonical
+  // on-disk name (CLASS-1). Lowercase both sides so the deleted file's line is always removed.
+  const removeLower = new Set([...filesToRemove].map((f) => String(f).toLowerCase()));
   const removeLineNums = new Set(
-    entries.filter((e) => e && filesToRemove.has(e.target)).map((e) => e.line),
+    entries.filter((e) => e && removeLower.has(String(e.target).toLowerCase())).map((e) => e.line),
   );
   const lines = String(indexText == null ? "" : indexText).split(/\r?\n/);
   const kept = lines.filter((_, i) => !removeLineNums.has(i + 1));
@@ -203,6 +232,11 @@ function run(opts) {
   }
   if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
     return fatal(notes, ["plan JSON must be an object with a 'store' and 'changes'"]);
+  }
+  // A non-array `changes` is a MALFORMED plan, not an empty one — fail-closed rather than
+  // silently treating it as zero changes (exit 0). (gauntlet r9, backend :101.)
+  if (!Array.isArray(plan.changes)) {
+    return fatal(notes, ["plan.changes must be an array (a non-array is a malformed plan, not an empty one)"]);
   }
 
   const storeRel = plan.store;
@@ -255,7 +289,21 @@ function run(opts) {
   const storeReal = path.resolve(storeAbs);
   const fsViolations = [];
   for (const p of mutations) {
-    const fileAbs = path.resolve(storeAbs, p.file);
+    // CLASS-1 canonicalization: resolve to the real on-disk entry name so unlink + index-removal
+    // operate on ONE case-exact name (see canonicalStoreName). Absent → fail-closed; ambiguous → reject.
+    let canonical;
+    try {
+      canonical = canonicalStoreName(storeAbs, p.file);
+    } catch (e) {
+      fsViolations.push({ file: p.file, reason: e.message });
+      continue;
+    }
+    if (!canonical) {
+      fsViolations.push({ file: p.file, reason: "no such file in the store (case-insensitive lookup)" });
+      continue;
+    }
+    p.canonicalFile = canonical;
+    const fileAbs = path.resolve(storeAbs, canonical);
     if (path.dirname(fileAbs) !== storeReal) {
       fsViolations.push({ file: p.file, reason: "resolves outside the store dir" });
       continue;
@@ -295,77 +343,127 @@ function run(opts) {
     };
   }
 
-  // FIX-C (security gauntlet r7): if any delete is planned, PRE-READ the index into memory
-  // NOW — before mutating anything — so a locked/unreadable MEMORY.md fails-closed BEFORE any
-  // file is deleted. Otherwise deletes apply, then the post-delete index read/write throws and
-  // the store is left with files gone + a stale index (corrupted). Correct-only plans don't
-  // touch the index, so they don't need it.
-  const anyDelete = mutations.some((p) => p.action === "delete");
+  // CLASS-2 index accessibility (security gauntlet r7/r8): before ANY mutation, require the index
+  // MEMORY.md to be a READABLE REGULAR FILE. A correct-only apply doesn't touch the index, but the
+  // POST-CHECK reads it — so a MEMORY.md that is a directory/unreadable would let the correct apply
+  // THEN fail the post-check (applied:true partial). Pre-checking before any mutation fails-closed
+  // first. Deletes additionally reuse the pre-read text for the index re-sync.
   let preReadIndexText = null;
-  if (anyDelete) {
+  {
+    const indexFail = (why) => ({
+      ok: false,
+      fatal: true,
+      dryRun: false,
+      applied: false,
+      violations: [],
+      planned: v.planned,
+      problems: [why],
+      notes: [...notes, "index pre-check failed — fail-closed, nothing mutated"],
+    });
+    let ist;
+    try {
+      ist = fs.lstatSync(memPath);
+    } catch (e) {
+      return indexFail(`index (MEMORY.md) unstattable before apply: ${e.code || e.message}`);
+    }
+    if (!ist.isFile()) {
+      return indexFail("index (MEMORY.md) is not a regular file (directory / symlink / device) — refusing to mutate");
+    }
     try {
       preReadIndexText = fs.readFileSync(memPath, "utf8");
     } catch (e) {
-      return {
-        ok: false,
-        fatal: true,
-        dryRun: false,
-        applied: false,
-        violations: [],
-        planned: v.planned,
-        problems: [`index (MEMORY.md) unreadable before apply: ${e.code || e.message}`],
-        notes: [...notes, "index pre-read failed — fail-closed, nothing mutated"],
-      };
+      return indexFail(`index (MEMORY.md) unreadable before apply: ${e.code || e.message}`);
     }
+  }
+
+  // BACKUP → APPLY → ROLLBACK transaction (security gauntlet r9, backend :322 — the KEYSTONE
+  // all-or-nothing fix). Preflight rejects PLAN-reachable faults; but a mid-SEQUENCE fault (a
+  // concurrent lock, disk error, EPERM arising DURING the loop) could still commit some ops and
+  // then throw. So capture the original bytes of every target (+ the index if any delete rewrites
+  // it) BEFORE mutating; on ANY throw during apply, restore every captured path → the store is
+  // exactly as it was. Memory files are small + few per plan, so the in-memory backup is cheap.
+  const anyDelete = mutations.some((p) => p.action === "delete");
+  const backup = []; // [{ abs, bytes:Buffer }]
+  try {
+    for (const p of mutations) {
+      const fileAbs = path.resolve(storeAbs, p.canonicalFile);
+      backup.push({ abs: fileAbs, bytes: fs.readFileSync(fileAbs) });
+    }
+    if (anyDelete) backup.push({ abs: memPath, bytes: Buffer.from(preReadIndexText, "utf8") });
+  } catch (e) {
+    return {
+      ok: false,
+      fatal: true,
+      applied: false,
+      dryRun: false,
+      violations: [],
+      planned: v.planned,
+      problems: [`backup capture failed before apply: ${e.message}`],
+      notes: [...notes, "backup capture failed — fail-closed, nothing mutated"],
+    };
   }
 
   try {
     const deletedFiles = new Set();
     for (const p of mutations) {
-      const fileAbs = path.resolve(storeAbs, p.file);
+      // Use the CANONICAL on-disk name (resolved in preflight) for both the unlink and the
+      // index-removal set, so a case-mismatched plan can't unlink one name yet leave the other's
+      // index line behind. (CLASS-1 mechanism.)
+      const fileAbs = path.resolve(storeAbs, p.canonicalFile);
       if (p.action === "delete") {
         fs.unlinkSync(fileAbs);
-        deletedFiles.add(p.file);
+        deletedFiles.add(p.canonicalFile);
       } else if (p.action === "correct") {
         fs.writeFileSync(fileAbs, p.newBody);
       }
     }
     // Re-sync the index for deletes (correct leaves the index alone) using the PRE-READ
-    // text captured before the mutation loop (FIX-C) — never re-read post-delete.
+    // text captured before the mutation loop — never re-read post-delete.
     if (deletedFiles.size) {
       fs.writeFileSync(memPath, removeIndexLines(preReadIndexText, deletedFiles));
     }
 
-    // Post-check: the store must be structurally clean (bijection intact).
-    const post = mem.run({ dirs: [storeAbs] });
-    if (post.fatal) {
-      return {
-        ok: false,
-        fatal: true,
-        applied: true,
-        dryRun: false,
-        violations: [],
-        planned: v.planned,
-        problems: post.problems || ["post-check fatal"],
-        notes: [...notes, `MUTATIONS APPLIED (${mutations.length}) but post-check failed fatally`],
-      };
+  } catch (e) {
+    // ROLLBACK: restore every captured path to its original bytes → the store is exactly as it
+    // was before apply (all-or-nothing preserved even against a mid-sequence fault).
+    const rollbackErrors = [];
+    for (const b of backup) {
+      try {
+        fs.writeFileSync(b.abs, b.bytes);
+      } catch (re) {
+        rollbackErrors.push(`${b.abs}: ${re.message}`);
+      }
     }
-    const postFindings = post.findings || [];
+    const rolledBack = rollbackErrors.length === 0;
     return {
-      ok: postFindings.length === 0,
-      fatal: false,
-      applied: true,
+      ok: false,
+      fatal: true,
+      applied: !rolledBack, // rolled back cleanly → nothing net-changed; incomplete → residual change
       dryRun: false,
       violations: [],
       planned: v.planned,
-      postFindings,
+      rolledBack,
+      problems: [
+        `apply error: ${e.message}`,
+        rolledBack
+          ? "rolled back — store restored, nothing changed"
+          : `ROLLBACK INCOMPLETE: ${rollbackErrors.join("; ")}`,
+      ],
       notes: [
         ...notes,
-        `applied ${mutations.length} mutation(s); post-check ${postFindings.length} finding(s)`,
+        rolledBack
+          ? "apply faulted mid-flight → rolled back (all-or-nothing preserved)"
+          : "apply faulted AND rollback incomplete — inspect the store manually",
       ],
     };
+  }
+
+  // Mutations committed OK. The post-check runs in its OWN try so an incidental post-check I/O
+  // error can NOT roll back a validly-committed plan — only a mid-SEQUENCE mutation fault does. (r7 low.)
+  let post;
+  try {
+    post = mem.run({ dirs: [storeAbs] });
   } catch (e) {
-    // Unexpected mid-apply error → fail-closed (exit 2); mutations may be partial.
     return {
       ok: false,
       fatal: true,
@@ -373,10 +471,33 @@ function run(opts) {
       dryRun: false,
       violations: [],
       planned: v.planned,
-      problems: [`apply error: ${e.message}`],
-      notes: [...notes, "apply aborted mid-flight — inspect the store manually"],
+      problems: [`post-check errored after a valid apply (mutations kept, NOT rolled back): ${e.message}`],
+      notes: [...notes, `applied ${mutations.length} mutation(s); post-check errored — mutations kept`],
     };
   }
+  if (post.fatal) {
+    return {
+      ok: false,
+      fatal: true,
+      applied: true,
+      dryRun: false,
+      violations: [],
+      planned: v.planned,
+      problems: post.problems || ["post-check fatal"],
+      notes: [...notes, `MUTATIONS APPLIED (${mutations.length}) but post-check failed fatally`],
+    };
+  }
+  const postFindings = post.findings || [];
+  return {
+    ok: postFindings.length === 0,
+    fatal: false,
+    applied: true,
+    dryRun: false,
+    violations: [],
+    planned: v.planned,
+    postFindings,
+    notes: [...notes, `applied ${mutations.length} mutation(s); post-check ${postFindings.length} finding(s)`],
+  };
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -456,6 +577,7 @@ if (require.main === module) main();
 module.exports = {
   validatePlan,
   isSafeStoreFilename,
+  canonicalStoreName,
   removeIndexLines,
   run,
   NAME,

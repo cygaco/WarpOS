@@ -524,5 +524,60 @@ ok("parseFrontmatter: a nested `type` (metadata.other.type) does NOT satisfy met
   assert.strictEqual(shadow.name, "real", "a nested `name` must not shadow the top-level name");
 });
 
+// ── gauntlet r8 (qa :539): default-scope root exists-but-is-a-FILE → fail-closed ──
+ok("LIVE: default-scope root that EXISTS but is a FILE is fatal (exit 2), not a skip-open", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "mi-rootfile-"));
+  fs.mkdirSync(path.join(proj, ".claude"), { recursive: true });
+  fs.writeFileSync(path.join(proj, ".claude", "agent-memory"), "not a dir\n"); // the root is a FILE
+  const r = spawnSync("node", [CHECK, "--enforce", "--json"], {
+    env: { ...process.env, CLAUDE_PROJECT_DIR: proj },
+    encoding: "utf8",
+  });
+  assert.strictEqual(r.status, 2, "a non-directory root is fatal, not a skip-open under --enforce");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true, "the run is fatal");
+});
+
+// ── gauntlet r9 (backend): parser hardening (decodeScalar, metadata-sequence, index regex) ──
+ok("parseFrontmatter: decodeScalar handles quoted / Null-casefold / unquoted inline-comment", () => {
+  const a = mod.parseFrontmatter('---\nname: x-slug\ndescription: "a desc"\nmetadata:\n  type: "feedback"\n---\nb\n');
+  assert.strictEqual(a.type, "feedback", "quoted type decodes to the literal");
+  assert.strictEqual(a.description, "a desc", "quoted description decodes");
+  const b = mod.parseFrontmatter("---\nname: x-slug\ndescription: NULL\nmetadata:\n  type: feedback\n---\nb\n");
+  assert.strictEqual(b.description, null, "unquoted NULL (any case) → absent");
+  const c = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata:\n  type: feedback # inline note\n---\nb\n");
+  assert.strictEqual(c.type, "feedback", "unquoted inline comment stripped");
+});
+
+ok("parseFrontmatter: metadata as a SEQUENCE or nested mapping does NOT yield metadata.type (r9 :196)", () => {
+  const seq = mod.parseFrontmatter("---\nname: x\ndescription: d\nmetadata:\n  - type: feedback\n---\nb\n");
+  assert.strictEqual(seq.type, null, "a sequence item under metadata is not a direct type");
+  const nested = mod.parseFrontmatter("---\nname: x\ndescription: d\nmetadata:\n  wrap:\n    type: feedback\n---\nb\n");
+  assert.strictEqual(nested.type, null, "a nested type under a sub-mapping is not metadata.type");
+  const flat = mod.parseFrontmatter("---\nname: x\ndescription: d\nmetadata:\n  type: feedback\n---\nb\n");
+  assert.strictEqual(flat.type, "feedback", "a flat direct type IS read");
+});
+
+ok("parseIndex: a filename with a hyphen after inner parens (ghost(1)-copy.md) parses WHOLE (r9 :82)", () => {
+  const { entries } = mod.parseIndex("- [Ghost](ghost(1)-copy.md) — a hook\n- [Plain](plain.md)\n");
+  const g = entries.find((e) => /ghost/.test(e.target));
+  assert.ok(g, "the ghost line parsed as an entry");
+  assert.strictEqual(g.target, "ghost(1)-copy.md", "target captured whole, not truncated at the inner ) or the -copy hyphen");
+  assert.strictEqual(g.hook, "a hook", "the real hook is captured");
+});
+
+ok("ReDoS: decodeScalar (via parseFrontmatter) is O(n) on a long internal-whitespace scalar (r7)", () => {
+  // A scalar with a huge internal whitespace run and no '#' was O(n^2) under /\s+#.*$/.
+  const big = "a" + " ".repeat(200000) + "b";
+  const t0 = Date.now();
+  const fm = mod.parseFrontmatter(`---\nname: x-slug\ndescription: ${big}\nmetadata:\n  type: feedback\n---\nbody\n`);
+  const elapsed = Date.now() - t0;
+  assert.ok(elapsed < 1000, `parseFrontmatter took ${elapsed}ms on a 200k-space scalar — must be < 1s (O(n))`);
+  assert.ok(fm.description && fm.description.startsWith("a"), "the value is still parsed");
+  // a real inline comment is still stripped
+  const c = mod.parseFrontmatter("---\nname: x-slug\ndescription: keep # drop this\nmetadata:\n  type: feedback\n---\nb\n");
+  assert.strictEqual(c.description, "keep", "inline comment stripped with the single-\\s form");
+});
+
 console.log(`\nmemory-integrity: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

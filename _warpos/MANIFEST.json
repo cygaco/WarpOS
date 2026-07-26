@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-24T21:25:02.271Z",
+  "generatedAt": "2026-07-26T23:49:54.345Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.1.0",
   "migrations": [],
@@ -82,10 +82,6 @@
       "_note": "Root document — source path same as destination (canonical-side).",
       "sha256": "695feaf587c0936d0e2b602204bde5245624dc098a8b18ba56e190aa00963074",
       "installedSha": "695feaf587c0936d0e2b602204bde5245624dc098a8b18ba56e190aa00963074"
-    },
-    "GRAPH.md": {
-      "owner": "runtime",
-      "managed": false
     },
     "install.ps1": {
       "owner": "framework",
@@ -6255,8 +6251,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/delta-canonical-dispatch-smoke.js",
-      "sha256": "7db8d4be6c2368d185326ed707b51ad34329cc70fe26cb47cc3a18a628c26cd0",
-      "installedSha": "7db8d4be6c2368d185326ed707b51ad34329cc70fe26cb47cc3a18a628c26cd0"
+      "sha256": "1994a26ec032ab773fd0ac8cfdda4c1d67dfbb5aea60b53b909bac8841cf864a",
+      "installedSha": "1994a26ec032ab773fd0ac8cfdda4c1d67dfbb5aea60b53b909bac8841cf864a"
+    },
+    "scripts/delta-canonical-dispatch-smoke.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/delta-canonical-dispatch-smoke.test.js",
+      "sha256": "ceb1a8d1e59cd5c6016d7b16ae150d6d75f546649849140dd169fa90e450f362",
+      "installedSha": "ceb1a8d1e59cd5c6016d7b16ae150d6d75f546649849140dd169fa90e450f362"
     },
     "scripts/delta-cleanup-stale-fix-worktrees.js": {
       "owner": "framework",
@@ -7928,8 +7931,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758",
-      "installedSha": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758"
+      "sha256": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289",
+      "installedSha": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -9713,8 +9716,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/lib/providers.js",
-      "sha256": "68f5273bbb95a865f4913583ae1fee98c563cd4b21aabebc1d097cb92e164783",
-      "installedSha": "68f5273bbb95a865f4913583ae1fee98c563cd4b21aabebc1d097cb92e164783"
+      "sha256": "057e31e4db3d48187874bf914ccdd01e7e5ed282115735e2af860352cf37d1e8",
+      "installedSha": "057e31e4db3d48187874bf914ccdd01e7e5ed282115735e2af860352cf37d1e8"
     },
     "scripts/hooks/lib/retention.js": {
       "owner": "framework",
@@ -11976,6 +11979,34 @@
       "source": "scripts/checks/maps-coverage.test.js",
       "sha256": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
       "installedSha": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4"
+    },
+    "scripts/checks/memory-apply.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/memory-apply.js",
+      "sha256": "5b72a4842088465dc410037157d33949dca928e019d01bb3f1dcad5086cd4cc3",
+      "installedSha": "5b72a4842088465dc410037157d33949dca928e019d01bb3f1dcad5086cd4cc3"
+    },
+    "scripts/checks/memory-apply.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/memory-apply.test.js",
+      "sha256": "0f8f7139c88e5e2954b197c9e2b5a7fe68139ba13c5118ca2e2c1414eb6bd5e4",
+      "installedSha": "0f8f7139c88e5e2954b197c9e2b5a7fe68139ba13c5118ca2e2c1414eb6bd5e4"
+    },
+    "scripts/checks/memory-integrity.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/memory-integrity.js",
+      "sha256": "58bc099b6e85d55c2a4696bd214038abf5fdd5e10728d7c860e19c07ce7b0925",
+      "installedSha": "58bc099b6e85d55c2a4696bd214038abf5fdd5e10728d7c860e19c07ce7b0925"
+    },
+    "scripts/checks/memory-integrity.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/memory-integrity.test.js",
+      "sha256": "67d810a0b6473ae79b18af713455c0b684b44505d858138b468582f67d8979d7",
+      "installedSha": "67d810a0b6473ae79b18af713455c0b684b44505d858138b468582f67d8979d7"
     },
     "scripts/checks/meta-lockstep.js": {
       "owner": "framework",
@@ -26763,6 +26794,14 @@
       "kind": "md",
       "sha256": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110",
       "installedSha": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110"
+    },
+    ".claude/commands/memory/verify.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/memory/verify.md",
+      "kind": "md",
+      "sha256": "9dbb6bf7436fc5c387b41c4c1d678ff123d4c513cad48e6b1ee765ef05e9c8b2",
+      "installedSha": "9dbb6bf7436fc5c387b41c4c1d678ff123d4c513cad48e6b1ee765ef05e9c8b2"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",

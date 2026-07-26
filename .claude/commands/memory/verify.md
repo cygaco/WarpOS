@@ -56,10 +56,11 @@ node scripts/checks/memory-integrity.js --dir <target> --json
 - **findings** (block under `--enforce`): `broken-index-pointer` (index line points at a missing file),
   `orphan-memory-file` (a `*.md` with no index line), `duplicate-index-entry`, `invalid-frontmatter`
   (missing/empty `name`/`description` or a `metadata.type` not in {user, feedback, project, reference}),
-  `duplicate-name-slug`.
+  `duplicate-name-slug`, `malformed-index-line` (a line that starts like an index entry — `- [..](` — but
+  doesn't fully parse, so it would otherwise be silently dropped).
 - **warnings** (never block): `dangling-wikilink` (a `[[slug]]` with no matching memory — *allowed by doctrine*
   as "worth writing later"), `index-too-long` (MEMORY.md exceeds the truncation threshold, so tail entries are
-  silently dropped from context).
+  silently dropped from context), `non-kebab-name` (a `name:` slug that isn't kebab-case — a convention nudge).
 
 These are the mechanical issues. The enforcer only DETECTS — it never mutates. Repairs happen in Phase 3.
 
