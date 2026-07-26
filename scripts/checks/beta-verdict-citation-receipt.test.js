@@ -484,6 +484,48 @@ t("ED-286 β-focus: astral chars BOTH before the citation AND after the msg_id -
   assert.strictEqual(r.hard[0].msg_id, "ghostb07", "the id must slice correctly with astral chars on both sides");
 });
 
+// ── ED-286 gauntlet r6 (qa BINDING HIGH — \p{Cc} controls + non-\p{Cf} default-ignorables survived the
+//    fold): the invisible class the NFKD skeleton strips is BROADER than \p{M}+\p{Cf}. On BOTH paths, a
+//    \p{Cc} control (NUL/BEL/DEL) or a non-\p{Cf} default-ignorable (U+2065/U+FFF0/U+E0000) inside the
+//    decision token must NOT hide the citation, and as the msg_id separator must NOT downgrade the receipt;
+//    whitespace controls (TAB) map to a space separator. ──
+const NUL = String.fromCodePoint(0x0000), BEL = String.fromCodePoint(0x0007), DEL = String.fromCodePoint(0x007F);
+const di2065 = String.fromCodePoint(0x2065), diFFF0 = String.fromCodePoint(0xFFF0), diE0000 = String.fromCodePoint(0xE0000);
+const TAB = String.fromCodePoint(0x0009);
+for (const [label, ch] of [
+  ["NUL U+0000", NUL], ["BEL U+0007", BEL], ["DEL U+007F", DEL],
+  ["default-ignorable U+2065", di2065], ["default-ignorable U+FFF0", diFFF0], ["default-ignorable U+E0000", diE0000],
+]) {
+  t(`ED-286 r6: '${label}' INSIDE the decision token ('β D<x>ECIDE') -> HARD (citation not hidden)`, () => {
+    const docs = [{ path: "a.md", text: "β D" + ch + "ECIDE (msg_id ghostr6) shipped" }];
+    const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.hard.length, 1, `'${label}' in the token must be stripped so the citation is still detected`);
+    assert.strictEqual(r.hard[0].msg_id, "ghostr6");
+  });
+  t(`ED-286 r6: '${label}' as the msg_id->id SEPARATOR -> HARD (receipt not downgraded)`, () => {
+    const docs = [{ path: "a.md", text: "β DECIDE (msg_id" + ch + "ghostr6s)" }];
+    const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.hard.length, 1, `'${label}' as the receipt separator must not downgrade HARD->SOFT`);
+    assert.strictEqual(r.hard[0].msg_id, "ghostr6s");
+  });
+}
+t("ED-286 r6: a whitespace CONTROL (TAB U+0009) as a separator maps to a space (both halves)", () => {
+  const docs = [{ path: "a.md", text: "β" + TAB + "DECIDE (msg_id" + TAB + "ghosttab)" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "TAB (\\p{Cc} whitespace) must map to a space separator on both the citation and receipt");
+  assert.strictEqual(r.hard[0].msg_id, "ghosttab");
+});
+t("ED-286 r6: a control/default-ignorable-obfuscated FORGED id de-obfuscates and stays HARD", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id gh" + NUL + "ost" + di2065 + "r6) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "invisible chars inside the id strip so the (unresolved) id is still extracted -> HARD");
+});
+t("ED-286 r6 GREEN: a control-obfuscated RESOLVING id de-obfuscates to the real id -> clean", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id ab" + NUL + "cd) ok" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("abcd")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "'ab<NUL>cd' must de-obfuscate to the resolving 'abcd'");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

@@ -34,10 +34,13 @@
  *      (ENOENT) input is fine.
  *   F6 the ED-275 disclaimer prints on EVERY path, including the fail-closed exit-2 paths.
  *
- * ED-286 (β DECIDE B/0.90, msg_id f1a4d7c9) — the citation-obfuscation defense is now a MECHANISM, not
- * a category list: normalizeForDetection folds the detection text to its NFKD skeleton (compat-decompose
- * + strip \p{M} marks incl. U+034F CGJ + strip \p{Cf} format + normalize blanks) THEN matches, closing
- * the invisible/combining/confusable CLASS by construction (BOTH halves of the citation, not just β).
+ * ED-286 (β DECIDE B/0.90 — NFKD per msg_id 562ba5b6, correcting the f1a4d7c9 "NFKC") — the citation-
+ * obfuscation defense is a MECHANISM, not a category list: normalizeForDetection folds the detection text
+ * to its NFKD skeleton (compat-decompose + strip the FULL invisible class \p{M}/\p{Cf}/\p{Cc}/
+ * \p{Default_Ignorable_Code_Point} + map \p{White_Space}/named-blanks to a space) THEN matches, closing the
+ * invisible/combining/control/confusable CLASS by construction (BOTH halves of the citation, not just β).
+ * The SAME shared normalization drives the msg_id RECEIPT-EXTRACTION path (r5) so the two can't diverge; the
+ * class was broadened from \p{M}+\p{Cf} to also cover controls + non-\p{Cf} default-ignorables (r6, qa HIGH).
  * The UTF-16-vs-code-point index-map desync (false-green after any astral char) is fixed (per-UTF-16-unit
  * map). Residual explicitly disclosed at the NORMALIZATION CEILING comment below (P-059).
  *
@@ -115,12 +118,15 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // de-obfuscates to ASCII and stays HARD instead of being downgraded to a receiptless SOFT.
 //
 // ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
-// The NFKD skeleton closes: \p{Cf} format/zero-width, \p{M} combining marks (incl. CGJ), markdown emphasis,
-// compatibility homoglyphs (fullwidth, math-alphanumeric, sub/superscript, ligatures), and \p{Zs} + the
-// named non-\p{Zs} blanks. This normalization is applied on BOTH paths — the citation DETECTION text
-// (normalizeForDetection) AND the msg_id RECEIPT-EXTRACTION clause (BLANK_G + RECEIPT_SEP_INVIS_G +
-// CLAUSE_STRIP_G) — so a blank/invisible separator between the `msg_id` label and its id can no longer
-// downgrade a forged receipt from HARD to SOFT (ED-286 r5 hunter HIGH, closed). It does NOT close, and
+// The NFKD skeleton closes the FULL invisible/control class (ED-286 r6, qa BINDING HIGH): \p{Cf} format/
+// zero-width, \p{M} combining marks (incl. CGJ), \p{Cc} CONTROLS (NUL/BEL/DEL), \p{Default_Ignorable_Code_Point}
+// (incl. the NON-\p{Cf} reserved default-ignorables U+2065/U+FFF0/U+E0000), markdown emphasis, compatibility
+// homoglyphs (fullwidth, math-alphanumeric, sub/superscript, ligatures), and \p{White_Space} (incl. control
+// whitespace like TAB) + the named non-\p{Zs} blanks. All of it is driven by ONE shared source (the INVIS
+// class fragment + SPACE_MAP) applied on BOTH paths — the citation DETECTION text (normalizeForDetection) AND
+// the msg_id RECEIPT-EXTRACTION clause (SPACE_MAP_G + RECEIPT_SEP_INVIS_G + CLAUSE_STRIP_G) — so the two paths
+// CANNOT diverge and a blank/invisible/control separator between the `msg_id` label and its id can no longer
+// hide a citation or downgrade a forged receipt HARD->SOFT (ED-286 r5 + r6 closed). It does NOT close, and
 // these remain the honest, self-declared residual:
 //   (a) CROSS-SCRIPT / visual confusables that share NO NFKD decomposition — Cyrillic/Greek <-> Latin
 //       look-alikes (e.g. Cyrillic C/E/P/B for Latin C/E/P/B, a Cyrillic-spoofed "beta", or the Latin
@@ -154,10 +160,27 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       it never HIDES a citation or downgrades a forgery. The root tightening — require a receipt-shaped/
 //       delimited context (backtick/quote/paren) around the id — is tracked as a follow-up ED against
 //       MSGID_IN_TEXT_RE, out of scope for the ED-286 obfuscation-mechanism fix.
+//   (g) PRECISION (over-flag, never a false-green — r6 backend LOW): the citation separator is OPTIONAL (`*`,
+//       so an invisible-removed separator still matches), which also matches a bare lowercase concatenation
+//       — `betaverdict` / `betaruled` / `betaapproved` (or an exact-case `βDECIDE`) scans AS a citation. That
+//       is the intended behavior for the invisible-removed case and an over-flag for a genuine identifier/word
+//       (a lowercase `betaverdict` var). It only ever over-FLAGS (SOFT when no msg_id; never hides/ downgrades),
+//       is case-bounded (uppercase tokens DECIDE/DIRECTIVE/ESCALATE + lowercase ruled/verdict/approved only, so
+//       `betaVerdict` with a capital V does NOT match), and the live-corpus delta is 0. Same inherent
+//       optional-separator ambiguity as (e)/(f); tracked with the (f) MSGID_IN_TEXT_RE follow-up ED.
 const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
-const STRIP_RE = /[\p{M}\p{Cf}]/gu;             // combining marks (incl U+034F CGJ) + format (incl zero-width)
-const BLANK_RE = /[\p{Zs}\u2800\u3164\u1160\u115f\uffa0]/u; // space-rendering incl the named non-\p{Zs} blanks
-const CLAUSE_STRIP_G = /[*`~]|[\p{M}\p{Cf}]/gu; // clean the RAW clause for msg_id extraction (KEEP `_`)
+// ED-286 gauntlet r6 (qa BINDING HIGH): the "invisible" class the fold must close is BROADER than \p{M}+\p{Cf}
+// \u2014 \p{Cc} CONTROLS (U+0000 NUL / U+0007 / U+007F) and NON-\p{Cf} DEFAULT-IGNORABLES (U+2065 / U+FFF0 /
+// U+E0000) survived, so `\u03b2 D<NUL>ECIDE` HID the citation (scanned=0) and `msg_id<NUL>ghost` downgraded the
+// receipt to SOFT. ONE shared INVIS class fragment drives BOTH the detection fold AND the extraction clean so
+// the two paths can NEVER diverge (the r5 asymmetry lesson, now structural). WHITESPACE \u2014 incl CONTROL
+// whitespace like TAB \u2014 maps to a " " separator (SPACE_MAP); every other invisible/control/mark/default-
+// ignorable strips to "" (INVIS); a named non-whitespace blank (U+2800 braille, Hangul fillers) still -> " ".
+const INVIS = "\\p{M}\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}"; // marks + format + controls + reserved default-ignorables
+const STRIP_INVIS_G = new RegExp("[" + INVIS + "]", "gu");               // detection fold: strip invisible/control/mark -> ""
+const SPACE_MAP_RE = /[\p{White_Space}\u2800\u3164\u1160\u115f\uffa0]/u; // per-cp: whitespace (incl TAB/control-ws) + named blanks -> " "
+const SPACE_MAP_G = new RegExp(SPACE_MAP_RE.source, "gu");               // global variant for the extraction clause
+const CLAUSE_STRIP_G = new RegExp("[*`~]|[" + INVIS + "]", "gu");        // clean the RAW clause for msg_id extraction (KEEP `_`)
 // ED-286 gauntlet r5 (hunter HIGH — RECEIPT-path normalization asymmetry): the msg_id EXTRACTION path
 // must apply the SAME invisible/blank normalization the DETECTION path does, or a citation the detection
 // path scans stays HARD-less. Two closures on the SEPARATOR between the `msg_id` label and the id:
@@ -171,12 +194,13 @@ const CLAUSE_STRIP_G = /[*`~]|[\p{M}\p{Cf}]/gu; // clean the RAW clause for msg_
 //       boundary replace inserts a space there. Position-specific on the LITERAL label so it NEVER
 //       false-matches a legit `msg_ids` array (which carries an ASCII `s` after the label, not an
 //       invisible) — the reason the citation separator could be made optional but this one cannot.
-const BLANK_G = new RegExp(BLANK_RE.source, "gu");
+// (BLANK_G folded into SPACE_MAP_G above — the extraction clause uses SPACE_MAP_G so the blank/whitespace
+//  mapping is identical to detection's per-cp SPACE_MAP_RE.)
 // The boundary-space fires ONLY when an id-shaped token actually follows the invisible run (r5 hunter
 // LOW): a bare \p{M}/\p{Cf} after the literal `msg_id` in prose with no following id no longer
 // synthesizes a spurious separator. (Does not fully close the inherent `msg_id <token>` prose over-flag
 // — that is NORMALIZATION CEILING (f), rooted in MSGID_IN_TEXT_RE and tracked as a follow-up ED.)
-const RECEIPT_SEP_INVIS_G = /(msg_id)[\p{Cf}\p{M}]+(?=[`'"]?[A-Za-z0-9])/giu;
+const RECEIPT_SEP_INVIS_G = new RegExp("(msg_id)[" + INVIS + "]+(?=[`'\"]?[A-Za-z0-9])", "giu");
 function normalizeForDetection(raw) {
   let norm = "";
   const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
@@ -185,8 +209,8 @@ function normalizeForDetection(raw) {
     const cpLen = cp.length;           // 1 or 2 UTF-16 units in the SOURCE
     let out;
     if (EMPHASIS_RE.test(cp)) out = "";
-    else if (BLANK_RE.test(cp)) out = " ";
-    else out = cp.normalize("NFKD").replace(STRIP_RE, ""); // compat-fold + drop marks/format from the decomposition
+    else if (SPACE_MAP_RE.test(cp)) out = " ";
+    else out = cp.normalize("NFKD").replace(STRIP_INVIS_G, ""); // compat-fold + drop marks/format/controls/default-ignorables
     for (let j = 0; j < out.length; j++) { map.push(rawIdx); norm += out[j]; } // map PER UTF-16 UNIT of the fold
     rawIdx += cpLen;                   // advance by the SOURCE code point's UTF-16 length (astral-safe)
   }
@@ -311,7 +335,7 @@ function evaluate({ docs, betaEventsText }) {
         // forged receipt stays HARD instead of a downgraded receiptless SOFT.
         const clause = raw.slice(rawStart, rawEnd)
           .normalize("NFKD")
-          .replace(BLANK_G, " ")
+          .replace(SPACE_MAP_G, " ")
           .replace(RECEIPT_SEP_INVIS_G, "$1 ")
           .replace(CLAUSE_STRIP_G, "");
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
