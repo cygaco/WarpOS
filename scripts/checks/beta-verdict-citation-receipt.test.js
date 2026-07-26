@@ -571,15 +571,34 @@ t("ED-286 r7 #2 GREEN: a genuine raw-ASCII id that resolves is NOT falsely laund
   assert.strictEqual(r.hard.length + r.soft.length, 0, "a raw-ASCII id present verbatim must resolve clean");
 });
 
-// #3 LINE-SEPARATOR MASKING — a Unicode-line-break-hidden peer heading must still close a history section.
-// r8 (hunter HIGH) added VT (U+000B) + FF (U+000C) — same UAX#14 mandatory-break class as LS/PS.
-const VT = String.fromCodePoint(0x000B), FF = String.fromCodePoint(0x000C);
-for (const [label, sep] of [["U+2028 LS", LS], ["U+2029 PS", PS], ["lone CR", CR], ["VT U+000B", VT], ["FF U+000C", FF]]) {
-  t(`ED-286 r7/r8 #3: a '${label}'-hidden peer heading does NOT keep an active citation history-masked`, () => {
+// #3 LINE-SEPARATOR / DANGEROUS-BREAK — r9 model (hunter HIGH regression fix): split ONLY on CommonMark
+// line-endings (LF/CR/CRLF); a NON-CommonMark break (VT/FF/NEL/LS/PS) is DANGEROUS SYNTAX flagged HARD on
+// presence (like bidi), NOT split — because splitting on them REGRESSED citation detection (`β<FF>DECIDE`
+// got split across enforcer-lines and hidden). The .md render surface uses CommonMark line-endings.
+const VT = String.fromCodePoint(0x000B), FF = String.fromCodePoint(0x000C), NEL = String.fromCodePoint(0x0085);
+// (a) a lone CR (a CommonMark line-ending) splits -> the hidden peer heading closes the section -> the active citation IS scanned.
+t("ED-286 #3a: a lone-CR-hidden peer heading (CommonMark line-ending) -> the active citation IS scanned", () => {
+  const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id hist1) done." + CR + "## Current status\nβ DECIDE (msg_id active99) needs a receipt.";
+  const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "active99"), "a CR-hidden heading splits and closes the section -> active99 scanned");
+  assert.ok(!r.hard.some((h) => h.msg_id === "hist1"), "the genuine history citation stays masked");
+});
+// (b) a NON-CommonMark break hiding a peer heading is DANGEROUS SYNTAX -> HARD on presence (even on a
+//     history-masked line), so the masked-citation attack can't ship a clean-green doc.
+for (const [label, sep] of [["VT U+000B", VT], ["FF U+000C", FF], ["NEL U+0085", NEL], ["LS U+2028", LS], ["PS U+2029", PS]]) {
+  t(`ED-286 r9 #3b: a '${label}'-hidden peer heading is flagged HARD (dangerous break), not a clean-green mask`, () => {
     const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id hist1) done." + sep + "## Current status\nβ DECIDE (msg_id active99) needs a receipt.";
     const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
-    assert.ok(r.hard.some((h) => h.msg_id === "active99"), `the active citation after a ${label}-hidden heading must be scanned (not masked)`);
-    assert.ok(!r.hard.some((h) => h.msg_id === "hist1"), "the genuine history citation stays masked");
+    assert.ok(r.hard.some((h) => h.msg_id === null), `a ${label} break must be flagged HARD (dangerous syntax) so a break-masked citation can't ship clean-green`);
+  });
+}
+// (c) r9 CITATION-SPLIT regression: a non-CommonMark break as a SEPARATOR inside a citation must NOT hide
+//     it — not split (SPACE_MAP folds it to a space -> detected) AND its presence flagged.
+for (const [label, sep] of [["FF U+000C", FF], ["VT U+000B", VT], ["LS U+2028", LS], ["PS U+2029", PS], ["NEL U+0085", NEL]]) {
+  t(`ED-286 r9 #3c: 'β<${label}>DECIDE' (break as a citation separator) is DETECTED, not split-hidden -> HARD`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text: "β" + sep + "DECIDE (msg_id ghostsplit)" }], betaEventsText: beta([vrow("real000")]) });
+    assert.ok(r.hard.some((h) => h.msg_id === "ghostsplit"), `'β<${label}>DECIDE' must be detected (SPACE_MAP folds the break) -> HARD on the forged receipt`);
+    assert.ok(r.hard.some((h) => h.msg_id === null), "the break presence is also flagged HARD");
   });
 }
 // r8 (hunter LOW — position-anchored laundering): a fullwidth (laundered) cited id must NOT resolve just

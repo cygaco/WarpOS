@@ -120,10 +120,15 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
 // r7 POLICY (security lane, 3 HIGHs — beyond plain strip/fold): (i) BIDI controls (U+202A-202E/U+2066-2069)
 // are DANGEROUS SYNTAX not ignorable — their PRESENCE on a scanned line is a HARD finding (they reorder
-// rendering so a citation can be visually masked; a data-free enforcer can't run UAX#9 visual reorder);
-// (ii) the doc is split on ALL Unicode UAX#14-BK line breaks (CRLF/LF/CR/VT U+000B/FF U+000C/LS/PS/NEL —
-// r8 added VT/FF) BEFORE historyMask, so a Unicode-line-break-hidden peer heading can't keep an active
-// citation history-masked; (iii) the msg_id PAYLOAD is validated RAW and POSITION-ANCHORED (r8) — a folded
+// rendering so a citation can be visually masked; a data-free enforcer can't run UAX#9 visual reorder) AND
+// non-CommonMark line/whitespace breaks VT/FF/NEL/LS/PS (DANGEROUS_BREAK_RE — the .md render surface diverges
+// from the scanned line model, split-hiding a citation or masking a history heading);
+// (ii) the doc is split on CommonMark line-endings ONLY (LF/CR/CRLF) — r9 corrected the r7/r8 over-split on
+// the full UAX#14-BK set (VT/FF/NEL/LS/PS), which REGRESSED detection: `β<FF>DECIDE` renders on ONE .md line
+// but got split across enforcer-lines and HIDDEN. A non-CommonMark break INSIDE a citation is now SPACE_MAP-
+// folded to a space and still detected; a break-hidden peer heading is caught by the (i) dangerous-syntax
+// flag (which runs on EVERY line, incl. history-masked, so it can't mask the section boundary itself);
+// (iii) the msg_id PAYLOAD is validated RAW and POSITION-ANCHORED (r8) — a folded
 // captured id must appear as a RAW receipt AT ITS msg_id-LABEL position (rawMids, extracted from the same
 // clause with NO compat-fold), else it was minted by compat-fold/mark-strip (e.g. fullwidth ｒｅａｌ０００ →
 // real000) → LAUNDERED → HARD, never resolves (a transformation must never mint a credential; a raw twin
@@ -232,7 +237,18 @@ const RECEIPT_SEP_INVIS_G = new RegExp("(msg_id)[" + INVIS + "]+(?=[`'\"]?[A-Za-
 //     minted by folding/mark-strip -> LAUNDERED -> HARD, never resolves. (writer-stamped-fields principle:
 //     a transformation must never mint a credential.)
 const BIDI_RE = /[‪-‮⁦-⁩]/u;       // bidi overrides/embeddings/isolates — dangerous syntax, not ignorable
-const LINE_SPLIT_RE = new RegExp("\\r\\n|[\\n\\r\\u000b\\u000c\\u2028\\u2029\\u0085]"); // all Unicode UAX#14-BK line breaks: CRLF, LF, CR, VT (U+000B), FF (U+000C), LS, PS, NEL — r8 added VT/FF (same mandatory-break class as LS/PS; a VT/FF-hidden peer heading must also close a history section)
+// r9 (hunter HIGH — line-split over-reach REGRESSION): r7/r8 split the doc on the full UAX#14 mandatory-
+// break set (VT/FF/LS/PS/NEL) BEFORE detection. But those are NOT CommonMark line-endings (only LF/CR/CRLF
+// are) — splitting on them diverges the enforcer's line model from the .md RENDER surface, so `β<FF>DECIDE`
+// (which renders on ONE line) got split across two enforcer-lines and the citation was HIDDEN (scanned=0).
+// FIX: split ONLY on CommonMark line-endings (LF/CR/CRLF) — so a non-CommonMark break inside a citation is
+// SPACE_MAP-folded to a space and still detected — and treat the PRESENCE of a non-CommonMark break
+// (VT/FF/NEL/LS/PS) on a scanned line as DANGEROUS SYNTAX (HARD, like bidi). That closes BOTH directions:
+// the citation-split regression (now detected) AND the heading-mask attack (a break-hidden heading no longer
+// silently masks an active citation — its presence is flagged). Non-CommonMark breaks ~never appear in legit
+// ADR/tracker/ROADMAP prose (same rationale as bidi).
+const LINE_SPLIT_RE = /\r\n|[\n\r]/; // CommonMark line-endings ONLY (LF/CR/CRLF)
+const DANGEROUS_BREAK_RE = new RegExp("[\\u000b\\u000c\\u0085\\u2028\\u2029]", "u"); // VT/FF/NEL/LS/PS — non-CommonMark line/whitespace breaks (render-surface divergence)
 const RAW_ID_CLEAN_G = new RegExp("[*`~]|[\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}]", "gu"); // RAW id-payload cleaner: strip emphasis(keep _) + render-nothing ONLY (NO \p{M}, NO compat-fold)
 function normalizeForDetection(raw) {
   let norm = "";
@@ -337,7 +353,10 @@ function evaluate({ docs, betaEventsText }) {
     const rawLines = String(d.text || "").split(LINE_SPLIT_RE); // r7 #3: ALL Unicode line breaks, so a U+2028/U+2029/lone-CR-hidden peer heading still closes a history section
     const inHistory = historyMask(rawLines);
     for (let i = 0; i < rawLines.length; i++) {
-      if (inHistory[i]) continue; // append-only history section — a dated past citation is a record
+      const raw = rawLines[i];
+      // DANGEROUS-SYNTAX checks (bidi + non-CommonMark break) run on EVERY line INCLUDING history-masked
+      // ones (r9): a bidi control or a VT/FF/NEL/LS/PS break can mask the section BOUNDARY itself, so the
+      // history skip (below) must skip only the CITATION scan, not these flags.
       // R2/S3 (r3 hunter HIGH — underscore-italic + zero-width citation BYPASS): DETECTION and
       // msg_id EXTRACTION need OPPOSITE treatment of `_`. Build a DETECTION-normalized line that strips
       // ALL inline emphasis (* ` _) AND zero-width/format unicode (U+200B–200D, U+FEFF), keeping an
@@ -345,7 +364,6 @@ function evaluate({ docs, betaEventsText }) {
       // detected — while msg_id EXTRACTION runs on the RAW clause (only * / backtick / zero-width
       // stripped, `_` PRESERVED) so an id like abc_def is never corrupted. (r2 kept `_`; that left the
       // identical bypass open for standard CommonMark underscore-italic — the r3 hunter HIGH.)
-      const raw = rawLines[i];
       // r7 #1 (security HIGH): a bidi control on a scanned line can visually reorder a hidden citation
       // ("β <RLO>EDICED<PDF>" renders "β DECIDE" but the logical/scanned order is "EDICED"). Bidi is
       // DANGEROUS SYNTAX, not ignorable — its PRESENCE is a HARD finding (a citation may be masked).
@@ -355,6 +373,17 @@ function evaluate({ docs, betaEventsText }) {
           reason: `bidi control (U+202A-202E / U+2066-2069) on a scanned line — rendering order differs from logical order, so a β-verdict citation may be visually MASKED (e.g. "β <RLO>EDICED<PDF>" renders "β DECIDE" while the scanner sees "EDICED"). Bidi overrides do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${raw.replace(new RegExp(BIDI_RE.source, "gu"), "<BIDI>").trim().slice(0, 120)}`,
         });
       }
+      // r9 (hunter HIGH): a non-CommonMark line/whitespace break (VT/FF/NEL/LS/PS) on a scanned line means
+      // the .md render surface diverges from the enforcer's line model — a citation can be split-hidden
+      // (`β<FF>DECIDE`) or a history heading masked. Detection folds it to a space (SPACE_MAP, so the split
+      // citation is STILL detected on this un-split line), and its PRESENCE is flagged HARD (dangerous syntax).
+      if (DANGEROUS_BREAK_RE.test(raw)) {
+        hard.push({
+          doc: d.path, line: i + 1, msg_id: null,
+          reason: `non-CommonMark line/whitespace break (VT U+000B / FF U+000C / NEL U+0085 / LS U+2028 / PS U+2029) on a scanned line — the markdown render surface differs from the scanned line model, so a citation can be split-hidden (\`β<FF>DECIDE\`) or a history-section heading masked. These do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${raw.replace(new RegExp(DANGEROUS_BREAK_RE.source, "gu"), "<BREAK>").trim().slice(0, 120)}`,
+        });
+      }
+      if (inHistory[i]) continue; // append-only history — skip the CITATION scan only (dangerous-syntax flags above already ran, incl. on history lines)
       const { norm, map } = normalizeForDetection(raw);
       const starts = [];
       citationGlobal.lastIndex = 0;
