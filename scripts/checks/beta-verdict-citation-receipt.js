@@ -275,7 +275,7 @@ const DANGEROUS_BREAK_RE = new RegExp("[\\u000b\\u000c\\u0085\\u2028\\u2029]", "
 // — closing it needs a real CommonMark renderer (a tech-bar dependency), out of scope pre-mvp.
 function decodeCharRefs(s) {
   return String(s)
-    .replace(/&#x([0-9a-fA-F]+);/g, (m, h) => { try { const c = parseInt(h, 16); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } })
+    .replace(/&#[xX]([0-9a-fA-F]+);/g, (m, h) => { try { const c = parseInt(h, 16); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } }) // [xX]: CommonMark/HTML5 accept BOTH &#x…; and &#X…; (r11 hunter HIGH — uppercase-X was undecoded)
     .replace(/&#(\d+);/g, (m, d) => { try { const c = parseInt(d, 10); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } })
     .replace(/&beta;/g, "β")   // &beta; -> β (U+03B2 lowercase) — the citation token
     .replace(/&Beta;/g, "Β");  // &Beta; -> Β (U+0392 UPPERCASE Greek) — a DISTINCT entity, NOT the β token (case-correct per HTML5; not case-folded)

@@ -653,6 +653,21 @@ t("ED-286 r10 GREEN: a legit resolving char-ref-free citation stays clean (char-
   const r = evaluate({ docs: [{ path: "a.md", text: "β DECIDE (msg_id real000) ok" }], betaEventsText: beta([vrow("real000")]) });
   assert.strictEqual(r.hard.length + r.soft.length, 0);
 });
+// ── ED-286 r11 (hunter HIGH — char-ref decode was case-INCOMPLETE): CommonMark/HTML5 accept BOTH &#x…; and
+//    &#X…; (uppercase X) hex numeric refs. The lowercase-only regex left &#X3B2; undecoded -> citation
+//    hidden. This is the by-construction numeric-ref class (NOT ceiling h). Now case-complete via [xX]. ──
+t("ED-286 r11: an UPPERCASE-X hex char-ref (&#X3B2; = β) with a forged receipt -> HARD (not left undecoded)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "&#X3B2; DECIDE (msg_id ghostUX)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "ghostUX"), "&#X3B2; must decode to β on the render surface (uppercase-X hex ref)");
+});
+t("ED-286 r11: an UPPERCASE-X hex char-ref bidi (&#X202E;) decodes then is flagged HARD", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "&#X202E;text&#X202C; (msg_id x)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.length >= 1, "an uppercase-X entity-encoded bidi control must decode then hit the dangerous-syntax flag");
+});
+t("ED-286 r11 GREEN: lowercase &#x3B2; still decodes (case-complete, not a regression)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "&#x3B2; DECIDE (msg_id ghostlx)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "ghostlx"));
+});
 
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
