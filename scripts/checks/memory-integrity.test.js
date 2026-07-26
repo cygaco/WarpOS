@@ -1,0 +1,528 @@
+#!/usr/bin/env node
+// ─────────────────────────────────────────────────────────────────────────────
+// memory-integrity.test.js — planted-violation + live end-to-end test for the
+// READ-ONLY memory-integrity structural detector.
+//
+// Layers (modelled on doc-ref-integrity.test.js):
+//   • PURE evaluate() PLANTED, each finding class in isolation on synthetic stores
+//     (no disk) — proves each structural check fires, that a CLEAN store yields 0
+//     findings, and that dangling-wikilink + index-too-long are WARNINGS not findings.
+//   • Parser units (parseIndex / parseFrontmatter / extractWikilinks).
+//   • LIVE end-to-end in a sealed fs.mkdtempSync dir: an explicit --dir store with a
+//     planted broken index pointer → ok:false, report-only exits 0, --enforce exits 1.
+//   • LIVE fail-closed: an explicit --dir that does not exist exits 2; a valid
+//     empty-but-present store exits 0.
+//   • LIVE against the REAL in-repo .claude/agent-memory default scope: not fatal,
+//     storeCount >= 1 (no hard 0-findings assert — real memory may drift).
+// ─────────────────────────────────────────────────────────────────────────────
+"use strict";
+
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const CHECK = path.join(__dirname, "memory-integrity.js");
+const mod = require("./memory-integrity.js");
+
+let pass = 0;
+let fail = 0;
+function ok(name, fn) {
+  try {
+    fn();
+    pass++;
+    console.log(`  ok  ${name}`);
+  } catch (e) {
+    fail++;
+    console.log(`FAIL  ${name}\n      ${e.message}`);
+  }
+}
+
+// Helper: a minimal valid file record (well-formed frontmatter).
+function validFile(file, name, extra) {
+  return Object.assign(
+    {
+      file,
+      hasFrontmatter: true,
+      name,
+      description: "a one-line description",
+      type: "feedback",
+      wikilinks: [],
+    },
+    extra || {},
+  );
+}
+// Helper: a store with 1 index entry per file (a clean bijection) unless overridden.
+function storeOf(files, opts) {
+  opts = opts || {};
+  const indexEntries =
+    opts.indexEntries ||
+    files.map((f, i) => ({ line: i + 1, title: f.name, target: f.file, hook: "h" }));
+  return {
+    dir: opts.dir || "mem/agent",
+    maxIndexLines: opts.maxIndexLines || 200,
+    indexEntries,
+    indexLineCount: opts.indexLineCount != null ? opts.indexLineCount : indexEntries.length,
+    files,
+  };
+}
+
+// ── PURE evaluate(): each finding class in isolation ─────────────────────────
+
+ok("PLANTED: broken-index-pointer flags (high)", () => {
+  const store = storeOf([validFile("a.md", "alpha")], {
+    indexEntries: [
+      { line: 1, title: "A", target: "a.md", hook: "h" },
+      { line: 2, title: "Gone", target: "ghost.md", hook: "h" },
+    ],
+  });
+  const { findings } = mod.evaluate({ stores: [store] });
+  const f = findings.filter((x) => x.kind === "broken-index-pointer");
+  assert.strictEqual(f.length, 1, "exactly one broken pointer");
+  assert.strictEqual(f[0].severity, "high");
+  assert.ok(/ghost\.md/.test(f[0].message));
+});
+
+ok("PLANTED: orphan-memory-file flags (medium)", () => {
+  // Two files, index only references one → the other is an orphan.
+  const store = storeOf([validFile("a.md", "alpha"), validFile("b.md", "bravo")], {
+    indexEntries: [{ line: 1, title: "A", target: "a.md", hook: "h" }],
+  });
+  const { findings } = mod.evaluate({ stores: [store] });
+  const f = findings.filter((x) => x.kind === "orphan-memory-file");
+  assert.strictEqual(f.length, 1, "exactly one orphan");
+  assert.strictEqual(f[0].severity, "medium");
+  assert.strictEqual(f[0].file, "b.md");
+});
+
+ok("PLANTED: duplicate-index-entry flags (low)", () => {
+  const store = storeOf([validFile("a.md", "alpha")], {
+    indexEntries: [
+      { line: 1, title: "A", target: "a.md", hook: "h" },
+      { line: 2, title: "A again", target: "a.md", hook: "h" },
+    ],
+  });
+  const { findings } = mod.evaluate({ stores: [store] });
+  const f = findings.filter((x) => x.kind === "duplicate-index-entry");
+  assert.strictEqual(f.length, 1, "exactly one dup-index finding");
+  assert.strictEqual(f[0].severity, "low");
+});
+
+ok("PLANTED: invalid-frontmatter flags for NO frontmatter (high)", () => {
+  const bad = { file: "x.md", hasFrontmatter: false, name: null, description: null, type: null, wikilinks: [] };
+  const store = storeOf([bad]);
+  const { findings } = mod.evaluate({ stores: [store] });
+  const f = findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 1, "one finding for the missing block");
+  assert.strictEqual(f[0].severity, "high");
+  assert.ok(/no YAML frontmatter/i.test(f[0].message));
+});
+
+ok("PLANTED: invalid-frontmatter flags for EMPTY name (high, names the field)", () => {
+  const bad = validFile("x.md", "", {});
+  const store = storeOf([bad]);
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 1);
+  assert.ok(/'name'/.test(f[0].message), "message names the name field");
+});
+
+ok("PLANTED: invalid-frontmatter flags for EMPTY description (high, names the field)", () => {
+  const bad = validFile("x.md", "xray", { description: "   " });
+  const store = storeOf([bad]);
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 1);
+  assert.ok(/'description'/.test(f[0].message), "message names the description field");
+});
+
+ok("PLANTED: invalid-frontmatter flags for BAD/ABSENT type (high, names the field)", () => {
+  const badType = validFile("x.md", "xray", { type: "nonsense" });
+  const absentType = validFile("y.md", "yankee", { type: null });
+  const store = storeOf([badType, absentType], {
+    indexEntries: [
+      { line: 1, title: "X", target: "x.md", hook: "h" },
+      { line: 2, title: "Y", target: "y.md", hook: "h" },
+    ],
+  });
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 2, "one per bad-type file");
+  assert.ok(f.every((x) => /metadata\.type/.test(x.message)), "each names metadata.type");
+});
+
+ok("PLANTED: duplicate-name-slug flags (high)", () => {
+  const store = storeOf([validFile("a.md", "same-slug"), validFile("b.md", "same-slug")], {
+    indexEntries: [
+      { line: 1, title: "A", target: "a.md", hook: "h" },
+      { line: 2, title: "B", target: "b.md", hook: "h" },
+    ],
+  });
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "duplicate-name-slug");
+  assert.strictEqual(f.length, 1, "one dup-slug finding for the pair");
+  assert.strictEqual(f[0].severity, "high");
+  assert.ok(/same-slug/.test(f[0].message));
+});
+
+ok("CLEAN store yields 0 findings and 0 warnings (does not flag everything)", () => {
+  const store = storeOf([
+    validFile("a.md", "alpha", { wikilinks: ["bravo"] }),
+    validFile("b.md", "bravo"),
+  ]);
+  const { findings, warnings } = mod.evaluate({ stores: [store] });
+  assert.strictEqual(findings.length, 0, `expected 0 findings, got ${JSON.stringify(findings)}`);
+  assert.strictEqual(warnings.length, 0, `expected 0 warnings, got ${JSON.stringify(warnings)}`);
+});
+
+// ── WARNINGS: never findings ─────────────────────────────────────────────────
+
+ok("SAFETY: a dangling-wikilink is a WARNING, NOT a finding", () => {
+  const store = storeOf([validFile("a.md", "alpha", { wikilinks: ["write-me-later"] })]);
+  const { findings, warnings } = mod.evaluate({ stores: [store] });
+  assert.strictEqual(findings.length, 0, "dangling links never block");
+  const w = warnings.filter((x) => x.kind === "dangling-wikilink");
+  assert.strictEqual(w.length, 1);
+  assert.strictEqual(w[0].severity, "warning");
+  assert.ok(/write-me-later/.test(w[0].message));
+});
+
+ok("index-too-long is a WARNING (0 findings) when indexLineCount > maxIndexLines", () => {
+  const store = storeOf([validFile("a.md", "alpha")], {
+    maxIndexLines: 1,
+    indexLineCount: 5,
+    indexEntries: [{ line: 1, title: "A", target: "a.md", hook: "h" }],
+  });
+  const { findings, warnings } = mod.evaluate({ stores: [store] });
+  assert.strictEqual(findings.length, 0, "too-long never blocks");
+  const w = warnings.filter((x) => x.kind === "index-too-long");
+  assert.strictEqual(w.length, 1);
+  assert.strictEqual(w[0].severity, "warning");
+});
+
+// ── Parser units ─────────────────────────────────────────────────────────────
+
+ok("parseIndex extracts target + counts non-blank lines", () => {
+  const text = "- [Title A](file_a.md) — hook a\n\n- [Title B](file_b.md) — hook b\nnotanentry\n";
+  const { entries, lineCount } = mod.parseIndex(text);
+  assert.strictEqual(entries.length, 2);
+  assert.strictEqual(entries[0].target, "file_a.md");
+  assert.strictEqual(entries[0].title, "Title A");
+  assert.strictEqual(lineCount, 3, "3 non-blank lines (2 entries + 1 stray)");
+});
+
+ok("parseFrontmatter reads name/description/metadata.type + strips the block from body", () => {
+  const text =
+    "---\nname: my-slug\ndescription: one line\nmetadata:\n  type: feedback\n---\n\nBody with [[a-link]].\n";
+  const fm = mod.parseFrontmatter(text);
+  assert.strictEqual(fm.hasFrontmatter, true);
+  assert.strictEqual(fm.name, "my-slug");
+  assert.strictEqual(fm.description, "one line");
+  assert.strictEqual(fm.type, "feedback");
+  assert.ok(/Body with/.test(fm.body));
+  assert.ok(!/name: my-slug/.test(fm.body), "frontmatter stripped from body");
+});
+
+ok("parseFrontmatter reports hasFrontmatter:false when the block is absent", () => {
+  const fm = mod.parseFrontmatter("no frontmatter here\njust text\n");
+  assert.strictEqual(fm.hasFrontmatter, false);
+});
+
+ok("extractWikilinks pulls [[slugs]] and ignores the two identifier spaces", () => {
+  const links = mod.extractWikilinks("see [[first-slug]] and [[second-slug]] not [a](file.md)");
+  assert.deepStrictEqual(links, ["first-slug", "second-slug"]);
+});
+
+// ── LIVE end-to-end: sealed temp store, planted broken index pointer ──────────
+
+function seedStore(dir, opts) {
+  opts = opts || {};
+  fs.mkdirSync(dir, { recursive: true });
+  const valid =
+    "---\nname: valid-one\ndescription: a real memory\nmetadata:\n  type: feedback\n---\n\nBody.\n";
+  fs.writeFileSync(path.join(dir, "valid_one.md"), valid);
+  const index =
+    "- [Valid One](valid_one.md) — a real memory\n" +
+    (opts.broken ? "- [Broken](missing_file.md) — points at nothing\n" : "");
+  fs.writeFileSync(path.join(dir, "MEMORY.md"), index);
+}
+
+ok("LIVE-PLANTED: a broken index pointer in a sealed --dir store is caught end-to-end", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memint-"));
+  const store = path.join(base, "agent");
+  seedStore(store, { broken: true });
+
+  const r = spawnSync("node", [CHECK, "--dir", store, "--json"], { encoding: "utf8" });
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.ok, false, "should report the broken pointer");
+  assert.strictEqual(out.skipped, false);
+  assert.ok(
+    out.findings.some((f) => f.kind === "broken-index-pointer" && /missing_file\.md/.test(f.message)),
+    "the broken pointer is a finding",
+  );
+  assert.ok(
+    !out.findings.some((f) => f.message && /valid_one\.md/.test(f.message)),
+    "the valid entry is not flagged",
+  );
+  assert.strictEqual(r.status, 0, "report-only exits 0 even with a finding");
+
+  const r2 = spawnSync("node", [CHECK, "--dir", store, "--enforce"], { encoding: "utf8" });
+  assert.strictEqual(r2.status, 1, "--enforce blocks on a finding");
+});
+
+ok("LIVE: a CLEAN sealed --dir store passes (exit 0, ok:true)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memint-"));
+  const store = path.join(base, "agent");
+  seedStore(store, { broken: false });
+  const r = spawnSync("node", [CHECK, "--dir", store, "--json"], { encoding: "utf8" });
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.ok, true, `clean store ok, got ${JSON.stringify(out.findings)}`);
+  assert.strictEqual(out.storeCount, 1);
+  assert.strictEqual(r.status, 0);
+});
+
+// ── LIVE fail-closed: explicit --dir that is not a valid store ────────────────
+
+ok("LIVE: an explicit --dir that does not exist FAILS CLOSED (exit 2)", () => {
+  const nonexistent = path.join(os.tmpdir(), "memint-does-not-exist-" + Date.now());
+  const r = spawnSync("node", [CHECK, "--dir", nonexistent, "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "bad explicit --dir is fail-closed exit 2");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true);
+});
+
+ok("LIVE: an explicit --dir that exists but has no MEMORY.md FAILS CLOSED (exit 2)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memint-"));
+  const store = path.join(base, "notastore");
+  fs.mkdirSync(store, { recursive: true });
+  fs.writeFileSync(path.join(store, "some.md"), "no index here\n");
+  const r = spawnSync("node", [CHECK, "--dir", store, "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "a dir without MEMORY.md is not a valid store");
+});
+
+// ── LIVE skip-on-absent: default scope with no .claude/agent-memory ───────────
+
+ok("LIVE-SKIP: default scope with no .claude/agent-memory SKIPS (skipped:true, exit 0)", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "memint-proj-"));
+  // No .claude/agent-memory under this CLAUDE_PROJECT_DIR.
+  const r = spawnSync("node", [CHECK, "--json"], {
+    env: { ...process.env, CLAUDE_PROJECT_DIR: proj },
+    encoding: "utf8",
+  });
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.skipped, true, "skip-on-absent, not fail-closed");
+  assert.strictEqual(out.ok, true);
+  assert.strictEqual(out.storeCount, 0);
+  assert.strictEqual(r.status, 0, "skip exits 0");
+});
+
+// ── LIVE default scope against a POPULATED store tree (storeCount>=1) ─────────
+// NOTE: the real in-repo `.claude/agent-memory/` is GITIGNORED (a local, per-machine
+// store), so it is legitimately absent in a fresh worktree/CI checkout. To exercise a
+// realistic default-scope scan deterministically we seed a populated store tree under a
+// temp CLAUDE_PROJECT_DIR and assert storeCount>=1 + not fatal (do NOT hard-assert 0
+// findings — a real store may drift).
+ok("LIVE: default scope over a populated .claude/agent-memory is not fatal, storeCount>=1", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "memint-proj-"));
+  const agentDir = path.join(proj, ".claude", "agent-memory", "epsilon");
+  seedStore(agentDir, { broken: false });
+  const r = spawnSync("node", [CHECK, "--json"], {
+    env: { ...process.env, CLAUDE_PROJECT_DIR: proj },
+    encoding: "utf8",
+  });
+  const out = JSON.parse(r.stdout);
+  assert.notStrictEqual(out.fatal, true, "default scope over a real store must not be fatal");
+  assert.strictEqual(out.skipped, false, "a populated store is scanned, not skipped");
+  assert.ok(out.storeCount >= 1, `expected >=1 store, got ${out.storeCount}`);
+  assert.strictEqual(r.status, 0, "report-only exits 0");
+});
+
+// ── LIVE against the REAL in-repo default scope (skip-or-scan, both valid) ────
+ok("LIVE: real in-repo default scope run() is never fatal (skip-on-absent OR scans)", () => {
+  const res = mod.run({});
+  assert.notStrictEqual(res.fatal, true, "must not be fatal against the real repo");
+  // The store is gitignored, so either it is present (scanned, storeCount>=1) or absent
+  // in this checkout (skipped). Both are valid; neither is fatal.
+  if (res.skipped) {
+    assert.strictEqual(res.storeCount, 0);
+  } else {
+    assert.ok(res.storeCount >= 1, `scanned → expected >=1 store, got ${res.storeCount}`);
+  }
+});
+
+// ── ReDoS regression (security gauntlet r1): extractWikilinks must be O(n) ─────
+ok("ReDoS: extractWikilinks on a long unclosed-'[[' body is O(n) + still extracts real slugs", () => {
+  const adversarial = "[".repeat(100000); // quadratic on the old /[^\]]+/ regex (~21s), O(n) now
+  const t0 = Date.now();
+  const got = mod.extractWikilinks(adversarial);
+  const elapsed = Date.now() - t0;
+  assert.ok(elapsed < 1000, `extractWikilinks took ${elapsed}ms on 100k '[' — must be < 1s (O(n))`);
+  assert.deepStrictEqual(got, [], "no closed [[slug]] → no matches");
+  assert.deepStrictEqual(
+    mod.extractWikilinks("see [[a-slug]] and [[b-slug]] here"),
+    ["a-slug", "b-slug"],
+    "real slugs still extracted after the fix",
+  );
+  assert.deepStrictEqual(mod.extractWikilinks("[[[[x]]"), ["x"], "adjacent openers do not swallow the closer");
+});
+
+// ── fail-closed regression (security gauntlet r1): non-ENOENT MEMORY.md error ──
+ok("fail-closed: default scope with an unreadable MEMORY.md (dir, not file) exits 2 — not a silent skip", () => {
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), "mi-corrupt-"));
+  const badStore = path.join(proj, ".claude", "agent-memory", "badstore");
+  fs.mkdirSync(badStore, { recursive: true });
+  fs.mkdirSync(path.join(badStore, "MEMORY.md")); // MEMORY.md is a DIRECTORY → readFileSync throws (non-ENOENT)
+  const r = spawnSync("node", [CHECK, "--json"], {
+    env: { ...process.env, CLAUDE_PROJECT_DIR: proj },
+    encoding: "utf8",
+  });
+  assert.strictEqual(r.status, 2, "a non-ENOENT store error in default scope must fail-closed (exit 2)");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true, "the run is fatal, not a silent skip");
+});
+
+// ── gauntlet r2 regressions ───────────────────────────────────────────────────
+
+// FIX-1: a non-ENOENT error at the DEFAULT-scope memory ROOT must PROPAGATE
+// (main() → exit 2, fail-closed), NOT be swallowed as a skip that exits 0 OPEN.
+// (Windows returns ENOENT for a file-parented stat, so a filesystem fixture can't
+// force EACCES/EISDIR portably — we monkeypatch the shared fs module object, which
+// the enforcer calls through, to inject each error class deterministically.)
+ok("FIX-1: a non-ENOENT error at the memory ROOT stat propagates (fail-closed), not skip", () => {
+  const realStat = fs.statSync;
+  try {
+    fs.statSync = () => {
+      const e = new Error("permission denied");
+      e.code = "EACCES";
+      throw e;
+    };
+    assert.throws(
+      () => mod.run({}),
+      /EACCES|permission/,
+      "a non-ENOENT root stat error must propagate (→ main fail-closes exit 2), not silent-skip",
+    );
+  } finally {
+    fs.statSync = realStat;
+  }
+  // Sanity: a genuinely-absent root (ENOENT) still SKIPS gracefully (does not throw).
+  try {
+    fs.statSync = () => {
+      const e = new Error("no such file");
+      e.code = "ENOENT";
+      throw e;
+    };
+    const res = mod.run({});
+    assert.strictEqual(res.skipped, true, "ENOENT at the root still skips (ok:true), not fatal");
+  } finally {
+    fs.statSync = realStat;
+  }
+});
+
+// FIX-2: a balanced-paren filename is captured WHOLE (not truncated at the first ')').
+ok("FIX-2: parseIndex captures a balanced-paren target whole (ghost(1).md)", () => {
+  const { entries } = mod.parseIndex("- [T](ghost(1).md) — hook\n");
+  assert.strictEqual(entries.length, 1, "the line is NOT silently omitted");
+  assert.strictEqual(entries[0].target, "ghost(1).md", "target captured whole, not 'ghost(1'");
+  assert.strictEqual(entries[0].hook, "hook");
+});
+
+// FIX-2 (defense-in-depth): a line that STARTS like an entry but does not parse is
+// surfaced as a malformed-index-line finding, not silently dropped.
+ok("FIX-2: an index-shaped-but-unparseable line → malformed-index-line (medium finding)", () => {
+  const { entries, malformed } = mod.parseIndex("- [Broken](no-close-paren.md — hook\n");
+  assert.strictEqual(entries.length, 0, "it did not parse as an entry");
+  assert.strictEqual(malformed.length, 1, "but it was recorded as malformed, not dropped");
+  const store = storeOf([validFile("a.md", "alpha")], {
+    indexEntries: [{ line: 1, title: "A", target: "a.md", hook: "h" }],
+  });
+  store.indexMalformed = malformed;
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "malformed-index-line");
+  assert.strictEqual(f.length, 1, "one malformed-index-line finding");
+  assert.strictEqual(f[0].severity, "medium");
+});
+
+// FIX-3: decoded scalars — quotes stripped, null/~/quoted-empty absent, compound rejected.
+ok("FIX-3: decodeScalar strips matched quotes; null/~/empty→absent; compound→absent", () => {
+  assert.strictEqual(mod.decodeScalar('"feedback"'), "feedback", "quotes stripped");
+  assert.strictEqual(mod.decodeScalar("'project'"), "project");
+  assert.strictEqual(mod.decodeScalar("null"), null, "unquoted null → absent");
+  assert.strictEqual(mod.decodeScalar("~"), null, "unquoted ~ → absent");
+  assert.strictEqual(mod.decodeScalar('""'), null, "quoted-empty → absent");
+  assert.strictEqual(mod.decodeScalar(""), null, "empty → absent");
+  assert.strictEqual(mod.decodeScalar("[a, b]"), null, "flow-seq is not a simple scalar");
+  assert.strictEqual(mod.decodeScalar("| block"), null, "block scalar indicator → absent");
+  assert.strictEqual(mod.decodeScalar("plain-slug"), "plain-slug");
+});
+
+ok("FIX-3: quoted type passes; empty name / null description fire invalid-frontmatter", () => {
+  const good = mod.parseFrontmatter(
+    '---\nname: my-slug\ndescription: one\nmetadata:\n  type: "feedback"\n---\nbody\n',
+  );
+  assert.strictEqual(good.type, "feedback", "quoted type is decoded → valid");
+  const bad = mod.parseFrontmatter(
+    '---\nname: ""\ndescription: null\nmetadata:\n  type: feedback\n---\nbody\n',
+  );
+  assert.strictEqual(bad.name, null, "quoted-empty name → absent (was fail-open)");
+  assert.strictEqual(bad.description, null, "unquoted null description → absent (was fail-open)");
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: true, name: bad.name, description: bad.description, type: bad.type, wikilinks: [] },
+  ]);
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 2, "invalid-frontmatter fires for name AND description");
+});
+
+ok("FIX-3: quoting cannot evade duplicate-name-slug (decoded before comparison)", () => {
+  const a = mod.parseFrontmatter('---\nname: "dup"\ndescription: d\nmetadata:\n  type: feedback\n---\n');
+  const b = mod.parseFrontmatter("---\nname: dup\ndescription: d\nmetadata:\n  type: feedback\n---\n");
+  const store = storeOf(
+    [
+      { file: "a.md", hasFrontmatter: true, name: a.name, description: a.description, type: a.type, wikilinks: [] },
+      { file: "b.md", hasFrontmatter: true, name: b.name, description: b.description, type: b.type, wikilinks: [] },
+    ],
+    { indexEntries: [{ line: 1, title: "A", target: "a.md", hook: "h" }, { line: 2, title: "B", target: "b.md", hook: "h" }] },
+  );
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "duplicate-name-slug");
+  assert.strictEqual(f.length, 1, "'dup' and \"dup\" collide once decoded");
+});
+
+// FIX-6: a non-kebab name is a WARNING, never a finding.
+ok("FIX-6: a non-kebab name is a WARNING (never a finding)", () => {
+  const store = storeOf([validFile("a.md", "Not_Kebab_Name")]);
+  const { findings, warnings } = mod.evaluate({ stores: [store] });
+  assert.strictEqual(findings.filter((x) => x.kind === "non-kebab-name").length, 0, "never a finding");
+  const w = warnings.filter((x) => x.kind === "non-kebab-name");
+  assert.strictEqual(w.length, 1, "one non-kebab warning");
+  assert.strictEqual(w[0].severity, "warning");
+  assert.ok(/Not_Kebab_Name/.test(w[0].message));
+});
+
+// FIX-7: canonical empty frontmatter `---\n---` is hasFrontmatter:true, all fields null.
+ok("FIX-7: canonical empty frontmatter is hasFrontmatter:true with null fields (per-field diagnostics)", () => {
+  const fm = mod.parseFrontmatter("---\n---\nbody text\n");
+  assert.strictEqual(fm.hasFrontmatter, true, "empty block is frontmatter, not no-frontmatter");
+  assert.strictEqual(fm.name, null);
+  assert.strictEqual(fm.description, null);
+  assert.strictEqual(fm.type, null);
+  assert.ok(/body text/.test(fm.body), "body after the empty block is preserved");
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: true, name: null, description: null, type: null, wikilinks: [] },
+  ]);
+  const f = mod.evaluate({ stores: [store] }).findings.filter((x) => x.kind === "invalid-frontmatter");
+  assert.strictEqual(f.length, 3, "one missing-field finding per field, not a single no-block finding");
+  assert.ok(!f.some((x) => /no YAML frontmatter/i.test(x.message)), "not the no-block message");
+});
+
+// ── FIX-130 regression: metadata.type counts ONLY as a DIRECT child ──────────
+ok("parseFrontmatter: a nested `type` (metadata.other.type) does NOT satisfy metadata.type", () => {
+  const nested = mod.parseFrontmatter(
+    "---\nname: x-slug\ndescription: d\nmetadata:\n  other:\n    type: feedback\n---\nbody\n",
+  );
+  assert.strictEqual(nested.type, null, "a grandchild `type` must NOT be read as metadata.type (false green)");
+  assert.strictEqual(nested.name, "x-slug", "the top-level name is still read");
+  const direct = mod.parseFrontmatter(
+    "---\nname: x-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nbody\n",
+  );
+  assert.strictEqual(direct.type, "feedback", "a DIRECT child `type` IS read");
+  const shadow = mod.parseFrontmatter("---\nname: real\nother:\n  name: nested\n---\nbody\n");
+  assert.strictEqual(shadow.name, "real", "a nested `name` must not shadow the top-level name");
+});
+
+console.log(`\nmemory-integrity: ${pass}/${pass + fail} pass`);
+process.exit(fail ? 1 : 0);

@@ -616,7 +616,13 @@ function buildProviderArgv(providerName, model, reasoningArgs = [], opts = {}) {
     // catalog resolver (lazy require avoids a load-time cycle; the SAME resolver cert-attest#probeShape
     // uses — no second copy of the mapping).
     const agyModel = require("../../dispatch/catalog").agyModelName(model);
-    return { toolId: "agy", argv: ["--model", agyModel, "--print-timeout", "90s", "-p", opts.prompt || ""], usesStdin: false };
+    // 90s default protects teammate frames (~2-min Bash cap — catalog.js note); a top-level frame
+    // dispatching review-scale payloads needs longer before first output (2026-07-25: 31KB security
+    // review died "timeout waiting for response" at 90s). Env override, validated against the same
+    // duration grammar safe-spawn's ARG_POLICY enforces; malformed values fall back to 90s.
+    const agyTimeoutRaw = process.env.WARPOS_AGY_PRINT_TIMEOUT || "90s";
+    const agyTimeout = /^[0-9]+(ms|s|m|h)?$/.test(agyTimeoutRaw) ? agyTimeoutRaw : "90s";
+    return { toolId: "agy", argv: ["--model", agyModel, "--print-timeout", agyTimeout, "-p", opts.prompt || ""], usesStdin: false };
   }
   // A manifest-overridden provider with a custom cfg.syntax has no ARG_POLICY entry in the safety
   // kernel → fail CLOSED rather than spawn an unvetted shell string.
