@@ -526,6 +526,61 @@ t("ED-286 r6 GREEN: a control-obfuscated RESOLVING id de-obfuscates to the real 
   assert.strictEqual(r.hard.length + r.soft.length, 0, "'ab<NUL>cd' must de-obfuscate to the resolving 'abcd'");
 });
 
+// ── ED-286 gauntlet r7 (security lane, 3 BINDING HIGHs) — the normalization-policy rework:
+//    #1 bidi controls are DANGEROUS SYNTAX (HARD on presence); #2 the receipt-id PAYLOAD must be RAW
+//    (a compat-fold/mark-strip that mints a ledger id = LAUNDERING → HARD); #3 all Unicode line breaks
+//    split before historyMask (a U+2028/U+2029/lone-CR-hidden heading can't mask an active citation). ──
+const RLO = String.fromCodePoint(0x202E), PDF = String.fromCodePoint(0x202C), RLI = String.fromCodePoint(0x2067), PDI = String.fromCodePoint(0x2069);
+const LS = String.fromCodePoint(0x2028), PS = String.fromCodePoint(0x2029), CR = String.fromCodePoint(0x000D);
+const fwReal000 = [0xFF52, 0xFF45, 0xFF41, 0xFF4C, 0xFF10, 0xFF10, 0xFF10].map((c) => String.fromCodePoint(c)).join(""); // ｒｅａｌ０００
+
+// #1 BIDI — a logical "EDICED" wrapped in RLO..PDF renders "DECIDE" to a human; the scanner sees "EDICED"
+//    (scanned=0) → the citation is HIDDEN. Bidi presence on a scanned line is a HARD finding.
+t("ED-286 r7 #1: a BIDI override masking a citation ('β <RLO>EDICED<PDF>') -> HARD (dangerous syntax)", () => {
+  const docs = [{ path: "a.md", text: "β " + RLO + "EDICED" + PDF + " (msg_id ghost999) shipped" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length >= 1, true, "a bidi override on a scanned line must be a HARD finding (a citation may be masked)");
+  assert.ok(r.hard.some((h) => h.msg_id === null), "the bidi finding carries no msg_id (it is a dangerous-syntax flag, not a receipt finding)");
+});
+t("ED-286 r7 #1b: a BIDI isolate (RLI/PDI) present on a scanned line -> HARD", () => {
+  const docs = [{ path: "a.md", text: "note " + RLI + "some text" + PDI + " here" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "bidi isolates are dangerous syntax too");
+});
+t("ED-286 r7 #1 GREEN: a normal RTL-free prose line has NO bidi finding (no over-flag)", () => {
+  const docs = [{ path: "a.md", text: "The beta build is stable; nothing decided here." }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "a line with no bidi control must not be flagged");
+});
+
+// #2 RECEIPT-ID LAUNDERING — a compat-folded/mark-decorated id that folds INTO a ledger id must NOT resolve.
+t("ED-286 r7 #2: a FULLWIDTH id (ｒｅａｌ０００) that NFKD-folds into the ledger id 'real000' -> HARD (laundered, not clean)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id " + fwReal000 + ") ship" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "normalization must NOT mint a valid receipt from a fullwidth payload");
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+});
+t("ED-286 r7 #2b: an ACCENTED id (ŕeal000, r+combining acute) that mark-strips into 'real000' -> HARD (laundered)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id " + "r" + String.fromCodePoint(0x0301) + "eal000) x" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a mark-decorated id that folds to a ledger id must not resolve");
+});
+t("ED-286 r7 #2 GREEN: a genuine raw-ASCII id that resolves is NOT falsely laundered", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id real000) ok" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "a raw-ASCII id present verbatim must resolve clean");
+});
+
+// #3 LINE-SEPARATOR MASKING — a U+2028/U+2029/lone-CR-hidden peer heading must still close a history section.
+for (const [label, sep] of [["U+2028 LS", LS], ["U+2029 PS", PS], ["lone CR", CR]]) {
+  t(`ED-286 r7 #3: a '${label}'-hidden peer heading does NOT keep an active citation history-masked`, () => {
+    const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id hist1) done." + sep + "## Current status\nβ DECIDE (msg_id active99) needs a receipt.";
+    const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
+    assert.ok(r.hard.some((h) => h.msg_id === "active99"), `the active citation after a ${label}-hidden heading must be scanned (not masked)`);
+    assert.ok(!r.hard.some((h) => h.msg_id === "hist1"), "the genuine history citation stays masked");
+  });
+}
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);

@@ -118,6 +118,14 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // de-obfuscates to ASCII and stays HARD instead of being downgraded to a receiptless SOFT.
 //
 // ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
+// r7 POLICY (security lane, 3 HIGHs — beyond plain strip/fold): (i) BIDI controls (U+202A-202E/U+2066-2069)
+// are DANGEROUS SYNTAX not ignorable — their PRESENCE on a scanned line is a HARD finding (they reorder
+// rendering so a citation can be visually masked; a data-free enforcer can't run UAX#9 visual reorder);
+// (ii) the doc is split on ALL Unicode line breaks (CRLF/LF/CR/LS/PS/NEL) BEFORE historyMask, so a
+// U+2028/U+2029/lone-CR-hidden peer heading can't keep an active citation history-masked; (iii) the msg_id
+// PAYLOAD is validated RAW — a captured id NOT present verbatim in the render-nothing-cleaned clause (i.e.
+// minted by compat-fold or mark-strip, e.g. fullwidth ｒｅａｌ０００ → real000) is LAUNDERED → HARD, never
+// resolves (a transformation must never mint a credential).
 // The NFKD skeleton closes the FULL invisible/control class (ED-286 r6, qa BINDING HIGH): \p{Cf} format/
 // zero-width, \p{M} combining marks (incl. CGJ), \p{Cc} CONTROLS (NUL/BEL/DEL), \p{Default_Ignorable_Code_Point}
 // (incl. the NON-\p{Cf} reserved default-ignorables U+2065/U+FFF0/U+E0000), markdown emphasis, compatibility
@@ -201,6 +209,29 @@ const CLAUSE_STRIP_G = new RegExp("[*`~]|[" + INVIS + "]", "gu");        // clea
 // synthesizes a spurious separator. (Does not fully close the inherent `msg_id <token>` prose over-flag
 // — that is NORMALIZATION CEILING (f), rooted in MSGID_IN_TEXT_RE and tracked as a follow-up ED.)
 const RECEIPT_SEP_INVIS_G = new RegExp("(msg_id)[" + INVIS + "]+(?=[`'\"]?[A-Za-z0-9])", "giu");
+// ── ED-286 gauntlet r7 — normalization-POLICY additions (security lane, 3 HIGHs) ──────────────────────
+// Three char-classes need DIFFERENT handling than plain strip/fold:
+//   * BIDI CONTROLS (r7 #1): U+202A-202E (LRE/RLE/PDF/LRO/RLO) + U+2066-2069 (isolates) are \p{Cf}, so the
+//     fold STRIPPED them — but they REORDER rendering, so `β <RLO>EDICED<PDF>` renders "β DECIDE" to a human
+//     while the logical (scanned) order is "EDICED" -> scanned=0, a HIDDEN citation. Stripping does NOT help
+//     (the logical order IS the attack). Treat bidi as DANGEROUS SYNTAX: its PRESENCE in a scanned
+//     (non-history) line is a HARD finding — a citation may be masked. Simplest + strongest (a data-free
+//     enforcer can't run the full UAX#9 visual reorder); explicit bidi overrides ~never appear in legit
+//     ADR/tracker/ROADMAP prose (RTL text uses the IMPLICIT bidi algorithm, not overrides).
+//   * LINE SEPARATORS (r7 #3): the doc was split on /\r?\n/ only, so U+2028/U+2029/lone-CR/NEL were NOT line
+//     breaks — an attacker hides a peer heading inside an open history section (it never closes the section)
+//     so active citations after it stay history-masked -> scanned=0. Split on ALL Unicode line breaks BEFORE
+//     historyMask.
+//   * RECEIPT-ID PAYLOAD (r7 #2, the deep one): the extraction clause is NFKD-COMPAT-FOLDED, so a fullwidth
+//     `msg_id ｒｅａｌ０００` (or a mark-decorated `ŕeal000`) FOLDS INTO a real ledger id and RESOLVES CLEAN — a
+//     normalization that MINTS a valid credential. The id PAYLOAD must be validated RAW: only render-nothing
+//     invisibles (\p{Cf}/\p{Cc}/\p{Default_Ignorable}, NOT \p{M} marks, NOT compat-fold) may be removed. A
+//     captured (folded) id that is NOT a verbatim substring of the raw render-nothing-cleaned clause was
+//     minted by folding/mark-strip -> LAUNDERED -> HARD, never resolves. (writer-stamped-fields principle:
+//     a transformation must never mint a credential.)
+const BIDI_RE = /[‪-‮⁦-⁩]/u;       // bidi overrides/embeddings/isolates — dangerous syntax, not ignorable
+const LINE_SPLIT_RE = new RegExp("\\r\\n|[\\n\\r\\u2028\\u2029\\u0085]"); // all Unicode line breaks (CRLF, LF, CR, LS, PS, NEL)
+const RAW_ID_CLEAN_G = new RegExp("[*`~]|[\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}]", "gu"); // RAW id-payload cleaner: strip emphasis(keep _) + render-nothing ONLY (NO \p{M}, NO compat-fold)
 function normalizeForDetection(raw) {
   let norm = "";
   const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
@@ -301,7 +332,7 @@ function evaluate({ docs, betaEventsText }) {
   const citationGlobal = new RegExp(CITATION_RE.source, "g");
   const msgidGlobal = new RegExp(MSGID_IN_TEXT_RE.source, "gi");
   for (const d of docs || []) {
-    const rawLines = String(d.text || "").split(/\r?\n/);
+    const rawLines = String(d.text || "").split(LINE_SPLIT_RE); // r7 #3: ALL Unicode line breaks, so a U+2028/U+2029/lone-CR-hidden peer heading still closes a history section
     const inHistory = historyMask(rawLines);
     for (let i = 0; i < rawLines.length; i++) {
       if (inHistory[i]) continue; // append-only history section — a dated past citation is a record
@@ -313,6 +344,15 @@ function evaluate({ docs, betaEventsText }) {
       // stripped, `_` PRESERVED) so an id like abc_def is never corrupted. (r2 kept `_`; that left the
       // identical bypass open for standard CommonMark underscore-italic — the r3 hunter HIGH.)
       const raw = rawLines[i];
+      // r7 #1 (security HIGH): a bidi control on a scanned line can visually reorder a hidden citation
+      // ("β <RLO>EDICED<PDF>" renders "β DECIDE" but the logical/scanned order is "EDICED"). Bidi is
+      // DANGEROUS SYNTAX, not ignorable — its PRESENCE is a HARD finding (a citation may be masked).
+      if (BIDI_RE.test(raw)) {
+        hard.push({
+          doc: d.path, line: i + 1, msg_id: null,
+          reason: `bidi control (U+202A-202E / U+2066-2069) on a scanned line — rendering order differs from logical order, so a β-verdict citation may be visually MASKED (e.g. "β <RLO>EDICED<PDF>" renders "β DECIDE" while the scanner sees "EDICED"). Bidi overrides do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${raw.replace(new RegExp(BIDI_RE.source, "gu"), "<BIDI>").trim().slice(0, 120)}`,
+        });
+      }
       const { norm, map } = normalizeForDetection(raw);
       const starts = [];
       citationGlobal.lastIndex = 0;
@@ -333,14 +373,20 @@ function evaluate({ docs, betaEventsText }) {
         // `_`), \p{M} marks and \p{Cf} format so an obfuscated label/id de-obfuscates to ASCII (a legit
         // underscore id ab_cd_ef is preserved; ASCII is NFKD-invariant). Net: an invisible/blank-obfuscated
         // forged receipt stays HARD instead of a downgraded receiptless SOFT.
-        const clause = raw.slice(rawStart, rawEnd)
+        const clauseRaw = raw.slice(rawStart, rawEnd);
+        const clause = clauseRaw
           .normalize("NFKD")
           .replace(SPACE_MAP_G, " ")
           .replace(RECEIPT_SEP_INVIS_G, "$1 ")
           .replace(CLAUSE_STRIP_G, "");
+        // r7 #2 (security HIGH — receipt-id LAUNDERING): the id PAYLOAD must be validated RAW. `clause` is
+        // compat-FOLDED, so a fullwidth `ｒｅａｌ０００` (or a mark-decorated `ŕeal000`) folds INTO a real ledger
+        // id and would resolve CLEAN — a normalization MINTING a credential. `rawIdClean` strips render-nothing
+        // invisibles + emphasis ONLY (keeps `_`, keeps \p{M} marks, does NOT compat-fold), so a captured id
+        // that is NOT a verbatim substring of it was minted by folding/mark-strip -> LAUNDERED -> unresolvable.
+        const rawIdClean = clauseRaw.replace(RAW_ID_CLEAN_G, "");
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
-        // clause, not just the first. A resolving-first + unresolved-second inside ONE clause was a HARD
-        // false-green. ANY cited receipt that does not resolve → HARD.
+        // clause, not just the first. ANY cited receipt that does not resolve (or is normalization-laundered) → HARD.
         const mids = [];
         msgidGlobal.lastIndex = 0;
         let mm;
@@ -354,11 +400,15 @@ function evaluate({ docs, betaEventsText }) {
             reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${clause.trim().slice(0, 120)}`,
           });
         } else {
-          const unresolved = mids.filter((x) => !known.has(x));
+          const isLaundered = (x) => !rawIdClean.includes(x); // r7 #2: the folded id is not present raw -> minted by normalization
+          const unresolved = mids.filter((x) => isLaundered(x) || !known.has(x));
           if (unresolved.length) {
+            const first = unresolved[0];
             hard.push({
-              doc: d.path, line: i + 1, msg_id: unresolved[0],
-              reason: `β-verdict citation cites msg_id '${unresolved[0]}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (${unresolved.length} of ${mids.length} cited receipt(s) unresolved; forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
+              doc: d.path, line: i + 1, msg_id: first,
+              reason: isLaundered(first)
+                ? `β-verdict citation cites msg_id '${first}' that exists ONLY via normalization (compat-fold/mark-strip minted it from an obfuscated payload — e.g. fullwidth/accented id) and is NOT a raw ASCII receipt — normalization must never mint a credential (r7 #2). Citation: ${clause.trim().slice(0, 120)}`
+                : `β-verdict citation cites msg_id '${first}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (${unresolved.length} of ${mids.length} cited receipt(s) unresolved; forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
             });
           }
         }
