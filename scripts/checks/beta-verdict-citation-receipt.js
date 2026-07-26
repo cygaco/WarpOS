@@ -121,11 +121,13 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // r7 POLICY (security lane, 3 HIGHs — beyond plain strip/fold): (i) BIDI controls (U+202A-202E/U+2066-2069)
 // are DANGEROUS SYNTAX not ignorable — their PRESENCE on a scanned line is a HARD finding (they reorder
 // rendering so a citation can be visually masked; a data-free enforcer can't run UAX#9 visual reorder);
-// (ii) the doc is split on ALL Unicode line breaks (CRLF/LF/CR/LS/PS/NEL) BEFORE historyMask, so a
-// U+2028/U+2029/lone-CR-hidden peer heading can't keep an active citation history-masked; (iii) the msg_id
-// PAYLOAD is validated RAW — a captured id NOT present verbatim in the render-nothing-cleaned clause (i.e.
-// minted by compat-fold or mark-strip, e.g. fullwidth ｒｅａｌ０００ → real000) is LAUNDERED → HARD, never
-// resolves (a transformation must never mint a credential).
+// (ii) the doc is split on ALL Unicode UAX#14-BK line breaks (CRLF/LF/CR/VT U+000B/FF U+000C/LS/PS/NEL —
+// r8 added VT/FF) BEFORE historyMask, so a Unicode-line-break-hidden peer heading can't keep an active
+// citation history-masked; (iii) the msg_id PAYLOAD is validated RAW and POSITION-ANCHORED (r8) — a folded
+// captured id must appear as a RAW receipt AT ITS msg_id-LABEL position (rawMids, extracted from the same
+// clause with NO compat-fold), else it was minted by compat-fold/mark-strip (e.g. fullwidth ｒｅａｌ０００ →
+// real000) → LAUNDERED → HARD, never resolves (a transformation must never mint a credential; a raw twin
+// ELSEWHERE in the clause can't launder it — the check is keyed to the label, not a whole-clause substring).
 // The NFKD skeleton closes the FULL invisible/control class (ED-286 r6, qa BINDING HIGH): \p{Cf} format/
 // zero-width, \p{M} combining marks (incl. CGJ), \p{Cc} CONTROLS (NUL/BEL/DEL), \p{Default_Ignorable_Code_Point}
 // (incl. the NON-\p{Cf} reserved default-ignorables U+2065/U+FFF0/U+E0000), markdown emphasis, compatibility
@@ -230,7 +232,7 @@ const RECEIPT_SEP_INVIS_G = new RegExp("(msg_id)[" + INVIS + "]+(?=[`'\"]?[A-Za-
 //     minted by folding/mark-strip -> LAUNDERED -> HARD, never resolves. (writer-stamped-fields principle:
 //     a transformation must never mint a credential.)
 const BIDI_RE = /[‪-‮⁦-⁩]/u;       // bidi overrides/embeddings/isolates — dangerous syntax, not ignorable
-const LINE_SPLIT_RE = new RegExp("\\r\\n|[\\n\\r\\u2028\\u2029\\u0085]"); // all Unicode line breaks (CRLF, LF, CR, LS, PS, NEL)
+const LINE_SPLIT_RE = new RegExp("\\r\\n|[\\n\\r\\u000b\\u000c\\u2028\\u2029\\u0085]"); // all Unicode UAX#14-BK line breaks: CRLF, LF, CR, VT (U+000B), FF (U+000C), LS, PS, NEL — r8 added VT/FF (same mandatory-break class as LS/PS; a VT/FF-hidden peer heading must also close a history section)
 const RAW_ID_CLEAN_G = new RegExp("[*`~]|[\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}]", "gu"); // RAW id-payload cleaner: strip emphasis(keep _) + render-nothing ONLY (NO \p{M}, NO compat-fold)
 function normalizeForDetection(raw) {
   let norm = "";
@@ -384,7 +386,24 @@ function evaluate({ docs, betaEventsText }) {
         // id and would resolve CLEAN — a normalization MINTING a credential. `rawIdClean` strips render-nothing
         // invisibles + emphasis ONLY (keeps `_`, keeps \p{M} marks, does NOT compat-fold), so a captured id
         // that is NOT a verbatim substring of it was minted by folding/mark-strip -> LAUNDERED -> unresolvable.
-        const rawIdClean = clauseRaw.replace(RAW_ID_CLEAN_G, "");
+        // r7 #2 + r8 (security HIGH + hunter LOW — receipt-id LAUNDERING, position-anchored): the id
+        // PAYLOAD must be a RAW ASCII receipt AT ITS msg_id-LABEL position, not merely present somewhere in
+        // the clause. `rawMids` = the ids captured (by the SAME label+separator regex) from a clause cleaned
+        // the SAME way EXCEPT with NO compat-fold (SPACE_MAP + RECEIPT_SEP boundary + render-nothing/emphasis
+        // strip; \p{M} marks KEPT). So a fullwidth/mark-decorated id folds in `clause` but is absent from
+        // `rawMids` -> LAUNDERED -> HARD; and a raw twin elsewhere in the clause (hunter LOW) can't launder it,
+        // because rawMids is keyed to the LABEL position, not a whole-clause substring.
+        const rawClause = clauseRaw
+          .replace(SPACE_MAP_G, " ")
+          .replace(RECEIPT_SEP_INVIS_G, "$1 ")
+          .replace(RAW_ID_CLEAN_G, ""); // NO NFKD fold — the RAW id payload
+        const rawMids = [];
+        msgidGlobal.lastIndex = 0;
+        let rm;
+        while ((rm = msgidGlobal.exec(rawClause)) !== null) {
+          if (MSGID_SHAPE_RE.test(rm[1])) rawMids.push(rm[1]);
+          if (msgidGlobal.lastIndex === rm.index) msgidGlobal.lastIndex++;
+        }
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
         // clause, not just the first. ANY cited receipt that does not resolve (or is normalization-laundered) → HARD.
         const mids = [];
@@ -400,7 +419,7 @@ function evaluate({ docs, betaEventsText }) {
             reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${clause.trim().slice(0, 120)}`,
           });
         } else {
-          const isLaundered = (x) => !rawIdClean.includes(x); // r7 #2: the folded id is not present raw -> minted by normalization
+          const isLaundered = (x) => !rawMids.includes(x); // r8: the folded id is not a RAW receipt at a label position -> minted by normalization
           const unresolved = mids.filter((x) => isLaundered(x) || !known.has(x));
           if (unresolved.length) {
             const first = unresolved[0];

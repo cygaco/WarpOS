@@ -571,15 +571,25 @@ t("ED-286 r7 #2 GREEN: a genuine raw-ASCII id that resolves is NOT falsely laund
   assert.strictEqual(r.hard.length + r.soft.length, 0, "a raw-ASCII id present verbatim must resolve clean");
 });
 
-// #3 LINE-SEPARATOR MASKING — a U+2028/U+2029/lone-CR-hidden peer heading must still close a history section.
-for (const [label, sep] of [["U+2028 LS", LS], ["U+2029 PS", PS], ["lone CR", CR]]) {
-  t(`ED-286 r7 #3: a '${label}'-hidden peer heading does NOT keep an active citation history-masked`, () => {
+// #3 LINE-SEPARATOR MASKING — a Unicode-line-break-hidden peer heading must still close a history section.
+// r8 (hunter HIGH) added VT (U+000B) + FF (U+000C) — same UAX#14 mandatory-break class as LS/PS.
+const VT = String.fromCodePoint(0x000B), FF = String.fromCodePoint(0x000C);
+for (const [label, sep] of [["U+2028 LS", LS], ["U+2029 PS", PS], ["lone CR", CR], ["VT U+000B", VT], ["FF U+000C", FF]]) {
+  t(`ED-286 r7/r8 #3: a '${label}'-hidden peer heading does NOT keep an active citation history-masked`, () => {
     const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id hist1) done." + sep + "## Current status\nβ DECIDE (msg_id active99) needs a receipt.";
     const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
     assert.ok(r.hard.some((h) => h.msg_id === "active99"), `the active citation after a ${label}-hidden heading must be scanned (not masked)`);
     assert.ok(!r.hard.some((h) => h.msg_id === "hist1"), "the genuine history citation stays masked");
   });
 }
+// r8 (hunter LOW — position-anchored laundering): a fullwidth (laundered) cited id must NOT resolve just
+// because a raw-ASCII twin appears ELSEWHERE in the same clause; the raw check is keyed to the label position.
+t("ED-286 r8: a fullwidth cited id + a raw twin ELSEWHERE in the clause -> HARD (laundering not rescued by the twin)", () => {
+  const docs = [{ path: "a.md", text: "β DECIDE (msg_id " + fwReal000 + ") also real000 mentioned here" }];
+  const r = evaluate({ docs, betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "the fullwidth cited receipt is laundered; a raw twin elsewhere must not launder it");
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+});
 
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
