@@ -183,6 +183,22 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       is case-bounded (uppercase tokens DECIDE/DIRECTIVE/ESCALATE + lowercase ruled/verdict/approved only, so
 //       `betaVerdict` with a capital V does NOT match), and the live-corpus delta is 0. Same inherent
 //       optional-separator ambiguity as (e)/(f); tracked with the (f) MSGID_IN_TEXT_RE follow-up ED.
+//   (h) DEEP MARKDOWN RENDER-SURFACE (r9 hunter HIGHs → β bounded-final DECIDE B/0.89, the SAME tech-bar
+//       ceiling shape as the TR39/cross-script residual (a)/562ba5b6): a data-free line scanner cannot fully
+//       match the CommonMark RENDER surface without a real CommonMark parser/renderer (a tech introduction
+//       the decision-policy bars pre-mvp). r10 CLOSED the two BOUNDED/by-construction gaps within it — (1)
+//       NUMERIC/HEX character references (decodeCharRefs, property-complete for &#N;/&#xH;) + the one named
+//       entity that maps to a citation token (&beta;); (2) historyMask Setext + indented-ATX heading-close.
+//       NOT closed (this ceiling): the full HTML5 NAMED-entity table (beyond &beta; — the rest map to
+//       non-token characters, so they don't hide a β/DECIDE citation) AND CommonMark BLOCK-structure render
+//       fidelity (reference-style links, HTML blocks/comments, tables, nested containers). Exposure is LOW
+//       and identical in shape to (a): it fools a RENDERED-view reader only (the enforcer + any raw-diff
+//       reviewer see the raw &#…/weirdness), and requires write access to a canonical ADR/tracker/ROADMAP
+//       (self-attack at solo pre-mvp). A CommonMark-renderer rewrite is its own Class-B ADR if ever built.
+//       β STOP-CONDITION (562ba5b6-shape): a char/entity-level bypass that SHOULD be closed by construction
+//       is in-scope; a render-fidelity nuance within THIS ceiling is covered — ship the GATE, not the
+//       impossible full renderer. Codified by the r10 β-probe(a) test (a named entity != &beta; is not a
+//       citation) + the char-ref/Setext teeth. Cross-ref ED-275, ED-289, 562ba5b6, and the render-surface ED.
 const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
 // ED-286 gauntlet r6 (qa BINDING HIGH): the "invisible" class the fold must close is BROADER than \p{M}+\p{Cf}
 // \u2014 \p{Cc} CONTROLS (U+0000 NUL / U+0007 / U+007F) and NON-\p{Cf} DEFAULT-IGNORABLES (U+2065 / U+FFF0 /
@@ -249,6 +265,21 @@ const BIDI_RE = /[‪-‮⁦-⁩]/u;       // bidi overrides/embeddings/isolates
 // ADR/tracker/ROADMAP prose (same rationale as bidi).
 const LINE_SPLIT_RE = /\r\n|[\n\r]/; // CommonMark line-endings ONLY (LF/CR/CRLF)
 const DANGEROUS_BREAK_RE = new RegExp("[\\u000b\\u000c\\u0085\\u2028\\u2029]", "u"); // VT/FF/NEL/LS/PS — non-CommonMark line/whitespace breaks (render-surface divergence)
+// r10 (hunter HIGH — β DECIDE B/0.89 bounded-final): decode NUMERIC/HEX character references (&#NNN; / &#xHHH;)
+// + the ONE named entity that maps to a citation token (&beta;), so a render-surface-encoded citation
+// (`&#946; DECIDE` renders "β DECIDE" on GitHub) is detected. Composed BEFORE the NFKD skeleton (per β) so a
+// numeric ref to a compat homoglyph (&#xFF24; = fullwidth D) folds through BOTH passes; and a numeric ref to
+// an invisible/control/bidi (e.g. &#x202E;) decodes then hits the strip/dangerous-syntax checks. Numeric/hex
+// is PROPERTY-COMPLETE (every code point uniformly, like NFKD closed the char class). The full HTML5
+// NAMED-entity table + CommonMark block-structure render fidelity is the DISCLOSED render-surface ceiling (h)
+// — closing it needs a real CommonMark renderer (a tech-bar dependency), out of scope pre-mvp.
+function decodeCharRefs(s) {
+  return String(s)
+    .replace(/&#x([0-9a-fA-F]+);/g, (m, h) => { try { const c = parseInt(h, 16); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } })
+    .replace(/&#(\d+);/g, (m, d) => { try { const c = parseInt(d, 10); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } })
+    .replace(/&beta;/g, "β")   // &beta; -> β (U+03B2 lowercase) — the citation token
+    .replace(/&Beta;/g, "Β");  // &Beta; -> Β (U+0392 UPPERCASE Greek) — a DISTINCT entity, NOT the β token (case-correct per HTML5; not case-folded)
+}
 const RAW_ID_CLEAN_G = new RegExp("[*`~]|[\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}]", "gu"); // RAW id-payload cleaner: strip emphasis(keep _) + render-nothing ONLY (NO \p{M}, NO compat-fold)
 function normalizeForDetection(raw) {
   let norm = "";
@@ -315,17 +346,36 @@ function verdictMsgIds(betaEventsText) {
  * heading at the SAME-or-HIGHER level. So a history section in the MIDDLE of a doc no longer
  * truncates the active content after it. `headings` is the precomputed per-line heading levels.
  */
+const HISTORY_LABEL_RE = /^(Session log|Change log|Changelog|History)\b/i;
 function historyMask(lines) {
   const mask = new Array(lines.length).fill(false);
   let historyLevel = null;
   for (let i = 0; i < lines.length; i++) {
-    const h = lines[i].match(/^(#{1,6})\s+(.*)$/);
-    if (h) {
-      const level = h[1].length;
-      if (historyLevel !== null && level <= historyLevel) historyLevel = null; // section closed by a peer/higher heading
-      if (historyLevel === null && /^(Session log|Change log|Changelog|History)\b/i.test(h[2].trim())) {
+    // r10 (hunter HIGH — historyMask heading-recognition diverged from the CommonMark render surface):
+    // recognize BOTH (a) ATX with 0-3 leading spaces (CommonMark allows the indent) AND (b) a Setext
+    // underline (=+ -> H1, -+ -> H2) under a preceding non-blank, non-ATX text line. Bias FAIL-OPEN to
+    // SCANNING: err toward CLOSING a history section (over-scanning a dated history line is at worst a
+    // harmless SOFT; leaving an ACTIVE citation masked is a false-green — β DECIDE B/0.89).
+    const atx = lines[i].match(/^ {0,3}(#{1,6})\s+(.*)$/);
+    const setextUnder = /^ {0,3}(=+|-+)\s*$/.test(lines[i]) && i > 0 && lines[i - 1].trim() !== "" && !/^ {0,3}#{1,6}\s/.test(lines[i - 1]);
+    if (atx) {
+      const level = atx[1].length;
+      if (historyLevel !== null && level <= historyLevel) historyLevel = null; // closed by a peer/higher heading
+      if (historyLevel === null && HISTORY_LABEL_RE.test(atx[2].trim())) {
         historyLevel = level;
         mask[i] = true; // the heading line itself is history
+        continue;
+      }
+    } else if (setextUnder) {
+      const level = /^ {0,3}=+\s*$/.test(lines[i]) ? 1 : 2; // = -> H1, - -> H2
+      const headingText = lines[i - 1].trim();
+      if (historyLevel !== null && level <= historyLevel) {
+        historyLevel = null; // a Setext peer/higher heading CLOSES the section
+        mask[i - 1] = false; mask[i] = false; // un-mask the heading + its underline (they were the boundary)
+      }
+      if (historyLevel === null && HISTORY_LABEL_RE.test(headingText)) {
+        historyLevel = level;
+        mask[i - 1] = true; mask[i] = true; // a Setext-labeled history section
         continue;
       }
     }
@@ -353,7 +403,7 @@ function evaluate({ docs, betaEventsText }) {
     const rawLines = String(d.text || "").split(LINE_SPLIT_RE); // r7 #3: ALL Unicode line breaks, so a U+2028/U+2029/lone-CR-hidden peer heading still closes a history section
     const inHistory = historyMask(rawLines);
     for (let i = 0; i < rawLines.length; i++) {
-      const raw = rawLines[i];
+      const raw = decodeCharRefs(rawLines[i]); // r10: decode numeric/hex/&beta; char-refs (render surface) BEFORE the checks + NFKD, so `&#946; DECIDE`/`&#x202E;`... are detected/flagged like their decoded form
       // DANGEROUS-SYNTAX checks (bidi + non-CommonMark break) run on EVERY line INCLUDING history-masked
       // ones (r9): a bidi control or a VT/FF/NEL/LS/PS break can mask the section BOUNDARY itself, so the
       // history skip (below) must skip only the CITATION scan, not these flags.

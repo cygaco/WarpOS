@@ -610,6 +610,50 @@ t("ED-286 r8: a fullwidth cited id + a raw twin ELSEWHERE in the clause -> HARD 
   assert.strictEqual(r.hard[0].msg_id, "real000");
 });
 
+// ── ED-286 gauntlet r10 (β bounded-final DECIDE B/0.89) — the 2 bounded render-surface fixes + β's probes.
+//    (i) numeric/hex/&beta; CHARACTER-REFERENCE decode (composed BEFORE NFKD); (ii) historyMask Setext +
+//    indented-ATX heading-close (fail-open-to-scanning). The deep render-surface (HTML5 named-entity table +
+//    block-structure fidelity) is the DISCLOSED ceiling (h) — needs a real CommonMark renderer. ──
+for (const [label, ref] of [["numeric &#946;", "&#946;"], ["hex &#x3B2;", "&#x3B2;"], ["named &beta;", "&beta;"]]) {
+  t(`ED-286 r10 #i: a ${label}-encoded β with a forged receipt renders "β DECIDE" -> HARD (char-ref decoded)`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text: ref + " DECIDE (msg_id ghostref)" }], betaEventsText: beta([vrow("real000")]) });
+    assert.ok(r.hard.some((h) => h.msg_id === "ghostref"), `${label} must decode to β on the render surface and be scanned`);
+  });
+}
+t("ED-286 r10 β-probe(b): a numeric ref to a compat homoglyph (&#xFF24; = fullwidth D) composes decode->NFKD -> HARD", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "β &#xFF24;ECIDE (msg_id ghostfw)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "ghostfw"), "&#xFF24;ECIDE must decode to ＤECIDE then NFKD-fold to DECIDE");
+});
+t("ED-286 r10 β-probe(b): a numeric ref to a bidi control (&#x202E;) decodes then is flagged HARD", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "&#x202E;text&#x202C; (msg_id x)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.length >= 1, "an entity-encoded bidi control must decode then hit the dangerous-syntax flag");
+});
+// β-probe (a) — the KEY check that the &beta;-only named-entity cut is sufficient for THIS token set (not a
+// hidden category-strip): a named entity OTHER than &beta; must NOT resolve to a citation token.
+for (const [label, ref] of [["&alpha;", "&alpha;"], ["&gamma;", "&gamma;"], ["&Beta; (uppercase Greek)", "&Beta;"]]) {
+  t(`ED-286 r10 β-probe(a): the named entity ${label} does NOT resolve to a β citation token (scanned=0)`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text: ref + " DECIDE (msg_id x); " + ref + " ruled" }], betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.scannedCitations, 0, `${label} is not the β token — not a citation (the &beta;-only cut is sufficient, not a category-strip)`);
+  });
+}
+// β-probe (c) — the over-mask regression: a Setext-closed / indented-ATX history section followed by an
+// ACTIVE citation must be SCANNED (fail-open-to-scanning).
+t("ED-286 r10 β-probe(c)/Setext: `Current status`\\n`---` closes the history section -> active citation scanned", () => {
+  const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id histS) done.\nCurrent status\n---\nβ DECIDE (msg_id activeS) needs a receipt.";
+  const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "activeS"), "a Setext-closed heading must un-mask the active citation");
+  assert.ok(!r.hard.some((h) => h.msg_id === "histS"), "the genuine history citation stays masked");
+});
+t("ED-286 r10 indented-ATX (0-3 leading spaces) closes the history section -> active citation scanned", () => {
+  const text = "# Epic\n## Session log\n- 2026-01-01 β DECIDE (msg_id histA) done.\n   ## Current status\nβ DECIDE (msg_id activeA) needs a receipt.";
+  const r = evaluate({ docs: [{ path: "tr.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.ok(r.hard.some((h) => h.msg_id === "activeA"), "a 3-space-indented ATX heading (valid CommonMark) must close the section");
+});
+t("ED-286 r10 GREEN: a legit resolving char-ref-free citation stays clean (char-ref decode is a no-op on plain text)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "β DECIDE (msg_id real000) ok" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0);
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
