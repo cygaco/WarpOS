@@ -4,8 +4,8 @@
 - **Title:** ED-286 citation-obfuscation defense — mechanism fix (normalize-on-match) for `beta-verdict-citation-receipt.js`
 - **Owner:** Alex ε (sprint conductor), under Alex α
 - **Parent epic:** [E-DISPATCH-INTEGRITY-001](../epics/E-DISPATCH-INTEGRITY-001-agent-dispatch-integrity.md)
-- **Goal:** Close the ED-286 citation-obfuscation bypass CLASS in `scripts/checks/beta-verdict-citation-receipt.js` by construction — normalize the detection text to its rendered form before matching — so that invisible, combining, and confusable character categories are covered by the mechanism rather than by an enumerated strip-list.
-- **Scope:** `scripts/checks/beta-verdict-citation-receipt.js` and its test suite `scripts/checks/beta-verdict-citation-receipt.test.js`. Detection-side normalization (NFKD decompose, then strip `\p{M}` / `\p{Cf}`, then fold blank-rendering code points), the receipt-id raw-validation path, character-reference decoding, and the UTF-16 index map that ties normalized match offsets back to raw offsets.
+- **Goal:** Close the ED-286 citation-obfuscation bypass CLASS in `scripts/checks/beta-verdict-citation-receipt.js` by construction — normalize the detection text to its rendered form before matching — so that invisible, combining, and confusable character categories are covered by the mechanism rather than by an enumerated strip-list. <!-- doc-ref-ignore: the enforcer lands with SP-20260725-001 — it exists on sprint/SP-20260725-001-ed286-fix, not yet on this branch -->
+- **Scope:** <!-- doc-ref-ignore: lands with SP-20260725-001 --> `scripts/checks/beta-verdict-citation-receipt.js` and its test suite `scripts/checks/beta-verdict-citation-receipt.test.js`. Detection-side normalization (NFKD decompose, then strip `\p{M}` / `\p{Cf}`, then fold blank-rendering code points), the receipt-id raw-validation path, character-reference decoding, and the UTF-16 index map that ties normalized match offsets back to raw offsets.
 - **Out of scope:** Full CommonMark / HTML / named-entity render fidelity (requires a renderer; bounded by β as disclosed ceiling (h), tracked as ED-290). TR39 confusable-skeleton coverage (ED-289). Wiring the enforcer into any additional gate.
 - **Current state:** Blocked
 - **Percent completion:** 85% — the mechanism is implemented through fix round r11 and the committed suite passes 119/119, but the gauntlet is red: two binding HIGH findings from independent reviewer lanes remain open, so the sprint cannot reach its Definition of Done. The remaining 15% is one root fix plus a clean re-review.
@@ -30,16 +30,16 @@
 - [ ] Re-run the affected reviewer lanes on the fixed commit.
 
 ## Files expected to change
-- `scripts/checks/beta-verdict-citation-receipt.js`
-- `scripts/checks/beta-verdict-citation-receipt.test.js`
+- `scripts/checks/beta-verdict-citation-receipt.js` <!-- doc-ref-ignore: lands with SP-20260725-001 -->
+- `scripts/checks/beta-verdict-citation-receipt.test.js` <!-- doc-ref-ignore: lands with SP-20260725-001 -->
 
 ## Files actually changed
-- `scripts/checks/beta-verdict-citation-receipt.js` — 2026-07-25 through 2026-07-26 (fix rounds r1–r11)
-- `scripts/checks/beta-verdict-citation-receipt.test.js` — 2026-07-25 through 2026-07-26
+- `scripts/checks/beta-verdict-citation-receipt.js` — 2026-07-25 through 2026-07-26 (fix rounds r1–r11) <!-- doc-ref-ignore: lands with SP-20260725-001 -->
+- `scripts/checks/beta-verdict-citation-receipt.test.js` — 2026-07-25 through 2026-07-26 <!-- doc-ref-ignore: lands with SP-20260725-001 -->
 
 ## Paths expected to exist
-- `scripts/checks/beta-verdict-citation-receipt.js`
-- `scripts/checks/beta-verdict-citation-receipt.test.js`
+- `scripts/checks/beta-verdict-citation-receipt.js` <!-- doc-ref-ignore: lands with SP-20260725-001 -->
+- `scripts/checks/beta-verdict-citation-receipt.test.js` <!-- doc-ref-ignore: lands with SP-20260725-001 -->
 
 ## Paths verified to exist
 - `.worktrees/enforcer-cluster/scripts/checks/beta-verdict-citation-receipt.js` — Verified Exists 2026-07-27 via `ls -la` by Alex ε
