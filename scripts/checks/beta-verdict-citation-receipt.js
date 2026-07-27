@@ -44,6 +44,24 @@
  * The UTF-16-vs-code-point index-map desync (false-green after any astral char) is fixed (per-UTF-16-unit
  * map). Residual explicitly disclosed at the NORMALIZATION CEILING comment below (P-059).
  *
+ * ED-286 r12 (β DECIDE B/0.89 msg_id 7c3f9e2a) — TWO INDEPENDENT credential-minting bypasses closed. They
+ * share an abstraction (a transformation mints a payload the raw check then blesses) but NOT a mechanism,
+ * and neither fix closes the other — verified by building each in isolation:
+ *   FIX 1 (backend HIGH, was `const raw = decodeCharRefs(...)`): the variable NAMED `raw` held DECODED text,
+ *     so a char-ref-spelled receipt (`msg_id &#x72;&#x65;&#x61;&#x6c;&#x30;&#x30;&#x30;`) was genuine raw
+ *     ASCII before the anti-laundering check ran. The ORIGINAL PHYSICAL line is now kept as the undecoded
+ *     channel; decodeCharRefs returns an index map that COMPOSES with normalizeForDetection's, so every
+ *     match resolves to a span in the ORIGINAL. Occurrence-anchoring ALONE would NOT have closed this: a
+ *     decoded id is legitimately ASCII at its OWN label position, so a span-anchored compare finds a
+ *     matching raw twin at exactly the right span and passes.
+ *   FIX 2 (security HIGH, was `isLaundered = (x) => !rawMids.includes(x)`): a VALUE test over a flat array,
+ *     so ANY later raw `msg_id real000` in the clause rescued an earlier minted occurrence. Now each cited
+ *     occurrence must pair with a raw receipt at its OWN origin span. An undecoded raw slice ALONE would NOT
+ *     have closed this: the fullwidth probe contains no char refs, so the decode is a no-op and the raw
+ *     clause was already correct — the defect was purely the value test.
+ * Both are documented-invariant violations (ED-292): the code carried comments asserting properties it did
+ * not hold. Those comments are corrected in place and marked DO NOT RE-BREAK rather than deleted.
+ *
  * GITIGNORED-LEDGER POSTURE (mirrors betaevents-dedup-lint): betaEvents is a gitignored advisory
  * ledger, absent on a fresh clone / CI. Absent (ENOENT) => SKIP-with-note (exit 0). Present-but-
  * unreadable => fail-closed exit 2. SCOPE: /scan:full only, never CI; report-only by default.
@@ -113,9 +131,12 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // offset (a downgraded/misattributed finding = a false-green). Map values are always code-point starts, so
 // raw.slice(map[a], map[b]) never splits a surrogate pair.
 //
-// msg_id EXTRACTION runs on the RAW clause NFKD-folded with * / ` / ~ / \p{M} / \p{Cf} stripped but `_`
-// PRESERVED (ids keep abc_def; ASCII is NFKD-invariant) — so an invisible-obfuscated forged receipt
-// de-obfuscates to ASCII and stays HARD instead of being downgraded to a receiptless SOFT.
+// msg_id EXTRACTION runs on TWO clauses in parallel, both mapped back to ORIGINAL-line offsets (r12):
+// the CITED clause (char-ref-decoded + NFKD-folded, * / ` / ~ / \p{M} / \p{Cf} stripped, `_` PRESERVED so
+// ids keep abc_def) is what a RENDERED-view reader sees — an invisible-obfuscated forged receipt
+// de-obfuscates to ASCII there and stays HARD instead of being downgraded to a receiptless SOFT; and the
+// RAW clause (sliced from the ORIGINAL PHYSICAL line, NO char-ref decode, NO NFKD, \p{M} KEPT) is the
+// credential channel. The two are paired BY ORIGIN SPAN, never by value membership — see r12 below.
 //
 // ───────────── NORMALIZATION CEILING (P-059 complete disclosure — every category NOT fully closed) ────
 // r7 POLICY (security lane, 3 HIGHs — beyond plain strip/fold): (i) BIDI controls (U+202A-202E/U+2066-2069)
@@ -128,11 +149,18 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 // but got split across enforcer-lines and HIDDEN. A non-CommonMark break INSIDE a citation is now SPACE_MAP-
 // folded to a space and still detected; a break-hidden peer heading is caught by the (i) dangerous-syntax
 // flag (which runs on EVERY line, incl. history-masked, so it can't mask the section boundary itself);
-// (iii) the msg_id PAYLOAD is validated RAW and POSITION-ANCHORED (r8) — a folded
-// captured id must appear as a RAW receipt AT ITS msg_id-LABEL position (rawMids, extracted from the same
-// clause with NO compat-fold), else it was minted by compat-fold/mark-strip (e.g. fullwidth ｒｅａｌ０００ →
-// real000) → LAUNDERED → HARD, never resolves (a transformation must never mint a credential; a raw twin
-// ELSEWHERE in the clause can't launder it — the check is keyed to the label, not a whole-clause substring).
+// (iii) the msg_id PAYLOAD is validated RAW and OCCURRENCE/SPAN-ANCHORED (r8, CORRECTED in r12) — each
+// CITED receipt occurrence must be paired with a raw-clean receipt occurrence starting at the SAME
+// ORIGINAL-line offset AND carrying the SAME ASCII payload; otherwise it was minted by a transformation
+// (character-reference decode &#x72;… → r, compat-fold fullwidth ｒｅａｌ０００ → real000, or mark-strip
+// ŕeal000 → real000) → LAUNDERED → HARD, never resolves. A transformation must never mint a credential.
+// HISTORY / DO NOT RE-BREAK: r8's comment here asserted that "a raw twin ELSEWHERE in the clause can't
+// launder it — the check is keyed to the label"; that was FALSE. r8 implemented `!rawMids.includes(x)`,
+// a VALUE test over a flat array with positions DISCARDED, so it only ever caught a twin that was not
+// itself `msg_id`-labelled. `β DECIDE (msg_id ｒｅａｌ０００); … not msg_id real000` passed CLEAN — the
+// labelled twin rescued the folded occurrence. That is why the pairing is now by ORIGIN SPAN, and why
+// a comment asserting an invariant the code does not hold is treated here as a defect (ED-292), not a
+// documentation nit: the next reader reasons from it and builds the next bypass on top of it.
 // The NFKD skeleton closes the FULL invisible/control class (ED-286 r6, qa BINDING HIGH): \p{Cf} format/
 // zero-width, \p{M} combining marks (incl. CGJ), \p{Cc} CONTROLS (NUL/BEL/DEL), \p{Default_Ignorable_Code_Point}
 // (incl. the NON-\p{Cf} reserved default-ignorables U+2065/U+FFF0/U+E0000), markdown emphasis, compatibility
@@ -189,9 +217,27 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       the decision-policy bars pre-mvp). r10 CLOSED the two BOUNDED/by-construction gaps within it — (1)
 //       NUMERIC/HEX character references (decodeCharRefs, property-complete for &#N;/&#xH;) + the one named
 //       entity that maps to a citation token (&beta;); (2) historyMask Setext + indented-ATX heading-close.
-//       NOT closed (this ceiling): the full HTML5 NAMED-entity table (beyond &beta; — the rest map to
-//       non-token characters, so they don't hide a β/DECIDE citation) AND CommonMark BLOCK-structure render
-//       fidelity (reference-style links, HTML blocks/comments, tables, nested containers). Exposure is LOW
+//       NOT closed (this ceiling) — ENUMERATED, not merely gestured at (r12 β rider C: a ceiling that says
+//       only "render fidelity" is under-specified the SAME way "normalize" was, which is what produced the
+//       r3→r4 category-chase; ED-286/ED-290 carry this list):
+//         (h1) HTML5 NAMED entities beyond the single &beta;/&Beta; mapping — the full table is ~2,200
+//              entries. The ones that matter for THIS enforcer are those decoding to a citation token or to
+//              an id-payload character: e.g. &#946;-equivalents, and the ASCII-letter/digit-yielding refs a
+//              receipt id could be spelled with. Numeric/hex refs ARE property-complete (decodeCharRefs);
+//              named refs are a finite DATA TABLE, so this is a data-dependency call, not a parser one.
+//         (h2) CommonMark SOFTBREAK — a citation split across two source lines (`β DECIDE` where `β` ends
+//              line N and `DECIDE` begins line N+1) renders as ONE line joined by a space, but the scanner's
+//              line model treats them as two lines and detects NO citation. The dangerous-BREAK flag does
+//              NOT cover this: a plain LF is a legitimate CommonMark line-ending, so there is nothing
+//              anomalous to flag. This is the widest remaining hole in the class and needs block-level
+//              (paragraph-joined) scanning, not another character rule.
+//         (h3) INLINE HTML TAGS — `β <span>DECIDE</span>` / `β DEC<!-- x -->IDE` render as a citation but
+//              the tag/comment text sits in the scanned line, breaking the token. Stripping tags naively
+//              would itself be a new bypass surface (a literal `<` in prose), so this needs real inline
+//              parsing.
+//         (h4) CommonMark BLOCK-structure fidelity (reference-style links, HTML blocks/comments, tables,
+//              nested containers, code fences that should SUPPRESS a citation).
+//       Exposure is LOW
 //       and identical in shape to (a): it fools a RENDERED-view reader only (the enforcer + any raw-diff
 //       reviewer see the raw &#…/weirdness), and requires write access to a canonical ADR/tracker/ROADMAP
 //       (self-attack at solo pre-mvp). A CommonMark-renderer rewrite is its own Class-B ADR if ever built.
@@ -248,10 +294,13 @@ const RECEIPT_SEP_INVIS_G = new RegExp("(msg_id)[" + INVIS + "]+(?=[`'\"]?[A-Za-
 //   * RECEIPT-ID PAYLOAD (r7 #2, the deep one): the extraction clause is NFKD-COMPAT-FOLDED, so a fullwidth
 //     `msg_id ｒｅａｌ０００` (or a mark-decorated `ŕeal000`) FOLDS INTO a real ledger id and RESOLVES CLEAN — a
 //     normalization that MINTS a valid credential. The id PAYLOAD must be validated RAW: only render-nothing
-//     invisibles (\p{Cf}/\p{Cc}/\p{Default_Ignorable}, NOT \p{M} marks, NOT compat-fold) may be removed. A
-//     captured (folded) id that is NOT a verbatim substring of the raw render-nothing-cleaned clause was
-//     minted by folding/mark-strip -> LAUNDERED -> HARD, never resolves. (writer-stamped-fields principle:
-//     a transformation must never mint a credential.)
+//     invisibles (\p{Cf}/\p{Cc}/\p{Default_Ignorable}, NOT \p{M} marks, NOT compat-fold) may be removed, and
+//     (r12) the raw channel is sliced from the ORIGINAL PHYSICAL line so a character-reference decode cannot
+//     mint one either. A captured (folded) id with NO raw receipt occurrence AT ITS OWN ORIGIN SPAN was
+//     minted by a transformation -> LAUNDERED -> HARD, never resolves. NB the r7/r8 test was a "verbatim
+//     substring / value membership" check; r12 replaced it with SPAN-anchored pairing, because substring
+//     presence anywhere in the clause let an unrelated raw twin rescue a minted occurrence.
+//     (writer-stamped-fields principle: a transformation must never mint a credential.)
 const BIDI_RE = /[‪-‮⁦-⁩]/u;       // bidi overrides/embeddings/isolates — dangerous syntax, not ignorable
 // r9 (hunter HIGH — line-split over-reach REGRESSION): r7/r8 split the doc on the full UAX#14 mandatory-
 // break set (VT/FF/LS/PS/NEL) BEFORE detection. But those are NOT CommonMark line-endings (only LF/CR/CRLF
@@ -273,29 +322,128 @@ const DANGEROUS_BREAK_RE = new RegExp("[\\u000b\\u000c\\u0085\\u2028\\u2029]", "
 // is PROPERTY-COMPLETE (every code point uniformly, like NFKD closed the char class). The full HTML5
 // NAMED-entity table + CommonMark block-structure render fidelity is the DISCLOSED render-surface ceiling (h)
 // — closing it needs a real CommonMark renderer (a tech-bar dependency), out of scope pre-mvp.
+// ── ED-286 r12 (backend HIGH, line 406) — INDEX-MAPPED TRANSFORMS ────────────────────────────────────
+// r10/r11 assigned `const raw = decodeCharRefs(rawLines[i])`, so the variable NAMED `raw` held DECODED
+// text and every downstream consumer — including the "raw" receipt channel `rawMids` — derived from it.
+// A receipt id written as character references (`msg_id &#x72;&#x65;&#x61;&#x6c;&#x30;&#x30;&#x30;`)
+// was therefore genuine raw ASCII (`real000`) by the time the anti-laundering check ran, and resolved
+// CLEAN — the decode MINTED the credential, the exact failure r7 #2 exists to stop. FIX: the ORIGINAL
+// physical line is kept as a genuinely undecoded, un-normalized channel, and every transform carries an
+// INDEX MAP back to it, so a match found in transformed text resolves to the span in the ORIGINAL that
+// produced it. MAP CONTRACT (uniform across every transform here, and matching normalizeForDetection's
+// existing one): a map has length text.length + 1; map[i] = the ORIGIN UTF-16 index that produced unit
+// i; map[text.length] is the end sentinel. Values are always ORIGIN CODE-POINT STARTS, so slicing an
+// origin string by them can never split a surrogate pair (the astral-desync discipline, preserved).
+const identityMap = (s) => { const m = new Array(s.length + 1); for (let i = 0; i <= s.length; i++) m[i] = i; return m; };
+// COMPOSITION is pointwise and done at the two call sites in evaluate(): a norm offset resolves through
+// normalizeForDetection's map to a `rendered` offset, and that through decoded.map to an ORIGINAL-line
+// offset — i.e. origin = decoded.map[mapNorm[i]]. Kept inline (rather than behind a combinator) so the
+// two coordinate hops are visible at the point where the spans are actually compared.
+/**
+ * Apply a GLOBAL regex to mapped text, keeping the index map aligned. Every unit of a replacement
+ * inherits the ORIGIN of the match's FIRST unit — an INSERTED character (e.g. the RECEIPT_SEP_INVIS_G
+ * boundary space) has no origin of its own, so it is anchored to where it was introduced.
+ */
+function mapReplace(text, map, re, repl) {
+  let out = "";
+  const omap = [];
+  let last = 0, m;
+  re.lastIndex = 0;
+  while ((m = re.exec(text)) !== null) {
+    for (let i = last; i < m.index; i++) { out += text[i]; omap.push(map[i]); }
+    const r = repl(m);
+    for (let k = 0; k < r.length; k++) { out += r[k]; omap.push(map[m.index]); }
+    last = m.index + m[0].length;
+    if (m[0].length === 0) { // zero-width match guard (mirrors the exec loops below)
+      if (last < text.length) { out += text[last]; omap.push(map[last]); last++; }
+      re.lastIndex = last;
+      if (last >= text.length) break;
+    }
+  }
+  for (let i = last; i < text.length; i++) { out += text[i]; omap.push(map[i]); }
+  omap.push(map[text.length]);
+  return { text: out, map: omap };
+}
+/** Per-CODE-POINT NFKD with an aligned map (same per-cp discipline as normalizeForDetection). */
+function mapNFKD(text, map) {
+  let out = "";
+  const omap = [];
+  let idx = 0;
+  for (const cp of text) {                     // by CODE POINT (surrogate-pair-safe)
+    const d = cp.normalize("NFKD");
+    for (let k = 0; k < d.length; k++) { out += d[k]; omap.push(map[idx]); }
+    idx += cp.length;                          // advance by the SOURCE cp's UTF-16 length
+  }
+  omap.push(map[text.length]);
+  return { text: out, map: omap };
+}
+// ONE single-pass alternation (was three chained .replace() calls) so the decode can carry an index map.
+// Single-pass is also the render-CORRECT reading: CommonMark/HTML do NOT re-decode a decode's output, so
+// `&#x26;#946;` renders as the literal text "&#946;" — the old chained form decoded it twice, to "β".
+const CHAR_REF_G = /&#[xX]([0-9a-fA-F]+);|&#(\d+);|&(beta|Beta);/g; // [xX]: CommonMark/HTML5 accept BOTH &#x…; and &#X…; (r11 hunter HIGH — uppercase-X was undecoded)
+const NAMED_REFS = { beta: "β", Beta: "Β" }; // &beta; -> β (U+03B2, the citation token); &Beta; -> Β (U+0392 UPPERCASE) — a DISTINCT entity, case-correct per HTML5, NOT case-folded
+/** Decode char-refs, returning { text, map } — map: decoded UTF-16 index -> ORIGINAL line UTF-16 index. */
 function decodeCharRefs(s) {
-  return String(s)
-    .replace(/&#[xX]([0-9a-fA-F]+);/g, (m, h) => { try { const c = parseInt(h, 16); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } }) // [xX]: CommonMark/HTML5 accept BOTH &#x…; and &#X…; (r11 hunter HIGH — uppercase-X was undecoded)
-    .replace(/&#(\d+);/g, (m, d) => { try { const c = parseInt(d, 10); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m; } catch { return m; } })
-    .replace(/&beta;/g, "β")   // &beta; -> β (U+03B2 lowercase) — the citation token
-    .replace(/&Beta;/g, "Β");  // &Beta; -> Β (U+0392 UPPERCASE Greek) — a DISTINCT entity, NOT the β token (case-correct per HTML5; not case-folded)
+  const src = String(s);
+  return mapReplace(src, identityMap(src), CHAR_REF_G, (m) => {
+    try {
+      if (m[1] !== undefined) { const c = parseInt(m[1], 16); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m[0]; }
+      if (m[2] !== undefined) { const c = parseInt(m[2], 10); return c >= 0 && c <= 0x10ffff ? String.fromCodePoint(c) : m[0]; }
+      return NAMED_REFS[m[3]] !== undefined ? NAMED_REFS[m[3]] : m[0];
+    } catch { return m[0]; }
+  });
 }
 const RAW_ID_CLEAN_G = new RegExp("[*`~]|[\\p{Cf}\\p{Cc}\\p{Default_Ignorable_Code_Point}]", "gu"); // RAW id-payload cleaner: strip emphasis(keep _) + render-nothing ONLY (NO \p{M}, NO compat-fold)
-function normalizeForDetection(raw) {
+// NB `src` is the RENDER-surface (char-ref-DECODED) line, never the original physical line — the caller
+// composes this map with the decode map to land back on ORIGINAL offsets (r12).
+function normalizeForDetection(src) {
   let norm = "";
-  const map = []; // map[i] = raw UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
-  let rawIdx = 0;
-  for (const cp of raw) {              // iterate the RAW by CODE POINT (surrogate-pair-safe)
+  const map = []; // map[i] = src UTF-16 index that produced norm's UTF-16 unit i (UTF-16-aligned)
+  let srcIdx = 0;
+  for (const cp of src) {              // iterate the SOURCE by CODE POINT (surrogate-pair-safe)
     const cpLen = cp.length;           // 1 or 2 UTF-16 units in the SOURCE
     let out;
     if (EMPHASIS_RE.test(cp)) out = "";
     else if (SPACE_MAP_RE.test(cp)) out = " ";
     else out = cp.normalize("NFKD").replace(STRIP_INVIS_G, ""); // compat-fold + drop marks/format/controls/default-ignorables
-    for (let j = 0; j < out.length; j++) { map.push(rawIdx); norm += out[j]; } // map PER UTF-16 UNIT of the fold
-    rawIdx += cpLen;                   // advance by the SOURCE code point's UTF-16 length (astral-safe)
+    for (let j = 0; j < out.length; j++) { map.push(srcIdx); norm += out[j]; } // map PER UTF-16 UNIT of the fold
+    srcIdx += cpLen;                   // advance by the SOURCE code point's UTF-16 length (astral-safe)
   }
-  map.push(rawIdx); // sentinel: map[norm.length] === raw.length (raw's UTF-16 length)
+  map.push(srcIdx); // sentinel: map[norm.length] === src.length (src's UTF-16 length)
   return { norm, map };
+}
+/**
+ * Build a clause string for receipt extraction, carrying an index map back to the ORIGINAL line.
+ * `fold=true`  => the CITED payload as a RENDERED reader sees it (per-cp NFKD compat-fold + \p{M}/\p{Cf}
+ *                 strip). Built from the char-ref-DECODED clause.
+ * `fold=false` => the RAW payload channel: NO NFKD, NO \p{M} strip — only emphasis + render-NOTHING
+ *                 code points are removed. Built from the ORIGINAL PHYSICAL clause (r12), so neither a
+ *                 compat-fold NOR a character-reference decode can mint a raw receipt.
+ * Both paths apply the SAME blank/separator normalization (SPACE_MAP_G then RECEIPT_SEP_INVIS_G) in the
+ * SAME order, so a legitimate receipt lands at the SAME origin offset on both — which is what makes the
+ * span-anchored pairing in evaluate() sound.
+ */
+function buildClause(text, map, fold) {
+  let cur = fold ? mapNFKD(text, map) : { text, map };
+  cur = mapReplace(cur.text, cur.map, SPACE_MAP_G, () => " ");
+  cur = mapReplace(cur.text, cur.map, RECEIPT_SEP_INVIS_G, (m) => m[1] + " ");
+  cur = mapReplace(cur.text, cur.map, fold ? CLAUSE_STRIP_G : RAW_ID_CLEAN_G, () => "");
+  return cur;
+}
+/**
+ * Extract every `msg_id <id>` receipt from a clause as an OCCURRENCE: { id, origStart } where origStart
+ * is the id payload's start offset in the ORIGINAL physical line. The origin offset — not mere value
+ * membership — is what anchors a cited receipt to its own label position (r12 fix 2).
+ */
+function extractReceipts(clauseText, clauseMap) {
+  const out = [];
+  const re = new RegExp(MSGID_IN_TEXT_RE.source, "gid"); // `d` => exact capture offsets, no arithmetic
+  let m;
+  while ((m = re.exec(clauseText)) !== null) {
+    if (MSGID_SHAPE_RE.test(m[1])) out.push({ id: m[1], origStart: clauseMap[m.indices[1][0]] });
+    if (re.lastIndex === m.index) re.lastIndex++;
+  }
+  return out;
 }
 // Verdict row types (from reasoned-consult-honesty's live corpus). A citation's receipt must resolve
 // to a POSITIVELY-classified verdict row — one of these types AND carrying a real decision/verdict.
@@ -398,12 +546,19 @@ function evaluate({ docs, betaEventsText }) {
   // citation owns its own CLAUSE (from its position to the NEXT citation, or line end) and resolves
   // against the msg_id(s) in THAT clause only.
   const citationGlobal = new RegExp(CITATION_RE.source, "g");
-  const msgidGlobal = new RegExp(MSGID_IN_TEXT_RE.source, "gi");
   for (const d of docs || []) {
     const rawLines = String(d.text || "").split(LINE_SPLIT_RE); // r7 #3: ALL Unicode line breaks, so a U+2028/U+2029/lone-CR-hidden peer heading still closes a history section
     const inHistory = historyMask(rawLines);
     for (let i = 0; i < rawLines.length; i++) {
-      const raw = decodeCharRefs(rawLines[i]); // r10: decode numeric/hex/&beta; char-refs (render surface) BEFORE the checks + NFKD, so `&#946; DECIDE`/`&#x202E;`... are detected/flagged like their decoded form
+      // r12 (backend HIGH): `origLine` is the ORIGINAL PHYSICAL line — the one genuinely undecoded,
+      // un-normalized channel; `rendered` is the char-ref-DECODED RENDER surface. Nothing named "raw"
+      // holds transformed text any more (the old `const raw = decodeCharRefs(...)` was itself the bug:
+      // it made a char-ref-encoded receipt id real ASCII before the anti-laundering check ran).
+      // DETECTION + the dangerous-syntax flags run on `rendered` (r10/r11 teeth: `&#946; DECIDE` and
+      // `&#x202E;` must be seen as their decoded form); the RAW receipt channel runs on `origLine`.
+      const origLine = rawLines[i];
+      const decoded = decodeCharRefs(origLine); // { text, map } — map: rendered idx -> origLine idx
+      const rendered = decoded.text;
       // DANGEROUS-SYNTAX checks (bidi + non-CommonMark break) run on EVERY line INCLUDING history-masked
       // ones (r9): a bidi control or a VT/FF/NEL/LS/PS break can mask the section BOUNDARY itself, so the
       // history skip (below) must skip only the CITATION scan, not these flags.
@@ -417,24 +572,24 @@ function evaluate({ docs, betaEventsText }) {
       // r7 #1 (security HIGH): a bidi control on a scanned line can visually reorder a hidden citation
       // ("β <RLO>EDICED<PDF>" renders "β DECIDE" but the logical/scanned order is "EDICED"). Bidi is
       // DANGEROUS SYNTAX, not ignorable — its PRESENCE is a HARD finding (a citation may be masked).
-      if (BIDI_RE.test(raw)) {
+      if (BIDI_RE.test(rendered)) {
         hard.push({
           doc: d.path, line: i + 1, msg_id: null,
-          reason: `bidi control (U+202A-202E / U+2066-2069) on a scanned line — rendering order differs from logical order, so a β-verdict citation may be visually MASKED (e.g. "β <RLO>EDICED<PDF>" renders "β DECIDE" while the scanner sees "EDICED"). Bidi overrides do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${raw.replace(new RegExp(BIDI_RE.source, "gu"), "<BIDI>").trim().slice(0, 120)}`,
+          reason: `bidi control (U+202A-202E / U+2066-2069) on a scanned line — rendering order differs from logical order, so a β-verdict citation may be visually MASKED (e.g. "β <RLO>EDICED<PDF>" renders "β DECIDE" while the scanner sees "EDICED"). Bidi overrides do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${rendered.replace(new RegExp(BIDI_RE.source, "gu"), "<BIDI>").trim().slice(0, 120)}`,
         });
       }
       // r9 (hunter HIGH): a non-CommonMark line/whitespace break (VT/FF/NEL/LS/PS) on a scanned line means
       // the .md render surface diverges from the enforcer's line model — a citation can be split-hidden
       // (`β<FF>DECIDE`) or a history heading masked. Detection folds it to a space (SPACE_MAP, so the split
       // citation is STILL detected on this un-split line), and its PRESENCE is flagged HARD (dangerous syntax).
-      if (DANGEROUS_BREAK_RE.test(raw)) {
+      if (DANGEROUS_BREAK_RE.test(rendered)) {
         hard.push({
           doc: d.path, line: i + 1, msg_id: null,
-          reason: `non-CommonMark line/whitespace break (VT U+000B / FF U+000C / NEL U+0085 / LS U+2028 / PS U+2029) on a scanned line — the markdown render surface differs from the scanned line model, so a citation can be split-hidden (\`β<FF>DECIDE\`) or a history-section heading masked. These do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${raw.replace(new RegExp(DANGEROUS_BREAK_RE.source, "gu"), "<BREAK>").trim().slice(0, 120)}`,
+          reason: `non-CommonMark line/whitespace break (VT U+000B / FF U+000C / NEL U+0085 / LS U+2028 / PS U+2029) on a scanned line — the markdown render surface differs from the scanned line model, so a citation can be split-hidden (\`β<FF>DECIDE\`) or a history-section heading masked. These do not belong in prose ADR/tracker/ROADMAP; remove or justify. Line: ${rendered.replace(new RegExp(DANGEROUS_BREAK_RE.source, "gu"), "<BREAK>").trim().slice(0, 120)}`,
         });
       }
       if (inHistory[i]) continue; // append-only history — skip the CITATION scan only (dangerous-syntax flags above already ran, incl. on history lines)
-      const { norm, map } = normalizeForDetection(raw);
+      const { norm, map: mapNorm } = normalizeForDetection(rendered);
       const starts = [];
       citationGlobal.lastIndex = 0;
       let cm;
@@ -444,69 +599,64 @@ function evaluate({ docs, betaEventsText }) {
       }
       for (let c = 0; c < starts.length; c++) {
         scannedCitations++;
-        const rawStart = map[starts[c]];
-        const rawEnd = c + 1 < starts.length ? map[starts[c + 1]] : raw.length;
-        // RAW clause (mapped back from the normalized detect position): NFKD-fold, then apply the SAME
-        // invisible/blank normalization as DETECTION so the receipt path can't be desynced from it
-        // (ED-286 r5 hunter HIGH). Order: (1) BLANK_G maps blank-rendering separators -> " " (real \s);
-        // (2) RECEIPT_SEP_INVIS_G turns an invisible run right after the `msg_id` label into a space so
-        // it doesn't abut the id after stripping; (3) CLAUSE_STRIP_G strips remaining emphasis (except
-        // `_`), \p{M} marks and \p{Cf} format so an obfuscated label/id de-obfuscates to ASCII (a legit
-        // underscore id ab_cd_ef is preserved; ASCII is NFKD-invariant). Net: an invisible/blank-obfuscated
-        // forged receipt stays HARD instead of a downgraded receiptless SOFT.
-        const clauseRaw = raw.slice(rawStart, rawEnd);
-        const clause = clauseRaw
-          .normalize("NFKD")
-          .replace(SPACE_MAP_G, " ")
-          .replace(RECEIPT_SEP_INVIS_G, "$1 ")
-          .replace(CLAUSE_STRIP_G, "");
-        // r7 #2 (security HIGH — receipt-id LAUNDERING): the id PAYLOAD must be validated RAW. `clause` is
-        // compat-FOLDED, so a fullwidth `ｒｅａｌ０００` (or a mark-decorated `ŕeal000`) folds INTO a real ledger
-        // id and would resolve CLEAN — a normalization MINTING a credential. `rawIdClean` strips render-nothing
-        // invisibles + emphasis ONLY (keeps `_`, keeps \p{M} marks, does NOT compat-fold), so a captured id
-        // that is NOT a verbatim substring of it was minted by folding/mark-strip -> LAUNDERED -> unresolvable.
-        // r7 #2 + r8 (security HIGH + hunter LOW — receipt-id LAUNDERING, position-anchored): the id
-        // PAYLOAD must be a RAW ASCII receipt AT ITS msg_id-LABEL position, not merely present somewhere in
-        // the clause. `rawMids` = the ids captured (by the SAME label+separator regex) from a clause cleaned
-        // the SAME way EXCEPT with NO compat-fold (SPACE_MAP + RECEIPT_SEP boundary + render-nothing/emphasis
-        // strip; \p{M} marks KEPT). So a fullwidth/mark-decorated id folds in `clause` but is absent from
-        // `rawMids` -> LAUNDERED -> HARD; and a raw twin elsewhere in the clause (hunter LOW) can't launder it,
-        // because rawMids is keyed to the LABEL position, not a whole-clause substring.
-        const rawClause = clauseRaw
-          .replace(SPACE_MAP_G, " ")
-          .replace(RECEIPT_SEP_INVIS_G, "$1 ")
-          .replace(RAW_ID_CLEAN_G, ""); // NO NFKD fold — the RAW id payload
-        const rawMids = [];
-        msgidGlobal.lastIndex = 0;
-        let rm;
-        while ((rm = msgidGlobal.exec(rawClause)) !== null) {
-          if (MSGID_SHAPE_RE.test(rm[1])) rawMids.push(rm[1]);
-          if (msgidGlobal.lastIndex === rm.index) msgidGlobal.lastIndex++;
-        }
+        // The clause spans this citation to the NEXT one (or line end), expressed in BOTH coordinate
+        // systems: `rendered` (for the CITED payload) and `origLine` (for the RAW payload). decoded.map
+        // relates them, so the two clauses always cover the same logical region of the document.
+        const decStart = mapNorm[starts[c]];
+        const decEnd = c + 1 < starts.length ? mapNorm[starts[c + 1]] : rendered.length;
+        const origStart = decoded.map[decStart];
+        const origEnd = decoded.map[decEnd];
+        // CITED clause — what a RENDERED-view reader sees: char-ref-decoded, then NFKD-folded with the
+        // SAME invisible/blank normalization DETECTION uses so the two paths cannot desync (ED-286 r5).
+        // Order: (1) SPACE_MAP_G maps blank-rendering separators -> " " (a real \s); (2) RECEIPT_SEP_INVIS_G
+        // turns an invisible run right after the `msg_id` label into a space so it can't abut the id after
+        // stripping; (3) CLAUSE_STRIP_G strips remaining emphasis (except `_`), \p{M} marks and \p{Cf}
+        // format so an obfuscated label/id de-obfuscates to ASCII (a legit underscore id ab_cd_ef survives;
+        // ASCII is NFKD-invariant). Net: an invisible/blank-obfuscated forged receipt stays HARD instead of
+        // being downgraded to a receiptless SOFT.
+        const decClauseText = rendered.slice(decStart, decEnd);
+        const decClauseMap = new Array(decClauseText.length + 1);
+        for (let j = 0; j <= decClauseText.length; j++) decClauseMap[j] = decoded.map[decStart + j];
+        const citedClause = buildClause(decClauseText, decClauseMap, true);
+        const clause = citedClause.text;
+        // ── r12 fix 2 (security HIGH, was line 501) — SPAN-ANCHORED, not value-membership ────────────
+        // WHAT THIS GUARANTEES (r8's comment here claimed this and was FALSE — the security lane proved
+        // a raw twin ELSEWHERE in the clause DID launder a folded occurrence, because the old test was
+        // `!rawMids.includes(x)`, a VALUE test over a flat array with the positions thrown away):
+        // every CITED receipt occurrence is paired to a RAW receipt occurrence at ITS OWN ORIGIN SPAN.
+        // An occurrence is clean only if a raw-clean receipt starts at the SAME ORIGINAL-line offset AND
+        // carries the SAME ASCII payload. Another raw `msg_id real000` later in the clause has a
+        // DIFFERENT origin offset, so it can no longer rescue a minted occurrence — regardless of what
+        // appears elsewhere on the line.
+        // The RAW channel is built from `origLine` (r12 fix 1), NOT from decoded or folded text, and is
+        // NOT compat-folded and does NOT strip \p{M} — only emphasis + render-NOTHING code points are
+        // removed. So an id minted by ANY of the three transformations — character-reference decode
+        // (`&#x72;&#x65;…` -> real000), compat-fold (fullwidth ｒｅａｌ０００ -> real000), or mark-strip
+        // (ŕeal000 -> real000) — has no raw twin at its own span and is LAUNDERED -> HARD.
+        const origClauseText = origLine.slice(origStart, origEnd);
+        const origClauseMap = new Array(origClauseText.length + 1);
+        for (let j = 0; j <= origClauseText.length; j++) origClauseMap[j] = origStart + j;
+        const rawClause = buildClause(origClauseText, origClauseMap, false);
+        const rawReceipts = extractReceipts(rawClause.text, rawClause.map);
         // R1 (gpt security+backend r2, HIGH — intra-clause laundering): validate EVERY msg_id in the
-        // clause, not just the first. ANY cited receipt that does not resolve (or is normalization-laundered) → HARD.
-        const mids = [];
-        msgidGlobal.lastIndex = 0;
-        let mm;
-        while ((mm = msgidGlobal.exec(clause)) !== null) {
-          if (MSGID_SHAPE_RE.test(mm[1])) mids.push(mm[1]);
-          if (msgidGlobal.lastIndex === mm.index) msgidGlobal.lastIndex++;
-        }
-        if (mids.length === 0) {
+        // clause, not just the first. ANY cited receipt that does not resolve (or is laundered) → HARD.
+        const cited = extractReceipts(citedClause.text, citedClause.map);
+        if (cited.length === 0) {
           soft.push({
             doc: d.path, line: i + 1,
             reason: `load-bearing β-verdict citation with NO msg_id receipt — add the delivered verdict's msg_id (ED-239 conductor-side contract). Citation: ${clause.trim().slice(0, 120)}`,
           });
         } else {
-          const isLaundered = (x) => !rawMids.includes(x); // r8: the folded id is not a RAW receipt at a label position -> minted by normalization
-          const unresolved = mids.filter((x) => isLaundered(x) || !known.has(x));
+          // Occurrence-anchored: same ORIGIN offset AND same payload — never a whole-clause value lookup.
+          const isLaundered = (occ) => !rawReceipts.some((r) => r.origStart === occ.origStart && r.id === occ.id);
+          const unresolved = cited.filter((occ) => isLaundered(occ) || !known.has(occ.id));
           if (unresolved.length) {
             const first = unresolved[0];
             hard.push({
-              doc: d.path, line: i + 1, msg_id: first,
+              doc: d.path, line: i + 1, msg_id: first.id,
               reason: isLaundered(first)
-                ? `β-verdict citation cites msg_id '${first}' that exists ONLY via normalization (compat-fold/mark-strip minted it from an obfuscated payload — e.g. fullwidth/accented id) and is NOT a raw ASCII receipt — normalization must never mint a credential (r7 #2). Citation: ${clause.trim().slice(0, 120)}`
-                : `β-verdict citation cites msg_id '${first}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (${unresolved.length} of ${mids.length} cited receipt(s) unresolved; forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
+                ? `β-verdict citation cites msg_id '${first.id}' that exists ONLY via a render/normalization transformation (character-reference decode, compat-fold or mark-strip minted it from an obfuscated payload — e.g. &#x72;… / fullwidth / accented id) and is NOT a raw ASCII receipt at that position — a transformation must never mint a credential (r7 #2, r12). Citation: ${clause.trim().slice(0, 120)}`
+                : `β-verdict citation cites msg_id '${first.id}' which does NOT resolve to a betaEvents VERDICT row — unverified receipt (${unresolved.length} of ${cited.length} cited receipt(s) unresolved; forged/typo/stale). Citation: ${clause.trim().slice(0, 120)}`,
             });
           }
         }

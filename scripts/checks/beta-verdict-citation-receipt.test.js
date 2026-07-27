@@ -669,6 +669,99 @@ t("ED-286 r11 GREEN: lowercase &#x3B2; still decodes (case-complete, not a regre
   assert.ok(r.hard.some((h) => h.msg_id === "ghostlx"));
 });
 
+// ══ ED-286 r12 (β DECIDE B/0.89 msg_id 7c3f9e2a) — TWO INDEPENDENT credential-minting bypasses ═══════
+// Both are "a transformation mints a payload the raw check then blesses", but they have DIFFERENT
+// mechanisms and NEITHER fix closes the other (β byte-verified this; it is why r12 is two fixes, not one
+// choke-point). These fixtures are SEALED — pure evaluate({docs, betaEventsText}), never disk — because
+// betaEvents is gitignored, so a disk-resolved fixture is machine-local-green and false-REDs on a fresh
+// clone.
+//
+// BYPASS 1 (backend HIGH, was line 406 `const raw = decodeCharRefs(rawLines[i])`): the RAW channel was
+// already char-ref DECODED, so a receipt id spelled as character references was genuine raw ASCII by the
+// time the anti-laundering check ran. Occurrence-anchoring ALONE does NOT close this — a decoded id is
+// legitimately ASCII AT ITS OWN label position, so a span-anchored compare finds a matching raw twin at
+// exactly the right span and passes. The fix is the undecoded ORIGINAL-line channel + composed index map.
+const idHexLower = ["72", "65", "61", "6c", "30", "30", "30"].map((h) => "&#x" + h + ";").join(""); // real000
+const idHexUpper = ["72", "65", "61", "6C", "30", "30", "30"].map((h) => "&#X" + h + ";").join(""); // real000, uppercase-X
+const idDecimal = [114, 101, 97, 108, 48, 48, 48].map((d) => "&#" + d + ";").join("");              // real000
+for (const [label, encId] of [["DECIMAL", idDecimal], ["lowercase-hex", idHexLower], ["UPPERCASE-X hex", idHexUpper]]) {
+  t(`ED-286 r12 bypass1: a receipt id spelled as ${label} character refs decoding to a REAL ledger id -> HARD (decode must not mint a credential)`, () => {
+    const r = evaluate({ docs: [{ path: "a.md", text: "&#x3B2; DECIDE (msg_id " + encId + ")" }], betaEventsText: beta([vrow("real000")]) });
+    assert.strictEqual(r.scannedCitations, 1, "the char-ref-encoded β citation must still be DETECTED (r10/r11 teeth intact)");
+    assert.strictEqual(r.hard.length, 1, `a ${label} char-ref id that decodes into the ledger id must NOT resolve clean`);
+    assert.strictEqual(r.hard[0].msg_id, "real000");
+    assert.ok(/never mint a credential/.test(r.hard[0].reason), "must be reported as a laundered (minted) receipt, not merely unresolved");
+  });
+}
+t("ED-286 r12 bypass1 GREEN: a char-ref-encoded β with a RAW-ASCII forged receipt is still HARD-as-unresolved (not misreported as laundered)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "&#x3B2; DECIDE (msg_id ghostr12)" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+  assert.strictEqual(r.hard[0].msg_id, "ghostr12");
+  assert.ok(/does NOT resolve/.test(r.hard[0].reason), "a genuinely raw id must be reported as unresolved, NOT as laundered — the two diagnoses must stay distinct");
+});
+
+// BYPASS 2 (security HIGH, was line 501 `isLaundered = (x) => !rawMids.includes(x)`): a VALUE test over a
+// flat array, so ANY later raw mention of the same id rescued an earlier MINTED occurrence. An undecoded
+// raw slice ALONE does NOT close this — the fullwidth probe contains no char refs, so the decode is a
+// no-op and the raw clause was already correct; the defect was purely the value test. The fix is
+// occurrence/span-anchored pairing: a raw match must sit at the cited occurrence's OWN origin span.
+// NB r8's fixture used a twin with NO `msg_id` label, so it never entered rawMids and passed for the
+// wrong reason. These twins ARE labelled — that is the whole point.
+t("ED-286 r12 bypass2: a FULLWIDTH cited id + a LABELLED raw twin later in the clause -> HARD (the twin must not rescue it)", () => {
+  const text = "β DECIDE (msg_id " + fwReal000 + "); unrelated prose says not msg_id real000";
+  const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.scannedCitations, 1);
+  assert.strictEqual(r.hard.length, 1, "a raw twin ELSEWHERE in the clause must not launder a compat-folded occurrence");
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+  assert.ok(/never mint a credential/.test(r.hard[0].reason));
+});
+t("ED-286 r12 bypass2: a MARK-DECORATED cited id + a LABELLED raw twin later in the clause -> HARD", () => {
+  const text = "β DECIDE (msg_id r" + String.fromCodePoint(0x0301) + "eal000); see also msg_id real000";
+  const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "a mark-stripped occurrence must not be rescued by a labelled raw twin");
+});
+t("ED-286 r12 bypass2 CONTROL: the same fullwidth payload WITHOUT the twin stays HARD (unchanged by r12)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "β DECIDE (msg_id " + fwReal000 + ")" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+});
+t("ED-286 r12 bypass2: the twin's OWN occurrence resolves on its own merits (span-anchoring is not a blanket condemnation)", () => {
+  // Two citations -> two clauses. #1 cites a fullwidth (minted) id; #2 cites the SAME id raw and legitimately.
+  const text = "β DECIDE (msg_id " + fwReal000 + ") first. β DECIDE (msg_id real000) second.";
+  const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.scannedCitations, 2, "two citations, two clauses");
+  assert.strictEqual(r.hard.length, 1, "only the MINTED occurrence is HARD; the genuine raw one resolves clean");
+  assert.ok(/never mint a credential/.test(r.hard[0].reason));
+});
+
+// ── r12 no-false-positive + index-map alignment guards ────────────────────────────────────────────────
+t("ED-286 r12 GREEN: a legitimate raw citation with a real receipt stays clean (no r12 false positive)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: "We proceed. β DECIDE B/0.92 (design->build, msg_id real000) SHIP." }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "a genuine raw-ASCII receipt must not be flagged by span-anchored pairing");
+  assert.strictEqual(r.scannedCitations, 1);
+});
+t("ED-286 r12 GREEN: a legit receipt whose separator is a BLANK/invisible still pairs at its own span (both channels normalize identically)", () => {
+  const zwsp = String.fromCodePoint(0x200B);
+  const r = evaluate({ docs: [{ path: "a.md", text: "β DECIDE (msg_id" + zwsp + "real000) ok" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "an invisible label->id separator must not desync the two channels into a false laundering verdict");
+});
+t("ED-286 r12: an ASTRAL char BEFORE the citation keeps the COMPOSED (decode∘normalize) index map aligned -> laundering still detected", () => {
+  const text = emoji + emoji + " note: β DECIDE (msg_id " + fwReal000 + ") x";
+  const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1, "astral chars must not desync the composed map (a desync would mis-slice the raw clause into a false-green)");
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+});
+t("ED-286 r12 GREEN: an ASTRAL char before a RESOLVING char-ref-encoded citation stays clean (composed map, both directions)", () => {
+  const r = evaluate({ docs: [{ path: "a.md", text: emoji + " &#x3B2; DECIDE (msg_id real000) ok" }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length + r.soft.length, 0, "the composed map must land the raw slice correctly after an astral char AND a char-ref decode");
+});
+t("ED-286 r12: an astral char INSIDE the clause between the label and a fullwidth id -> still HARD (no map drift mid-clause)", () => {
+  const text = "β DECIDE " + emoji + " (msg_id " + fwReal000 + ") x";
+  const r = evaluate({ docs: [{ path: "a.md", text }], betaEventsText: beta([vrow("real000")]) });
+  assert.strictEqual(r.hard.length, 1);
+  assert.strictEqual(r.hard[0].msg_id, "real000");
+});
+
 console.log("");
 console.log(pass + "/" + (pass + fail) + " passed" + (fail ? " (" + fail + " FAILED)" : ""));
 process.exit(fail ? 1 : 0);
