@@ -579,5 +579,117 @@ ok("ReDoS: decodeScalar (via parseFrontmatter) is O(n) on a long internal-whites
   assert.strictEqual(c.description, "keep", "inline comment stripped with the single-\\s form");
 });
 
+// ── gauntlet r10: comment-only scalars + metadata-with-a-same-line-scalar ─────────
+// PLANTED RED (:149). Before the fix the `\s#` strip required a PRECEDING whitespace, so in
+// `name: # comment` the '#' sat at index 0 and was never stripped — the literal '# comment'
+// came back as a valid name and invalid-frontmatter never fired for the absent field.
+ok("r10 PLANTED: a comment-only value (`name: # comment`) decodes to ABSENT, not to '# comment'", () => {
+  assert.strictEqual(mod.decodeScalar("# comment"), null, "leading '#' is a whole-line comment → absent");
+  assert.strictEqual(mod.decodeScalar("#nospace"), null, "no space after '#' is still a comment");
+  assert.strictEqual(mod.decodeScalar("   # padded   "), null, "leading whitespace then '#' → absent");
+  const fm = mod.parseFrontmatter("---\nname: # comment\ndescription: # comment\nmetadata:\n  type: feedback\n---\nbody\n");
+  assert.strictEqual(fm.name, null, "comment-only name is absent");
+  assert.strictEqual(fm.description, null, "comment-only description is absent");
+});
+
+ok("r10 PLANTED: comment-only name/description FIRE invalid-frontmatter end-to-end", () => {
+  const fm = mod.parseFrontmatter("---\nname: # comment\ndescription: # comment\nmetadata:\n  type: feedback\n---\nbody\n");
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: fm.hasFrontmatter, name: fm.name, description: fm.description, type: fm.type, wikilinks: [] },
+  ]);
+  const { findings } = mod.evaluate({ stores: [store] });
+  const inv = findings.filter((f) => f.kind === "invalid-frontmatter");
+  assert.strictEqual(inv.length, 2, `expected a finding for name AND description, got ${JSON.stringify(inv.map((f) => f.message))}`);
+  assert.ok(inv.some((f) => /'name'/.test(f.message)), "the missing name is named");
+  assert.ok(inv.some((f) => /'description'/.test(f.message)), "the missing description is named");
+});
+
+ok("r10 NO-FALSE-POSITIVE: a QUOTED '# not a comment' stays a real value", () => {
+  assert.strictEqual(mod.decodeScalar('"# not a comment"'), "# not a comment", "quoted content is a literal");
+  assert.strictEqual(mod.decodeScalar("'# also literal'"), "# also literal", "single quotes too");
+  const fm = mod.parseFrontmatter('---\nname: "# not a comment"\ndescription: "# nor this"\nmetadata:\n  type: feedback\n---\nb\n');
+  assert.strictEqual(fm.name, "# not a comment", "quoted name survives");
+  assert.strictEqual(fm.description, "# nor this", "quoted description survives");
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: true, name: fm.name, description: fm.description, type: fm.type, wikilinks: [] },
+  ]);
+  const { findings } = mod.evaluate({ stores: [store] });
+  assert.strictEqual(findings.filter((f) => f.kind === "invalid-frontmatter").length, 0, "no false invalid-frontmatter");
+});
+
+ok("r10 ReDoS GUARD: the leading-'#' check is O(n) — a long comment-only scalar does not backtrack", () => {
+  // The leading-'#' case must be closed with an O(1) index test, NEVER by relaxing `\s#` to
+  // `\s*#` — that form backtracks O(n^2) on these inputs (the r7/r9 regression this fix must not
+  // reintroduce). Both a long comment-only value and a long whitespace run must stay linear.
+  const bigComment = "# " + "x ".repeat(200000);
+  const bigSpaces = "a" + " ".repeat(200000) + "#b";
+  const t0 = Date.now();
+  assert.strictEqual(mod.decodeScalar(bigComment), null, "a 400k-char comment-only value is absent");
+  assert.strictEqual(mod.decodeScalar(bigSpaces), "a", "a 200k-space run before a '#' still strips");
+  const elapsed = Date.now() - t0;
+  assert.ok(elapsed < 1000, `decodeScalar took ${elapsed}ms on 200k-char scalars — must be < 1s (O(n))`);
+});
+
+// PLANTED RED (:229). Before the fix `if (key === "metadata")` never inspected the value, so
+// `metadata: scalar` still opened a mapping parent and a later indented `type:` populated it.
+ok("r10 PLANTED: `metadata: scalar` does NOT open a mapping — an indented type is UNTRUSTED", () => {
+  const scalar = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata: some-scalar\n  type: feedback\n---\nb\n");
+  assert.strictEqual(scalar.type, null, "a metadata carrying a same-line scalar yields no trustworthy type");
+  const nullish = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata: null\n  type: feedback\n---\nb\n");
+  assert.strictEqual(nullish.type, null, "`metadata: null` is a same-line value, not an empty mapping parent");
+  const flow = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata: []\n  type: feedback\n---\nb\n");
+  assert.strictEqual(flow.type, null, "a flow collection is not a flat mapping either");
+});
+
+ok("r10 PLANTED: `metadata: scalar` + indented type FIRES invalid-frontmatter end-to-end", () => {
+  const fm = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata: some-scalar\n  type: feedback\n---\nb\n");
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: fm.hasFrontmatter, name: fm.name, description: fm.description, type: fm.type, wikilinks: [] },
+  ]);
+  const { findings } = mod.evaluate({ stores: [store] });
+  const inv = findings.filter((f) => f.kind === "invalid-frontmatter");
+  assert.strictEqual(inv.length, 1, "exactly the metadata.type finding");
+  assert.ok(/metadata\.type/.test(inv[0].message), inv[0].message);
+});
+
+ok("r10 NO-REGRESSION: a bare `metadata:` (empty, or comment-only) still opens the mapping", () => {
+  const bare = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nb\n");
+  assert.strictEqual(bare.type, "feedback", "the canonical shape still reads metadata.type");
+  const padded = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata:   \n  type: feedback\n---\nb\n");
+  assert.strictEqual(padded.type, "feedback", "trailing whitespace after `metadata:` is still empty");
+  const commented = mod.parseFrontmatter("---\nname: x-slug\ndescription: d\nmetadata: # note\n  type: feedback\n---\nb\n");
+  assert.strictEqual(commented.type, "feedback", "a comment carries no value → still a mapping parent (composes with :149)");
+  // and the clean record produces no findings
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: true, name: bare.name, description: bare.description, type: bare.type, wikilinks: [] },
+  ]);
+  assert.strictEqual(mod.evaluate({ stores: [store] }).findings.length, 0, "a canonical record stays clean");
+});
+
+ok("r10: isEmptyFieldValue distinguishes an ABSENT same-line value from a null/flow one", () => {
+  assert.strictEqual(mod.isEmptyFieldValue(""), true);
+  assert.strictEqual(mod.isEmptyFieldValue("   "), true);
+  assert.strictEqual(mod.isEmptyFieldValue("# note"), true, "a comment carries no value");
+  assert.strictEqual(mod.isEmptyFieldValue("null"), false, "`null` IS a same-line value (decodeScalar would say null — that is the difference)");
+  assert.strictEqual(mod.isEmptyFieldValue("[]"), false);
+  assert.strictEqual(mod.isEmptyFieldValue("scalar"), false);
+});
+
+// ── gauntlet r10 (defect 4): the header taxonomy matches what the code actually emits ──
+ok("r10: every finding/warning kind the code emits is listed in the header taxonomy", () => {
+  const src = fs.readFileSync(CHECK, "utf8");
+  const header = src.slice(0, src.indexOf("const fs = require"));
+  const kinds = [...src.matchAll(/kind: "([a-z-]+)"/g)].map((m) => m[1]);
+  assert.ok(kinds.length >= 9, `expected the emit sites to be found, got ${kinds.length}`);
+  for (const k of new Set(kinds)) {
+    assert.ok(header.includes(k), `header taxonomy omits the emitted kind '${k}'`);
+  }
+  // and the header must not advertise a kind the code never emits
+  const advertised = ["broken-index-pointer", "duplicate-name-slug", "invalid-frontmatter", "malformed-index-line", "orphan-memory-file", "duplicate-index-entry", "dangling-wikilink", "non-kebab-name", "index-too-long"];
+  for (const a of advertised) {
+    assert.ok(kinds.includes(a), `header advertises '${a}' but no code site emits it`);
+  }
+});
+
 console.log(`\nmemory-integrity: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);
