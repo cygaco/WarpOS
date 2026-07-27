@@ -31,7 +31,7 @@ renamed, removed, or never merged. This skill turns that discipline into a repea
 
 ## Two identifier spaces (do not conflate)
 
-- `MEMORY.md` index lines target the **filename**: `- [Title](some_file.md) — one-line hook`.
+- `MEMORY.md` index lines target the **filename**: `- [Title](some_file.md) — one-line hook`. <!-- doc-ref-ignore: some_file.md is an illustrative pattern, not a real path -->
 - Body `[[wikilinks]]` reference another memory's **`name:` slug** (which is *not* the filename — e.g. file
   `feedback_add_sprint_mint_then_commit_atomic.md` has `name: add-sprint-mint-then-commit-atomic`).
 
