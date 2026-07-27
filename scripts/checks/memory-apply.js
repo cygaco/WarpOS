@@ -18,8 +18,9 @@
  *
  *   - default (no --apply): DRY-RUN — validate + print the planned ops, mutate
  *     NOTHING, exit 0 (or exit 2 if the plan is invalid/unsafe).
- *   - --apply: only reached when validatePlan is clean — perform each op, re-sync
- *     the index for deletes, then require the store structurally CLEAN.
+ *   - --apply: only reached when validatePlan AND the newBody content gate are clean —
+ *     perform each op, re-sync the index for deletes, then require the store structurally
+ *     CLEAN; anything short of clean is ROLLED BACK to the pre-apply bytes.
  *
  * PLAN shape (produced by the agent after its semantic ground-truth pass):
  *   {
@@ -42,9 +43,20 @@
  *   - action "none" is always allowed (no evidence needed);
  *   - ANY violation → fail-closed, all-or-nothing: mutate NOTHING, exit 2.
  *
- * Exit codes: runner error / bad plan / bad store / ANY violation → 2 ; clean
- * dry-run or clean apply → 0 ; apply whose post-check has findings → 1 (mutations
- * already applied, reported). Zero runtime deps.
+ * THE ALL-OR-NOTHING INVARIANT (r10 :417 — two mechanisms, both required):
+ *   `--apply` leaves the store either CLEAN or BYTE-IDENTICAL to its pre-apply state.
+ *   1. validateNewBody pre-validates every `correct` body through the detector's own parser
+ *      before anything is written (a per-file gate — it cannot see the rest of the store);
+ *   2. the backup → apply → rollback transaction restores the pre-apply bytes on ANY outcome
+ *      that does not PROVE the store is clean: a mid-sequence fault, a post-check that errored,
+ *      a fatal post-check, or a post-check with findings (the store-wide cases — e.g. a
+ *      duplicate name-slug across files — that no per-file pre-check can see).
+ *   The ONE residual third outcome is a rollback that itself faults on the filesystem; that is
+ *   never silent — it reports rolledBack:false + "ROLLBACK INCOMPLETE" and exits 2.
+ *
+ * Exit codes: runner error / bad plan / bad store / ANY violation / any apply that does not
+ * end clean → 2 ; clean dry-run or clean apply → 0. There is NO exit-1 path: a dirty store is
+ * not an outcome --apply is permitted to leave behind. Zero runtime deps.
  */
 
 const fs = require("fs");
@@ -119,6 +131,40 @@ function canonicalStoreName(storeAbs, name) {
     throw err;
   }
   return matches[0];
+}
+
+/**
+ * validateNewBody(body) — run a `correct` replacement body through the SAME parser the
+ * read-only detector uses (mem.parseFrontmatter + its field rules) and return the list of
+ * structural reasons it is not a valid memory file. Empty list = structurally valid.
+ *
+ * WHY (gauntlet r10 :417): validatePlan only requires newBody to be a non-empty STRING, so a
+ * structurally-invalid body was written to disk successfully — no throw, therefore no rollback —
+ * leaving a corrupted memory file behind. This is HALF ONE of the all-or-nothing fix: refuse the
+ * body BEFORE any mutation. It is deliberately NOT folded into validatePlan, which is the pure
+ * plan-SHAPE gate; this is the CONTENT gate and it mirrors evaluate()'s invalid-frontmatter rules
+ * exactly so the pre-check and the post-check cannot disagree about one file.
+ *
+ * It can only see ONE file, so it can NOT see store-wide invariants (e.g. a duplicate name-slug
+ * against a SIBLING file). That residue is what half two — rollback on a dirty post-check — covers.
+ */
+function validateNewBody(body) {
+  const reasons = [];
+  const fm = mem.parseFrontmatter(String(body == null ? "" : body));
+  if (!fm.hasFrontmatter) {
+    reasons.push("no YAML frontmatter block (expected a leading '---' … '---' block)");
+    return reasons; // no fields to check without a block
+  }
+  if (!fm.name || !String(fm.name).trim()) reasons.push("missing a non-empty 'name' field");
+  if (!fm.description || !String(fm.description).trim()) {
+    reasons.push("missing a non-empty 'description' field");
+  }
+  if (!fm.type || !mem.VALID_TYPES.has(String(fm.type).trim())) {
+    reasons.push(
+      `'metadata.type' is absent or not one of {${[...mem.VALID_TYPES].join(", ")}} (got '${fm.type == null ? "" : fm.type}')`,
+    );
+  }
+  return reasons;
 }
 
 function validatePlan(plan) {
@@ -265,6 +311,32 @@ function run(opts) {
 
   const mutations = v.planned.filter((p) => p.action !== "none");
 
+  // CONTENT gate (r10 :417, half one of all-or-nothing): every `correct` newBody must parse as a
+  // structurally valid memory file BEFORE anything is written. Runs ahead of the dry-run return on
+  // purpose — a dry-run that promises "would correct" for a body --apply refuses is a gate/apply
+  // divergence, the same class the validated-newBody carry-through closed.
+  const bodyViolations = [];
+  for (const p of mutations) {
+    if (p.action !== "correct") continue;
+    for (const reason of validateNewBody(p.newBody)) {
+      bodyViolations.push({ file: p.file, reason: `newBody is not a valid memory file: ${reason}` });
+    }
+  }
+  if (bodyViolations.length) {
+    return {
+      ok: false,
+      fatal: true,
+      dryRun: !opts.apply,
+      applied: false,
+      violations: bodyViolations,
+      planned: v.planned,
+      notes: [
+        ...notes,
+        `${bodyViolations.length} newBody structural violation(s) — fail-closed, nothing mutated`,
+      ],
+    };
+  }
+
   // DRY-RUN (default): print what WOULD happen, mutate nothing.
   if (!opts.apply) {
     return {
@@ -382,6 +454,8 @@ function run(opts) {
   // then throw. So capture the original bytes of every target (+ the index if any delete rewrites
   // it) BEFORE mutating; on ANY throw during apply, restore every captured path → the store is
   // exactly as it was. Memory files are small + few per plan, so the in-memory backup is cheap.
+  // r10 widened the RESTORE trigger (not the backup): the same captured bytes are now also
+  // restored when the POST-CHECK fails to certify the store clean — see `undo` below.
   const anyDelete = mutations.some((p) => p.action === "delete");
   const backup = []; // [{ abs, bytes:Buffer }]
   try {
@@ -426,6 +500,62 @@ function run(opts) {
   } catch (e) {
     // ROLLBACK: restore every captured path to its original bytes → the store is exactly as it
     // was before apply (all-or-nothing preserved even against a mid-sequence fault).
+    return undo(`apply error: ${e.message}`, "apply faulted mid-flight", null);
+  }
+
+  // Mutations committed to disk. They are NOT yet final: the store must still be structurally
+  // CLEAN for this apply to stand. Every outcome below that does not PROVE cleanliness routes
+  // through the SAME rollback path the mid-sequence catch uses (r10 :417, half two of
+  // all-or-nothing). This deliberately REVERSES the r7 note that a post-check error must keep a
+  // "validly-committed" plan: a post-check that did not run has not certified anything, so the
+  // commit is unverified, not valid. Rollback restores byte-exact originals, so nothing is lost —
+  // the plan can simply be re-applied once the store is readable again.
+  let post;
+  try {
+    post = mem.run({ dirs: [storeAbs] });
+  } catch (e) {
+    return undo(`post-check errored after apply — the store could not be verified: ${e.message}`, "post-check errored", null);
+  }
+  if (post.fatal) {
+    return undo(
+      `post-check fatal after apply: ${(post.problems || ["post-check fatal"]).join("; ")}`,
+      "post-check fatal",
+      null,
+    );
+  }
+  const postFindings = post.findings || [];
+  if (postFindings.length > 0) {
+    // The store-wide case pre-validation CANNOT see: each newBody parsed clean on its own, but the
+    // resulting STORE is dirty (e.g. the new name-slug duplicates a sibling file's). Refuse it —
+    // a dirty store is not an outcome --apply is allowed to leave behind.
+    // CONSEQUENCE, by design: the post-check judges the WHOLE store, not just the touched files,
+    // so a plan applied to an ALREADY-dirty store is refused even when its own ops are sound. The
+    // plan must leave the store fully clean. That is the fail-closed reading of the invariant —
+    // widen the plan (or clean the store first), do not weaken this branch.
+    return undo(
+      `post-check found ${postFindings.length} structural finding(s) — the plan would leave the store dirty`,
+      `post-check ${postFindings.length} finding(s)`,
+      postFindings,
+    );
+  }
+  return {
+    ok: true,
+    fatal: false,
+    applied: true,
+    dryRun: false,
+    violations: [],
+    planned: v.planned,
+    postFindings,
+    notes: [...notes, `applied ${mutations.length} mutation(s); post-check clean`],
+  };
+
+  /**
+   * Restore every captured path to its original bytes and build the fail-closed result. The ONE
+   * rollback path — a mid-sequence fault, a post-check that errored, a fatal post-check, and a
+   * dirty post-check all land here, so "clean or byte-identical" holds by construction rather
+   * than by four separate hand-written branches agreeing with each other.
+   */
+  function undo(problem, noteVerb, findings) {
     const rollbackErrors = [];
     for (const b of backup) {
       try {
@@ -435,7 +565,7 @@ function run(opts) {
       }
     }
     const rolledBack = rollbackErrors.length === 0;
-    return {
+    const res = {
       ok: false,
       fatal: true,
       applied: !rolledBack, // rolled back cleanly → nothing net-changed; incomplete → residual change
@@ -444,60 +574,21 @@ function run(opts) {
       planned: v.planned,
       rolledBack,
       problems: [
-        `apply error: ${e.message}`,
+        problem,
         rolledBack
-          ? "rolled back — store restored, nothing changed"
+          ? "rolled back — store restored to its pre-apply bytes, nothing changed"
           : `ROLLBACK INCOMPLETE: ${rollbackErrors.join("; ")}`,
       ],
       notes: [
         ...notes,
         rolledBack
-          ? "apply faulted mid-flight → rolled back (all-or-nothing preserved)"
-          : "apply faulted AND rollback incomplete — inspect the store manually",
+          ? `${noteVerb} → rolled back (all-or-nothing preserved)`
+          : `${noteVerb} AND rollback incomplete — inspect the store manually`,
       ],
     };
+    if (findings && findings.length) res.postFindings = findings;
+    return res;
   }
-
-  // Mutations committed OK. The post-check runs in its OWN try so an incidental post-check I/O
-  // error can NOT roll back a validly-committed plan — only a mid-SEQUENCE mutation fault does. (r7 low.)
-  let post;
-  try {
-    post = mem.run({ dirs: [storeAbs] });
-  } catch (e) {
-    return {
-      ok: false,
-      fatal: true,
-      applied: true,
-      dryRun: false,
-      violations: [],
-      planned: v.planned,
-      problems: [`post-check errored after a valid apply (mutations kept, NOT rolled back): ${e.message}`],
-      notes: [...notes, `applied ${mutations.length} mutation(s); post-check errored — mutations kept`],
-    };
-  }
-  if (post.fatal) {
-    return {
-      ok: false,
-      fatal: true,
-      applied: true,
-      dryRun: false,
-      violations: [],
-      planned: v.planned,
-      problems: post.problems || ["post-check fatal"],
-      notes: [...notes, `MUTATIONS APPLIED (${mutations.length}) but post-check failed fatally`],
-    };
-  }
-  const postFindings = post.findings || [];
-  return {
-    ok: postFindings.length === 0,
-    fatal: false,
-    applied: true,
-    dryRun: false,
-    violations: [],
-    planned: v.planned,
-    postFindings,
-    notes: [...notes, `applied ${mutations.length} mutation(s); post-check ${postFindings.length} finding(s)`],
-  };
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -513,10 +604,11 @@ function parseArgs(argv) {
   return opts;
 }
 
+// --apply has exactly TWO reachable outcomes: a CLEAN apply (0), or a fail-closed refusal with
+// the store restored to its pre-apply bytes (2). A dirty post-check no longer exits 1 with the
+// mutations kept — it rolls back and fails closed. (r10 :417.)
 function exitCode(res) {
-  if (res.fatal) return 2;
-  if (res.applied && res.postFindings && res.postFindings.length > 0) return 1;
-  return 0;
+  return res.fatal ? 2 : 0;
 }
 
 function main() {
@@ -546,6 +638,11 @@ function main() {
       process.stderr.write(`  - REJECT ${vio.file}: ${vio.reason}\n`);
     }
     for (const p of res.problems || []) process.stderr.write(`  - ${p}\n`);
+    // A rolled-back apply carries the post-check findings that caused the refusal — print them,
+    // otherwise the operator sees "refused" with no reason to act on.
+    for (const f of res.postFindings || []) {
+      process.stderr.write(`  - [${f.severity}] ${f.kind}: ${f.message}\n`);
+    }
     if (res.notes && res.notes.length) process.stderr.write(`  (${res.notes.join(" · ")})\n`);
     process.exit(2);
   }
@@ -559,23 +656,18 @@ function main() {
     process.exit(0);
   }
 
-  // applied
-  const postFindings = res.postFindings || [];
-  if (postFindings.length === 0) {
-    process.stdout.write(`APPLIED [${NAME}] ${res.notes.join(" · ")}\n`);
-    process.exit(0);
-  }
-  process.stderr.write(
-    `APPLIED-DIRTY [${NAME}] mutations applied but ${postFindings.length} post-check finding(s):\n`,
-  );
-  for (const f of postFindings) process.stderr.write(`  - [${f.severity}] ${f.kind}: ${f.message}\n`);
-  process.exit(1);
+  // Applied. A non-fatal result is a CLEAN apply by construction — a dirty/unverifiable
+  // post-check is rolled back and returns fatal above, so there is no APPLIED-DIRTY state
+  // left to print.
+  process.stdout.write(`APPLIED [${NAME}] ${res.notes.join(" · ")}\n`);
+  process.exit(0);
 }
 
 if (require.main === module) main();
 
 module.exports = {
   validatePlan,
+  validateNewBody,
   isSafeStoreFilename,
   canonicalStoreName,
   removeIndexLines,

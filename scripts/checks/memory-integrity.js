@@ -41,11 +41,13 @@
  * - `--max-index-lines <n>`: MEMORY.md line-count warn threshold (default 200 — the
  *   user-memory truncation limit).
  *
- * FINDINGS (block under --enforce):
- *   broken-index-pointer (high)  · orphan-memory-file (medium) · duplicate-index-entry (low)
- *   invalid-frontmatter (high, one per bad field) · duplicate-name-slug (high)
- * WARNINGS (NEVER block, even under --enforce):
- *   dangling-wikilink · index-too-long
+ * FINDINGS (block under --enforce) — the COMPLETE set emitted by evaluate(); keep this list
+ * reconciled against every `findings.push` site, not against one example:
+ *   broken-index-pointer (high) · duplicate-name-slug (high)
+ *   invalid-frontmatter (high, one per bad field: no block / name / description / metadata.type)
+ *   malformed-index-line (medium) · orphan-memory-file (medium) · duplicate-index-entry (low)
+ * WARNINGS (NEVER block, even under --enforce) — the COMPLETE set emitted by evaluate():
+ *   dangling-wikilink · non-kebab-name · index-too-long
  *
  * Exit codes: runner error / bad explicit --dir → 2 ; report-only default → 0 (even
  * with findings) ; --enforce → 1 iff >=1 finding (warnings never cause exit 1).
@@ -128,6 +130,7 @@ function parseIndex(text) {
  *     compound YAML → treat as ABSENT (leave the field null so invalid-frontmatter fires);
  *   - strip ONE layer of matching surrounding quotes (`"…"` or `'…'`), then trim —
  *     quoted content is a literal string (so `"feedback"` → feedback, `""`/`''` → absent);
+ *   - an UNQUOTED value that BEGINS with `#` is a whole-line comment → ABSENT (null);
  *   - an UNQUOTED `null` or `~`, or an empty-after-decode value → ABSENT (null).
  */
 function decodeScalar(raw) {
@@ -141,6 +144,15 @@ function decodeScalar(raw) {
     v = v.slice(1, -1).trim();
     return v === "" ? null : v; // quoted-empty → absent; else a literal string
   }
+  // UNQUOTED, LEADING '#': the whole value is a YAML comment, so the field carries NO value —
+  // ABSENT, exactly like an empty value. This is a SEPARATE O(1) index check, NOT a relaxation
+  // of the `\s#` strip below: the strip REQUIRES a preceding whitespace, so in `name: # comment`
+  // the '#' sits at index 0 of the already-trimmed value and was never stripped — the literal
+  // '# comment' returned as a valid name, and invalid-frontmatter never fired for the missing
+  // field. Widening `\s#` to `\s*#` would close it but REINTRODUCE the O(n^2) ReDoS that r7/r9
+  // removed, so the boundary case is handled here instead. Quoted values never reach this line,
+  // so `name: "# not a comment"` stays a real literal value. (gauntlet r10 :149.)
+  if (v[0] === "#") return null;
   // UNQUOTED: strip a YAML-style inline comment (a '#' preceded by whitespace, to EOL), then
   // re-trim. Use a SINGLE `\s` (not `\s+`) — `\s+#` before a mismatchable `#` backtracks O(n^2)
   // on a long internal-whitespace scalar (a ReDoS, same class removed from extractWikilinks); a
@@ -151,6 +163,22 @@ function decodeScalar(raw) {
   if (/^[[{|>]/.test(v)) return null; // unsupported compound/block YAML → invalid
   if (/^(null|~)$/i.test(v)) return null; // unquoted YAML null sentinels, ANY case (null/Null/NULL/~)
   return v;
+}
+
+/**
+ * Does a `key:` line carry NO value on the same line? True for an empty remainder and for a
+ * remainder that is ENTIRELY a comment (`# …`) — a comment denotes no value, matching
+ * decodeScalar's leading-'#' rule. Anything else (a scalar, a null sentinel, a flow collection)
+ * IS a same-line value.
+ *
+ * NOT interchangeable with `decodeScalar(v) === null`: decodeScalar also returns null for
+ * `null` / `~` / `[…]`, which ARE same-line values and must not be read as an absent one. This
+ * is the discriminator `metadata:` needs to decide mapping-parent vs. scalar. O(1)/O(n), no
+ * backtracking. (gauntlet r10 :229.)
+ */
+function isEmptyFieldValue(raw) {
+  const v = String(raw == null ? "" : raw).trim();
+  return v === "" || v[0] === "#";
 }
 
 /**
@@ -227,9 +255,20 @@ function parseFrontmatter(text) {
     const key = km[1];
     const val = km[2];
     if (key === "metadata") {
-      inMetadata = true;
-      metadataIndent = ind;
-      metadataChildIndent = -1;
+      // `metadata:` opens a MAPPING PARENT only when it carries NO same-line value. A
+      // `metadata: <scalar>` is by definition not a flat mapping, so it must NOT open a block:
+      // otherwise a later indented `type:` populated out.type off a key that never was a mapping
+      // (a false green — the record read as validly typed). A same-line value instead marks the
+      // block invalid, so the existing `if (metadataInvalid) out.type = null` tail fires and the
+      // record reports invalid frontmatter. `metadata: # note` is EMPTY (the comment carries no
+      // value, per decodeScalar's leading-'#' rule) and still opens the block. (gauntlet r10 :229.)
+      if (isEmptyFieldValue(val)) {
+        inMetadata = true;
+        metadataIndent = ind;
+        metadataChildIndent = -1;
+      } else {
+        metadataInvalid = true;
+      }
     } else if (key === "name") out.name = decodeScalar(val);
     else if (key === "description") out.description = decodeScalar(val);
   }
@@ -707,6 +746,7 @@ module.exports = {
   parseIndex,
   parseFrontmatter,
   decodeScalar,
+  isEmptyFieldValue,
   extractWikilinks,
   readStore,
   NAME,

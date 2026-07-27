@@ -456,5 +456,147 @@ ok("LIVE: a non-array plan.changes is a MALFORMED plan (exit 2), not a silent em
   assert.strictEqual(out.fatal, true);
 });
 
+// ── gauntlet r10 (:417): --apply leaves the store CLEAN or BYTE-IDENTICAL, never corrupted ──
+// Snapshot every file in a store so "byte-identical to pre-apply" is asserted, not assumed.
+function snapshot(dir) {
+  const snap = new Map();
+  for (const name of fs.readdirSync(dir).sort()) {
+    snap.set(name, fs.readFileSync(path.join(dir, name)).toString("base64"));
+  }
+  return snap;
+}
+function assertUnchanged(dir, before, why) {
+  const after = snapshot(dir);
+  assert.deepStrictEqual([...after.keys()], [...before.keys()], `${why}: the file SET changed`);
+  for (const [name, bytes] of before) {
+    assert.strictEqual(after.get(name), bytes, `${why}: '${name}' is not byte-identical to pre-apply`);
+  }
+}
+
+ok("r10 PURE: validateNewBody accepts a valid memory file and names every structural defect", () => {
+  assert.deepStrictEqual(
+    mod.validateNewBody("---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nbody\n"),
+    [],
+    "a canonical memory file is valid",
+  );
+  assert.ok(/no YAML frontmatter/.test(mod.validateNewBody("just prose, no block\n")[0]), "no block is caught");
+  const partial = mod.validateNewBody("---\nname: a-slug\n---\nbody\n");
+  assert.ok(partial.some((r) => /'description'/.test(r)), "missing description named");
+  assert.ok(partial.some((r) => /metadata\.type/.test(r)), "missing metadata.type named");
+  const badType = mod.validateNewBody("---\nname: a-slug\ndescription: d\nmetadata:\n  type: nonsense\n---\nb\n");
+  assert.strictEqual(badType.length, 1);
+  assert.ok(/metadata\.type/.test(badType[0]));
+});
+
+// PLANTED RED — proves HALF ONE (pre-validation). Before the fix, validatePlan only required a
+// non-empty newBody STRING, so this body was written to disk successfully; nothing threw, so the
+// catch-only rollback never fired and a corrupted memory file was left behind.
+ok("r10 PLANTED (half a): a correct plan with a STRUCTURALLY INVALID newBody is refused BEFORE any mutation", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-prevalid-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "TRACKER reversed it", newBody: "CORRUPTED — no frontmatter at all\n" }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, `a structurally invalid newBody is fail-closed exit 2, got ${r.status} :: ${r.stderr}`);
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true);
+  assert.strictEqual(out.applied, false, "nothing was applied");
+  assert.ok(
+    (out.violations || []).some((x) => /newBody is not a valid memory file/.test(x.reason)),
+    `the refusal names the body defect: ${JSON.stringify(out.violations)}`,
+  );
+  assertUnchanged(store, before, "invalid newBody refused pre-mutation");
+});
+
+ok("r10 PLANTED (half a): the SAME invalid newBody is refused in DRY-RUN too (no gate/apply divergence)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-dry-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "x", newBody: "---\nname: only-a-name\n---\nb\n" }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "a dry-run must not promise a correct that --apply would refuse");
+  assertUnchanged(store, before, "dry-run never mutates");
+});
+
+// PLANTED RED — proves HALF TWO (rollback on a dirty post-check). This body PASSES per-file
+// pre-validation (name + description + valid type), so half (a) cannot catch it; it is only
+// dirty relative to the REST of the store — its name-slug collides with keep_one.md's. Before the
+// fix this returned ok:false/applied:true and left the duplicate slug on disk.
+ok("r10 PLANTED (half b): a correct that passes pre-validation but DIRTIES the store (duplicate name-slug) is ROLLED BACK", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-rollback-"));
+  const store = path.join(base, "agent");
+  seedStore(store); // keep_one.md → name: keep-one ; drop_one.md → name: drop-one
+  const before = snapshot(store);
+  const collide = "---\nname: keep-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nCOLLIDES WITH keep_one.md\n";
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "TRACKER shows the slug was merged", newBody: collide }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, `a dirty post-check must fail closed (exit 2), got ${r.status} :: ${r.stderr}`);
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.fatal, true);
+  assert.strictEqual(out.rolledBack, true, "the rollback ran");
+  assert.strictEqual(out.applied, false, "rolled back cleanly → nothing net-applied");
+  assert.ok(
+    (out.postFindings || []).some((f) => f.kind === "duplicate-name-slug"),
+    `the store-wide finding is reported: ${JSON.stringify(out.postFindings)}`,
+  );
+  assertUnchanged(store, before, "dirty post-check rolled back");
+  // Asserted LAST, on purpose: the rollback above is what this test proves, and it must fail for
+  // THAT reason against pre-fix code — not because this newer export is missing. This line is the
+  // supporting claim that half (a) alone could never have caught the case.
+  assert.deepStrictEqual(mod.validateNewBody(collide), [], "the body is per-file VALID — half (a) cannot catch this");
+});
+
+ok("r10 NO-REGRESSION: a correct with a VALID body still applies cleanly and leaves the store clean", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-good-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const newBody = "---\nname: drop-one\ndescription: a corrected memory\nmetadata:\n  type: project\n---\n\nCORRECTED BODY.\n";
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "git log shows the value changed", newBody }],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, `a valid correct applies cleanly, got ${r.status} :: ${r.stderr}`);
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.applied, true);
+  assert.strictEqual(out.ok, true);
+  assert.strictEqual(fs.readFileSync(path.join(store, "drop_one.md"), "utf8"), newBody, "the corrected body is on disk");
+  assert.strictEqual((out.postFindings || []).length, 0, "post-check clean");
+  assert.ok(/drop_one\.md/.test(fs.readFileSync(path.join(store, "MEMORY.md"), "utf8")), "correct leaves the index alone");
+});
+
+ok("r10: a MIXED plan is all-or-nothing — one dirty-making correct rolls back the sibling DELETE too", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-mixed-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  fs.writeFileSync(path.join(store, "third.md"), "---\nname: third-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n");
+  fs.appendFileSync(path.join(store, "MEMORY.md"), "- [Third](third.md) — a memory\n");
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "third.md", classification: "contradicted", action: "delete", evidence: "reversed" },
+      { file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "merged", newBody: "---\nname: keep-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nCOLLIDES.\n" },
+    ],
+  });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "the whole plan fails closed");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.rolledBack, true);
+  assert.ok(fs.existsSync(path.join(store, "third.md")), "the sibling delete was undone");
+  assertUnchanged(store, before, "mixed plan rolled back whole (index re-sync included)");
+});
+
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);
