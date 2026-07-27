@@ -3,7 +3,9 @@
 - **Status:** Accepted (2026-07-27, SP-20260725-002 r10 adjudication)
 - **Class:** B (β DECIDE B/0.90, msg_id `2d7a4e91-6b53-4c08-9f14-8e3b0d75a2c6`, boundary `gauntlet→release`, ASK 3)
 - **Relates:** ED-230 (served-model unproven), ADR-0037 (agy auth-fallback record honesty), ADR-0025/ED-060
-- **Enforcement:** debt logged — see `paths.enforcementDebt`
+- **Enforcement:** NO automated enforcer today. Debt logged as **ED-298** in `paths.enforcementDebt`, carrying the concrete shape: the ship/release gate must refuse to close when no security lane with `provider != antigravity` has run and passed. Reviewer artifacts already carry a `provider` field, so this is a field read over existing artifacts, not new plumbing. Until it exists, decision #2 below is a convention with a **silent** failure mode.
+  <!-- Record-honesty note: this line originally read "debt logged" before ED-298 existed, which was false at write time — the same documented-invariant class this session logged as ED-292. Corrected rather than quietly backfilled. -->
+
 
 ## Context
 
