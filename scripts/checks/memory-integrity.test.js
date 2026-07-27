@@ -675,20 +675,159 @@ ok("r10: isEmptyFieldValue distinguishes an ABSENT same-line value from a null/f
   assert.strictEqual(mod.isEmptyFieldValue("scalar"), false);
 });
 
-// ── gauntlet r10 (defect 4): the header taxonomy matches what the code actually emits ──
-ok("r10: every finding/warning kind the code emits is listed in the header taxonomy", () => {
+// ── gauntlet r11 HIGH-2: the parser fails CLOSED on ambiguous frontmatter ─────
+// Both shapes below used to yield `type: feedback` — a TRUSTED type off a block that is not a
+// well-formed flat mapping — so validateNewBody() returned no reasons and memory-apply certified
+// a structurally invalid body clean. RED against 16bcf623.
+
+ok("r11 HIGH-2: a DUPLICATE top-level `metadata:` block yields NO trustworthy type", () => {
+  const fm = mod.parseFrontmatter(
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\nmetadata:\n  type: feedback\n---\nbody\n",
+  );
+  assert.strictEqual(fm.type, null, "two metadata blocks cannot resolve to one trusted type");
+  const problems = mod.frontmatterProblems(fm);
+  assert.ok(problems.some((p) => p.field === "metadata.type"), JSON.stringify(problems));
+  // and it surfaces as a real finding through evaluate()
+  const store = storeOf([
+    { file: "x.md", hasFrontmatter: true, name: fm.name, description: fm.description, type: fm.type, wikilinks: [] },
+  ]);
+  const inv = mod.evaluate({ stores: [store] }).findings.filter((f) => f.kind === "invalid-frontmatter");
+  assert.strictEqual(inv.length, 1, "the store reports invalid frontmatter");
+  assert.ok(/metadata\.type/.test(inv[0].message), inv[0].message);
+});
+
+ok("r11 HIGH-2: a NON-SCALAR metadata child (`tags: []`) invalidates the whole block", () => {
+  const fm = mod.parseFrontmatter(
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  tags: []\n---\nbody\n",
+  );
+  assert.strictEqual(fm.type, null, "a flow-sequence child means metadata is not a flat scalar mapping");
+  assert.ok(mod.frontmatterProblems(fm).some((p) => p.field === "metadata.type"));
+  // every flow/block indicator, not just '['
+  for (const child of ["tags: []", "tags: {}", "note: |", "note: >"]) {
+    const f2 = mod.parseFrontmatter(
+      `---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  ${child}\n---\nbody\n`,
+    );
+    assert.strictEqual(f2.type, null, `child '${child}' must invalidate the block`);
+  }
+});
+
+ok("r11 HIGH-2: a REPEATED `type:` inside metadata is ambiguous → no trusted type", () => {
+  const fm = mod.parseFrontmatter(
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  type: user\n---\nbody\n",
+  );
+  assert.strictEqual(fm.type, null, "two type: children cannot resolve to one value");
+});
+
+ok("r11 HIGH-2: a DUPLICATE top-level `name:` / `description:` is ambiguous → treated as ABSENT", () => {
+  const dupName = mod.parseFrontmatter(
+    "---\nname: a-slug\nname: b-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nbody\n",
+  );
+  assert.strictEqual(dupName.name, null, "last-wins would silently pick a slug the author never declared");
+  assert.ok(mod.frontmatterProblems(dupName).some((p) => p.field === "name"));
+  const dupDesc = mod.parseFrontmatter(
+    "---\nname: a-slug\ndescription: d1\ndescription: d2\nmetadata:\n  type: feedback\n---\nbody\n",
+  );
+  assert.strictEqual(dupDesc.description, null);
+});
+
+ok("r11 HIGH-2 NO-REGRESSION: ordinary SCALAR metadata siblings still leave type trustworthy", () => {
+  const fm = mod.parseFrontmatter(
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  source: a-doc\n  count: 3\n---\nbody\n",
+  );
+  assert.strictEqual(fm.type, "feedback", "extra SCALAR children are fine — only non-scalars invalidate");
+  assert.deepStrictEqual(mod.frontmatterProblems(fm), [], "a valid record has no problems");
+});
+
+ok("r11 HIGH-2: frontmatterProblems is the ONE validator — it accepts a canonical record and names each defect", () => {
+  assert.deepStrictEqual(
+    mod.frontmatterProblems({ hasFrontmatter: true, name: "a-slug", description: "d", type: "feedback" }),
+    [],
+  );
+  assert.deepStrictEqual(
+    mod.frontmatterProblems({ hasFrontmatter: false }).map((p) => p.field),
+    ["block"],
+    "no block short-circuits — the field diagnostics would be noise",
+  );
+  assert.deepStrictEqual(
+    mod.frontmatterProblems({ hasFrontmatter: true, name: "", description: "  ", type: "nope" }).map((p) => p.field),
+    ["name", "description", "metadata.type"],
+  );
+});
+
+// ── gauntlet r10 (defect 4) / r11 LOW: header taxonomy ≡ what the code emits ──
+// r11 LOW: the reverse direction used a HARDCODED `advertised` array, so it only ever proved that
+// nine remembered names were emitted — a tenth kind invented in the header (`imaginary-kind`) was
+// invisible to it. The advertised set is now PARSED FROM THE HEADER and compared for SET EQUALITY,
+// and the parse+compare is a function so a PLANTED header can prove the test actually bites.
+
+// Parse the kinds the header ADVERTISES out of the bounded FINDINGS/WARNINGS taxonomy block.
+// Bounded on both ends so surrounding prose can never be mistaken for a kind: it starts at
+// `FINDINGS (block under --enforce)` and stops at `Exit codes:`. Parenthetical annotations
+// (`(high)`, `(medium)`) are stripped, the remainder is split on the `·` separator, and only
+// tokens that are ENTIRELY kind-shaped (`a-b`, `a-b-c`) survive — prose clauses contain spaces
+// and are dropped.
+function advertisedKinds(src) {
+  const start = src.indexOf("FINDINGS (block under --enforce)");
+  const end = src.indexOf("Exit codes:");
+  assert.ok(start > -1 && end > start, "the header taxonomy block must be locatable");
+  const block = src.slice(start, end);
+  const kinds = new Set();
+  for (const rawLine of block.split("\n")) {
+    const line = rawLine
+      .replace(/^\s*\*?\s?/, "") // strip the jsdoc comment gutter
+      .replace(/\([^()]*\)/g, ""); // strip `(high)` / `(medium, …)` annotations
+    for (const tok of line.split("·")) {
+      const t = tok.trim();
+      if (/^[a-z]+(-[a-z]+)+$/.test(t)) kinds.add(t);
+    }
+  }
+  return kinds;
+}
+// The kinds the code actually EMITS, from every `kind: "…"` push site.
+function emittedKinds(src) {
+  return new Set([...src.matchAll(/kind: "([a-z-]+)"/g)].map((m) => m[1]));
+}
+// The comparison under test, as data — so a planted source can be run through the SAME logic.
+function taxonomyDiff(src) {
+  const adv = advertisedKinds(src);
+  const emit = emittedKinds(src);
+  return {
+    advertised: [...adv].sort(),
+    emitted: [...emit].sort(),
+    onlyInHeader: [...adv].filter((k) => !emit.has(k)).sort(), // advertised but never emitted
+    onlyInCode: [...emit].filter((k) => !adv.has(k)).sort(), // emitted but undocumented
+  };
+}
+
+ok("r11 LOW: the header taxonomy and the emitted kinds are SET-EQUAL (both directions)", () => {
   const src = fs.readFileSync(CHECK, "utf8");
-  const header = src.slice(0, src.indexOf("const fs = require"));
-  const kinds = [...src.matchAll(/kind: "([a-z-]+)"/g)].map((m) => m[1]);
-  assert.ok(kinds.length >= 9, `expected the emit sites to be found, got ${kinds.length}`);
-  for (const k of new Set(kinds)) {
-    assert.ok(header.includes(k), `header taxonomy omits the emitted kind '${k}'`);
-  }
-  // and the header must not advertise a kind the code never emits
-  const advertised = ["broken-index-pointer", "duplicate-name-slug", "invalid-frontmatter", "malformed-index-line", "orphan-memory-file", "duplicate-index-entry", "dangling-wikilink", "non-kebab-name", "index-too-long"];
-  for (const a of advertised) {
-    assert.ok(kinds.includes(a), `header advertises '${a}' but no code site emits it`);
-  }
+  const d = taxonomyDiff(src);
+  assert.ok(d.emitted.length >= 9, `expected the emit sites to be found, got ${d.emitted.length}`);
+  assert.deepStrictEqual(d.onlyInCode, [], "the code emits kind(s) the header taxonomy never documents");
+  assert.deepStrictEqual(d.onlyInHeader, [], "the header advertises kind(s) no code site emits");
+  assert.deepStrictEqual(d.advertised, d.emitted, "the header taxonomy must equal the emitted set exactly");
+});
+
+ok("r11 LOW: a PLANTED header-only extra kind turns the taxonomy check RED (the reverse direction has teeth)", () => {
+  const src = fs.readFileSync(CHECK, "utf8");
+  // Plant `imaginary-kind` in the WARNINGS list — advertised in the header, emitted by nothing.
+  // Against the r10 hardcoded-array test this was INVISIBLE; it must now be caught.
+  const planted = src.replace(
+    " *   dangling-wikilink · non-kebab-name · index-too-long",
+    " *   dangling-wikilink · non-kebab-name · index-too-long · imaginary-kind",
+  );
+  assert.notStrictEqual(planted, src, "the planted fixture must actually modify the header");
+  const d = taxonomyDiff(planted);
+  assert.deepStrictEqual(d.onlyInHeader, ["imaginary-kind"], "a header-only kind must be detected");
+  assert.notDeepStrictEqual(d.advertised, d.emitted, "set equality must FAIL on the planted header");
+});
+
+ok("r11 LOW: a PLANTED undocumented emit site also turns the taxonomy check RED (forward direction)", () => {
+  const src = fs.readFileSync(CHECK, "utf8");
+  const planted = src.replace('kind: "index-too-long"', 'kind: "undocumented-kind"');
+  assert.notStrictEqual(planted, src, "the planted fixture must actually modify an emit site");
+  const d = taxonomyDiff(planted);
+  assert.ok(d.onlyInCode.includes("undocumented-kind"), "an emitted-but-undocumented kind must be detected");
 });
 
 console.log(`\nmemory-integrity: ${pass}/${pass + fail} pass`);

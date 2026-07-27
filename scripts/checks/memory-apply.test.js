@@ -598,5 +598,288 @@ ok("r10: a MIXED plan is all-or-nothing — one dirty-making correct rolls back 
   assertUnchanged(store, before, "mixed plan rolled back whole (index re-sync included)");
 });
 
+// ── gauntlet r11 HIGH-1: a hardlinked target cannot reach OUTSIDE the store ───
+// A hardlink is a REGULAR file by every stat predicate, so lstat+isFile() cannot see one. Before
+// r11, `correct` used fs.writeFileSync, which writes THROUGH the inode — the out-of-store twin was
+// overwritten while the run reported ok:true with a clean post-check. Two fixtures, because there
+// are two independent claims: the MECHANISM (rename never writes through an inode) and the
+// END-TO-END refusal. Both are RED against 16bcf623.
+
+ok("r11 HIGH-1 MECHANISM: atomicWriteInStore over a HARDLINKED target leaves the outside file BYTE-UNCHANGED", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hl1-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+  const target = path.join(store, "drop_one.md");
+  fs.unlinkSync(target);
+  try {
+    fs.linkSync(outside, target); // a REAL hardlink: store entry and outside file share one inode
+  } catch (e) {
+    console.log(`      (skipped: hardlinks unsupported here — ${e.code})`);
+    return;
+  }
+  assert.ok(fs.lstatSync(target).nlink > 1, "precondition: the target really is hardlinked");
+
+  mod.atomicWriteInStore(store, target, "REPLACEMENT BODY\n");
+
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be byte-unchanged (writeFileSync would have written through the inode)",
+  );
+  assert.strictEqual(fs.readFileSync(target, "utf8"), "REPLACEMENT BODY\n", "the in-store target got the new bytes");
+  assert.strictEqual(fs.lstatSync(target).nlink, 1, "the target is no longer hardlinked — rename replaced the dir entry");
+  assert.ok(
+    !fs.readdirSync(store).some((n) => n.endsWith(".tmp")),
+    "no temp file is left behind in the store",
+  );
+});
+
+ok("r11 HIGH-1 END-TO-END: a valid `correct` plan on a HARDLINKED file is refused and the OUTSIDE file is BYTE-UNCHANGED", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hl2-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+  const target = path.join(store, "drop_one.md");
+  fs.unlinkSync(target);
+  try {
+    fs.linkSync(outside, target);
+  } catch (e) {
+    console.log(`      (skipped: hardlinks unsupported here — ${e.code})`);
+    return;
+  }
+  // A fully VALID plan — contradicted, real evidence, structurally valid newBody. Nothing about
+  // the PLAN is wrong; the danger is entirely in the target's extra directory entry.
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      {
+        file: "drop_one.md",
+        classification: "contradicted",
+        action: "correct",
+        evidence: "grep shows the claim is false",
+        newBody: "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNew body.\n",
+      },
+    ],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "fail-closed on a hardlinked target");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.applied, false, "nothing was applied");
+  assert.ok(
+    (out.violations || []).some((v) => /hard link/i.test(v.reason)),
+    `preflight must name the hardlink, got ${JSON.stringify(out.violations)}`,
+  );
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be byte-unchanged",
+  );
+});
+
+// ── gauntlet r11 HIGH-3: rollback restores MEMORY.md BYTE-EXACTLY ─────────────
+// The backup used to capture MEMORY.md as Buffer.from(preReadIndexText, "utf8") — the string that
+// had already been DECODED at read time. A decode→re-encode round trip is not the identity on
+// arbitrary bytes: invalid UTF-8 comes back as U+FFFD (EF BF BD). So `rolledBack: true` could be
+// reported over a MEMORY.md whose bytes had changed. MEMORY.md is human-edited, so this is live.
+// The assertion below is a BUFFER comparison on purpose — comparing strings would decode both
+// sides and hide exactly the defect under test. RED against 16bcf623.
+ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it holds invalid UTF-8", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-utf8-"));
+  const store = path.join(base, "agent");
+  fs.mkdirSync(store, { recursive: true });
+  const mk = (slug) => `---\nname: ${slug}\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n`;
+  fs.writeFileSync(path.join(store, "drop_one.md"), mk("drop-one"));
+  // `bad.md` has NO frontmatter → the post-check finds it dirty → the apply is rolled back.
+  fs.writeFileSync(path.join(store, "bad.md"), "no frontmatter here\n");
+  // MEMORY.md carries a LONE 0xFF — a byte that is not valid UTF-8 and cannot survive a
+  // decode→re-encode round trip. It sits in a hook, so the index still parses.
+  const indexBytes = Buffer.concat([
+    Buffer.from("- [Drop One](drop_one.md) — a memory\n- [Bad](bad.md) — hook ", "utf8"),
+    Buffer.from([0xff]),
+    Buffer.from("\n", "utf8"),
+  ]);
+  fs.writeFileSync(path.join(store, "MEMORY.md"), indexBytes);
+  assert.ok(
+    !Buffer.from(indexBytes.toString("utf8"), "utf8").equals(indexBytes),
+    "precondition: these bytes really do NOT survive a utf8 round trip",
+  );
+
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      {
+        file: "drop_one.md",
+        classification: "contradicted",
+        action: "delete",
+        evidence: "grep shows the claim is false",
+      },
+    ],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "the dirty post-check must refuse the apply");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.rolledBack, true, "the transaction reports a clean rollback");
+
+  const after = fs.readFileSync(path.join(store, "MEMORY.md"));
+  assert.ok(
+    after.equals(indexBytes),
+    `rolledBack:true must mean BYTE-identical — got ${after.toString("hex")} vs ${indexBytes.toString("hex")}`,
+  );
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the delete was undone");
+});
+
+ok("r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollback restores it byte-exactly too", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-uncond-"));
+  const store = path.join(base, "agent");
+  fs.mkdirSync(store, { recursive: true });
+  fs.writeFileSync(
+    path.join(store, "drop_one.md"),
+    "---\nname: drop-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n",
+  );
+  fs.writeFileSync(path.join(store, "bad.md"), "no frontmatter here\n"); // forces a dirty post-check
+  const indexBytes = Buffer.concat([
+    Buffer.from("- [Drop One](drop_one.md) — a memory\n- [Bad](bad.md) — hook ", "utf8"),
+    Buffer.from([0xff]),
+    Buffer.from("\n", "utf8"),
+  ]);
+  fs.writeFileSync(path.join(store, "MEMORY.md"), indexBytes);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      {
+        file: "drop_one.md",
+        classification: "contradicted",
+        action: "correct",
+        evidence: "grep shows the claim is false",
+        newBody: "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNew.\n",
+      },
+    ],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2);
+  assert.strictEqual(JSON.parse(r.stdout).rolledBack, true);
+  assert.ok(fs.readFileSync(path.join(store, "MEMORY.md")).equals(indexBytes), "MEMORY.md is byte-identical");
+  assert.ok(
+    !fs.readdirSync(store).some((n) => n.endsWith(".tmp")),
+    "no temp file survives a rolled-back correct",
+  );
+});
+
+// ── gauntlet r11 MEDIUM: invisible-only evidence is not evidence ──────────────
+ok("r11 MEDIUM: evidence made ONLY of invisible characters is REJECTED", () => {
+  // U+200B/U+2060/U+180E/U+034F are format characters, NOT whitespace — JS trim() leaves them, so
+  // each of these cleared the old `.trim()` gate and applied a delete with visually blank audit
+  // evidence. RED against 16bcf623.
+  const invisibleOnly = [
+    "\u200B",
+    "\u200B\u200B\u200B",
+    "\u2060",
+    "\u180E",
+    "\u034F",
+    "\uFEFF\u200B",
+    "\u200B \t\n",
+    "\u00A0\u200B ",
+    "\u200E\u200F",
+  ];
+  for (const evidence of invisibleOnly) {
+    const v = mod.validatePlan({
+      store: "s",
+      changes: [{ file: "a.md", classification: "contradicted", action: "delete", evidence }],
+    });
+    assert.strictEqual(v.ok, false, `invisible-only evidence ${JSON.stringify(evidence)} must be rejected`);
+    assert.strictEqual(v.violations[0].reason, "mutation requires ground-truth evidence");
+  }
+});
+
+ok("r11 MEDIUM: evidence with ONE visible character still passes (the gate is not over-tight)", () => {
+  for (const evidence of ["x", "\u200Bgrep shows the claim is false\u200B", " \u00A0 g \u200B "]) {
+    const v = mod.validatePlan({
+      store: "s",
+      changes: [{ file: "a.md", classification: "contradicted", action: "delete", evidence }],
+    });
+    assert.strictEqual(v.ok, true, `visible evidence ${JSON.stringify(evidence)} must be accepted`);
+  }
+});
+
+ok("r11 MEDIUM: hasVisibleText routes through the module's ONE INVIS/SPACE_MAP enumeration", () => {
+  assert.strictEqual(typeof mod.hasVisibleText, "function");
+  assert.ok(mod.INVIS instanceof RegExp && mod.SPACE_MAP instanceof RegExp, "both classes are exported, not inlined twice");
+  assert.strictEqual(mod.hasVisibleText("\u200B"), false);
+  assert.strictEqual(mod.hasVisibleText(""), false);
+  assert.strictEqual(mod.hasVisibleText(null), false);
+  assert.strictEqual(mod.hasVisibleText("a"), true);
+  // /g regexes carry lastIndex — prove repeated calls do not alternate.
+  assert.strictEqual(mod.hasVisibleText("\u200B"), false, "a second call agrees with the first");
+  assert.strictEqual(mod.hasVisibleText("ab"), true);
+  assert.strictEqual(mod.hasVisibleText("ab"), true, "no lastIndex leakage between calls");
+});
+
+// ── gauntlet r11 HIGH-2: the newBody pre-check no longer MIRRORS the detector ──
+ok("r11 HIGH-2: validateNewBody REJECTS the parser shapes that used to yield a trusted type", () => {
+  const dupMetadata =
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\nmetadata:\n  type: feedback\n---\nbody\n";
+  const nonScalarChild =
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  tags: []\n---\nbody\n";
+  for (const [label, body] of [["duplicate top-level metadata:", dupMetadata], ["metadata.tags: []", nonScalarChild]]) {
+    const reasons = mod.validateNewBody(body);
+    assert.ok(reasons.length > 0, `${label} must produce reasons, got none`);
+    assert.ok(
+      reasons.some((rr) => /metadata\.type/.test(rr)),
+      `${label}: expected a metadata.type reason, got ${JSON.stringify(reasons)}`,
+    );
+  }
+});
+
+ok("r11 HIGH-2: the pre-check and the post-check are the SAME function, not two copies", () => {
+  const memmod = require("./memory-integrity.js");
+  assert.strictEqual(typeof memmod.frontmatterProblems, "function", "the shared validator is exported");
+  // Every body the pre-check accepts must also satisfy the detector's own rules, and vice versa.
+  const bodies = [
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nbody\n",
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n  tags: []\n---\nbody\n",
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\nmetadata:\n  type: user\n---\nbody\n",
+    "---\nname: a-slug\ndescription: d\nmetadata:\n  type: nonsense\n---\nbody\n",
+    "no frontmatter at all\n",
+    "---\nname: a-slug\nmetadata:\n  type: feedback\n---\nbody\n",
+  ];
+  for (const body of bodies) {
+    const pre = mod.validateNewBody(body);
+    const post = memmod.frontmatterProblems(memmod.parseFrontmatter(body)).map((p) => p.message);
+    assert.deepStrictEqual(pre, post, `pre-check and post-check disagree about ${JSON.stringify(body)}`);
+  }
+});
+
+ok("r11 HIGH-2 LIVE: an --apply whose newBody carries a duplicated metadata block is fail-closed", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-dupmeta-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      {
+        file: "drop_one.md",
+        classification: "contradicted",
+        action: "correct",
+        evidence: "grep shows the claim is false",
+        newBody:
+          "---\nname: drop-one\ndescription: d\nmetadata:\n  type: feedback\nmetadata:\n  type: feedback\n---\nbody\n",
+      },
+    ],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "a structurally invalid newBody must be refused BEFORE any write");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.applied, false);
+  assert.ok(
+    (out.violations || []).some((v) => /newBody is not a valid memory file/.test(v.reason)),
+    `expected a newBody violation, got ${JSON.stringify(out.violations)}`,
+  );
+  assertUnchanged(store, before, "a refused newBody leaves the store untouched");
+});
+
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);

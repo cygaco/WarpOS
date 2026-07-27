@@ -69,6 +69,69 @@ const NAME = "memory-apply";
 const VALID_ACTIONS = new Set(["none", "correct", "delete"]);
 const VALID_CLASSIFICATIONS = new Set(["verified", "contradicted", "unverifiable"]);
 
+// ── Invisible-character classes — ONE definition, reused everywhere ──────────
+// Evidence is an AUDIT artifact: a human reads it later to see why a memory was mutated. A string
+// made only of characters that RENDER AS NOTHING is blank evidence wearing a non-empty string's
+// clothes — an `evidence` of just U+200B cleared the old `.trim()` gate, because JS trim() strips only
+// WhiteSpace/LineTerminator, and U+200B (and U+2060, U+180E, U+034F …) are format characters, not
+// whitespace. (gauntlet r11 MEDIUM.)
+//
+// These two classes are the module's SINGLE enumeration of "renders as nothing". Anything that
+// needs to ask the question calls hasVisibleText() — a second, parallel strip-list is the same
+// drift shape as the validateNewBody mirror (r11 HIGH-2), and enumerating invisible categories in
+// two places moves the gap rather than closing it. Add new code points HERE, once.
+// INVIS: zero-width, joiners, bidi controls, variation selectors, interlinear annotation, BOM.
+const INVIS = /[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB]/g;
+// SPACE_MAP: every character that renders as horizontal/vertical blank. `\s` already covers ASCII
+// whitespace plus U+00A0/U+1680/U+2000-200A/U+2028/U+2029/U+202F/U+205F/U+3000; the extras are
+// listed explicitly so the class documents itself rather than relying on the engine's `\s`.
+const SPACE_MAP = /[\s\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g;
+
+/**
+ * Does `s` contain at least ONE character a human would actually see? Strips the INVIS class then
+ * the SPACE_MAP class and asks whether anything is left. Replace() (not test()) is used on purpose:
+ * these are /g regexes, and .test() on a /g regex carries lastIndex between calls.
+ */
+function hasVisibleText(s) {
+  return String(s == null ? "" : s).replace(INVIS, "").replace(SPACE_MAP, "") !== "";
+}
+
+// A monotonic suffix so two atomic writes in the same process/millisecond cannot collide.
+let tmpSeq = 0;
+
+/**
+ * atomicWriteInStore(storeAbs, targetAbs, data) — the ONE way this module ever writes a file in a
+ * memory store. Writes a temp file INSIDE storeAbs, then RENAMES it over the target.
+ *
+ * WHY RENAME, NOT writeFileSync (gauntlet r11 HIGH-1 — fixed at the MECHANISM, not with a guard):
+ * `fs.writeFileSync` writes THROUGH the target's inode. A per-fact file HARDLINKED to a file
+ * outside the store is a regular file by every stat predicate — isFile() is true, isSymbolicLink()
+ * is false — so it cleared preflight, and `correct` then overwrote the out-of-store file through
+ * the shared inode. `rename` replaces the store's DIRECTORY ENTRY and never touches the old inode:
+ * the hardlinked target simply stops being hardlinked and the outside file keeps its bytes. The
+ * escape is therefore impossible BY CONSTRUCTION rather than by anyone remembering a check.
+ *
+ * The temp stays INSIDE storeAbs so the rename is same-filesystem (hence atomic — a cross-device
+ * rename would EXDEV), and carries a leading dot + `.tmp` suffix so readStore() — which only reads
+ * `*.md` — can never parse it as a memory file. Crash-atomicity comes free: a fault leaves either
+ * the whole old file or the whole new one, never a half-written body.
+ */
+function atomicWriteInStore(storeAbs, targetAbs, data) {
+  const tmpAbs = path.join(storeAbs, `.memory-apply.${process.pid}.${tmpSeq++}.tmp`);
+  try {
+    fs.writeFileSync(tmpAbs, data);
+    fs.renameSync(tmpAbs, targetAbs);
+  } catch (e) {
+    // Never leave a stray temp behind for the post-check (or the operator) to trip over.
+    try {
+      fs.unlinkSync(tmpAbs);
+    } catch {
+      /* best-effort: the temp may not have been created at all */
+    }
+    throw e;
+  }
+}
+
 // ── Pure safety gate (no fs) ─────────────────────────────────────────────────
 /**
  * validatePlan(plan) — decide, with NO disk access, whether every change is safe
@@ -142,29 +205,24 @@ function canonicalStoreName(storeAbs, name) {
  * structurally-invalid body was written to disk successfully — no throw, therefore no rollback —
  * leaving a corrupted memory file behind. This is HALF ONE of the all-or-nothing fix: refuse the
  * body BEFORE any mutation. It is deliberately NOT folded into validatePlan, which is the pure
- * plan-SHAPE gate; this is the CONTENT gate and it mirrors evaluate()'s invalid-frontmatter rules
- * exactly so the pre-check and the post-check cannot disagree about one file.
+ * plan-SHAPE gate; this is the CONTENT gate.
+ *
+ * r11 HIGH-2 — WHY THIS IS NOW THREE LINES: it used to MIRROR evaluate()'s invalid-frontmatter
+ * rules in its own code, under a comment asserting that the mirror and the post-check "cannot
+ * disagree". They did. Parser shapes that yielded a trusted `type` (a duplicated top-level
+ * `metadata:`; a non-scalar `metadata.tags: []`) produced NO reasons here, so apply certified a
+ * structurally invalid body clean. A mirrored reimplementation is precisely the thing that drifts,
+ * and patching the two known shapes into the mirror would only re-arm it for the next shape. The
+ * rules now live in exactly ONE place — mem.frontmatterProblems — which evaluate() also calls, so
+ * "the pre-check and the post-check cannot disagree" is true BY CONSTRUCTION rather than by
+ * assertion. Do not re-inline these rules here.
  *
  * It can only see ONE file, so it can NOT see store-wide invariants (e.g. a duplicate name-slug
  * against a SIBLING file). That residue is what half two — rollback on a dirty post-check — covers.
  */
 function validateNewBody(body) {
-  const reasons = [];
   const fm = mem.parseFrontmatter(String(body == null ? "" : body));
-  if (!fm.hasFrontmatter) {
-    reasons.push("no YAML frontmatter block (expected a leading '---' … '---' block)");
-    return reasons; // no fields to check without a block
-  }
-  if (!fm.name || !String(fm.name).trim()) reasons.push("missing a non-empty 'name' field");
-  if (!fm.description || !String(fm.description).trim()) {
-    reasons.push("missing a non-empty 'description' field");
-  }
-  if (!fm.type || !mem.VALID_TYPES.has(String(fm.type).trim())) {
-    reasons.push(
-      `'metadata.type' is absent or not one of {${[...mem.VALID_TYPES].join(", ")}} (got '${fm.type == null ? "" : fm.type}')`,
-    );
-  }
-  return reasons;
+  return mem.frontmatterProblems(fm).map((p) => p.message);
 }
 
 function validatePlan(plan) {
@@ -207,8 +265,12 @@ function validatePlan(plan) {
       violations.push({ file, reason: "only a contradicted memory may be mutated" });
       continue;
     }
-    const evidence = ch && typeof ch.evidence === "string" ? ch.evidence.trim() : "";
-    if (!evidence) {
+    // Evidence must contain at least one VISIBLE character, not merely a non-empty string.
+    // `.trim()` alone let `evidence: "​"` through, applying a delete whose audit trail
+    // renders blank to the human who later asks why the memory went away. hasVisibleText routes
+    // through the module's single INVIS/SPACE_MAP enumeration. (gauntlet r11 MEDIUM.)
+    const evidence = ch && typeof ch.evidence === "string" ? ch.evidence : "";
+    if (!hasVisibleText(evidence)) {
       violations.push({ file, reason: "mutation requires ground-truth evidence" });
       continue;
     }
@@ -399,6 +461,20 @@ function run(opts) {
       });
       continue;
     }
+    // HARDLINK (gauntlet r11 HIGH-1, defense-in-depth). A hardlink is a REGULAR file by every stat
+    // predicate — isFile() true, isSymbolicLink() false — so the checks above cannot see one, and
+    // a target hardlinked to a file OUTSIDE the store used to have its outside twin overwritten
+    // through the shared inode. atomicWriteInStore already makes that escape impossible by
+    // construction; this check is here because an unexpected extra directory entry on a memory
+    // file is an ANOMALY, and a store in an unexplained state should fail LOUDLY rather than be
+    // silently tolerated. (st.nlink is unreliable on a few exotic filesystems, hence the guard.)
+    if (typeof st.nlink === "number" && st.nlink > 1) {
+      fsViolations.push({
+        file: p.file,
+        reason: `target has ${st.nlink} hard links — a memory file must have exactly one directory entry`,
+      });
+      continue;
+    }
     if (p.action === "correct" && typeof p.newBody !== "string") {
       fsViolations.push({ file: p.file, reason: "newBody missing at apply time" });
     }
@@ -456,14 +532,31 @@ function run(opts) {
   // exactly as it was. Memory files are small + few per plan, so the in-memory backup is cheap.
   // r10 widened the RESTORE trigger (not the backup): the same captured bytes are now also
   // restored when the POST-CHECK fails to certify the store clean — see `undo` below.
-  const anyDelete = mutations.some((p) => p.action === "delete");
   const backup = []; // [{ abs, bytes:Buffer }]
   try {
     for (const p of mutations) {
       const fileAbs = path.resolve(storeAbs, p.canonicalFile);
       backup.push({ abs: fileAbs, bytes: fs.readFileSync(fileAbs) });
     }
-    if (anyDelete) backup.push({ abs: memPath, bytes: Buffer.from(preReadIndexText, "utf8") });
+    // MEMORY.md is captured EXACTLY like every other entry: RAW BYTES, no encoding argument.
+    //
+    // r11 HIGH-3 — it used to be `Buffer.from(preReadIndexText, "utf8")`, re-encoding the string
+    // that :445 had already DECODED. A decode→re-encode round trip is not the identity on
+    // arbitrary bytes: any byte sequence that is not valid UTF-8 comes back as U+FFFD (EF BF BD).
+    // MEMORY.md is human-edited, so that is a live case — a rollback then reported
+    // `rolledBack: true` over a file whose bytes had CHANGED, which is precisely the invariant
+    // ("clean or byte-identical") the transaction exists to hold. preReadIndexText stays exactly
+    // as it is for removeIndexLines; only the BACKUP stops travelling through a string.
+    //
+    // UNCONDITIONAL, where it used to be `if (anyDelete)`. I checked whether a correct-only plan
+    // can write MEMORY.md, and today it cannot — three separate guards have to hold for that:
+    // isSafeStoreFilename rejects `memory.md` case-insensitively, canonicalStoreName only ever
+    // returns an entry whose lowercase equals the (already-vetted) plan name, and the dirname
+    // confinement check rejects anything outside storeAbs. But the BACKUP's correctness should not
+    // depend on a three-guard chain in unrelated functions continuing to agree — that is the same
+    // "documented invariant the code doesn't hold" shape as HIGH-2. Capturing it always costs one
+    // small read of a file we have already read, and removes the dependency entirely.
+    backup.push({ abs: memPath, bytes: fs.readFileSync(memPath) });
   } catch (e) {
     return {
       ok: false,
@@ -488,13 +581,14 @@ function run(opts) {
         fs.unlinkSync(fileAbs);
         deletedFiles.add(p.canonicalFile);
       } else if (p.action === "correct") {
-        fs.writeFileSync(fileAbs, p.newBody);
+        // Temp-then-rename, NEVER writeFileSync — see atomicWriteInStore. (r11 HIGH-1.)
+        atomicWriteInStore(storeAbs, fileAbs, p.newBody);
       }
     }
     // Re-sync the index for deletes (correct leaves the index alone) using the PRE-READ
     // text captured before the mutation loop — never re-read post-delete.
     if (deletedFiles.size) {
-      fs.writeFileSync(memPath, removeIndexLines(preReadIndexText, deletedFiles));
+      atomicWriteInStore(storeAbs, memPath, removeIndexLines(preReadIndexText, deletedFiles));
     }
 
   } catch (e) {
@@ -559,7 +653,10 @@ function run(opts) {
     const rollbackErrors = [];
     for (const b of backup) {
       try {
-        fs.writeFileSync(b.abs, b.bytes);
+        // Restore through the SAME temp-then-rename mechanism the forward path uses, so the
+        // rollback cannot write through a hardlinked inode either, and so a fault mid-restore
+        // leaves the whole old file rather than a truncated one. (r11 HIGH-1.)
+        atomicWriteInStore(storeAbs, b.abs, b.bytes);
       } catch (re) {
         rollbackErrors.push(`${b.abs}: ${re.message}`);
       }
@@ -671,6 +768,10 @@ module.exports = {
   isSafeStoreFilename,
   canonicalStoreName,
   removeIndexLines,
+  atomicWriteInStore,
+  hasVisibleText,
+  INVIS,
+  SPACE_MAP,
   run,
   NAME,
   VALID_ACTIONS,
