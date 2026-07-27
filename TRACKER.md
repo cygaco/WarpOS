@@ -577,8 +577,8 @@ Two sprints are open and recorded below — SP-20260725-001 (Blocked) and SP-202
 - Parent epic: E-DISPATCH-INTEGRITY-001.
 - Goal: Close the ED-286 citation-obfuscation bypass class in `scripts/checks/beta-verdict-citation-receipt.js` by construction — normalize the detection text to its rendered form before matching — rather than by an enumerated strip-list. <!-- doc-ref-ignore: the enforcer lands with SP-20260725-001 — it exists on sprint/SP-20260725-001-ed286-fix, not yet on this branch -->
 
-- Current state: Blocked.
-- Percent completion: 85% — implemented through fix round r11 with the committed suite at 119/119, but two binding HIGH gauntlet findings remain open, so the Definition of Done is not satisfied.
+- Current state: Blocked — HALTED at the r12 terminal condition, pending an operator architecture decision.
+- Percent completion: 90% — fix round r12 (`93ae41ce`) closed both prior HIGHs with the suite at 132/132 and a live-corpus delta of 0, but the r12 hunter found two NEW by-construction HIGHs, firing the terminal condition β set when authorizing r12. The remainder is an architecture decision, not another fix round.
 - Evidence of progress: branch `sprint/SP-20260725-001-ed286-fix` @ `b877096f` (pushed); `gauntlet-verify` over the three GPT lanes → PASS, exit 0 (liveness) on 2026-07-26; qa-reviewer `pass` and the Claude hunter `pass` (52 probes) on that commit; security-reviewer and backend-reviewer each returned a HIGH — verdict payloads under `.worktrees/enforcer-cluster/runtime/gauntlet/SP-20260725-001/out/`.
 - Next required action: Route the fix-round-12-versus-park decision to β through α; if authorized, author one unified fix brief covering BOTH open HIGHs as a single root fix (anchor receipt validation to raw occurrences over the original undecoded line), then re-run the security and backend lanes.
 - Blockers: Two open HIGH findings — receipt laundering checked by value membership rather than occurrence position (`:501`), and character-reference decoding running before raw receipt-payload validation (`:406`).
