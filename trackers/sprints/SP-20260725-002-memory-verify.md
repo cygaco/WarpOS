@@ -8,7 +8,7 @@
 - **Scope:** `scripts/checks/memory-integrity.js` (detector, read-only), `scripts/checks/memory-apply.js` (gated executor), `.claude/commands/memory/verify.md` (skill), and the two test suites `memory-integrity.test.js` and `memory-apply.test.js`.
 - **Out of scope:** Wiring the detector into `/scan:full` — deliberately deferred and logged as ED-287. Semantic judgement about memory CONTENT; the detector is structural.
 - **Current state:** Active
-- **Percent completion:** 80% — all three deliverables exist and both suites pass on the sprint commit, but the gauntlet is red with three open defects (two HIGH, one MEDIUM) plus one low. The remaining 20% is one bounded fix round and a re-review of the two affected lanes.
+- **Percent completion:** 80% — fix round r10 closed all four defects it targeted and both suites rose (47/47 and 36/36), but the r10 gauntlet is red again: re-establishing the security scope on a provider that discriminates surfaced three NEW HIGHs, including an out-of-store write. Percent is held rather than raised because the newly-surfaced defects are at least as serious as those closed.
 
 ## Definition of Done
 - [x] A read-only structural detector exists and cannot mutate a store.
@@ -75,7 +75,7 @@
 - The live agent-memory stores as the corpus the detector reads.
 
 ## Blockers
-- Three open gauntlet defects — see the Verification log. Next action to clear: one fix brief covering all of them, then a re-review of the qa and backend lanes.
+- Five open defects from the r10 gauntlet — three HIGH (hardlink escape writing outside the store; a parser fail-open that bypasses the r10 pre-validation gate; a rollback that reports `rolledBack: true` while changing MEMORY.md bytes), one MEDIUM (invisible-only evidence passes the evidence gate), one LOW (the taxonomy test has no teeth in the reverse direction). Next action to clear: β's scope ruling, then one r11 round covering all five, then a full three-lane re-fire including security-via-GPT.
 
 ## Risks
 - Partial fix / likelihood medium / impact medium — a brief covering only some of the named defects guarantees the omitted one re-fails on re-review. Mitigation: enumerate every finding with its file and line in one brief.
@@ -101,6 +101,19 @@
 - Verification performed: `gauntlet-verify` over the three registry roles on the canonical ledger; verdict artifacts read directly. · Validation run: `node scripts/dispatch/gauntlet-verify.js --roles security-reviewer,qa-reviewer,backend-reviewer --since 2026-07-27T00:03:00Z` · Validation result: PASS (liveness), exit 0
 - Next action: Author one fix brief covering all four named defects, then re-run the qa and backend lanes.
 - Evidence/references: `runtime/gauntlet-SP-20260725-002/out/` (four verdict payloads)
+
+### 2026-07-27 02:20 UTC — Session 2026-07-26-sprint-resume (r10 round)
+- Agent(s): Alex ε (conductor), backend-fixer, the registry reviewer roster · Mode: sprint
+- Work performed: β authorized the bounded 3-defect-plus-low fix (DECIDE B/0.89, msg_id `b41d8f06-9c27-4e53-8d1a-3f7b2e9c604d`) and OVERRODE the default re-convergence scope, requiring the security lane be re-established on a provider that demonstrably discriminates rather than carrying the antigravity PASSes. A fixer closed all four; α merged at `16bcf623`; the three lanes re-fired.
+- Files changed: `memory-integrity.js`, `memory-apply.js` and both test files (by the fixer). None by ε.
+- Decisions: adjudicated the r10 gauntlet as FAIL; withheld the land; superseded the staged qa-only micro-brief with a full five-item r11 brief.
+- Issues discovered: three NEW HIGHs — a hardlink escape writing outside the store, a parser fail-open bypassing the new pre-validation gate, and a rollback reporting success while altering MEMORY.md bytes — plus a MEDIUM (invisible-only evidence) and the qa LOW.
+- Definitions added/changed: None
+- State change: Active → Active · Completion change: 80% → 80%
+- Verification performed: all three lanes liveness-verified; every verdict read from its on-disk artifact rather than from relay; both suites re-run directly by ε (47/47, 36/36); the rider-3 store check run in report mode. · Validation run: `node scripts/dispatch/gauntlet-verify.js --roles qa-reviewer,backend-reviewer,security-reviewer --since 2026-07-27T02:06:00Z` · Validation result: PASS, exit 0
+- Next action: β scope ruling, then the r11 round.
+- Evidence/references: `runtime/gauntlet-SP-20260725-002/out/{security-reviewer-r10-gpt,qa-reviewer-r10,backend-reviewer-r10}.json`; brief at `runtime/gauntlet-SP-20260725-002/r11-fix-brief.md`
+- Note for the retro: β's rider F is vindicated by measurement. The antigravity lanes returned 0 findings twice on this code; the GPT lane found three HIGHs on it. A 0-finding lane that provably missed what another caught is an unfalsifiable null result, not evidence of a clean scope.
 
 ## Change log
 ### 2026-07-27 00:15 UTC — Session 2026-07-26-sprint-resume
@@ -140,8 +153,7 @@
 | Detector wired into `/scan:full` | No | Verified Nonexistent (and expected nonexistent) | `/scan:full` lane registry | deferred by decision; logged as ED-287 | 2026-07-27 | Alex ε |
 | Four lane completion records | Yes | Verified Exists | canonical `dispatch-completions.jsonl` | `gauntlet-verify` exit 0 | 2026-07-27 | Alex ε |
 
-## Current next action
-Author one fix brief covering ALL four named defects — `memory-integrity.js:149`, `memory-integrity.js:229`, `memory-apply.js:417`, and the header taxonomy-sync miss — dispatch the fixer, then re-run the qa and backend reviewer lanes on the fixed commit.
+Await β's scope ruling on the r11 brief (consult `e228a2b8-c25b-41f1-9b85-904a6a57d594`), which asks in particular whether `--apply` remains shippable at pre-mvp given the out-of-store write, or whether the executor should be gated harder while the read-only detector ships alone. On her ruling, dispatch one r11 round covering all five items per `runtime/gauntlet-SP-20260725-002/r11-fix-brief.md`, then re-fire qa, backend, and security-via-GPT.
 
 ## Completion record
 - Final state: Not yet complete
