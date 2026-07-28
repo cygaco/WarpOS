@@ -90,12 +90,12 @@
 ### 2026-07-27 01:40 UTC — Session 2026-07-26-sprint-resume (r12 round)
 - Agent(s): Alex ε (conductor), backend-fixer, security_claude_hunter · Mode: sprint
 - Work performed: β authorized r12 as the LAST round for the char/entity class (DECIDE B/0.89, msg_id `7c3f9e2a-5d41-4b8e-9a06-2f1c8d5b7e34`), correcting ε's "one root" framing to two INDEPENDENT bypasses. A fixer closed both and committed `93ae41ce`. ε then ran the hunter lane on that commit.
-- Files changed: `scripts/checks/beta-verdict-citation-receipt.js` + its suite (by the fixer, in the worktree). None by ε.
+- Files changed: `scripts/checks/beta-verdict-citation-receipt.js` + its suite (by the fixer, in the worktree). None by ε. <!-- doc-ref-ignore: file lands with SP-20260725-001 sprint branch, absent here by design -->
 - Decisions: HALTED the sprint at the terminal condition; withheld the land; recommended holding the three GPT lanes as spend without decision value, since the binding hunter lane already fails.
 - Issues discovered: two NEW by-construction HIGHs — a clause-model receipt mint (`β DECIDE, msg_id real000betaruled` resolves via prefix truncation) and an NFKD fold that mints an ASCII word character, killing the word boundary and hiding the citation (1,831 of 1,943 swept code points).
 - Definitions added/changed: None
 - State change: Blocked → Blocked (halted at terminal condition) · Completion change: 85% → 90%
-- Verification performed: suite run directly by ε (132/132); hunter verdict artifact read from disk; completion record written evidence-bound. · Validation run: `node scripts/checks/beta-verdict-citation-receipt.test.js` · Validation result: 132/132, exit 0
+- Verification performed: suite run directly by ε (132/132); hunter verdict artifact read from disk; completion record written evidence-bound. · Validation run: `node scripts/checks/beta-verdict-citation-receipt.test.js` · Validation result: 132/132, exit 0 <!-- doc-ref-ignore: file lands with SP-20260725-001 sprint branch, absent here by design -->
 - Next action: operator architecture decision via β's ESCALATE.
 - Evidence/references: `runtime/gauntlet/SP-20260725-001/security_claude_hunter-r12-verdict.json`; completion record `d-ms2kzi2q-560162c7`
 
