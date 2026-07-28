@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.1.0",
-  "installedCommit": "adbeb8919ccbff9a5d6f4321c2054f3ec26700a0",
-  "installedAt": "2026-07-24T21:25:02.027Z",
+  "installedCommit": "c58cdb7173f3a6617f1e3aee1ec593ca5aacb728",
+  "installedAt": "2026-07-28T15:54:46.505Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -899,13 +899,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.president._system.policy.adr.0039-agy-barred-as-security-scope-of-record.md",
+      "kind": "agent",
+      "dest": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
+      "currentHashAtInstall": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.president._system.policy.adr.INDEX.md",
       "kind": "agent",
       "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "a9d001af98d7083291e20aaa02079bfc8e9ac61ea21543b5f59a8dc06869bbab",
-      "currentHashAtInstall": "a9d001af98d7083291e20aaa02079bfc8e9ac61ea21543b5f59a8dc06869bbab",
+      "installedHash": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210",
+      "currentHashAtInstall": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210",
       "introducedIn": "0.0.0"
     },
     {
@@ -2016,6 +2026,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "c7fa6441fce452ff046e6bfe45d5365dac82686c5d4078188d33f0ad365b228a",
       "currentHashAtInstall": "c7fa6441fce452ff046e6bfe45d5365dac82686c5d4078188d33f0ad365b228a",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.memory.verify.md",
+      "kind": "skill",
+      "dest": ".claude/commands/memory/verify.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2",
+      "currentHashAtInstall": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2",
       "introducedIn": "0.0.0"
     },
     {
@@ -5494,8 +5514,8 @@
       "dest": "scripts/hooks/lib/providers.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "68f5273bbb95a865f4913583ae1fee98c563cd4b21aabebc1d097cb92e164783",
-      "currentHashAtInstall": "68f5273bbb95a865f4913583ae1fee98c563cd4b21aabebc1d097cb92e164783",
+      "installedHash": "057e31e4db3d48187874bf914ccdd01e7e5ed282115735e2af860352cf37d1e8",
+      "currentHashAtInstall": "057e31e4db3d48187874bf914ccdd01e7e5ed282115735e2af860352cf37d1e8",
       "introducedIn": "0.0.0"
     },
     {
@@ -6074,8 +6094,8 @@
       "dest": "scripts/warpos/manifest/walk-skip.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758",
-      "currentHashAtInstall": "181284a3486abd61bbe0eaa917377f8aa8c794e2a5e5a4f169598e67cc8d8758",
+      "installedHash": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289",
+      "currentHashAtInstall": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289",
       "introducedIn": "0.0.0"
     },
     {
@@ -7446,6 +7466,46 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
       "currentHashAtInstall": "f02d3810dd9e5492f735593548cc221290713bc36a1a53e7b95893a0f07f21c4",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.memory-apply.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/memory-apply.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
+      "currentHashAtInstall": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.memory-apply.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/memory-apply.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
+      "currentHashAtInstall": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.memory-integrity.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/memory-integrity.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "9b46f39b7de3eeed8cbdaae32487898abb89edf7bdcead7c8d9d80cafc67155f",
+      "currentHashAtInstall": "9b46f39b7de3eeed8cbdaae32487898abb89edf7bdcead7c8d9d80cafc67155f",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.memory-integrity.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/memory-integrity.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "416c2c2255d71b5ea76c950e96582414b59df52578d9f875723ec0a43815749b",
+      "currentHashAtInstall": "416c2c2255d71b5ea76c950e96582414b59df52578d9f875723ec0a43815749b",
       "introducedIn": "0.0.0"
     },
     {
@@ -17134,8 +17194,8 @@
       "dest": "CODEX.md",
       "owner": "framework",
       "mergeStrategy": "append-if-exists",
-      "installedHash": "59a3183b0794b2fbb220c9287ea0275ec07ecab67efbf9f851deeb5f42c32a6f",
-      "currentHashAtInstall": "59a3183b0794b2fbb220c9287ea0275ec07ecab67efbf9f851deeb5f42c32a6f",
+      "installedHash": "6c805e2481156f135e93a74366a8c215bfcccf2bd97d5e8555e8d3b4ccff182b",
+      "currentHashAtInstall": "6c805e2481156f135e93a74366a8c215bfcccf2bd97d5e8555e8d3b4ccff182b",
       "introducedIn": "0.0.0"
     },
     {
