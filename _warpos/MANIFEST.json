@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-28T15:03:30.402Z",
+  "generatedAt": "2026-07-28T15:49:56.816Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.1.0",
   "migrations": [],
@@ -11992,15 +11992,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.js",
-      "sha256": "ce1d821f9bd041b3b2d5189658bbd14b18417aee892e138b134541f9cfb14701",
-      "installedSha": "ce1d821f9bd041b3b2d5189658bbd14b18417aee892e138b134541f9cfb14701"
+      "sha256": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
+      "installedSha": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56"
     },
     "scripts/checks/memory-apply.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.test.js",
-      "sha256": "f72d9e1dae914b5e87c3b6440b7160f6db751720558f31fad21f262837bce9ed",
-      "installedSha": "f72d9e1dae914b5e87c3b6440b7160f6db751720558f31fad21f262837bce9ed"
+      "sha256": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
+      "installedSha": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea"
     },
     "scripts/checks/memory-integrity.js": {
       "owner": "framework",
@@ -12013,8 +12013,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-integrity.test.js",
-      "sha256": "962814ddc04f89ac1cdc2b4cb41fe5bfdcc3510cd2c8c18ddf79be620fcc17ba",
-      "installedSha": "962814ddc04f89ac1cdc2b4cb41fe5bfdcc3510cd2c8c18ddf79be620fcc17ba"
+      "sha256": "416c2c2255d71b5ea76c950e96582414b59df52578d9f875723ec0a43815749b",
+      "installedSha": "416c2c2255d71b5ea76c950e96582414b59df52578d9f875723ec0a43815749b"
     },
     "scripts/checks/meta-lockstep.js": {
       "owner": "framework",
@@ -28174,8 +28174,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
       "kind": "md",
-      "sha256": "90ec5ab7a04e0dff027d2af7744500b78e6b23e0c466f9fa5e7ca27ce5adea03",
-      "installedSha": "90ec5ab7a04e0dff027d2af7744500b78e6b23e0c466f9fa5e7ca27ce5adea03"
+      "sha256": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
+      "installedSha": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
