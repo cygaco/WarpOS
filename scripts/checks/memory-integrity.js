@@ -220,6 +220,14 @@ function parseFrontmatter(text) {
   let metadataIndent = 0;
   let metadataChildIndent = -1; // indent of metadata's DIRECT children (first line inside fixes it)
   let metadataInvalid = false; // any NON-flat-mapping structure under metadata → type untrustworthy
+  // DUPLICATE load-bearing keys are AMBIGUOUS, not last-wins. A file carrying two top-level
+  // `metadata:` blocks (or two `type:` children) declares no single trustworthy type, and quietly
+  // keeping the last one picks a winner the author never wrote — the record then reads as validly
+  // typed. Fail CLOSED: a repeat marks the field ABSENT so invalid-frontmatter fires on it.
+  // (gauntlet r11 HIGH-2 — the shape that reached `type: feedback` through a duplicated block.)
+  const topLevelSeen = new Set();
+  const topLevelDup = new Set();
+  let metadataTypeSeen = false;
   for (const ln of fmLines) {
     if (ln.trim() === "") continue;
     const ind = indentOf(ln);
@@ -246,7 +254,26 @@ function parseFrontmatter(text) {
         metadataInvalid = true;
         continue;
       }
-      if (km[1] === "type") out.type = decodeScalar(km[2]);
+      // EVERY direct child must be a SIMPLE SCALAR — not just `type`. A value opening with a YAML
+      // flow/block indicator (`[` `{` `|` `>`) is a collection or a block scalar, so the block is
+      // not a flat `key: scalar` mapping and `type` is no more trustworthy than it is under a
+      // nested line. The old loop only ever LOOKED at `type:` and ignored every other child, so
+      // `metadata:\n  type: feedback\n  tags: []` parsed as validly typed. Checking the child
+      // shape (rather than enumerating known keys) closes the whole class, not this one key.
+      // (gauntlet r11 HIGH-2.)
+      const childVal = String(km[2] == null ? "" : km[2]).trim();
+      if (/^[[{|>]/.test(childVal)) {
+        metadataInvalid = true;
+        continue;
+      }
+      if (km[1] === "type") {
+        if (metadataTypeSeen) {
+          metadataInvalid = true; // a repeated `type:` — ambiguous, no trustworthy value
+          continue;
+        }
+        metadataTypeSeen = true;
+        out.type = decodeScalar(km[2]);
+      }
       continue; // stay inside metadata until a dedent
     }
 
@@ -254,6 +281,12 @@ function parseFrontmatter(text) {
     if (ind !== 0) continue; // top-level keys only; a nested `name:`/`description:` can't shadow
     const key = km[1];
     const val = km[2];
+    // Record repeats of the three load-bearing top-level keys BEFORE reading the value, so the
+    // tail below can null the ambiguous field out regardless of which occurrence won. (r11 HIGH-2.)
+    if (key === "metadata" || key === "name" || key === "description") {
+      if (topLevelSeen.has(key)) topLevelDup.add(key);
+      topLevelSeen.add(key);
+    }
     if (key === "metadata") {
       // `metadata:` opens a MAPPING PARENT only when it carries NO same-line value. A
       // `metadata: <scalar>` is by definition not a flat mapping, so it must NOT open a block:
@@ -272,8 +305,53 @@ function parseFrontmatter(text) {
     } else if (key === "name") out.name = decodeScalar(val);
     else if (key === "description") out.description = decodeScalar(val);
   }
+  // A DUPLICATED top-level key leaves the field ambiguous → treat it as ABSENT (fail-closed), so
+  // evaluate()/frontmatterProblems report the missing field instead of silently taking last-wins.
+  if (topLevelDup.has("metadata")) metadataInvalid = true;
+  if (topLevelDup.has("name")) out.name = null;
+  if (topLevelDup.has("description")) out.description = null;
   if (metadataInvalid) out.type = null; // a malformed (non-flat) metadata block → no trustworthy type
   return out;
+}
+
+/**
+ * frontmatterProblems(fm) — THE SINGLE SOURCE OF TRUTH for "are these frontmatter fields
+ * structurally valid for a memory file". Takes anything carrying the four parsed fields:
+ * a parseFrontmatter() result, or a store file record from readStore(). Returns [] when valid,
+ * else a list of { field, message } where `message` is a SUBJECT-LESS clause the caller prefixes
+ * with whatever it is talking about (`<dir>/<file> …` / `newBody …`).
+ *
+ * WHY THIS EXISTS (gauntlet r11 HIGH-2): memory-apply's `validateNewBody` used to MIRROR these
+ * rules in its own code, with a comment claiming the mirror and evaluate() "cannot disagree". A
+ * mirrored reimplementation is exactly the thing that drifts — and it did: parser shapes that
+ * produced a trusted `type` sailed through the pre-check. Both the PRE-check (memory-apply, before
+ * anything is written) and the POST-check (evaluate, over the store on disk) now CALL this one
+ * function, so there is no second copy left to drift out of step. Do not re-inline these rules.
+ */
+function frontmatterProblems(fm) {
+  const problems = [];
+  const f = fm || {};
+  if (!f.hasFrontmatter) {
+    problems.push({
+      field: "block",
+      message:
+        "has no YAML frontmatter block (expected a leading '---' … '---' block with name/description/metadata.type)",
+    });
+    return problems; // no fields to check without a block
+  }
+  if (!f.name || !String(f.name).trim()) {
+    problems.push({ field: "name", message: "frontmatter is missing a non-empty 'name' field" });
+  }
+  if (!f.description || !String(f.description).trim()) {
+    problems.push({ field: "description", message: "frontmatter is missing a non-empty 'description' field" });
+  }
+  if (!f.type || !VALID_TYPES.has(String(f.type).trim())) {
+    problems.push({
+      field: "metadata.type",
+      message: `frontmatter 'metadata.type' is absent or not one of {${[...VALID_TYPES].join(", ")}} (got '${f.type == null ? "" : f.type}')`,
+    });
+  }
+  return problems;
 }
 
 /** Extract `[[wikilinks]]` (name-slug references) from a body. */
@@ -380,46 +458,17 @@ function evaluate({ stores }) {
     }
 
     // 4) invalid-frontmatter (high, one finding per problem, message names the field).
+    // Routed through frontmatterProblems — the SAME function memory-apply's newBody pre-check
+    // calls — so the pre-check and this post-check cannot disagree about one file. (r11 HIGH-2.)
     for (const f of files) {
-      if (!f.hasFrontmatter) {
+      for (const p of frontmatterProblems(f)) {
         findings.push({
           severity: "high",
           check: NAME,
           kind: "invalid-frontmatter",
           dir,
           file: f.file,
-          message: `${dir}/${f.file} has no YAML frontmatter block (expected a leading '---' … '---' block with name/description/metadata.type).`,
-        });
-        continue; // no fields to check without a frontmatter block
-      }
-      if (!f.name || !String(f.name).trim()) {
-        findings.push({
-          severity: "high",
-          check: NAME,
-          kind: "invalid-frontmatter",
-          dir,
-          file: f.file,
-          message: `${dir}/${f.file} frontmatter is missing a non-empty 'name' field.`,
-        });
-      }
-      if (!f.description || !String(f.description).trim()) {
-        findings.push({
-          severity: "high",
-          check: NAME,
-          kind: "invalid-frontmatter",
-          dir,
-          file: f.file,
-          message: `${dir}/${f.file} frontmatter is missing a non-empty 'description' field.`,
-        });
-      }
-      if (!f.type || !VALID_TYPES.has(String(f.type).trim())) {
-        findings.push({
-          severity: "high",
-          check: NAME,
-          kind: "invalid-frontmatter",
-          dir,
-          file: f.file,
-          message: `${dir}/${f.file} frontmatter 'metadata.type' is absent or not one of {user, feedback, project, reference} (got '${f.type == null ? "" : f.type}').`,
+          message: `${dir}/${f.file} ${p.message}.`,
         });
       }
     }
@@ -745,6 +794,7 @@ module.exports = {
   run,
   parseIndex,
   parseFrontmatter,
+  frontmatterProblems,
   decodeScalar,
   isEmptyFieldValue,
   extractWikilinks,
