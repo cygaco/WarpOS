@@ -245,6 +245,45 @@ const MSGID_SHAPE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 //       is in-scope; a render-fidelity nuance within THIS ceiling is covered — ship the GATE, not the
 //       impossible full renderer. Codified by the r10 β-probe(a) test (a named entity != &beta; is not a
 //       citation) + the char-ref/Setext teeth. Cross-ref ED-275, ED-289, 562ba5b6, and the render-surface ED.
+//
+// ───────────── IN-SCANNER DISCLOSED DEFECTS (NOT ceiling items) ─────────────
+// These are IN-SCANNER BUGS, deliberately left open at pre-mvp on a report-only lint (β ESCALATE
+// 9f4e7b21-3c86-4d90-b7a5-1e2f8c60d43b + supplement 3b8c5f47-2e91-4a06-8d73-c15e9f2a4b60; operator
+// ruling 2026-07-28: SHIP r12 with disclosure). DISTINCT from the NORMALIZATION CEILING (a)-(h)
+// above, every member of which is blocked on a renderer or on external data. These two are NOT
+// renderer-blocked and a renderer would fix NEITHER — both are closable with machinery that already
+// exists in this file. Do NOT re-file them under (h): doing so would encode the exact error β
+// corrected, and the next reader would wrongly conclude a renderer is required.
+//   (D1) CITATION-BOUNDARY RECEIPT MINT (ED-296, SCANNER-LOGIC class). CITATION_RE's lookbehind
+//        `(?<![A-Za-z])` excludes ASCII LETTERS only — not digits, not id punctuation. A substring
+//        such as `betaruled` INSIDE a receipt id, preceded by a DIGIT, opens a SECOND citation
+//        inside the id token; the clause slice then truncates the receipt to its prefix, and where
+//        that prefix is exactly a real ledger id, the forged token resolves clean.
+//        Repro: `β DECIDE, msg_id real000betaruled` with ledger id `real000` -> scanned=2, hard=0,
+//        --enforce exit 0, while the rendered doc cites an id ABSENT from betaEvents.
+//        The exploit REQUIRES the real id to be a PREFIX of the forged token, which is why the
+//        `real000-betaruled` control correctly HARDs. Fix direction: widen the lookbehind to
+//        exclude digits and id punctuation, and validate the FULL id token against the raw span.
+//   (D2) FOLD-BOUNDARY DETECTION KILL (ED-297, MECHANISM class — the sole trigger of the r12
+//        terminal condition). The trailing `\b` and the leading lookbehind are asserted on the
+//        NFKD-FOLDED detection text, so the fold ITSELF can MINT an ASCII word character that
+//        destroys the boundary and hides the citation. `DECIDE` + U+00B9 (superscript one) folds to
+//        `DECIDE1`, where `\b` sees word-char-to-word-char; U+1D43 (modifier letter a) + β folds to
+//        `aβ`, where the lookbehind sees `a`. Repro: `β DECIDE<U+00B9> (msg_id fake123)` -> scanned=0,
+//        exit 0 — the forged receipt is never scanned AT ALL. Also reachable via `&#xB9;` and via
+//        U+FF3F -> `_`. Causation control: `β DECIDE±` -> scanned=1, so a NON-folding character does
+//        NOT hide it; the fold is the cause. Exhaustive sweep: 1,943 code points are non-word,
+//        non-stripped and non-space-mapped yet fold to an ASCII word char; 1,831 of them hide the
+//        citation. Fix direction: assert boundaries in RAW space via the existing norm->raw index
+//        map, not in folded space.
+//   BOUNDED EXPOSURE (why these ship rather than block): ZERO of the 1,831 hiding code points are
+//   invisible or blank-rendering by this module's own INVIS/SPACE_MAP classes — every one renders as
+//   a VISIBLE glyph. A human reading the rendered document sees something odd, unlike the r6 NUL and
+//   r7 bidi classes, which were silent. Combined with report-only default scope, /scan:full-only
+//   invocation (never CI), a gitignored advisory ledger, and a GREEN that means "receipt PRESENT,
+//   not authenticated" BY DESIGN (authenticity is ED-275), these are disclosed gaps rather than live
+//   holes. Live-corpus delta is 0 across the 60-doc corpus for every shape — adversarial-only, not a
+//   live regression. The mitigation travels WITH the finding: it is the first thing lost in a summary.
 const EMPHASIS_RE = /[*_`~]/u;                  // markdown emphasis/strikethrough delimiters (per code point)
 // ED-286 gauntlet r6 (qa BINDING HIGH): the "invisible" class the fold must close is BROADER than \p{M}+\p{Cf}
 // \u2014 \p{Cc} CONTROLS (U+0000 NUL / U+0007 / U+007F) and NON-\p{Cf} DEFAULT-IGNORABLES (U+2065 / U+FFF0 /
