@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.1.0",
-  "installedCommit": "c58cdb7173f3a6617f1e3aee1ec593ca5aacb728",
-  "installedAt": "2026-07-28T15:54:46.505Z",
+  "installedCommit": "956c2c79f4fdf3abda7576c6991b51f25b94b8ce",
+  "installedAt": "2026-07-28T21:49:03.896Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -904,8 +904,8 @@
       "dest": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
-      "currentHashAtInstall": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
+      "installedHash": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847",
+      "currentHashAtInstall": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847",
       "introducedIn": "0.0.0"
     },
     {
@@ -2674,8 +2674,8 @@
       "dest": ".claude/commands/scan/full.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d21a0e38decd702368651fd31e110ee87cb5348f9b20854e3a35209e23e4a6c5",
-      "currentHashAtInstall": "d21a0e38decd702368651fd31e110ee87cb5348f9b20854e3a35209e23e4a6c5",
+      "installedHash": "ef47f82fe7fcfd6d26ca75b79fda903264437124e4faee8fac3e8ba675ab0d21",
+      "currentHashAtInstall": "ef47f82fe7fcfd6d26ca75b79fda903264437124e4faee8fac3e8ba675ab0d21",
       "introducedIn": "0.0.0"
     },
     {
@@ -6669,6 +6669,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.beta-verdict-citation-receipt.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/beta-verdict-citation-receipt.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "d715ae6b76da0fba42f5e2d57344d5a7af53145636513db5dfbf316a457ca69e",
+      "currentHashAtInstall": "d715ae6b76da0fba42f5e2d57344d5a7af53145636513db5dfbf316a457ca69e",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.beta-verdict-citation-receipt.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/beta-verdict-citation-receipt.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "014303c154b43e000bee4868dd554563879f36af9c85b3ec4a5a9c2d73772c83",
+      "currentHashAtInstall": "014303c154b43e000bee4868dd554563879f36af9c85b3ec4a5a9c2d73772c83",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.brand-leak-scan.js",
       "kind": "check_tool",
       "dest": "scripts/checks/brand-leak-scan.js",
@@ -7079,6 +7099,26 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.ed-register-reality-drift.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/ed-register-reality-drift.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c9756baf37f7a1b48c4abcd04d3a2624fbab5a9442b255897d11f234e4b495dc",
+      "currentHashAtInstall": "c9756baf37f7a1b48c4abcd04d3a2624fbab5a9442b255897d11f234e4b495dc",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.ed-register-reality-drift.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/ed-register-reality-drift.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5ff1e748a8f3920621920570e3b5058cafc2e82c4ba9dc432fff08c2f80374a4",
+      "currentHashAtInstall": "5ff1e748a8f3920621920570e3b5058cafc2e82c4ba9dc432fff08c2f80374a4",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.ed060-sunset.js",
       "kind": "check_tool",
       "dest": "scripts/checks/ed060-sunset.js",
@@ -7474,8 +7514,8 @@
       "dest": "scripts/checks/memory-apply.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
-      "currentHashAtInstall": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
+      "installedHash": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217",
+      "currentHashAtInstall": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217",
       "introducedIn": "0.0.0"
     },
     {
@@ -7484,8 +7524,8 @@
       "dest": "scripts/checks/memory-apply.test.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
-      "currentHashAtInstall": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
+      "installedHash": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb",
+      "currentHashAtInstall": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb",
       "introducedIn": "0.0.0"
     },
     {
@@ -8506,6 +8546,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
       "currentHashAtInstall": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.enforcer-selftest-coverage.js",
+      "kind": "check_tool",
+      "dest": "scripts/enforcement/enforcer-selftest-coverage.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ff3240101be75efe8d2e39d510c5cea27a923505d21dbece53646f7fcf36d439",
+      "currentHashAtInstall": "ff3240101be75efe8d2e39d510c5cea27a923505d21dbece53646f7fcf36d439",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.enforcer-selftest-coverage.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/enforcement/enforcer-selftest-coverage.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "39d97cb273bdd84b5aa17e83ce7d5fca9f12cecdf6904dcc9566f46d1d62fc27",
+      "currentHashAtInstall": "39d97cb273bdd84b5aa17e83ce7d5fca9f12cecdf6904dcc9566f46d1d62fc27",
       "introducedIn": "0.0.0"
     },
     {

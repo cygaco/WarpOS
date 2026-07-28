@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 199,
+    "check_tool": 205,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1720,
+  "total": 1726,
   "assets": {
     "agent": [
       {
@@ -1145,7 +1145,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
         "dest": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
         "kind": "agent",
-        "sha256": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
+        "sha256": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -3271,7 +3271,7 @@
         "src": ".claude/commands/scan/full.md",
         "dest": ".claude/commands/scan/full.md",
         "kind": "skill",
-        "sha256": "d21a0e38decd702368651fd31e110ee87cb5348f9b20854e3a35209e23e4a6c5",
+        "sha256": "ef47f82fe7fcfd6d26ca75b79fda903264437124e4faee8fac3e8ba675ab0d21",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -8087,6 +8087,30 @@
         "replaces": null
       },
       {
+        "id": "check_tool.beta-verdict-citation-receipt.js",
+        "src": "scripts/checks/beta-verdict-citation-receipt.js",
+        "dest": "scripts/checks/beta-verdict-citation-receipt.js",
+        "kind": "check_tool",
+        "sha256": "d715ae6b76da0fba42f5e2d57344d5a7af53145636513db5dfbf316a457ca69e",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.beta-verdict-citation-receipt.test.js",
+        "src": "scripts/checks/beta-verdict-citation-receipt.test.js",
+        "dest": "scripts/checks/beta-verdict-citation-receipt.test.js",
+        "kind": "check_tool",
+        "sha256": "014303c154b43e000bee4868dd554563879f36af9c85b3ec4a5a9c2d73772c83",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.brand-leak-scan.js",
         "src": "scripts/checks/brand-leak-scan.js",
         "dest": "scripts/checks/brand-leak-scan.js",
@@ -8579,6 +8603,30 @@
         "replaces": null
       },
       {
+        "id": "check_tool.ed-register-reality-drift.js",
+        "src": "scripts/checks/ed-register-reality-drift.js",
+        "dest": "scripts/checks/ed-register-reality-drift.js",
+        "kind": "check_tool",
+        "sha256": "c9756baf37f7a1b48c4abcd04d3a2624fbab5a9442b255897d11f234e4b495dc",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.ed-register-reality-drift.test.js",
+        "src": "scripts/checks/ed-register-reality-drift.test.js",
+        "dest": "scripts/checks/ed-register-reality-drift.test.js",
+        "kind": "check_tool",
+        "sha256": "5ff1e748a8f3920621920570e3b5058cafc2e82c4ba9dc432fff08c2f80374a4",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.ed060-sunset.js",
         "src": "scripts/checks/ed060-sunset.js",
         "dest": "scripts/checks/ed060-sunset.js",
@@ -9051,7 +9099,7 @@
         "src": "scripts/checks/memory-apply.js",
         "dest": "scripts/checks/memory-apply.js",
         "kind": "check_tool",
-        "sha256": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
+        "sha256": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -9063,7 +9111,7 @@
         "src": "scripts/checks/memory-apply.test.js",
         "dest": "scripts/checks/memory-apply.test.js",
         "kind": "check_tool",
-        "sha256": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
+        "sha256": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -10288,6 +10336,30 @@
         "dest": "scripts/enforcement/ed-registry.test.js",
         "kind": "check_tool",
         "sha256": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.enforcer-selftest-coverage.js",
+        "src": "scripts/enforcement/enforcer-selftest-coverage.js",
+        "dest": "scripts/enforcement/enforcer-selftest-coverage.js",
+        "kind": "check_tool",
+        "sha256": "ff3240101be75efe8d2e39d510c5cea27a923505d21dbece53646f7fcf36d439",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.enforcer-selftest-coverage.test.js",
+        "src": "scripts/enforcement/enforcer-selftest-coverage.test.js",
+        "dest": "scripts/enforcement/enforcer-selftest-coverage.test.js",
+        "kind": "check_tool",
+        "sha256": "39d97cb273bdd84b5aa17e83ce7d5fca9f12cecdf6904dcc9566f46d1d62fc27",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

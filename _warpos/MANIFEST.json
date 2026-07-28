@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-28T15:54:46.750Z",
+  "generatedAt": "2026-07-28T21:49:09.275Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.1.0",
   "migrations": [],
@@ -9937,6 +9937,20 @@
       "sha256": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678",
       "installedSha": "aa3cfd70568cbc81651ea632e0ad84ac1bdd4eacca3681cd08c249ca26b1e678"
     },
+    "scripts/enforcement/enforcer-selftest-coverage.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/enforcer-selftest-coverage.js",
+      "sha256": "ff3240101be75efe8d2e39d510c5cea27a923505d21dbece53646f7fcf36d439",
+      "installedSha": "ff3240101be75efe8d2e39d510c5cea27a923505d21dbece53646f7fcf36d439"
+    },
+    "scripts/enforcement/enforcer-selftest-coverage.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/enforcement/enforcer-selftest-coverage.test.js",
+      "sha256": "39d97cb273bdd84b5aa17e83ce7d5fca9f12cecdf6904dcc9566f46d1d62fc27",
+      "installedSha": "39d97cb273bdd84b5aa17e83ce7d5fca9f12cecdf6904dcc9566f46d1d62fc27"
+    },
     "scripts/enforcement/next-ed-id.js": {
       "owner": "framework",
       "managed": true,
@@ -11449,6 +11463,20 @@
       "sha256": "23e923b2b37f81f73ec07223333a4a8992b6e6495eeb7088eed001b5e6074849",
       "installedSha": "23e923b2b37f81f73ec07223333a4a8992b6e6495eeb7088eed001b5e6074849"
     },
+    "scripts/checks/beta-verdict-citation-receipt.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/beta-verdict-citation-receipt.js",
+      "sha256": "d715ae6b76da0fba42f5e2d57344d5a7af53145636513db5dfbf316a457ca69e",
+      "installedSha": "d715ae6b76da0fba42f5e2d57344d5a7af53145636513db5dfbf316a457ca69e"
+    },
+    "scripts/checks/beta-verdict-citation-receipt.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/beta-verdict-citation-receipt.test.js",
+      "sha256": "014303c154b43e000bee4868dd554563879f36af9c85b3ec4a5a9c2d73772c83",
+      "installedSha": "014303c154b43e000bee4868dd554563879f36af9c85b3ec4a5a9c2d73772c83"
+    },
     "scripts/checks/brand-leak-scan.js": {
       "owner": "framework",
       "managed": true,
@@ -11736,6 +11764,20 @@
       "sha256": "5e998725b3a4e979a6386936df00acbec2d12a9d4b5f00715547448e3b5504e5",
       "installedSha": "5e998725b3a4e979a6386936df00acbec2d12a9d4b5f00715547448e3b5504e5"
     },
+    "scripts/checks/ed-register-reality-drift.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/ed-register-reality-drift.js",
+      "sha256": "c9756baf37f7a1b48c4abcd04d3a2624fbab5a9442b255897d11f234e4b495dc",
+      "installedSha": "c9756baf37f7a1b48c4abcd04d3a2624fbab5a9442b255897d11f234e4b495dc"
+    },
+    "scripts/checks/ed-register-reality-drift.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/ed-register-reality-drift.test.js",
+      "sha256": "5ff1e748a8f3920621920570e3b5058cafc2e82c4ba9dc432fff08c2f80374a4",
+      "installedSha": "5ff1e748a8f3920621920570e3b5058cafc2e82c4ba9dc432fff08c2f80374a4"
+    },
     "scripts/checks/ed060-sunset.js": {
       "owner": "framework",
       "managed": true,
@@ -11992,15 +12034,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.js",
-      "sha256": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56",
-      "installedSha": "ed38b49662079cb4c8e87cd4784535814779564bde98c0a0b03b1ff416008a56"
+      "sha256": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217",
+      "installedSha": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217"
     },
     "scripts/checks/memory-apply.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.test.js",
-      "sha256": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea",
-      "installedSha": "14da5852eb74eda18d5311f3913c6e908f2254ee0bbe877103a6c33d219a99ea"
+      "sha256": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb",
+      "installedSha": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb"
     },
     "scripts/checks/memory-integrity.js": {
       "owner": "framework",
@@ -26080,8 +26122,8 @@
       "managed": true,
       "source": ".claude/commands/scan/full.md",
       "kind": "md",
-      "sha256": "d21a0e38decd702368651fd31e110ee87cb5348f9b20854e3a35209e23e4a6c5",
-      "installedSha": "d21a0e38decd702368651fd31e110ee87cb5348f9b20854e3a35209e23e4a6c5"
+      "sha256": "ef47f82fe7fcfd6d26ca75b79fda903264437124e4faee8fac3e8ba675ab0d21",
+      "installedSha": "ef47f82fe7fcfd6d26ca75b79fda903264437124e4faee8fac3e8ba675ab0d21"
     },
     ".claude/commands/scan/greek-office-parity.md": {
       "owner": "framework",
@@ -28174,8 +28216,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
       "kind": "md",
-      "sha256": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5",
-      "installedSha": "5a76def01162bd5f9327c2530cb4f70039d391d30b14afa1b42deb23efade7c5"
+      "sha256": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847",
+      "installedSha": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
