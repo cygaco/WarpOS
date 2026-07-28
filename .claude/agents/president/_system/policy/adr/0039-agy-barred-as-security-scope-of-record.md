@@ -82,6 +82,35 @@ A related gauntlet-design lesson from the same round, recorded here because it b
 any single PASS is worth: the backend lane verified the rollback by direct module probes and
 passed, while the security lane found the defect it had not been briefed to look for. A lane
 briefed to check **enumerated paths** inherits the blind spots of the brief, and the brief is
-written by people who already believe the design is sound. At least one lane per gauntlet should
-be briefed to attack the **invariant** ("prove all-or-nothing can be violated", "prove a write can
-land outside the store") rather than to confirm a path list.
+written by people who already believe the design is sound.
+
+## Amendment (2026-07-28) — the unbriefed attack lane is REQUIRED, not advisory
+
+β DECIDE B/0.90, msg_id `4e8b1d63-7a05-4c29-9e17-2b6f0a5c8d34`, `open_adr: true`.
+
+The paragraph above originally said one lane "should" be briefed to attack invariants. The very
+next gauntlet produced a controlled comparison that settles it, so it is now a **requirement**:
+
+> **Every gauntlet round MUST brief at least one lane on invariants to falsify, with NO fix
+> enumeration and NO change list.**
+
+**The evidence.** On SP-20260725-002 r11, one commit, three lanes: backend and qa were given the
+full five-item change list and both returned PASS with zero findings. The security lane was given
+three invariants and no change list, and falsified **all three** — including a CRITICAL in which
+the round's own fix mechanism was hardlink-escapable at its temp path, producing an out-of-store
+write with `{ok:true, applied:true}` and a clean post-check.
+
+That is a controlled comparison rather than an anecdote: same code, same commit, same provider,
+differing only in how the lanes were briefed. The blind-spot mechanism this ADR had just recorded
+reproduced itself one round after being written down. Backend's report was accurate in every
+word — it verified the temp was created inside the store, renamed over the target, and cleaned up
+on failure. It never asked whether the temp *path* could be pre-created as a hardlink, because
+that was not on the list it was given.
+
+**Related principle, from the same verdict**, recorded here because it generalizes past this
+sprint: *a boolean a caller trusts to mean "the world is in state X" must be computed by
+OBSERVING the world, not by reaching the end of the code that was supposed to establish it.*
+Scoped to claims consumed as safety guarantees, not to every return value. The instance was
+`rolledBack: true`, which had asserted an all-or-nothing guarantee it did not hold in three
+consecutive rounds; the remedy is to re-read the restored bytes and compare, so the report is an
+observation rather than a self-attestation.
