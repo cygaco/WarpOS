@@ -473,6 +473,23 @@ function assertUnchanged(dir, before, why) {
   }
 }
 
+// Run `body()` with the detector's post-check replaced by `fn`. The POST-CHECK is a real branch of
+// run() — a post-check that errors or reports findings routes to the rollback — but since r12 the
+// PROSPECTIVE pre-check refuses store-dirtying plans before they ever mutate, so a dirty store can
+// no longer be used to reach the rollback. Substituting the post-check reaches the same branch
+// deterministically and on every platform, and touches NOTHING in the production module: the
+// projection calls mem.readStore/mem.evaluate, never mem.run.
+function withPostCheck(fn, body) {
+  const memmod = require("./memory-integrity.js");
+  const orig = memmod.run;
+  memmod.run = fn;
+  try {
+    return body();
+  } finally {
+    memmod.run = orig;
+  }
+}
+
 ok("r10 PURE: validateNewBody accepts a valid memory file and names every structural defect", () => {
   assert.deepStrictEqual(
     mod.validateNewBody("---\nname: a-slug\ndescription: d\nmetadata:\n  type: feedback\n---\nbody\n"),
@@ -526,12 +543,13 @@ ok("r10 PLANTED (half a): the SAME invalid newBody is refused in DRY-RUN too (no
   assertUnchanged(store, before, "dry-run never mutates");
 });
 
-// PLANTED RED — proves HALF TWO (rollback on a dirty post-check). This body PASSES per-file
-// pre-validation (name + description + valid type), so half (a) cannot catch it; it is only
-// dirty relative to the REST of the store — its name-slug collides with keep_one.md's. Before the
-// fix this returned ok:false/applied:true and left the duplicate slug on disk.
-ok("r10 PLANTED (half b): a correct that passes pre-validation but DIRTIES the store (duplicate name-slug) is ROLLED BACK", () => {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-rollback-"));
+// PLANTED RED — the r12 MEDIUM fixture. This body PASSES per-file pre-validation (name +
+// description + valid type), so validateNewBody cannot catch it; it is dirty only relative to the
+// REST of the store — its name-slug collides with keep_one.md's. r10 caught it AFTER mutating and
+// rolled back; r12 refuses it BEFORE mutating, because the pre-check now runs the detector over
+// the store state the plan would produce instead of over the body alone.
+ok("r12 MEDIUM: a correct that passes per-file validation but DIRTIES the store (duplicate name-slug) is refused BEFORE any mutation", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-prospect-"));
   const store = path.join(base, "agent");
   seedStore(store); // keep_one.md → name: keep-one ; drop_one.md → name: drop-one
   const before = snapshot(store);
@@ -541,20 +559,48 @@ ok("r10 PLANTED (half b): a correct that passes pre-validation but DIRTIES the s
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "TRACKER shows the slug was merged", newBody: collide }],
   });
   const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  assert.strictEqual(r.status, 2, `a dirty post-check must fail closed (exit 2), got ${r.status} :: ${r.stderr}`);
+  assert.strictEqual(r.status, 2, `a store-dirtying plan must fail closed (exit 2), got ${r.status} :: ${r.stderr}`);
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.fatal, true);
-  assert.strictEqual(out.rolledBack, true, "the rollback ran");
-  assert.strictEqual(out.applied, false, "rolled back cleanly → nothing net-applied");
+  assert.strictEqual(out.applied, false, "nothing was applied");
+  // THE claim: refused BEFORE the mutation, so there was no rollback to run at all.
+  assert.strictEqual(out.rolledBack, undefined, "nothing was mutated, so no rollback should have been needed");
   assert.ok(
-    (out.postFindings || []).some((f) => f.kind === "duplicate-name-slug"),
-    `the store-wide finding is reported: ${JSON.stringify(out.postFindings)}`,
+    (out.prospectiveFindings || []).some((f) => f.kind === "duplicate-name-slug"),
+    `the store-wide finding is reported from the PROJECTED store: ${JSON.stringify(out.prospectiveFindings)}`,
   );
-  assertUnchanged(store, before, "dirty post-check rolled back");
-  // Asserted LAST, on purpose: the rollback above is what this test proves, and it must fail for
-  // THAT reason against pre-fix code — not because this newer export is missing. This line is the
-  // supporting claim that half (a) alone could never have caught the case.
-  assert.deepStrictEqual(mod.validateNewBody(collide), [], "the body is per-file VALID — half (a) cannot catch this");
+  assert.ok(
+    (out.violations || []).some((x) => /duplicate-name-slug/.test(x.reason)),
+    `the refusal names the collision: ${JSON.stringify(out.violations)}`,
+  );
+  assertUnchanged(store, before, "store-dirtying plan refused pre-mutation");
+  // Asserted LAST, on purpose: the pre-mutation refusal above is what this test proves. This line
+  // is the supporting claim — the body IS per-file valid, so the body-level gate cannot see it.
+  assert.deepStrictEqual(mod.validateNewBody(collide), [], "the body is per-file VALID — the body-level gate cannot catch this");
+});
+
+// The post-check is now the BACKSTOP rather than the gate for this class, and it must still work:
+// if anything the projection did not predict makes the store dirty, the mutations are rolled back.
+ok("r12 MEDIUM: the post-check backstop still rolls back a store the projection did not predict", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-backstop-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
+  });
+  // A post-check that reports a finding the projection could not have seen (a concurrent writer,
+  // a platform surprise). The plan itself is clean, so it clears every pre-mutation gate.
+  const res = withPostCheck(
+    () => ({ ok: false, fatal: false, findings: [{ severity: "high", check: "memory-integrity", kind: "duplicate-name-slug", dir: store, message: "a finding the projection did not predict" }], warnings: [] }),
+    () => mod.run({ plan, apply: true }),
+  );
+  assert.strictEqual(res.fatal, true, "a dirty post-check still fails closed");
+  assert.strictEqual(res.rolledBack, true, "the backstop rolled the mutations back");
+  assert.strictEqual(res.applied, false, "rolled back cleanly → nothing net-applied");
+  assert.ok((res.postFindings || []).some((f) => f.kind === "duplicate-name-slug"), "the post-check finding is reported");
+  assertUnchanged(store, before, "post-check backstop rolled back");
 });
 
 ok("r10 NO-REGRESSION: a correct with a VALID body still applies cleanly and leaves the store clean", () => {
@@ -576,7 +622,7 @@ ok("r10 NO-REGRESSION: a correct with a VALID body still applies cleanly and lea
   assert.ok(/drop_one\.md/.test(fs.readFileSync(path.join(store, "MEMORY.md"), "utf8")), "correct leaves the index alone");
 });
 
-ok("r10: a MIXED plan is all-or-nothing — one dirty-making correct rolls back the sibling DELETE too", () => {
+ok("r10/r12: a MIXED plan is all-or-nothing — one dirty-making correct blocks the sibling DELETE too", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-mixed-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -593,9 +639,16 @@ ok("r10: a MIXED plan is all-or-nothing — one dirty-making correct rolls back 
   const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "the whole plan fails closed");
   const out = JSON.parse(r.stdout);
-  assert.strictEqual(out.rolledBack, true);
-  assert.ok(fs.existsSync(path.join(store, "third.md")), "the sibling delete was undone");
-  assertUnchanged(store, before, "mixed plan rolled back whole (index re-sync included)");
+  assert.strictEqual(out.applied, false, "nothing net-applied");
+  // r12: the collision is now seen in the PROJECTED store, so the whole plan — the sound delete
+  // included — is refused before anything is written, rather than applied and then undone.
+  assert.strictEqual(out.rolledBack, undefined, "refused pre-mutation, so no rollback was needed");
+  assert.ok(
+    (out.prospectiveFindings || []).some((f) => f.kind === "duplicate-name-slug"),
+    `the projection names the collision: ${JSON.stringify(out.prospectiveFindings)}`,
+  );
+  assert.ok(fs.existsSync(path.join(store, "third.md")), "the sibling delete never happened");
+  assertUnchanged(store, before, "mixed plan refused whole (index re-sync included)");
 });
 
 // ── gauntlet r11 HIGH-1: a hardlinked target cannot reach OUTSIDE the store ───
@@ -686,18 +739,21 @@ ok("r11 HIGH-1 END-TO-END: a valid `correct` plan on a HARDLINKED file is refuse
 // reported over a MEMORY.md whose bytes had changed. MEMORY.md is human-edited, so this is live.
 // The assertion below is a BUFFER comparison on purpose — comparing strings would decode both
 // sides and hide exactly the defect under test. RED against 16bcf623.
+// r12 note on the TRIGGER (the claim is unchanged): these used to reach the rollback by seeding a
+// structurally broken `bad.md` so the POST-check found the store dirty. Since r12 the PROSPECTIVE
+// pre-check refuses that plan before it mutates, so the rollback is now reached the way it will be
+// reached in the field — a post-check that could not certify the store — via withPostCheck.
 ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it holds invalid UTF-8", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-utf8-"));
   const store = path.join(base, "agent");
   fs.mkdirSync(store, { recursive: true });
   const mk = (slug) => `---\nname: ${slug}\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n`;
   fs.writeFileSync(path.join(store, "drop_one.md"), mk("drop-one"));
-  // `bad.md` has NO frontmatter → the post-check finds it dirty → the apply is rolled back.
-  fs.writeFileSync(path.join(store, "bad.md"), "no frontmatter here\n");
+  fs.writeFileSync(path.join(store, "keep_one.md"), mk("keep-one"));
   // MEMORY.md carries a LONE 0xFF — a byte that is not valid UTF-8 and cannot survive a
   // decode→re-encode round trip. It sits in a hook, so the index still parses.
   const indexBytes = Buffer.concat([
-    Buffer.from("- [Drop One](drop_one.md) — a memory\n- [Bad](bad.md) — hook ", "utf8"),
+    Buffer.from("- [Drop One](drop_one.md) — a memory\n- [Keep One](keep_one.md) — hook ", "utf8"),
     Buffer.from([0xff]),
     Buffer.from("\n", "utf8"),
   ]);
@@ -718,10 +774,14 @@ ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it hold
       },
     ],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  assert.strictEqual(r.status, 2, "the dirty post-check must refuse the apply");
-  const out = JSON.parse(r.stdout);
-  assert.strictEqual(out.rolledBack, true, "the transaction reports a clean rollback");
+  const res = withPostCheck(
+    () => {
+      throw new Error("simulated: the post-check could not verify the store");
+    },
+    () => mod.run({ plan, apply: true }),
+  );
+  assert.strictEqual(res.fatal, true, "an unverifiable post-check must refuse the apply");
+  assert.strictEqual(res.rolledBack, true, "the transaction reports a clean rollback");
 
   const after = fs.readFileSync(path.join(store, "MEMORY.md"));
   assert.ok(
@@ -739,9 +799,8 @@ ok("r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollbac
     path.join(store, "drop_one.md"),
     "---\nname: drop-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n",
   );
-  fs.writeFileSync(path.join(store, "bad.md"), "no frontmatter here\n"); // forces a dirty post-check
   const indexBytes = Buffer.concat([
-    Buffer.from("- [Drop One](drop_one.md) — a memory\n- [Bad](bad.md) — hook ", "utf8"),
+    Buffer.from("- [Drop One](drop_one.md) — a memory hook ", "utf8"),
     Buffer.from([0xff]),
     Buffer.from("\n", "utf8"),
   ]);
@@ -758,9 +817,15 @@ ok("r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollbac
       },
     ],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  assert.strictEqual(r.status, 2);
-  assert.strictEqual(JSON.parse(r.stdout).rolledBack, true);
+  // A correct-only plan never writes MEMORY.md, so this proves the backup captures it anyway.
+  const res = withPostCheck(
+    () => {
+      throw new Error("simulated: the post-check could not verify the store");
+    },
+    () => mod.run({ plan, apply: true }),
+  );
+  assert.strictEqual(res.fatal, true);
+  assert.strictEqual(res.rolledBack, true);
   assert.ok(fs.readFileSync(path.join(store, "MEMORY.md")).equals(indexBytes), "MEMORY.md is byte-identical");
   assert.ok(
     !fs.readdirSync(store).some((n) => n.endsWith(".tmp")),
@@ -879,6 +944,415 @@ ok("r11 HIGH-2 LIVE: an --apply whose newBody carries a duplicated metadata bloc
     `expected a newBody violation, got ${JSON.stringify(out.violations)}`,
   );
   assertUnchanged(store, before, "a refused newBody leaves the store untouched");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r12 CRITICAL — the temp-and-rename mechanism is no longer escapable
+//
+// r11 moved the write off the TARGET's inode (rename replaces a directory entry). It left the
+// write's SOURCE unguarded: the temp was created by `fs.writeFileSync(tmpAbs, data)` — a write BY
+// PATH — at `.memory-apply.<pid>.<counter>.tmp`, a name built from two ENUMERABLE values. A
+// hardlink pre-created at that path was followed exactly the way the target's used to be, so an
+// ordinary `correct` plan overwrote an out-of-store file and still reported {ok:true,
+// applied:true} with a clean post-check.
+//
+// The layers are tested SEPARATELY on purpose, so a later reader can see which one is the control:
+//   • CONTROL      — `wx` exclusive create + a write through the DESCRIPTOR (the two tests below);
+//   • depth        — an unguessable temp name;
+//   • belt+braces  — nlink === 1 on the fresh descriptor;
+//   • hygiene ONLY — the stray-temp refusal. Tested LAST and labelled, because it is NOT what
+//     makes the escape impossible; the mechanism tests above hold with no scan in sight.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const VALID_BODY = "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNew body.\n";
+
+// Plant a hardlink to `outside` at EVERY temp name the pre-fix generator could pick in THIS
+// process (pid is fixed; the counter is monotonic and shared across this file's earlier writes).
+// Returns false if the platform has no hardlinks.
+function plantEnumerableTempLinks(store, outside) {
+  for (let i = 0; i < 64; i++) {
+    const p = path.join(store, `.memory-apply.${process.pid}.${i}.tmp`);
+    try {
+      fs.linkSync(outside, p);
+    } catch (e) {
+      if (i === 0) {
+        console.log(`      (skipped: hardlinks unsupported here — ${e.code})`);
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+ok("r12 CRITICAL CONTROL: the temp is created O_EXCL ('wx') and written through the DESCRIPTOR, never by path", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-fd-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const target = path.join(store, "drop_one.md");
+
+  const origOpen = fs.openSync;
+  const origWrite = fs.writeFileSync;
+  const origFstat = fs.fstatSync;
+  const opens = [];
+  const writeTargets = [];
+  const fstatted = [];
+  fs.openSync = (p, flags, mode) => {
+    const fd = origOpen(p, flags, mode);
+    opens.push({ p, flags, fd });
+    return fd;
+  };
+  fs.writeFileSync = (dest, data, o) => {
+    writeTargets.push(dest);
+    return origWrite(dest, data, o);
+  };
+  fs.fstatSync = (fd, o) => {
+    fstatted.push(fd);
+    return origFstat(fd, o);
+  };
+  try {
+    mod.atomicWriteInStore(store, target, "NEW BODY\n");
+  } finally {
+    fs.openSync = origOpen;
+    fs.writeFileSync = origWrite;
+    fs.fstatSync = origFstat;
+  }
+
+  assert.strictEqual(opens.length, 1, `exactly one temp open, got ${opens.length}`);
+  assert.strictEqual(opens[0].flags, "wx", "the temp must be created O_CREAT|O_EXCL|O_WRONLY");
+  assert.ok(writeTargets.length >= 1, "the data was written");
+  for (const w of writeTargets) {
+    assert.strictEqual(
+      typeof w,
+      "number",
+      `the write must target a file DESCRIPTOR, got ${JSON.stringify(w)} — a write BY PATH after the exclusive open re-resolves the name and reopens the exact TOCTOU window the open closed`,
+    );
+  }
+  assert.strictEqual(writeTargets[0], opens[0].fd, "the write goes to the descriptor the exclusive open returned");
+  assert.ok(fstatted.includes(opens[0].fd), "nlink is checked on that same descriptor (belt-and-braces)");
+  assert.strictEqual(fs.readFileSync(target, "utf8"), "NEW BODY\n", "the target still gets the new bytes");
+});
+
+ok("r12 CRITICAL MECHANISM: a hardlink planted at every ENUMERABLE temp name cannot capture the write", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-hltmp-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+  if (!plantEnumerableTempLinks(store, outside)) return;
+
+  const target = path.join(store, "drop_one.md");
+  mod.atomicWriteInStore(store, target, "REPLACEMENT BODY\n");
+
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be byte-unchanged — a write BY PATH to a pre-created temp follows the planted hardlink",
+  );
+  assert.strictEqual(fs.readFileSync(target, "utf8"), "REPLACEMENT BODY\n", "the in-store target got the new bytes");
+});
+
+ok("r12 CRITICAL END-TO-END (correct): a planted temp hardlink cannot reach an out-of-store file", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-e2e-corr-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+  if (!plantEnumerableTempLinks(store, outside)) return;
+
+  // A fully ORDINARY plan: contradicted, real evidence, structurally valid body, a target with one
+  // directory entry. Nothing about the plan or the target is suspicious.
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "grep shows the claim is false", newBody: VALID_BODY }],
+  });
+  const res = mod.run({ plan, apply: true }); // IN-PROCESS so process.pid matches the planted names
+
+  // Asserted FIRST: the escape itself. Pre-fix this run returned {ok:true, applied:true} with a
+  // clean post-check while the out-of-store file had been overwritten.
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be BYTE-UNCHANGED",
+  );
+  assert.strictEqual(res.fatal, true, "the apply must fail closed");
+  assert.strictEqual(res.applied, false, "nothing was applied");
+});
+
+ok("r12 CRITICAL END-TO-END (delete/index): the index re-sync cannot reach an out-of-store file either", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-e2e-del-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+  if (!plantEnumerableTempLinks(store, outside)) return;
+
+  // The delete path writes MEMORY.md through the SAME writer, so it reproduces independently.
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER shows this fact was reversed" }],
+  });
+  const res = mod.run({ plan, apply: true });
+
+  // Asserted FIRST: the escape itself (pre-fix the outside file came back truncated/rewritten).
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be BYTE-UNCHANGED (the index re-sync used to write through it)",
+  );
+  assert.strictEqual(res.fatal, true, "the apply must fail closed");
+  assert.strictEqual(res.applied, false, "nothing was applied");
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the delete did not happen");
+});
+
+ok("r12 CRITICAL: EEXIST ABORTS the write fail-closed — it is NEVER retried under a fresh name", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-eexist-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const target = path.join(store, "drop_one.md");
+  const before = fs.readFileSync(target);
+
+  const origOpen = fs.openSync;
+  let tempOpens = 0;
+  fs.openSync = (p, flags, mode) => {
+    if (typeof p === "string" && path.basename(p).startsWith(mod.TMP_PREFIX)) {
+      tempOpens++;
+      throw Object.assign(new Error("EEXIST: file already exists, open"), { code: "EEXIST" });
+    }
+    return origOpen(p, flags, mode);
+  };
+  let threw = null;
+  try {
+    mod.atomicWriteInStore(store, target, "SHOULD NEVER LAND\n");
+  } catch (e) {
+    threw = e;
+  } finally {
+    fs.openSync = origOpen;
+  }
+
+  assert.ok(threw, "the write must abort, not swallow the collision");
+  assert.strictEqual(threw.code, "EEXIST", `the abort keeps the code: ${threw && threw.message}`);
+  assert.strictEqual(
+    tempOpens,
+    1,
+    `exactly ONE open attempt — a retry under a fresh name would mask an attack in progress (got ${tempOpens})`,
+  );
+  assert.ok(fs.readFileSync(target).equals(before), "the target is untouched");
+  assert.ok(
+    !fs.readdirSync(store).some((n) => n.startsWith(mod.TMP_PREFIX)),
+    "no temp is left behind by the aborted write",
+  );
+});
+
+ok("r12 CRITICAL depth: temp names are unguessable (crypto-random) and never repeat", () => {
+  assert.strictEqual(typeof mod.tempFileName, "function", "the temp name has ONE generator");
+  const names = new Set();
+  for (let i = 0; i < 500; i++) {
+    const n = mod.tempFileName();
+    assert.ok(/^\.memory-apply\.[0-9a-f]{32}\.tmp$/.test(n), `unexpected temp-name shape: ${n}`);
+    assert.ok(!n.includes(`.${process.pid}.`), "the pid must not appear in the name — it is enumerable");
+    names.add(n);
+  }
+  assert.strictEqual(names.size, 500, "no repeats");
+});
+
+ok("r12 HYGIENE (explicitly NOT the control): a stray apply temp in the store refuses the plan", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-stray-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  fs.writeFileSync(path.join(store, ".memory-apply.leftover-from-a-crash.tmp"), "junk\n");
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "e", newBody: VALID_BODY }],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "a store in an unexplained state is not written into");
+  const out = JSON.parse(r.stdout);
+  assert.ok(
+    (out.violations || []).some((v) => /stray apply temp/.test(v.reason)),
+    `the refusal names the stray temp: ${JSON.stringify(out.violations)}`,
+  );
+  assertUnchanged(store, before, "stray temp refused");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r12 HIGH — `rolledBack` is an OBSERVATION of the store, not a report
+// from the code that was supposed to restore it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("r12 HIGH: a rollback whose restore SILENTLY leaves wrong bytes reports rolledBack:false + ROLLBACK INCOMPLETE", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-rbverify-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const dropAbs = path.join(store, "drop_one.md");
+  const dropBefore = fs.readFileSync(dropAbs);
+  const newDrop = "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW DROP.\n";
+  const newKeep = "---\nname: keep-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW KEEP.\n";
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "e1", newBody: newDrop },
+      { file: "keep_one.md", classification: "contradicted", action: "correct", evidence: "e2", newBody: newKeep },
+    ],
+  });
+
+  // Two sabotages, both in the RENAME — deliberately NOT in the temp writer, because this fixture
+  // tests the VERIFICATION and must fail just as loudly with the writer fixed:
+  //   rename #2 (forward, keep_one) THROWS  → the mid-flight fault that triggers the rollback;
+  //   rename #3 (rollback, drop_one) silently does NOTHING → the restore "succeeds" and returns
+  //     normally while drop_one.md keeps its mutated bytes. That is the exact shape all three
+  //     previous rounds produced by three different mechanisms.
+  const origRename = fs.renameSync;
+  let renames = 0;
+  fs.renameSync = (from, to) => {
+    renames++;
+    if (renames === 2) throw Object.assign(new Error("EIO: simulated mid-flight fault"), { code: "EIO" });
+    if (renames > 2 && path.basename(String(to)) === "drop_one.md") {
+      try {
+        fs.unlinkSync(from); // drop the temp and pretend the restore landed
+      } catch {
+        /* best-effort */
+      }
+      return undefined;
+    }
+    return origRename(from, to);
+  };
+  let res;
+  try {
+    res = mod.run({ plan, apply: true });
+  } finally {
+    fs.renameSync = origRename;
+  }
+
+  assert.strictEqual(res.fatal, true, "the apply fails closed");
+  assert.strictEqual(res.rolledBack, false, "a restore that did not restore must NOT be reported as a rollback");
+  assert.strictEqual(res.rollbackVerified, false, "the verification is what caught it");
+  assert.ok(
+    (res.problems || []).some((p) => /ROLLBACK INCOMPLETE/.test(p)),
+    `the operator is told the store is not as it was: ${JSON.stringify(res.problems)}`,
+  );
+  assert.ok(
+    (res.changedFilesAfterRollback || []).includes("drop_one.md"),
+    `the unrestored file is NAMED: ${JSON.stringify(res.changedFilesAfterRollback)}`,
+  );
+  assert.strictEqual(res.applied, true, "an incomplete rollback leaves a residual change — say so");
+  // The report is TRUE, not merely cautious: the store really is not byte-identical.
+  assert.ok(
+    !fs.readFileSync(dropAbs).equals(dropBefore),
+    "precondition of the claim: drop_one.md really does still hold its mutated bytes",
+  );
+});
+
+ok("r12 HIGH: a genuine rollback still reports rolledBack:true — after RE-READING every captured path", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-rbok-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "reversed" },
+      { file: "keep_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody: "---\nname: keep-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW.\n" },
+    ],
+  });
+  const res = withPostCheck(
+    () => {
+      throw new Error("simulated: the post-check could not verify the store");
+    },
+    () => mod.run({ plan, apply: true }),
+  );
+  assert.strictEqual(res.rolledBack, true, "the restore really did restore");
+  assert.strictEqual(res.rollbackVerified, true, "and the store was re-read to prove it");
+  assert.deepStrictEqual(res.changedFilesAfterRollback, [], "nothing differs from the captured bytes");
+  assert.ok(
+    (res.problems || []).some((p) => /RE-READ/.test(p)),
+    "the success message states that the claim was observed, not assumed",
+  );
+  assertUnchanged(store, before, "verified rollback");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r12 MEDIUM — the pre-check and the post-check are ONE computation
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("r12 MEDIUM: the PROJECTED store is exactly what the detector reads after the apply", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-proj-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  fs.writeFileSync(path.join(store, "third.md"), "---\nname: third-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n");
+  fs.appendFileSync(path.join(store, "MEMORY.md"), "- [Third](third.md) — a memory\n");
+  const indexText = fs.readFileSync(path.join(store, "MEMORY.md"), "utf8");
+
+  const newBody = "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: project\n---\n\nCORRECTED [[keep-one]].\n";
+  const mutations = [
+    { file: "third.md", canonicalFile: "third.md", action: "delete" },
+    { file: "drop_one.md", canonicalFile: "drop_one.md", action: "correct", newBody },
+  ];
+  const projected = mod.projectStoreState(store, mutations, indexText);
+
+  // Now really apply the same ops and read the store back off disk.
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "third.md", classification: "contradicted", action: "delete", evidence: "reversed" },
+      { file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody },
+    ],
+  });
+  const res = mod.run({ plan, apply: true });
+  assert.strictEqual(res.applied, true, `the plan is clean and should apply: ${JSON.stringify(res.problems || res.violations)}`);
+
+  const memmod = require("./memory-integrity.js");
+  const actual = memmod.readStore(store, projected.dir, memmod.DEFAULT_MAX_INDEX_LINES);
+  assert.deepStrictEqual(projected, actual, "the projection is the post-apply store record, not an approximation of it");
+  assert.deepStrictEqual(
+    memmod.evaluate({ stores: [projected] }),
+    memmod.evaluate({ stores: [actual] }),
+    "so the pre-check and the post-check are the SAME computation over the SAME state",
+  );
+});
+
+ok("r12 MEDIUM: an ALREADY-dirty store is refused BEFORE mutation, not applied and rolled back", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-dirty-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  // An orphan: present on disk, referenced by no index line. The plan's own ops are sound.
+  fs.writeFileSync(path.join(store, "orphan.md"), "---\nname: orphan-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n");
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "the plan must leave the store fully clean — fail-closed otherwise");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.applied, false);
+  assert.strictEqual(out.rolledBack, undefined, "refused pre-mutation — nothing to roll back");
+  assert.ok(
+    (out.prospectiveFindings || []).some((f) => f.kind === "orphan-memory-file"),
+    `the projection names the pre-existing finding: ${JSON.stringify(out.prospectiveFindings)}`,
+  );
+  assertUnchanged(store, before, "already-dirty store refused pre-mutation");
+});
+
+ok("r12 MEDIUM: the DRY-RUN clears the same gates as --apply (no gate/apply divergence)", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-dry-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const collide = "---\nname: keep-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nCOLLIDES.\n";
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "merged", newBody: collide }],
+  });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 2, "a dry-run must not promise a correct that --apply would refuse");
+  const out = JSON.parse(r.stdout);
+  assert.strictEqual(out.dryRun, true, "it is still reported as a dry-run");
+  assert.ok(
+    (out.prospectiveFindings || []).some((f) => f.kind === "duplicate-name-slug"),
+    `the dry-run sees the store-wide consequence too: ${JSON.stringify(out.prospectiveFindings)}`,
+  );
+  assertUnchanged(store, before, "dry-run never mutates");
 });
 
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);

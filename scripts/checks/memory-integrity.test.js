@@ -830,5 +830,105 @@ ok("r11 LOW: a PLANTED undocumented emit site also turns the taxonomy check RED 
   assert.ok(d.onlyInCode.includes("undocumented-kind"), "an emitted-but-undocumented kind must be detected");
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r12 — the PROSPECTIVE-STATE contract.
+//
+// memory-apply's pre-check no longer reasons about a replacement BODY; it builds the store record
+// this detector WOULD read after a plan is applied and runs evaluate() over it, so that its
+// pre-check and its post-check are one computation rather than two that must agree. That makes
+// three properties of THIS module load-bearing for a caller, and a silent change to any of them
+// would re-open the r12 MEDIUM without anything here going red:
+//   1. evaluate() is PURE over a store record — it must never reach for the disk;
+//   2. a HAND-BUILT record with readStore()'s field shape evaluates identically to a read one;
+//   3. index state is part of that record, so a caller must model index effects to get the same
+//      verdict the post-check will reach.
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("r12 CONTRACT: evaluate() is PURE over a store record — no disk, even for a dir that does not exist", () => {
+  const res = mod.evaluate({
+    stores: [
+      {
+        dir: path.join(os.tmpdir(), "no-such-store-" + Date.now()),
+        indexEntries: [{ line: 1, title: "A", target: "a.md", hook: "h" }],
+        indexMalformed: [],
+        indexLineCount: 1,
+        files: [{ file: "a.md", hasFrontmatter: true, name: "a-slug", description: "d", type: "feedback", wikilinks: [] }],
+      },
+    ],
+  });
+  assert.deepStrictEqual(res.findings, [], "a well-formed synthetic store is clean without any file existing");
+  assert.deepStrictEqual(res.warnings, [], "and raises no warnings either");
+});
+
+ok("r12 CONTRACT: a HAND-BUILT record with readStore's field shape evaluates identically to a read one", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "memint-r12-shape-"));
+  const mk = (slug) => `---\nname: ${slug}\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody with a [[${slug}]] link.\n`;
+  fs.writeFileSync(path.join(dir, "a.md"), mk("a-slug"));
+  fs.writeFileSync(path.join(dir, "b.md"), mk("b-slug"));
+  fs.writeFileSync(path.join(dir, "MEMORY.md"), "- [A](a.md) — h\n- [B](b.md) — h\n");
+
+  const read = mod.readStore(dir, "store", mod.DEFAULT_MAX_INDEX_LINES);
+  const built = {
+    dir: "store",
+    maxIndexLines: mod.DEFAULT_MAX_INDEX_LINES,
+    ...(() => {
+      const { entries, lineCount, malformed } = mod.parseIndex("- [A](a.md) — h\n- [B](b.md) — h\n");
+      return { indexEntries: entries, indexMalformed: malformed, indexLineCount: lineCount };
+    })(),
+    files: ["a.md", "b.md"].map((file) => {
+      const fm = mod.parseFrontmatter(mk(file === "a.md" ? "a-slug" : "b-slug"));
+      return {
+        file,
+        hasFrontmatter: fm.hasFrontmatter,
+        name: fm.name,
+        description: fm.description,
+        type: fm.type,
+        wikilinks: mod.extractWikilinks(fm.body),
+      };
+    }),
+  };
+  assert.deepStrictEqual(built, read, "a record built from the exported parsers IS the record readStore produces");
+  assert.deepStrictEqual(mod.evaluate({ stores: [built] }), mod.evaluate({ stores: [read] }), "so both evaluate the same");
+});
+
+ok("r12 CONTRACT: a replacement body's slug is judged against its SIBLINGS, not on its own", () => {
+  const file = (name, slug) => ({ file: name, hasFrontmatter: true, name: slug, description: "d", type: "feedback", wikilinks: [] });
+  const index = mod.parseIndex("- [A](a.md) — h\n- [B](b.md) — h\n");
+  const state = (bSlug) => ({
+    dir: "store",
+    indexEntries: index.entries,
+    indexMalformed: index.malformed,
+    indexLineCount: index.lineCount,
+    files: [file("a.md", "a-slug"), file("b.md", bSlug)],
+  });
+  // b.md's body is structurally perfect in BOTH states — the only difference is the rest of the store.
+  assert.deepStrictEqual(mod.evaluate({ stores: [state("b-slug")] }).findings, [], "distinct slugs are clean");
+  const collided = mod.evaluate({ stores: [state("a-slug")] }).findings;
+  assert.strictEqual(collided.length, 1, `a sibling collision is one finding, got ${JSON.stringify(collided)}`);
+  assert.strictEqual(collided[0].kind, "duplicate-name-slug");
+  assert.deepStrictEqual(
+    mod.frontmatterProblems({ hasFrontmatter: true, name: "a-slug", description: "d", type: "feedback" }),
+    [],
+    "and the per-FILE validator sees nothing wrong with it — which is exactly why the store-wide state must be projected",
+  );
+});
+
+ok("r12 CONTRACT: index state is part of the record — a delete must be projected into the index too", () => {
+  const files = [{ file: "a.md", hasFrontmatter: true, name: "a-slug", description: "d", type: "feedback", wikilinks: [] }];
+  const withStaleLine = mod.parseIndex("- [A](a.md) — h\n- [B](b.md) — h\n");
+  const resynced = mod.parseIndex("- [A](a.md) — h\n");
+  const stale = mod.evaluate({
+    stores: [{ dir: "store", indexEntries: withStaleLine.entries, indexMalformed: withStaleLine.malformed, indexLineCount: withStaleLine.lineCount, files }],
+  }).findings;
+  assert.ok(
+    stale.some((f) => f.kind === "broken-index-pointer"),
+    `deleting b.md WITHOUT projecting the index re-sync leaves a broken pointer: ${JSON.stringify(stale)}`,
+  );
+  const clean = mod.evaluate({
+    stores: [{ dir: "store", indexEntries: resynced.entries, indexMalformed: resynced.malformed, indexLineCount: resynced.lineCount, files }],
+  }).findings;
+  assert.deepStrictEqual(clean, [], "projecting the re-sync as well yields the verdict the post-check will reach");
+});
+
 console.log(`\nmemory-integrity: ${pass}/${pass + fail} pass`);
 process.exit(fail ? 1 : 0);
