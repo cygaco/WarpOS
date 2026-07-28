@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-26T23:49:54.345Z",
+  "generatedAt": "2026-07-28T15:03:30.402Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.1.0",
   "migrations": [],
@@ -64,8 +64,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "59a3183b0794b2fbb220c9287ea0275ec07ecab67efbf9f851deeb5f42c32a6f",
-      "installedSha": "59a3183b0794b2fbb220c9287ea0275ec07ecab67efbf9f851deeb5f42c32a6f"
+      "sha256": "6c805e2481156f135e93a74366a8c215bfcccf2bd97d5e8555e8d3b4ccff182b",
+      "installedSha": "6c805e2481156f135e93a74366a8c215bfcccf2bd97d5e8555e8d3b4ccff182b"
     },
     "DICTIONARY.md": {
       "owner": "framework",
@@ -5048,6 +5048,14 @@
       "installedSha": "41e6c2aab85ce3b4c58ccc50ba791ac50c4b97e80952f15dec3473cee0e0a1c1"
     },
     "trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/SP-20260725-001-ed286-citation-obfuscation-mechanism.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/SP-20260725-002-memory-verify.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -11984,29 +11992,29 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.js",
-      "sha256": "5b72a4842088465dc410037157d33949dca928e019d01bb3f1dcad5086cd4cc3",
-      "installedSha": "5b72a4842088465dc410037157d33949dca928e019d01bb3f1dcad5086cd4cc3"
+      "sha256": "ce1d821f9bd041b3b2d5189658bbd14b18417aee892e138b134541f9cfb14701",
+      "installedSha": "ce1d821f9bd041b3b2d5189658bbd14b18417aee892e138b134541f9cfb14701"
     },
     "scripts/checks/memory-apply.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.test.js",
-      "sha256": "0f8f7139c88e5e2954b197c9e2b5a7fe68139ba13c5118ca2e2c1414eb6bd5e4",
-      "installedSha": "0f8f7139c88e5e2954b197c9e2b5a7fe68139ba13c5118ca2e2c1414eb6bd5e4"
+      "sha256": "f72d9e1dae914b5e87c3b6440b7160f6db751720558f31fad21f262837bce9ed",
+      "installedSha": "f72d9e1dae914b5e87c3b6440b7160f6db751720558f31fad21f262837bce9ed"
     },
     "scripts/checks/memory-integrity.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-integrity.js",
-      "sha256": "58bc099b6e85d55c2a4696bd214038abf5fdd5e10728d7c860e19c07ce7b0925",
-      "installedSha": "58bc099b6e85d55c2a4696bd214038abf5fdd5e10728d7c860e19c07ce7b0925"
+      "sha256": "9b46f39b7de3eeed8cbdaae32487898abb89edf7bdcead7c8d9d80cafc67155f",
+      "installedSha": "9b46f39b7de3eeed8cbdaae32487898abb89edf7bdcead7c8d9d80cafc67155f"
     },
     "scripts/checks/memory-integrity.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-integrity.test.js",
-      "sha256": "67d810a0b6473ae79b18af713455c0b684b44505d858138b468582f67d8979d7",
-      "installedSha": "67d810a0b6473ae79b18af713455c0b684b44505d858138b468582f67d8979d7"
+      "sha256": "962814ddc04f89ac1cdc2b4cb41fe5bfdcc3510cd2c8c18ddf79be620fcc17ba",
+      "installedSha": "962814ddc04f89ac1cdc2b4cb41fe5bfdcc3510cd2c8c18ddf79be620fcc17ba"
     },
     "scripts/checks/meta-lockstep.js": {
       "owner": "framework",
@@ -26800,8 +26808,8 @@
       "managed": true,
       "source": ".claude/commands/memory/verify.md",
       "kind": "md",
-      "sha256": "9dbb6bf7436fc5c387b41c4c1d678ff123d4c513cad48e6b1ee765ef05e9c8b2",
-      "installedSha": "9dbb6bf7436fc5c387b41c4c1d678ff123d4c513cad48e6b1ee765ef05e9c8b2"
+      "sha256": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2",
+      "installedSha": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",
@@ -28161,13 +28169,21 @@
       "sha256": "1744dcd14b4b017a8d1db064b325f2d2d17d2e63102f0bdfc3d655dc1978d963",
       "installedSha": "1744dcd14b4b017a8d1db064b325f2d2d17d2e63102f0bdfc3d655dc1978d963"
     },
+    ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
+      "kind": "md",
+      "sha256": "90ec5ab7a04e0dff027d2af7744500b78e6b23e0c466f9fa5e7ca27ce5adea03",
+      "installedSha": "90ec5ab7a04e0dff027d2af7744500b78e6b23e0c466f9fa5e7ca27ce5adea03"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "a9d001af98d7083291e20aaa02079bfc8e9ac61ea21543b5f59a8dc06869bbab",
-      "installedSha": "a9d001af98d7083291e20aaa02079bfc8e9ac61ea21543b5f59a8dc06869bbab"
+      "sha256": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210",
+      "installedSha": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
