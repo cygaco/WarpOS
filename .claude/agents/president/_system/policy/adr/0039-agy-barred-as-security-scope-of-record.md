@@ -107,6 +107,19 @@ word — it verified the temp was created inside the store, renamed over the tar
 on failure. It never asked whether the temp *path* could be pre-created as a hardlink, because
 that was not on the list it was given.
 
+**Second evidence item, structurally independent of the first** (β `c5e1a739`). The r11 comparison
+shows that an unbriefed lane finds what a briefed lane misses. The r12→r13 round shows something
+stronger: **a briefed lane is constitutionally incapable of finding a defect introduced by the act
+of fixing.** The r12 fixer exported a write primitive so its spy fixture could assert the write goes
+through a file descriptor — a good guard. The r13 security lane then walked through that export,
+which had no confinement assertion. No fix-list brief could ever have surfaced it, because the brief
+is generated FROM the change list and the new export IS the change. The reviewer would have had to
+suspect the thing it was handed as the solution.
+
+These are two independent arguments, and both should be weighed before anyone proposes dropping the
+lane for throughput: one is empirical (same commit, differently-briefed lanes, opposite results), the
+other structural (a change-list brief has a blind spot exactly the shape of the change).
+
 **Related principle, from the same verdict**, recorded here because it generalizes past this
 sprint: *a boolean a caller trusts to mean "the world is in state X" must be computed by
 OBSERVING the world, not by reaching the end of the code that was supposed to establish it.*
