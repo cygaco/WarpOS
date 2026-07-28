@@ -25,6 +25,14 @@ const { spawnSync } = require("child_process");
 const CHECK = path.join(__dirname, "memory-apply.js");
 const mod = require("./memory-apply.js");
 
+// The write primitive is NOT on the module's public surface (gauntlet r13 HIGH, surface reduction);
+// it is reachable only through the explicitly test-only handle. Bound ONCE here so every fixture
+// below — including the r12 FD spy, which is what keeps a regression to a write-by-path
+// self-detecting — goes through the same door. A hard destructure (rather than an `||` fallback to
+// mod.atomicWriteInStore) is deliberate: if the handle ever disappears this file fails loudly
+// instead of silently re-binding to a re-promoted public export.
+const writer = mod.__testonly__.atomicWriteInStore;
+
 let pass = 0;
 let fail = 0;
 function ok(name, fn) {
@@ -675,7 +683,7 @@ ok("r11 HIGH-1 MECHANISM: atomicWriteInStore over a HARDLINKED target leaves the
   }
   assert.ok(fs.lstatSync(target).nlink > 1, "precondition: the target really is hardlinked");
 
-  mod.atomicWriteInStore(store, target, "REPLACEMENT BODY\n");
+  writer(store, target, "REPLACEMENT BODY\n");
 
   assert.ok(
     fs.readFileSync(outside).equals(outsideBytes),
@@ -1010,7 +1018,7 @@ ok("r12 CRITICAL CONTROL: the temp is created O_EXCL ('wx') and written through 
     return origFstat(fd, o);
   };
   try {
-    mod.atomicWriteInStore(store, target, "NEW BODY\n");
+    writer(store, target, "NEW BODY\n");
   } finally {
     fs.openSync = origOpen;
     fs.writeFileSync = origWrite;
@@ -1042,7 +1050,7 @@ ok("r12 CRITICAL MECHANISM: a hardlink planted at every ENUMERABLE temp name can
   if (!plantEnumerableTempLinks(store, outside)) return;
 
   const target = path.join(store, "drop_one.md");
-  mod.atomicWriteInStore(store, target, "REPLACEMENT BODY\n");
+  writer(store, target, "REPLACEMENT BODY\n");
 
   assert.ok(
     fs.readFileSync(outside).equals(outsideBytes),
@@ -1122,7 +1130,7 @@ ok("r12 CRITICAL: EEXIST ABORTS the write fail-closed — it is NEVER retried un
   };
   let threw = null;
   try {
-    mod.atomicWriteInStore(store, target, "SHOULD NEVER LAND\n");
+    writer(store, target, "SHOULD NEVER LAND\n");
   } catch (e) {
     threw = e;
   } finally {
@@ -1353,6 +1361,208 @@ ok("r12 MEDIUM: the DRY-RUN clears the same gates as --apply (no gate/apply dive
     `the dry-run sees the store-wide consequence too: ${JSON.stringify(out.prospectiveFindings)}`,
   );
   assertUnchanged(store, before, "dry-run never mutates");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r13 HIGH — the write primitive asserts CONFINEMENT itself, and is no
+// longer advertised on the public surface.
+//
+// r12 hardened the write's destination and its source but left the primitive
+// willing to rename its temp over ANY path a caller named. No plan reached it —
+// every internal call site passes an isSafeStoreFilename-validated name resolved
+// against storeAbs — so this is a hardening gap, not an escape. It is real all the
+// same: the guarantee lived in an agreement among three callers instead of in the
+// function that does the writing. Both fixtures below are RED against c004c3d3.
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("r13 HIGH: the write primitive REFUSES an out-of-store target and leaves it BYTE-UNCHANGED", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r13-conf-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const outside = path.join(base, "outside.md");
+  const outsideBytes = Buffer.from("OUTSIDE SECRET — must never be rewritten\n", "utf8");
+  fs.writeFileSync(outside, outsideBytes);
+
+  let threw = null;
+  try {
+    writer(store, outside, Buffer.from("NEW\n"));
+  } catch (e) {
+    threw = e;
+  }
+
+  // Asserted FIRST: the damage. Pre-fix this call renamed the temp straight over the outside file.
+  assert.ok(
+    fs.readFileSync(outside).equals(outsideBytes),
+    "the OUT-OF-STORE file must be BYTE-UNCHANGED — the primitive renamed its temp over any path it was handed",
+  );
+  assert.ok(threw, "the write must be refused, not silently skipped");
+  assert.strictEqual(threw.code, "EOUTOFSTORE", `the refusal is fail-closed and typed: ${threw && threw.message}`);
+  assert.ok(
+    !fs.readdirSync(store).some((n) => n.startsWith(mod.TMP_PREFIX)),
+    "the refusal happens BEFORE any temp is created — nothing to clean up",
+  );
+});
+
+ok("r13 HIGH companion: a LEGITIMATE in-store target still succeeds (the assertion is not 'refuse everything')", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r13-legit-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const target = path.join(store, "drop_one.md");
+
+  writer(store, target, "LEGIT BODY\n");
+  assert.strictEqual(fs.readFileSync(target, "utf8"), "LEGIT BODY\n", "an in-store write still lands");
+
+  // The same call spelled with a non-normalized store + target must also pass: the assertion
+  // resolves BOTH sides, so it judges the paths rather than their spelling.
+  const oddStore = path.join(store, "sub", "..");
+  const oddTarget = path.join(store, ".", "keep_one.md");
+  writer(oddStore, oddTarget, "LEGIT TOO\n");
+  assert.strictEqual(
+    fs.readFileSync(path.join(store, "keep_one.md"), "utf8"),
+    "LEGIT TOO\n",
+    "'.' and '..' spellings that RESOLVE into the store are accepted — the check normalizes, it does not string-match",
+  );
+});
+
+ok("r13 HIGH (surface): the public export no longer advertises the writer; only the test-only handle reaches it", () => {
+  assert.strictEqual(
+    mod.atomicWriteInStore,
+    undefined,
+    "the module must not advertise a write primitive on its public surface",
+  );
+  assert.strictEqual(
+    typeof mod.__testonly__.atomicWriteInStore,
+    "function",
+    "the test-only handle still reaches it — the FD spy fixture depends on it",
+  );
+  // The inert exports are deliberately NOT swept up in this: they touch no disk.
+  for (const inert of ["tempFileName", "strayTempNames", "isSafeStoreFilename", "validatePlan", "run"]) {
+    assert.strictEqual(typeof mod[inert], "function", `${inert} stays exported — it performs no writes`);
+  }
+  assert.strictEqual(typeof mod.TMP_PREFIX, "string", "TMP_PREFIX stays exported — inert");
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gauntlet r13 — a failed close() is FATAL, because it is frequently the DEFERRED
+// REPORT OF A WRITE FAILURE.
+//
+// Labelled MEDIUM by the reviewer as FD-lifecycle hygiene; it is worse than that.
+// Buffered write errors (ENOSPC, EIO, quota) commonly surface at close rather than
+// at the write. Swallowing close and renaming anyway can therefore rename a
+// TRUNCATED temp over a perfectly good memory file and return {ok:true,
+// applied:true} while doing it — data destruction with a success report. The
+// last assertion is the one that encodes that: the good data must survive.
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("r13: a failed close() on the temp FD is FATAL — no rename, temp cleaned up, the GOOD TARGET BYTES SURVIVE", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r13-close-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const target = path.join(store, "drop_one.md");
+  const before = fs.readFileSync(target); // the perfectly good memory file
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "grep shows the claim is false", newBody: VALID_BODY }],
+  });
+
+  const origOpen = fs.openSync;
+  const origClose = fs.closeSync;
+  const origRename = fs.renameSync;
+  const tempPathByFd = new Map();
+  const renameSources = [];
+  let failedTmpPath = null;
+  let injected = 0;
+
+  fs.openSync = (p, flags, mode) => {
+    const fd = origOpen(p, flags, mode);
+    if (typeof p === "string" && path.basename(p).startsWith(mod.TMP_PREFIX)) tempPathByFd.set(fd, p);
+    return fd;
+  };
+  // Fail the FIRST temp close only — a realistic transient (ENOSPC surfacing at close), and it
+  // leaves the rollback path able to do its job, so the assertions below stay about the forward write.
+  fs.closeSync = (fd) => {
+    if (tempPathByFd.has(fd) && injected === 0) {
+      injected++;
+      failedTmpPath = tempPathByFd.get(fd);
+      origClose(fd); // really release it — the fixture must not leak the descriptor it is testing
+      throw Object.assign(new Error("ENOSPC: no space left on device, close"), { code: "ENOSPC" });
+    }
+    return origClose(fd);
+  };
+  fs.renameSync = (a, b) => {
+    renameSources.push(a);
+    return origRename(a, b);
+  };
+
+  let res;
+  try {
+    res = mod.run({ plan, apply: true });
+  } finally {
+    fs.openSync = origOpen;
+    fs.closeSync = origClose;
+    fs.renameSync = origRename;
+  }
+
+  assert.strictEqual(injected, 1, "precondition: the close failure was actually injected on a temp FD");
+
+  // THE assertion — β's rationale. Pre-fix the truncated temp was renamed over this file.
+  assert.ok(
+    fs.readFileSync(target).equals(before),
+    "the pre-existing target must be BYTE-UNCHANGED — a swallowed close renames a possibly-truncated temp over good data",
+  );
+  assert.notStrictEqual(res.applied, true, "a write whose close failed was NOT applied");
+  assert.strictEqual(res.fatal, true, "it fails closed");
+  assert.ok(
+    !renameSources.includes(failedTmpPath),
+    `the temp whose close failed must NEVER be renamed (rename sources: ${JSON.stringify(renameSources.map((s) => path.basename(s)))})`,
+  );
+  assert.ok(failedTmpPath && !fs.existsSync(failedTmpPath), "that temp is unlinked, not left behind");
+  assert.ok(
+    !fs.readdirSync(store).some((n) => n.startsWith(mod.TMP_PREFIX)),
+    "no stray temp survives the aborted write",
+  );
+});
+
+ok("r13: the close failure is REPORTED, not swallowed — the problem names the failure and its code survives", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r13-closerep-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const target = path.join(store, "drop_one.md");
+
+  const origOpen = fs.openSync;
+  const origClose = fs.closeSync;
+  const tempFds = new Set();
+  fs.openSync = (p, flags, mode) => {
+    const fd = origOpen(p, flags, mode);
+    if (typeof p === "string" && path.basename(p).startsWith(mod.TMP_PREFIX)) tempFds.add(fd);
+    return fd;
+  };
+  fs.closeSync = (fd) => {
+    if (tempFds.has(fd)) {
+      origClose(fd);
+      throw Object.assign(new Error("EIO: i/o error, close"), { code: "EIO" });
+    }
+    return origClose(fd);
+  };
+
+  let threw = null;
+  try {
+    writer(store, target, "SHOULD NEVER LAND\n");
+  } catch (e) {
+    threw = e;
+  } finally {
+    fs.openSync = origOpen;
+    fs.closeSync = origClose;
+  }
+
+  assert.ok(threw, "the close failure must propagate, not be swallowed as 'the bytes are already written'");
+  assert.strictEqual(threw.code, "EIO", `the underlying code survives for the caller: ${threw && threw.message}`);
+  assert.ok(/close/i.test(threw.message), `the message names the close failure: ${threw.message}`);
+  assert.notStrictEqual(
+    fs.readFileSync(target, "utf8"),
+    "SHOULD NEVER LAND\n",
+    "the bytes from the failed-close write never reached the target",
+  );
 });
 
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);

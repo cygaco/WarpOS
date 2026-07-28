@@ -179,8 +179,34 @@ function strayTempNames(storeAbs) {
  * The temp stays INSIDE storeAbs so the rename is same-filesystem (hence atomic — a cross-device
  * rename would EXDEV). Crash-atomicity comes free: a fault leaves either the whole old file or the
  * whole new one, never a half-written body.
+ *
+ * CONFINEMENT (gauntlet r13 HIGH) — asserted HERE, at the primitive, not at the call sites.
+ * Every call site today derives targetAbs from an isSafeStoreFilename-validated name resolved
+ * against storeAbs, so no plan reached this. That is exactly the fragility: the guarantee lived in
+ * an agreement between three separate callers rather than in the function that does the writing,
+ * so the first caller to forget would rename a temp over an arbitrary path with no complaint. The
+ * assertion below holds for EVERY caller, including ones not written yet. It is deliberately the
+ * STRICT form — a DIRECT CHILD of the store, not merely "somewhere underneath it" — because a
+ * memory store is flat and a prefix test (`startsWith(storeAbs)`) both admits subdirectories we
+ * never write and is the classic sibling-prefix bug (`/store-evil` starts with `/store`).
+ *
+ * NOT in scope here, deliberately: fsync. Durability across power loss is a DIFFERENT property
+ * from the crash-atomicity claimed above, and this module does not claim it.
  */
 function atomicWriteInStore(storeAbs, targetAbs, data) {
+  // FIRST, before any fs call: the target must be a direct child of the store. Resolve BOTH sides
+  // so the comparison is on normalized paths ('.', '..', trailing separators) rather than on
+  // whatever spelling the caller happened to pass. Fail-closed on any mismatch.
+  const resolvedStore = path.resolve(storeAbs);
+  const resolvedTarget = path.resolve(targetAbs);
+  if (path.dirname(resolvedTarget) !== resolvedStore) {
+    const err = new Error(
+      `refusing to write '${path.basename(String(targetAbs))}': it resolves to '${resolvedTarget}', which is not a direct child of the store '${resolvedStore}' — aborting fail-closed`,
+    );
+    err.code = "EOUTOFSTORE";
+    throw err;
+  }
+
   const tmpAbs = path.join(storeAbs, tempFileName());
 
   let fd;
@@ -221,10 +247,29 @@ function atomicWriteInStore(storeAbs, targetAbs, data) {
     throw e;
   }
 
+  // CLOSE IS FATAL (gauntlet r13). This used to swallow the error with the note "the bytes are
+  // already written" — which is precisely the assumption that does not hold. A close() failure is
+  // frequently the DEFERRED REPORT OF A WRITE FAILURE: buffered write errors (ENOSPC, EIO, quota)
+  // commonly surface at close rather than at the write that caused them. So the swallow meant a
+  // TRUNCATED OR INCOMPLETE temp could be renamed over a perfectly good memory file while apply
+  // returned {ok:true, applied:true} — data destruction with a success report, not an FD leak.
+  // Never rename after a failed close: unlink the temp and throw BEFORE the rename below.
   try {
     fs.closeSync(fd);
-  } catch {
-    /* best-effort: the bytes are already written */
+  } catch (e) {
+    try {
+      fs.unlinkSync(tmpAbs);
+    } catch {
+      /* best-effort: never leave a stray temp behind */
+    }
+    const err = new Error(
+      `refusing to write '${path.basename(String(targetAbs))}': closing the temp descriptor failed ` +
+        `(${(e && (e.code || e.message)) || "unknown error"}) — the temp was NOT renamed over the target, because a failed ` +
+        "close commonly reports a buffered write error and the temp may be truncated",
+    );
+    err.code = (e && e.code) || "ECLOSEFAILED";
+    err.cause = e;
+    throw err;
   }
 
   try {
@@ -1075,7 +1120,6 @@ module.exports = {
   canonicalStoreName,
   removeIndexLines,
   projectStoreState,
-  atomicWriteInStore,
   tempFileName,
   strayTempNames,
   TMP_PREFIX,
@@ -1086,4 +1130,18 @@ module.exports = {
   NAME,
   VALID_ACTIONS,
   VALID_CLASSIFICATIONS,
+
+  // ── TEST-ONLY (gauntlet r13 HIGH, surface reduction) ───────────────────────
+  // atomicWriteInStore is the module's ONLY write primitive and is NOT part of the public surface:
+  // nothing outside this file has any business renaming bytes over a file in a memory store. It
+  // was exported in r12 solely so the FD spy fixture could assert the write goes THROUGH THE
+  // DESCRIPTOR — a verification that must keep working, since it is what makes a regression back
+  // to a write-by-path self-detecting. So it stays reachable, but only through a handle whose name
+  // says what it is for, and the confinement assertion inside it holds regardless of how it is
+  // reached. Do NOT call this from production code, and do not promote it back to the surface.
+  //
+  // The rest of the exports above are inert: predicates and pure functions that touch no disk.
+  __testonly__: {
+    atomicWriteInStore,
+  },
 };
