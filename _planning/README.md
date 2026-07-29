@@ -16,7 +16,9 @@
 | `research/` | processed research feeding plans | `/research:deep` | `<topic>-research.md` |
 | `archive/` | superseded / closed plan artifacts | `/epic:close`, `/epic:fold` | preserves original name |
 
-Pre-existing corpus dirs (`ingest/`, `plans/`, `reviews/`, `sources/`) and the long-form docs (`warpos-lifecycle-plan.md`, `principle.md`) are untouched. Note: `plans/` holds the separate org/GTM "product-studio" expansion planning (a *different* epic) and is NOT part of the epic/sprint lifecycle-store contract.
+Pre-existing corpus dirs (`ingest/`, `plans/`, `reviews/`, `sources/`) and the long-form docs (`warpos-lifecycle-plan.md`, `principle.md`) are untouched.
+
+**Active product-plan triad (Vlad — agent+MCP, 2026-07-28):** [`vlad-agent-mcp-plan.md`](vlad-agent-mcp-plan.md) (the plan + 6 grill rounds of recorded rulings) · [`vlad-why-us.md`](vlad-why-us.md) (differentiators vs standalone hosts) · [`vlad-transferability.md`](vlad-transferability.md) (what ports vs rebuilds, 34 families). Read the plan first; the epic derives from all three. Note: `plans/` holds the separate org/GTM "product-studio" expansion planning (a *different* epic) and is NOT part of the epic/sprint lifecycle-store contract.
 
 ## Tracker-linkage convention (load-bearing)
 
