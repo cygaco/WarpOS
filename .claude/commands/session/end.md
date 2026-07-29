@@ -25,6 +25,7 @@ The contract: **reach a state the next session can resume from with ZERO progres
 | Phase | `--fast` |
 |---|---|
 | 1–4 cognitive (learn/mine/sleep/integrate) | **SKIP** (note "deferred to a full `/session:end`" in the report; capture any one-line durable insight as a memory + an `/enforcement:log` gap instead of the full chain) |
+| 4.5 debt sweep (`/enforcement:sweep`) | **SKIP** (full-chain only; a `--fast` wrap files at most the one-line `/enforcement:log` gaps it already captures) |
 | 5 TRACKER reconcile (fail-CLOSED) | **KEEP** — `node scripts/trackers/validate.js` MUST exit 0. Light reconcile only: if green and not *lying*, the rich per-item state can live in the DUMP (Phase 6) instead of a full header re-narration. If RED, fix to green before proceeding (still fail-closed). |
 | 6 DUMP handoff | **KEEP — this is the load-bearing artifact.** It must carry the next-action, in-flight state, and any operating-model/directive changes so a fresh session needs nothing else. |
 | 7 Land | **KEEP commit (no loss); CONDITIONAL merge.** Commit ALL working state so nothing is lost. Then: **merge/land to `main` ONLY if the work is genuinely done** (e.g. a sprint whose gauntlet is GREEN). If a sprint is mid-fix-cycle / gauntlet-RED / otherwise unfinished, **commit + push the working branch for backup but do NOT merge to main** — landing unfinished work is a progress-*corruption*, not progress-saving. Surface the judgment. |
@@ -53,6 +54,14 @@ Both run AFTER sleep (Phase 3) so they act on the **consolidated + reviewed** se
 - **`/beta:integrate`** — promote the validated **β pattern-mining recommendations** (staged by Phase 2's `/beta:mine`, reviewed in `/sleep:deep` Phase 4) into the **β judgment model**. This is the counterpart to `/learn:integrate`: without it, `/beta:mine`'s recs sit in the staging file *mined-but-never-applied* — the exact gap that left P-051..P-054 staged at session-2 end. Apply only operator-validated / high-confidence recs; a NEW *principle* or *policy* item still needs its own operator ruling (don't auto-promote a behavioral principle).
 
 > Both are no-ops if Phase 1/2 produced nothing to integrate — fail-open: note and continue.
+
+### Phase 4.5 — Debt sweep (`/enforcement:sweep`)
+Run `/enforcement:sweep`. Finds UNFILED debt — deferral comments, prompt suppressions, skipped
+tests, unenforced-policy claims, review residuals — and reconciles it against `paths.enforcementDebt`,
+filing what's missing. Runs AFTER integrate (Phase 4) so freshly-promoted learnings don't double-file,
+BEFORE the tracker reconcile (Phase 5) so the handoff reflects an honest ledger. Fail-open: on
+failure, note it and continue — but capture the triage report path in the DUMP. (Origin: ED-305 —
+"a comment is not a ledger entry.")
 
 ### Phase 5 — Reconcile + validate `TRACKER.md` (fail-CLOSED)
 `TRACKER.md` (root) is the enforced source of truth — the Handoff (Phase 6) is built FROM it and the Land (Phase 7) pushes it, so it must be ACCURATE and GREEN before either. Never write a handoff or land on a tracker that lies about state.
@@ -100,6 +109,7 @@ Tell the operator: what consolidated (learnings/recs/integrations), **the TRACKE
 
 ## Related
 - `/learn:deep`, `/beta:mine`, `/sleep:deep`, `/sleep:quick`, `/learn:integrate`, `/beta:integrate` — the cognitive-maintenance chain (mine+integrate and deep+integrate are PAIRS — run both halves).
+- `/enforcement:sweep` — the Phase 4.5 debt-finding sweep (unfiled deferrals → `paths.enforcementDebt`).
 - `/trackers:validate` — the fail-closed tracker validator run in Phase 5 (`node scripts/trackers/validate.js`).
 - `/session:dump`, `/session:handoff`, `/session:checkpoint` — handoff artifacts.
 - `/commit:land` — the commit→push→merge flow.

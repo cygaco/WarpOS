@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.1.0",
-  "installedCommit": "b1a80eb4fe0c71c85ebcb1f163a46ab09193ce60",
-  "installedAt": "2026-07-29T03:14:53.102Z",
+  "installedCommit": "771979c7b09e40ba03f7df3d5eb2db6e53d3a7f4",
+  "installedAt": "2026-07-29T03:50:01.925Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1436,6 +1436,16 @@
       "mergeStrategy": "three_way_markdown",
       "installedHash": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
       "currentHashAtInstall": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "skill.enforcement.sweep.md",
+      "kind": "skill",
+      "dest": ".claude/commands/enforcement/sweep.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "3561540fc66103f07bcde664423c2f02bc9085c7653c82e357120658fc5551c6",
+      "currentHashAtInstall": "3561540fc66103f07bcde664423c2f02bc9085c7653c82e357120658fc5551c6",
       "introducedIn": "0.0.0"
     },
     {
@@ -3124,8 +3134,8 @@
       "dest": ".claude/commands/session/end.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1",
-      "currentHashAtInstall": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1",
+      "installedHash": "26d02e648c9e6bc2b170a4595f1e282a22432d2a051fd127114c690fc2af7746",
+      "currentHashAtInstall": "26d02e648c9e6bc2b170a4595f1e282a22432d2a051fd127114c690fc2af7746",
       "introducedIn": "0.0.0"
     },
     {

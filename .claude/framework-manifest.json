@@ -4,7 +4,7 @@
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
     "agent": 116,
-    "skill": 236,
+    "skill": 237,
     "kernel": 42,
     "reference": 30,
     "maps_baseline": 26,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1726,
+  "total": 1727,
   "assets": {
     "agent": [
       {
@@ -1784,6 +1784,18 @@
         "dest": ".claude/commands/enforcement/log.md",
         "kind": "skill",
         "sha256": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "skill.enforcement.sweep.md",
+        "src": ".claude/commands/enforcement/sweep.md",
+        "dest": ".claude/commands/enforcement/sweep.md",
+        "kind": "skill",
+        "sha256": "3561540fc66103f07bcde664423c2f02bc9085c7653c82e357120658fc5551c6",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -3811,7 +3823,7 @@
         "src": ".claude/commands/session/end.md",
         "dest": ".claude/commands/session/end.md",
         "kind": "skill",
-        "sha256": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1",
+        "sha256": "26d02e648c9e6bc2b170a4595f1e282a22432d2a051fd127114c690fc2af7746",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
