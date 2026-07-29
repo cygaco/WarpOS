@@ -173,7 +173,16 @@
 | Detector wired into `/scan:full` | No | Verified Nonexistent (and expected nonexistent) | `/scan:full` lane registry | deferred by decision; logged as ED-287 | 2026-07-27 | Alex ε |
 | Four lane completion records | Yes | Verified Exists | canonical `dispatch-completions.jsonl` | `gauntlet-verify` exit 0 | 2026-07-27 | Alex ε |
 
-Await β's scope ruling on the r11 brief (consult `e228a2b8-c25b-41f1-9b85-904a6a57d594`), which asks in particular whether `--apply` remains shippable at pre-mvp given the out-of-store write, or whether the executor should be gated harder while the read-only detector ships alone. On her ruling, dispatch one r11 round covering all five items per `runtime/gauntlet-SP-20260725-002/r11-fix-brief.md`, then re-fire qa, backend, and security-via-GPT.
+**STATE AS OF 2026-07-29 (supersedes the r11-era text that stood here; corrected per β D1 before the 1.2.0 tag).**
+
+This sprint is **OPEN**. It is NOT closed, NOT complete, and the 1.2.0 release does not close it.
+
+- **Rounds ran through r15.** r15 @ `8adf768b`: qa PASS (0 findings); backend FAIL (1 MEDIUM); security FAIL (3 HIGH). Four findings remain **OPEN**, filed one row each in `paths.enforcementDebt`: **ED-306** (S-3, successful delete silently rewrites retained MEMORY.md line endings), **ED-307** (S-4, the close→rename window can leave a failed apply with the store changed, so `ok:false` does not imply pre-apply byte identity), **ED-308** (S-5, rollback verification checks only backed-up paths, so a failed temp cleanup leaves a new in-store file while reporting `rolledBack:true`), **ED-309** (B-6, a swallowed unlink failure at `memory-apply.js:370` that also wedges every subsequent apply).
+- **None of the four is eligible for the disclosed-residual route.** All four fail ADR-0039 §A2.1 condition 2 — each is a claim consumed as a safety guarantee that is silently false — so "land it as debt" is not permitted by the doctrine. They ship as OPEN findings behind a held executor, never as accepted debt.
+- **`--apply` is HELD fail-closed in WarpOS 1.2.0** (**ED-310**, the tracked home of the hold and its unhold trigger). The read-only detector `scripts/checks/memory-integrity.js` ships and is useful on its own; it is byte-identical between the released tree and `8adf768b` (verified: `git diff` empty, 806 lines both), which is why the release record may inherit the r15 qa PASS.
+- **The hard terminal is LIVE and UNCONSUMED.** β reserved exactly ONE more pass, to be run a different way — state what `ok:true`, `ok:false` and `rolledBack:true` each guarantee, over which set of paths, with what byte-fidelity promise, then verify the code against those written invariants rather than against reported findings. If that pass surfaces another HIGH in the byte-fidelity or transaction-honesty families, `--apply` does not ship in this sprint at all and becomes a scoped follow-up. The 1.2.0 landing neither consumes nor resets it.
+- **Governing rulings:** betaEvents row 275 `d4f81b6a` (ESCALATE, class C, ED-287) · `3b7c9f41` hold shape, C1–C8 · `5e2a80c7` landing discharge (row 275's "do not land" is scoped to the EXECUTOR and discharged for the 1.2.0 landing only) · `8c4d1e6b` refusal-citation amendment.
+- **Next action:** the invariants-first pass. Not another findings-driven fix round — fixing findings is what produced five rounds.
 
 ## Completion record
 - Final state: Not yet complete
