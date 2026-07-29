@@ -38,17 +38,13 @@ The real ceiling: **the threat model is a SAME-USER actor with write access to t
 
 ---
 
-### β's FIVE CONDITIONS — reproduced verbatim here for durability
+### β's FIVE CONDITIONS — see the canonical rule, not this file
 
-β ruled that "narrowed + named residual" is an acceptable close for a binding-lane HIGH **only** when all five hold. They are reproduced here because `betaEvents` is **not tracked by git at all** (`.gitignore:40` = `.claude/agents/**/events.jsonl`; `git ls-files --error-unmatch` reports the path unknown to git), so rows 270-271 do not survive a fresh clone. This file does. The authoritative home is the pending ADR-0039 amendment, which **must land before any release record cites the five-condition close** — otherwise the release cites a reference that resolves on one machine and nowhere else (the cited-ref-must-resolve-from-the-committed-tree finding, SP-20260718-001).
+**The authoritative text is [ADR-0039 §A2.1](../../.claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md), landed at commit `4fc25f4d` (β CONFIRM `a4c8e70f`).** Read the five conditions and the layer-naming requirement there.
 
-1. The residual is unreachable by any mechanism available in **this runtime AND threat model** — impossible, not merely expensive. Name the specific absence.
-2. The narrowing removes the **SILENT** outcome. After the fix the bad case is prevented or loud; it is never quiet success.
-3. The residual grants **no capability the actor lacks** (the capability discriminator).
-4. It is **disclosed where a future reader hits it**: its own ED, plus correction of any comment that currently overclaims.
-5. A **named falsifiable re-entry condition**. Here: the store becoming multi-writer or shared across trust boundaries re-opens it, because condition 1's premise dies at that moment.
+This section previously reproduced them in full, as a durability bridge while `betaEvents` — which is **not tracked by git at all** (`.gitignore:40`; `git ls-files --error-unmatch` reports the path unknown to git) — was their only home. That bridge did its job and is now retired: a rule with two texts is a rule someone eventually diffs and mis-reads, so this file points rather than restates. Per β, single authoritative home, everything else a pointer.
 
-Plus the layer-naming requirement: **control vs window-narrowing vs hygiene must be stated in the code comment, not only in the review artifact.**
+What stays here is only what is **instance-specific to r14**: how the five conditions are satisfied for THIS residual (the rename TOCTOU), which is the S-1 section below, and the residual ED itself (**ED-303**). Note that ADR-0039 §A2.1 marks condition 5's "Here: the store becoming multi-writer…" as the **ED-287 instance**, not part of the general rule — the general rule requires naming, per residual, the event that kills condition 1's premise.
 
 ---
 
