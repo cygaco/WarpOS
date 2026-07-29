@@ -1,0 +1,86 @@
+You are the backend-fixer for SP-20260725-002, fix round r14.
+
+REPO: C:\Users\Vlad\Desktop\Claude\Projects\WarpOS
+TARGET FILE: scripts/checks/memory-apply.js  (and its suite scripts/checks/memory-apply.test.js)
+BASE: commit 92b9d19e on session/2026-07-25
+AUTHORIZATION: Beta DECIDE B/0.90, msg_id b7e4c1a9-3f28-4d56-8e01-9a2f7c34b0d5 (betaEvents line 270), ED-287.
+
+This is the LAST authorized fix round for this class. Fix exactly the four items in the brief below and nothing else. Do NOT redesign the write primitive. Do NOT touch line 651.
+
+READ FIRST, then work:
+  1. The full brief, reproduced below.
+  2. scripts/checks/memory-apply.js in full — particularly :131-143 (strayTempNames), :146-285 (atomicWriteInStore incl. the :165-171 and :234 comments you must amend, and the :276 rename), :325-350 (canonicalStoreName), :630-700 (the pre-flight loop and fsViolations), :740-760 (the stray-temp refusal), :890-1000 (the mutation loop, the post-check, and undo() — note undo's VERIFY BY OBSERVATION block at :980, which is the pattern S-1's control must mirror on the forward path).
+
+CRITICAL FRAMING, do not lose it: S-1's attacker gains NO write capability — they must already own the store. What they gain is a FALSE SUCCESS REPORT. The load-bearing fix is therefore the read-back CONTROL, not the window narrowing. Shipping only the window narrowing would be a failed round.
+
+VERIFICATION REQUIRED BEFORE YOU REPORT DONE:
+  - Run `node scripts/checks/memory-apply.test.js` and `node scripts/checks/memory-integrity.test.js`. Paste the REAL pass counts. They start at 64 and 59 respectively and must GROW (you are adding tests) and must be green. Do not assert a count you did not observe.
+  - Confirm you did not modify line 651's comparison.
+
+Report at the end: the four items and what you changed for each, the two real suite counts, and the ED id you filed for the S-1 residual.
+
+═══════════════════════════════════════════════════════════════════════
+THE BRIEF
+═══════════════════════════════════════════════════════════════════════
+
+## S-1 (HIGH, binding security lane) — TOCTOU source-swap at the rename
+
+WHERE: atomicWriteInStore, the `fs.renameSync(tmpAbs, targetAbs)` at :276.
+
+MECHANISM: the whole write chain is bound to the DESCRIPTOR — :214 openSync(tmpAbs,"wx") is the O_EXCL control, :228 fstatSync(fd) does the nlink check, :235 writeFileSync(fd, data) writes through the fd, :258 closeSync(fd) is fatal on failure. Then :276 renames BY PATH, re-resolving tmpAbs without confirming it is still the inode that was exclusively created and written. Anything that can write into the store can unlink the temp between close and rename, drop its own file at that name, and have it promoted over the target while apply reports success.
+
+This reaches ALL THREE call sites, not just apply: :900 (apply), :906 (index rewrite), and :974 (undo/rollback). The rollback path is not exempt.
+
+WHAT IT ACTUALLY IS: the attacker gains no write capability. They gain a FALSE SUCCESS REPORT — apply returns applied:true over content it did not write. undo() already got this right one round ago (:980, "VERIFY BY OBSERVATION ... rolledBack must be computed by LOOKING at the store ... this is the LAYER, not the instance"). The forward path does not verify the bytes it wrote at all. That asymmetry is the defect.
+
+FIX — TWO HALVES, LABEL EACH IN THE CODE:
+
+  (1) CONTROL — the load-bearing half. After the rename, re-read the target and compare against the bytes just written. On mismatch: applied:false, fail loudly, route through the existing rollback path. This closes the lying half BY CONSTRUCTION, independent of the race.
+
+  (2) WINDOW NARROWING — defense in depth, EXPLICITLY NOT A CONTROL. Capture {dev, ino} from fstatSync(fd) BEFORE the close; after the close, lstat the temp path and refuse fail-closed if dev/ino do not match. This shrinks the window from close->rename to lstat->rename. SAY EXACTLY THAT IN THE COMMENT. If it gets described as a control, we have rebuilt the exact defect this sprint keeps producing.
+
+  (3) AMEND THE COMMENTS IN THE SAME COMMIT. :165-171 asserts "the FD is what makes the guarantee hold across that gap" and :234 says "THE DESCRIPTOR, not the path." The rename is by path, so these currently OVERCLAIM that the descriptor binding covers the whole operation. Correct them to state where the descriptor binding ends and what the read-back control covers instead. A false comment is part of the defect.
+
+THE RESIDUAL — STATE IT IN ITS STRONG FORM. Do NOT write "Node has no rename-by-descriptor"; that is true but weak and a future reader will conclude a Node upgrade fixes it. CHECKED on node v24.16.0: the only rename/link APIs are path-based (link, linkSync, rename, renameSync, symlink, unlink); the fd-based surface is limited to fchmod, fchown, fdatasync, ftruncate, futimes; renameat, renameat2 and linkat are all undefined. State it as a checked claim. The real ceiling: the threat model is a SAME-USER actor with write access to the store, so the control and the attacker hold identical privileges and no filesystem-level mechanism separates them. Given rename-by-descriptor you would close this instance and the actor would simply modify the file after apply returns — a capability they always had. With the read-back control the honest claim becomes "at the moment I checked, the intended bytes were on disk" — an observation with a stated instant. File this residual as its own ED in .claude/project/memory/enforcement-debt.jsonl (get the next free id with `node scripts/enforcement/next-ed-id.js`, and append via a small one-shot script — a raw node -e append is blocked by a guard). Name the falsifiable re-entry: the store becoming multi-writer or shared across trust boundaries re-opens it.
+
+## B-1 (MEDIUM) — confinement rejects legitimate case-variant spellings
+
+WHERE: :202, `if (path.dirname(resolvedTarget) !== resolvedStore)`.
+
+REPRODUCED through __testonly__.atomicWriteInStore: same-casing control writes; target-dir upper-cased, store-arg upper-cased and store-arg lower-cased all throw EOUTOFSTORE; fs.existsSync on the variant returns true, proving it is the same directory. path.resolve does not case-normalize, and the two sides here have INDEPENDENT PROVENANCE (the caller supplies storeAbs and targetAbs separately).
+
+FIX: compare fs.realpathSync of the target's PARENT against fs.realpathSync of the store. The parent exists even when the target does not, and realpath gives OS canonicalization correct on both case-insensitive and case-sensitive filesystems. ENOENT on the parent is FAIL-CLOSED.
+
+DO NOT lowercase both sides — correct on NTFS, WRONG on a case-sensitive filesystem where it would accept a genuinely different directory.
+DO NOT smuggle in a prefix test. The strict direct-child rule at :189-191 stands.
+
+NEGATIVE FIXTURES ARE NON-NEGOTIABLE (:202 is the r13 control; widening it without teeth is how a control becomes a hole):
+  - the sibling-prefix case (store-evil vs store) must still be REFUSED
+  - a ".." traversal target must still be REFUSED
+  - the legitimate case-variant must now be ACCEPTED
+
+DO NOT TOUCH :651. It is structurally safe: fileAbs = path.resolve(storeAbs, canonical) where canonical is a readdir entry OF storeAbs, so both sides derive from the same root and it cannot false-positive. :202 is the only independently-sourced comparison in the module.
+
+## B-2 + B-3 (MEDIUM) — close the CLASS, not the two catch blocks
+
+WHERE: :139 strayTempNames (catch { return [] }) and :337 canonicalStoreName (catch { return null }).
+
+ONE DEFECT, NOT TWO. Each helper meets an unreadable store and INVENTS A DEFAULT, and each default reads downstream as a POSITIVE FACT: [] becomes "no strays" (fails OPEN — the hygiene refusal at :745 is skipped, apply proceeds and reports clean) and null becomes "no such file" (fails CLOSED at :646, but with a reason that is a lie about what happened). They fail in OPPOSITE directions, which is why "make it fatal" is the wrong instruction for either.
+
+FIX: detect store readability ONCE, early in run(), as a precondition with its own error code. The helpers then either consume the entries already read, or propagate the error. The distinction to preserve throughout is "the scan could not run" versus "the scan found nothing" — separately representable, separately reported.
+
+DO NOT promote strayTempNames to a control. :131-133 correctly labels it hygiene and states nothing is built on its having run. That labelling must survive.
+
+## B-4 — NO ACTION
+
+r13's un-export is sound: atomicWriteInStore appears only under __testonly__ at :1144-1145, nowhere in the public surface at :1116, and the suite already asserts the surface shape. Leave it alone.
+
+## DEFINITION OF DONE
+
+1. All four items fixed, in scripts/checks/memory-apply.js.
+2. Every new layer LABELLED in the code comment as control / window-narrowing / hygiene. This is a Beta requirement, not a style preference.
+3. :165-171 and :234 comments amended in the SAME commit.
+4. New tests per item, including B-1's negative fixtures and an S-1 test that the read-back control fires when the target's bytes do not match what was written.
+5. Both suites green and grown (from 64 and 59). Paste real counts.
+6. The S-1 residual filed as its own ED, strong form, with the multi-writer re-entry named.
+7. No change to :651. No redesign of the write primitive.
