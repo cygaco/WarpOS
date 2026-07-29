@@ -127,3 +127,140 @@ Scoped to claims consumed as safety guarantees, not to every return value. The i
 `rolledBack: true`, which had asserted an all-or-nothing guarantee it did not hold in three
 consecutive rounds; the remedy is to re-read the restored bytes and compare, so the report is an
 observation rather than a self-attestation.
+
+---
+
+## Amendment 2 — disclosed-residual closes for security-lane HIGHs + mitigation layer-naming
+
+**Status:** ACCEPTED (β read-back CONFIRM `a4c8e70f-91d2-4b63-8c05-7e1f3a6d2b48`, 2026-07-29;
+supplements her CORRECT round `e2a71c85-4b90-4f13-a7d6-58c3b0e94f26`).
+**Ruling:** β DECIDE B/0.90, msg_id `b7e4c1a9-3f28-4d56-8e01-9a2f7c34b0d5`, betaEvents line 270,
+boundary `gauntlet→release`, `open_adr: true`, ED-287. Precedent chain cited in the ruling:
+`8f3d0b52`, `4e8b1d63`, `c5e1a739`, `9f4e7b21`. Drafted by α; authored-vs-transcribed split and
+all four read-back corrections recorded in the draft trail
+(`runtime/adr-0039-amendment-2-DRAFT-pending-beta.md`, local runtime artifact).
+
+### A2.1 The reusable rule — when a binding-lane HIGH may close as "narrowed + named residual"
+
+A HIGH from a **binding lane** — one whose verdict **establishes the security scope of record**
+for the release (sourced from this ADR's own partition: decision #1 makes agy ADVISORY, decision #2
+bars an advisory lane from establishing scope of record) — normally closes only by being eliminated.
+(The adjacent org-authority rule — neither the Security Lead nor the Director of Engineering can
+override a security-reviewer FAIL — is separately written at
+`.claude/agents/engineering/security/security-lead.md:7-8` and `:45`; it is cited here as context,
+not as this rule's scope definition.) It MAY instead close
+as **"narrowed + named residual"** — the residual disclosed rather than fixed — **only when all five
+of the following hold.** Fewer than five is not a close; it is a deferral wearing a schedule (P-064).
+
+**Source text (β's choice, read-back e2a71c85):** the tracked r14 brief
+(`runtime/gauntlet-SP-20260725-002/r14-fix-brief.md` §"β's FIVE CONDITIONS", committed at
+`82f6bc9a`), which carries β's ORIGINAL wording. betaEvents line 270 (msg_id `b7e4c1a9`) carries
+ε's compressed rendering of the same ruling — faithful, but not this ADR's text. The brief is OWED
+a pointer edit (ε, at r14 close) so it points here rather than standing as a second rendering — an
+obligation at this writing, not a fact.
+*Bracketed italics are editorial, not β's words.*
+
+> 1. The residual is unreachable by any mechanism available in **this runtime AND threat model** —
+>    impossible, not merely expensive. Name the specific absence.
+> 2. The narrowing removes the **SILENT** outcome. After the fix the bad case is prevented or loud;
+>    it is never quiet success.
+> 3. The residual grants **no capability the actor lacks** (the capability discriminator).
+> 4. It is **disclosed where a future reader hits it**: its own ED, plus correction of any comment
+>    that currently overclaims.
+> 5. A **named falsifiable re-entry condition** *[editorial marker: the brief's "Here:" that
+>    follows is the ED-287 instance — the memory store; the GENERAL rule requires naming, per
+>    residual, the event that kills condition 1's premise]*. Here: the store becoming multi-writer
+>    or shared across trust boundaries re-opens it, because condition 1's premise dies at that
+>    moment.
+
+Two riders that come with the rule, not additions to it:
+
+- **Condition 1 must be CHECKED, not reasoned.** β declared the limit herself — she inferred Node's
+  absence of rename-by-descriptor from the documented `fs` surface without running anything, and
+  directed r14 to state it as checked or soften it. ε then checked it on node v24.16.0: rename/link
+  are path-only (`link`, `linkSync`, `rename`, `renameSync`, `symlink`, `unlink`), the fd-based
+  surface is `fchmod`/`fchown`/`fdatasync`/`ftruncate`/`futimes`, and `renameat`/`renameat2`/`linkat`
+  are all `undefined`. A "specific absence named" that nobody executed is an assumption.
+- **Condition 5 is what makes this falsifiable rather than permanent.** The re-entry condition names
+  the event that kills condition 1's premise. Without it, a disclosed residual is a permanent
+  deferral, which P-064 bars.
+
+### A2.2 Layer-naming requirement — the class goes in the CODE COMMENT
+
+Every mitigation layer MUST state its class **at the mitigation site, in the code comment** — not
+only in the review artifact, fix brief, or ADR:
+
+| Class | What it means |
+|---|---|
+| **CONTROL** | Load-bearing. The property holds because this exists. |
+| **WINDOW NARROWING** | Defense-in-depth. Shrinks exposure; the property does **not** rest on it. |
+| **HYGIENE** | Housekeeping. Nothing is built on its having run. |
+
+β's reason, verbatim: *"if it gets described as a control we have rebuilt the exact defect this sprint
+keeps producing."* Review artifacts are read once and archived; the comment is what the next reader
+hits. A comment that overclaims its layer is **part of the defect**, and correcting it is in scope of
+the same commit that adds the layer — as already applied to Sprint A `:473-474`, and to
+`memory-apply.js:165-171` and `:234` in r14, which asserted the descriptor binding covered an
+operation ending at a path-based `rename`.
+
+### A2.3 Residual-statement form — STRONG, never weak
+
+A residual MUST be stated in the **strong form**: what actor and what privilege it concedes.
+
+- **Weak (barred):** *"Node has no rename-by-descriptor."* True, and useless — a future reader
+  concludes a runtime upgrade closes it, and it does not.
+- **Strong (required):** *"the threat model is a SAME-USER actor with write access to the store, so
+  control and attacker hold identical privileges and no filesystem mechanism separates them; given
+  rename-by-descriptor the actor would simply modify the file after apply returns."*
+
+The test is whether the sentence names the actor and the privilege. A missing-API sentence describes
+the runtime; a strong-form sentence describes who wins and why. Correspondingly, a verified claim
+states its instant: with a read-back control the honest claim is *"at the moment I checked, the
+intended bytes were on disk"* — an observation, not a guarantee.
+
+### A2.4 Provenance
+
+SP-20260725-002, r13 → r14, `scripts/checks/memory-apply.js`.
+
+- **The finding.** S-1, HIGH, security lane, binding: a TOCTOU source-swap at the `fs.renameSync`
+  on `:276`. The write chain is bound to the descriptor (`:214` `openSync(…,"wx")`, `:228`
+  `fstatSync(fd)` nlink check, `:235` `writeFileSync(fd, …)`, `:258` fatal `closeSync`) and then
+  renames **by path**, re-resolving `tmpAbs` without confirming it is still the inode that was
+  exclusively created and written.
+- **ε's three-call-site verification.** β caught what ε's report missed — `atomicWriteInStore` is
+  called at `:900` (apply), `:906` (index rewrite) **and** `:974` (undo/rollback), so S-1 reaches the
+  rollback path too. ε independently confirmed all three call sites after the ruling.
+- **β's reclassification, which changed the fix.** The attacker gains **no write capability** — they
+  must already own the store. What they gain is a **FALSE SUCCESS REPORT**: apply returns
+  `applied:true` over content it did not write. So the load-bearing half is the **read-back compare**
+  (re-read the target after rename, compare to the bytes just written, `applied:false` and fail loudly
+  on mismatch) — a CONTROL that closes the lying half by construction, independent of the race. The
+  `{dev,ino}` fstat-before-close / lstat-after-close check is **WINDOW NARROWING**, explicitly not a
+  control. This is the sprint's own thesis (`4e8b1d63`, ratified one round earlier for rollback): a
+  boolean a caller reads as "the world is in state X" must be computed by OBSERVING the world.
+  `undo()` already re-read and compared bytes; apply verified what it wrote not at all. That
+  asymmetry was the defect.
+- **Trigger check.** β checked the costly reading first and confirmed the `8f3d0b52` ship-stop trigger
+  does not fire on either reading: a swapped temp is renamed as the link itself (rename moves a
+  directory entry, it does not follow the source), so nothing lands outside `storeAbs`; and the
+  capability discriminator agrees, since the actor already owns the store. Plan-reachable out-of-store
+  escapes measured r11→r14: 2 → 0 → 0.
+
+### A2.5 Enforcement
+
+- **Eventual enforcer: ED-302** (logged 2026-07-29, BEFORE this amendment left draft). Conditions
+  1–5 and the residual-form rule are release-gate-shaped checks over artifacts that already exist —
+  a security-lane HIGH closed with `resolution: residual` must refuse to close without a linked ED,
+  a named re-entry condition, and a strong-form statement. **ED-298 explicitly does NOT cover this
+  rule** — β verified its recorded shape is a provider-identity check (*"no security lane with
+  `provider != antigravity` has run and passed"*), which would pass a release carrying a
+  residual-close with no ED, no re-entry condition, and a weak-form statement. Naming ED-298 here
+  would manufacture the appearance of an owed enforcer that never fires on this rule.
+- **Cheapest available enforcer — NOT YET BUILT:** the layer-label convention is grep-able.
+  `CONTROL` / `WINDOW NARROWING` / `HYGIENE` as literal tokens at each mitigation site can be
+  scanned by a check that fails when a security-lane fix adds a layer carrying no class token — a
+  lint over a fixed vocabulary, not new plumbing, and reviewable by eye in any diff. Nothing runs
+  today.
+- **Until ED-302's enforcer exists this is a convention with a silent failure mode** — the same
+  standing caveat as decision #2 above. The gap IS logged (ED-302, `paths.enforcementDebt`); do not
+  let the reader assume a check runs.
