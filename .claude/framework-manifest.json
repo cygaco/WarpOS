@@ -1145,7 +1145,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
         "dest": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
         "kind": "agent",
-        "sha256": "552346d250f31e30d92d705a990447d2376bcbf02e265b91be929ca4f3512adf",
+        "sha256": "49e43ff58b6976b2f4c2ee51889ac3a696d4ae2cddad1e9b8e0ce038b2d8cfc6",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

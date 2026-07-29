@@ -132,8 +132,10 @@ observation rather than a self-attestation.
 
 ## Amendment 2 — disclosed-residual closes for security-lane HIGHs + mitigation layer-naming
 
-**Status:** ACCEPTED (β read-back CONFIRM `a4c8e70f-91d2-4b63-8c05-7e1f3a6d2b48`, 2026-07-29;
-supplements her CORRECT round `e2a71c85-4b90-4f13-a7d6-58c3b0e94f26`).
+**Status:** ACCEPTED (β read-back chain, 2026-07-29: CORRECT `e2a71c85-4b90-4f13-a7d6-58c3b0e94f26`
+→ CONFIRM `a4c8e70f-91d2-4b63-8c05-7e1f3a6d2b48` — the four correction items, examined against the
+PRIOR quote block → CONFIRM `c3f9d418-7e26-4a05-b1d7-90a4e2c85b73` — the source-text replacement,
+**the confirm covering the text as landed**. Post-landing on-disk verification: `d81b6f35`.)
 **Ruling:** β DECIDE B/0.90, msg_id `b7e4c1a9-3f28-4d56-8e01-9a2f7c34b0d5`, betaEvents line 270,
 boundary `gauntlet→release`, `open_adr: true`, ED-287. Precedent chain cited in the ruling:
 `8f3d0b52`, `4e8b1d63`, `c5e1a739`, `9f4e7b21`. Drafted by α; authored-vs-transcribed split and

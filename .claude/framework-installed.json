@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.1.0",
-  "installedCommit": "4fc25f4d7b12bae54305faf670a88bd30e856c80",
-  "installedAt": "2026-07-29T03:12:33.622Z",
+  "installedCommit": "b1a80eb4fe0c71c85ebcb1f163a46ab09193ce60",
+  "installedAt": "2026-07-29T03:14:53.102Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -904,8 +904,8 @@
       "dest": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "552346d250f31e30d92d705a990447d2376bcbf02e265b91be929ca4f3512adf",
-      "currentHashAtInstall": "552346d250f31e30d92d705a990447d2376bcbf02e265b91be929ca4f3512adf",
+      "installedHash": "49e43ff58b6976b2f4c2ee51889ac3a696d4ae2cddad1e9b8e0ce038b2d8cfc6",
+      "currentHashAtInstall": "49e43ff58b6976b2f4c2ee51889ac3a696d4ae2cddad1e9b8e0ce038b2d8cfc6",
       "introducedIn": "0.0.0"
     },
     {
