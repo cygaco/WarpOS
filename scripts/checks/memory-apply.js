@@ -2,25 +2,32 @@
 "use strict";
 
 /**
- * scripts/checks/memory-apply.js — the GATED mutation executor for file-based
- * memory stores. This is the CODE that makes /memory:verify's Phase-3
- * correct/delete safety rules safe BY CONSTRUCTION (they were PROSE ONLY — no
- * code enforced --apply, contradicted-only-delete, or ground-truth evidence).
+ * scripts/checks/memory-apply.js — the mutation executor for file-based memory
+ * stores. Its `--apply` (mutating) path is currently HELD — a deliberate
+ * governance hold, not a bug. See ADR-0039 §A2.1
+ * (.claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md)
+ * and the shipped skill doc .claude/commands/memory/verify.md for the doctrine and
+ * user-facing framing. The read-only detector (scripts/checks/memory-integrity.js)
+ * SHIPS and is fully functional; only the executor's ability to actually write is
+ * held. There is no override — no env var, flag, or config key re-enables it.
  *
- * The read-only detector (scripts/checks/memory-integrity.js) NEVER writes; this
- * executable is the ONE place a memory file is ever deleted/rewritten, and only
- * when a plan clears every safety gate under an explicit --apply. It REUSES the
- * detector's parsers (parseIndex) for the MEMORY.md index re-sync and its run()
- * for the post-mutation structural post-check (bijection must stay intact).
+ * WHY: four findings remain open against the mutation path (ED-306/307/308/309).
+ * Lifting the hold is a code change under the review process that opened it, not
+ * a runtime toggle.
+ *
+ * The comments below (SAFETY INVARIANTS, THE ALL-OR-NOTHING INVARIANT, WRITING,
+ * Exit codes) describe the executor's DESIGN — the code they describe still
+ * exists and is still exercised by dry-run — but they no longer describe a path
+ * any caller can reach with `--apply`: `run()` refuses before any of it runs.
  *
  * CLI:
  *   node scripts/checks/memory-apply.js --plan <plan.json> [--apply] [--json]
  *
  *   - default (no --apply): DRY-RUN — validate + print the planned ops, mutate
- *     NOTHING, exit 0 (or exit 2 if the plan is invalid/unsafe).
- *   - --apply: only reached when validatePlan AND the newBody content gate are clean —
- *     perform each op, re-sync the index for deletes, then require the store structurally
- *     CLEAN; anything short of clean is ROLLED BACK to the pre-apply bytes.
+ *     NOTHING, exit 0 (or exit 2 if the plan is invalid/unsafe). Still fully live.
+ *   - --apply: HELD. Refused fail-closed (exit 2) before the plan is even read.
+ *     Everything below this point in the header describes the executor as it
+ *     behaves ONCE THE HOLD IS LIFTED (a future, reviewed change) — not today.
  *
  * PLAN shape (produced by the agent after its semantic ground-truth pass):
  *   {
@@ -34,7 +41,8 @@
  *     ]
  *   }
  *
- * SAFETY INVARIANTS (pure validatePlan, fully unit-tested — the gate):
+ * SAFETY INVARIANTS (pure validatePlan, fully unit-tested — the gate; still runs
+ * under dry-run, but no longer reachable via --apply while the hold stands):
  *   - correct/delete REQUIRE classification === "contradicted" (an UNVERIFIABLE or
  *     verified memory is NEVER mutated — "couldn't verify" is not "delete");
  *   - correct/delete REQUIRE non-empty ground-truth evidence;
@@ -43,7 +51,8 @@
  *   - action "none" is always allowed (no evidence needed);
  *   - ANY violation → fail-closed, all-or-nothing: mutate NOTHING, exit 2.
  *
- * THE ALL-OR-NOTHING INVARIANT (r10 :417 — three mechanisms, all required):
+ * THE ALL-OR-NOTHING INVARIANT (r10 :417 — three mechanisms, all required — this
+ * describes the --apply transaction as designed; it is not reachable while held):
  *   `--apply` leaves the store either CLEAN or BYTE-IDENTICAL to its pre-apply state.
  *   1. validateNewBody pre-validates every `correct` body through the detector's own parser
  *      before anything is written (a per-file gate — it cannot see the rest of the store), and
@@ -65,11 +74,13 @@
  * create (`wx`) of an unguessable temp INSIDE the store, a write THROUGH THE DESCRIPTOR, then a
  * rename over the target. Never fs.writeFileSync onto a path in the store, and never a write by
  * path onto the temp after the exclusive open. See atomicWriteInStore for which layer is the
- * control and which are defense in depth.
+ * control and which are defense in depth. (This primitive is dead code while the hold stands —
+ * nothing reaches it — and is left in place, untouched, for when the hold is lifted.)
  *
- * Exit codes: runner error / bad plan / bad store / ANY violation / any apply that does not
- * end clean → 2 ; clean dry-run or clean apply → 0. There is NO exit-1 path: a dirty store is
- * not an outcome --apply is permitted to leave behind. Zero runtime deps.
+ * Exit codes while HELD: clean dry-run → 0 ; anything else, including EVERY --apply invocation
+ * → 2. (Once lifted, the original design resumes: runner error / bad plan / bad store / ANY
+ * violation / any apply that does not end clean → 2 ; clean dry-run or clean apply → 0. There is
+ * NO exit-1 path either way.) Zero runtime deps.
  */
 
 const fs = require("fs");
@@ -79,6 +90,22 @@ const mem = require("./memory-integrity.js");
 
 const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname, "..", "..");
 const NAME = "memory-apply";
+
+// ── HOLD MESSAGE — ONE string, used by both the CONTROL (run()) and the
+// DEFENSE-IN-DEPTH (main()) refusal, so the two copies cannot drift apart.
+// Order (β amendment 8c4d1e6b, DECIDE A/0.93): the SKILL DOC first — that is
+// where a reader finds what is off, why, and when it comes back — THEN the ADR
+// as provenance, with the parenthetical spelling out what ADR-0039 §A2.1 is
+// (the ADR file is titled agy-barred-as-security-scope-of-record, so a bare
+// "see ADR-0039 §A2.1" would strand a reader in an apparently-wrong document).
+// No ED id here — the enforcement-debt register is gitignored and would not
+// survive a fresh clone; ED-310/306-309 stay internal cross-references only.
+const HOLD_MESSAGE =
+  "the --apply (mutation) path is HELD — this is a deliberate governance hold, not a bug. See " +
+  ".claude/commands/memory/verify.md for what is off, why, and when it comes back; ADR-0039 §A2.1 " +
+  "(the disclosed-residual rule for security-lane HIGHs) is the provenance. The read-only detector " +
+  "(scripts/checks/memory-integrity.js) is unaffected and still works. Dry-run (omit --apply) is " +
+  "still available and mutates nothing. There is no override for this hold.";
 
 const VALID_ACTIONS = new Set(["none", "correct", "delete"]);
 const VALID_CLASSIFICATIONS = new Set(["verified", "contradicted", "unverifiable"]);
@@ -547,6 +574,28 @@ function fatal(notes, problems) {
 function run(opts) {
   opts = opts || {};
   const notes = [];
+
+  // ── HOLD — CONTROL (ADR-0039 §A2.1) ─────────────────────────────────────────
+  // This is the load-bearing refusal: FIRST statement in run(), before every fs
+  // call below (in particular before the plan read a few lines down). Any caller
+  // reaching run() directly — `require(".../memory-apply.js").run({plan, apply:true})`,
+  // not only the CLI — hits this before anything on disk is touched.
+  //
+  // The --apply (mutating) executor is HELD pending further review: ED-306, ED-307,
+  // ED-308, ED-309 remain open against it (the hold itself is tracked as ED-310 —
+  // internal cross-reference only; do not surface an ED id in the user-facing string
+  // below, since the enforcement-debt register is gitignored and does not survive a
+  // fresh clone). This is a deliberate governance hold, not a bug — the detector
+  // (scripts/checks/memory-integrity.js) still ships and works, and dry-run (no
+  // --apply) is still fully available. See ADR-0039 §A2.1
+  // (.claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md)
+  // and .claude/commands/memory/verify.md for the doctrine and user-facing framing.
+  //
+  // NO OVERRIDE: no env var, CLI flag, or config key re-enables --apply. A hold the
+  // caller can un-hold is not a hold; lifting it is a code change, by design.
+  if (opts.apply) {
+    return fatal(notes, [HOLD_MESSAGE]);
+  }
 
   const planPath = opts.plan;
   if (!planPath) return fatal(notes, ["--plan <plan.json> is required"]);
@@ -1051,9 +1100,11 @@ function parseArgs(argv) {
   return opts;
 }
 
-// --apply has exactly TWO reachable outcomes: a CLEAN apply (0), or a fail-closed refusal with
-// the store restored to its pre-apply bytes (2). A dirty post-check no longer exits 1 with the
-// mutations kept — it rolls back and fails closed. (r10 :417.)
+// While the --apply HOLD stands (ADR-0039 §A2.1), --apply has exactly ONE reachable outcome: a
+// fail-closed refusal (2), never a clean apply. (Pre-hold design, resumed if the hold is lifted:
+// a CLEAN apply (0), or a fail-closed refusal with the store restored to its pre-apply bytes (2);
+// a dirty post-check does not exit 1 with the mutations kept — it rolls back and fails closed —
+// r10 :417.)
 function exitCode(res) {
   return res.fatal ? 2 : 0;
 }
@@ -1061,6 +1112,35 @@ function exitCode(res) {
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const mode = opts.apply ? "apply" : "dry-run";
+
+  // ── HOLD — DEFENSE-IN-DEPTH, explicitly NOT the control ─────────────────────
+  // The load-bearing refusal is the FIRST statement inside run() (see the "HOLD — CONTROL"
+  // comment there) — it fires for every caller, in-process or CLI, and this block is
+  // redundant with it for a CLI invocation. This second check exists only so the CLI layer
+  // refuses on its own terms too (defense-in-depth); removing THIS block would not open the
+  // hold — run()'s CONTROL still refuses every --apply. Removing run()'s check WOULD open it.
+  if (opts.apply) {
+    const msg = HOLD_MESSAGE;
+    process.stdout.write(
+      (opts.json
+        ? JSON.stringify({
+            check: NAME,
+            mode,
+            ok: false,
+            fatal: true,
+            dryRun: false,
+            applied: false,
+            violations: [],
+            planned: [],
+            problems: [msg],
+            notes: [],
+            error: msg,
+          })
+        : `ERROR  [${NAME}] (fail-closed, defense-in-depth) ${msg}`) + "\n",
+    );
+    process.exit(2);
+  }
+
   let res;
   try {
     res = run(opts);

@@ -185,7 +185,55 @@ ok("LIVE: a valid contradicted-delete plan DRY-RUN (default) mutates NOTHING and
   assert.ok(/drop_one\.md/.test(fs.readFileSync(path.join(store, "MEMORY.md"), "utf8")), "index untouched");
 });
 
-ok("LIVE: --apply removes the file + its MEMORY.md index line and leaves the store clean (exit 0)", () => {
+// ─────────────────────────────────────────────────────────────────────────────
+// QUARANTINE — the --apply (mutation) executor is HELD (ADR-0039 §A2.1, ED-310).
+//
+// Every test below this banner used to exercise --apply ACTUALLY MUTATING — a
+// clean apply, a rollback, the hardlink/EEXIST/close-failure protections AS
+// OBSERVED THROUGH a real --apply run, the projected-store gate reached via
+// --apply, etc. Since `run()`'s hold refuses --apply unconditionally, before the
+// plan is even read (see "HOLD — CONTROL" in memory-apply.js), none of that code
+// runs anymore under --apply, and these tests would either red (their original
+// assertion no longer holds) or pass for the wrong reason (e.g. "the file still
+// exists" being trivially true when nothing ever attempted to touch it).
+//
+// Per the r15 fix brief (C6), each is QUARANTINED rather than deleted or given a
+// bypass flag: its body is rewritten to assert the ONE thing that is true of it
+// today — that this exact --apply invocation refuses via the HOLD, citing
+// ADR-0039 §A2.1, before any mutation — and a comment names what it used to prove.
+// The underlying mechanisms (rollback verification, the hardlink/EEXIST/close
+// defenses, the store projection) remain covered where they are exercised BELOW
+// the control — directly against `writer` (`__testonly__.atomicWriteInStore`) or
+// the pure `validatePlan`/`projectStoreState` functions — see the r11/r12/r13
+// MECHANISM and CONTROL fixtures elsewhere in this file, none of which call
+// `run()` and so are unaffected by the hold. Restore each quarantined body from
+// git history when the hold is lifted (tracked as ED-310; underlying findings
+// ED-306/307/308/309).
+function assertHoldRefusal(result, { cli } = {}) {
+  const problems = cli ? undefined : result.problems || [];
+  if (cli) {
+    assert.strictEqual(result.status, 2, "--apply refuses fail-closed (exit 2) while HELD");
+    const out = JSON.parse(result.stdout);
+    assert.strictEqual(out.fatal, true, "the CLI reports fatal while HELD");
+    assert.strictEqual(out.applied, false, "nothing is applied while HELD");
+    assert.ok(
+      (out.problems || []).some((p) => /HELD/.test(p)),
+      `the refusal names the HOLD: ${JSON.stringify(out.problems)}`,
+    );
+    assert.ok(
+      (out.problems || []).some((p) => /A2\.1/.test(p)),
+      `the refusal cites ADR-0039 §A2.1: ${JSON.stringify(out.problems)}`,
+    );
+    return out;
+  }
+  assert.strictEqual(result.fatal, true, "run() reports fatal while HELD");
+  assert.strictEqual(result.applied, false, "nothing is applied while HELD");
+  assert.ok(problems.some((p) => /HELD/.test(p)), `the refusal names the HOLD: ${JSON.stringify(problems)}`);
+  assert.ok(problems.some((p) => /A2\.1/.test(p)), `the refusal cites ADR-0039 §A2.1: ${JSON.stringify(problems)}`);
+  return result;
+}
+
+ok("QUARANTINED (was 'LIVE: --apply removes the file + its MEMORY.md index line and leaves the store clean (exit 0)'): --apply refuses via the HOLD instead — the file/index survive untouched", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -194,14 +242,11 @@ ok("LIVE: --apply removes the file + its MEMORY.md index line and leaves the sto
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER shows this fact was reversed" }],
   });
   const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  const out = JSON.parse(r.stdout);
-  assert.strictEqual(r.status, 0, `apply should exit 0 clean, got ${r.status} :: ${r.stderr}`);
-  assert.strictEqual(out.applied, true);
-  assert.ok(!fs.existsSync(path.join(store, "drop_one.md")), "the file was deleted");
+  assertHoldRefusal(r, { cli: true });
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the file was NOT deleted — the hold refused before any mutation");
   const idx = fs.readFileSync(path.join(store, "MEMORY.md"), "utf8");
-  assert.ok(!/drop_one\.md/.test(idx), "the index line was removed");
+  assert.ok(/drop_one\.md/.test(idx), "the index line was NOT removed");
   assert.ok(/keep_one\.md/.test(idx), "the surviving entry is intact");
-  assert.strictEqual((out.postFindings || []).length, 0, "post-check clean (bijection intact)");
 });
 
 ok("LIVE: an unverifiable-delete plan exits 2 with the file STILL PRESENT (nothing mutated)", () => {
@@ -399,7 +444,15 @@ ok("PURE: canonicalStoreName resolves a case-variant plan name to the real on-di
   assert.strictEqual(mod.canonicalStoreName(store, "nope.md"), null, "no match → null");
 });
 
-ok("LIVE-SECURITY: deleting a CASE-VARIANT name (DROP_ONE.md) removes the file AND its index line (no broken pointer)", () => {
+// QUARANTINED (r15 fix brief C6): this used to prove an END-TO-END --apply actually deletes a
+// case-variant name and re-syncs the index. Since run()'s HOLD refuses --apply unconditionally
+// before the plan is even read, no case-insensitive delete can be observed through --apply today.
+// The underlying mechanism (canonicalStoreName resolving a case-variant plan name to the real
+// on-disk entry) remains covered BELOW the control by "PURE: canonicalStoreName resolves a
+// case-variant plan name to the real on-disk entry" a few tests above, which calls
+// mod.canonicalStoreName directly and is unaffected by the hold. Restore this body from git
+// history when the hold is lifted (ED-310; underlying findings ED-306/307/308/309).
+ok("QUARANTINED (was 'LIVE-SECURITY: deleting a CASE-VARIANT name (DROP_ONE.md) removes the file AND its index line (no broken pointer)'): --apply refuses via the HOLD instead — the case-variant file/index survive untouched", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-case-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -408,12 +461,10 @@ ok("LIVE-SECURITY: deleting a CASE-VARIANT name (DROP_ONE.md) removes the file A
     changes: [{ file: "DROP_ONE.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
   });
   const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  assert.strictEqual(r.status, 0, `apply should be clean, got ${r.status} :: ${r.stderr}`);
-  assert.ok(!fs.existsSync(path.join(store, "drop_one.md")), "the real (lowercase) file was deleted");
+  assertHoldRefusal(r, { cli: true });
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the real (lowercase) file was NOT deleted — the hold refused before any mutation");
   const idx = fs.readFileSync(path.join(store, "MEMORY.md"), "utf8");
-  assert.ok(!/drop_one\.md/i.test(idx), "the index line was removed (case-insensitive) — no broken pointer");
-  const out = JSON.parse(r.stdout);
-  assert.strictEqual((out.postFindings || []).length, 0, "post-check clean (bijection intact)");
+  assert.ok(/drop_one\.md/i.test(idx), "the index line was NOT removed");
 });
 
 ok("LIVE-SECURITY: a CORRECT-only apply with an unreadable index (MEMORY.md dir) fails BEFORE the correct (no partial)", () => {
@@ -516,6 +567,13 @@ ok("r10 PURE: validateNewBody accepts a valid memory file and names every struct
 // PLANTED RED — proves HALF ONE (pre-validation). Before the fix, validatePlan only required a
 // non-empty newBody STRING, so this body was written to disk successfully; nothing threw, so the
 // catch-only rollback never fired and a corrupted memory file was left behind.
+//
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): this used to invoke `--apply`; since run()'s HOLD
+// refuses --apply unconditionally BEFORE the plan is even read, that would now only prove the HOLD
+// fired, not that the body-level content gate refused the mutation. The content gate (validateNewBody
+// via run()) is NOT gated by opts.apply — it runs identically under a plain (no --apply) invocation,
+// which is the ONE part of "as --apply would refuse" that is still reachable — so this asserts the
+// same violation through dry-run instead of through the held mutation path.
 ok("r10 PLANTED (half a): a correct plan with a STRUCTURALLY INVALID newBody is refused BEFORE any mutation", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-prevalid-"));
   const store = path.join(base, "agent");
@@ -525,7 +583,7 @@ ok("r10 PLANTED (half a): a correct plan with a STRUCTURALLY INVALID newBody is 
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "TRACKER reversed it", newBody: "CORRUPTED — no frontmatter at all\n" }],
   });
-  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, `a structurally invalid newBody is fail-closed exit 2, got ${r.status} :: ${r.stderr}`);
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.fatal, true);
@@ -556,6 +614,11 @@ ok("r10 PLANTED (half a): the SAME invalid newBody is refused in DRY-RUN too (no
 // REST of the store — its name-slug collides with keep_one.md's. r10 caught it AFTER mutating and
 // rolled back; r12 refuses it BEFORE mutating, because the pre-check now runs the detector over
 // the store state the plan would produce instead of over the body alone.
+//
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): invoked as a plain (no --apply) dry-run. The
+// prospective store-state gate (projectStoreState + mem.evaluate) is NOT gated by opts.apply — it
+// runs identically either way and is what this test proves, so dry-run reaches it unaffected by
+// the HOLD, which only refuses the mutation ITSELF.
 ok("r12 MEDIUM: a correct that passes per-file validation but DIRTIES the store (duplicate name-slug) is refused BEFORE any mutation", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-prospect-"));
   const store = path.join(base, "agent");
@@ -566,7 +629,7 @@ ok("r12 MEDIUM: a correct that passes per-file validation but DIRTIES the store 
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "TRACKER shows the slug was merged", newBody: collide }],
   });
-  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, `a store-dirtying plan must fail closed (exit 2), got ${r.status} :: ${r.stderr}`);
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.fatal, true);
@@ -589,7 +652,15 @@ ok("r12 MEDIUM: a correct that passes per-file validation but DIRTIES the store 
 
 // The post-check is now the BACKSTOP rather than the gate for this class, and it must still work:
 // if anything the projection did not predict makes the store dirty, the mutations are rolled back.
-ok("r12 MEDIUM: the post-check backstop still rolls back a store the projection did not predict", () => {
+//
+// QUARANTINED (r15 fix brief C6): proving the BACKSTOP requires a real mutation to have landed on
+// disk (so there is something for the post-check to observe and the rollback to undo). run()'s HOLD
+// refuses --apply before the plan is even read — before backup/apply/rollback ever run — so there
+// is no reachable path to exercise a real rollback today, in-process or via the CLI. There is no
+// mechanism below the control to point this at: the rollback code (`undo`) only runs from inside
+// run()'s apply branch. Restore this body from git history when the hold is lifted (ED-310;
+// underlying findings ED-306/307/308/309).
+ok("QUARANTINED (was 'r12 MEDIUM: the post-check backstop still rolls back a store the projection did not predict'): --apply refuses via the HOLD instead — no mutation, no rollback needed", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-backstop-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -598,38 +669,36 @@ ok("r12 MEDIUM: the post-check backstop still rolls back a store the projection 
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
   });
-  // A post-check that reports a finding the projection could not have seen (a concurrent writer,
-  // a platform surprise). The plan itself is clean, so it clears every pre-mutation gate.
-  const res = withPostCheck(
-    () => ({ ok: false, fatal: false, findings: [{ severity: "high", check: "memory-integrity", kind: "duplicate-name-slug", dir: store, message: "a finding the projection did not predict" }], warnings: [] }),
-    () => mod.run({ plan, apply: true }),
-  );
-  assert.strictEqual(res.fatal, true, "a dirty post-check still fails closed");
-  assert.strictEqual(res.rolledBack, true, "the backstop rolled the mutations back");
-  assert.strictEqual(res.applied, false, "rolled back cleanly → nothing net-applied");
-  assert.ok((res.postFindings || []).some((f) => f.kind === "duplicate-name-slug"), "the post-check finding is reported");
-  assertUnchanged(store, before, "post-check backstop rolled back");
+  const res = mod.run({ plan, apply: true });
+  assertHoldRefusal(res);
+  assertUnchanged(store, before, "the hold refused before any mutation — nothing to roll back");
 });
 
-ok("r10 NO-REGRESSION: a correct with a VALID body still applies cleanly and leaves the store clean", () => {
+// QUARANTINED (r15 fix brief C6): "applies cleanly" is, by definition, a real mutation landing
+// (out.applied === true, the corrected body on disk). run()'s HOLD refuses --apply unconditionally,
+// so a clean apply is not a reachable outcome today — there is no mechanism below the control that
+// proves it. The gate this plan clears (validatePlan + validateNewBody + the prospective store
+// check) remains covered by "r12 MEDIUM: the DRY-RUN clears the same gates as --apply" and the
+// PLANTED/PURE fixtures above, all of which run this exact plan shape through dry-run. Restore this
+// body from git history when the hold is lifted (ED-310; underlying findings ED-306/307/308/309).
+ok("QUARANTINED (was 'r10 NO-REGRESSION: a correct with a VALID body still applies cleanly and leaves the store clean'): --apply refuses via the HOLD instead — the file survives untouched", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-good-"));
   const store = path.join(base, "agent");
   seedStore(store);
+  const before = fs.readFileSync(path.join(store, "drop_one.md"), "utf8");
   const newBody = "---\nname: drop-one\ndescription: a corrected memory\nmetadata:\n  type: project\n---\n\nCORRECTED BODY.\n";
   const plan = writePlan(base, {
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "git log shows the value changed", newBody }],
   });
   const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
-  assert.strictEqual(r.status, 0, `a valid correct applies cleanly, got ${r.status} :: ${r.stderr}`);
-  const out = JSON.parse(r.stdout);
-  assert.strictEqual(out.applied, true);
-  assert.strictEqual(out.ok, true);
-  assert.strictEqual(fs.readFileSync(path.join(store, "drop_one.md"), "utf8"), newBody, "the corrected body is on disk");
-  assert.strictEqual((out.postFindings || []).length, 0, "post-check clean");
-  assert.ok(/drop_one\.md/.test(fs.readFileSync(path.join(store, "MEMORY.md"), "utf8")), "correct leaves the index alone");
+  assertHoldRefusal(r, { cli: true });
+  assert.strictEqual(fs.readFileSync(path.join(store, "drop_one.md"), "utf8"), before, "the file was NOT corrected — the hold refused before any mutation");
 });
 
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): invoked as a plain (no --apply) dry-run — the
+// prospective store-state gate this test proves is not gated by opts.apply, so dry-run reaches the
+// identical refusal untouched by the HOLD.
 ok("r10/r12: a MIXED plan is all-or-nothing — one dirty-making correct blocks the sibling DELETE too", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r10-mixed-"));
   const store = path.join(base, "agent");
@@ -644,7 +713,7 @@ ok("r10/r12: a MIXED plan is all-or-nothing — one dirty-making correct blocks 
       { file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "merged", newBody: "---\nname: keep-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nCOLLIDES.\n" },
     ],
   });
-  const r = spawnSync("node", [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync("node", [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "the whole plan fails closed");
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.applied, false, "nothing net-applied");
@@ -697,6 +766,10 @@ ok("r11 HIGH-1 MECHANISM: atomicWriteInStore over a HARDLINKED target leaves the
   );
 });
 
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): invoked as a plain (no --apply) dry-run — the fs
+// preflight hardlink check this test proves is not gated by opts.apply, so dry-run reaches the
+// identical refusal untouched by the HOLD, and the outside file is trivially byte-unchanged since
+// dry-run never writes.
 ok("r11 HIGH-1 END-TO-END: a valid `correct` plan on a HARDLINKED file is refused and the OUTSIDE file is BYTE-UNCHANGED", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hl2-"));
   const store = path.join(base, "agent");
@@ -726,7 +799,7 @@ ok("r11 HIGH-1 END-TO-END: a valid `correct` plan on a HARDLINKED file is refuse
       },
     ],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "fail-closed on a hardlinked target");
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.applied, false, "nothing was applied");
@@ -751,7 +824,14 @@ ok("r11 HIGH-1 END-TO-END: a valid `correct` plan on a HARDLINKED file is refuse
 // structurally broken `bad.md` so the POST-check found the store dirty. Since r12 the PROSPECTIVE
 // pre-check refuses that plan before it mutates, so the rollback is now reached the way it will be
 // reached in the field — a post-check that could not certify the store — via withPostCheck.
-ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it holds invalid UTF-8", () => {
+// QUARANTINED (r15 fix brief C6): proving a BYTE-EXACT rollback requires a real mutation to have
+// landed (so the backup/rollback transaction has something to restore). run()'s HOLD refuses
+// --apply before the plan is even read — before the backup capture, the mutation loop, or `undo`
+// ever run — so there is no reachable path to a rollback today. The backup/rollback code (`undo`)
+// is internal to run()'s apply branch; there is no mechanism below the control to point this at.
+// Restore this body from git history when the hold is lifted (ED-310; underlying findings
+// ED-306/307/308/309).
+ok("QUARANTINED (was 'r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it holds invalid UTF-8'): --apply refuses via the HOLD instead — the invalid-UTF-8 index survives untouched", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-utf8-"));
   const store = path.join(base, "agent");
   fs.mkdirSync(store, { recursive: true });
@@ -766,10 +846,6 @@ ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it hold
     Buffer.from("\n", "utf8"),
   ]);
   fs.writeFileSync(path.join(store, "MEMORY.md"), indexBytes);
-  assert.ok(
-    !Buffer.from(indexBytes.toString("utf8"), "utf8").equals(indexBytes),
-    "precondition: these bytes really do NOT survive a utf8 round trip",
-  );
 
   const plan = writePlan(base, {
     store,
@@ -782,24 +858,17 @@ ok("r11 HIGH-3: a rollback restores MEMORY.md BYTE-IDENTICALLY even when it hold
       },
     ],
   });
-  const res = withPostCheck(
-    () => {
-      throw new Error("simulated: the post-check could not verify the store");
-    },
-    () => mod.run({ plan, apply: true }),
-  );
-  assert.strictEqual(res.fatal, true, "an unverifiable post-check must refuse the apply");
-  assert.strictEqual(res.rolledBack, true, "the transaction reports a clean rollback");
-
-  const after = fs.readFileSync(path.join(store, "MEMORY.md"));
-  assert.ok(
-    after.equals(indexBytes),
-    `rolledBack:true must mean BYTE-identical — got ${after.toString("hex")} vs ${indexBytes.toString("hex")}`,
-  );
-  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the delete was undone");
+  const res = mod.run({ plan, apply: true });
+  assertHoldRefusal(res);
+  assert.ok(fs.readFileSync(path.join(store, "MEMORY.md")).equals(indexBytes), "the index was NOT touched");
+  assert.ok(fs.existsSync(path.join(store, "drop_one.md")), "the delete never happened");
 });
 
-ok("r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollback restores it byte-exactly too", () => {
+// QUARANTINED (r15 fix brief C6): same reason as the fixture above — proving the backup is
+// UNCONDITIONAL requires a real correct-only apply to reach the rollback, which the HOLD refuses
+// before the plan is even read. Restore this body from git history when the hold is lifted
+// (ED-310; underlying findings ED-306/307/308/309).
+ok("QUARANTINED (was 'r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollback restores it byte-exactly too'): --apply refuses via the HOLD instead — the correct never happens", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-uncond-"));
   const store = path.join(base, "agent");
   fs.mkdirSync(store, { recursive: true });
@@ -825,19 +894,12 @@ ok("r11 HIGH-3: the MEMORY.md backup is UNCONDITIONAL — a correct-only rollbac
       },
     ],
   });
-  // A correct-only plan never writes MEMORY.md, so this proves the backup captures it anyway.
-  const res = withPostCheck(
-    () => {
-      throw new Error("simulated: the post-check could not verify the store");
-    },
-    () => mod.run({ plan, apply: true }),
-  );
-  assert.strictEqual(res.fatal, true);
-  assert.strictEqual(res.rolledBack, true);
-  assert.ok(fs.readFileSync(path.join(store, "MEMORY.md")).equals(indexBytes), "MEMORY.md is byte-identical");
+  const res = mod.run({ plan, apply: true });
+  assertHoldRefusal(res);
+  assert.ok(fs.readFileSync(path.join(store, "MEMORY.md")).equals(indexBytes), "MEMORY.md is untouched");
   assert.ok(
     !fs.readdirSync(store).some((n) => n.endsWith(".tmp")),
-    "no temp file survives a rolled-back correct",
+    "no temp file is left behind — nothing was ever written",
   );
 });
 
@@ -925,6 +987,9 @@ ok("r11 HIGH-2: the pre-check and the post-check are the SAME function, not two 
   }
 });
 
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): invoked as a plain (no --apply) dry-run — the
+// content gate (validateNewBody, called from run() regardless of opts.apply) is what this test
+// proves, so dry-run reaches the identical refusal untouched by the HOLD.
 ok("r11 HIGH-2 LIVE: an --apply whose newBody carries a duplicated metadata block is fail-closed", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-dupmeta-"));
   const store = path.join(base, "agent");
@@ -943,7 +1008,7 @@ ok("r11 HIGH-2 LIVE: an --apply whose newBody carries a duplicated metadata bloc
       },
     ],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "a structurally invalid newBody must be refused BEFORE any write");
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.applied, false);
@@ -1163,6 +1228,9 @@ ok("r12 CRITICAL depth: temp names are unguessable (crypto-random) and never rep
   assert.strictEqual(names.size, 500, "no repeats");
 });
 
+// REWIRED BELOW THE CONTROL (r15 fix brief C6): invoked as a plain (no --apply) dry-run — the
+// stray-temp scan this test proves runs whenever `mutations.length` is nonzero, regardless of
+// opts.apply, so dry-run reaches the identical refusal untouched by the HOLD.
 ok("r12 HYGIENE (explicitly NOT the control): a stray apply temp in the store refuses the plan", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-stray-"));
   const store = path.join(base, "agent");
@@ -1173,7 +1241,7 @@ ok("r12 HYGIENE (explicitly NOT the control): a stray apply temp in the store re
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "e", newBody: VALID_BODY }],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "a store in an unexplained state is not written into");
   const out = JSON.parse(r.stdout);
   assert.ok(
@@ -1188,12 +1256,17 @@ ok("r12 HYGIENE (explicitly NOT the control): a stray apply temp in the store re
 // from the code that was supposed to restore it.
 // ─────────────────────────────────────────────────────────────────────────────
 
-ok("r12 HIGH: a rollback whose restore SILENTLY leaves wrong bytes reports rolledBack:false + ROLLBACK INCOMPLETE", () => {
+// QUARANTINED (r15 fix brief C6): proving rollback VERIFICATION (rolledBack:false + ROLLBACK
+// INCOMPLETE on a restore that silently fails) requires a real forward mutation to sabotage
+// mid-flight. run()'s HOLD refuses --apply before the plan is even read — before the mutation loop
+// or `undo` ever run — so there is no reachable path to this today, and the verification logic is
+// internal to run()'s `undo`, with no mechanism below the control to point this at. Restore this
+// body from git history when the hold is lifted (ED-310; underlying findings ED-306/307/308/309).
+ok("QUARANTINED (was 'r12 HIGH: a rollback whose restore SILENTLY leaves wrong bytes reports rolledBack:false + ROLLBACK INCOMPLETE'): --apply refuses via the HOLD instead — nothing mutated, nothing to roll back", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-rbverify-"));
   const store = path.join(base, "agent");
   seedStore(store);
-  const dropAbs = path.join(store, "drop_one.md");
-  const dropBefore = fs.readFileSync(dropAbs);
+  const before = snapshot(store);
   const newDrop = "---\nname: drop-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW DROP.\n";
   const newKeep = "---\nname: keep-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW KEEP.\n";
   const plan = writePlan(base, {
@@ -1203,55 +1276,16 @@ ok("r12 HIGH: a rollback whose restore SILENTLY leaves wrong bytes reports rolle
       { file: "keep_one.md", classification: "contradicted", action: "correct", evidence: "e2", newBody: newKeep },
     ],
   });
-
-  // Two sabotages, both in the RENAME — deliberately NOT in the temp writer, because this fixture
-  // tests the VERIFICATION and must fail just as loudly with the writer fixed:
-  //   rename #2 (forward, keep_one) THROWS  → the mid-flight fault that triggers the rollback;
-  //   rename #3 (rollback, drop_one) silently does NOTHING → the restore "succeeds" and returns
-  //     normally while drop_one.md keeps its mutated bytes. That is the exact shape all three
-  //     previous rounds produced by three different mechanisms.
-  const origRename = fs.renameSync;
-  let renames = 0;
-  fs.renameSync = (from, to) => {
-    renames++;
-    if (renames === 2) throw Object.assign(new Error("EIO: simulated mid-flight fault"), { code: "EIO" });
-    if (renames > 2 && path.basename(String(to)) === "drop_one.md") {
-      try {
-        fs.unlinkSync(from); // drop the temp and pretend the restore landed
-      } catch {
-        /* best-effort */
-      }
-      return undefined;
-    }
-    return origRename(from, to);
-  };
-  let res;
-  try {
-    res = mod.run({ plan, apply: true });
-  } finally {
-    fs.renameSync = origRename;
-  }
-
-  assert.strictEqual(res.fatal, true, "the apply fails closed");
-  assert.strictEqual(res.rolledBack, false, "a restore that did not restore must NOT be reported as a rollback");
-  assert.strictEqual(res.rollbackVerified, false, "the verification is what caught it");
-  assert.ok(
-    (res.problems || []).some((p) => /ROLLBACK INCOMPLETE/.test(p)),
-    `the operator is told the store is not as it was: ${JSON.stringify(res.problems)}`,
-  );
-  assert.ok(
-    (res.changedFilesAfterRollback || []).includes("drop_one.md"),
-    `the unrestored file is NAMED: ${JSON.stringify(res.changedFilesAfterRollback)}`,
-  );
-  assert.strictEqual(res.applied, true, "an incomplete rollback leaves a residual change — say so");
-  // The report is TRUE, not merely cautious: the store really is not byte-identical.
-  assert.ok(
-    !fs.readFileSync(dropAbs).equals(dropBefore),
-    "precondition of the claim: drop_one.md really does still hold its mutated bytes",
-  );
+  const res = mod.run({ plan, apply: true });
+  assertHoldRefusal(res);
+  assertUnchanged(store, before, "the hold refused before any mutation — nothing to roll back or verify");
 });
 
-ok("r12 HIGH: a genuine rollback still reports rolledBack:true — after RE-READING every captured path", () => {
+// QUARANTINED (r15 fix brief C6): same reason — proving a GENUINE rollback re-reads every captured
+// path requires a real forward mutation to have landed, which the HOLD refuses before the plan is
+// even read. Restore this body from git history when the hold is lifted (ED-310; underlying
+// findings ED-306/307/308/309).
+ok("QUARANTINED (was 'r12 HIGH: a genuine rollback still reports rolledBack:true — after RE-READING every captured path'): --apply refuses via the HOLD instead — nothing mutated, nothing to roll back", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-rbok-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -1263,27 +1297,24 @@ ok("r12 HIGH: a genuine rollback still reports rolledBack:true — after RE-READ
       { file: "keep_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody: "---\nname: keep-one\ndescription: corrected\nmetadata:\n  type: feedback\n---\n\nNEW.\n" },
     ],
   });
-  const res = withPostCheck(
-    () => {
-      throw new Error("simulated: the post-check could not verify the store");
-    },
-    () => mod.run({ plan, apply: true }),
-  );
-  assert.strictEqual(res.rolledBack, true, "the restore really did restore");
-  assert.strictEqual(res.rollbackVerified, true, "and the store was re-read to prove it");
-  assert.deepStrictEqual(res.changedFilesAfterRollback, [], "nothing differs from the captured bytes");
-  assert.ok(
-    (res.problems || []).some((p) => /RE-READ/.test(p)),
-    "the success message states that the claim was observed, not assumed",
-  );
-  assertUnchanged(store, before, "verified rollback");
+  const res = mod.run({ plan, apply: true });
+  assertHoldRefusal(res);
+  assertUnchanged(store, before, "the hold refused before any mutation — nothing to roll back or verify");
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // gauntlet r12 MEDIUM — the pre-check and the post-check are ONE computation
 // ─────────────────────────────────────────────────────────────────────────────
 
-ok("r12 MEDIUM: the PROJECTED store is exactly what the detector reads after the apply", () => {
+// REWIRED BELOW THE CONTROL (r15 hold, brief §1 option (a)): this used to reach the post-mutation
+// state by running a real `--apply`, which the hold now refuses. The property under test is
+// projectStoreState-vs-disk, and it is preserved intact: the post-mutation state is now produced by
+// REPLAYING the same ops through the very primitives run()'s apply loop uses, in the same order —
+// fs.unlinkSync for a delete, the write primitive for a correct, and removeIndexLines() through the
+// write primitive for the delete's index re-sync (memory-apply.js, the BACKUP → APPLY block). No
+// second implementation of the projection or of the write is introduced. What is NOT covered while
+// the hold stands is run()'s own SEQUENCING of those primitives.
+ok("r12 MEDIUM: the PROJECTED store is exactly what the detector reads after the mutations land", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-proj-"));
   const store = path.join(base, "agent");
   seedStore(store);
@@ -1298,20 +1329,33 @@ ok("r12 MEDIUM: the PROJECTED store is exactly what the detector reads after the
   ];
   const projected = mod.projectStoreState(store, mutations, indexText);
 
-  // Now really apply the same ops and read the store back off disk.
-  const plan = writePlan(base, {
+  // The plan still goes through the real gate, so the ops proved below are ops the gate ACCEPTS —
+  // a projection that only matches disk for plans nothing would ever apply proves nothing.
+  const v = mod.validatePlan({
     store,
     changes: [
       { file: "third.md", classification: "contradicted", action: "delete", evidence: "reversed" },
       { file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "drifted", newBody },
     ],
   });
-  const res = mod.run({ plan, apply: true });
-  assert.strictEqual(res.applied, true, `the plan is clean and should apply: ${JSON.stringify(res.problems || res.violations)}`);
+  assert.strictEqual(v.ok, true, `the gate accepts this plan: ${JSON.stringify(v.violations)}`);
+
+  // Replay the accepted ops through the SAME primitives, in the SAME order as the apply loop.
+  const deletedFiles = new Set();
+  for (const p of mutations) {
+    const fileAbs = path.resolve(store, p.canonicalFile);
+    if (p.action === "delete") {
+      fs.unlinkSync(fileAbs);
+      deletedFiles.add(p.canonicalFile);
+    } else {
+      writer(store, fileAbs, p.newBody);
+    }
+  }
+  writer(store, path.join(store, "MEMORY.md"), mod.removeIndexLines(indexText, deletedFiles));
 
   const memmod = require("./memory-integrity.js");
   const actual = memmod.readStore(store, projected.dir, memmod.DEFAULT_MAX_INDEX_LINES);
-  assert.deepStrictEqual(projected, actual, "the projection is the post-apply store record, not an approximation of it");
+  assert.deepStrictEqual(projected, actual, "the projection is the post-mutation store record, not an approximation of it");
   assert.deepStrictEqual(
     memmod.evaluate({ stores: [projected] }),
     memmod.evaluate({ stores: [actual] }),
@@ -1319,27 +1363,49 @@ ok("r12 MEDIUM: the PROJECTED store is exactly what the detector reads after the
   );
 });
 
-ok("r12 MEDIUM: an ALREADY-dirty store is refused BEFORE mutation, not applied and rolled back", () => {
+// REWIRED BELOW THE CONTROL (r15 hold, brief §1 option (a)): the mechanism is the PROSPECTIVE
+// store-state gate — the projection sees a finding that exists in the store already, and the gate
+// refuses on ANY finding rather than only plan-attributable ones. Both halves are still exercised:
+// the projection directly (pure projectStoreState + the detector's evaluate), and the gate that
+// consumes it through the DRY-RUN, which run() returns from AFTER every gate --apply must clear
+// ("DRY-RUN (default) ... returns HERE, after every gate --apply must clear" — memory-apply.js).
+// What is NOT covered while the hold stands: that the refusal specifically beats the --apply
+// mutation loop to the disk. The ordering is still asserted structurally by the hold's own ORDERING
+// PROOF and by "the DRY-RUN clears the same gates as --apply" below.
+ok("r12 MEDIUM: an ALREADY-dirty store is refused AT THE GATE, not applied and rolled back", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r12-dirty-"));
   const store = path.join(base, "agent");
   seedStore(store);
   // An orphan: present on disk, referenced by no index line. The plan's own ops are sound.
   fs.writeFileSync(path.join(store, "orphan.md"), "---\nname: orphan-one\ndescription: a memory\nmetadata:\n  type: feedback\n---\n\nBody.\n");
   const before = snapshot(store);
+  const indexText = fs.readFileSync(path.join(store, "MEMORY.md"), "utf8");
+
+  // (1) the projection names the PRE-EXISTING finding, even though the plan's own op is sound.
+  const memmod = require("./memory-integrity.js");
+  const mutations = [{ file: "drop_one.md", canonicalFile: "drop_one.md", action: "delete" }];
+  const projected = mod.projectStoreState(store, mutations, indexText);
+  const projectedFindings = memmod.evaluate({ stores: [projected] }).findings || [];
+  assert.ok(
+    projectedFindings.some((f) => f.kind === "orphan-memory-file"),
+    `the projection names the pre-existing finding: ${JSON.stringify(projectedFindings)}`,
+  );
+
+  // (2) the gate that consumes it refuses the plan on that finding, having mutated nothing.
   const plan = writePlan(base, {
     store,
     changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
   });
-  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--json"], { encoding: "utf8" });
   assert.strictEqual(r.status, 2, "the plan must leave the store fully clean — fail-closed otherwise");
   const out = JSON.parse(r.stdout);
   assert.strictEqual(out.applied, false);
-  assert.strictEqual(out.rolledBack, undefined, "refused pre-mutation — nothing to roll back");
+  assert.strictEqual(out.rolledBack, undefined, "refused at the gate — nothing to roll back");
   assert.ok(
     (out.prospectiveFindings || []).some((f) => f.kind === "orphan-memory-file"),
-    `the projection names the pre-existing finding: ${JSON.stringify(out.prospectiveFindings)}`,
+    `the gate refuses on the pre-existing finding: ${JSON.stringify(out.prospectiveFindings)}`,
   );
-  assertUnchanged(store, before, "already-dirty store refused pre-mutation");
+  assertUnchanged(store, before, "already-dirty store refused at the gate");
 });
 
 ok("r12 MEDIUM: the DRY-RUN clears the same gates as --apply (no gate/apply divergence)", () => {
@@ -1454,16 +1520,20 @@ ok("r13 HIGH (surface): the public export no longer advertises the writer; only 
 // last assertion is the one that encodes that: the good data must survive.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// REWIRED BELOW THE CONTROL (r15 hold, brief §1 option (a)): the injection used to be driven by a
+// real `--apply`, so under the hold no temp FD was ever opened and the fixture's own precondition
+// (`injected === 1`) failed — it was proving nothing. It now targets the temp FD opened by the write
+// primitive itself (`__testonly__.atomicWriteInStore`), which is where the close-is-fatal behaviour
+// lives and which the hold deliberately does NOT gate. Every assertion about the write survives:
+// good bytes intact, no rename of the failed temp, temp unlinked, no stray temp. What is NOT covered
+// while the hold stands is the run()-level consequence — that a failed close aborts the surrounding
+// transaction and surfaces as {applied:false, fatal:true}.
 ok("r13: a failed close() on the temp FD is FATAL — no rename, temp cleaned up, the GOOD TARGET BYTES SURVIVE", () => {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-r13-close-"));
   const store = path.join(base, "agent");
   seedStore(store);
   const target = path.join(store, "drop_one.md");
   const before = fs.readFileSync(target); // the perfectly good memory file
-  const plan = writePlan(base, {
-    store,
-    changes: [{ file: "drop_one.md", classification: "contradicted", action: "correct", evidence: "grep shows the claim is false", newBody: VALID_BODY }],
-  });
 
   const origOpen = fs.openSync;
   const origClose = fs.closeSync;
@@ -1494,9 +1564,11 @@ ok("r13: a failed close() on the temp FD is FATAL — no rename, temp cleaned up
     return origRename(a, b);
   };
 
-  let res;
+  let threw = null;
   try {
-    res = mod.run({ plan, apply: true });
+    writer(store, target, VALID_BODY);
+  } catch (e) {
+    threw = e;
   } finally {
     fs.openSync = origOpen;
     fs.closeSync = origClose;
@@ -1510,8 +1582,8 @@ ok("r13: a failed close() on the temp FD is FATAL — no rename, temp cleaned up
     fs.readFileSync(target).equals(before),
     "the pre-existing target must be BYTE-UNCHANGED — a swallowed close renames a possibly-truncated temp over good data",
   );
-  assert.notStrictEqual(res.applied, true, "a write whose close failed was NOT applied");
-  assert.strictEqual(res.fatal, true, "it fails closed");
+  assert.ok(threw, "a write whose close failed fails CLOSED — the failure is not swallowed as 'the bytes are already written'");
+  assert.strictEqual(threw.code, "ENOSPC", `the underlying code survives for the caller: ${threw && threw.message}`);
   assert.ok(
     !renameSources.includes(failedTmpPath),
     `the temp whose close failed must NEVER be renamed (rename sources: ${JSON.stringify(renameSources.map((s) => path.basename(s)))})`,
@@ -1563,6 +1635,165 @@ ok("r13: the close failure is REPORTED, not swallowed — the problem names the 
     "SHOULD NEVER LAND\n",
     "the bytes from the failed-close write never reached the target",
   );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE HOLD ITSELF (r15 fix brief §2 / β condition C6). The fixtures above prove the
+// mechanisms the hold makes unreachable; these five prove the HOLD, which is now the
+// only reachable outcome of --apply. They are the tests that must go RED if the
+// CONTROL in run() is ever removed — see the MUTANT PROOF in the brief (§4).
+//
+// Note WHY the in-process fixtures are load-bearing and the CLI ones are not: main()
+// carries its own DEFENSE-IN-DEPTH refusal that fires before run() is even called, so
+// a CLI-only assertion would stay green with run()'s CONTROL deleted. Anything that
+// claims to prove the CONTROL must call run() directly.
+// ─────────────────────────────────────────────────────────────────────────────
+
+ok("HOLD: the refusal cites the SKILL DOC first, then ADR-0039 §A2.1 WITH the parenthetical, and no ED id", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hold-cite-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
+  });
+
+  const res = assertHoldRefusal(mod.run({ plan, apply: true }));
+  const msg = res.problems.find((p) => /HELD/.test(p));
+
+  const docAt = msg.indexOf(".claude/commands/memory/verify.md");
+  const adrAt = msg.indexOf("ADR-0039 §A2.1");
+  assert.ok(docAt >= 0, `the refusal points at the shipped skill doc: ${msg}`);
+  assert.ok(adrAt >= 0, `the refusal cites the ADR section: ${msg}`);
+  assert.ok(docAt < adrAt, `the SKILL DOC comes FIRST — the reader needs what/why/when before provenance: ${msg}`);
+  // REQUIRED, not decoration: ADR-0039 is titled 'agy-barred-as-security-scope-of-record', so a
+  // bare section reference strands the reader in an apparently-wrong document.
+  assert.ok(
+    /ADR-0039 §A2\.1 \(the disclosed-residual rule for security-lane HIGHs\)/.test(msg),
+    `the citation says what §A2.1 IS: ${msg}`,
+  );
+  assert.ok(/not a bug/i.test(msg), `it says the hold is deliberate, not a bug: ${msg}`);
+  assert.ok(/memory-integrity\.js/.test(msg), `it says the read-only detector still works: ${msg}`);
+  assert.ok(/[Dd]ry-run/.test(msg), `it says dry-run is still available: ${msg}`);
+  assert.ok(/no override/i.test(msg), `it says there is no override: ${msg}`);
+  // The enforcement-debt register is gitignored: an ED id in USER-FACING text would not survive a
+  // fresh clone. Internal code comments may cross-reference it; this string may not.
+  assert.ok(!/\bED-\d+\b/.test(msg), `no ED id in the user-facing refusal: ${msg}`);
+
+  // The CLI's defense-in-depth copy must be the SAME string — two copies that drift are two
+  // different answers to the same question.
+  const cli = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  const out = assertHoldRefusal(cli, { cli: true });
+  assert.strictEqual(out.problems[0], msg, "the CONTROL and DEFENSE-IN-DEPTH refusals are one string, not two");
+});
+
+ok("HOLD ORDERING PROOF: --apply on a plan whose STORE DOES NOT EXIST fails with the HOLD, not the store error", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hold-order-"));
+  const missingStore = path.join(base, "no-such-store");
+  assert.ok(!fs.existsSync(missingStore), "precondition: the store really is absent");
+  const plan = writePlan(base, {
+    store: missingStore,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER reversed it" }],
+  });
+
+  // THE load-bearing assertion. Without it the CONTROL could sit anywhere after the store check and
+  // every other hold test would still pass. run() reaches the store check at "has no MEMORY.md";
+  // seeing the HOLD instead proves the refusal precedes that filesystem work.
+  const res = assertHoldRefusal(mod.run({ plan, apply: true }));
+  const problems = res.problems.join(" | ");
+  assert.ok(!/no MEMORY\.md/.test(problems), `the store error was NOT reached — the hold came first: ${problems}`);
+
+  // Deeper still: a plan file that cannot even be READ also yields the HOLD, so the CONTROL
+  // precedes the plan read too (memory-apply.js: "plan file unreadable").
+  const absentPlan = path.join(base, "not-written.json");
+  const res2 = assertHoldRefusal(mod.run({ plan: absentPlan, apply: true }));
+  assert.ok(
+    !/unreadable/.test(res2.problems.join(" | ")),
+    `the plan read was NOT reached either: ${res2.problems.join(" | ")}`,
+  );
+
+  // And the CLI agrees (this half proves main()'s defense-in-depth, not the CONTROL).
+  const cli = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8" });
+  assertHoldRefusal(cli, { cli: true });
+});
+
+ok("HOLD IN-PROCESS PROOF: require(...).run({plan, apply:true}) refuses — the CONTROL, not the CLI layer", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hold-inproc-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  // A plan that clears every gate: pre-hold this was the CLEAN APPLY case (exit 0, file removed).
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER shows this fact was reversed" }],
+  });
+
+  // No spawn: main()'s defense-in-depth cannot participate. This is the CONTROL or nothing.
+  const res = assertHoldRefusal(require("./memory-apply.js").run({ plan, apply: true }));
+  assert.strictEqual(res.dryRun, false, "a refused --apply is not reported as a dry-run");
+  assertUnchanged(store, before, "the in-process caller mutated NOTHING");
+});
+
+ok("HOLD NO-OVERRIDE: no env var and no flag re-enables --apply", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hold-noovr-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [{ file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER shows this fact was reversed" }],
+  });
+
+  // Every plausible spelling an operator (or a future maintainer) might reach for.
+  const env = {
+    ...process.env,
+    WARPOS_MEMORY_APPLY_FORCE: "1",
+    WARPOS_MEMORY_APPLY_UNHOLD: "1",
+    MEMORY_APPLY_FORCE: "1",
+    MEMORY_APPLY_UNHOLD: "1",
+    WARPOS_APPLY_FORCE: "1",
+    WARPOS_UNHOLD: "1",
+    WARPOS_HOLD: "0",
+    FORCE: "1",
+    UNHOLD: "1",
+  };
+  const withEnv = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", "--json"], { encoding: "utf8", env });
+  assertHoldRefusal(withEnv, { cli: true });
+
+  for (const flag of ["--force", "--unhold", "--no-hold", "--override"]) {
+    const r = spawnSync(process.execPath, [CHECK, "--plan", plan, "--apply", flag, "--json"], { encoding: "utf8" });
+    assertHoldRefusal(r, { cli: true });
+  }
+  assertUnchanged(store, before, "no env var and no flag let a mutation through");
+
+  // STRUCTURAL, and the reason this test stays honest as the module changes: the module reads
+  // exactly ONE environment variable, and it is the project-root resolver — there is no env-gated
+  // branch for a bypass to hide in. Adding one reds this assertion.
+  const src = fs.readFileSync(CHECK, "utf8");
+  const envNames = [...new Set([...src.matchAll(/process\.env\.([A-Za-z0-9_]+)/g)].map((m) => m[1]))].sort();
+  assert.deepStrictEqual(envNames, ["CLAUDE_PROJECT_DIR"], `the module's only env read is the project root: ${envNames}`);
+  assert.ok(!/process\.env\s*\[/.test(src), "no dynamic env lookup either — a computed key is a bypass too");
+});
+
+ok("HOLD DRY-RUN REGRESSION: a clean dry-run still exits 0 and still prints its planned ops", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "memapply-hold-dry-"));
+  const store = path.join(base, "agent");
+  seedStore(store);
+  const before = snapshot(store);
+  const plan = writePlan(base, {
+    store,
+    changes: [
+      { file: "drop_one.md", classification: "contradicted", action: "delete", evidence: "TRACKER shows this fact was reversed" },
+      { file: "keep_one.md", classification: "verified", action: "none", evidence: "still true" },
+    ],
+  });
+
+  const r = spawnSync(process.execPath, [CHECK, "--plan", plan], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, `the hold must not have collaterally broken the report-only path: ${r.stdout}${r.stderr}`);
+  assert.ok(/^DRY-RUN /m.test(r.stdout), `it still reports as a dry-run: ${r.stdout}`);
+  assert.ok(/would delete drop_one\.md/.test(r.stdout), `it still prints the planned ops: ${r.stdout}`);
+  assert.ok(/no-op keep_one\.md/.test(r.stdout), `including the no-ops: ${r.stdout}`);
+  assertUnchanged(store, before, "the dry-run mutates nothing");
 });
 
 console.log(`\nmemory-apply: ${pass}/${pass + fail} pass`);
