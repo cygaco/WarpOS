@@ -1,0 +1,24 @@
+{
+  "sprint": "SP-20260725-002",
+  "round": "r13",
+  "role": "security-reviewer",
+  "commit": "92b9d19e",
+  "provider": "openai",
+  "model": "gpt-5.6-terra",
+  "ok": true,
+  "dispatch_task_id": "bc5x3xout",
+  "persisted_at": "2026-07-29T02:49:33.678Z",
+  "persisted_by": "epsilon",
+  "verdict": "fail",
+  "findings": [
+    {
+      "severity": "high",
+      "file": "scripts/checks/memory-apply.js",
+      "line": 276,
+      "issue": "TOCTOU source-swap after the temp descriptor is closed: `renameSync` re-resolves `tmpAbs` without confirming it is still the inode that was exclusively created and written. A structurally valid attacker file can replace that pathname and be reported as a successful correction.",
+      "repro": "Executed fixture: valid store with a correct plan for `a.md`; after the module closed its `wx` temp FD, the probe unlinked that temp pathname and hardlinked a different valid outside file to it before line 276. `run({apply:true})` returned `{ok:true, applied:true}`; `a.md` byte-compared unequal to the intended newBody, equal to the outside file, and had nlink=2. The structural post-check remained clean.",
+      "fix": "Before reporting success, verify raw-buffer postconditions for every corrected target and the expected full store entry map; rollback on any mismatch. Eliminate the mutable temp-source window with a source directory unavailable to concurrent writers or a platform-native replacement primitive that binds the rename source to the created inode; add this exact close-to-rename hardlink-swap regression fixture."
+    }
+  ],
+  "raw_output": "INV-1 and INV-2 held in executed fixture probes. INV-3a is breached.\n\n{\"verdict\":\"fail\",\"findings\":[{\"severity\":\"high\",\"file\":\"scripts/checks/memory-apply.js\",\"line\":276,\"issue\":\"TOCTOU source-swap after the temp descriptor is closed: `renameSync` re-resolves `tmpAbs` without confirming it is still the inode that was exclusively created and written. A structurally valid attacker file can replace that pathname and be reported as a successful correction.\",\"repro\":\"Executed fixture: valid store with a correct plan for `a.md`; after the module closed its `wx` temp FD, the probe unlinked that temp pathname and hardlinked a different valid outside file to it before line 276. `run({apply:true})` returned `{ok:true, applied:true}`; `a.md` byte-compared unequal to the intended newBody, equal to the outside file, and had nlink=2. The structural post-check remained clean.\",\"fix\":\"Before reporting success, verify raw-buffer postconditions for every corrected target and the expected full store entry map; rollback on any mismatch. Eliminate the mutable temp-source window with a source directory unavailable to concurrent writers or a platform-native replacement primitive that binds the rename source to the created inode; add this exact close-to-rename hardlink-swap regression fixture.\"}]}"
+}

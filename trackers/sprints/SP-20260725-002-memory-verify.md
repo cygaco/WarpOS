@@ -115,7 +115,27 @@
 - Evidence/references: `runtime/gauntlet-SP-20260725-002/out/{security-reviewer-r10-gpt,qa-reviewer-r10,backend-reviewer-r10}.json`; brief at `runtime/gauntlet-SP-20260725-002/r11-fix-brief.md`
 - Note for the retro: β's rider F is vindicated by measurement. The antigravity lanes returned 0 findings twice on this code; the GPT lane found three HIGHs on it. A 0-finding lane that provably missed what another caught is an unfalsifiable null result, not evidence of a clean scope.
 
+### 2026-07-28 19:50 UTC — Session 2026-07-28-r13-refire
+- Agent(s): Alex ε (conductor) · Mode: sprint
+- Work performed: Fired the three held r13 lanes against `92b9d19e` and adjudicated. Verified the basis BEFORE firing: the r13 files are unchanged since `92b9d19e`, both suites match their stated counts (memory-apply 64/64, memory-integrity 59/59), and the staged security prompt cites `92b9d19e` and carries INV-3a/INV-3b — a staged prompt is pinned to the commit it was built against, so this is checked rather than assumed. Every finding was then re-verified at source rather than accepted from the reviewer.
+- Files changed: None by ε. · Paths changed: None. · Wirings changed: None.
+- Decisions: Adjudicated the r13 gauntlet as FAIL; withheld the land; held the unified brief until all three lanes were in, so that no survivor is omitted.
+- Issues discovered: FIVE survivors. S-1 HIGH `memory-apply.js:276` — TOCTOU source-swap: `renameSync` re-resolves the temp BY PATH after a chain otherwise bound to the DESCRIPTOR, breaking the module's own `:234` invariant ("THE DESCRIPTOR, not the path"). B-1 MEDIUM `:202` — the confinement check rejects legitimate case-variant spellings (reproduced directly through `__testonly__`: control writes, three case-variants throw EOUTOFSTORE, `existsSync` proves the same directory); it is the ONLY comparison in the module whose two sides have independent provenance, so `:651` is structurally safe and deliberately out of scope. B-2 MEDIUM `:139` — `strayTempNames` swallows readdir errors and fails OPEN. B-3 MEDIUM `:337` — `canonicalStoreName` swallows readdir errors and fails CLOSED but conflates "could not read the store" with "no such file", at the choke-point its own docstring calls the one canonicalization the case class routes through. B-2 and B-3 are the same swallow shape failing in OPPOSITE directions, which is why "make it fatal" is the wrong instruction for either.
+- Definitions added/changed: None
+- State change: Active → Active · Completion change: 80% → 80% (held: the newly-surfaced HIGH is at least as serious as anything closed in r13)
+- Verification performed: all three lanes liveness-verified from the completion ledger, not from prose; every verdict read from its on-disk artifact; both suites re-run directly by ε; B-1 reproduced with a purpose-built probe; the r13 un-export independently confirmed to have no production consumer (only the test file, via `__testonly__`, with the suite asserting the surface shape). · Validation run: `node scripts/dispatch/gauntlet-verify.js --roles security-reviewer,backend-reviewer,qa-reviewer --since 2026-07-28T21:30:00Z` · Validation result: PASS, exit 0 — all three roles produced well-formed completion records
+- Next action: fresh live-β ruling on r14 (the r13 authorization was one-round-capped), then ONE unified brief covering all five ids.
+- Evidence/references: `runtime/gauntlet-SP-20260725-002/out/{security-reviewer-r13-gpt,backend-reviewer-r13,qa-reviewer-r13}.json` — persisted from session-scoped harness temp files, which do not survive the session
+- Dispatch note for the retro: the security lane took three attempts, and the first two failures were routing errors of ε's own making, not provider outages. The registry default routes `security-reviewer` to antigravity — the binding security lane defaulting to a provider ADR-0039 bars as scope-of-record — and it only surfaced loudly because the 95KB prompt blew agy's 32000 argv bound. A shorter prompt would have produced a plausible-looking agy verdict. Then `--provider openai` inherited `effort: null` (agy has no effort flag) and defaulted to xhigh, which on gpt-5.6-sol at this prompt size died at the 540s clamp (elapsed 540237ms) and then instantly. gpt-5.6-terra, the configuration already proven on the qa lane at the same prompt size, completed in 461227ms.
+
 ## Change log
+### 2026-07-28 19:50 UTC — Session 2026-07-28-r13-refire
+- Changed: r13 gauntlet round completed and adjudicated FAIL; three verdict artifacts persisted into the sprint evidence dir.
+- Reason: The r13 lanes were staged but never fired; adjudication was unclaimed at the previous session's wrap.
+- Affected: `runtime/gauntlet-SP-20260725-002/out/`, this tracker
+- Previous state: Active, r13 merged, lanes held unfired.
+- New state: Active, r13 gauntlet RED with five enumerated survivors, r14 pending a fresh β ruling.
+
 ### 2026-07-27 00:15 UTC — Session 2026-07-26-sprint-resume
 - Changed: This tracker file created as the sprint's durable record; state recorded as Active with a red gauntlet.
 - Reason: The sprint ran to fix round r9 and through a full gauntlet without ever being registered in the tracker system.
