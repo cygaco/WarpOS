@@ -1,0 +1,152 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260730-0083
+created_at: "2026-07-30T02:24:36.808Z"
+updated_at: "2026-07-30T02:24:36.808Z"
+sprint: S-VLADW1-01
+source_request: "Wave-1 AUDIT (epic label SP-VLAD-W1-AUDIT): give the Vlad engine its first real job by porting the lastmile audit — detect, score, adapters — into the engine, removing the WarpOS-specific refusals in the ported copy, adding an intake fallback for undetectable stacks, adopting score.js as the ONE readiness number, and producing receipt schema v1 from portfolio dogfood data."
+source_request_verbatim: "Job #1: port lastmile detect/score/adapters into the engine; remove WarpOS refusals in the ported copy; intake fallback for undetectable stacks; adopt score.js as the ONE readiness number (checklist proxy not ported); receipt schema v1 from portfolio dogfood"
+request_type: integration
+interpreted_intent: "Move an existing, working audit capability into a new host rather than rewriting it, and settle the readiness-number question permanently while doing so. The word 'converge' in the epic's framing is a trap: this is an ADOPTION of score.js plus a deliberate NON-port of the checklist proxy, not a reconciliation of two implementations. Secondary intent: produce the real dogfood data that lets the receipt schema be typed at all, since the engine deliberately emits an untyped interior until this sprint fills it."
+user_or_business_outcome: "A founder points Vlad at a repository and gets a readiness assessment with a receipt — one number, one source of truth, and an honest 'NOT SCORED' where a dimension cannot be derived rather than a fabricated score."
+affected_surfaces:
+  - surface: "the sibling product repo (name pending operator sign-off)"
+    evidence_level: not_verified
+    notes: "Does not exist yet. Every file in this sprint lands there, not in WarpOS. Operator gate #1."
+  - surface: "lastmile detect/score/adapters (port source)"
+    evidence_level: inferred_from_repo
+    notes: "The transferability inventory cites these but the cited files were NOT read; it flags its own maps as trailing live values. A builder must verify each path and line before porting."
+  - surface: "score.js (the readiness number to adopt)"
+    evidence_level: inferred_from_repo
+    notes: "Cited as score.js:134 in the inventory; unverified. Adopt as-is; do not port the checklist proxy alongside it."
+  - surface: FOUNDERS_CHECKLIST.md-dependent readiness dimension
+    evidence_level: inferred_from_repo
+    notes: "One dimension depends on it. Must be re-sourced or honestly recorded as NOT SCORED — never silently dropped or approximated."
+  - surface: "receipt schema interior (produced by ENGINE as untyped)"
+    evidence_level: not_verified
+    notes: "ENGINE emits schema_version plus three named slots and never branches on them; this sprint fills the interior and mints v1 from real data."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "No Vlad product repo exists, so there is no current behavior on the product side. On the WarpOS side, the lastmile audit exists and works but carries WarpOS-specific refusals, and TWO readiness numbers exist: score.js and a checklist proxy that concedes in its own code that it is an MVP stand-in."
+desired_behavior: "The engine can detect a repository's stack, score its readiness via score.js, fall back to intake when the stack is undetectable, and emit a receipt whose interior is now typed as v1 from real dogfood evidence. Exactly ONE readiness number exists in the product repo, enforced by a check that fails the build if a second appears."
+scope:
+  size: l
+  risk_level: medium
+  complexity_drivers:
+    - "Port sources are cited but unverified — every path and line reference must be checked before use, so the port cannot be mechanical."
+    - "The readiness-number decision must be enforced in code or it regrows; prose will not hold it."
+    - "The receipt interior can only be typed from real dogfood data, which requires a named corpus of at least three repositories with recorded read-only authorization."
+    - "Removing WarpOS-specific refusals is a judgement call per refusal, not a find-and-delete."
+scope_variants:
+  minimal_safe:
+    summary: "Port detect + score against ONE authorized repository; adopt score.js; record the checklist-dependent dimension as NOT SCORED; emit the receipt interior as v0-shaped but do not mint v1."
+    tradeoffs:
+      - "Does not satisfy the epic's dogfood intent (three repos) so the receipt interior stays provisional."
+      - "Leaves the second-readiness-number enforcer unbuilt, which is the item most likely to regrow."
+  recommended:
+    summary: "Full port of detect/score/adapters with the WarpOS refusals removed, intake fallback for undetectable stacks, score.js adopted as the single readiness number WITH a build-failing enforcer, and receipt v1 minted from a named corpus of three or more authorized repositories."
+    tradeoffs:
+      - "Requires the portfolio corpus and its read-only authorization up front, which is an operator gate rather than engineering work."
+      - "Depends on ENGINE having shipped the untyped-interior envelope; if ENGINE typed a receipt instead, part of this work is rework."
+  expanded:
+    summary: "Recommended, plus re-sourcing the FOUNDERS_CHECKLIST-dependent dimension from live repository signals rather than recording it NOT SCORED."
+    tradeoffs:
+      - "Re-sourcing may not be possible at all, so this variant can consume effort and still end at NOT SCORED."
+      - "Widens the sprint past its Job-#1 framing for a single readiness dimension."
+assumptions:
+  safe:
+    - "The lastmile audit's detect/score logic is portable — it reads repository state and does not depend on WarpOS-specific services."
+    - "score.js is the better of the two readiness implementations; the checklist proxy says so in its own code."
+  unsafe:
+    - "That the transferability inventory's cited paths and line numbers are accurate. They are marked inferred_from_repo, never verified_from_repo, and the inventory flags its own maps as trailing live values."
+  needs_user_or_beta_review:
+    - "That 'dogfood against portfolio repositories' constitutes authorization to read those repositories. It was accepted verbally in grill round 3 but never reconciled in writing with the standing WarpOS-only rule, and this sprint cannot proceed on a verbal."
+    - That recording a readiness dimension as NOT SCORED is acceptable product behavior rather than a gap a founder would read as brokenness.
+open_questions:
+  blocking:
+    - "OPERATOR GATE 1: sibling repo name, slug, and creation sign-off (inherited from the epic's first approval point)."
+    - "OPERATOR GATE 2: WHICH portfolio repositories (at least three), named, with explicit read-only authorization recorded in writing against the standing WarpOS-only rule."
+    - "OPERATOR GATE 3: ratification of the J3 reframe — that this is an adoption of score.js and a deliberate non-port of the checklist proxy, not a convergence of two numbers."
+    - "OPERATOR GATE 4: the Anthropic API spend envelope for dev/test, inherited via the engine (trips two autonomy rows: signup/purchase not allowed; spend at or above five dollars is ask-first)."
+  non_blocking:
+    - "Whether the FOUNDERS_CHECKLIST-dependent readiness dimension can be re-sourced at all, or must ship as NOT SCORED."
+    - "What the intake fallback asks a founder when the stack is undetectable — wording is a copy question, not an engineering one."
+non_goals:
+  - "Porting the checklist readiness proxy. This is a deliberate NON-port, not an omission — see the J3 decision."
+  - "The write path (Wave 2)."
+  - "The agent face and installer (Wave 2)."
+  - Typing the receipt interior speculatively before dogfood data exists.
+  - "Any change to WarpOS itself; this sprint's files all land in the sibling repo."
+requirement_areas:
+  - "Stack detection port, with WarpOS-specific refusals removed"
+  - "Readiness scoring: score.js adopted as the single number"
+  - Intake fallback for undetectable stacks
+  - "Receipt schema v1, minted from dogfood evidence"
+  - "Enforcement: a check that fails the build if a second readiness number appears"
+high_level_story_candidates:
+  - "As a founder, I point Vlad at my repository and it tells me what stack it found, so I can trust that it understood my project before it scores it."
+  - "As a founder, I get ONE readiness number, so I am never left reconciling two scores that disagree."
+  - "As a founder, when Vlad cannot assess a dimension, it says so plainly rather than giving me a number it invented."
+  - "As a founder with an unusual stack, Vlad asks me instead of guessing wrong."
+granular_story_candidates:
+  - Detect the stack of an authorized repository and record what evidence drove the detection.
+  - Score readiness using the adopted score.js and no other implementation.
+  - "Record a dimension as NOT SCORED, with its reason, when its source is unavailable."
+  - Fall back to intake questions when detection cannot identify the stack.
+  - Emit a receipt whose interior conforms to the newly minted v1 schema.
+  - Fail the build when a second readiness number is introduced.
+workstream_candidates:
+  - Port and de-WarpOS-ify detect/adapters
+  - Adopt score.js and build the single-number enforcer
+  - Intake fallback
+  - Receipt v1 from dogfood evidence
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "No executable tickets. design_required is true and execution_allowed_without_design is false, and four operator gates are unresolved — the most consequential being which repositories may be read. Minting tickets now would create work items whose target repository does not exist."
+external_service_dependencies:
+  status: blocked
+  required:
+    - "Anthropic API access via the user's own key, inherited through the engine"
+  possible: []
+  notes: "Blocked rather than merely required: the spend envelope is an unresolved operator gate, and the model-access seam this depends on is itself pending operator ratification in S-VLADW1-01. No API call may be made from this sprint until both clear."
+approval_boundaries:
+  - "Creating the sibling repository — operator sign-off required; ε may not create it."
+  - "Reading any repository outside WarpOS — requires named, written, read-only authorization; the standing rule is WarpOS-only."
+  - "Any Anthropic API spend — ask-first at or above five dollars; signup and purchase are not permitted at all."
+  - "Ratifying the J3 adoption reframe — a product decision, above ε's altitude."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: no_recommendation
+mode_invocation_required_by_user: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "No WarpOS-side code changes, so no WarpOS worktree is needed. All product work lands in the sibling repo, which does not exist yet; its isolation posture is a Wave-1 design question and cannot be settled before the repo is named."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "A readiness dimension reported as NOT SCORED may read as the product being broken rather than honest, and the operator has previously optimised hard against onboarding friction."
+  overbuild_risks:
+    - "Re-sourcing the checklist-dependent dimension (the expanded variant) can consume real effort and still land on NOT SCORED."
+    - "Treating the readiness question as a 'convergence' would port both implementations and reconcile them — a hidden second sprint the J3 reframe exists to prevent."
+  missing_context_risks:
+    - "Every port source is cited but unverified, so scope estimates rest on an inventory that flags its own maps as stale."
+    - "Whether verbal dogfood acceptance extends to reading three named repositories is genuinely unresolved, not merely unrecorded."
+plan_quality:
+  status: needs_user_clarification
+  confidence: medium
+  evidence_gaps:
+    - "Port sources are inferred_from_repo, never verified_from_repo — the cited files were not read."
+    - "The portfolio corpus is unnamed, so the dogfood scope is unknown."
+    - "The receipt interior's shape depends on data that does not exist yet by design."
+  fail_reasons: []
+next_recommended_command: "/sprint:design S-VLADW1-02 — but only after the four operator gates in open_questions.blocking are answered; the corpus authorization is the one that cannot be worked around."
+resume_instructions: "The banked planning substance is at runtime/vlad-w1/w1-planning-inputs.md (section 2 for this contract's source material, section 4.2 for the schema gotchas already resolved here). The durable tracker is trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md, which carries the four gates as Blockers and the J3 decision. Note recommended_mode is no_recommendation because this is conducted as a SPRINT and the schema enum offers only solo, adhoc, oneshot — the omission is the enum's, not an absence of a recommendation. Product-lead judgement carried forward: this sprint is better-evidenced than S-VLADW1-01 and its blockers are INPUTS rather than unknowns, so it clears to pass without re-authoring once the gates are answered. HOLD at design→build regardless."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260730-0083.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260730-0083.report.md"
+created_by: epsilon
+updated_by: epsilon
