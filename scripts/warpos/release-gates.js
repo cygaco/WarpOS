@@ -163,6 +163,76 @@ const GATES = [
     };
   }),
 
+  // 2a-bis. Release-notes placeholder scan (ED-318) — the gate that would have
+  // caught WarpOS 1.2.0 being tagged with its own generated placeholder notes
+  // ("Replace this placeholder content with real release notes before tagging",
+  // "(TODO: list user-visible changes)", and a RELEASES.md row still reading
+  // "Fill in via release notes"). Every other gate here checks manifest honesty,
+  // structure, install or upgrade; NONE of them checked whether a document says
+  // what a human promised it would say, which is the aspirational-vs-enforced
+  // pattern in its purest form. The scan closed it mechanically because the
+  // placeholders are OUR OWN GENERATOR'S sentinels, so gate and skeleton share
+  // one source of truth rather than drifting. It also refuses a capsule that
+  // cannot state what it was built from.
+  //
+  // Not a hypothetical: when first run it showed 1.1.0 had shipped placeholder
+  // notes too, so the gap was at least two releases old rather than a one-off.
+  //
+  // SEVERITY MAPPING, deliberate. exit 1 (placeholder present / no provenance
+  // commit) and exit 2 (COULD NOT RUN — missing or unreadable capsule) BOTH map
+  // to `red`, because only `red` blocks (`ok: red === 0`) and a gate that cannot
+  // verify must never let a release through — absence of a finding is not a
+  // finding of absence. `degraded` was considered and REJECTED for exit 2: it
+  // does not block. But the two are LABELLED distinctly in the message, so this
+  // gate does not repeat GATE-A's conflation of could-not-run with failed, which
+  // is ED-313's open residual.
+  gate("release_notes_no_placeholders", () => {
+    const version = (() => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "version.json"), "utf8")).version;
+      } catch {
+        return null;
+      }
+    })();
+    if (!version) {
+      return {
+        ok: false,
+        severity: "red",
+        message:
+          "release_notes_no_placeholders COULD NOT RUN — version.json unreadable, so the capsule under test is unknown. Not a pass.",
+      };
+    }
+    const r = runScript("scripts/checks/release-notes-placeholder-scan.js", ["--version", version, "--json"]);
+    let payload = null;
+    try {
+      payload = JSON.parse(r.stdout || "{}");
+    } catch {
+      /* fall through to the exit-code reading */
+    }
+    const problems = (payload && payload.problems) || [];
+    const notes = (payload && payload.notes) || [];
+    if (r.status === 0)
+      return {
+        ok: true,
+        severity: "green",
+        message: `Release notes for ${version} carry no generator placeholders and the capsule states its build commit.`,
+        details: notes.slice(0, 4),
+      };
+    if (r.status === 1)
+      return {
+        ok: false,
+        severity: "red",
+        message: `release_notes_no_placeholders FAILED — the ${version} capsule still carries placeholder notes, or cannot state what it was built from. Fill the notes before tagging; a tagged placeholder cannot be repaired by a later release.`,
+        details: problems.slice(0, 8).concat(notes.slice(0, 2)),
+      };
+    return {
+      ok: false,
+      severity: "red",
+      message: `release_notes_no_placeholders COULD NOT RUN (exit ${r.status}) — the ${version} capsule is missing or unreadable, so nothing was verified. Distinct from a FAILURE, and still blocking: absence of a finding is not a finding of absence.`,
+      details: problems.length ? problems.slice(0, 6) : [(r.stderr || r.stdout || "").slice(0, 200)],
+    };
+  }),
+
   // 2b. Ship coverage (SP-20260525-024) — the framework_manifest gate above is
   // TAUTOLOGICAL (it only checks the manifest matches its own generator). This
   // gate closes the "downstream always missing something" class: it asserts the
