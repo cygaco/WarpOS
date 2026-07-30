@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 205,
+    "check_tool": 206,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1733,
+  "total": 1734,
   "assets": {
     "agent": [
       {
@@ -9623,6 +9623,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.release-notes-placeholder-scan.js",
+        "src": "scripts/checks/release-notes-placeholder-scan.js",
+        "dest": "scripts/checks/release-notes-placeholder-scan.js",
+        "kind": "check_tool",
+        "sha256": "51e70c933ef125e5891df5d74cc9acbf1061c701b4af9a65698f1944d9dcdd87",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.repo-role-single-source.js",
         "src": "scripts/checks/repo-role-single-source.js",
         "dest": "scripts/checks/repo-role-single-source.js",
@@ -17681,7 +17693,7 @@
         "src": "framework/releases/1.2.0/changelog.md",
         "dest": "framework/releases/1.2.0/changelog.md",
         "kind": "release_capsule",
-        "sha256": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c",
+        "sha256": "11cfb3765666376839116a120e8eab081abd03e49ea7804d9cd7cb8ab9b743fd",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -17729,7 +17741,7 @@
         "src": "framework/releases/1.2.0/upgrade-notes.md",
         "dest": "framework/releases/1.2.0/upgrade-notes.md",
         "kind": "release_capsule",
-        "sha256": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14",
+        "sha256": "876c628b4e5a012fad21b05507c6a430941197b727fa36a2ff984155bf0b73ff",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "11fead50d68c6eef21664ecd49d2dcd538a0e9c7",
-  "installedAt": "2026-07-29T22:53:31.536Z",
+  "installedCommit": "f4c2f1f3523af4f07c83d2bf292c56bff54e8717",
+  "installedAt": "2026-07-30T01:17:56.111Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7949,6 +7949,16 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "check_tool.release-notes-placeholder-scan.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/release-notes-placeholder-scan.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "51e70c933ef125e5891df5d74cc9acbf1061c701b4af9a65698f1944d9dcdd87",
+      "currentHashAtInstall": "51e70c933ef125e5891df5d74cc9acbf1061c701b4af9a65698f1944d9dcdd87",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "check_tool.repo-role-single-source.js",
       "kind": "check_tool",
       "dest": "scripts/checks/repo-role-single-source.js",
@@ -14594,8 +14604,8 @@
       "dest": "framework/releases/1.2.0/changelog.md",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c",
-      "currentHashAtInstall": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c",
+      "installedHash": "11cfb3765666376839116a120e8eab081abd03e49ea7804d9cd7cb8ab9b743fd",
+      "currentHashAtInstall": "11cfb3765666376839116a120e8eab081abd03e49ea7804d9cd7cb8ab9b743fd",
       "introducedIn": "0.0.0"
     },
     {
@@ -14634,8 +14644,8 @@
       "dest": "framework/releases/1.2.0/upgrade-notes.md",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14",
-      "currentHashAtInstall": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14",
+      "installedHash": "876c628b4e5a012fad21b05507c6a430941197b727fa36a2ff984155bf0b73ff",
+      "currentHashAtInstall": "876c628b4e5a012fad21b05507c6a430941197b727fa36a2ff984155bf0b73ff",
       "introducedIn": "0.0.0"
     },
     {
