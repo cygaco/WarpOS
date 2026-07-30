@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-30T02:13:24.849Z",
+  "generatedAt": "2026-07-30T02:21:08.087Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -5048,6 +5048,14 @@
       "installedSha": "41e6c2aab85ce3b4c58ccc50ba791ac50c4b97e80952f15dec3473cee0e0a1c1"
     },
     "trackers/sprints/S-SPINUP-001-step-driven-degrade-proof-spinup.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-01-vlad-engine-skeleton.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md": {
       "owner": "runtime",
       "managed": false
     },
