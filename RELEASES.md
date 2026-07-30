@@ -10,7 +10,7 @@ Every `version.json` bump that produced a capsule under `framework/releases/X.Y.
 
 | Version | Released | Capsule | Summary |
 |---|---|---|---|
-| `1.2.0` | 2026-07-29 | [1.2.0/release.json](framework/releases/1.2.0/release.json) | Patch bump to 1.2.0. Fill in via release notes. |
+| `1.2.0` | 2026-07-29 | [1.2.0/release.json](framework/releases/1.2.0/release.json) | **Minor** bump. `/memory:verify` ships with its `--apply` executor **held fail-closed** — after five review rounds it still cannot guarantee that a successful delete leaves untouched bytes alone, or that a failed run leaves the store unchanged while reporting that it does; four findings remain open and there is no override. The read-only detector ships and is useful on its own. Also: two release gates that could not execute on a large working tree now bound their snapshot read, and the review process's finding-class definitions get a tracked ADR home. No breaking changes, no schema changes, no migrations. |
 | `1.1.0` | 2026-07-23 | [1.1.0/release.json](framework/releases/1.1.0/release.json) | Patch bump to 1.1.0. Fill in via release notes. |
 | `1.0.0` | 2026-07-22 | [1.0.0/release.json](framework/releases/1.0.0/release.json) | Patch bump to 1.0.0. Fill in via release notes. |
 | `0.17.0` | 2026-06-28 | [0.17.0/release.json](framework/releases/0.17.0/release.json) | Patch bump to 0.17.0. Fill in via release notes. |

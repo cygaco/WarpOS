@@ -147,10 +147,22 @@ Two combinations are known emittable and uncovered as of `8adf768b`:
 
 - **(`rolledBack:false`, `rollbackVerified:true`)** — emittable because `rollbackVerified` is computed from the
   observed-difference set alone while `rolledBack` additionally requires that no restore error occurred. It reads
-  as "verified, and it failed anyway."
-- **(`ok:true`, `applied:false`, `dryRun:false`)** — an empty or no-op plan.
+  as "verified, and it failed anyway." **Mechanism (found by lane I4, filed as a finding):**
+  `atomicWriteInStore` can rename successfully and *then* throw solely because its own post-rename read-back
+  fails — so the bytes ARE restored while an error is still recorded. The same object additionally carries
+  `applied:true`, because `applied` is derived as `!rolledBack`.
+- **(`ok:true`, `applied:true`, `dryRun:false`) on an empty or all-`none` plan — CORRECTED.** This document
+  previously recorded the pair as `applied:false`. That was **wrong, and the error is attributable to verdict
+  `4b2e8f17`, not to transcription**: β's B4 wrote the `applied:false` formulation, ε copied it faithfully, and
+  her spot-check established only that the two fields derive from different predicates — never the *direction*
+  of the no-op case. Lane I4 found the inverse and worse form: an all-`none` plan reaches the success return
+  with **`applied:true`** while the mutation loop writes nothing, because `action:"none"` is a valid
+  non-mutating entry that the mutations list filters out. β took ownership of the error explicitly; it is
+  recorded here rather than silently fixed so the correction is auditable.
 
 The verifier must **enumerate the combinations the code can emit**, not the ones this document happens to discuss.
+Lane I4 did exactly that and returned **7** emittable configurations — more than this section anticipated, which
+is the point of the instruction.
 
 ---
 

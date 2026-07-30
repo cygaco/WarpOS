@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 205,
+    "check_tool": 206,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1733,
+  "total": 1734,
   "assets": {
     "agent": [
       {
@@ -9623,6 +9623,18 @@
         "replaces": null
       },
       {
+        "id": "check_tool.release-notes-placeholder-scan.js",
+        "src": "scripts/checks/release-notes-placeholder-scan.js",
+        "dest": "scripts/checks/release-notes-placeholder-scan.js",
+        "kind": "check_tool",
+        "sha256": "1c2634c9c88d1317203382f47ac90bbcc8401d89a5eade3b16663608648f523f",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "check_tool.repo-role-single-source.js",
         "src": "scripts/checks/repo-role-single-source.js",
         "dest": "scripts/checks/repo-role-single-source.js",
@@ -17681,7 +17693,7 @@
         "src": "framework/releases/1.2.0/changelog.md",
         "dest": "framework/releases/1.2.0/changelog.md",
         "kind": "release_capsule",
-        "sha256": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c",
+        "sha256": "11cfb3765666376839116a120e8eab081abd03e49ea7804d9cd7cb8ab9b743fd",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -17693,7 +17705,7 @@
         "src": "framework/releases/1.2.0/checksums.json",
         "dest": "framework/releases/1.2.0/checksums.json",
         "kind": "release_capsule",
-        "sha256": "eed83a375f2ab17f8f8cd4471b9f46caded20273257e0a8d17a400a7c3f7ac7a",
+        "sha256": "26bbfb1726f93c4ceec8064a0f48b1b8ff878a0df39227bd37b83ef09963ccb3",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -17705,7 +17717,7 @@
         "src": "framework/releases/1.2.0/framework-manifest.json",
         "dest": "framework/releases/1.2.0/framework-manifest.json",
         "kind": "release_capsule",
-        "sha256": "04cae9d69224f4f6ce520aa257966dde4da66c8f1f126f85405a479fd2b2403b",
+        "sha256": "d4268e870a52ddb803ea50c8ee22ad1e90ee16f98d49ab2f77f1f15a90761489",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -17729,7 +17741,7 @@
         "src": "framework/releases/1.2.0/upgrade-notes.md",
         "dest": "framework/releases/1.2.0/upgrade-notes.md",
         "kind": "release_capsule",
-        "sha256": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14",
+        "sha256": "876c628b4e5a012fad21b05507c6a430941197b727fa36a2ff984155bf0b73ff",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
