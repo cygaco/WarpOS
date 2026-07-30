@@ -137,10 +137,18 @@ function snapshotCanonicalState() {
     cwd: REPO_ROOT,
     encoding: "utf8",
     timeout: 30_000,
+    // `--untracked-files=all` lists EVERY untracked file, so this output grows with accumulated
+    // artifacts, not with the size of the change under test. Node's spawnSync default maxBuffer is
+    // 1 MiB; once the listing crosses it the child is SIGTERM'd with ENOBUFS and `status` comes back
+    // null, which this function raises as a snapshot failure and the callers surface as a GATE-A/
+    // GATE-B failure — a gate that can no longer RUN reporting as a gate that FAILED. Observed at
+    // 1,076,925 bytes / 10,307 files, only 2.7% over the default. Generous on purpose: the margin
+    // must not be re-crossable by ordinary artifact accumulation.
+    maxBuffer: 64 * 1024 * 1024,
   });
   if (r.status !== 0) {
     throw new Error(
-      `git status snapshot failed (status=${r.status}): ${(r.stderr || r.stdout || "").slice(0, 300)}`,
+      `git status snapshot failed (status=${r.status}${r.error ? `, ${r.error.code || r.error.message}` : ""}): ${(r.stderr || r.stdout || "").slice(0, 300)}`,
     );
   }
   return (r.stdout || "")

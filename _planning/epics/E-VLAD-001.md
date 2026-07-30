@@ -1,0 +1,1 @@
+# Epic Plan: E-VLAD-001 — body withheld from the public repository (private positioning and pricing for an unreleased product). State lives in the epic tracker: [../../trackers/epics/E-VLAD-001-vlad-v1-agent-mcp-cofounder.md](../../trackers/epics/E-VLAD-001-vlad-v1-agent-mcp-cofounder.md). Withheld 2026-09-02 (E-OPEN-SOURCE-001 S-OS-03).

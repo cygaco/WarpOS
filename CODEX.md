@@ -40,4 +40,4 @@ The trailing `-` reads the prompt from **stdin** (`cat prompt.txt | codex exec �
 
 ## Skills (slash commands) under Codex
 
-`.claude/commands/*.md` are PROCEDURES, not executable slash commands for you. When `DUMP.md`/`TRACKER.md` says "run `/x:y`", OPEN `.claude/commands/x/y.md` and follow its documented CLI steps. The sprint runtime itself is real CLI (`node scripts/sprint/epsilon-runtime.js plan|conduct`), but `record-inprocess` + the in-process roster need the Agent tool you don't have — so build/gauntlet run through the `dispatch-claude.js` / `dispatch-agent.js` CLI routes per #4.
+`.claude/commands/*.md` are PROCEDURES, not executable slash commands for you. When `DUMP.md`/`TRACKER.md` says "run `/x:y`", OPEN `.claude/commands/x/y.md` and follow its documented CLI steps. <!-- doc-ref-ignore: x/y.md is an illustrative pattern for any skill path --> The sprint runtime itself is real CLI (`node scripts/sprint/epsilon-runtime.js plan|conduct`), but `record-inprocess` + the in-process roster need the Agent tool you don't have — so build/gauntlet run through the `dispatch-claude.js` / `dispatch-agent.js` CLI routes per #4.
