@@ -1,6 +1,21 @@
 # STAGED betaEvents row — E-VLAD-001 Wave-1 plan→design boundary
 
-**Status: STAGED, NOT APPENDED.** Staged by Alex ε ("EpsilonW1") for the actual appender.
+## ✅ CONSUMED — APPENDED 2026-07-30. DO NOT APPEND AGAIN.
+
+**This staging file has been used. Re-appending the line below would create a duplicate betaEvents row.**
+
+- Canonical location: `paths.betaEvents` **line 293** (`.claude/agents/president/_system/beta/events.jsonl`).
+- Appended by **α**, which stamped its own `appended_by: "alpha"` — exactly the ED-267a intent, since ε
+  staged the row with no append attribution.
+- Presence-verified 2026-07-30 by direct read: the log holds **exactly one** row carrying
+  `msg_id: 7c4e2b96-5d81-4a37-b0f2-91e6c58a3d74` (DECIDE / B / 0.88 / open_adr true).
+  `scripts/enforcement/betaevents-dedup-lint.js` exits 0.
+- Retained rather than deleted so the staging→append chain stays auditable and the verdict's full text has a
+  readable home outside a 7.8KB JSONL field. The marker above is what makes retention safe.
+
+---
+
+**Original status when written: STAGED, NOT APPENDED.** Staged by Alex ε ("EpsilonW1") for the actual appender.
 
 Per ED-267a as amended: the note below describes **only events that have already occurred**, and carries
 **no append attribution** — `appended_by` / `appended_at` / `append_lane` are deliberately ABSENT and are the
