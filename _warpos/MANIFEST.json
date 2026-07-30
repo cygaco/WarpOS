@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-30T01:17:56.359Z",
+  "generatedAt": "2026-07-30T01:43:07.256Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -12332,8 +12332,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/release-notes-placeholder-scan.js",
-      "sha256": "51e70c933ef125e5891df5d74cc9acbf1061c701b4af9a65698f1944d9dcdd87",
-      "installedSha": "51e70c933ef125e5891df5d74cc9acbf1061c701b4af9a65698f1944d9dcdd87"
+      "sha256": "1c2634c9c88d1317203382f47ac90bbcc8401d89a5eade3b16663608648f523f",
+      "installedSha": "1c2634c9c88d1317203382f47ac90bbcc8401d89a5eade3b16663608648f523f"
     },
     "scripts/checks/repo-role-single-source.js": {
       "owner": "framework",
@@ -13452,15 +13452,15 @@
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/1.2.0/checksums.json",
-      "sha256": "eed83a375f2ab17f8f8cd4471b9f46caded20273257e0a8d17a400a7c3f7ac7a",
-      "installedSha": "eed83a375f2ab17f8f8cd4471b9f46caded20273257e0a8d17a400a7c3f7ac7a"
+      "sha256": "26bbfb1726f93c4ceec8064a0f48b1b8ff878a0df39227bd37b83ef09963ccb3",
+      "installedSha": "26bbfb1726f93c4ceec8064a0f48b1b8ff878a0df39227bd37b83ef09963ccb3"
     },
     "framework/releases/1.2.0/framework-manifest.json": {
       "owner": "framework",
       "managed": true,
       "source": "framework/releases/1.2.0/framework-manifest.json",
-      "sha256": "04cae9d69224f4f6ce520aa257966dde4da66c8f1f126f85405a479fd2b2403b",
-      "installedSha": "04cae9d69224f4f6ce520aa257966dde4da66c8f1f126f85405a479fd2b2403b"
+      "sha256": "d4268e870a52ddb803ea50c8ee22ad1e90ee16f98d49ab2f77f1f15a90761489",
+      "installedSha": "d4268e870a52ddb803ea50c8ee22ad1e90ee16f98d49ab2f77f1f15a90761489"
     },
     "framework/releases/1.2.0/release.json": {
       "owner": "framework",

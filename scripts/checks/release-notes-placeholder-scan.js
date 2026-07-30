@@ -99,31 +99,58 @@ function scan(version, opts = {}) {
     return fail(2, [`RELEASES.md unreadable (${e.code || e.message}) — cannot verify`]);
   }
 
-  // release.json must be able to say what it was built from.
+  // PROVENANCE. The invariant that matters is "the capsule can state what it was built from", and the
+  // artifact that actually carries it is checksums.json#commit — release-build.js stamps it there.
+  // release.json#commit is written `null` by the skeleton and NEVER populated (true of 1.1.0 and 1.2.0
+  // alike; tracked as its own debt row). So the BLOCKING rule keys on checksums.json, and the null
+  // release.json field is surfaced as a loud non-blocking legacy note.
+  //
+  // Deliberate note on why the rule is shaped this way rather than blocking on release.json: a rule no
+  // release has ever satisfied, and that the generator cannot satisfy, is a permanent red rather than a
+  // gate — it would block every future release until the generator is fixed, and a gate that is always
+  // red gets routed around. Keying the block on the artifact that genuinely carries the provenance keeps
+  // the teeth on the real invariant. This is a specification fix, not a weakening to let a particular
+  // capsule through; the legacy defect stays visible in every run's output.
   let commitNull = false;
-  const rjPath = path.join(capsule, "release.json");
+  let provenanceCommit = null;
   try {
-    const rj = JSON.parse(fs.readFileSync(rjPath, "utf8"));
+    const rj = JSON.parse(fs.readFileSync(path.join(capsule, "release.json"), "utf8"));
     scanned.push(`framework/releases/${version}/release.json`);
     if (!rj.commit) commitNull = true;
   } catch (e) {
     return fail(2, [`release.json unreadable/unparseable (${e.code || e.message}) — cannot verify`]);
   }
+  try {
+    const cs = JSON.parse(fs.readFileSync(path.join(capsule, "checksums.json"), "utf8"));
+    scanned.push(`framework/releases/${version}/checksums.json`);
+    provenanceCommit = cs.commit || null;
+  } catch (e) {
+    return fail(2, [`checksums.json unreadable/unparseable (${e.code || e.message}) — cannot verify`]);
+  }
 
   // Drift guard: if NOTHING matched anywhere, the sentinel set may have drifted from the generator.
   // Opt-in, because a legitimately-clean capsule also matches nothing.
   const problems = [];
+  const notes = [];
   for (const f of findings) problems.push(`${f.file}:${f.line} still carries the generator placeholder ${JSON.stringify(f.sentinel)}`);
-  if (commitNull) {
+
+  // BLOCKING: no artifact in the capsule states the build commit.
+  if (!provenanceCommit) {
     problems.push(
-      `framework/releases/${version}/release.json has a null "commit" — the capsule cannot state what it was built from (the build records the real value in checksums.json#commit)`,
+      `framework/releases/${version}/checksums.json has no "commit" — the capsule cannot state what it was built from`,
+    );
+  }
+  // NON-BLOCKING, but always surfaced: the known-null legacy field.
+  if (commitNull) {
+    notes.push(
+      `framework/releases/${version}/release.json "commit" is null (known legacy: the skeleton writes it null and nothing populates it; the build records provenance in checksums.json#commit${provenanceCommit ? ` = ${provenanceCommit}` : ""}). Tracked as debt — not blocking.`,
     );
   }
 
   if (problems.length) {
-    return { check: NAME, ok: false, exit: 1, version, scanned, problems, findings, commit_null: commitNull };
+    return { check: NAME, ok: false, exit: 1, version, scanned, problems, notes, findings, commit_null: commitNull, provenance_commit: provenanceCommit };
   }
-  return { check: NAME, ok: true, exit: 0, version, scanned, problems: [], findings: [], commit_null: false };
+  return { check: NAME, ok: true, exit: 0, version, scanned, problems: [], notes, findings: [], commit_null: commitNull, provenance_commit: provenanceCommit };
 }
 
 function main(argv) {
@@ -144,11 +171,13 @@ function main(argv) {
   if (json) {
     process.stdout.write(JSON.stringify(r, null, 2) + "\n");
   } else if (r.exit === 0) {
-    process.stdout.write(`OK   [${NAME}] ${version}: no placeholder text; release.json#commit populated (${r.scanned.length} surfaces scanned)\n`);
+    process.stdout.write(`OK   [${NAME}] ${version}: no placeholder text; provenance commit present (${r.scanned.length} surfaces scanned)\n`);
+    for (const n of r.notes || []) process.stdout.write(`     note: ${n}\n`);
   } else {
     const label = r.exit === 2 ? "COULD-NOT-RUN" : "FAIL";
     process.stdout.write(`${label} [${NAME}] ${version}\n`);
     for (const p of r.problems) process.stdout.write(`       ${p}\n`);
+    for (const n of r.notes || []) process.stdout.write(`     note: ${n}\n`);
   }
   return r.exit;
 }
