@@ -1,0 +1,294 @@
+{
+  "sprint_title": "Engine skeleton — plain-node Agent SDK app, MCP stdio server, four-core tool surface, job state machine, journal, permission-level config port, and the API-key model-access seam",
+  "sprint_objective": "Stand up the engine Vlad runs on: a plain-node app on the TypeScript Agent SDK exposing a four-tool MCP surface over stdio, with a job state machine, an on-disk journal, ported permission-level config, and a model-access seam that bills to the user's own API key and never lets that key leave their machine.",
+
+  "source_request": "Wave-1 ENGINE of epic E-VLAD-001 (epic label SP-VLAD-W1-ENGINE). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28), the differentiator memo _planning/vlad-why-us.md, and the 34-family port inventory _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2 and the ToS finding in §1.",
+  "source_request_verbatim": "S-VLADW1-01 (epic label SP-VLAD-W1-ENGINE) — candidate — Engine skeleton: plain-node Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port (turbo engine half) + API-key model-access seam via the TypeScript Agent SDK (the claude-CLI subscription shell-out is ToS NO-GO; the seam's residue is the credential-custody enforcer + an empirically characterized quota-exhaustion detector)",
+
+  "request_type": "feature_add",
+
+  "interpreted_intent": "Build the substrate every later Vlad wave stands on: a plain-node application on the TypeScript Agent SDK that speaks MCP over stdio, runs jobs through an explicit state machine backed by an on-disk journal, reads a ported per-project permission-level config, and reaches a model through the user's OWN Anthropic API key. Two of the calls in this sprint are load-bearing far beyond it. First, the model-access seam: the ratified claude-CLI subscription shell-out is ToS-barred, so API-key is primary and ONLY, which makes a fail-closed credential-custody enforcer part of the build rather than a later hardening pass. Second, the receipt: ENGINE emits a versioned envelope with an UNTYPED interior (J4) and never validates or branches on it, because typing it here would propagate a v0 shape into the journal, get_status, the MCP signatures, the driver assertions and the ledger records before the dogfood data that defines it exists.",
+
+  "user_or_business_outcome": "Nothing user-visible ships in this sprint, and that is the correct shape: this is the engine, not a feature. What it buys is that every subsequent wave — the audit job, the write path, the agent face, the roadmap layer — has a real surface to attach to, exercisable end-to-end without a host, with the compliance-critical credential boundary already enforced in code rather than retrofitted. The founder-facing payoff arrives in S-VLADW1-02, which cannot start without this.",
+
+  "affected_surfaces": [
+    {
+      "surface": "The sibling Vlad product repo (all product-side files)",
+      "evidence_level": "unknown",
+      "notes": "Does not exist. Name + slug + creation sign-off is operator gate #1 and the epic's first approval point. No product-side path can be assigned, so every file-level claim here is necessarily unlocated."
+    },
+    {
+      "surface": "The MCP stdio server and its four-core tool surface",
+      "evidence_level": "assumed_from_request",
+      "notes": "Both the epic tracker and the plan artifact say '4-core tool surface' but NEITHER enumerates which four. The full v1 surface is seven tools (get_status, get_readiness, run_job, send_message, approve_job, cancel_job, get_roadmap). Which four ship in Wave 1 is genuinely undetermined in the record — see the non-blocking open question. Not invented here."
+    },
+    {
+      "surface": "The job state machine (running / needs_input / proposing / done) and the on-disk job journal",
+      "evidence_level": "assumed_from_request",
+      "notes": "States are named in the epic scope; checkpoint granularity and the resume/discard semantics get_status must offer are design-time work."
+    },
+    {
+      "surface": "The receipt envelope — schema_version plus three named slots, interior UNTYPED",
+      "evidence_level": "assumed_from_request",
+      "notes": "J4's fix for a designed-in circularity. ENGINE journals, returns and logs the interior opaquely and never validates or branches on it; S-VLADW1-02 fills it and mints v1. Cheap only if decided now, which is why it is a Decision on the tracker rather than a design open question."
+    },
+    {
+      "surface": "Model access via the TypeScript Agent SDK (@anthropic-ai/claude-agent-sdk) on the user's own API key",
+      "evidence_level": "verified_from_repo",
+      "notes": "The ToS constraint is primary-source verified TWICE with independently re-fetched verbatim quotes (runtime/vlad-w1/w1-planning-inputs.md §1). What is verified is the CONSTRAINT, not an implementation — no engine code exists. The SDK bundling its own Claude Code binary removes the user's Claude Code install from the dependency graph; bank that portability gain, do not spend it."
+    },
+    {
+      "surface": "The credential-custody enforcer (fail-closed)",
+      "evidence_level": "assumed_from_request",
+      "notes": "The user's key must never leave their machine — no transmit, no log, no proxy, no telemetry — and ambient ANTHROPIC_API_KEY must never be inherited by a child process. Consumer Terms forbid credential sharing, making this a COMPLIANCE obligation, not hygiene: a report-only check does not satisfy it. Now epic DoD item 10."
+    },
+    {
+      "surface": "The quota-exhaustion detector",
+      "evidence_level": "inferred_from_repo",
+      "notes": "Result strings and structured error codes are documented; the EXIT CODE is not. So the detector must be empirically characterized against real terminations before ship, an unrecognized termination classifies could-not-run rather than success, and it must never trip on 'Server is temporarily limiting requests (not your usage limit)' — that is capacity, auto-retried."
+    },
+    {
+      "surface": "Permission-level config port (turbo engine half: auto | notice | confirm | never, TTL grants checked in code)",
+      "evidence_level": "inferred_from_repo",
+      "notes": "Cited sources (permission-profile.js and the rest of the inventory's maps) are inferred_from_repo and were never opened. The action taxonomy these levels gate does not exist yet — see the risk."
+    },
+    {
+      "surface": "The host-free driver",
+      "evidence_level": "assumed_from_request",
+      "notes": "Non-negotiable and deliberately inside minimal_safe: without it a four-tool MCP surface cannot be exercised end-to-end at all, so nothing else in the sprint is testable."
+    },
+    {
+      "surface": "The branding guard ('Vlad, powered by Claude')",
+      "evidence_level": "assumed_from_request",
+      "notes": "Never 'Claude Code', never Claude-Code-mimicking visuals. The DoD requires an enforcer to be NAMED, which is currently unmet."
+    }
+  ],
+
+  "current_behavior": {
+    "evidence_level": "verified_from_repo",
+    "notes": "Nothing exists product-side. The sibling repo is Verified Nonexistent as of 2026-07-29 (no path assigned; operator gate #1 unresolved). Inside WarpOS the registry entry, ROADMAP row and sprint stores exist for S-VLADW1-01 — which holds registry primary, the intended result of minting AUDIT first and ENGINE last — with current.yaml and progress.yaml at minted defaults; the tracker at trackers/sprints/S-VLADW1-01-vlad-engine-skeleton.md was authored separately because add-sprint.js does not scaffold one. The previously-recorded blocker that the epic asserted the ToS-barred seam as fact in four places is now VERIFIED CLOSED: all six cited locations were re-read on 2026-07-29 and each states the NO-GO correctly (epic tracker § Scope and § Open questions item 2; plan artifact § 3 Scope, § 6 Dependency map, § 7 Risk map, § 10 Gate W1), plus AC #1 repriced and the codex/gemini ToS item added. No product code has been written and none may be before the design->build gate clears."
+  },
+
+  "desired_behavior": "A plain-node application starts, registers as an MCP stdio server, and answers its four core tools. A job submitted through run_job moves through an explicit state machine (running / needs_input / proposing / done) with every transition checkpointed to an on-disk journal, so killing the editor mid-job leaves the repository clean and the next session's get_status names the interrupted job with resume and discard options. Job completion emits a versioned receipt envelope whose interior the engine treats as opaque bytes — journalled, returned and logged, never validated or branched on. Model calls go through the TypeScript Agent SDK using the user's own Anthropic API key, and no code path reads, logs, transmits, proxies or inherits an ambient ANTHROPIC_API_KEY: env passing to child processes is allowlist-based, and a fail-closed enforcer fails the build rather than reporting a warning if that boundary is crossed. A quota-exhausted or otherwise unrecognized termination classifies as could-not-run, never as success. A per-project config file selects a permission level, and at least ONE refusal is genuinely enforced in engine code rather than merely present in the vocabulary. All of it is exercisable through a host-free driver, and every surface says 'Vlad, powered by Claude'.",
+
+  "scope": {
+    "size": "xl",
+    "risk_level": "high",
+    "complexity_drivers": [
+      "The model-access seam rests on a ToS reversal of an operator-ratified decision, so the sprint's foundational technical choice is pending operator ratification rather than settled.",
+      "Credential custody is a COMPLIANCE obligation under Consumer Terms, not hygiene — it demands a fail-closed enforcer, and fail-closed enforcers are materially harder to get right than report-only checks.",
+      "In -p 'the key is always used when present', so a stray ambient env key silently bills the wrong Console org — a correctness defect that produces no error, only a wrong invoice.",
+      "The quota-exhaustion detector has documented string and structured-error signals but NO documented exit code, so it cannot be specified from docs and must be empirically characterized against real terminations.",
+      "The receipt circularity (J4): AUDIT depends on ENGINE for the receipt seam while the data defining the receipt only exists after AUDIT — defused only by shipping an untyped interior, and only if that is decided before the seam is built.",
+      "Permission levels are being ported against an action taxonomy that does not exist yet, which invites shipping vocabulary that enforces nothing.",
+      "Every port citation is inferred_from_repo and was never opened, so the port surface must be verified before code moves.",
+      "Which four of the seven v1 MCP tools constitute the 'four-core' surface is not written down anywhere."
+    ]
+  },
+
+  "scope_variants": {
+    "minimal_safe": {
+      "summary": "The plain-node Agent SDK app, the MCP stdio server with its four core tools, the job state machine, the journal writer, the untyped-interior receipt envelope, the API-key model-access seam WITH its fail-closed credential-custody enforcer, and the host-free driver. The driver is inside minimal_safe deliberately: without it none of the rest is exercisable end-to-end, so it is not a nice-to-have.",
+      "tradeoffs": [
+        "Defers the permission-level config port, so the engine has no per-project permission surface yet — acceptable only because the write path (the thing permissions actually gate) is Wave 2.",
+        "Defers the branding guard's enforcer, leaving a DoD item on an honour system.",
+        "Still requires the sibling repo, operator ratification of API-key-only, and a spend envelope — the gates bind minimal_safe exactly as hard as recommended."
+      ]
+    },
+    "recommended": {
+      "summary": "minimal_safe plus the permission-level config port done honestly — vocabulary, per-project config file, an in-code check, and exactly ONE genuinely enforced refusal — plus the branding guard with a named enforcer, and the quota-exhaustion detector empirically characterized against real terminations rather than specified from documentation.",
+      "tradeoffs": [
+        "The 'exactly ONE enforced refusal' discipline will feel underbuilt next to a full permission vocabulary, which is precisely the point: it proves the mechanism rather than the taxonomy.",
+        "Empirically characterizing quota exhaustion costs real metered API spend and deliberately provoked failures, which is why the spend envelope is a gate rather than a formality.",
+        "Larger surface means the port-verification pass covers more unverified citations before any code moves."
+      ]
+    },
+    "expanded": {
+      "summary": "Recommended plus the full permission action taxonomy with every level enforced across it, and the complete seven-tool MCP surface instead of four.",
+      "tradeoffs": [
+        "Builds a permission taxonomy against a write path that does not exist yet — the classic shape of work thrown away when the real actions arrive in Wave 2.",
+        "approve_job and cancel_job are write-path tools; implementing them here means implementing them against an unbuilt write path, so their semantics would be guesses.",
+        "Directly contradicts J1's finding that the value in this sprint is the four-fifths that is gate-independent; expanding the surface enlarges exactly the part that is not."
+      ]
+    }
+  },
+
+  "assumptions": {
+    "safe": [
+      "The TypeScript Agent SDK bundles its own Claude Code binary, so the user's Claude Code install leaves the dependency graph and the engine becomes MORE host-portable. Bank this; the epic does not need to spend it.",
+      "'Your code never touches our servers' survives the API-key reversal intact and is in fact stronger, since the engine is plain node running locally on the user's own key.",
+      "Claude Code is the v1 certified host, so host-specific integration risk is bounded to one host.",
+      "The write path is genuinely out of scope for this sprint, so the permission port can prove its mechanism without a complete action taxonomy.",
+      "The epic and plan artifact no longer contradict the ToS finding — verified by re-reading all six previously-stale locations on 2026-07-29."
+    ],
+    "unsafe": [
+      "That the cited port references (score.js:134, phases/preflight.js, permission-profile.js, transaction.js, registry.js) are accurate — all are inferred_from_repo, none was opened, and the inventory warns its own maps trail live values.",
+      "That the quota-exhaustion contract can be implemented from documentation. The exit code is undocumented; a detector written from the docs alone will misclassify terminations, and misclassifying one as success is the dangerous direction.",
+      "That the four-core tool surface is a settled set. It is named as 'four' in two artifacts and enumerated in neither.",
+      "That a report-only credential check would be adequate as an interim step. Under Consumer Terms this is a compliance obligation, so report-only does not satisfy the DoD at any stage.",
+      "That 'opportunistic use of other CLIs when detected' is available for codex or gemini. It is the identical prohibited subscription-routing shape and nobody has read OpenAI's or Google's terms — only the Anthropic instance was tested."
+    ],
+    "needs_user_or_beta_review": [
+      "OPERATOR: the sibling product repo's name and slug, plus sign-off to create it — the epic's first approval point and a hard precondition for every product-side file.",
+      "OPERATOR: does the operator RATIFY API-key-only model access, and does the product survive the reinstated onboarding cliff? This reverses a decision the operator personally made in grill round 3 to solve the drop-off they themselves named as the biggest one. It is not product-lead altitude and it is not epsilon's — the ToS finding forces the constraint, but whether v1 ships behind that wall is a product ruling.",
+      "OPERATOR: the Anthropic API spend envelope for dev/test — trips two autonomy rows (signups/purchases not allowed; >=$5 ask-first). Empirically characterizing the quota detector requires deliberately provoking metered failures, so this gates a specific DoD item, not just general development.",
+      "BETA: the credential-custody enforcer. What makes 'the key never leaves the machine' self-detecting and FAIL-CLOSED rather than aspirational — the enforcer's shape, what it can actually prove versus what it can only assert, and its honest residual ceiling.",
+      "BETA: the honest-degradation language ('NOT verified' when a repo has no tests, could-not-run on an unrecognized termination). Both are claims-boundary surfaces where the wording is the control.",
+      "BETA/OPERATOR: the unmitigated funnel risk. The CLI seam was the sole solve for the operator's own named biggest drop-off; it is now unowned, and 'no cost estimates in proposals' was ruled in a subscription world and is now a churn hazard."
+    ]
+  },
+
+  "open_questions": {
+    "blocking": [
+      "Sibling product repo name + slug + operator sign-off to create it (epic gate #1).",
+      "Operator ratification of API-key-only model access, together with the judgment on whether the product survives the reinstated onboarding cliff.",
+      "The Anthropic API spend envelope for dev/test."
+    ],
+    "non_blocking": [
+      "WHICH four of the seven v1 MCP tools form the 'four-core' surface? Neither the epic tracker nor the plan artifact enumerates them. The natural Wave-1 reading is get_status, get_readiness, run_job and send_message — approve_job and cancel_job are write-path tools belonging to Wave 2, and get_roadmap belongs to Wave 3 — but that is an INFERENCE and must be settled at /sprint:design rather than assumed into code.",
+      "To Anthropic sales, no published answer exists: the exact scope of 'route requests ... on behalf of their users' for a local-CLI topology; the approval criteria behind the SDK page's 'unless previously approved' carve-out; which document controls given the paused June-15 metering change; the --bare default timeline; the exit-code/JSON contract on quota exhaustion; and the current numeric Pro/Max limits.",
+      "UNOWNED: 'opportunistic use of other CLIs when detected' replicates the identical prohibited shape for codex and gemini, and nobody has read OpenAI's or Google's terms. Recorded in the epic as not-in-v1, each its own ToS gate — but no owner is named.",
+      "Which single refusal is the ONE genuinely enforced refusal in the permission port, given the action taxonomy it would gate does not exist yet?",
+      "The safe-spawn transfers-as-is classification needs an env-allowlist amendment. This is a billing-correctness defect rather than hygiene, and it is a WarpOS-side item surfacing from a product-side finding.",
+      "The plan-contract schema's recommended_mode enum offers only solo/adhoc/oneshot/no_recommendation and has no 'sprint' value, so this contract records no_recommendation despite being conducted in sprint mode. The enum predates sprint mode; the honest value is the one recorded."
+    ]
+  },
+
+  "non_goals": [
+    "The audit job itself — that is S-VLADW1-02.",
+    "The write path: transaction.js, branch-per-job, preflight, ff-only apply, draft-PR park, undo. Wave 2.",
+    "The agent face file and the installer. Wave 2.",
+    "TYPING the receipt interior. ENGINE emits schema_version plus three named slots and treats the interior as opaque — deliberately, per J4. Validating or branching on it here is the failure mode, not the goal.",
+    "A complete permission action taxonomy with every level enforced. Vocabulary plus config plus an in-code check plus exactly ONE genuinely enforced refusal is the target.",
+    "approve_job and cancel_job semantics — write-path tools whose meaning depends on a write path that does not exist yet.",
+    "Any claude-CLI subscription shell-out, setup-token flow, or other route to a user's Free/Pro/Max credentials. ToS NO-GO, verified twice, with no fallback because the path was never permitted.",
+    "Opportunistic use of codex or gemini CLIs. Same prohibited shape, terms unread.",
+    "Modifying any canonical WarpOS asset — every port is a copy-out."
+  ],
+
+  "requirement_areas": [
+    "Engine skeleton: plain-node application on the TypeScript Agent SDK",
+    "MCP stdio server and the four-core tool surface",
+    "Job state machine and crash-survivable on-disk journal",
+    "Receipt envelope with a versioned, deliberately untyped interior",
+    "Model-access seam on the user's own API key",
+    "Credential custody — fail-closed enforcement and allowlist-based env passing",
+    "Quota-exhaustion detection, empirically characterized, could-not-run on the unknown",
+    "Permission-level config port with exactly one genuinely enforced refusal",
+    "Branding guard with a named enforcer",
+    "Host-free driver for end-to-end exercisability"
+  ],
+
+  "high_level_story_candidates": [
+    "As a founder, I install Vlad and it reaches a model on MY API key, so no one else's credentials or subscription is involved.",
+    "As a founder, I am confident my API key never leaves my machine, because a build-failing enforcer proves it rather than a doc promising it.",
+    "As a founder who kills the editor mid-job, my repository is left clean and the next session tells me what was interrupted and offers to resume or discard.",
+    "As a founder who runs out of quota, I am told the job could not run — never handed a result that silently degraded into a success.",
+    "As the operator, I can exercise the whole MCP surface without a host, so the engine is testable from day one.",
+    "As the engineer of Wave 2, I inherit a receipt envelope whose interior was never prematurely typed, so filling it costs no rework."
+  ],
+
+  "granular_story_candidates": [
+    "Stand up the plain-node application on @anthropic-ai/claude-agent-sdk and confirm it reaches a model on an explicitly-supplied API key.",
+    "Register the MCP stdio server and answer the four core tools (set enumerated at design, not assumed).",
+    "Implement the job state machine over running / needs_input / proposing / done with an explicit, enumerated transition table.",
+    "Write the on-disk job journal at checkpoints and prove crash-survival by killing mid-job and asserting a clean repository.",
+    "Have get_status name an interrupted job from the journal and offer resume or discard.",
+    "Emit the receipt as schema_version plus three named slots, journalled, returned and logged opaquely — with a test asserting the engine never validates or branches on the interior.",
+    "Pass env to child processes from an allowlist, and assert that ambient ANTHROPIC_API_KEY is NOT inherited.",
+    "Build the fail-closed credential-custody enforcer: no transmit, no log, no proxy, no telemetry of the key — failing the build, not warning.",
+    "Empirically characterize quota exhaustion against real terminations; classify unrecognized terminations as could-not-run; do NOT trip on 'Server is temporarily limiting requests (not your usage limit)'.",
+    "Port the permission-level config (auto | notice | confirm | never) with a per-project config file and an in-code check.",
+    "Enforce exactly ONE refusal genuinely in engine code, with a test that drives at it and is refused.",
+    "Add the branding guard for 'Vlad, powered by Claude' and name its enforcer.",
+    "Build the host-free driver that exercises every tool end-to-end without a host.",
+    "Verify each cited port reference (path AND line) before porting, recording any citation found wrong."
+  ],
+
+  "workstream_candidates": [
+    "Engine skeleton + MCP stdio surface (backend)",
+    "Job state machine + journal + receipt envelope (backend)",
+    "Model-access seam + credential custody + quota detection (backend + security, the compliance-critical lane)",
+    "Permission-level config port + the one enforced refusal (backend + enforcement)",
+    "Host-free driver + branding guard (tooling + enforcement)"
+  ],
+
+  "preliminary_ticket_candidates": {
+    "allowed": false,
+    "candidates": [],
+    "notes": "No executable tickets. plan_quality is needs_user_clarification with three blocking operator gates — one of which asks whether the sprint's foundational model-access decision is ratified at all — and design_required is true. Tickets are minted during /sprint:design. Minting them now would create executable work against a sibling repo that does not exist and a seam whose ratification is pending."
+  },
+
+  "external_service_dependencies": {
+    "status": "required",
+    "required": [
+      "Anthropic API via the TypeScript Agent SDK (@anthropic-ai/claude-agent-sdk) on the user's OWN Console API key — the engine's only permitted model-access path after the ToS NO-GO on the claude-CLI subscription seam. Requires a Console account and a dev/test spend envelope before any metered run.",
+      "An Anthropic Console account with billing for development and test, including the deliberately-provoked failures the quota-exhaustion detector must be characterized against."
+    ],
+    "possible": [
+      "Anthropic sales, for the open questions with no published answer — the scope of 'route requests on behalf of their users' for a local-CLI topology, and the approval criteria behind the SDK page's 'unless previously approved' carve-out. A sales conversation with no published criteria, form or timeline is not a dependency this sprint can schedule around."
+    ],
+    "notes": "This is the sprint that INTRODUCES the Anthropic dependency; S-VLADW1-02 consumes it. Both required items are operator-gated: signups and purchases are not allowed at all under the autonomy table, and >=$5 is ask-first. The dependency is unavoidable rather than chosen — the subscription alternative was never permitted, so there is no fallback to fall back to."
+  },
+
+  "approval_boundaries": [
+    "Creating the sibling product repo — operator sign-off, the epic's first approval point. No product-side file may be written before it.",
+    "Ratifying API-key-only model access — a product ruling that reverses the operator's own grill-round-3 decision. The ToS finding forces the constraint; whether v1 ships behind the resulting onboarding cliff is the operator's call, not epsilon's and not product-lead's.",
+    "Creating an Anthropic Console account or incurring metered spend — signups and purchases are not allowed under the autonomy table, and >=$5 is ask-first.",
+    "Crossing design->build. HELD: this contract stops at the plan->design boundary."
+  ],
+
+  "design_required": true,
+  "execution_allowed_without_design": false,
+  "recommended_mode": "no_recommendation",
+
+  "lane": {
+    "type": "default",
+    "value": null,
+    "isolation_notes": "No lane isolation set at plan time. The product-side work lands in a sibling repo that does not exist yet, so the eventual isolation question is 'which repo', not 'which worktree'. Revisit at /sprint:design once the repo exists."
+  },
+
+  "beta_review": {
+    "required": true,
+    "likely_founder_rejection_risks": [
+      "API-key-only reverses the operator's own grill-round-3 solve for the funnel drop-off they personally named the biggest one. The likeliest rejection is not of the ToS finding, which is verified, but of shipping v1 behind the resulting cliff at all.",
+      "The user-side cost story inverts: cost-to-us stays near zero, but the founder now needs a Console account and a card, metered per token. 'No cost estimates in proposals' was ruled in a subscription world and is now a churn hazard.",
+      "AC #1's 'install-to-first-visible-act under 5 minutes' was false as written and has been repriced to be time-boxed from key-in-hand, with the Console onboarding measured separately. A repriced headline claim may read as a walked-back promise.",
+      "A sprint with no user-visible output can read as slow, even though it is the substrate every later wave attaches to.",
+      "Same-provider adversarial review roughly doubles per-job spend on the founder's card."
+    ],
+    "overbuild_risks": [
+      "Building the full permission action taxonomy against a write path that does not exist yet — the runner-up most-likely-throwaway item after the receipt schema.",
+      "Typing the receipt interior 'just a little' for convenience, which propagates a v0 shape into the journal, get_status, MCP signatures, driver assertions and ledger records and reintroduces exactly the churn J4 defuses.",
+      "Implementing all seven MCP tools rather than the four-core surface, including two write-path tools whose semantics would be guesses.",
+      "Gold-plating the credential enforcer beyond what it can actually prove, instead of shipping a fail-closed check plus an honestly-named residual ceiling."
+    ],
+    "missing_context_risks": [
+      "The quota-exhaustion exit code is undocumented, so any detector specified from docs alone is untested guesswork — and misclassifying an exhausted run as success is the dangerous direction.",
+      "Every port citation is unverified; a builder trusting the inventory rather than opening the files will port against references that may not exist.",
+      "Which four tools constitute the four-core surface is written down nowhere.",
+      "Nobody has read OpenAI's or Google's terms, so the 'opportunistic other-CLI' idea remains an unowned ToS exposure rather than a closed question.",
+      "The safe-spawn transfers-as-is classification needs an env-allowlist amendment — a WarpOS-side billing-correctness defect surfaced by this product-side finding, currently unowned."
+    ]
+  },
+
+  "plan_quality": {
+    "status": "needs_user_clarification",
+    "confidence": "medium",
+    "evidence_gaps": [
+      "The sibling product repo does not exist, so no product-side path can be verified.",
+      "Every port citation is inferred_from_repo; not one cited file or line has been opened.",
+      "The quota-exhaustion exit-code contract is undocumented and unmeasured.",
+      "The four-core MCP tool set is named but never enumerated in either the epic tracker or the plan artifact.",
+      "The action taxonomy the permission levels gate does not exist yet, so 'the ONE enforced refusal' cannot yet be named."
+    ],
+    "fail_reasons": []
+  },
+
+  "next_recommended_command": "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, ratification of API-key-only model access with the onboarding-cliff judgment, and the API spend envelope)",
+
+  "resume_instructions": "Sprint S-VLADW1-01 is HELD at the plan->design boundary. Per J1 this sprint is PLANNABLE, not blocked: roughly four-fifths of it (MCP surface, state machine, journal, memory, permission config, ledger discipline, branding guard, host-free driver) is unaffected by the gates, and 'blocked' should mean 'cannot author an honest plan', not 'execution cannot start'. It would flip to blocked only if the operator judges the API-key wall unacceptable for v1. The previously-recorded fourth blocker — the epic asserting the dead seam in four places — is VERIFIED CLOSED as of 2026-07-29 across all six cited locations in both artifacts. Read trackers/sprints/S-VLADW1-01-vlad-engine-skeleton.md for durable state and runtime/vlad-w1/w1-planning-inputs.md for the banked substance (§1 the ToS gate with verbatim primary-source quotes, §2 the product-lead contracts and J1-J4). Do NOT begin product-side work: the sibling repo does not exist and API-key-only is unratified.",
+
+  "created_by": "epsilon",
+  "updated_by": "epsilon"
+}

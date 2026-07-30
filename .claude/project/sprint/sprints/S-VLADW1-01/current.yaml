@@ -1,20 +1,23 @@
 schema: warpos/sprint/current-sprint/v1
-id: "S-VLADW1-01"
-title: "SP-VLAD-W1-ENGINE — Engine skeleton: plain-node TS Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port + API-key model-access seam (ToS NO-GO forced; credential-custody enforcer)"
-objective: "Run /sprint:plan to set this."
-status: not_started
+id: S-VLADW1-01
+title: "Engine skeleton — plain-node Agent SDK app, MCP stdio server, four-core tool surface, job state machine, journal, permission-level config port, and the API-key model-access seam"
+objective: "Stand up the engine Vlad runs on: a plain-node app on the TypeScript Agent SDK exposing a four-tool MCP surface over stdio, with a job state machine, an on-disk journal, ported permission-level config, and a model-access seam that bills to the user's own API key and never lets that key leave their machine."
+status: planning
 created_at: "2026-07-30T00:52:06.179Z"
-updated_at: "2026-07-30T00:52:06.179Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-07-30T02:30:23.499Z"
+source_request: "Wave-1 ENGINE of epic E-VLAD-001 (epic label SP-VLAD-W1-ENGINE). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28), the differentiator memo _planning/vlad-why-us.md, and the 34-family port inventory _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2 and the ToS finding in §1."
+interpreted_intent: "Build the substrate every later Vlad wave stands on: a plain-node application on the TypeScript Agent SDK that speaks MCP over stdio, runs jobs through an explicit state machine backed by an on-disk journal, reads a ported per-project permission-level config, and reaches a model through the user's OWN Anthropic API key. Two of the calls in this sprint are load-bearing far beyond it. First, the model-access seam: the ratified claude-CLI subscription shell-out is ToS-barred, so API-key is primary and ONLY, which makes a fail-closed credential-custody enforcer part of the build rather than a later hardening pass. Second, the receipt: ENGINE emits a versioned envelope with an UNTYPED interior (J4) and never validates or branches on it, because typing it here would propagate a v0 shape into the journal, get_status, the MCP signatures, the driver assertions and the ledger records before the dogfood data that defines it exists."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260730-0085.yaml"
+risk_level: high
 approval_state: none_required
-current_phase: idle
+current_phase: plan
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
-  identified: []
+  identified:
+    - "Anthropic API via the TypeScript Agent SDK (@anthropic-ai/claude-agent-sdk) on the user's OWN Console API key — the engine's only permitted model-access path after the ToS NO-GO on the claude-CLI subscription seam. Requires a Console account and a dev/test spend envelope before any metered run."
+    - "An Anthropic Console account with billing for development and test, including the deliberately-provoked failures the quota-exhaustion detector must be characterized against."
+    - "Anthropic sales, for the open questions with no published answer — the scope of 'route requests on behalf of their users' for a local-CLI topology, and the approval criteria behind the SDK page's 'unless previously approved' carve-out. A sales conversation with no published criteria, form or timeline is not a dependency this sprint can schedule around."
   blocked: []
   ready: []
   mocked: []
@@ -49,20 +52,53 @@ requirements:
   redteam_plan: null
   release_plan: null
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260730-0085.report.md"
   design: null
   execution: null
   release: null
@@ -74,10 +110,14 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, ratification of API-key-only model access with the onboarding-cliff judgment, and the API spend envelope)"
+  resume_summary: "Plan Contract PC-20260730-0085 created. Next: /sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, ratification of API-key-only model access with the onboarding-cliff judgment, and the API spend envelope)."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "No lane isolation set at plan time. The product-side work lands in a sibling repo that does not exist yet, so the eventual isolation question is 'which repo', not 'which worktree'. Revisit at /sprint:design once the repo exists."
