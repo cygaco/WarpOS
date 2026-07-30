@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "344d0029b69c4c229549d46c0a487001ec8f849f",
-  "installedAt": "2026-07-30T02:21:07.794Z",
+  "installedCommit": "3f9c39f52ad5c78ab4e027f570587774b2f8ca7f",
+  "installedAt": "2026-07-30T02:55:16.102Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -9184,8 +9184,8 @@
       "dest": "scripts/sprint/plan.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38",
-      "currentHashAtInstall": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38",
+      "installedHash": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654",
+      "currentHashAtInstall": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654",
       "introducedIn": "0.0.0"
     },
     {
@@ -9276,6 +9276,16 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d",
       "currentHashAtInstall": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.test-plan-target-channel-guard.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/test-plan-target-channel-guard.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d",
+      "currentHashAtInstall": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d",
       "introducedIn": "0.0.0"
     },
     {

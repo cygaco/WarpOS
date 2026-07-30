@@ -27,7 +27,7 @@
     "preflight_tool": 1,
     "requirements_engine": 12,
     "paths_engine": 4,
-    "sprint_engine": 44,
+    "sprint_engine": 45,
     "tracker_tool": 2,
     "dispatch_engine": 188,
     "check_runner_tool": 4,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1734,
+  "total": 1735,
   "assets": {
     "agent": [
       {
@@ -11129,7 +11129,7 @@
         "src": "scripts/sprint/plan.js",
         "dest": "scripts/sprint/plan.js",
         "kind": "sprint_engine",
-        "sha256": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38",
+        "sha256": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -11238,6 +11238,18 @@
         "dest": "scripts/sprint/test-plan-honors-registry-primary.js",
         "kind": "sprint_engine",
         "sha256": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "sprint_engine.test-plan-target-channel-guard.js",
+        "src": "scripts/sprint/test-plan-target-channel-guard.js",
+        "dest": "scripts/sprint/test-plan-target-channel-guard.js",
+        "kind": "sprint_engine",
+        "sha256": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

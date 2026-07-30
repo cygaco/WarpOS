@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-30T02:21:08.087Z",
+  "generatedAt": "2026-07-30T02:55:22.893Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -8322,8 +8322,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/plan.js",
-      "sha256": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38",
-      "installedSha": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38"
+      "sha256": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654",
+      "installedSha": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654"
     },
     "scripts/sprint/release.js": {
       "owner": "framework",
@@ -8380,6 +8380,13 @@
       "source": "scripts/sprint/test-plan-honors-registry-primary.js",
       "sha256": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d",
       "installedSha": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d"
+    },
+    "scripts/sprint/test-plan-target-channel-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-plan-target-channel-guard.js",
+      "sha256": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d",
+      "installedSha": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d"
     },
     "scripts/sprint/test-regression-seed-gate.js": {
       "owner": "framework",
@@ -21602,6 +21609,30 @@
       "managed": false
     },
     ".claude/project/sprint/plan-contracts/PC-20260628-0082.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0083.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0083.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0084.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0084.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0085.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0085.yaml": {
       "owner": "runtime",
       "managed": false
     },
