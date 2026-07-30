@@ -2,9 +2,9 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-28T21:49:09.275Z",
+  "generatedAt": "2026-07-29T22:53:32.008Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
-  "warposVersion": "1.1.0",
+  "warposVersion": "1.2.0",
   "migrations": [],
   "paths": {
     ".gitattributes": {
@@ -87,8 +87,8 @@
       "owner": "framework",
       "managed": true,
       "source": null,
-      "sha256": "b9a1b0f193072f06569d840d39845cd8fd67fce6140ec9b5cf37a7c599a74f76",
-      "installedSha": "b9a1b0f193072f06569d840d39845cd8fd67fce6140ec9b5cf37a7c599a74f76"
+      "sha256": "94ffdb8e45d7db3501e6da945179982ba5436512278689c063b4e0d340ef29eb",
+      "installedSha": "94ffdb8e45d7db3501e6da945179982ba5436512278689c063b4e0d340ef29eb"
     },
     "INTERESTING.md": {
       "owner": "framework",
@@ -129,16 +129,16 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "8fa8d20c50def36cb268f81beae661864dfc77ec22cdf3aa17b0fb015b2c367c",
-      "installedSha": "8fa8d20c50def36cb268f81beae661864dfc77ec22cdf3aa17b0fb015b2c367c"
+      "sha256": "eb6738df1b6f0044c8c4ce0ce95d6a4128ff446261f8c6195a107bc79846f6bb",
+      "installedSha": "eb6738df1b6f0044c8c4ce0ce95d6a4128ff446261f8c6195a107bc79846f6bb"
     },
     "ROADMAP.md": {
       "owner": "framework",
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "d79cfe6809ba3793ac8e16c14ab6f9aa1fa4df8c37d883ccf4d8dd760f7fce71",
-      "installedSha": "d79cfe6809ba3793ac8e16c14ab6f9aa1fa4df8c37d883ccf4d8dd760f7fce71"
+      "sha256": "66631da85a634042ed50827bb17cf063cfeb942af714f47600e9acd71fb32d15",
+      "installedSha": "66631da85a634042ed50827bb17cf063cfeb942af714f47600e9acd71fb32d15"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -161,8 +161,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "ebfb755ef771bab575b49db3cc55e6d3c6f9b484d10f794200f2f0a7d730704a",
-      "installedSha": "ebfb755ef771bab575b49db3cc55e6d3c6f9b484d10f794200f2f0a7d730704a"
+      "sha256": "bddc610b633b6058cd27eb4cd69e2c531bfdaa13f85f83b797503920ca74a719",
+      "installedSha": "bddc610b633b6058cd27eb4cd69e2c531bfdaa13f85f83b797503920ca74a719"
     },
     "WARP.md": {
       "owner": "runtime",
@@ -5163,6 +5163,10 @@
       "owner": "runtime",
       "managed": false
     },
+    "trackers/epics/E-VLAD-001-vlad-v1-agent-mcp-cofounder.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     "tests/warpos/dispatch-readiness.test.js": {
       "owner": "framework",
       "managed": true,
@@ -7764,8 +7768,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-scaffold-all-ways.js",
-      "sha256": "66dcee9b705bf422003d315417cd02b46560e5a3ddfd9b71beef8e27b5b27e8a",
-      "installedSha": "66dcee9b705bf422003d315417cd02b46560e5a3ddfd9b71beef8e27b5b27e8a"
+      "sha256": "6b1012e55bb6a1aa6ba0d6a9c20a5d967182b46d25565d20ed133b0711940dac",
+      "installedSha": "6b1012e55bb6a1aa6ba0d6a9c20a5d967182b46d25565d20ed133b0711940dac"
     },
     "scripts/warpos/test-sealed-capsule-gate.js": {
       "owner": "framework",
@@ -7813,8 +7817,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/test-upgrade-current-to-new.js",
-      "sha256": "d4f95aaa4a51dd7e52d049635ade7bad3a239f6c98f8a187878d333bf20c2336",
-      "installedSha": "d4f95aaa4a51dd7e52d049635ade7bad3a239f6c98f8a187878d333bf20c2336"
+      "sha256": "e8302634f6718883dc387151acc056d1103becd2e3e22db0e835c97cc4535e05",
+      "installedSha": "e8302634f6718883dc387151acc056d1103becd2e3e22db0e835c97cc4535e05"
     },
     "scripts/warpos/transaction.js": {
       "owner": "framework",
@@ -12034,15 +12038,15 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.js",
-      "sha256": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217",
-      "installedSha": "079399b1c011c82f0f4934925474019657e8d4bdd5417f573c61c0c7f440a217"
+      "sha256": "43b670a2ed95aea6940266766ce36b3268a7f7b605ce4ed51a0fa4131239458f",
+      "installedSha": "43b670a2ed95aea6940266766ce36b3268a7f7b605ce4ed51a0fa4131239458f"
     },
     "scripts/checks/memory-apply.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/memory-apply.test.js",
-      "sha256": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb",
-      "installedSha": "1f28a9ea09e8d19e661fca95bd55927e853a2c8c446f2d9de9fb4c1b456f2ecb"
+      "sha256": "3678070a37d6f9beec10d147fdfdc13c7590e118b974241d8a561480c4deff10",
+      "installedSha": "3678070a37d6f9beec10d147fdfdc13c7590e118b974241d8a561480c4deff10"
     },
     "scripts/checks/memory-integrity.js": {
       "owner": "framework",
@@ -13429,6 +13433,41 @@
       "source": "framework/paths.registry.json",
       "sha256": "73aacca0c2d181d74586819ff9e138fcbd9bf748a638024478534ec7a5c7f625",
       "installedSha": "73aacca0c2d181d74586819ff9e138fcbd9bf748a638024478534ec7a5c7f625"
+    },
+    "framework/releases/1.2.0/changelog.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/1.2.0/changelog.md",
+      "sha256": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c",
+      "installedSha": "9a1d121f8ee5e62633c13b15707f3c451ca0154a9c0ca38c3b56d8d99cf2d91c"
+    },
+    "framework/releases/1.2.0/checksums.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/1.2.0/checksums.json",
+      "sha256": "eed83a375f2ab17f8f8cd4471b9f46caded20273257e0a8d17a400a7c3f7ac7a",
+      "installedSha": "eed83a375f2ab17f8f8cd4471b9f46caded20273257e0a8d17a400a7c3f7ac7a"
+    },
+    "framework/releases/1.2.0/framework-manifest.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/1.2.0/framework-manifest.json",
+      "sha256": "04cae9d69224f4f6ce520aa257966dde4da66c8f1f126f85405a479fd2b2403b",
+      "installedSha": "04cae9d69224f4f6ce520aa257966dde4da66c8f1f126f85405a479fd2b2403b"
+    },
+    "framework/releases/1.2.0/release.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/1.2.0/release.json",
+      "sha256": "d8185cdcaf4059ceea58510e1a07d45a855bdbf24a49a3bdcd508a9cfeef452b",
+      "installedSha": "d8185cdcaf4059ceea58510e1a07d45a855bdbf24a49a3bdcd508a9cfeef452b"
+    },
+    "framework/releases/1.2.0/upgrade-notes.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": "framework/releases/1.2.0/upgrade-notes.md",
+      "sha256": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14",
+      "installedSha": "1eaee11979eb5653d0188261a4d6ce8447263e50160271bfa407bf628722ae14"
     },
     "framework/releases/1.1.0/changelog.md": {
       "owner": "framework",
@@ -16520,6 +16559,22 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260725-002/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260725-002/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260725-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260725-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
@@ -25938,8 +25993,8 @@
       "managed": true,
       "source": ".claude/commands/session/end.md",
       "kind": "md",
-      "sha256": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1",
-      "installedSha": "60110cdf542925a90ccdea165559cd1be35e8311f1cfa5c574c1d35dde93bca1"
+      "sha256": "26d02e648c9e6bc2b170a4595f1e282a22432d2a051fd127114c690fc2af7746",
+      "installedSha": "26d02e648c9e6bc2b170a4595f1e282a22432d2a051fd127114c690fc2af7746"
     },
     ".claude/commands/session/handoff.md": {
       "owner": "framework",
@@ -26850,8 +26905,8 @@
       "managed": true,
       "source": ".claude/commands/memory/verify.md",
       "kind": "md",
-      "sha256": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2",
-      "installedSha": "42f8e86849d2a6889e6df8c64c129a2c44389b28fa58b033f5018751666e05d2"
+      "sha256": "ad196081a3fa75d504c5204199bc8a5f57d75155794ab06ad477f3dfc1bf9c06",
+      "installedSha": "ad196081a3fa75d504c5204199bc8a5f57d75155794ab06ad477f3dfc1bf9c06"
     },
     ".claude/commands/maps/all.md": {
       "owner": "framework",
@@ -27340,6 +27395,14 @@
       "kind": "md",
       "sha256": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
       "installedSha": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26"
+    },
+    ".claude/commands/enforcement/sweep.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/commands/enforcement/sweep.md",
+      "kind": "md",
+      "sha256": "3561540fc66103f07bcde664423c2f02bc9085c7653c82e357120658fc5551c6",
+      "installedSha": "3561540fc66103f07bcde664423c2f02bc9085c7653c82e357120658fc5551c6"
     },
     ".claude/commands/docs/catalog.md": {
       "owner": "framework",
@@ -28216,16 +28279,24 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0039-agy-barred-as-security-scope-of-record.md",
       "kind": "md",
-      "sha256": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847",
-      "installedSha": "9442304af60a5780af80bc81e23c3291cf378afbc7c8bb5b705ced166a4d6847"
+      "sha256": "49e43ff58b6976b2f4c2ee51889ac3a696d4ae2cddad1e9b8e0ce038b2d8cfc6",
+      "installedSha": "49e43ff58b6976b2f4c2ee51889ac3a696d4ae2cddad1e9b8e0ce038b2d8cfc6"
+    },
+    ".claude/agents/president/_system/policy/adr/0040-finding-class-boundaries-bf-th-no-relabelling.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0040-finding-class-boundaries-bf-th-no-relabelling.md",
+      "kind": "md",
+      "sha256": "04c45c91b625067dba7d5243db77258b3a1a58c764ea971a089eb078c93ebd2c",
+      "installedSha": "04c45c91b625067dba7d5243db77258b3a1a58c764ea971a089eb078c93ebd2c"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210",
-      "installedSha": "b77745dc031c04b06849277c99410e0f48f18f724b018c0870f06f0c91235210"
+      "sha256": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180",
+      "installedSha": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",

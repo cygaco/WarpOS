@@ -704,9 +704,15 @@ function listDirtyFiles() {
     cwd: REPO_ROOT,
     encoding: "utf8",
     timeout: 30_000,
+    // SECOND site of the same defect fixed at test-scaffold-all-ways.js#snapshotCanonicalState (see
+    // the note there): `--untracked-files=all` output grows with accumulated artifacts, and Node's
+    // 1 MiB spawnSync default then SIGTERMs the child with ENOBUFS, surfacing as a gate FAILURE
+    // rather than a gate that could not RUN. This call site is independent of that one, so fixing
+    // only the other would leave GATE-B failing here instead.
+    maxBuffer: 64 * 1024 * 1024,
   });
   if (r.status !== 0) {
-    throw new Error(`listDirtyFiles: git status failed (status=${r.status}): ${(r.stderr || r.stdout || "").slice(0, 300)}`);
+    throw new Error(`listDirtyFiles: git status failed (status=${r.status}${r.error ? `, ${r.error.code || r.error.message}` : ""}): ${(r.stderr || r.stdout || "").slice(0, 300)}`);
   }
   const parts = (r.stdout || "").split("\0");
   const files = [];

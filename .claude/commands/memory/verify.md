@@ -27,9 +27,14 @@ renamed, removed, or never merged. This skill turns that discipline into a repea
   is the ONLY mode available today; there is no override. The gate's shape and safety rules below describe the
   executor's design and still apply once the hold is lifted — they are not reachable meanwhile.
 
-> The frontmatter-memory dirs have no `paths.X` key today (a `paths.agentMemory` key is a recommended
-> follow-up). Every OTHER project path you touch in this flow (e.g. `paths.enforcementDebt`,
-> `paths.systemsFile`) must be referenced by its `paths.X` key, not a literal — the registry is `.claude/paths.json`.
+> The frontmatter-memory dirs are HOME-anchored (`~/.claude/projects/<project>/memory/`, resolved via
+> `os.homedir()`) and deliberately carry NO paths-registry key: the registry is project-relative, and
+> HOME-anchored paths do not belong in it (same ruling as the deprecated portfolio-registry key,
+> T-20260611-309). Every OTHER project path you touch in this flow (e.g. `paths.enforcementDebt`,
+> `paths.systemsFile`) must be referenced by its `paths.X` key, not a literal. The registry SOURCE is
+> `framework/paths.registry.json`; `.claude/paths.json` is the GENERATED view that hooks read — add or edit keys
+> in the source and let `scripts/paths/build.js` regenerate, because a hand-edit to the generated file is
+> silently discarded on the next build.
 
 ## Two identifier spaces (do not conflate)
 
