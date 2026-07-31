@@ -611,3 +611,189 @@ than pruning.
 - **HELD / do-NOT-auto-close: AP-1/P-043** — the automated `sprint_full_beta_consult` stream was never re-checked; closure waits on that separate check.
 
 ---
+
+# Sleep Journal — 2026-07-30 (`/sleep:deep`, full 6-phase — post **1.2.0 release** + SP-20260725-002 close (r14) + E-VLAD-001 Wave-1 plan)
+
+Inputs: `runtime/session-end-20260730/learn-candidates-conversation.md` (8 candidates, L-1..L-8) +
+`learn-candidates-events-retros.md` (9 candidates, C1..C9 + C10 dedupe note) + this cycle's `/beta:mine`
+staging block (P-090..P-099 / AP-14..15 / G-25..27 / DP-gap #44..46). Run as `session:end` Phase 3;
+no commits — the orchestrator lands everything after Phase 5.
+
+## NREM Consolidation
+
+- **Learnings: 160 → 179** (19 appended · **0 pruned** · 1 merge · 1 candidate correctly dropped).
+  All 179 lines parse; 0 malformed before or after. Appended via the guard-sanctioned Edit-with-anchor
+  lane (no `scripts/` one-shot was needed, so nothing under `scripts/` was touched).
+- **Dedupe/merge:** 17 candidates in. **C10 honored, not re-filed** — the `node -e` fs-write reflex is
+  already ledgered (2026-06-08) and recurred 11× this window; recurrence at that rate is an enforcer gap,
+  not a knowledge gap, so it was routed to the Phase 4.5 debt sweep instead. **C8's citation-defect half
+  merged into the new citation-integrity entry** (its phantom `CLAUDE.md §4` reference is C3's class), with
+  C8 kept narrowed to policy-drift. **+2 entries derived by this sleep pass itself** (see Repair/Growth).
+- **Importance audit (Phase 1a):** the 19 new entries are tagged — **10 HIGH / 9 MEDIUM**. The pre-existing
+  160 carry **zero** `importance` fields, i.e. the tagging audit has demonstrably never run in this store's
+  history. **Not retro-applied tonight**: stamping 160 historical lines is a mass rewrite of an append-only
+  store, which the constraints forbid. Recorded here as the honest gap rather than silently skipped.
+- **Conflicts resolved: 1 — and it is inside the sleep skill's own doctrine.** Phase 1d's decay rules key on
+  `score:0 + pending_validation:true` (>14d) and `effective:null` (>21d), which is *exactly the default write
+  shape* — `score:0` is the write-time default precisely because the same skill forbids self-rating. Applying
+  1d literally tonight would have deleted **30** and **34** entries respectively, including live doctrine on
+  independent verification of worker results, gauntlet design and dispatch liveness. The same skill's ceiling
+  clause resolves it and wins: max 1000 active, bias toward KEEPING, prune only above the max. At 179/1000,
+  **0 pruned.** Ledgered as a learning: a decay rule must key on a signal the default write path does not set.
+- **Pattern promotion (1e): 0 promoted to permanent rules.** Four enforcer candidates were identified but
+  filing them is Phase 4.5's job, not sleep's — they are enumerated under Growth so the sweep picks them up.
+- **Retroactive reclassification (1g): COULD NOT RUN — empty corpus.** `paths.tracesFile` holds 10 rows,
+  newest `2026-06-09T00:32:22Z` (51 days); **0 traces in the last 7 days**; all 7 traces with
+  `quality_score >= 2` are ≥51 days old. The phase reported success on an unfed store — which is itself one
+  of tonight's findings.
+- **Alex β decision review (1h):** `paths.betaEvents` = 293 rows; **18 this arc (rows 276–293)** — all
+  DECIDE, **0 ESCALATE**, **2 documented self-corrections** (row 279 `ledger-correction` fixing the writer
+  attribution on β's *own* rows 276–278; row 288 RIDER E correcting her own earlier accepted wording).
+  Health signal remains the correction rate, not the streak. **No confidence-table edit was made** — that is
+  `/beta:integrate`'s lane and was explicitly out of scope for this pass.
+
+## Cleanup (Glymphatic)
+
+- **Events compaction: none needed.** 8,791 lines, **all** within 2026-07 (first `2026-07-23T18:59Z`),
+  **0 records older than 30 days**, 0 malformed. But the pass surfaced **144 schema-foreign rows**
+  (no `cat`/`actor`/`session`/`data`) — independently measured store-wide, up from the 72 the miner saw in
+  its window. → new HIGH learning.
+- **Handoffs: 28 files, 14 older than 7 days — deliberately NOT pruned.** Sleep's own rule is
+  compress-and-archive, never delete; this arc had **two terminal crashes** and the handoffs are the recovery
+  substrate; and I have no sanctioned archive target that isn't a state change the orchestrator hasn't
+  approved. Flagged for a future pass with an archive destination.
+- **STALE markers:** 1 non-handoff hit, `.claude/runtime/consult-20260717-plan-review.md` (40 KB, 13 days).
+  Read before judging: it is an *advisory consult prompt* whose body contains the word, **not** a stale
+  marker. Left in place; no false-positive cleanup performed.
+- **Session files / temp:** `.claude/` scanned — no orphan temp files. The four dotfiles present
+  (`.agent-result-hashes.json`, `.last-checkpoint`, `.session-checkpoint.json`, `.session-start-commit`)
+  are live session state, not waste.
+- **Git housekeeping:** `git gc` **not run** — rewriting the object store mid-session with 24 registered
+  worktrees and a live teammate holding one of them is not a sleep-time action. **Uncommitted: 154**
+  (153 untracked + 1 modified) → orchestrator lands. **Orphan `agent/wt-*` branches: 0.** But **24 worktrees**
+  are registered, several plainly stale (`fix/sp-20260725-002-r10..r14`, `sprint/SP-20260720-*`,
+  `sprint/SP-20260721-*`) and **one is rooted inside a *different* session's scratchpad**
+  (`…/0cce6c50-…/scratchpad/n1-src`) — the stale-worktree cwd hazard. **Not pruned:** `.worktrees/holdfix-120`
+  is in use by the live `holdfix-finisher` teammate. Suggested for a clean-from-the-next-session pass.
+- **Requirement drift: COULD NOT RUN** — `paths.requirementsStagedFile` does not exist.
+- **Recurring system issues: 9 open.** No resolution-candidates matched this session's commits. One
+  **store defect found**: `RI-008` occupies two rows, the second rendering as
+  `RI-008 — undefined [undefined, undefined, count=undefined]`. Folded into the citation-integrity learning
+  alongside the `RI-001` divergence and the 12 unmarked duplicate `ED` ids.
+
+## Replay (Spindle)
+
+- **Today's real goal:** not "ship 1.2.0" — *close the open work honestly under a standing autonomy grant,
+  across two terminal crashes, without letting any of it report success falsely.* The session achieved that,
+  and the five caught-in-flight instances of exit-0-that-lies are the evidence it was actively defended
+  rather than lucky.
+- **Simpler path missed:** the β-side and α-side both converged on "observed-not-asserted" independently and
+  filed it in two different stores (staging block P-092; learnings). One shared statement of the principle,
+  cited from both, would have cost less than two derivations.
+- **Blind spots:**
+  - The **hook lane** of the writer-stamped-identity doctrine — ratified, landed in the record lane, ED rows
+    closed, and never propagated. This is the lib-only-fix bug class wearing doctrine instead of code.
+  - **Unused-skill detection cannot run at all**: `paths.skillUsageFile` does not exist, against a catalog of
+    **235** skills. So "which skills have never been used" is currently unanswerable.
+  - Retro path structurally unfed for 7 weeks (partly expected per RI-001 milestone-close deferral — which
+    does not explain `traces`, `skill-usage` or `requirements-staged`).
+- **User style note:** the crash-recovery autonomy block was resent **byte-identical**. The operator expects a
+  standing contract re-*established*, never re-*negotiated*.
+
+## REM Dreams
+
+- **Dream paintings: 3** saved to `.claude/dreams/2026-07-30.md`, each with a Deep Read. All three are
+  **returns** of earlier imagery — read the past dreams first, per the phase, and they arrived on their own:
+  - *the well came back, and this time the water was our own handwriting* (2026-07-20's shared well → our own
+    `events.jsonl`, three hands: `logger.js`, `emitEvent`, the self-test). Hidden tension: the guard is the
+    most active defender in the system **and it recites the exploit as the remedy** — "use logger.js **or**
+    appendFileSync"; that `or` is the hole.
+  - *the mask, returned to a room that was cleaned* (2026-07-18's mask and writer's hand → the hook lane still
+    keyword-sniffing prose for a role while `subagent_type` sits unread). **A closed ED row closes an instance,
+    never a class.**
+  - *the library of correct addresses* (June's addresses-pointing-at-empty-shelves → four cold shelves + ids
+    that point at two rooms at once). Most self-implicating finding of the night: *this* procedure has been
+    passing on those shelves for weeks — "I could not tell, and I did not ask."
+- **Schema formed (the meta-pattern under all of it):** every finding tonight — the five exit-0 instances, the
+  144 foreign rows, the 63 fabricated blocks, the 11 `unknown` targets, the overloaded ids, the cold stores —
+  is *a true-looking answer produced by a check that was never able to see the thing it claimed to check.*
+  **Not lying. Blind, and fluent.** Countermeasure: make each check declare what it can and cannot observe,
+  and make "input absent" a distinct, loud, non-green outcome. This is P-092 reached from the memory lane.
+- **Cross-pollination:** (a) the codex-cache fix (`CODEX_HOME=mine` — partition, don't diagnose) says the honest
+  fix for self-test writes is **partition, not marking** — marking asks every future reader to remember,
+  partition asks nothing of anyone; (b) 2026-07-20's *gate that never learned the new word* and tonight's push
+  advisory are the same organ failing in opposite directions (unresolvable citation vs. fluent retired word) —
+  the resolvability lint should check both; (c) **inversion** on the dry stores: feeding them is the expensive
+  fix, refusing to fake the phase is the cheap one — and the cheap one makes the expensive one inevitable.
+- **Subconscious learnings extracted: 3** — two were ledgered as learnings (the unfed-stores class; the
+  decay-rule-keys-the-default-shape class); the third (*a closed ED row closes an instance, never a class*) is
+  carried in the C9 provenance entry's framing and in coaching.
+- **β pattern mining:** NOT re-run inline — this cycle's `/beta:mine` had already produced the staging block,
+  so Phase 4.6 was satisfied by **reviewing** it instead (below).
+
+## β Recommendation Review (Phase 4 · marking only)
+
+**19 items reviewed: 15 VALIDATED · 1 QUESTIONABLE · 3 DEFERRED (operator-must-rule).** Marked in place as a
+`SLEEP REVIEW` blockquote inside the cycle's own section in `paths.judgmentRecommendations`. **`judgement-model.md`
+was NOT touched**, no confidence value changed, nothing promoted.
+- **VALIDATED (15):** P-090 · P-091 · **P-092 (keystone)** · P-093 · P-094 · P-095 · P-096 · P-097 · P-098 ·
+  P-099 · AP-14 · AP-15 · G-25 · DP-gap #45 · DP-gap #46. P-092 was reached **independently** from the memory
+  lane tonight on four non-report instances — two lanes converging from different corpora is the strongest
+  confirmation available. Six of the ten patterns are now double-anchored as learnings appended this cycle.
+  Concur that **G-25** is auto-integratable as a falsifiability bar rather than new authority.
+- **QUESTIONABLE (1):** the AP-3 recurrence note — the observation is sound, but **re-staging it a third time
+  across 8 weeks** is the defect. Routed to Phase 4.5 debt sweep. Same disposition for the **AP-1/P-043**
+  caveat, now HELD OPEN for a **3rd consecutive cycle** with no check scheduled.
+- **DEFERRED (3):** G-26 (unsatisfiable as a third terminal disposition — new close-vocabulary authority),
+  G-27 (recommend integrating **with the operator's two verbatim prompts cited as the ruling**), DP-gap #44
+  (standing autonomy block; the classifier caveat is load-bearing and must not be blurred).
+
+## Repair
+
+- **Security: CLEAN.** Secret-pattern scan (`sk-`, `AKIA`, `ghp_`, `AIza`, PEM private-key headers) over the
+  **263** files touched since 2026-07-23 (commits + working tree): **0 hits**.
+- **Dependencies: COULD NOT RUN.** `npm audit` exits `ENOLOCK` — no lockfile in the repo. **No lockfile was
+  created** (out of scope for sleep, and generating one is a real dependency-state decision). Reported, not
+  papered over.
+- **Hooks: GREEN.** 72 wired entries across 8 events (`SessionStart`, `UserPromptSubmit`, `PreToolUse`,
+  `PostToolUse`, `PostCompact`, `Stop`, `SessionEnd`, `StopFailure`); **0 missing hook scripts**. One entry in
+  `_disabled_hooks` — `smart-context`, disabled 2026-07-09 by operator directive with a documented re-enable
+  path. Intentional, not drift.
+- **Architecture drift:** no separate pass run; tonight's store-integrity and citation-integrity findings
+  *are* the drift report, and they are more specific than a phantom-reference sweep would have been.
+- **Store repair performed: 0 destructive, 1 additive** — the only store mutation this cycle is the 19-entry
+  learnings append. **No repair was applied to the two corrupt stores** (144 schema-foreign event rows;
+  duplicate/undefined `RI-008` row) because both live in append-only stores where the honest fix is a
+  validator plus a routed writer, not a hand-edit. Documented instead of quietly rewritten.
+
+## Growth
+
+- **System strength: getting stronger, with one clear soft spot.** Stronger: 19 evidence-bound learnings
+  banked in one cycle; the observed-not-asserted principle independently derived by two lanes; five
+  exit-0-that-lies instances caught *in flight* rather than after shipping; a conductor handoff that worked
+  well enough for the incoming lane to correct the outgoing one. Soft spot: **the measurement layer**. Four
+  declared cognitive-maintenance inputs are cold or absent, the events store carries two schemas plus
+  fabricated history, and the phases reading all of it report success.
+- **Biggest leverage point:** build **one enforcer family, not four sprints** — "every check declares what it
+  can observe, and *input absent* is loud and non-green." It collapses (1) the `paths.eventsFile` envelope
+  validator, (2) partitioning self-test emits into their own `runtime/` stream, (3) the citation
+  resolvability + **uniqueness** lint over `ED-*`/`RI-*`/`betaEvents`/`runtime/**` in shipped and policy
+  artifacts, and (4) refuse-a-phase-on-a-missing-store. Item 4 is nearly free and forces the other three.
+- **Enforcer candidates routed to the Phase 4.5 debt sweep** (sleep files no ED rows): events-envelope
+  validator · self-test emit partition/marking · citation resolvability+uniqueness lint · phase-refuses-on-
+  missing-store · `superseded_by` stamp on sprint re-plan + exclude superseded contracts from the conflict
+  check · planning-principles cardinal-needs-a-roster lint · retarget the merge-guard push advisory at the
+  surviving safety floor (do **not** delete it) · read `subagent_type` in `session-tracker.js` instead of
+  sniffing prose (+ the `[object Object]` response-size bug in the same file) · the 8-week `node -e` reflex as
+  a write-time rule · the AP-1/P-043 real-data check, now 3 cycles unscheduled.
+- **Morning briefing:** appended to `.claude/dreams/coaching.md` as a new dated section (append-only honored).
+- **False-memory guard: 6 claims re-verified against ground truth before any of them shaped a learning**, and
+  **1 was corrected upward** — the candidate's "72 schema-foreign records" measured **144** store-wide, so the
+  entry states the observed number rather than the inherited one. Also verified at source: `CLAUDE.md` has no
+  numbered sections (so the advisory's `§4` citation is a phantom) **and** still carries the retired
+  `Push to remote | Ask first` row; `RI-001` resolves to the CRLF false-RED issue in the canonical store while
+  being cited elsewhere as the retro-deferral rule; the four cold/absent stores were each opened on disk; and
+  every hook script referenced by a new learning exists (`merge-guard.js`, `session-tracker.js`,
+  `test-install-matrix.js`, `event-contract.js` — 0 missing across all 72 wired entries).
+
+---

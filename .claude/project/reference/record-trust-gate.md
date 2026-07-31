@@ -60,6 +60,29 @@ grind (R7s chasing undecidable completeness) and the shortcut (closing over real
 is as undecidable as detector-completeness; "substance-proven-closed + claims-honest-to-scan" is a legitimate
 binding-clear. Used 3× this session (SP-003 gpt#5, SP-004 R6, SP-003 park terminal).
 
+**The exit-0-that-lies class, and why its instance COUNT is itself a finding (2026-07-30).** Five
+independent instances landed in ONE session, each shaped as a tool returning success over a world it did
+not achieve: a placeholder changelog shipped at tag; a plan writer authoring a contract against the WRONG
+sprint at exit 0; ENOBUFS surfacing could-not-run as an opaque FAIL (ED-313); capsule checksums claiming
+placeholder bytes after the fill; and an ED row's own fail-closed-by-construction claim with no living
+enforcer. **Rule:** when one class produces several instances inside a single arc, stop treating them as
+incidents — name it that arc's dominant failure mode and screen every REMAINING deliverable against it
+before shipping. The screen must include your OWN prior reports: the fifth instance was a claim about the
+fix for the first four. Prevention, proven five times: fail-closed checks plus artifact-first verification
+of every claim. (ED-313/318/319/325/326/329.)
+
+**A gate keyed on a CLOSED enumeration needs its escape CONSTRUCTED, not assumed away (2026-07-30).** The
+false-green/false-RED pair above covers gates that LIE; this covers gates that are SILENT — a real outcome
+landing in no named bucket and therefore PASSING. β constructed the escape against her own terminal: under
+the v1 phrasing, a successful apply that leaves a working file behind AND REPORTS IT HONESTLY was neither
+transaction-honesty (the report is true) nor byte-fidelity (no existing content changed), and would have
+slipped the terminal entirely. The fix was DEFINITIONAL, not procedural — non-existence is a byte value, so
+an entry that appears or disappears unbidden IS byte-fidelity. **Rule:** for every closed class-set (finding
+classes, severity families, ship/no-ship buckets) construct the outcome that fits none of them before
+ratifying it; and prefer tightening a definition over adding a class, because any class outside the named
+set is itself an escape hatch and widening the taxonomy requires the terminal RE-RATIFIED rather than
+silently re-scoped. (`.claude/agents/president/_system/policy/adr/0040-finding-class-boundaries-bf-th-no-relabelling.md` §B3.)
+
 ## Related — the regex-guard ceiling
 
 The structural guards above are today regex-based and share an undecidable residual (broadening the

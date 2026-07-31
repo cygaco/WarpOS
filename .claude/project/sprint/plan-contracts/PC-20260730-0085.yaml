@@ -26,7 +26,7 @@ affected_surfaces:
     notes: "The ToS constraint is primary-source verified TWICE with independently re-fetched verbatim quotes (runtime/vlad-w1/w1-planning-inputs.md §1). What is verified is the CONSTRAINT, not an implementation — no engine code exists. The SDK bundling its own Claude Code binary removes the user's Claude Code install from the dependency graph; bank that portability gain, do not spend it."
   - surface: "The credential-custody enforcer (fail-closed)"
     evidence_level: assumed_from_request
-    notes: "The user's key must never leave their machine — no transmit, no log, no proxy, no telemetry — and ambient ANTHROPIC_API_KEY must never be inherited by a child process. Consumer Terms forbid credential sharing, making this a COMPLIANCE obligation, not hygiene: a report-only check does not satisfy it. Now epic DoD item 10."
+    notes: "REWORDED 2026-07-31 per beta 7c4e2b96 + ED-331 (the original 'never leave their machine / no transmit' form is unachievable — the Agent SDK authenticates to Anthropic WITH the key, so transmitting it is the mechanism, not a leak): the product never becomes a CREDENTIAL INTERMEDIARY — the key is used solely as the SDK's own auth to Anthropic's endpoint and reaches no other destination (no log, no telemetry, no proxy, no third party, no child process; env passing allowlist-only). The twice-verified legal page bars credential intermediation directly (the earlier Consumer-Terms citation was never primary-source verified and is not relied on). COMPLIANCE obligation, not hygiene: report-only does not satisfy it. Now epic DoD item 10 (corrected form, 3a8fd442)."
   - surface: The quota-exhaustion detector
     evidence_level: inferred_from_repo
     notes: "Result strings and structured error codes are documented; the EXIT CODE is not. So the detector must be empirically characterized against real terminations before ship, an unrecognized termination classifies could-not-run rather than success, and it must never trip on 'Server is temporarily limiting requests (not your usage limit)' — that is capacity, auto-retried."
@@ -91,7 +91,7 @@ assumptions:
     - "OPERATOR: the sibling product repo's name and slug, plus sign-off to create it — the epic's first approval point and a hard precondition for every product-side file."
     - "OPERATOR: does the operator RATIFY API-key-only model access, and does the product survive the reinstated onboarding cliff? This reverses a decision the operator personally made in grill round 3 to solve the drop-off they themselves named as the biggest one. It is not product-lead altitude and it is not epsilon's — the ToS finding forces the constraint, but whether v1 ships behind that wall is a product ruling."
     - "OPERATOR: the Anthropic API spend envelope for dev/test — trips two autonomy rows (signups/purchases not allowed; >=$5 ask-first). Empirically characterizing the quota detector requires deliberately provoking metered failures, so this gates a specific DoD item, not just general development."
-    - "BETA: the credential-custody enforcer. What makes 'the key never leaves the machine' self-detecting and FAIL-CLOSED rather than aspirational — the enforcer's shape, what it can actually prove versus what it can only assert, and its honest residual ceiling."
+    - "BETA: the credential-custody enforcer. What makes 'the product is never a credential intermediary' (the 7c4e2b96 corrected form) self-detecting and FAIL-CLOSED rather than aspirational — the enforcer's shape, what it can actually prove versus what it can only assert, and its honest residual ceiling."
     - "BETA: the honest-degradation language ('NOT verified' when a repo has no tests, could-not-run on an unrecognized termination). Both are claims-boundary surfaces where the wording is the control."
     - "BETA/OPERATOR: the unmitigated funnel risk. The CLI seam was the sole solve for the operator's own named biggest drop-off; it is now unowned, and 'no cost estimates in proposals' was ruled in a subscription world and is now a churn hazard."
 open_questions:
@@ -129,7 +129,7 @@ requirement_areas:
   - Host-free driver for end-to-end exercisability
 high_level_story_candidates:
   - "As a founder, I install Vlad and it reaches a model on MY API key, so no one else's credentials or subscription is involved."
-  - "As a founder, I am confident my API key never leaves my machine, because a build-failing enforcer proves it rather than a doc promising it."
+  - "As a founder, I am confident my API key reaches Anthropic and nowhere else — no log, no telemetry, no proxy, no other process — because a build-failing enforcer proves it rather than a doc promising it."
   - "As a founder who kills the editor mid-job, my repository is left clean and the next session tells me what was interrupted and offers to resume or discard."
   - "As a founder who runs out of quota, I am told the job could not run — never handed a result that silently degraded into a success."
   - "As the operator, I can exercise the whole MCP surface without a host, so the engine is testable from day one."
@@ -142,7 +142,7 @@ granular_story_candidates:
   - Have get_status name an interrupted job from the journal and offer resume or discard.
   - "Emit the receipt as schema_version plus three named slots, journalled, returned and logged opaquely — with a test asserting the engine never validates or branches on the interior."
   - "Pass env to child processes from an allowlist, and assert that ambient ANTHROPIC_API_KEY is NOT inherited."
-  - "Build the fail-closed credential-custody enforcer: no transmit, no log, no proxy, no telemetry of the key — failing the build, not warning."
+  - "Build the fail-closed credential-custody enforcer (credential-intermediary form, 7c4e2b96): the key reaches Anthropic's endpoint ONLY — no log, no proxy, no telemetry, no third party, no child process (allowlist env) — failing the build, not warning."
   - "Empirically characterize quota exhaustion against real terminations; classify unrecognized terminations as could-not-run; do NOT trip on 'Server is temporarily limiting requests (not your usage limit)'."
   - "Port the permission-level config (auto | notice | confirm | never) with a per-project config file and an in-code check."
   - "Enforce exactly ONE refusal genuinely in engine code, with a test that drives at it and is refused."

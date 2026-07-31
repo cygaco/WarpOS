@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "3f9c39f52ad5c78ab4e027f570587774b2f8ca7f",
-  "installedAt": "2026-07-30T02:55:16.102Z",
+  "installedCommit": "c322d3a6e0e0e55d2ff6e63ee97cd4e13d16460e",
+  "installedAt": "2026-07-31T19:00:27.809Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -434,8 +434,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524",
-      "currentHashAtInstall": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524",
+      "installedHash": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
+      "currentHashAtInstall": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
       "introducedIn": "0.0.0"
     },
     {
@@ -444,8 +444,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f",
-      "currentHashAtInstall": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f",
+      "installedHash": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
+      "currentHashAtInstall": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
       "introducedIn": "0.0.0"
     },
     {
@@ -2094,8 +2094,8 @@
       "dest": ".claude/commands/mode/sprint.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110",
-      "currentHashAtInstall": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110",
+      "installedHash": "2904cf0c6d6abc99e35af8d0db7168b4158f36b33bbcd37207e876b39518a422",
+      "currentHashAtInstall": "2904cf0c6d6abc99e35af8d0db7168b4158f36b33bbcd37207e876b39518a422",
       "introducedIn": "0.0.0"
     },
     {
@@ -4174,8 +4174,8 @@
       "dest": ".claude/project/reference/record-trust-gate.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "4d920e8a58d50523ca4dadc3cd65c00370fc6d2a6248c14e2511f12ca41b027d",
-      "currentHashAtInstall": "4d920e8a58d50523ca4dadc3cd65c00370fc6d2a6248c14e2511f12ca41b027d",
+      "installedHash": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343",
+      "currentHashAtInstall": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343",
       "introducedIn": "0.0.0"
     },
     {
