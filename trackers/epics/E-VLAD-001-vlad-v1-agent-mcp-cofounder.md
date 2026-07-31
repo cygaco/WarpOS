@@ -26,7 +26,7 @@
 - [ ] Engine memory persists per-project across sessions, keyed path-primary; a moved folder is detected and offered relink
 - [ ] Receipts and agent output pass an ELI5 spot-check rubric (non-technical, short); 'Vlad (AI)' attribution present in all owned-channel output
 - [ ] A recorded end-to-end demo exists: install → init → audit → roadmap on a real non-WarpOS repo (the blog post's evidence)
-- [ ] Credential custody proven by a FAIL-CLOSED automated enforcer (not a report-only check): the user's Anthropic API key never leaves their machine — no transmit, no log, no proxy, no telemetry — and ambient `ANTHROPIC_API_KEY` is never inherited by any child process (env passing allowlist-only). Consumer Terms forbid credential sharing, so this is a compliance obligation, not hygiene
+- [ ] Credential custody proven by a FAIL-CLOSED automated enforcer (not a report-only check): **the product never becomes a credential intermediary** — the user's Anthropic API key is used solely as the Agent SDK's own authentication to Anthropic's endpoint and reaches NO other destination (no log, no telemetry, no proxy, no third party, no child process; env passing allowlist-only). REWORDED 2026-07-30 per β `7c4e2b96` (see Change log): the prior "never leaves their machine / no transmit" form was unachievable as written — the SDK authenticates WITH the key, so transmitting it to Anthropic is the mechanism, not a leak. The enforcer proves three things: no key-shaped secret in the scanned surface; every child-spawn passes an explicit allowlist env AND raw `spawn`/`exec`/`fork` bypassing the audited wrapper is refused; a runtime decoy-key negative fixture goes RED if the scrub is removed. Product-layer control — it ships to and runs on the user's machine. Basis: the twice-verified legal page bars credential intermediation directly (the earlier "Consumer Terms forbid credential sharing" citation was never primary-source verified and is not relied on)
 
 ## Related definitions
 - None currently recorded.
@@ -128,6 +128,11 @@
 - Provenance: 2026-07-29 · source: sprint-id blocker resolution (w1-planning-inputs §3) · <!-- fold:148ac68e -->
 - ⚠ CONFLICT FLAGGED: overlaps a stable commitment ("sprint"). NOT applied to Scope/Decisions — requires resolution before any plan-item change.
 - Approval: this class is taste-heavy/irreversible-leaning — requires user approval before it reshapes committed items.
+
+### 2026-07-30 — fold (constraint) — source: Beta verdict 7c4e2b96 (W1 plan→design boundary), routed to α by EpsilonW1
+- Folded: CREDENTIAL-CUSTODY DoD LINE UNACHIEVABLE AS WORDED: 'the key never leaves their machine / no transmit' is contradicted on the happy path — the Agent SDK authenticates to Anthropic's API WITH that key, so transmitting it is the mechanism, not a leak; a fail-closed enforcer proving the old wording would prove a falsehood (ADR-0039 §A2.1 condition 2 arriving pre-build). Achievable/provable form: the product never becomes a CREDENTIAL INTERMEDIARY — key used solely as the SDK's own auth to Anthropic's endpoint, reaching no other destination (no log/telemetry/proxy/third party/child process; env allowlist-only); enforcer proves three things incl. refusing raw spawn/exec/fork bypassing the audited wrapper + a runtime decoy-key negative fixture; product-layer control running on the user's machine. CITATION RE-BASED: 'Consumer Terms forbid credential sharing' was never primary-source verified; the twice-verified legal page bars credential-intermediation directly — cite that. Sprint tracker S-VLADW1-01 DoD already carries the corrected form (EpsilonW1, 33024f46); this fold gates the epic DoD edit.
+- Classification: constraint
+- Provenance: 2026-07-30 · source: Beta verdict 7c4e2b96 (W1 plan→design boundary), routed to α by EpsilonW1 · <!-- fold:9a6f6c88 -->
 
 ## Evidence log
 ### 2026-07-28 — Epic plan authored

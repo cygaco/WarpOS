@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-07-30T02:13:24.849Z",
+  "generatedAt": "2026-07-31T19:00:28.033Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -5051,6 +5051,14 @@
       "owner": "runtime",
       "managed": false
     },
+    "trackers/sprints/S-VLADW1-01-vlad-engine-skeleton.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     "trackers/sprints/SP-20260725-001-ed286-citation-obfuscation-mechanism.md": {
       "owner": "runtime",
       "managed": false
@@ -8314,8 +8322,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/plan.js",
-      "sha256": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38",
-      "installedSha": "3848630b11693a556874677db222a3c20935ba07f7ae4e0f881ba5b0d47ffc38"
+      "sha256": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654",
+      "installedSha": "567772098c106170b69b3e4aa1053c07c8d654a2fa6ab379a34599da60a6d654"
     },
     "scripts/sprint/release.js": {
       "owner": "framework",
@@ -8372,6 +8380,13 @@
       "source": "scripts/sprint/test-plan-honors-registry-primary.js",
       "sha256": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d",
       "installedSha": "9640e58691eb5d33f253392a3e799ff64653bcab25381a31fe6405f0556f1f8d"
+    },
+    "scripts/sprint/test-plan-target-channel-guard.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/sprint/test-plan-target-channel-guard.js",
+      "sha256": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d",
+      "installedSha": "30977b985c13acbad7cc0beb42022e60950e073d9724455f9147b43f69013a5d"
     },
     "scripts/sprint/test-regression-seed-gate.js": {
       "owner": "framework",
@@ -21597,6 +21612,30 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0083.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0083.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0084.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0084.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0085.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260730-0085.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -25038,8 +25077,8 @@
       "managed": true,
       "source": ".claude/project/reference/record-trust-gate.md",
       "kind": "md",
-      "sha256": "4d920e8a58d50523ca4dadc3cd65c00370fc6d2a6248c14e2511f12ca41b027d",
-      "installedSha": "4d920e8a58d50523ca4dadc3cd65c00370fc6d2a6248c14e2511f12ca41b027d"
+      "sha256": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343",
+      "installedSha": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343"
     },
     ".claude/project/reference/recurring-issues-design.md": {
       "owner": "framework",
@@ -25714,6 +25753,12 @@
       "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
     },
     ".claude/dreams/2026-07-20.md": {
+      "owner": "project",
+      "managed": false,
+      "class": "guide",
+      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
+    },
+    ".claude/dreams/2026-07-30.md": {
       "owner": "project",
       "managed": false,
       "class": "guide",
@@ -26920,8 +26965,8 @@
       "managed": true,
       "source": ".claude/commands/mode/sprint.md",
       "kind": "md",
-      "sha256": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110",
-      "installedSha": "185025c80d6cdc9c52497201f40e1fe023929dae498efc9fe4719b0f80319110"
+      "sha256": "2904cf0c6d6abc99e35af8d0db7168b4158f36b33bbcd37207e876b39518a422",
+      "installedSha": "2904cf0c6d6abc99e35af8d0db7168b4158f36b33bbcd37207e876b39518a422"
     },
     ".claude/commands/memory/verify.md": {
       "owner": "framework",
@@ -28392,16 +28437,16 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524",
-      "installedSha": "a65450ae231fc4cff84dce60d63e678782d02e8a58e029f543eb10fe76666524"
+      "sha256": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
+      "installedSha": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f",
-      "installedSha": "fb3683afd83ff7f12c2ab96099bb2c929f540a339c41be1de00579cbbcc2838f"
+      "sha256": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
+      "installedSha": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b"
     },
     ".claude/agents/president/_system/alpha/events.jsonl": {
       "owner": "runtime",

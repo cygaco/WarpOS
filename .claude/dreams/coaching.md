@@ -278,3 +278,50 @@ Resume the **SP-003 panel-3lab binding activation** build (ED-227, ADR-0022 teet
 - Dream solution worth reviewing: for INTERMITTENT failures, look for a shared mutable resource with many writers before blaming the tool (isolation > diagnosis). Adopt the CODEX_HOME=~/.codex-warpos seam for any lane dispatching codex — flag it for Epsilon2's SP-005 codex work.
 - Suggested first task next session: wire the meta-lockstep enforcer (broadening a scan's scope filter requires its paired class_derivation/rule table to gain the matching rule) — the deep-clean violated exactly this and only the GPT cross-check caught it.
 - Watch-out: don't dismiss a review finding as 'just wording' before grounding it at the code — check-2 nearly entered the record as doc-precision when it was a real (pre-existing) registry-overrides-floor gap.
+
+## 2026-07-30 — Morning briefing + coaching (post 1.2.0 · SP-20260725-002 close · E-VLAD-001 W1 plan)
+
+**Where we parked.** 1.2.0 shipped; SP-20260725-002 closed after 14 rounds; E-VLAD-001 Wave 1 is planned
+(two plan contracts minted) and design is the next step. 154 uncommitted paths were still on the branch
+at sleep time — the session-end orchestrator lands them.
+
+**Suggested first task next session — one enforcer family closes four of tonight's HIGH findings.** They
+are all the same defect ("a check that reports green about something it cannot see"), so build them
+together rather than one per sprint:
+1. an **envelope validator** over `paths.eventsFile` (require `{id, ts, cat, actor, session, data}`,
+   reject unknown top-level keys) wired into `/scan:full` — 144 rows in the store today fail it;
+2. **partition the self-test writes** into their own `runtime/` stream instead of marking them
+   `fixture: true`. Tonight's cross-pollination argues for partition on principle: marking asks every
+   future reader to remember, partition asks nothing of anyone (this is the `CODEX_HOME=mine` lesson);
+3. a **resolvability + uniqueness lint** over `ED-*` / `RI-*` / `betaEvents` / `runtime/**` citations in
+   shipped and policy artifacts — must resolve from a fresh clone AND resolve to exactly one thing;
+4. **"input absent" must be a loud, non-green outcome** in every phase that reads a store. This one is
+   nearly free — the phase already knows the path it wanted — and it makes the other three inevitable.
+
+**Two things to check before trusting green.**
+- `0 malformed` on a JSONL store is a *syntax* claim. All 144 schema-foreign rows in `events.jsonl` parse
+  perfectly. Ask what the check can SEE, not whether it passed.
+- Four declared inputs to our own cognitive maintenance are cold or absent (`traces.jsonl` 51 days;
+  sprint retro history 7 weeks; `_reports/` 6 weeks; `skill-usage.jsonl` and `requirements-staged.jsonl`
+  never created). Every phase reading them reports success. If a "we have telemetry for that" claim comes
+  up, open the store first.
+
+**Dream solutions worth reviewing.** (a) The 2026-07-20 *shared well* returned as our own event store —
+when a symptom is intermittent OR a store looks inexplicably clean, look for many writers before blaming
+the reader. (b) The 2026-07-18 *mask and the writer's hand* returned in an unfixed lane: the
+writer-stamped-identity doctrine was landed in the record lane and declared closed, while the hook lane
+still keyword-sniffs prose and records `unknown`. **A closed ED row closes an instance, never a class** —
+when ratifying something broad, enumerate every lane it governs, not just the one that hurt.
+
+**Gentle coaching (from the session's own patterns).**
+- This arc's own best move is worth keeping deliberately: ε flagged its **own** context degradation
+  *before* the precision work, banked every input into committed durable homes, and the fresh conductor
+  then caught the outgoing conductor's misdiagnosis. Self-flagging degradation early is a competence
+  signal — reward it, and use the test "does the resuming lane need anyone's memory?" rather than
+  document length.
+- ~19 message crossings and zero damage was not luck: round-keyed asks, `msg_id` citation of every ruling,
+  and "an unanswered *keyed* ask is the only block signal" are what made two stalls-on-rulings-that-already-
+  existed recover in one exchange each. Keep keying the asks; a stall you can diagnose in one step is cheap.
+- The `node -e` fs-write reflex fired 11 more times this window (8 weeks running, always caught). Gate-time
+  blocking demonstrably does not extinguish it, so stop expecting the reminder to work and let the Phase 4.5
+  debt sweep turn it into a write-time rule.

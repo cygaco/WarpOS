@@ -70,13 +70,51 @@ path was never permitted, so API-key is primary and only.
 Constraints that fall out:
 - **Never inherit ambient `ANTHROPIC_API_KEY` into a child process.** In `-p` "the key is always used
   when present" → a stray env key silently bills the wrong Console org. Env passing must be allowlist-based.
-- **The user's key must never leave their machine** (no transmit/log/proxy/telemetry). Consumer Terms
-  forbid credential sharing, so this is a **compliance obligation**, not hygiene → needs a fail-closed
-  enforcer, not a report-only check. The epic's 10-item DoD currently has no line for this.
+- ~~**The user's key must never leave their machine** (no transmit/log/proxy/telemetry). Consumer Terms
+  forbid credential sharing, so this is a **compliance obligation**, not hygiene~~ → needs a fail-closed
+  enforcer, not a report-only check.
+
+  > **CORRECTED 2026-07-30 — β verdict `7c4e2b96-5d81-4a37-b0f2-91e6c58a3d74` (A1 + A2). Do not reuse the
+  > struck wording above; it is preserved only so the correction is auditable.**
+  >
+  > **A1 — "must never leave their machine" is UNACHIEVABLE AS WORDED.** The Agent SDK authenticates to
+  > Anthropic's API *with* that key, so transmitting it is the **mechanism, not a leak**. As written, the
+  > constraint is contradicted by the architecture on the happy path, and a fail-closed enforcer asserting
+  > it would either have to lie to pass or red-flag correct behaviour forever. β classed this as ADR-0039
+  > §A2.1 condition 2 (a claim consumed as a guarantee that is silently false), arriving **pre-build**.
+  >
+  > **The achievable and provable form, which is what to build against:** the product **never becomes a
+  > credential intermediary** — the key is used solely as the SDK's own auth to Anthropic's endpoint and
+  > reaches **no other destination**: no log, no telemetry, no proxy, no third party, no child process
+  > (env passing allowlist-only). This version is provable precisely because it names destinations an
+  > enforcer can enumerate, where "never transmits" names none.
+  >
+  > **A2 — the compliance citation is NOT in this document's verified set.** "Consumer Terms forbid
+  > credential sharing" cites a **different document** from the one quoted verbatim in §1
+  > (`code.claude.com/docs/en/legal-and-compliance`), and the Consumer Terms were never fetched or quoted
+  > — not in either of the two verification passes. **Treat it as UNVERIFIED.** For a hygiene item that
+  > would be a nit; for an obligation deliberately elevated to *compliance*, the citation is load-bearing.
+  >
+  > The obligation **survives on better footing**: §1's already-verified page bars credential
+  > intermediation directly — *"Anthropic does not permit third-party developers to offer Claude.ai login
+  > or to route requests through Free, Pro, or Max plan credentials on behalf of their users."* Re-base
+  > onto that quote, or fetch and quote the Consumer Terms before calling it compliance.
+  >
+  > **Stale sub-claim, also corrected:** this bullet previously ended "The epic's 10-item DoD currently
+  > has no line for this." That is no longer true — the `/epic:fold` amendment landed a credential-custody
+  > item in the epic's Definition of Done. What the epic's item *does* still carry is the A1 wording above,
+  > which is an **α item via `/epic:fold`**, tracked on S-VLADW1-01's Blockers (ε must not edit an epic's DoD).
 - **Branding:** ship as "Vlad, powered by Claude". Never "Claude Code", never Claude-Code-mimicking visuals.
 - **Usage-limit exhaustion has documented STRING + structured-error-code signals but NO documented exit
   code.** Detector must be empirically characterized before ship; an unrecognized termination classifies
   `could-not-run`, never success.
+
+  > **REFINED 2026-07-30 — β verdict `7c4e2b96` (B3): the rule above is right but INCOMPLETE.** Classify
+  > into **three** buckets, not two: recognized success, recognized quota-exhaustion, and unrecognized →
+  > `could-not-run` **with the raw signal surfaced**. "Unrecognized never means success" covers one failure
+  > direction; the other is classifying an unrecognized termination **as quota**, which tells a founder to
+  > buy credits when the real fault is elsewhere. `could-not-run` must not become a euphemism that resolves
+  > to the most likely cause — fail closed to "we could not tell", and show what was seen.
 
 Usable detectors (all primary-source backed): result strings
 `You've hit your (session|weekly|Opus) limit · resets <time>`; structured error codes

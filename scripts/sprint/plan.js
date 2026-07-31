@@ -417,6 +417,65 @@ function main() {
   }
   const payload = loadPayload(args.payload);
   if (!payload) return 1;
+
+  // ── DOOR 1 (fail-closed): the inert-target-channel guard ─────────────────
+  // `payload.sprint` is NOT a targeting channel. This script stamps the Plan
+  // Contract's `sprint:` from the RESOLVED sprint — `--sprint` via
+  // parseSprintArg -> WARPOS_SPRINT_ID, else the registry `primary` — and never
+  // reads `payload.sprint` (only `payload.sprint_title` / `sprint_objective`).
+  // A caller who supplies the target ONLY in the payload was therefore silently
+  // retargeted and handed an exit-0 success line naming a different sprint in
+  // small print. That produced PC-20260730-0083 on 2026-07-30: AUDIT content
+  // stamped `sprint: S-VLADW1-01`, schema-invalid on top of the mis-association.
+  // The sanity WARN at the end of main() structurally cannot catch this case —
+  // it fires only when `--sprint` WAS passed and disagreed.
+  // Refuse on disagreement; never silently prefer one channel over the other.
+  // Checked BEFORE ensureCurrentSprint() so a refusal writes nothing.
+  if (Object.prototype.hasOwnProperty.call(payload, "sprint")) {
+    const declared = payload.sprint;
+    if (typeof declared !== "string" || declared !== sa.id) {
+      process.stderr.write(
+        `PLAN_TARGET_CHANNEL_MISMATCH: payload declares sprint=${JSON.stringify(
+          declared,
+        )} but this run resolves to sprint=${JSON.stringify(sa.id)}.\n` +
+          `  \`payload.sprint\` is not a targeting channel and is never read as one.\n` +
+          `  To target a sprint, pass the flag: --sprint ${
+            typeof declared === "string" ? declared : "<SP-id>"
+          }\n` +
+          `  Refusing rather than silently planning against ${JSON.stringify(
+            sa.id,
+          )}.\n`,
+      );
+      return 1;
+    }
+  }
+
+  // ── DOOR 2 (loud, not fatal): target came from ambient state ─────────────
+  // Deliberately NOT a refusal. The documented /sprint:plan invocation
+  // (.claude/commands/sprint/plan.md) omits `--sprint`, and 119 sprints are
+  // registered here, so refusing would break the primary documented route and
+  // turn test-plan-honors-registry-primary.js case 2 into a false RED. What was
+  // actually wrong in the PC-0083 incident was that the resolution was SMALL
+  // PRINT, so make it loud instead. Residual tracked as enforcement debt: a
+  // caller that omits the flag, declares nothing, and means a non-primary
+  // sprint expresses no intent this guard could compare against.
+  if (!process.argv.includes("--sprint")) {
+    let registered = 0;
+    try {
+      const reg = readYamlMaybe(SPRINT.activeRegistry);
+      registered = reg && Array.isArray(reg.sprints) ? reg.sprints.length : 0;
+    } catch {
+      /* fail open — never block plan formation on a registry read */
+    }
+    if (registered > 1) {
+      process.stderr.write(
+        `PLAN_TARGET_FROM_AMBIENT: --sprint was not passed, so the target came from the ` +
+          `registry \`primary\` = ${JSON.stringify(sa.id)} (of ${registered} registered sprints). ` +
+          `Pass --sprint <SP-id> to target explicitly.\n`,
+      );
+    }
+  }
+
   const current = ensureCurrentSprint();
   // Defensive sanity check: if the operator passed --sprint <id>, the resolved
   // current.id MUST equal that id. A mismatch means ensureCurrentSprint fell

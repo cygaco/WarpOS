@@ -1,20 +1,23 @@
 schema: warpos/sprint/current-sprint/v1
-id: "S-VLADW1-02"
-title: "SP-VLAD-W1-AUDIT — Job #1: port lastmile detect/score/adapters; WarpOS-refusal edits in the ported copy; intake fallback; readiness-score adoption (score.js, no checklist proxy); receipt schema v1 from portfolio dogfood"
-objective: "Run /sprint:plan to set this."
-status: not_started
+id: S-VLADW1-02
+title: "Job #1 — port lastmile detect/score/adapters into the Vlad engine, adopt score.js as the ONE readiness number, mint receipt v1 from portfolio dogfood"
+objective: "Give the engine its first real job: detect a repo's stack, score its readiness, emit a receipt — by PORTING the existing lastmile audit rather than rewriting it, with exactly one readiness number in the product repo."
+status: planning
 created_at: "2026-07-30T00:52:06.116Z"
-updated_at: "2026-07-30T00:52:06.116Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-07-30T02:27:09.083Z"
+source_request: "Wave-1 AUDIT of epic E-VLAD-001 (epic label SP-VLAD-W1-AUDIT). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28) plus the 34-family port inventory in _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2."
+interpreted_intent: "Port the existing lastmile readiness-audit engine (detect, score, adapters) into the new Vlad product engine so Job #1 — a read-only readiness audit — runs end-to-end on a stranger repo and returns a receipt. Three things make this a port rather than a build: the WarpOS-specific refusals are edited out in the PORTED copy (canonical WarpOS assets are never modified); score.js is ADOPTED as the single readiness number rather than converged with the checklist proxy (J3); and the receipt schema's interior — left deliberately untyped by S-VLADW1-01 (J4) — is filled here from real dogfood data and minted as v1."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260730-0084.yaml"
+risk_level: medium
 approval_state: none_required
-current_phase: idle
+current_phase: plan
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
-  identified: []
+  identified:
+    - "Anthropic API (Console account + the operator's own API key) — the engine's only model-access path after the ToS NO-GO on the claude-CLI subscription seam. Needs a dev/test spend envelope before any metered run."
+    - "The named portfolio dogfood corpus (>=3 repositories) under explicit written read-only authorization — external to WarpOS and outside the standing WarpOS-only rule, so it requires operator consent per repository."
+    - "A git host, if the corpus repos are read from remotes rather than local working copies."
   blocked: []
   ready: []
   mocked: []
@@ -49,20 +52,53 @@ requirements:
   redteam_plan: null
   release_plan: null
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260730-0084.report.md"
   design: null
   execution: null
   release: null
@@ -74,10 +110,14 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, the named >=3-repo corpus with written read-only authorization, and the API spend envelope)"
+  resume_summary: "Plan Contract PC-20260730-0084 created. Next: /sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, the named >=3-repo corpus with written read-only authorization, and the API spend envelope)."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "No lane isolation set at plan time. The product-side work lands in a sibling repo that does not exist yet, so the eventual isolation question is 'which repo', not 'which worktree'. Revisit at /sprint:design once the repo exists."

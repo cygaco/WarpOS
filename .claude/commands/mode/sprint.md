@@ -203,6 +203,20 @@ legacy team panel — `/warp:health` §3.5 reports it as informational only.
    but NO readiness ping ever arrives, the teammate was likely reaped (RI-004-class) —
    re-spawn it. Do NOT reach a boundary consult (or `/sprint:full`) until both pings are in.
 
+4. **Once the team is live, suspect DELIVERY before suspecting the VERDICT.** Teammate messages
+   batch and cross; a verdict that looks missing is far more often a crossing than a refusal.
+   ~19 crossings caused zero damage on 2026-07-30 because four cheap mechanisms were in place —
+   keep all four:
+   - **Key every ask to its round** (`r13`, `GATE-B r2`). A late answer then self-files against
+     the round it belongs to instead of arriving as an orphan nobody can place.
+   - **Cite the `msg_id`** of every ruling you rely on, so "β ruled X" is checkable rather than
+     remembered.
+   - **Only an UNANSWERED KEYED ASK is a legitimate block signal.** Silence on an unkeyed
+     question is not a block — re-ask it keyed before halting anything on it.
+   - **When re-asked, the judge names the `msg_id`s it already issued**, which turns a stall
+     into a one-step diagnosis. Twice on 2026-07-30 a release stalled on a ruling that ALREADY
+     EXISTED; both recovered in one exchange because the ask was keyed.
+
 **Layer 1 (persistent team):** α (lead) + ε (conductor) + β (judgment) — members in
 `~/.claude/teams/<project>-sprint/config.json`, addressable by name via SendMessage.
 **Layer 2 (ε's hook-point roster):** directors / leads / builders / reviewers / learner —
