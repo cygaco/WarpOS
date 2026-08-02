@@ -1,7 +1,7 @@
 schema: warpos/sprint/plan-contract/v1
 id: PC-20260730-0084
 created_at: "2026-07-30T02:27:09.080Z"
-updated_at: "2026-07-30T02:27:09.080Z"
+updated_at: "2026-08-01T00:00:00.000Z"
 sprint: S-VLADW1-02
 source_request: "Wave-1 AUDIT of epic E-VLAD-001 (epic label SP-VLAD-W1-AUDIT). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28) plus the 34-family port inventory in _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2."
 source_request_verbatim: "S-VLADW1-02 (epic label SP-VLAD-W1-AUDIT) — candidate — Job #1: port lastmile detect/score/adapters into the engine; remove WarpOS refusals in the ported copy; intake fallback for undetectable stacks; adopt score.js as the ONE readiness number (checklist proxy not ported); receipt schema v1 from portfolio dogfood"
@@ -68,7 +68,7 @@ assumptions:
     - "The port is genuinely a port: the lastmile audit engine already runs on non-WarpOS repositories behind a small number of refusal edits, per the transferability inventory."
     - "This is a NEW repo with no legacy consumer, so there is nothing to migrate and no back-compatibility surface for the readiness number."
     - "The audit is read-only: it inspects and scores, and does not write to the audited repository. The write path is Wave 2 and explicitly out of scope."
-    - "'Your code never touches our servers' survives the API-key-only reversal intact, and is in fact stronger — this claim is safe to keep making."
+    - "'Your code never touches our servers' is SEAM-AGNOSTIC — it survived the API-key-only reversal and survives the 2026-08-01 subscription-primary ruling, because the audit runs locally either way. Safe to keep making under any seam."
   unsafe:
     - "That the cited port references (score.js:134, phases/preflight.js and the rest of the inventory's maps) are accurate — they are inferred, never opened, and the inventory says its maps trail live values."
     - "That 'converge the two readiness scores' is a small reconciliation task — read literally it invites porting both scorers, which is a hidden second sprint. J3 reframes it as adoption for exactly this reason."
@@ -77,14 +77,14 @@ assumptions:
   needs_user_or_beta_review:
     - "OPERATOR: the sibling product repo's name and slug, plus sign-off to create it — the epic's first approval point and a hard precondition for every product-side file in this sprint."
     - "OPERATOR: the named portfolio corpus (>=3 repos) WITH explicit read-only authorization, reconciled in writing against the standing WarpOS-only rule. Verbal acceptance in grill round 3 was never reconciled with 'open these three directories', and this sprint cannot run its DoD without it."
-    - "OPERATOR: the Anthropic API spend envelope for dev/test — trips two autonomy rows (signups/purchases not allowed; >=$5 ask-first)."
+    - "RESOLVED-2026-08-01 (prior text preserved: 'OPERATOR: the Anthropic API spend envelope for dev/test — trips two autonomy rows (signups/purchases not allowed; >=$5 ask-first).'). Operator granted $50 dev/test, vlad lane only; spend beyond that envelope remains ask-first."
     - "BETA: the honest-degradation language. When a repo has no tests the audit must report 'NOT verified' rather than inferring a pass — this is a claims-boundary surface, and the exact wording determines whether the receipt is honest or merely hedged."
     - "BETA: whether the build-failing second-readiness-number enforcer is the right shape of teeth for J3, or whether an adoption discipline this simple regrows anyway."
 open_questions:
   blocking:
     - "Sibling product repo name + slug + operator sign-off to create it (epic gate #1, inherited)."
     - "Which >=3 portfolio repositories form the dogfood corpus, and explicit written read-only authorization for each, reconciled against the standing WarpOS-only rule."
-    - The Anthropic API spend envelope for dev/test.
+    - "RESOLVED-2026-08-01 (prior text preserved: 'The Anthropic API spend envelope for dev/test.'). Operator granted $50, vlad lane only."
   non_blocking:
     - "Can the FOUNDERS_CHECKLIST.md-dependent readiness dimension be re-sourced from a signal a stranger repo actually has, or must it ship as honestly NOT SCORED? Either answer is acceptable; silently scoring it is not."
     - "J3 (adopt score.js, never port the checklist proxy) is now folded into the epic's Definition of Done item on the readiness number as an alpha-altitude Class B scoping call. It is recorded, not awaiting an operator answer — surfaced here for objection rather than held as a gate."
@@ -135,11 +135,11 @@ preliminary_ticket_candidates:
 external_service_dependencies:
   status: required
   required:
-    - "Anthropic API (Console account + the operator's own API key) — the engine's only model-access path after the ToS NO-GO on the claude-CLI subscription seam. Needs a dev/test spend envelope before any metered run."
+    - "Anthropic model access — SUBSCRIPTION-PRIMARY per the operator ruling of 2026-08-01 (the end user's own Claude subscription, user-invoked agent, local MCP topology, no developer credentials in the path), with the API-key/TypeScript-Agent-SDK route ENGINEERED AND READY as the fallback. SUPERSEDES the prior entry, preserved here: 'Anthropic API (Console account + the operator's own API key) — the engine's only model-access path after the ToS NO-GO on the claude-CLI subscription seam.' Our own dev/test spend is covered by the $50 envelope granted 2026-08-01 (vlad lane only)."
     - "The named portfolio dogfood corpus (>=3 repositories) under explicit written read-only authorization — external to WarpOS and outside the standing WarpOS-only rule, so it requires operator consent per repository."
   possible:
     - "A git host, if the corpus repos are read from remotes rather than local working copies."
-  notes: "The Anthropic dependency is inherited from S-VLADW1-01's model-access seam rather than introduced here; this sprint consumes it. Both required items are operator-gated: the spend envelope trips two autonomy rows (purchases not allowed, >=$5 ask-first), and the corpus needs read-only authorization reconciled in writing against the WarpOS-only rule."
+  notes: "The Anthropic dependency is inherited from S-VLADW1-01's model-access seam rather than introduced here; this sprint consumes it — and as of the 2026-08-01 operator ruling that seam is SUBSCRIPTION-PRIMARY with the API-key route as the engineered fallback, so what this sprint consumes is an auth-agnostic seam rather than an API-key-only one. The spend half of the prior gating is settled ($50 dev/test granted 2026-08-01, vlad lane only). The corpus half still needs read-only authorization reconciled against the standing WarpOS-only rule."
 approval_boundaries:
   - "Creating the sibling product repo — operator sign-off, the epic's first approval point. No product-side file may be written before it."
   - "Opening any repository outside WarpOS, even read-only — the standing WarpOS-only rule holds until the operator names the corpus and authorizes it in writing."
@@ -177,7 +177,7 @@ plan_quality:
     - The receipt envelope this sprint fills does not exist until S-VLADW1-01 ships it.
   fail_reasons: []
 next_recommended_command: "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, the named >=3-repo corpus with written read-only authorization, and the API spend envelope)"
-resume_instructions: "Sprint S-VLADW1-02 is HELD at the plan->design boundary. Product-lead assessment carried forward: this sprint is better-evidenced than S-VLADW1-01 and its blockers are INPUTS, not unknowns — it clears to plan_quality=pass without re-authoring once the operator answers. Read trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md for the durable state and runtime/vlad-w1/w1-planning-inputs.md for the banked substance (§2 the product-lead contracts, J1-J4 the judgments). Do NOT begin product-side work: the sibling repo does not exist and the corpus is unauthorized."
+resume_instructions: "Sprint S-VLADW1-02 is HELD at the plan->design boundary. SEAM POSTURE UPDATED 2026-08-01: model access is SUBSCRIPTION-PRIMARY per the operator ruling — the end user's own Claude subscription powering an agent they themselves invoke, local MCP topology, no developer credentials in the path — with the API-key/TypeScript-Agent-SDK seam ENGINEERED AND READY as the fallback per beta 7c4e2b96's auth-agnostic design. Residual risk is recorded not softened: an alternative parse of the clause is available, policy is explicitly in flux, and Anthropic reserves enforce-without-notice; the Anthropic clarification/approval request is live PARALLEL work, and the trigger for flipping to API-key is Anthropic closing or metering the seam. Authoritative text: the epic's § Decisions first entry + Change-log fold 5b022ea9. This sprint consumes the seam rather than building it, so the ruling changes its inherited dependency, not its scope. Product-lead assessment carried forward: this sprint is better-evidenced than S-VLADW1-01 and its blockers are INPUTS, not unknowns — it clears to plan_quality=pass without re-authoring once the operator answers. Read trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md for the durable state and runtime/vlad-w1/w1-planning-inputs.md for the banked substance (§2 the product-lead contracts, J1-J4 the judgments). Do NOT begin product-side work: the sibling repo does not exist and the corpus is unauthorized."
 tracker_paths:
   current_sprint: ".claude/project/sprint/current-sprint.yaml"
   sprint_progress: ".claude/project/sprint/sprint-progress.yaml"

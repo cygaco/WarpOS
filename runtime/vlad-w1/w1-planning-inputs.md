@@ -11,6 +11,37 @@ Minted-but-not-yet-registered sprint ids (see "Sprint-id blocker" below):
 
 ## 1. THE TOS GATE — verdict NO-GO (this is the load-bearing finding)
 
+> ## ⚠ SUPERSEDED-2026-08-01 — THE NO-GO READING NO LONGER GOVERNS
+>
+> **The whole of §1 below is preserved as the EVIDENCE RECORD, not as the live posture.** The
+> primary-source quotes, the scope-difference finding, the disclosed counter-evidence and the
+> detector signals all remain accurate and load-bearing. What is superseded is the *verdict* and
+> its **forced consequence** ("API-key is primary and only").
+>
+> **OPERATOR RULING 2026-08-01 — model access is SUBSCRIPTION-PRIMARY.** Verbatim: *"We are in the
+> clear. It's literally their subscription using an AGENT. And in most cases local MCP. Like, we are
+> good. codify this, update the plan."* The operator's parse: the prohibition clause quoted below
+> bars **the DEVELOPER's credentials proxying users' requests** — not a user running an agent/MCP
+> locally on their OWN subscription. Supported practically by the support-page counter-evidence
+> already disclosed in this section (third-party SDK usage currently draws from subscriptions;
+> metering change PAUSED June 2026).
+>
+> **THE NEW POSTURE:** subscription-primary — the user's own subscription powering an agent *they
+> themselves invoke*, local MCP topology, **no developer credentials anywhere in the path**. The
+> API-key seam (TypeScript Agent SDK) stays **ENGINEERED AND READY as the fallback** per β
+> `7c4e2b96`'s auth-agnostic design, so the flip is a seam swap rather than a rework.
+>
+> **RESIDUAL RISK — recorded, not softened:** the clause is ambiguous under the alternative parse
+> ("offer Claude.ai login" is per-user by nature; OAuth "exclusively for ordinary use of native
+> Anthropic applications"); policy is explicitly in flux; Anthropic reserves enforce-without-notice.
+> **MITIGATIONS:** (1) the engineered API-key fallback seam; (2) the Anthropic clarification/approval
+> request, now a **parallel work item** rather than a blocker (see §1's "Open to Anthropic sales").
+> **TRIGGER:** if Anthropic closes or meters the seam, flip to API-key **without rework**.
+>
+> **Authoritative source for the ruling text, reasoning, residual and mitigations:**
+> `trackers/epics/E-VLAD-001-vlad-v1-agent-mcp-cofounder.md` § Decisions (first entry) and the
+> 2026-08-01 Change-log fold `5b022ea9`. This banked file does not outrank the epic.
+
 The epic's ratified model-access seam — a distributed Vlad shelling out to the end user's installed
 `claude` CLI so inference bills to that user's Pro/Max subscription — is **not permitted**.
 Researched once, then the decisive quotes independently re-fetched and confirmed **VERBATIM** by a
@@ -61,15 +92,25 @@ Read: that is a statement about **metering**, not a grant of **permission**, des
 paused. It confirms the seam currently *functions*; it does not contradict the legal page. Policy is
 explicitly in flux with promised notice before changes take effect → watch item, not a basis to build.
 
-### Forced consequence
-Model access is the user's **own Anthropic API key** via the **TypeScript Agent SDK**
+### Forced consequence — ~~live~~ **SUPERSEDED-2026-08-01** (see the header block above)
+~~Model access is the user's **own Anthropic API key** via the **TypeScript Agent SDK**
 (`@anthropic-ai/claude-agent-sdk`), which bundles its own Claude Code binary and therefore removes the
 user's Claude Code install from the dependency graph. There is **no "fallback"** — the subscription
-path was never permitted, so API-key is primary and only.
+path was never permitted, so API-key is primary and only.~~
 
-Constraints that fall out:
-- **Never inherit ambient `ANTHROPIC_API_KEY` into a child process.** In `-p` "the key is always used
-  when present" → a stray env key silently bills the wrong Console org. Env passing must be allowlist-based.
+> **SUPERSEDED-2026-08-01 by the operator's subscription-primary ruling.** Struck in place so the
+> derivation stays auditable. **Live posture:** model access is the user's OWN Claude subscription,
+> powering an agent they themselves invoke, local MCP topology, no developer credentials in the path.
+> The API-key/TypeScript-Agent-SDK route above is now the **ENGINEERED FALLBACK seam**, not the only
+> path — so "there is no fallback" is exactly the sentence that inverted. The SDK's own-binary
+> portability gain survives intact on the fallback seam and is still worth banking.
+
+Constraints that fall out (each **survives the supersession** — they are seam-agnostic unless noted):
+- **Never inherit ambient credential state into a child process.** In `-p` "the key is always used
+  when present" → a stray ambient `ANTHROPIC_API_KEY` silently bills the wrong Console org. Env passing
+  must be allowlist-based. **Unchanged by the 2026-08-01 supersession, and if anything wider under it:**
+  under subscription-primary the ambient state to keep out of children is the user's OAuth/subscription
+  state as well as any API key — the rule is "inherit no credential", not "inherit no API key".
 - ~~**The user's key must never leave their machine** (no transmit/log/proxy/telemetry). Consumer Terms
   forbid credential sharing, so this is a **compliance obligation**, not hygiene~~ → needs a fail-closed
   enforcer, not a report-only check.
@@ -84,10 +125,17 @@ Constraints that fall out:
   > §A2.1 condition 2 (a claim consumed as a guarantee that is silently false), arriving **pre-build**.
   >
   > **The achievable and provable form, which is what to build against:** the product **never becomes a
-  > credential intermediary** — the key is used solely as the SDK's own auth to Anthropic's endpoint and
-  > reaches **no other destination**: no log, no telemetry, no proxy, no third party, no child process
-  > (env passing allowlist-only). This version is provable precisely because it names destinations an
-  > enforcer can enumerate, where "never transmits" names none.
+  > credential intermediary** — the **HELD SECRET** is used solely as the SDK/agent's own auth to
+  > Anthropic's endpoint and reaches **no other destination**: no log, no telemetry, no proxy, no third
+  > party, no child process (env passing allowlist-only). This version is provable precisely because it
+  > names destinations an enforcer can enumerate, where "never transmits" names none.
+  >
+  > **EXTENDED 2026-08-01 (supersession-proofing, per the epic's credential-custody DoD item):** the
+  > obligation is stated over **whichever secret the seam carries** — the user's OAuth/subscription
+  > ambient state under the live subscription-primary posture, the user's API key on the fallback seam.
+  > This is not a softening; it is precisely β `7c4e2b96`'s generic-held-secret design, which is why the
+  > 2026-08-01 ruling changes *which* secret the control guards rather than *whether* it works. Read
+  > every "the key" in this block as "the held secret".
   >
   > **A2 — the compliance citation is NOT in this document's verified set.** "Consumer Terms forbid
   > credential sharing" cites a **different document** from the one quoted verbatim in §1
@@ -127,6 +175,14 @@ Exact scope of "route requests … on behalf of their users" for the local-CLI t
 behind "unless previously approved" · which document controls given the June-15 pause · `--bare` default
 timeline · exit-code/JSON contract on quota exhaustion · current numeric Pro/Max limits.
 
+> **RE-SCOPED 2026-08-01:** these are no longer a **blocker** on the seam — the operator ruled
+> subscription-primary and the questions became the **parallel clarification/approval work item**
+> named in the ruling's mitigations. The strongest case to put to Anthropic is exactly the topology
+> the ruling describes: a **local tool, user-invoked, on the user's own subscription**, through the
+> SDK page's "unless previously approved" door. The quota exit-code/JSON question is the one item
+> here that is *engineering* rather than policy, and it still gates a DoD item on S-VLADW1-01
+> regardless of which seam is live.
+
 ---
 
 ## 2. PRODUCT-LEAD AUTHORED CONTRACTS — outcome summary
@@ -139,22 +195,36 @@ session's tool-results; the decision-relevant content is summarized here.
 recommended variant = `recommended` for both.**
 
 ### S-VLADW1-01 (ENGINE) — blocking questions
-1. Sibling repo name + slug + operator creation sign-off (first approval point of the epic).
-2. **Does the operator ratify API-key-only model access, and does the product survive the reinstated
+1. ~~Sibling repo name + slug + operator creation sign-off (first approval point of the epic).~~
+   **RESOLVED-2026-08-01:** repo created — `vlad`, sibling to WarpOS, scaffolded via `/portfolio:new`.
+2. ~~**Does the operator ratify API-key-only model access, and does the product survive the reinstated
    onboarding cliff?** This reverses a decision the operator personally made in grill round 3 to solve
-   the drop-off they themselves named as the biggest one. Not product-lead altitude.
-3. **The epic states the dead seam as fact in FOUR places** — epic tracker § Scope and § Open questions
+   the drop-off they themselves named as the biggest one. Not product-lead altitude.~~
+   **RESOLVED-SUPERSEDED-2026-08-01:** the question is moot — the operator did not ratify API-key-only,
+   they ruled **subscription-primary**, which restores the grill-r3 frictionless onboarding this question
+   was worried about. API-key becomes the engineered fallback. See the §1 header block and the epic's
+   § Decisions first entry.
+3. ~~**The epic states the dead seam as fact in FOUR places** — epic tracker § Scope and § Open questions
    item 2; plan artifact § 3 Scope, § 6 Dependency map, § 7 Risk map (first entry), § 10 Gate W1.
-   Executing now = building to a contradicted contract.
-4. Anthropic API spend envelope for dev/test (trips two autonomy rows: signup/purchase not allowed; ≥$5 ask-first).
+   Executing now = building to a contradicted contract.~~ **CLOSED 2026-07-30** by the `/epic:fold`
+   amendment (verified across all six locations). Note for readers: the "dead seam" of this item is the
+   **live primary seam** as of the 2026-08-01 ruling, and the same six locations were swept again on
+   2026-08-01 to carry the supersession — the drift risk this item names is real and recurring, so
+   re-verify the locations rather than trusting either amendment report.
+4. ~~Anthropic API spend envelope for dev/test (trips two autonomy rows: signup/purchase not allowed; ≥$5 ask-first).~~
+   **RESOLVED-2026-08-01:** operator granted **$50** dev/test, vlad lane only.
 
-Recommended next command: **`/epic:fold E-VLAD-001`** (amend the four stale locations, restate Gate W1,
-add the credential invariant to the DoD, reprice AC #1's five-minute claim) — *before* `/sprint:design`.
+Recommended next command: ~~**`/epic:fold E-VLAD-001`** (amend the four stale locations, restate Gate W1,
+add the credential invariant to the DoD, reprice AC #1's five-minute claim) — *before* `/sprint:design`.~~
+**DONE** (`3a8fd442`, plus the 2026-08-01 subscription-primary fold `5b022ea9`). Next is `/sprint:design`
+on fresh operator authorization.
 
 ### S-VLADW1-02 (AUDIT) — blocking questions
-1. Sibling repo (inherited). 2. **Which ≥3 portfolio repos + explicit read-only authorization** against
-the standing WarpOS-only rule (dogfood was accepted in round 3 but never reconciled in writing with
-"open these three directories"). 3. Ratification of the convergence reframe (J3 below).
+1. ~~Sibling repo (inherited).~~ **RESOLVED-2026-08-01** — `vlad` created. 2. **Which ≥3 portfolio repos
++ explicit read-only authorization** against the standing WarpOS-only rule (dogfood was accepted in round 3
+but never reconciled in writing with "open these three directories"). **2026-08-01 — DELEGATED to α, who
+proposes `dreamteam` / `companycam` / `almanac`; a standing operator veto window is open.** This is the
+ONLY remaining external input on the Wave-1 pair. 3. Ratification of the convergence reframe (J3 below).
 Better-evidenced than ENGINE; its blockers are **inputs, not unknowns** — clears to `pass` without re-authoring.
 
 ### The four judgments worth carrying forward
@@ -177,6 +247,19 @@ Better-evidenced than ENGINE; its blockers are **inputs, not unknowns** — clea
   hygiene); (9) the SDK bundling its own binary makes the engine *more* host-portable — bank it, don't
   spend it. Survives intact: "your code never touches our servers" (now stronger) and the BYOK
   prompt-visibility trade.
+
+  > **PARTLY SUPERSEDED-2026-08-01 by the subscription-primary ruling.** J2's damage list was derived
+  > from the API-key-only forced consequence, so the items that were *consequences of that consequence*
+  > fall away with it. **Withdrawn as live damage:** (1) the inverted user-side cost story, (2) AC #1's
+  > five-minute claim being false as written, (3) the unmitigated/unowned funnel risk, (4) "no cost
+  > estimates" as a churn hazard, (5) adversarial review doubling spend on the founder's card — all five
+  > were the onboarding cliff, and the ruling removes the cliff from the primary path. **They return
+  > verbatim if the fallback seam is ever triggered**, which is why they are struck-in-place rather than
+  > deleted: this list IS the fallback's impact assessment, already written.
+  > **Survives untouched:** (6) the codex/gemini other-CLI exposure — the ruling is an **Anthropic-specific
+  > parse** and clears nothing about OpenAI's or Google's terms, which nobody has read; (7) the
+  > ambient-credential-reach class is still being actively closed and is arguably *more* load-bearing now;
+  > (8) the `safe-spawn` env-allowlist amendment (still unowned, WarpOS-side); (9) the SDK portability gain.
 - **J3 — "converge the two readiness scores" is correctly sized ONLY after reframing.** It is not a
   convergence; it is **adopt `score.js` and never port the checklist proxy** (which concedes in its own
   code that it is an MVP stand-in), plus re-source the one `FOUNDERS_CHECKLIST.md`-dependent dimension.
@@ -238,8 +321,16 @@ on the dirty tree.
    `external_service_dependencies` requires `status`; `preliminary_ticket_candidates` is
    `{allowed, notes, candidates[]}`; `scopeVariant` is `{summary, tradeoffs[]}`;
    `mode_invocation_required_by_user` is `const: true`.
-3. Route the epic amendment (`/epic:fold`) to α — **not** ε: it reverses an operator-ratified decision.
-4. β at the plan→design boundary, specifically on the credential-custody enforcer and the
-   honest-degradation ("NOT verified") language — both claims-boundary surfaces.
-5. Escalate to operator: repo name+slug, API-key-only ratification + the onboarding-cliff judgment,
-   API spend envelope, named portfolio corpus with read-only authorization.
+3. ~~Route the epic amendment (`/epic:fold`) to α — **not** ε: it reverses an operator-ratified decision.~~
+   **DONE** — `3a8fd442`, plus the 2026-08-01 subscription-primary fold `5b022ea9`.
+4. ~~β at the plan→design boundary, specifically on the credential-custody enforcer and the
+   honest-degradation ("NOT verified") language — both claims-boundary surfaces.~~ **DONE** — β verdict
+   `7c4e2b96` (DECIDE, Class B, 0.88, OPEN_ADR narrow). Its auth-agnostic held-secret design is what
+   makes the 2026-08-01 seam change a swap rather than a rework.
+5. ~~Escalate to operator: repo name+slug, API-key-only ratification + the onboarding-cliff judgment,
+   API spend envelope, named portfolio corpus with read-only authorization.~~ **2026-08-01 — three of
+   four CLOSED:** repo created (`vlad`); ratification **superseded** by the subscription-primary ruling
+   (with it, the onboarding-cliff judgment); spend granted (**$50**, vlad lane only). **STILL OPEN:** the
+   named portfolio corpus — α proposes `dreamteam`/`companycam`/`almanac`, standing operator veto window.
+6. **NEW parallel work item (not a blocker):** send Anthropic the clarification/approval request — local
+   tool, user-invoked, user's own subscription, through the SDK page's "unless previously approved" door.
