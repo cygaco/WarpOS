@@ -14,6 +14,23 @@ Nothing user-visible ships in this sprint, and that is the correct shape: this i
 
 ### Original Request
 
+> ⚠ **PLAN-TIME HISTORY — NOT A CURRENT CONSTRAINT. Read this before the quote below.**
+>
+> This block is `source_request_verbatim` from the plan contract. It is **immutable by design**
+> (`/sprint:plan` keeps the original request verbatim), and keeping it is correct. But it was written
+> on **2026-07-29**, under the since-**SUPERSEDED** "ToS NO-GO → API-key primary and only" reading.
+>
+> **The governing posture is SUBSCRIPTION-PRIMARY** per the operator ruling of 2026-08-01 (epic
+> § Decisions, first entry; fold `5b022ea9`; commit `e62e38a6`): the user's own Claude subscription,
+> an agent they themselves invoke, local MCP topology, **no developer credentials in the path**. The
+> API-key seam is the **engineered auth-agnostic fallback**, not the primary.
+>
+> **Builders and reviewers:** the sentence "the claude-CLI subscription shell-out is ToS NO-GO"
+> below is history. Do not design or build to it, and do not reopen it in either direction.
+> `PC-20260730-0085` lines 83/89 already instruct re-verification by direct read.
+> Consumer-labeling fix filed as **ED-341** (deferred deliberately — `design.js` is not to be patched
+> mid-run).
+
 > S-VLADW1-01 (epic label SP-VLAD-W1-ENGINE) — candidate — Engine skeleton: plain-node Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port (turbo engine half) + API-key model-access seam via the TypeScript Agent SDK (the claude-CLI subscription shell-out is ToS NO-GO; the seam's residue is the credential-custody enforcer + an empirically characterized quota-exhaustion detector)
 
 ### Interpreted Intent

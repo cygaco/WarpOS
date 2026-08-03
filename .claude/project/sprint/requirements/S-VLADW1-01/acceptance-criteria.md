@@ -135,11 +135,27 @@ receipt, with `cancel_job` available if the run stalls.
   spawns a child through the audited wrapper, then the child cannot observe the decoy.
   verified_by: tests/regression/S-VLADW1-01/custody-runtime.test.js::child-cannot-see-decoy
 
-## S-8 — Fail-closed credential-custody enforcer (the ADR subject)
+## S-8 — Fail-closed credential-custody enforcer (governed by ADR-0041, ACCEPTED)
 
-> Scope discipline per ADR-0041: report **per-leg named fields**, never a single `custodyProven: true`.
-> Legs that are ASSERTED rather than PROVEN are enumerated in the ADR and must not be restated here
-> as proven.
+> **ADR-0041 is ACCEPTED** (`d0633641`, canonical at
+> `.claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md`).
+> It governs this story. Two bindings carry into the build:
+>
+> **1. Adopt the ADR's enforcer identities — do NOT mint new names.** All six are OWED under **ED-340**,
+> which closes only when all six exist. Paths are **product-repo**-relative:
+>
+> | ADR leg | Enforcer identity |
+> |---|---|
+> | P1 | `scripts/checks/no-held-secret-in-surface.js` |
+> | P2 | `scripts/checks/spawn-env-allowlist.js` |
+> | P3 | `test/credential-custody-decoy.test.js` |
+> | A5 (firing point) | the three above wired into the product's **own ship-time check run**, not only CI — the wiring itself asserted by a presence check in the product's release gate |
+> | Labeling rule | a receipt/README **claim lint** over shipped copy: every custody claim string must map to a P-clause id |
+> | A1–A4 | no in-repo enforcer exists or *can* exist for A1/A2 — **that is the finding, not a gap**. Enforced as a *presence* obligation: the four ceilings appear **verbatim** in the shipped custody statement, checked by the same claim lint |
+>
+> **2. Scope discipline.** Report **per-leg named fields**, never a single `custodyProven: true`. Legs
+> the ADR classes ASSERTED must not be restated here as proven. Narrowing a proven claim later means
+> **renaming** the field (ADR-0040), not re-documenting what the old name means.
 
 - AC-8.1: Given the declared scanned product surface contains a held-secret value or a seam-declared
   secret shape, when the custody enforcer runs, then it fails with the matching file and rule.
@@ -170,6 +186,26 @@ receipt, with `cancel_job` available if the run stalls.
 - AC-8.8: Given a parse error in any scanned file, when the enforcer runs, then it goes RED rather
   than skipping the file.
   verified_by: tests/regression/S-VLADW1-01/custody-static.test.js::parse-error-is-red-not-skip
+- AC-8.9 **(claim lint — ADR-0041 labeling rule)**: Given any custody claim string in shipped copy
+  (receipt, README, tool output), when the claim lint runs, then every such string maps to a P-clause
+  id, and a claim that maps to nothing fails the build. **The user-facing claim may not exceed the
+  proven set** — no "your key never leaves your machine" while the SDK transmits it, and no implied
+  guarantee about dependencies.
+  verified_by: tests/regression/S-VLADW1-01/claim-lint.test.js::every-custody-claim-maps-to-a-p-clause
+- AC-8.10 **(A1–A4 presence obligation)**: Given the shipped custody statement, when the claim lint
+  runs, then the four ceilings (A1 dependency surface, A2 same-user OS access, A3 unexercised paths,
+  A4 off-repo human leaks) appear **verbatim**. Their absence fails the build. There is no in-repo
+  enforcer for A1/A2 and there cannot be — the ADR records that as the finding, and verbatim presence
+  is how an assertion is kept from being consumed as a proof.
+  verified_by: tests/regression/S-VLADW1-01/claim-lint.test.js::a1-a4-ceilings-present-verbatim
+- AC-8.11 **(A5 firing point, presence-checked)**: Given the product's release gate, when it runs,
+  then it asserts that P1/P2/P3 are wired into the product's **own ship-time check run**. A wiring that
+  exists only in WarpOS CI fails this criterion.
+  verified_by: tests/regression/S-VLADW1-01/custody-runtime.test.js::release-gate-asserts-shiptime-wiring
+
+> **Final user-facing custody wording is Class C — operator territory.** It is a user-trust claim, not
+> an engineering call. Design and build draft **to the proven set** and route the wording to the
+> operator; no builder may finalise it.
 
 ## S-9 — Quota-exhaustion detection, three buckets
 
