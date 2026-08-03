@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: S-VLADW1-02
 title: "Job #1 — port lastmile detect/score/adapters into the Vlad engine, adopt score.js as the ONE readiness number, mint receipt v1 from portfolio dogfood"
 objective: "Give the engine its first real job: detect a repo's stack, score its readiness, emit a receipt — by PORTING the existing lastmile audit rather than rewriting it, with exactly one readiness number in the product repo."
-status: planning
+status: designing
 created_at: "2026-07-30T00:52:06.116Z"
-updated_at: "2026-07-30T02:27:09.083Z"
+updated_at: "2026-08-03T22:05:11.755Z"
 source_request: "Wave-1 AUDIT of epic E-VLAD-001 (epic label SP-VLAD-W1-AUDIT). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28) plus the 34-family port inventory in _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2."
 interpreted_intent: "Port the existing lastmile readiness-audit engine (detect, score, adapters) into the new Vlad product engine so Job #1 — a read-only readiness audit — runs end-to-end on a stranger repo and returns a receipt. Three things make this a port rather than a build: the WarpOS-specific refusals are edited out in the PORTED copy (canonical WarpOS assets are never modified); score.js is ADOPTED as the single readiness number rather than converged with the checklist proxy (J3); and the receipt schema's interior — left deliberately untyped by S-VLADW1-01 (J4) — is filled here from real dogfood data and minted as v1."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260730-0084.yaml"
 risk_level: medium
 approval_state: none_required
-current_phase: plan
+current_phase: design
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -41,16 +41,16 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-02\\release-plan.md"
 checks:
   lint:
     status: not_run
@@ -111,8 +111,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, the named >=3-repo corpus with written read-only authorization, and the API spend envelope)"
-  resume_summary: "Plan Contract PC-20260730-0084 created. Next: /sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, the named >=3-repo corpus with written read-only authorization, and the API spend envelope)."
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint S-VLADW1-02 design scaffolded (scale=m). Next: mint tickets from granular-stories, then run /sprint:execute."
   active_files: []
   dirty_state: false
   blockers: []

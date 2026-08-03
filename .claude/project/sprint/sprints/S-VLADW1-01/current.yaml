@@ -2,15 +2,15 @@ schema: warpos/sprint/current-sprint/v1
 id: S-VLADW1-01
 title: "Engine skeleton — plain-node Agent SDK app, MCP stdio server, four-core tool surface, job state machine, journal, permission-level config port, and the API-key model-access seam"
 objective: "Stand up the engine Vlad runs on: a plain-node app on the TypeScript Agent SDK exposing a four-tool MCP surface over stdio, with a job state machine, an on-disk journal, ported permission-level config, and a model-access seam that bills to the user's own API key and never lets that key leave their machine."
-status: planning
+status: designing
 created_at: "2026-07-30T00:52:06.179Z"
-updated_at: "2026-07-30T02:30:23.499Z"
+updated_at: "2026-08-03T22:05:02.215Z"
 source_request: "Wave-1 ENGINE of epic E-VLAD-001 (epic label SP-VLAD-W1-ENGINE). Derived from the epic contract, not from a fresh operator message: the operator's verbatim brief is the completed 6-round grill recorded in _planning/vlad-agent-mcp-plan.md (rulings in-file, 2026-07-28), the differentiator memo _planning/vlad-why-us.md, and the 34-family port inventory _planning/vlad-transferability.md. This Plan Contract marshals the banked product-lead substance in runtime/vlad-w1/w1-planning-inputs.md §2 and the ToS finding in §1."
 interpreted_intent: "Build the substrate every later Vlad wave stands on: a plain-node application on the TypeScript Agent SDK that speaks MCP over stdio, runs jobs through an explicit state machine backed by an on-disk journal, reads a ported per-project permission-level config, and reaches a model through the user's OWN Anthropic API key. Two of the calls in this sprint are load-bearing far beyond it. First, the model-access seam: the ratified claude-CLI subscription shell-out is ToS-barred, so API-key is primary and ONLY, which makes a fail-closed credential-custody enforcer part of the build rather than a later hardening pass. Second, the receipt: ENGINE emits a versioned envelope with an UNTYPED interior (J4) and never validates or branches on it, because typing it here would propagate a v0 shape into the journal, get_status, the MCP signatures, the driver assertions and the ledger records before the dogfood data that defines it exists."
 plan_contract: ".claude/project/sprint/plan-contracts/PC-20260730-0085.yaml"
 risk_level: high
 approval_state: none_required
-current_phase: plan
+current_phase: design
 recommended_mode: no_recommendation
 mode_invocation_required_by_user: true
 external_services:
@@ -41,16 +41,16 @@ tickets:
   reopened: []
   superseded: []
 requirements:
-  prd: null
-  high_level_stories: null
-  granular_stories: null
-  copy: null
-  inputs: null
-  trace: null
-  acceptance_criteria: null
-  qa_plan: null
-  redteam_plan: null
-  release_plan: null
+  prd: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\prd.md"
+  high_level_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\high-level-stories.md"
+  granular_stories: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\granular-stories.md"
+  copy: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\copy.md"
+  inputs: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\inputs.md"
+  trace: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\trace.md"
+  acceptance_criteria: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\acceptance-criteria.md"
+  qa_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\qa-plan.md"
+  redteam_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\redteam-plan.md"
+  release_plan: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS\\.claude\\project\\sprint\\requirements\\S-VLADW1-01\\release-plan.md"
 checks:
   lint:
     status: not_run
@@ -111,8 +111,8 @@ ralph:
   next_action: null
 crash_recovery:
   last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
-  resume_command: "/sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, ratification of API-key-only model access with the onboarding-cliff judgment, and the API spend envelope)"
-  resume_summary: "Plan Contract PC-20260730-0085 created. Next: /sprint:design (HELD — do not run until the three blocking operator gates clear: sibling repo name+slug+sign-off, ratification of API-key-only model access with the onboarding-cliff judgment, and the API spend envelope)."
+  resume_command: "/sprint:design"
+  resume_summary: "Sprint S-VLADW1-01 design scaffolded (scale=l). Next: mint tickets from granular-stories, then run /sprint:execute."
   active_files: []
   dirty_state: false
   blockers: []
