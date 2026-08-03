@@ -86,19 +86,38 @@ auth call" names a set an enforcer can walk.
 Report-only does not satisfy any of these. Each is stated with the precision it actually achieves, because a
 proof described more broadly than it runs is itself an ADR-0039 §A2.1 defect.
 
-- **P1 — No key-shaped secret in the scanned surface.** Committed files, log-writing call sites, telemetry
-  payload builders. *Proof scope: absence at the scan's precision over the surface enumerated — not absence in
-  general.*
+- **P1 — No held-secret-shaped value in the scanned surface.** Committed files, log-writing call sites,
+  telemetry payload builders. The scan targets the UNION of every secret class any engineered seam can carry —
+  API-key patterns AND OAuth/session-state patterns — unconditionally, never only the class the live seam
+  happens to use. Deriving the target from a "which seam is live" reading would make a stale value narrow the
+  scan silently and pass GREEN; both secrets can also be present at once, since the fallback seam is engineered
+  and ready. A new seam ADDS a class; an unrecognized seam value fails closed rather than scanning nothing.
+  *Proof scope: absence at the scan's precision over the surface enumerated — not absence in general.*
+  *(Amendment 1: generalized from "key-shaped" — the pre-seam-flip wording enforced only the fallback seam's
+  secret class.)*
 - **P2 — Every child-spawn passes an explicit allowlist env excluding the held secret, AND raw
   `spawn`/`exec`/`fork` that bypasses the audited wrapper is REFUSED.** Both halves are required. A scrubbing
   wrapper alone is a convention, not a control: it re-opens the defect the moment one caller goes around it —
   the CLAUDE.md lib-only-fix class, which has already cost this project the codex-stdin re-hit 13 days after
   the fix. *Proof scope: spawn sites reachable by the enforcer's walk of the shipped tree.*
-- **P3 — A runtime negative fixture: poison the ambient env with a decoy key, spawn a child, assert the child
-  cannot see it — and it goes RED when the scrub is removed.** The mutant proof is the point. Without it, P1
-  and P2 have proven only that the code *looks* right. *Proof scope: the paths the fixture actually exercises.*
+- **P3 — A runtime negative fixture: poison the ambient env with a decoy secret of EACH class P1 covers, spawn
+  a child, assert the child cannot see any of them — and it goes RED when the scrub is removed.** The mutant
+  proof is the point. Without it, P1 and P2 have proven only that the code *looks* right. *Proof scope: the
+  paths the fixture actually exercises.* *(Amendment 1: one decoy per secret class, was "a decoy key.")*
+- **P4 — No outbound request originating in the shipped tree carries the held secret, other than the SDK's own
+  authenticated call to Anthropic's endpoint.** Covers the obligation's "no proxy, no third party." *Proof
+  scope: outbound-request call sites reachable by the enforcer's walk of the shipped tree. What is proven is
+  that the secret is not ATTACHED to a non-auth call — NOT that any destination is safe, since a destination
+  may be computed at runtime.* *(Amendment 1: added — these two destinations were previously unclassified.)*
 
-**Firing point (β A5, binding).** The leak would happen on the user's machine, so P1–P3 are **product-layer
+**Destination totality (Amendment 1):** every destination the obligation names now maps to a clause — log → P1,
+telemetry → P1, child process → P2/P3, proxy → P4, third party → P4. Any future edit that adds a destination to
+the obligation must map it to a clause (PROVEN or ASSERTED) in the same edit; re-run this totality check
+whenever the obligation's destination list changes. P2 needed no generalizing and never will for this cause:
+it is deny-by-default (an allowlist excludes everything not named), immune to secret-shape drift, while
+pattern-match checks (P1/P3) must enumerate classes — the discriminator that predicts the next occurrence.
+
+**Firing point (β A5, binding).** The leak would happen on the user's machine, so P1–P4 are **product-layer
 controls that ship with the product and run in the user's install.** An enforcer that runs only in WarpOS CI
 proves something about our source and nothing about their runtime, and does not satisfy the DoD item. If any
 part can only run in our CI, the design must say **which** part and record the gap explicitly.
@@ -110,7 +129,10 @@ the leak steps one over. None of them shrink with effort.
 
 - **A1 — Dependency surface.** Any package in the tree can read `process.env` and reach the network. **No
   in-repo enforcer can bound this.** The mitigations are minimizing and reviewing the dependency surface — not
-  a scanner. This is the largest residual.
+  a scanner. This is the largest residual. This residual explicitly includes **dependency-initiated network
+  egress**: P4 walks outbound call sites in OUR tree only, so a package that reads the environment and makes
+  its own request is outside P4's falsifier set and lands here. *(Amendment 1: widened — a seam is closed by
+  widening an existing family, never by adding one.)*
 - **A2 — Same-user OS access.** Another process running as the user can read the environment or a key file.
   Control and attacker share privileges, so there is **no layer-level fix** — this is not "our scanner misses
   it." Same shape as the ceiling ADR-0025 named and accepted for the attestation surface.
@@ -147,14 +169,16 @@ planned identity and marked OWED. The names are carried here rather than only as
 |---|---|---|
 | P1 | `scripts/checks/no-held-secret-in-surface.js` — scan of committed files, log call sites, telemetry builders; non-zero exit on hit | **OWED** — ED-340 |
 | P2 | `scripts/checks/spawn-env-allowlist.js` — two assertions: every audited spawn passes an explicit allowlist env; any raw `spawn`/`exec`/`fork` outside the wrapper is a REFUSAL, not a warning | **OWED** — ED-340 |
-| P3 | `test/credential-custody-decoy.test.js` — runtime decoy-key fixture + a mutant run that must go RED with the scrub removed | **OWED** — ED-340 |
-| Firing point (A5) | The three above wired into the product's own ship-time check run, not only WarpOS CI; the wiring itself asserted by a presence check in the product's release gate | **OWED** — ED-340 |
+| P3 | `test/credential-custody-decoy.test.js` — runtime decoy fixture per secret class P1 covers + a mutant run that must go RED with the scrub removed | **OWED** — ED-340 |
+| P4 | `scripts/checks/no-secret-on-outbound.js` — walk of outbound-request call sites; the SDK auth call is the sole permitted carrier of the held secret; non-zero exit on any other; own mutant: a planted non-auth outbound call carrying a decoy secret must go RED | **OWED** — ED-340 |
+| Firing point (A5) | The four above wired into the product's own ship-time check run, not only WarpOS CI; the wiring itself asserted by a presence check in the product's release gate | **OWED** — ED-340 |
 | Labeling rule (1–3) | A receipt/README claim lint over the shipped copy: any custody claim string must map to a P-clause id | **OWED** — ED-340 |
 | A1–A4 | **No enforcer exists or can exist in-repo for A1/A2** (that is the finding, not a gap to close). Enforced instead as a *presence* obligation: the four ceilings must appear verbatim in the shipped custody statement, checked by the same claim lint | **OWED** — ED-340 |
 
-Filed as **ED-340** (one consolidated row covering the six planned enforcers; closes only when ALL six exist in
-the product repo and the P3 mutant run has gone RED at least once — partial shipment amends the row, never
-closes it).
+Filed as **ED-340** (one consolidated row covering the **seven** planned enforcers; closes only when ALL seven
+exist in the product repo and **both** the P3 and P4 mutant runs have gone RED at least once — partial shipment
+amends the row, never closes it. Amendment 1 raised the count from six and added the second mutant; a range or
+count reference that silently excludes a new clause is exactly the half-applied-amendment defect).
 
 ## Scope
 
@@ -175,7 +199,7 @@ boundary and the rule.
   metering change is paused, not withdrawn); and Anthropic reserves **enforce-without-notice**. Mitigations:
   the engineered API-key fallback seam; the Anthropic clarification/approval request, which runs as **parallel
   work and not a gate**. Trigger for the flip: Anthropic closes or meters the subscription path.
-- **A user-facing claim exceeding P1–P3 is a defect of this ADR's class**, regardless of how confident the
+- **A user-facing claim exceeding P1–P4 is a defect of this ADR's class**, regardless of how confident the
   claim's author is — including a claim about A1 (dependencies), which is the one most likely to be written
   optimistically because it feels like hygiene.
 - **An enforcer that runs only in WarpOS CI does not satisfy the DoD item**, and a design that ships one is
@@ -199,3 +223,26 @@ boundary and the rule.
   `runtime/vlad-w1/w1-planning-inputs.md` (`88abeb8b`, §1 primary-source block, corrected in place).
 - Superseded model-access history, struck in place: epic plan `_planning/epics/E-VLAD-001.md` §3/§4/§6/§7/§10.
 - Index row added at `paths.adrIndex` on acceptance (2026-08-03).
+
+## Amendments
+
+### Amendment 1 — 2026-08-03 — P1/P3 generalized to all seam secret classes; P4 added; A1 widened
+- **Origin:** two candidate gaps found by director-of-engineering during the S-VLADW1-01 design run (routed by
+  ε), CONFIRMED-AMEND by β verdict `c4b81e7f-25d3-4a69-9e0b-8f36a2145dce` (DECIDE, class B, 0.92) — which
+  widened both beyond the report: GAP 1 extends to P3 and the roster and takes the **union-unconditional** form
+  (a seam-conditional scan target is a settable-label dependency whose failure mode is GREEN — the defect class
+  this ADR exists to prevent); GAP 2 splits into P4 (PROVEN at call-site scope per the boundary rule's own
+  disjunct — call sites, not destinations) + the dependency-egress residual widened into A1 (a seam is closed
+  by widening an existing family, never by adding one).
+- **GAP 1 error attribution (β, on the record):** β's own row-293 A3 wording ("key-shaped"), written 2026-07-30
+  when the API key was the only posture; the drafter transcribed faithfully; the generic-held-secret principle
+  in the same verdict was the load-bearing correction that made the flip survivable.
+- **P2 unchanged, and the discriminator recorded:** deny-by-default (allowlist) is immune to secret-shape
+  drift; pattern-match checks (P1/P3) must enumerate classes. Shape-dependent checks silently narrow when the
+  secret class changes; shape-independent ones do not.
+- **Consequential edits in this amendment:** firing point and user-facing claim ceiling now read P1–P4; roster
+  gained the P4 row (`no-secret-on-outbound.js`) with its own mutant; ED-340's closing condition is now seven
+  enforcers + both mutants (P3 AND P4) RED at least once; Destination totality stated so the closure check is
+  re-runnable.
+- **Verification:** β post-landing verification against verdict `c4b81e7f` — see betaEvents; stamped by α per
+  the standing lane agreement.
