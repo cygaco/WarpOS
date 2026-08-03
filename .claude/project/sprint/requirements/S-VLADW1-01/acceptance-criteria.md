@@ -137,10 +137,27 @@ receipt, with `cancel_job` available if the run stalls.
 - AC-4.1: Given a job is killed mid-execution, when the process is restarted, then the target
   repository is unchanged and the journal holds the last checkpoint.
   verified_by: tests/regression/S-VLADW1-01/journal.test.js::kill-midjob-leaves-repo-clean
-- AC-4.2: Given any core job execution path, when filesystem activity is inspected in the fixture,
-  then Vlad writes **only** under its explicit operational-data root, and invokes no approval,
-  message, or agent-face capability.
-  verified_by: tests/regression/S-VLADW1-01/journal.test.js::writes-confined-to-operational-root
+- AC-4.2 **(write-confinement, quantified over EVERY registered job kind — β supplement `a91c46e2`)**:
+  Given **each job kind registered in Wave-1**, when it is executed and filesystem activity is
+  inspected, then Vlad writes **only** under its explicit operational-data root, leaves target-repo
+  contents unchanged, and invokes no approval, message, or agent-face capability.
+  verified_by: tests/regression/S-VLADW1-01/journal.test.js::writes-confined-per-registered-kind
+
+> **Why AC-4.2 quantifies per-kind rather than per-fixture, and why it — not AC-2.3 — is what makes
+> `run_job` read-only.** β corrected its own Q2 reasoning here, and the correction matters more than
+> the original answer. It had cited **AC-2.3** as the enforcement, but AC-2.3 refuses an unknown or
+> non-read-only job **kind** — it validates a **registry label**, not behaviour. On its own that is
+> exactly a settable label: a kind marked read-only with nothing stopping it from writing.
+>
+> What actually carries the weight is this AC plus the unchanged-target post-conditions (no target
+> write on an idempotent repeat, repo unchanged after a mid-job kill, only the journal directory
+> gaining entries). Those **observe the world after the run** instead of trusting the declaration —
+> which is what makes the read-only framing a control rather than a label.
+>
+> The per-kind quantifier closes the creep: if confinement were proven only for whichever fixture job
+> the test happens to run, a kind added later would inherit the read-only **label** without inheriting
+> the **proof**, and the settable label returns through the registry. Same shape as AC-3.6's guard over
+> every registered kind — deliberately modelled on it.
 
 ## S-5 — `get_status` surfaces an interrupted job
 
