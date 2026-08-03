@@ -156,6 +156,29 @@ receipt, with `cancel_job` available if the run stalls.
 > **2. Scope discipline.** Report **per-leg named fields**, never a single `custodyProven: true`. Legs
 > the ADR classes ASSERTED must not be restated here as proven. Narrowing a proven claim later means
 > **renaming** the field (ADR-0040), not re-documenting what the old name means.
+>
+> **P1's target shape — RESOLVED by ADR-0041 Amendment 1. Build to this, and note it rules OUT the
+> obvious design.** The gap was real: P1 previously read "no **key-shaped** secret", which under the
+> live subscription-primary posture guarded the *fallback* seam's secret class rather than the live
+> OAuth/session one. α amended it. P1 now reads:
+>
+> **"No held-secret-shaped value in the scanned surface"** — the scan targets the **UNION of every
+> secret class any engineered seam can carry** (API-key patterns AND OAuth/session-state patterns),
+> **unconditionally**.
+>
+> **Explicitly rejected: deriving P1's match set from which seam is live.** That was the intuitive fix
+> and it is wrong — a stale "which seam is live" value would silently narrow the scan and pass GREEN,
+> and both secrets can be present at once anyway, because the fallback seam is engineered and ready.
+> So do **not** wire P1's match set from `describeAuth()`. A new seam **ADDS** a class; an unrecognized
+> seam value **fails closed** rather than scanning nothing.
+>
+> The enforcer identity `scripts/checks/no-held-secret-in-surface.js` is unchanged and stable.
+> *(`describeAuth()` (AC-1.4) remains the right single source for the P2 env denylist and the P3 decoy
+> fixture — this exclusion is specific to P1's scan target.)*
+>
+> **Still open with β:** the obligation's "no proxy, no third party" is an **egress** claim that none of
+> P1/P2/P3 tests and that sits in neither the PROVEN nor the ASSERTED list. Unresolved at time of
+> writing; do not assume an egress proof exists.
 
 - AC-8.1: Given the declared scanned product surface contains a held-secret value or a seam-declared
   secret shape, when the custody enforcer runs, then it fails with the matching file and rule.
