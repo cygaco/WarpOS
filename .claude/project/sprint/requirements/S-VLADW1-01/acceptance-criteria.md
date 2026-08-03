@@ -83,6 +83,41 @@ receipt, with `cancel_job` available if the run stalls.
 
 ## S-3 — Job state machine with an enumerated transition table
 
+> **β's `needs_input` check — RUN, and it CONFIRMS a live gap. Widened one state over.**
+>
+> β asked whether Wave-1 implements `needs_input`, or any state whose only exit is an inbound message,
+> since removing `send_message` would then create a state with no exit. β flagged its own grep as a
+> single-method negative. It was right to: **`needs_input` IS in Wave-1 scope.** It appears in granular
+> story **S-3** itself, in the PRD's desired-behavior paragraph, in `PC-20260730-0085` at lines 18
+> (affected surface), 45 (desired behavior) and 142 (task), and in the epic § Scope. β's grep found
+> nothing only because it searched the *acceptance criteria*, where I had written none — the state was
+> in the sprint's stories and contract the whole time.
+>
+> **And the same defect sits one state over, which β could not see from the criteria alone:**
+> `proposing`'s natural exit is `approve_job`, and `approve_job` is Wave-2 exactly as `send_message` is.
+> Fixing only the state β named would have left the identical hole one field over.
+>
+> **Resolution — enumerate all four states, make the two un-exitable ones unreachable by construction.**
+> The transition table keeps `running / needs_input / proposing / done` as the plan contract and epic
+> specify (dropping them would be a unilateral scope reduction, which is not ε's call). What is added is
+> that **no registered Wave-1 job kind may ENTER `needs_input` or `proposing`** — both are reachable
+> only once Wave-2 ships the agent face (`send_message`) and the approval workflow (`approve_job`).
+> This is coherent with Wave-1's only job being a **read-only audit**, which has nothing to ask about
+> and nothing to propose. `cancel_job` remains the escape from any non-terminal state regardless, which
+> is the second reason the four-tool surface needed it.
+
+- AC-3.5: Given the job state machine, when its transition table is inspected, then it enumerates
+  `running`, `needs_input`, `proposing` and `done` explicitly, per the plan contract and epic scope.
+  verified_by: tests/regression/S-VLADW1-01/lifecycle.test.js::transition-table-enumerates-all-four-states
+- AC-3.6 **(the no-exit guard)**: Given every job kind registered in Wave-1, when each is driven through
+  its full lifecycle, then **none enters `needs_input` or `proposing`**. A Wave-1 job reaching either is
+  a **defect**, because the tools that exit them (`send_message`, `approve_job`) are Wave-2 and the
+  surface would strand the job.
+  verified_by: tests/regression/S-VLADW1-01/lifecycle.test.js::no-wave1-job-enters-an-unexitable-state
+- AC-3.7: Given a job in any non-terminal state, when `cancel_job` is called, then the job can always be
+  brought to a terminal state — so no job is unrecoverable even if AC-3.6 were violated.
+  verified_by: tests/regression/S-VLADW1-01/cancel.test.js::cancel-escapes-any-nonterminal-state
+
 - AC-3.1: Given a registered read-only fixture job, when `run_job` succeeds, then it returns a job id
   and the lifecycle records `queued`, `running`, and exactly one truthful terminal state.
   verified_by: tests/regression/S-VLADW1-01/lifecycle.test.js::records-full-transition-path
@@ -190,6 +225,17 @@ receipt, with `cancel_job` available if the run stalls.
 > in neither the PROVEN nor the ASSERTED list. Amendment 1 answers it with **P4**
 > (`no-secret-on-outbound.js`), moving egress into PROVEN rather than quietly demoting it to an
 > assertion — the right direction, since demoting it would have narrowed the product's claim.
+>
+> **P4's proof scope, stated precisely — this is a narrow proof and must be cited as one.** P4 is
+> PROVEN **at call-site scope**: outbound call sites in the shipped tree are enumerable, so an enforcer
+> can walk them. What P4 proves is that **the held secret is not ATTACHED to a non-auth outbound call**.
+> It does **not** prove that any destination is safe, that the SDK's own auth call is trustworthy, or
+> that a dependency-initiated request carries nothing — **dependency-initiated egress folds into the
+> existing A1 ceiling** (dependency surface, ASSERTED, the largest residual) rather than becoming a
+> fifth ceiling.
+>
+> **Do not let "egress is proven" be read as "nothing can leak."** The claim lint (AC-8.9) binds this:
+> any user-facing custody string must map to a P-clause, and P4's clause is the narrow one above.
 
 - AC-8.1: Given the declared scanned product surface contains a held-secret value or a seam-declared
   secret shape, when the custody enforcer runs, then it fails with the matching file and rule.

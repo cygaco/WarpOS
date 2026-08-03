@@ -226,6 +226,29 @@ edit an epic's Definition of Done.
 > repos. They cannot surface real stack shapes, repository size and performance behaviour, or odd git
 > states — precisely the surprises the plan contract's own `unsafe` assumption predicts. Fixtures
 > unblock the build; **they do not close the gate.**
+>
+> ### The three binding conditions on this split (β `d7f31a68`, Q3(a)) — so the gated half cannot decay
+>
+> The split is the build-the-seam posture applied to *evidence*: proceed, but never let delivery
+> pressure manufacture proof. These three exist because the failure mode is not the split — it is the
+> gated half quietly never closing while the sprint reads done on the ungated half alone.
+>
+> 1. **AC-9.2 is a SEPARATELY TRACKED, NON-CLOSEABLE item** — never a sub-bullet of a closeable one. A
+>    gated obligation nested under a closeable parent disappears the moment the parent is ticked.
+> 2. **The parent may not report satisfied while AC-9.2 is open.** Partial evidence **amends, never
+>    closes** — the same rule ED-340 already carries for the enforcer roster. "Passed on fixtures" is an
+>    amendment to the record, not a closure of it.
+> 3. **Record what the fixtures CANNOT show, next to the result.** They prove the port runs and that
+>    nothing WarpOS-specific refuses; they **cannot** prove real-world stack diversity, which is the
+>    entire reason the DoD asked for ≥3 *real* repos. Without this stated in place, a later reader reads
+>    fixture-green as corpus-green — which is precisely the fabricated-evidence class this sprint's
+>    whole honesty apparatus exists to prevent.
+>
+> - AC-9.3: Given the sprint's completion record, when AC-9.2 is open, then the corpus DoD item is
+>   reported **not satisfied**, tracked as its own non-closeable row, and the fixture result is recorded
+>   with its stated limits alongside it.
+>   verified_by: not_applicable — a record-discipline obligation on the tracker, enforced at sprint
+>   close by review rather than by a product test.
 
 ## S-10 — Receipt interior v1 **[GATED]**
 
