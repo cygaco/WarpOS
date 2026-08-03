@@ -32,7 +32,7 @@
 - None currently recorded.
 
 ## Related sprints
-- **S-VLADW1-01** (epic label SP-VLAD-W1-ENGINE) — candidate — Engine skeleton: plain-node Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port (turbo engine half) + API-key model-access seam via the TypeScript Agent SDK (the claude-CLI subscription shell-out is ToS NO-GO; the seam's residue is the credential-custody enforcer + an empirically characterized quota-exhaustion detector)
+- **S-VLADW1-01** (epic label SP-VLAD-W1-ENGINE) — candidate — Engine skeleton: plain-node Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port (turbo engine half) + the auth-agnostic model-access seam — **subscription-primary per the operator ruling of 2026-08-01, API-key route via the TypeScript Agent SDK engineered and ready as the fallback** (SUPERSEDES the prior "API-key seam … claude-CLI shell-out is ToS NO-GO" description; authoritative wording: § Decisions first entry + Change-log fold `5b022ea9`). The seam's residue is unchanged and seam-agnostic: the credential-custody enforcer + an empirically characterized quota-exhaustion detector
 - **S-VLADW1-02** (epic label SP-VLAD-W1-AUDIT) — candidate — Job #1: port lastmile detect/score/adapters into the engine; remove WarpOS refusals in the ported copy; intake fallback for undetectable stacks; adopt score.js as the ONE readiness number (checklist proxy not ported); receipt schema v1 from portfolio dogfood
 - **SP-VLAD-W2-WRITEPATH** (id to be minted schema-valid at registration) — candidate — Write path: port transaction.js + ff-only posture; branch-per-job; preflight; draft-PR park; undo; approve_job enforced in code under permission levels
 - **SP-VLAD-W2-FACE** (id to be minted schema-valid at registration) — candidate — Agent face + installer: @vlad agent file (ELI5 voice, delegation rules, engine-liveness check), package-deal installer (agent+engine+.mcp.json), init flow (intake → detection → memory scaffold path-primary → level+terms)
@@ -141,6 +141,12 @@
 - Provenance: 2026-08-01 · source: OPERATOR RULING 2026-08-01 (verbatim in-session) · <!-- fold:5b022ea9 -->
 - ⚠ CONFLICT FLAGGED: overlaps a stable commitment ("primary and only"). Item explicitly supersedes it — recorded; Scope/Decisions NOT auto-edited (resolve in a deliberate edit).
 
+### 2026-08-03 — deliberate edit — source: β pre-boundary verification note (seventh-surface sweep, DP-gap #38 close-by-search)
+- Changed: § Related sprints S-VLADW1-01 one-liner reworded from the superseded present-tense NO-GO/API-key-primary description to subscription-primary + engineered API-key fallback (mirrors plan artifact §5 and the sprint tracker title). Also: Verification-log ROADMAP row updated to Verified Exists (wired at ROADMAP.md § Epics, checked 2026-08-03); § Current next action updated to reflect minted W1 pair + design in flight.
+- Reason: β found the un-struck seventh surface by search after both prior sweeps enumerated locations; § Related sprints is live state, not an append-only record, so the superseded text could not stand. Fold `5b022ea9`'s conflict flag required exactly this deliberate edit.
+- Previous state: line 35 asserted the ToS NO-GO posture as present-tense fact while every governing surface said subscription-primary.
+- New state: all live-state surfaces coherent with § Decisions first entry; Change log and § Open questions strike-in-place history left intact by design.
+
 ## Evidence log
 ### 2026-07-28 — Epic plan authored
 - Evidence type: File changed.
@@ -151,10 +157,10 @@
 | Item | Should exist? | State | Where / wired where | Proof (cmd/inspection) | Checked | By |
 | --- | --- | --- | --- | --- | --- | --- |
 | _planning/epics/E-VLAD-001.md (plan artifact) | Yes | Verified Exists | _planning/epics/ | written by /epic:plan | 2026-07-28 | alpha |
-| ROADMAP § Epics entry for E-VLAD-001 | Yes | Missing But Required | ROADMAP.md | pending α integration | 2026-07-28 | alpha |
+| ROADMAP § Epics entry for E-VLAD-001 | Yes | Verified Exists | ROADMAP.md § Epics (line 39, ⭐⭐ TOP product priority) | grep E-VLAD-001 ROADMAP.md | 2026-08-03 | alpha |
 
 ## Current next action
-Mint the Wave-0 sprint candidate(s) via /sprint:plan, then wire E-VLAD-001 into ROADMAP § Epics + the TRACKER header (α at integration).
+W1 pair minted (S-VLADW1-01 PC-20260730-0085 primary · S-VLADW1-02 PC-20260730-0084) and ROADMAP/TRACKER wired. Design phase in flight (ε conducting, 2026-08-03) — next epic-grain action: fold design outcomes (four-core tool enumeration decision, B2 application) at the design boundary and flip § Related sprints statuses.
 
 ## Completion record
 - Final state: Not yet complete.
