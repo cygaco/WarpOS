@@ -131,9 +131,12 @@ receipt, with `cancel_job` available if the run stalls.
 - AC-7.1: Given any child-process launch site, when the custody enforcer runs, then it requires the
   audited wrapper **and** an explicit allowlist environment excluding the held secret.
   verified_by: tests/regression/S-VLADW1-01/custody-static.test.js::spawn-sites-use-allowlist-env
-- AC-7.2: Given the ambient environment is poisoned with a decoy secret, when the shipped fixture
-  spawns a child through the audited wrapper, then the child cannot observe the decoy.
-  verified_by: tests/regression/S-VLADW1-01/custody-runtime.test.js::child-cannot-see-decoy
+- AC-7.2 **(P3 — one decoy per secret class, per Amendment 1)**: Given the ambient environment is
+  poisoned with a decoy for **each** secret class the engineered seams can carry (API-key class **and**
+  OAuth/session-state class), when the shipped fixture spawns a child through the audited wrapper, then
+  the child cannot observe **any** of them. One decoy overall is insufficient — it would prove the
+  scrub only for whichever class the decoy happened to represent.
+  verified_by: tests/regression/S-VLADW1-01/custody-runtime.test.js::child-cannot-see-decoy-any-class
 
 ## S-8 — Fail-closed credential-custody enforcer (governed by ADR-0041, ACCEPTED)
 
@@ -141,17 +144,23 @@ receipt, with `cancel_job` available if the run stalls.
 > `.claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md`).
 > It governs this story. Two bindings carry into the build:
 >
-> **1. Adopt the ADR's enforcer identities — do NOT mint new names.** All six are OWED under **ED-340**,
-> which closes only when all six exist. Paths are **product-repo**-relative:
+> **1. Adopt the ADR's enforcer identities — do NOT mint new names.** Post-**Amendment 1** (`1c2ba415`,
+> β-confirmed `c4b81e7f`) the roster is **SEVEN**, not six. All are OWED under **ED-340**, which closes
+> only when **all seven exist AND both mutants pass**. Paths are **product-repo**-relative:
 >
 > | ADR leg | Enforcer identity |
 > |---|---|
-> | P1 | `scripts/checks/no-held-secret-in-surface.js` |
+> | P1 | `scripts/checks/no-held-secret-in-surface.js` — scans the **UNION of every seam secret class unconditionally** (API-key **AND** OAuth/session-state patterns). **Never derived from which seam is live**; an unrecognized seam value **fails closed** |
 > | P2 | `scripts/checks/spawn-env-allowlist.js` |
-> | P3 | `test/credential-custody-decoy.test.js` |
-> | A5 (firing point) | the three above wired into the product's **own ship-time check run**, not only CI — the wiring itself asserted by a presence check in the product's release gate |
+> | P3 | `test/credential-custody-decoy.test.js` — **one decoy per secret class**, not one decoy overall |
+> | **P4 (NEW)** | `scripts/checks/no-secret-on-outbound.js` — outbound-request **call-site walk**; the SDK auth call is the **sole permitted carrier**. Carries **its own mutant**: a planted non-auth outbound call carrying a decoy secret must go **RED** |
+> | A5 (firing point) | the checks above wired into the product's **own ship-time check run**, not only CI — the wiring itself asserted by a presence check in the product's release gate |
 > | Labeling rule | a receipt/README **claim lint** over shipped copy: every custody claim string must map to a P-clause id |
 > | A1–A4 | no in-repo enforcer exists or *can* exist for A1/A2 — **that is the finding, not a gap**. Enforced as a *presence* obligation: the four ceilings appear **verbatim** in the shipped custody statement, checked by the same claim lint |
+>
+> **The two mutants ED-340 closes on:** P3's (the decoy fixture must go RED when the scrub is removed,
+> AC-8.4) and P4's (the planted non-auth outbound carrier must go RED, AC-8.12). An enforcer with no
+> observed red state is enforcement debt wearing a green badge.
 >
 > **2. Scope discipline.** Report **per-leg named fields**, never a single `custodyProven: true`. Legs
 > the ADR classes ASSERTED must not be restated here as proven. Narrowing a proven claim later means
@@ -176,9 +185,11 @@ receipt, with `cancel_job` available if the run stalls.
 > *(`describeAuth()` (AC-1.4) remains the right single source for the P2 env denylist and the P3 decoy
 > fixture — this exclusion is specific to P1's scan target.)*
 >
-> **Still open with β:** the obligation's "no proxy, no third party" is an **egress** claim that none of
-> P1/P2/P3 tests and that sits in neither the PROVEN nor the ASSERTED list. Unresolved at time of
-> writing; do not assume an egress proof exists.
+> **The egress gap is CLOSED by Amendment 1 — via a new enforcer, not a reclassification.** The
+> obligation's "no proxy, no third party" was an egress claim that none of P1/P2/P3 tested and that sat
+> in neither the PROVEN nor the ASSERTED list. Amendment 1 answers it with **P4**
+> (`no-secret-on-outbound.js`), moving egress into PROVEN rather than quietly demoting it to an
+> assertion — the right direction, since demoting it would have narrowed the product's claim.
 
 - AC-8.1: Given the declared scanned product surface contains a held-secret value or a seam-declared
   secret shape, when the custody enforcer runs, then it fails with the matching file and rule.
@@ -202,10 +213,16 @@ receipt, with `cancel_job` available if the run stalls.
   then the product-layer custody self-check is invoked. An enforcer that runs only in our CI proves
   something about our source and **nothing about their runtime**.
   verified_by: tests/regression/S-VLADW1-01/custody-runtime.test.js::selfcheck-runs-on-user-machine
-- AC-8.7: Given the product's outbound clients, when a model operation carries the held secret, then
-  the secret attaches only at the seam's single transport choke point, pinned to Anthropic's
-  endpoint; raw HTTP-client use outside the seam module is refused by the enforcer.
-  verified_by: tests/regression/S-VLADW1-01/custody-static.test.js::egress-pinned-to-seam-chokepoint
+- AC-8.7 **(P4 — `scripts/checks/no-secret-on-outbound.js`)**: Given the product's outbound-request call
+  sites, when P4 walks them, then the **SDK auth call is the sole permitted carrier** of the held
+  secret; any other outbound call site carrying it fails the build. Raw HTTP-client use outside the
+  seam module is a refusal, not a warning.
+  verified_by: tests/regression/S-VLADW1-01/no-secret-on-outbound.test.js::sdk-auth-call-is-sole-carrier
+- AC-8.12 **(P4's mutant — the second mutant ED-340 closes on)**: Given a **planted non-auth outbound
+  call carrying a decoy secret**, when P4 runs, then it goes **RED**. If the plant passes, the build
+  fails because P4 is untrustworthy. Egress is the one leg with no runtime fixture behind it, so its
+  mutant is the only thing standing between "P4 exists" and "P4 works".
+  verified_by: tests/regression/S-VLADW1-01/no-secret-on-outbound.test.js::planted-outbound-carrier-goes-red
 - AC-8.8: Given a parse error in any scanned file, when the enforcer runs, then it goes RED rather
   than skipping the file.
   verified_by: tests/regression/S-VLADW1-01/custody-static.test.js::parse-error-is-red-not-skip

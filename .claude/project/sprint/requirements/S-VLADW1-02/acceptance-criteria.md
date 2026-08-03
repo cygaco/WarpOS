@@ -194,6 +194,18 @@ edit an epic's Definition of Done.
   test in <area> would let us score it"), never a bare status token. *(Form only — see the judgment
   list below.)*
   verified_by: tests/regression/S-VLADW1-02/degradation.test.js::cause-plus-action-present
+- AC-8.9 **(the DISPOSITION-GENERAL obligation — β `e2a7c5b8`, applied verbatim to the sprint DoD)**:
+  Given **however** the receipt handles a dimension it does not score for a given repo — NOT SCORED,
+  **REMOVED** from the default set, or any future disposition — when the receipt is produced, then that
+  handling is **stated on the receipt**. And where **removal changes the dimension set**, two repos'
+  readiness numbers are computed over **different sets** and are **not comparable unless the receipt
+  says so**.
+  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::disposition-general-handling-disclosed
+
+> **Why this AC is worded over dispositions rather than over "unscored":** the original obligation
+> governed only NOT SCORED, but D-2 moved the live case to REMOVED — so as written it would have
+> policed a disposition this sprint no longer uses while leaving the one it *does* use ungoverned. That
+> is the half-applied-amendment defect, and it is exactly the kind of gap that reads green.
 
 ## S-9 — Running the audit against a corpus **[SPLIT: (a) ungated / (b) GATED]**
 
