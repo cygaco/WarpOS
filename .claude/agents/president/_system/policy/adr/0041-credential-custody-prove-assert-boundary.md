@@ -1,7 +1,10 @@
 # ADR-0041 — Credential custody for the Vlad engine: the PROVE / ASSERT boundary
 
 - **Status:** ACCEPTED (2026-08-03) — α-reviewed and accepted same day (drafted by a delegated lane; the
-  drafting lane did not commit). Satisfies β's OPEN_ADR from `7c4e2b96` (narrow scope, see Deciders).
+  drafting lane did not commit). β's OPEN_ADR from `7c4e2b96` (narrow scope, see Deciders): **verified
+  discharged 2026-08-03** — β clause-by-clause review against the parent verdict, discharge verdict msg_id
+  `8f3a2d71-6b45-4e92-a17c-30d5c9e46b28` (DECIDE, class A, 0.92), conditional on the legal-basis sentence in
+  Context, which landed the same day. Observed, not asserted.
 - **Deciders:** β verdict `7c4e2b96-5d81-4a37-b0f2-91e6c58a3d74` (DECIDE, class B, 0.88, **OPEN_ADR narrow** — β
   scoped the ADR to "the credential-custody control's prove-versus-assert boundary, not the sprint as a whole");
   operator ruling 2026-08-01 (model access is SUBSCRIPTION-PRIMARY), which changed *which secret* the control
@@ -24,6 +27,11 @@ as written**: the Agent SDK authenticates *with* the secret, so transmitting it 
 fail-closed enforcer over that wording must either lie to pass or red-flag correct behaviour forever. The
 obligation was reworded to the achievable **credential-intermediary** form and landed in all three artifacts
 (sprint DoD `33024f46`, epic DoD via α's `/epic:fold` `3a8fd442`, banked planning inputs `88abeb8b`).
+
+**The obligation's verified legal basis, carried here because a product-repo reader cannot reach the epic DoD
+(β A2 re-base, 2026-07-30):** the twice-verified legal page (fetched verbatim twice, independently, 2026-07-29
+— evidence `runtime/vlad-w1/w1-planning-inputs.md` §1) bars credential **intermediation** directly; the earlier
+"Consumer Terms forbid credential sharing" citation was never primary-source verified and is **not relied on**.
 
 What was *not* settled by that rewording, and is what β flagged OPEN_ADR, is the boundary itself: which
 obligations a mechanical enforcer can **PROVE**, which remain **ASSERTED** posture, and how an assertion is
