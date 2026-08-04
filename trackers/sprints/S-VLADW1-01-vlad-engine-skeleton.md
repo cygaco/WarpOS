@@ -153,6 +153,23 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-04 — Port-reference verification, pass 2 (CONTENTS read): a SECOND mis-citation, and it would have broken the product
+Pass 1 confirmed paths; this pass read contents. Two of the three remaining citations verify. One does not, and it is the more dangerous kind — the file exists, the name is plausible, and porting it would do real damage.
+
+**`phases/preflight.js` — WRONG FILE, and porting it would make the engine refuse every stranger repo.** The cited `scripts/bootstrap/lastmile/phases/preflight.js` is a **39-line install gate**: it shells to `scripts/check/install.js` and refuses unless the target is a properly-installed WarpOS repo. Its failure message is verbatim *"install incomplete or not a WarpOS repo (/scan:install exit N) — refusing to proceed. Run /warp:setup (or fix the gaps) first."*
+
+That is **precisely the WarpOS-specific-refusal class S-VLADW1-02's S-3 exists to strip**, and it sits behind a citation the epic reads as the write-path preflight. Ported as cited, Vlad would refuse to audit a founder's repository **on the grounds that it is not a WarpOS install** — a total failure of the product's only job, arriving via a citation that looks correct.
+
+**What the epic actually means by "preflight (conflicts, drift, other sessions/worktrees) before apply" is a DIFFERENT file:** `scripts/warpos/preflight.js`, reached through `transaction.js#runFastPreflightSubset` → `require("./preflight")`, which runs ten gates and takes the subset `warpos-install-baseline`, `warpos-manifest-honesty`, `warpos-tracked-transients`. **Note those gate names are themselves WarpOS-coupled** — so the real preflight also needs de-WarpOS-ing, and that is Wave-2 write-path scope, not Wave 1.
+
+**`permission-profile.js` — VERIFIES, and is RICHER than the citation implies (good news for the port).** `scripts/turbo/permission-profile.js` (220 lines) declares `LEVELS = ["auto","notice","confirm","never"]` exactly as the epic states. It is **not vocabulary-only**: it ships `MUST_BE_AUTO` / `MUST_BE_CONFIRM` / `MUST_BE_NEVER` invariant sets plus `validateProfile()` and `levelFor()`. So S-10/S-11's "vocabulary + config + in-code check + exactly ONE enforced refusal" has real machinery to adopt rather than invent.
+
+**And it carries a doctrine the sprint artifacts did not, which the product must inherit:** the harness **auto-mode classifier sits ABOVE `permissions.allow`**, so a profile declaring `auto` **does not** satisfy the classifier — encoded in its `LOAD_BEARING_COMMENT` (*"push-to-main: confirm — classifier gate is above permissions.allow"*). The lesson generalises to Vlad: its permission levels must never promise `auto` for an action a higher gate will still refuse, or the level is a claim the system cannot honour. **This is the same two-gate shape that blocked the `vlad` workspace-trust flag on 2026-08-04** — a permissions grant that a classifier declined to honour.
+
+**`transaction.js` — VERIFIES.** `scripts/warpos/transaction.js` (516 lines) is the real write-path machinery: `beginTransaction` / `commitTransaction` / `rollbackTransaction`, sha256 snapshotting, an active-lock, `atomicWriteJSON`. Substantial and correctly cited. **Wave-2 scope** — the write path is explicitly out of Wave-1.
+
+**Running total: source-reading has now corrected the recorded record SEVEN times** (D-1's basis, the `needs_input` state, D-2's mechanic, D-2's inverted rationale, the `registry.js` ambiguity, this `preflight` mis-citation, and `permission-profile`'s under-description). Every port-shaped brief must cite source, never a summary.
+
 ### 2026-08-04 — Port-reference verification, pass 1: all five cited sources resolved; ONE citation was AMBIGUOUS and is now pinned
 The sprint task required verifying each cited port source before porting, because every one is `inferred_from_repo` and **none had been read**. Results, read at source:
 
