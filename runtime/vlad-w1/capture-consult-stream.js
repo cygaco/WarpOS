@@ -29,6 +29,15 @@
  * VARIES closes a three-cycle gap wrongly under an operator-ordered check's authority. A
  * template can only slot what the emitter knew, and the row records what the emitter knew.
  *
+ * VARIES DOES NOT SELF-EXECUTE (β ceiling, 2026-08-04): the normalization strips every value
+ * the ROW carries, but the row is only a LOWER BOUND on what the emitter knew — an interpolated
+ * value the emitter never recorded (a sprint title, a phase index sourced elsewhere) would
+ * survive normalization and produce VARIES on template output. Therefore a VARIES verdict is
+ * NOT sufficient to record AP-1 closed: a human must actually read the per-row message_head
+ * fields and judge substance before closure. VARIES establishes the falsifiable half; a reader
+ * supplies the judgment half. A TEMPLATE verdict needs no such gate — it is a finding, and
+ * findings are self-executing.
+ *
  * Usage: node runtime/vlad-w1/capture-consult-stream.js [--json]
  * Exit:  0 = ran (see verdict in output; a verdict of TEMPLATE is a finding, not a crash)
  *        2 = could not read the stream
