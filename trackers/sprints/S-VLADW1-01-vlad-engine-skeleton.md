@@ -153,6 +153,17 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-04 — AP-1 automated-consult-stream check: UN-SAMPLEABLE here, and the check's subject is not what its name implies
+Operator-ordered (task #11). Recorded honestly as **NOT CLOSED**. Team-lead ruled OPTION 3.
+
+**Verdict: `NO_DATA`** — zero W1 rows against a zero baseline. That is *"the subject never ran"*, **not** *"the check failed"*, and emphatically **not a pass**. Root cause read at source: `sprint_full_beta_consult` has **exactly one emitter**, `scripts/sprint/full.js:822`, and this sprint was **hand-conducted** (`design.js` and `dispatch-claude.js` driven directly; `full.js` never invoked). No number of phase boundaries changes this.
+
+**The reframing, which outlasts this sprint.** `beta_message` is **caller-supplied** via `--beta-message` (`full.js:201`) — the runtime does not generate it, it **records** orchestrator-supplied text behind a canned-content refusal gate (≥40 chars; a decision token or grounding reference required). So AP-1's real subject is **orchestrator discipline**, not runtime text generation. Consequence, routed to β as a supplemental question rather than absorbed: the "automated stream" was never the observer-immune lane β's separation argument assumed — **any orchestrator who knows the check exists is observer-affected**, exactly as β's betaEvents lane was. What AP-1 now measures, and what evidence could satisfy item 35(a)'s clean-result condition when every future sample is knowingly authored, is β's protection to redefine.
+
+**Deliberately not done:** ε did **not** drive `full.js` to manufacture a row. A self-authored sample would *look like* independent evidence while being a self-report — a subtler false-close than sampling β's lane would have been, and it would have foreclosed the decision by creating the contaminated artifact. Restraint endorsed by team-lead and still in force.
+
+**Capture remains ARMED** for the next genuinely `full.js`-driven sprint: `runtime/vlad-w1/capture-consult-stream.js`, β-hardened (over-normalized skeleton stripping every emitter-known value; `INCONCLUSIVE` gated on ≥2 *distinct* boundaries; `VARIES` explicitly does not self-execute and requires a human read). Scope guard verified intact — reads `paths.eventsFile` only, never betaEvents. Item 35(a) stays **DEFERRED**, its existing state.
+
 ### 2026-08-04 — Port-reference verification, pass 2 (CONTENTS read): a SECOND mis-citation, and it would have broken the product
 Pass 1 confirmed paths; this pass read contents. Two of the three remaining citations verify. One does not, and it is the more dangerous kind — the file exists, the name is plausible, and porting it would do real damage.
 

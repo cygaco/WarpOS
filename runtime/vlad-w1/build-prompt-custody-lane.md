@@ -114,6 +114,31 @@ leave the wording to the operator. Do not finalise it.
 3. **Do NOT port `scripts/bootstrap/lastmile/phases/preflight.js`.** It is a WarpOS install gate whose
    refusal would make the product reject non-WarpOS repositories. Named here so you don't reach for it.
 
+## FOLDED IN FROM THE ENGINE LANE — one micro-gap, and one obligation that is genuinely yours
+
+**1. AC-14.1 / AC-14.2 have no test (micro-gap, folded here deliberately).** The engine lane shipped
+`engine/src/port-refs.js` and `engine/port-references.json` — the code exists — but **no test exercises
+them**. This is a missing test, not missing code. Write it:
+- **AC-14.1:** each ported file records `{ source_path, source_line, source_content_hash }` and a
+  shipped script **re-verifies every record on demand** — the point is that the port claim is
+  *re-executable* rather than a one-time assertion someone made once and nobody can recheck.
+  `verified_by: engine/test/port-refs.test.js::every-port-reference-reverifies`
+- **AC-14.2:** a cited reference that does not resolve makes the script **exit non-zero and name the
+  citation**.
+  `verified_by: engine/test/port-refs.test.js::unresolvable-citation-is-red`
+
+**Why this one matters more than its size suggests:** on this sprint, verifying cited port sources
+caught **two** bad citations, one of which (`phases/preflight.js`) would have made the product refuse
+every stranger repository it exists to audit. AC-14 is the mechanism that keeps that class catchable
+after we stop looking by hand. A port-reference record that cannot be re-run is decoration.
+
+**2. The SDK dependency is YOUR obligation, not an engine-lane omission.** `engine/package.json` ships
+with `dependencies: {}` and that is **correct-by-design** for the engine lane: an MCP stdio server in
+plain node is JSON-RPC over stdio and needs no package, which the passing driver test demonstrates.
+`@anthropic-ai/claude-agent-sdk` belongs to the **model-access seam — your scope**. Add it **with its
+A1 justification in the same commit**, pinned to a version you have **verified is published**. If you
+cannot verify one, leave it undeclared and say so; do not invent a version.
+
 ## DEPENDENCY POLICY — BINDING
 
 Read `vladDependencyPolicy` in `engine/package.json`. **Every dependency requires a written
