@@ -33,16 +33,47 @@ meaning "the founder has done the launch prep" over a number meaning "this repo 
 has it **essentially never**, not *sometimes*. B2 reserves NOT SCORED for the sometimes-present case.
 A dimension blank on ~100% of target repos is a permanent blank that reads as malfunction.
 
-**The falsifier — one cheap check, and the decision is not final until it runs.** The conclusion above
-is a well-founded default, **not a verified finding**: nobody has read `FOUNDERS_CHECKLIST.md` or the
-dimension definition, and every port surface in the plan contract is `inferred_from_repo`.
+**The falsifier — RUN 2026-08-04 against source. It CONFIRMS the conclusion and FALSIFIES the
+mechanic.** Read directly from `scripts/bootstrap/lastmile/lib/score.js` (the cited port source, whose
+`score.js:134` citation **verifies** — line 134 is exactly `function applyFoundersChecklist`).
 
-> **FLIP TO RE-SOURCE IF AND ONLY IF** every item the dimension scores is independently observable in
-> an arbitrary repository. In that case the checklist is a redundant *cache* of repo facts, and
-> reading those facts directly measures the same property.
+> **FLIP CONDITION WAS:** re-source iff every item the dimension scores is independently observable in
+> an arbitrary repository.
 
-It rides free on S-1's existing port-reference verification. **Do not upgrade D-2 to "verified" in
-any artifact until that check is recorded.**
+**Result: the flip condition FAILS, so REMOVE stands — and it is now verified rather than inferred.**
+The scorer's own gap string is verbatim *"FOUNDERS_CHECKLIST.md missing - human-only launch work is
+not tracked"*, and open items are `{ id, label, dim }` founder-declared tasks. The source itself
+classifies these as **human-only launch work**. They are not repo-observable, so no substitute
+measures the same property. D-2's conclusion is confirmed **at source**, not by argument.
+
+**But the mechanic in D-2 was wrong, and a builder must not implement it as written.** There is **no
+`FOUNDERS_CHECKLIST` dimension to remove.** The nine dimensions (`product`, `technical`, `security`,
+`privacy`, `monetization`, `funnel`, `deployment`, `analytics`, `support`) each have their own
+`scoreX(state)` scorer fed by repo-observable signals. `applyFoundersChecklist` is a **post-hoc
+cross-cutting CAP**, not a dimension:
+
+- missing or invalid checklist → caps `dimensions.product` at 60 and pushes a gap;
+- each open item → caps **whichever dimension the item names** (`item.dim`, falling back to `product`)
+  at 60 and pushes a gap. So it can cap **any of the nine**, not just `product`.
+
+**Corrected port action: do not port the `applyFoundersChecklist` pass at all.** Do not attempt to
+remove a dimension — remove the *penalty pass*. Every dimension keeps its own repo-observed score.
+
+**This is cleaner than D-2 anticipated, and it simplifies the aggregate problem.** Because the thing
+dropped is a cap rather than a dimension, **the dimension set and the denominator are unchanged** for
+stranger repos. Nothing disappears from the receipt; a penalty simply stops being applied. So the
+cross-repo comparability consequence (β `e2a7c5b8`) **does not bite for this case** — it remains live
+only for a dimension that genuinely cannot be scored for a given repo, which is a different situation.
+AC-5.1/5.2 below are worded for removal-of-a-dimension and are **superseded by this finding**; the
+binding criteria are AC-5.5 and AC-5.6.
+
+- AC-5.5: Given a stranger repo, when readiness is computed, then the `applyFoundersChecklist` pass is
+  **not invoked** and no dimension is capped on the basis of a founder checklist.
+  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::no-checklist-cap-applied
+- AC-5.6: Given the same repo scored with and without a `FOUNDERS_CHECKLIST.md` present, when both
+  receipts are produced, then **the dimension set, the denominator and every dimension score are
+  identical** — the file's presence changes nothing in the ported scorer.
+  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::checklist-presence-changes-nothing
 
 **The property is not deleted, it is re-homed.** Founder-readiness has a legitimate same-property
 source: *ask the founder* — the same input class (a human declaration). Recorded as a **Wave-2** item
