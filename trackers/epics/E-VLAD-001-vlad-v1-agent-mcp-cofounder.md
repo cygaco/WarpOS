@@ -152,6 +152,11 @@
 - Classification: acceptance-criterion
 - Provenance: 2026-08-03 · source: epsilon design run 2026-08-03 (product-lead cross-provider lane; beta B2 rule from 7c4e2b96) · <!-- fold:da3396dc -->
 
+### 2026-08-04 — fold (clarification) — source: operator ruling 2026-08-04 (in-session, relayed via alpha ELI5 of beta d7f31a68 escalation + beta items-32-35 brief)
+- Folded: OPERATOR RULING 2026-08-04 (verbatim: 'yes to all', answering the three-part relayed question): (1) DESIGN-TO-BUILD GATE CLEARED for the W1 pair — a dated operator act POSTDATING design commit 5313a68b, satisfying beta d7f31a68's timing requirement in the form beta specified (the relayed question named the artifacts at 5313a68b and flagged the four-tool surface decision for optional skim; the operator answered with the design in existence). (2) DOGFOOD CORPUS AUTHORIZED: dreamteam, companycam, almanac — READ-ONLY; the relayed question named all three explicitly, so the answer is a specific act, not a delegation inference; supersedes the four prior permission-layer denials recorded in S-VLADW1-02. (3) Staged judgment-model items 32-35 approved per beta's split (G-25 promoted; DP-gap 45+46 to decision-policy; confidence: source-checking raise + agreement-streak hold applied, security raise deferred; automated-consult-stream check ORDERED on a real sprint — the W1 build qualifies).
+- Classification: clarification
+- Provenance: 2026-08-04 · source: operator ruling 2026-08-04 (in-session, relayed via alpha ELI5 of beta d7f31a68 escalation + beta items-32-35 brief) · <!-- fold:be5cb3f1 -->
+
 ## Evidence log
 ### 2026-07-28 — Epic plan authored
 - Evidence type: File changed.
