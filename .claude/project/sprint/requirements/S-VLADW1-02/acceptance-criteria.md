@@ -69,11 +69,11 @@ binding criteria are AC-5.5 and AC-5.6.
 
 - AC-5.5: Given a stranger repo, when readiness is computed, then the `applyFoundersChecklist` pass is
   **not invoked** and no dimension is capped on the basis of a founder checklist.
-  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::no-checklist-cap-applied
+  verified_by: engine/test/audit/dimensions.test.js::no-checklist-cap-applied
 - AC-5.6: Given the same repo scored with and without a `FOUNDERS_CHECKLIST.md` present, when both
   receipts are produced, then **the dimension set, the denominator and every dimension score are
   identical** — the file's presence changes nothing in the ported scorer.
-  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::checklist-presence-changes-nothing
+  verified_by: engine/test/audit/dimensions.test.js::checklist-presence-changes-nothing
 
 **The property is not deleted, it is re-homed.** Founder-readiness has a legitimate same-property
 source: *ask the founder* — the same input class (a human declaration). Recorded as a **Wave-2** item
@@ -94,33 +94,33 @@ edit an epic's Definition of Done.
 - AC-1.1: Given each cited port source, when verification runs before porting, then each
   `{source_path, source_line}` is confirmed against the source repo and the result recorded — including
   any citation found wrong.
-  verified_by: tests/regression/S-VLADW1-02/port-refs.test.js::every-citation-verified-and-recorded
+  verified_by: engine/test/audit/port-refs.test.js::every-citation-verified-and-recorded
 - AC-1.2: Given a ported file, when it lands, then it records `{source_path, source_line,
   source_content_hash}` and a shipped script re-verifies every record on demand. This converts "a
   builder checked them" from an unrepeatable claim into a re-executable artifact.
-  verified_by: tests/regression/S-VLADW1-02/port-refs.test.js::port-records-reverify
+  verified_by: engine/test/audit/port-refs.test.js::port-records-reverify
 - AC-1.3: Given the D-2 falsifier, when S-1 verification runs, then the scored rows of the
   `FOUNDERS_CHECKLIST` dimension are inspected and the flip condition is explicitly recorded as met or
   unmet.
-  verified_by: tests/regression/S-VLADW1-02/port-refs.test.js::d2-falsifier-recorded
+  verified_by: engine/test/audit/port-refs.test.js::d2-falsifier-recorded
 
 ## S-2 — Port detect/score/adapters, WarpOS originals untouched
 
 - AC-2.1: Given the port completes, when the WarpOS canonical assets are inspected, then they are
   byte-identical to their pre-port state.
-  verified_by: tests/regression/S-VLADW1-02/port-isolation.test.js::warpos-originals-untouched
+  verified_by: engine/test/audit/port-isolation.test.js::warpos-originals-untouched
 
 ## S-3 — WarpOS-specific refusals removed in the ported copy only
 
 - AC-3.1: Given a non-WarpOS synthetic fixture repo, when the ported audit runs, then **zero** WarpOS
   refusals fire.
-  verified_by: tests/regression/S-VLADW1-02/refusals.test.js::no-warpos-refusal-on-stranger-fixture
+  verified_by: engine/test/audit/refusals.test.js::no-warpos-refusal-on-stranger-fixture
 
 ## S-4 — `score.js` adopted as the ONE readiness number
 
 - AC-4.1: Given the ported engine, when readiness is computed, then exactly one scorer produces it and
   the checklist proxy is absent from the product tree.
-  verified_by: tests/regression/S-VLADW1-02/single-number.test.js::one-scorer-checklist-proxy-absent
+  verified_by: engine/test/audit/single-number.test.js::one-scorer-checklist-proxy-absent
 
 ## S-5 — The `FOUNDERS_CHECKLIST`-dependent dimension (see D-2)
 
@@ -129,18 +129,18 @@ edit an epic's Definition of Done.
 
 - AC-5.1: Given a stranger repo, when a receipt is produced, then the removed dimension appears in
   **no** receipt field and in **no** denominator.
-  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::removed-dimension-absent-everywhere
+  verified_by: engine/test/audit/dimensions.test.js::removed-dimension-absent-everywhere
 - AC-5.2: Given the removal, when the receipt describes coverage, then the removal is disclosed once
   via the "what this audit covers" line plus `schema_version` — **not** printed per-receipt as an
   excluded/blank dimension, which would recreate the permanent blank removal exists to eliminate.
-  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::removal-disclosed-as-schema-fact
+  verified_by: engine/test/audit/dimensions.test.js::removal-disclosed-as-schema-fact
 - AC-5.3: Given the readiness dimension registry, when the removed dimension is inspected, then a
   one-line rationale is recorded there, so a future contributor cannot re-add a founder-readiness
   dimension backed by artifact-presence without encountering this reasoning.
-  verified_by: tests/regression/S-VLADW1-02/dimensions.test.js::removal-rationale-recorded
+  verified_by: engine/test/audit/dimensions.test.js::removal-rationale-recorded
 - AC-5.4: Given any string reference to `FOUNDERS_CHECKLIST`, when the enforcer scans ported product
   code, then it fails.
-  verified_by: tests/regression/S-VLADW1-02/single-number.test.js::no-founders-checklist-reference
+  verified_by: engine/test/audit/single-number.test.js::no-founders-checklist-reference
 
 ## S-6 — The single-readiness-number enforcer
 
@@ -150,38 +150,38 @@ edit an epic's Definition of Done.
 - AC-6.1 **(F1)**: Given the readiness registry, when the enforcer runs, then it fails unless the
   registry resolves to **exactly one** `{module, symbol}` entry. There is deliberately **no
   allowlist-append path** — no expansion mechanism means no erosion path.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::registry-must-have-exactly-one-entry
+  verified_by: engine/test/audit/enforcer.test.js::registry-must-have-exactly-one-entry
 - AC-6.2 **(F2)**: Given the product tree, when more than one source location constructs or spreads the
   `Readiness` struct, or writes the receipt's readiness slot, then the build fails. The constructor is
   the choke point a rename cannot move.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::single-construction-site
+  verified_by: engine/test/audit/enforcer.test.js::single-construction-site
 - AC-6.3 **(F3)**: Given any object/array literal outside the authorized module mapping ≥3
   dimension-shaped keys to numeric values (or ≥3 entries with a weight-like property), when the
   enforcer runs, then it fails. You cannot compute a composite without a weights table; the function
   name is free, the table is not optional.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::no-weights-table-outside-authorized-module
+  verified_by: engine/test/audit/enforcer.test.js::no-weights-table-outside-authorized-module
 - AC-6.4 **(F4)**: Given a file importing ≥2 dimension modules and containing a normalisation form
   (`/ total`, `* 100`, `reduce(...)/length`, a weighted sum) outside the authorized module, when the
   enforcer runs, then it fails.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::no-composite-normalisation-outside
+  verified_by: engine/test/audit/enforcer.test.js::no-composite-normalisation-outside
 - AC-6.5 **(F5)**: Given the authorized module, when it exports more than one readiness-producing
   symbol, then the enforcer fails — otherwise the obvious defeat is hiding the second scorer inside the
   blessed file.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::authorized-module-exports-one-symbol
+  verified_by: engine/test/audit/enforcer.test.js::authorized-module-exports-one-symbol
 - AC-6.6 **(F6 — the enforcer's own red state)**: Given a planted second scorer, deliberately renamed
   to something innocuous and carrying its own weights table, when the enforcer runs, then it goes RED
   via F2/F3. If the fixture goes green the build fails **because the enforcer is untrustworthy**. An
   enforcer with no proven red state is enforcement debt wearing a green badge.
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::planted-second-scorer-trips-enforcer
+  verified_by: engine/test/audit/enforcer.test.js::planted-second-scorer-trips-enforcer
 - AC-6.7 **(F7)**: Given the enforcer errors, times out, or emits malformed output, then the build goes
   RED. Runner error → non-zero; **fail closed, never green on crash.**
-  verified_by: tests/regression/S-VLADW1-02/enforcer.test.js::runner-error-is-red
+  verified_by: engine/test/audit/enforcer.test.js::runner-error-is-red
 
 ## S-7 — Intake fallback for undetectable stacks
 
 - AC-7.1: Given a fixture repo whose stack cannot be classified, when the audit runs, then it routes to
   the intake fallback and returns a receipt state — not an error and not a crash.
-  verified_by: tests/regression/S-VLADW1-02/detect.test.js::undetectable-routes-to-intake
+  verified_by: engine/test/audit/detect.test.js::undetectable-routes-to-intake
 
 ## S-8 — Honest degradation and the aggregate disclosure
 
@@ -197,41 +197,41 @@ edit an epic's Definition of Done.
 
 - AC-8.1: Given an unscored dimension, when the overall number is computed, then that dimension
   contributes **neither 0 nor a pass** — it is excluded from numerator and denominator alike.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::unscored-never-imputed
+  verified_by: engine/test/audit/aggregate.test.js::unscored-never-imputed
 - AC-8.2 **(the highest-value test in the sprint)**: Given a dimension that cannot be scored, when it
   is added to or removed from the run, then the overall score is **unchanged**.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::score-invariant-to-unscorable-dimensions
+  verified_by: engine/test/audit/aggregate.test.js::score-invariant-to-unscorable-dimensions
 - AC-8.3: Given a `Readiness` value, when it is serialised or rendered, then it cannot be emitted
   without `scored_count`, `applicable_count` and `excluded[]`. No renderer accepts a bare `score`.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::bare-score-cannot-be-rendered
+  verified_by: engine/test/audit/aggregate.test.js::bare-score-cannot-be-rendered
 - AC-8.4: Given `scored_count < applicable_count`, when the number is presented anywhere — receipt,
   log, MCP return or summary line — then it is **not** rendered as a standalone value, and the
   exclusion is disclosed in the **same visual unit** as the number (not a footnote, hover, or details
   pane).
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::partial-coverage-never-bare
+  verified_by: engine/test/audit/aggregate.test.js::partial-coverage-never-bare
 - AC-8.5: Given any receipt with an unscored dimension, when it is rendered, then it states that the
   number is **not comparable** to a receipt with a different denominator. This is the rule most likely
   to be cut for brevity and is how "68" gets compared to another repo's "68".
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::comparability-warning-present
+  verified_by: engine/test/audit/aggregate.test.js::comparability-warning-present
 - AC-8.6: Given partial coverage, when the score is presented, then it is **never** rescaled,
   normalised up, projected, or presented as an estimated complete score.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::no-normalisation-up
+  verified_by: engine/test/audit/aggregate.test.js::no-normalisation-up
 - AC-8.7: Given the disclosure prose, when the struct changes, then the prose changes with it — prose
   is **generated from the same structure the number is computed from**. Hand-written prose drifts from
   the arithmetic within two sprints and the drift is invisible.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::prose-generated-from-struct
+  verified_by: engine/test/audit/aggregate.test.js::prose-generated-from-struct
 - AC-8.8: Given any could-not-run outcome, when presented, then it carries a **cause clause** and an
   **actionable next step** ("we couldn't check this because the project has no tests yet; adding one
   test in <area> would let us score it"), never a bare status token. *(Form only — see the judgment
   list below.)*
-  verified_by: tests/regression/S-VLADW1-02/degradation.test.js::cause-plus-action-present
+  verified_by: engine/test/audit/degradation.test.js::cause-plus-action-present
 - AC-8.9 **(the DISPOSITION-GENERAL obligation — β `e2a7c5b8`, applied verbatim to the sprint DoD)**:
   Given **however** the receipt handles a dimension it does not score for a given repo — NOT SCORED,
   **REMOVED** from the default set, or any future disposition — when the receipt is produced, then that
   handling is **stated on the receipt**. And where **removal changes the dimension set**, two repos'
   readiness numbers are computed over **different sets** and are **not comparable unless the receipt
   says so**.
-  verified_by: tests/regression/S-VLADW1-02/aggregate.test.js::disposition-general-handling-disclosed
+  verified_by: engine/test/audit/aggregate.test.js::disposition-general-handling-disclosed
 
 > **Why this AC is worded over dispositions rather than over "unscored":** the original obligation
 > governed only NOT SCORED, but D-2 moved the live case to REMOVED — so as written it would have
@@ -246,7 +246,7 @@ edit an epic's Definition of Done.
 - AC-9.1 **(a — ungated, automatable)**: Given ≥3 **synthetic fixture** repos the sprint constructs
   itself, when detect/score/adapters run inside the engine, then all three produce receipts with zero
   WarpOS refusals.
-  verified_by: tests/regression/S-VLADW1-02/corpus-synthetic.test.js::three-fixtures-produce-receipts
+  verified_by: engine/test/audit/corpus-synthetic.test.js::three-fixtures-produce-receipts
 - AC-9.2 **(b — GATED on operator corpus authorization)**: Given ≥3 **authorized real** repositories,
   when the audit runs against them, then observations sufficient for the receipt interior are captured.
   **Not designed against, not scheduled, and not closeable until the gate clears.**
@@ -288,7 +288,7 @@ edit an epic's Definition of Done.
   verified_by: not_applicable — evidence-gated on the corpus authorization.
 - AC-10.2: Given whatever interior is minted, when ENGINE handles the receipt, then ENGINE still never
   validates or branches on the interior (the J4 invariant survives the minting).
-  verified_by: tests/regression/S-VLADW1-02/receipt-interior.test.js::engine-still-treats-interior-opaque
+  verified_by: engine/test/audit/receipt-interior.test.js::engine-still-treats-interior-opaque
 
 ---
 
