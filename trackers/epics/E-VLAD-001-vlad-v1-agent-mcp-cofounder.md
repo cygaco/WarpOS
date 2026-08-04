@@ -167,6 +167,13 @@
 - Classification: clarification
 - Provenance: 2026-08-04 · source: beta source-read 2026-08-04 (score.js:134 first branch; correction to the 1742df0a rationale) · <!-- fold:7ec9f676 -->
 
+### 2026-08-04 — fold (tracker-correction) — source: epsilon port-source content reads 2026-08-04 (e00fab81)
+- Folded: PREFLIGHT MIS-CITATION CORRECTED (epsilon source-read 2026-08-04, e00fab81 — the dangerous kind: file exists, name exactly right, porting it does real damage): scripts/bootstrap/lastmile/phases/preflight.js is a 39-line WARPOS INSTALL GATE (refuses unless the target is a properly-installed WarpOS repo — 'Run /warp:setup first'), i.e. precisely the WarpOS-specific-refusal class S-3 exists to strip; ported as cited, Vlad would refuse to audit a founder's repository for not being a WarpOS install. The epic's ACTUAL write-path preflight (conflicts, drift, other sessions/worktrees) is scripts/warpos/preflight.js, reached via transaction.js#runFastPreflightSubset. WAVE-2 NOTE for SP-VLAD-W2-WRITEPATH: that real preflight's own gate names are WarpOS-coupled (warpos-install-baseline, warpos-manifest-honesty, warpos-tracked-transients) and need de-WarpOS-ing in the ported copy — in W2 scope, not W1. Also verified: permission-profile.js is BETTER than advertised (ships MUST_BE_* invariant sets + validateProfile + levelFor — S-10/S-11 adopts rather than invents; its LOAD_BEARING_COMMENT already encodes the classifier-above-permissions.allow two-gate doctrine, which Vlad's permission levels must honor: never promise auto for an action a higher gate will refuse); transaction.js verified as cited (Wave-2). Running tally: SEVEN source-reads have corrected the record this arc; two of the seven would have shipped actively wrong behavior to founders. Cite source, never a summary, is binding for port briefs.
+- Classification: tracker-correction
+- Provenance: 2026-08-04 · source: epsilon port-source content reads 2026-08-04 (e00fab81) · <!-- fold:0a7db1a0 -->
+- ⚠ CONFLICT FLAGGED: overlaps a stable commitment ("preflight"). NOT applied to Scope/Decisions — requires resolution before any plan-item change.
+- Approval: this class is taste-heavy/irreversible-leaning — requires user approval before it reshapes committed items.
+
 ## Evidence log
 ### 2026-07-28 — Epic plan authored
 - Evidence type: File changed.
