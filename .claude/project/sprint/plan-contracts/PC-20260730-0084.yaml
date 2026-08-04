@@ -27,9 +27,9 @@ affected_surfaces:
   - surface: "The receipt envelope interior (schema_version + three named slots emitted by S-VLADW1-01)"
     evidence_level: unknown
     notes: "The envelope does not exist yet — S-VLADW1-01 builds it. This sprint fills the interior and mints v1. The dependency on ENGINE is narrow and deliberately so (J4)."
-  - surface: "The portfolio dogfood corpus (>=3 repositories)"
-    evidence_level: unknown
-    notes: "Unnamed. Requires explicit read-only authorization reconciled in writing against the standing WarpOS-only rule — operator gate. Dogfood was accepted verbally in grill round 3 but never reconciled with 'open these three directories'."
+  - surface: "The portfolio dogfood corpus (>=3 repositories): dreamteam, companycam, almanac — READ-ONLY"
+    evidence_level: verified_from_repo
+    notes: "AUTHORIZED 2026-08-04 by a dated operator act (verbatim 'yes to all') answering a three-part question that named these three repositories explicitly, so the naming is the operator's own and not an agent proposal. Provenance: relayed to eps by team-lead. READ-ONLY at all times — no write, branch, commit or push in any of the three, at any point. SUPERSEDES the prior 'Unnamed / operator gate' state: the gate's own release condition was 'an operator-run edit or an explicit permission grant', and this is the latter. Four earlier attempts to write these names were denied by the permission layer while an AGENT was asserting the authorization; that was the WarpOS-only rule working correctly, and it is superseded by an operator-given authorization rather than worked around. Corpus-dependent acceptance stays split per AC-9.1/AC-9.2: synthetic-fixture evidence and real-corpus evidence remain honestly separated, and fixture-green is never reported as corpus-green."
 current_behavior:
   evidence_level: verified_from_repo
   notes: "Nothing exists product-side. The sibling repo is Verified Nonexistent as of 2026-07-29 (no path assigned; operator gate #1 unresolved). Inside WarpOS the registry entry, ROADMAP row and sprint stores exist for S-VLADW1-02 (current.yaml + progress.yaml only, both at their minted defaults); the tracker at trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md was authored separately because add-sprint.js does not scaffold one. No product code has been written and none may be before the design->build gate clears."
