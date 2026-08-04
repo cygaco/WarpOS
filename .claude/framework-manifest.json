@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "generated_by": "scripts/generate-framework-manifest.js",
   "counts": {
-    "agent": 117,
+    "agent": 118,
     "skill": 237,
     "kernel": 42,
     "reference": 30,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1735,
+  "total": 1736,
   "assets": {
     "agent": [
       {
@@ -581,7 +581,7 @@
         "src": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
         "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
         "kind": "agent",
-        "sha256": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
+        "sha256": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -593,7 +593,7 @@
         "src": ".claude/agents/president/_system/beta/judgement-model.md",
         "dest": ".claude/agents/president/_system/beta/judgement-model.md",
         "kind": "agent",
-        "sha256": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
+        "sha256": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1165,11 +1165,23 @@
         "replaces": null
       },
       {
+        "id": "agent.president._system.policy.adr.0041-credential-custody-prove-assert-boundary.md",
+        "src": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
+        "dest": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
+        "kind": "agent",
+        "sha256": "736ffd3350c7554f657991e76aab09ed86f61fa3bcb15199a024ed3e74c01303",
+        "owner": "framework",
+        "mergeStrategy": "three_way_markdown",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
         "id": "agent.president._system.policy.adr.INDEX.md",
         "src": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
         "kind": "agent",
-        "sha256": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180",
+        "sha256": "9bf3668d2d7abd9432bc4e46566cb8593e1374010b624f216ad58bb40ef90d3c",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -1193,7 +1205,7 @@
         "src": ".claude/agents/president/_system/policy/decision-policy.md",
         "dest": ".claude/agents/president/_system/policy/decision-policy.md",
         "kind": "agent",
-        "sha256": "a2494ff0eb757fcddbfb3c2de21a38df9e7a65e9a0ee6c45bb1995996822c4d8",
+        "sha256": "1673b765ea068af3ad826fa8928392bea659eb4693b53f694af77f61813917ce",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
@@ -10997,7 +11009,7 @@
         "src": "scripts/sprint/full.js",
         "dest": "scripts/sprint/full.js",
         "kind": "sprint_engine",
-        "sha256": "8193c8a041762b777768b746f43385eacb9a6eb5ffd6ebc447fa6808d0925c92",
+        "sha256": "d7a0cffd0092ea9202c77bbc9017d360c0c034cfd7e53843caf57739c127ae91",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

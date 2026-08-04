@@ -109,6 +109,13 @@ function skeleton(row) {
   return s.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * WITHIN-SPRINT is the comparison unit (ε finding 2026-08-04): two different sprints
+ * legitimately differ in content, so pooling -01 and -02 can read VARIES on data that is
+ * templated per sprint. analyze() groups by sprint_id and judges each group with
+ * analyzeGroup(); the overall verdict is the worst case (any TEMPLATE wins), never a
+ * cross-sprint pool.
+ */
 function analyze(rows) {
   if (rows.length === 0) {
     return {
@@ -118,6 +125,31 @@ function analyze(rows) {
         "this is not a pass. Re-run after a phase boundary fires.",
     };
   }
+  const groups = new Map();
+  for (const r of rows) {
+    if (!groups.has(r.sprint_id)) groups.set(r.sprint_id, []);
+    groups.get(r.sprint_id).push(r);
+  }
+  const per_sprint = {};
+  for (const [sid, g] of groups) per_sprint[sid] = analyzeGroup(g);
+  const verdicts = Object.values(per_sprint).map((v) => v.verdict);
+  let verdict, reason;
+  if (verdicts.includes("TEMPLATE")) {
+    const which = Object.keys(per_sprint).filter((s) => per_sprint[s].verdict === "TEMPLATE");
+    verdict = "TEMPLATE";
+    reason = `Template output detected WITHIN sprint(s) ${which.join(", ")} — see per_sprint. Cross-sprint variation was deliberately not counted as evidence.`;
+  } else if (verdicts.includes("VARIES")) {
+    const which = Object.keys(per_sprint).filter((s) => per_sprint[s].verdict === "VARIES");
+    verdict = "VARIES";
+    reason = `Within-sprint substance-bearing variation in sprint(s) ${which.join(", ")}; remaining groups inconclusive. Per the header rule, VARIES does not self-execute — a human reads message_heads before any closure.`;
+  } else {
+    verdict = "INCONCLUSIVE";
+    reason = `No sprint group has ≥2 distinct boundaries with judgeable variance (${groups.size} sprint group(s)). See per_sprint.`;
+  }
+  return { verdict, reason, per_sprint };
+}
+
+function analyzeGroup(rows) {
   const distinctBoundaries = new Set(rows.map((r) => r.boundary)).size;
   if (distinctBoundaries < 2) {
     return {
@@ -181,6 +213,7 @@ function main() {
     malformed_prefilter_lines: malformed,
     verdict: result.verdict,
     reason: result.reason,
+    per_sprint: result.per_sprint || null,
     rows: rows.map((r) => ({
       boundary: r.boundary,
       verdict: r.verdict,
@@ -215,4 +248,4 @@ function renderText(p) {
 }
 
 if (require.main === module) process.exit(main());
-module.exports = { readRows, analyze, skeleton, BASELINE };
+module.exports = { readRows, analyze, analyzeGroup, skeleton, BASELINE };

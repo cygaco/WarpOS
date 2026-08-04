@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "557be5f362a5b3b6f5d57e7092c70fe2c851fc73",
-  "installedAt": "2026-08-02T03:07:38.863Z",
+  "installedCommit": "a2a7769dbc8a8ad3747ce6cacaa06d0d21213bf2",
+  "installedAt": "2026-08-04T22:02:22.362Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -434,8 +434,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
-      "currentHashAtInstall": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
+      "installedHash": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
+      "currentHashAtInstall": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
       "introducedIn": "0.0.0"
     },
     {
@@ -444,8 +444,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
-      "currentHashAtInstall": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
+      "installedHash": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
+      "currentHashAtInstall": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
       "introducedIn": "0.0.0"
     },
     {
@@ -919,13 +919,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "agent.president._system.policy.adr.0041-credential-custody-prove-assert-boundary.md",
+      "kind": "agent",
+      "dest": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
+      "owner": "framework",
+      "mergeStrategy": "three_way_markdown",
+      "installedHash": "736ffd3350c7554f657991e76aab09ed86f61fa3bcb15199a024ed3e74c01303",
+      "currentHashAtInstall": "736ffd3350c7554f657991e76aab09ed86f61fa3bcb15199a024ed3e74c01303",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "agent.president._system.policy.adr.INDEX.md",
       "kind": "agent",
       "dest": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180",
-      "currentHashAtInstall": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180",
+      "installedHash": "9bf3668d2d7abd9432bc4e46566cb8593e1374010b624f216ad58bb40ef90d3c",
+      "currentHashAtInstall": "9bf3668d2d7abd9432bc4e46566cb8593e1374010b624f216ad58bb40ef90d3c",
       "introducedIn": "0.0.0"
     },
     {
@@ -944,8 +954,8 @@
       "dest": ".claude/agents/president/_system/policy/decision-policy.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "a2494ff0eb757fcddbfb3c2de21a38df9e7a65e9a0ee6c45bb1995996822c4d8",
-      "currentHashAtInstall": "a2494ff0eb757fcddbfb3c2de21a38df9e7a65e9a0ee6c45bb1995996822c4d8",
+      "installedHash": "1673b765ea068af3ad826fa8928392bea659eb4693b53f694af77f61813917ce",
+      "currentHashAtInstall": "1673b765ea068af3ad826fa8928392bea659eb4693b53f694af77f61813917ce",
       "introducedIn": "0.0.0"
     },
     {
@@ -9074,8 +9084,8 @@
       "dest": "scripts/sprint/full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "8193c8a041762b777768b746f43385eacb9a6eb5ffd6ebc447fa6808d0925c92",
-      "currentHashAtInstall": "8193c8a041762b777768b746f43385eacb9a6eb5ffd6ebc447fa6808d0925c92",
+      "installedHash": "d7a0cffd0092ea9202c77bbc9017d360c0c034cfd7e53843caf57739c127ae91",
+      "currentHashAtInstall": "d7a0cffd0092ea9202c77bbc9017d360c0c034cfd7e53843caf57739c127ae91",
       "introducedIn": "0.0.0"
     },
     {

@@ -829,6 +829,10 @@ function maybeConsultBeta(state, boundary, args) {
     sprint_id: state.sprintId,
     ts,
     via_cli_resume: !!(args && args.resume), // RT-1: audit marker for /scan:sprint-beta-honesty
+    // β finding 2026-08-04 (c17d5e92): the substance gate must stamp its own state into the
+    // row on BOTH paths — an off-switch flip is otherwise invisible to the exact audit
+    // designed to catch it (AP-15 in env-var costume). Written whether the gate ran or not.
+    substance_gate: process.env.WARPOS_BETA_SUBSTANCE_GATE !== "off" ? "on" : "off",
   });
 
   state.betaConsultations.push({
