@@ -250,15 +250,27 @@ receipt, with `cancel_job` available if the run stalls.
 > secret class any engineered seam can carry** (API-key patterns AND OAuth/session-state patterns),
 > **unconditionally**.
 >
-> **Explicitly rejected: deriving P1's match set from which seam is live.** That was the intuitive fix
-> and it is wrong — a stale "which seam is live" value would silently narrow the scan and pass GREEN,
-> and both secrets can be present at once anyway, because the fallback seam is engineered and ready.
-> So do **not** wire P1's match set from `describeAuth()`. A new seam **ADDS** a class; an unrecognized
-> seam value **fails closed** rather than scanning nothing.
+> **Explicitly rejected: deriving P1's match set from WHICH SEAM IS LIVE.** That was the intuitive fix
+> and it is wrong — a stale live-mode value would silently narrow the scan and pass GREEN, and both
+> secrets can be present at once anyway, because the fallback seam is engineered and ready. A new seam
+> **ADDS** a class; an unrecognized seam value **fails closed** rather than scanning nothing.
+>
+> **NARROWED 2026-08-04 — an earlier revision of this block said "do not wire P1's match set from
+> `describeAuth()`" at all. That was over-broad and is superseded.** Amendment 1 bars derivation from
+> the **live mode**, not from the seam module as such. The shipped seam satisfies it in a better way
+> than a duplicated hardcoded list would: `describeAuth().secretShapes` is a **frozen module constant
+> carrying both secret classes, returned unfiltered by mode**, so consuming it does *not* narrow with
+> the live seam — and it keeps one source of truth instead of two lists to drift apart.
+>
+> **P1 may therefore consume `describeAuth().secretShapes`, and the invariant that makes this safe is
+> now enforced**: `engine/test/seam-boundary.test.js` asserts `secretShapes` and `envDenylist` are
+> **identical across both modes** and that both classes are present under either. It was
+> **mutant-verified** — filtering `secretShapes` by live mode turns it RED. Without that tooth the
+> design was one plausible-looking "tidy-up" refactor away from silently reintroducing the defect.
 >
 > The enforcer identity `scripts/checks/no-held-secret-in-surface.js` is unchanged and stable.
-> *(`describeAuth()` (AC-1.4) remains the right single source for the P2 env denylist and the P3 decoy
-> fixture — this exclusion is specific to P1's scan target.)*
+> `describeAuth()` (AC-1.4) is the single source for P1's shapes, P2's env denylist **and** P3's decoy
+> fixture — one seam, three consumers, each retargeted by a seam flip without editing the enforcers.
 >
 > **The egress gap is CLOSED by Amendment 1 — via a new enforcer, not a reclassification.** The
 > obligation's "no proxy, no third party" was an egress claim that none of P1/P2/P3 tested and that sat
