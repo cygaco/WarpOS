@@ -29,9 +29,24 @@ world*; nothing in a repo can observe it. Substituting an observed signal while 
 dimension's name is precisely the silent redefinition B2 bars: the receipt would print a label
 meaning "the founder has done the launch prep" over a number meaning "this repo has tidy files."
 
-**Why not NOT SCORED:** `FOUNDERS_CHECKLIST.md` is a WarpOS/Vlad-scaffold artifact. A stranger repo
-has it **essentially never**, not *sometimes*. B2 reserves NOT SCORED for the sometimes-present case.
-A dimension blank on ~100% of target repos is a permanent blank that reads as malfunction.
+**Why not NOT SCORED — and read this carefully, because the obvious rationale is INVERTED.**
+`FOUNDERS_CHECKLIST.md` is a WarpOS/Vlad-scaffold artifact that a stranger repo has essentially never.
+The tempting inference is that the checklist logic therefore just *doesn't fire* on stranger repos and
+is harmless. **That is backwards, and β caught it at source.**
+
+Absence fires the **harshest** branch. From `applyFoundersChecklist` verbatim: when the checklist is
+missing or absent, it **caps `dimensions.product` at 60** *and* **pushes the gap string
+`"FOUNDERS_CHECKLIST.md missing - human-only launch work is not tracked"` into the receipt** — on
+**every stranger repo, every run**.
+
+**So the reason not to port this pass is that it FIRES, not that it never runs.** Ported unchanged, it
+would penalise a founder's product score for not having a WarpOS scaffold file they have never heard
+of, and print a WarpOS-internal artifact name into their receipt as though it were a finding about
+their project.
+
+**An inverted rationale is more dangerous than a vague one, precisely because it sounds specific.**
+"It never fires on stranger repos" invites a future contributor to port it back as harmless. It is not
+harmless; it is actively wrong on exactly the repos this product exists to audit.
 
 **The falsifier — RUN 2026-08-04 against source. It CONFIRMS the conclusion and FALSIFIES the
 mechanic.** Read directly from `scripts/bootstrap/lastmile/lib/score.js` (the cited port source, whose
@@ -239,6 +254,37 @@ edit an epic's Definition of Done.
 > is the half-applied-amendment defect, and it is exactly the kind of gap that reads green.
 
 ## S-9 — Running the audit against a corpus **[SPLIT: (a) ungated / (b) GATED]**
+
+> ### EXPECTED DIVERGENCE — the ported engine and WarpOS's scorer will DISAGREE on the same repo
+>
+> **This is correct behaviour, not a port defect.** Record it before dogfood, because the corpus run
+> against `dreamteam` / `companycam` / `almanac` is exactly where someone will see two different
+> numbers for one repository and file a bug against the port.
+>
+> The divergence is the **intended** consequence of not porting `applyFoundersChecklist` (D-2):
+>
+> | Case | WarpOS scorer | Ported engine |
+> |---|---|---|
+> | `FOUNDERS_CHECKLIST.md` **missing** (every stranger repo) | caps `product` at 60 **and** emits the `FOUNDERS_CHECKLIST.md missing` gap | no cap, no gap — `product` scores on its own repo-observable signals |
+> | present **with open items** | applies a per-item cap to each item's named dimension | no caps — dimensions score on their own signals |
+>
+> So for **any** repo lacking the file, expect the engine's `product` score to be **equal or higher**
+> than WarpOS's, and the engine's gap list to lack the checklist gap entirely.
+>
+> **AC-9.4:** Given a corpus repo scored by both, when the numbers differ in the ways tabulated above,
+> then that is recorded as **expected divergence** and **must not** be filed or fixed as a port defect.
+> A reviewer or builder proposing to "restore parity" by porting the checklist pass is proposing to
+> re-introduce the defect D-2 removed.
+> verified_by: engine/test/audit/dimensions.test.js::divergence-from-warpos-scorer-is-expected
+>
+> **What this does NOT license.** It is not a general permission for the ported scorer to disagree with
+> its source. Divergence is expected **only** where it traces to a recorded decision — currently just
+> D-2. Any *other* difference between the ported and source scorers is a port defect until shown
+> otherwise, and the per-file `{source_path, source_line, source_content_hash}` records from AC-1.2 are
+> how that is adjudicated rather than argued.
+>
+> **The one-readiness-number rule is untouched.** It bars *two scorers inside the product*; WarpOS's
+> scorer is not in the product. Nothing here weakens S-6's enforcer.
 
 > The dogfood-corpus authorization is an **OPEN operator gate**. Without a split, this DoD item cannot
 > close, and an unclosable item under delivery pressure is how fudged evidence enters a record.
