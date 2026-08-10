@@ -34,8 +34,10 @@ Minted-but-not-yet-registered sprint ids (see "Sprint-id blocker" below):
 > **RESIDUAL RISK — recorded, not softened:** the clause is ambiguous under the alternative parse
 > ("offer Claude.ai login" is per-user by nature; OAuth "exclusively for ordinary use of native
 > Anthropic applications"); policy is explicitly in flux; Anthropic reserves enforce-without-notice.
-> **MITIGATIONS:** (1) the engineered API-key fallback seam; (2) the Anthropic clarification/approval
-> request, now a **parallel work item** rather than a blocker (see §1's "Open to Anthropic sales").
+> **MITIGATIONS:** (1) the engineered API-key fallback seam — **the SOLE recorded mitigation**;
+> ~~(2) the Anthropic clarification/approval request, now a parallel work item rather than a blocker~~
+> **— CANCELLED PERMANENTLY, standing operator rule 2026-08-10** (fold `f539e1e2`, commit `1b1b175e`;
+> ADR-0041 Amendment 2). Struck in place so the mitigations list cannot be read as still having two.
 > **TRIGGER:** if Anthropic closes or meters the seam, flip to API-key **without rework**.
 >
 > **Authoritative source for the ruling text, reasoning, residual and mitigations:**
@@ -175,12 +177,16 @@ Exact scope of "route requests … on behalf of their users" for the local-CLI t
 behind "unless previously approved" · which document controls given the June-15 pause · `--bare` default
 timeline · exit-code/JSON contract on quota exhaustion · current numeric Pro/Max limits.
 
-> **RE-SCOPED 2026-08-01:** these are no longer a **blocker** on the seam — the operator ruled
+> ~~**RE-SCOPED 2026-08-01:** these are no longer a **blocker** on the seam — the operator ruled
 > subscription-primary and the questions became the **parallel clarification/approval work item**
 > named in the ruling's mitigations. The strongest case to put to Anthropic is exactly the topology
 > the ruling describes: a **local tool, user-invoked, on the user's own subscription**, through the
-> SDK page's "unless previously approved" door. The quota exit-code/JSON question is the one item
-> here that is *engineering* rather than policy, and it still gates a DoD item on S-VLADW1-01
+> SDK page's "unless previously approved" door.~~ **CANCELLED PERMANENTLY — standing operator rule
+> 2026-08-10** (fold `f539e1e2`, commit `1b1b175e`). These policy questions are **CLOSED, not
+> outstanding**: subscription-primary is settled and not to be second-guessed, and the engineered
+> API-key fallback seam is the SOLE recorded mitigation (ADR-0041 Amendment 2). Do not re-open or
+> route them. **SURVIVES, and was only bundled here by proximity:** the quota exit-code/JSON question
+> is *engineering* rather than policy, and it still gates a DoD item on S-VLADW1-01
 > regardless of which seam is live.
 
 ---
@@ -332,5 +338,8 @@ on the dirty tree.
    four CLOSED:** repo created (`vlad`); ratification **superseded** by the subscription-primary ruling
    (with it, the onboarding-cliff judgment); spend granted (**$50**, vlad lane only). **STILL OPEN:** the
    named portfolio corpus — α proposes `dreamteam`/`companycam`/`almanac`, standing operator veto window.
-6. **NEW parallel work item (not a blocker):** send Anthropic the clarification/approval request — local
-   tool, user-invoked, user's own subscription, through the SDK page's "unless previously approved" door.
+6. ~~**NEW parallel work item (not a blocker):** send Anthropic the clarification/approval request — local
+   tool, user-invoked, user's own subscription, through the SDK page's "unless previously approved" door.~~
+   **CANCELLED PERMANENTLY — standing operator rule 2026-08-10** (fold `f539e1e2`, commit `1b1b175e`).
+   Not to be sent, proposed, or re-listed. Subscription-primary is settled; the engineered API-key
+   fallback seam is the SOLE recorded mitigation (ADR-0041 Amendment 2).
