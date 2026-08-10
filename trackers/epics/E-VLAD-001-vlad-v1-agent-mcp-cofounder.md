@@ -180,6 +180,12 @@
 - Provenance: 2026-08-10 · source: operator ruling 2026-08-10 (in-session, verbatim) · <!-- fold:f539e1e2 -->
 - Approval: this class is taste-heavy/irreversible-leaning — requires user approval before it reshapes committed items.
 
+### 2026-08-10 — fold (user-preference) — source: operator ruling 2026-08-10 (/roadmap:add args, verbatim)
+- Folded: OPERATOR RULING 2026-08-10 (via /roadmap:add, verbatim: 'more templated lol. but yes, for now, i suppose we remove the unneeded stuff from vlad, reapply a fitting template.'): the dormant web scaffold in the vlad repo is to be STRIPPED and a fitting (plain-engine/minimal) template applied — supersedes the keep-dormant default recorded with D-3. TIMING (alpha sequencing): post-W1-merge, as its own small epsilon-conducted task, so the in-flight custody build surface is not disturbed; the engine/ subtree and its package boundary are untouched by the strip. The WarpOS-side generalization (multi-template /portfolio:new, minimal template, retrofit path — vlad is the retrofit test case) is tracked at ROADMAP § Next: Maintainer & Product Workflow, entry DISCUSSED-2026-08-10.
+- Classification: user-preference
+- Provenance: 2026-08-10 · source: operator ruling 2026-08-10 (/roadmap:add args, verbatim) · <!-- fold:02564a59 -->
+- Approval: this class is taste-heavy/irreversible-leaning — requires user approval before it reshapes committed items.
+
 ## Evidence log
 ### 2026-07-28 — Epic plan authored
 - Evidence type: File changed.
