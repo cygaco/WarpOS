@@ -196,9 +196,10 @@ boundary and the rule.
   reopening the control, and it is what makes a forced flip back to the API-key fallback a seam swap.
 - **Residual risks carried forward from the 2026-08-01 ruling, recorded and not softened:** the prohibition
   clause is ambiguous under the alternative parse; Anthropic's policy is explicitly in flux (the June 2026
-  metering change is paused, not withdrawn); and Anthropic reserves **enforce-without-notice**. Mitigations:
-  the engineered API-key fallback seam; the Anthropic clarification/approval request, which runs as **parallel
-  work and not a gate**. Trigger for the flip: Anthropic closes or meters the subscription path.
+  metering change is paused, not withdrawn); and Anthropic reserves **enforce-without-notice**. Mitigation:
+  the engineered API-key fallback seam — the SOLE mitigation as of 2026-08-10 (~~the Anthropic
+  clarification/approval request~~ CANCELLED by operator ruling, Amendment 2 — never to be re-proposed).
+  Trigger for the flip: Anthropic closes or meters the subscription path.
 - **A user-facing claim exceeding P1–P4 is a defect of this ADR's class**, regardless of how confident the
   claim's author is — including a claim about A1 (dependencies), which is the one most likely to be written
   optimistically because it feels like hygiene.
@@ -246,3 +247,9 @@ boundary and the rule.
   re-runnable.
 - **Verification:** β post-landing verification against verdict `c4b81e7f` — see betaEvents; stamped by α per
   the standing lane agreement.
+
+### Amendment 2 — 2026-08-10 — clarification-request mitigation CANCELLED by operator ruling
+- Operator ruling 2026-08-10 (verbatim preserved in epic fold `f539e1e2`): the Anthropic clarification/approval
+  request is **cancelled permanently** — it must never be re-surfaced to the operator or re-proposed by any
+  agent at any boundary. The residual-risk RECORD stands unchanged (it is history, not an open item); the
+  engineered API-key fallback seam is the **sole** mitigation. No other clause of this ADR changes.
