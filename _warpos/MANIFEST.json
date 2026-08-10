@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-04T22:02:22.702Z",
+  "generatedAt": "2026-08-10T20:32:21.272Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "939785e091a0a8c82dff707d4e4b84e0f2e99d9cbaf6f825d9c60e3008b9e6fe",
-      "installedSha": "939785e091a0a8c82dff707d4e4b84e0f2e99d9cbaf6f825d9c60e3008b9e6fe"
+      "sha256": "a56edc1180ec11ed476048647e1187c984617d50c6b59ace397cb910a3c9eff2",
+      "installedSha": "a56edc1180ec11ed476048647e1187c984617d50c6b59ace397cb910a3c9eff2"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -28443,8 +28443,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
       "kind": "md",
-      "sha256": "736ffd3350c7554f657991e76aab09ed86f61fa3bcb15199a024ed3e74c01303",
-      "installedSha": "736ffd3350c7554f657991e76aab09ed86f61fa3bcb15199a024ed3e74c01303"
+      "sha256": "0a6c745857420acf324d92e664f6b5229da2816b8083e25179d329309af08509",
+      "installedSha": "0a6c745857420acf324d92e664f6b5229da2816b8083e25179d329309af08509"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
