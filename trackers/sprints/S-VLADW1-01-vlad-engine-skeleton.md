@@ -153,6 +153,21 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-10 — CHUNK 3b: both ED-340 mutants OBSERVED RED, on verified-correct levers
+ADR-0041's standing rule is that an enforcer with no observed red state is enforcement debt wearing a green badge. Both required mutants have now been run. **This closes ED-340's mutant half**; the roster half (all seven identities existing) still needs chunk 4.
+
+**Lever identification FIRST, before mutating** — the P2 lesson applied. On P2 an earlier mutant was aimed at `RAW_LAUNCH_PATTERN` while the plant actually tripped the *import* rule; it changed nothing and would have read as verification. **A mutant aimed at the wrong lever is false reassurance, not weak reassurance.** So each plant was run against its enforcer first to learn the exact rule it trips:
+- `p4-secret-on-fetch` → `no-secret-on-outbound/raw-fetch-call`
+- `p4-raw-http-client` → `no-secret-on-outbound/raw-http-request-call`
+
+**MUTANT A — P3, the scrub removed.** `src/spawn-shim.js` changed from `env: opts.env` to `env: { ...process.env, ...opts.env }`, i.e. the audited wrapper leaks ambient environment into the child — the precise defect P3 exists to detect, and one that reads like a convenience. Result: **RED on `AC-7.2: no planted decoy, for ANY secret class, crosses the audited-spawn boundary`** (57/58, the correct test failing). Restored via `git checkout`, re-verified.
+
+**MUTANT B — P4, fetch detection disabled.** `FETCH_CALL_PATTERN` neutered to a never-matching pattern. Result: **RED on `P4 PLANT: a non-auth outbound call carrying a held-secret-shaped value trips RED`** (57/58, the correct test failing). Restored, re-verified.
+
+**Post-restore state, verified not assumed:** suite **58/58 pass, exit 0**; `npm run check:custody` green across all three scanners — P1 31 files, P2 20 files, P4 20 files, 0 violations each.
+
+**Builder self-commit audited.** Chunk 3a's builder self-committed (`364603d`) before the clamp — the first to do so. Audited file-by-file: all six paths are in 3a's scope (P3, P4, the appended tests, three plant fixtures) with **nothing swept** from other lanes. Its own commit message claimed 58/58; that claim was **independently re-run rather than accepted**, and it held.
+
 ### 2026-08-10 — INTEGRITY EVENT: ε fabricated a `dispatch_id` and attributed it to the ledger
 Filed by ε, self-reported. Recorded here rather than left to the retro to discover, because a record that catches an integrity event is worth less than one the actor files.
 
