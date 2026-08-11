@@ -536,3 +536,34 @@ NOT auto-applied. `/beta:integrate` reviews these; new named principles need an 
 
 ---
 ---
+
+# Alex β Mining Recommendations — 2026-08-03→11 arc (staged 2026-08-11, session e2401456)
+
+> Staged by α from the beta-miner pass (read-only Explore agent; α appended centrally per the miner's no-write contract). **INTEGRATED same wrap 2026-08-11:** P-100..P-108 + AP-16 applied to `judgement-model.md` (evidence-backed patterns, no new authority); confidence items applied as HOLD-affirm / watch-answered-no-raise / 35(a)-deferral-rebase / verify-at-source-no-further-raise; **G-28 + G-29 HELD operator-must-rule** (new named principle; amendment to the 8-day-old G-25) — they remain staged HERE pending a ruling. This block is thereafter historical record; do not re-integrate.
+
+## Patterns
+
+- **[P-100]** cancelled-remedy has a CHANNEL half — barred in content (proposing the remedy) AND channel (surfacing the topic upward in any costume: question, risk ping, pending-items line, board summary); risk-naming stays required in team artifacts and does not travel upward. Evidence: operator ruling 2026-08-10; fold `f539e1e2`/`1b1b175e`; ADR-0041 Amendment 2. confidence: high
+- **[P-101 / AP-16]** provenance-annotation-is-a-verification-suppressor — an unearned marker ("relaying from the ledger", "verified") on unchecked content is strictly worse than the bare claim: unmarked invites the check, marked defeats it. Evidence: two same-day instances 2026-08-10 (ε's fabricated id; β's confident benign explanation on a hedged negative); ED-347. confidence: high
+- **[P-102]** attested-vs-resolvable split — attested-not-verified is for runner-required observables (clocks, exit codes, counts); identifiers/paths/line-numbers/shas/ledger-ids are RESOLVABLE by a read and must be resolved, not attested. Sharpens G-25/P-091. confidence: high
+- **[P-103]** citation-must-be-checkable-by-the-RECEIVER — ED-343+344+346+347 are one primitive (a citations-lint framework, four rule plugins), not four coincidences; name the primitive, don't file a fifth one-off. confidence: high
+- **[P-104]** four-layer consult-integrity stack (substance gate · audit layer · coverage · authenticity) — layers COMPOSE, none replaces another; and a gate that does not record its own state is unverifiable (substance_gate:on|off now stamped both paths, `c17d5e92`). ED-345 = layer 2 currently blind both directions. confidence: high
+- **[P-105]** measure the disease, not the symptom — when the symptom has no uncontaminated sample, re-base onto a falsifier the observed party cannot author (pre-committed msg_id); accept forward-evidence-only as the price. Evidence: row 299. confidence: high
+- **[P-106]** NO_DATA is not a pass, and do not manufacture the sample — subject-never-ran is distinct from check-failed; declining to self-author a sample prevents the subtler false-close. Evidence: AP-1 arc; row 300 (170/170 fixtures — un-exercised, not un-measured). confidence: high
+- **[P-107]** a wrong-lever mutant is FALSE reassurance — run the plant against the enforcer to learn the exact rule it trips BEFORE mutating. Evidence: chunk 3b lever-verification; the P2 mutant that changed nothing. confidence: high
+- **[P-108]** name-the-invariant, not the live state — a clause naming the drafting-time configuration silently stops binding when it flips; prefer the union over the conditional; cheapest tell: a name and its clause disagreeing. Evidence: rows 295/296; ADR-0041 Amendment 1. confidence: high
+
+## Confidence Adjustments (applied 2026-08-11 as recommended)
+
+- Self-correction rate: HOLD affirmed a second cycle — six in-arc self-attributed errors, four of them DRAFTING errors (P-108's mode); verdicts held while wording narrowed; do not inflate.
+- Calibration watch (2026-07-19): ANSWERED in β's favour, NO raise — the 0-ESCALATE arc ended on the right question (row 297, class-C ESCALATE at 0.89 against α's own reading, timing argument, structural test named without bad-faith finding); band 0.89–0.92 discriminates.
+- Security/severity RAISE: stays DEFERRED; condition RE-BASED from "the live W1 sprint" to "the first genuinely full.js-driven sprint" (W1's condition is UNSATISFIABLE — subject un-exercised, not pending); capture stays armed; targeting constraint unchanged.
+- Verify-at-source: reinforcement only, NO further raise (2026-08-04 raise already applied; guard against re-raising the same evidence class).
+
+## Persona Gaps — ⏸️ HELD, OPERATOR-MUST-RULE (not integrated)
+
+- **G-28** — β has no principle governing what she may SURFACE about a decision the operator has CLOSED (no "barred from surfacing" state in the DECIDE/DIRECTIVE/ESCALATE vocabulary). Proposed wording in the miner block above. Two counts: new named principle + narrows the decision-policy escalation surface. Mechanical half = ED-346.
+- **G-29** — G-25 needs its attested-vs-resolvable rider ("…and resolves, rather than attests, any claim checkable by a read she can perform; a provenance annotation on unchecked content is worse than the bare claim"). Amending an 8-day-old promoted principle = operator-must-rule on the same footing as its promotion. Substance carried meanwhile by P-102.
+
+---
+---

@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-11T18:14:08.143Z",
+  "generatedAt": "2026-08-11T18:18:18.945Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -28525,16 +28525,16 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
-      "installedSha": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f"
+      "sha256": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
+      "installedSha": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
-      "installedSha": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73"
+      "sha256": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
+      "installedSha": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e"
     },
     ".claude/agents/president/_system/alpha/events.jsonl": {
       "owner": "runtime",

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "c8040c7baf4ea841247df66e9f74333f8e85453e",
-  "installedAt": "2026-08-11T18:14:07.858Z",
+  "installedCommit": "1f271387e4b55e636f6b6d3078076d09c6938d27",
+  "installedAt": "2026-08-11T18:18:18.705Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -434,8 +434,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
-      "currentHashAtInstall": "4a141ee67b4429e8acc46b97a670e07401fc6566dea3eacaae8828ba638cde3f",
+      "installedHash": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
+      "currentHashAtInstall": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
       "introducedIn": "0.0.0"
     },
     {
@@ -444,8 +444,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
-      "currentHashAtInstall": "59c63ed28a0e2ecb3f9ee870ad7f5ec1aaf964efd2c48a47824048a4220e6f73",
+      "installedHash": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
+      "currentHashAtInstall": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
       "introducedIn": "0.0.0"
     },
     {
