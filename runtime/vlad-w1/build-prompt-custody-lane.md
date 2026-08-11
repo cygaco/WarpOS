@@ -127,10 +127,30 @@ them**. This is a missing test, not missing code. Write it:
   citation**.
   `verified_by: engine/test/port-refs.test.js::unresolvable-citation-is-red`
 
-**Why this one matters more than its size suggests:** on this sprint, verifying cited port sources
-caught **two** bad citations, one of which (`phases/preflight.js`) would have made the product refuse
-every stranger repository it exists to audit. AC-14 is the mechanism that keeps that class catchable
-after we stop looking by hand. A port-reference record that cannot be re-run is decoration.
+**Why this one matters more than its size suggests — β read it and rated it higher than I first framed
+it.** AC-14 is not a routine missing test: it is **the provenance enforcer for a sprint the epic itself
+calls substantially a port, not a build**. Every port source in the plan contract is
+`inferred_from_repo` — cited but never read — and AC-14 is what converts "a builder checked them" into
+a re-runnable artifact. Its `source_content_hash` is also the machinery **AC-9.4 already relies on** to
+adjudicate port-defect versus decision-traceable divergence, so a decision made elsewhere leans on this
+working. On this sprint, verifying cited sources caught **two** bad citations, one of which
+(`phases/preflight.js`) would have made the product refuse every stranger repository it exists to
+audit.
+
+An enforcer with no test is the **false-green family**: a port-refs script that silently passes reports
+a clean provenance chain it never checked.
+
+**β's four binding conditions on this fold (verdict `f5b2c9d4`):**
+1. **The negative case is MANDATORY, not optional.** A test proving only the happy path proves the
+   script *runs*, not that it *catches*. AC-14.2's unresolvable-citation case **is the mutant** — without
+   it the enforcer is unproven in the one direction that matters. Do not ship AC-14.1 alone.
+2. **If this dispatch dies at the clamp, AC-14 stays OPEN.** Partial shipment **amends, never closes**.
+   Three of three builder dispatches have died at the clamp this sprint, so treat this as a live branch
+   rather than a formality — report it unfinished rather than rounding up.
+3. The gauntlet's input declares AC-14.1/14.2 **UNTESTED** until this lands (ε's responsibility, noted
+   here so you know the state you are changing).
+4. Interim evidence, if useful to you: running `port-refs.js` over the real `port-references.json` is an
+   **execution, not a test** — weaker than the AC, stronger than nothing.
 
 **2. The SDK dependency is YOUR obligation, not an engine-lane omission.** `engine/package.json` ships
 with `dependencies: {}` and that is **correct-by-design** for the engine lane: an MCP stdio server in
