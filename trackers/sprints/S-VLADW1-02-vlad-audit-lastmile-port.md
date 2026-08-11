@@ -7,8 +7,8 @@
 - **Goal:** Give the engine its first real job: detect a repo's stack, score its readiness, and emit a receipt — porting the existing lastmile audit rather than rewriting it, with exactly ONE readiness number in the product repo.
 - **Scope:** Port detect/score/adapters into the engine; remove the WarpOS-specific refusals in the ported copy; an intake fallback for undetectable stacks; adopt `score.js` as the single readiness number; fill the receipt-schema interior that ENGINE leaves untyped, and mint receipt v1 from real dogfood data.
 - **Out of scope:** The write path (Wave 2). The agent face and installer (Wave 2). Porting the checklist readiness proxy — see the J3 decision below; that is a deliberate NON-port, not an omission.
-- **Current state:** Planning — plan contract authored and schema-valid (`PC-20260730-0084`); β consulted and answered at the plan→design boundary. **UPDATED 2026-08-01:** the repo and spend gates are cleared and the model-access ruling is settled (subscription-primary); the dogfood-corpus authorization is the one external input still outstanding (see Blockers). The prior "held … on three operator gates" no longer describes the state.
-- **Percent completion:** 10% — the plan contract is authored and validated, which is the first half of DoD item 1; β consultation at the plan→design boundary is the unmet second half. No product-side work has begun and none may begin before the design→build gate clears.
+- **Current state:** Designed, build queued (as of 2026-08-11) — full design artifacts complete and β-cleared (`5313a68b`, 2026-08-03: D-2 with the falsifier-corrected not-port-the-penalty-pass mechanic, AC-9.4 expected-divergence disclosure, the any-disposition aggregate amendment per β `e2a7c5b8`); the dogfood-corpus gate CLEARED 2026-08-04 by dated operator act (dreamteam/companycam/almanac, READ-ONLY, purpose-scoped — written into this tracker + `PC-20260730-0084`, the four prior permission denials superseded). Build is deliberately SEQUENCED BEHIND S-VLADW1-01's custody lane (shared repo surface); no build dispatch has been made for this sprint.
+- **Percent completion:** 30% (as of 2026-08-11) — plan + full design complete and β-cleared, all gates cleared; no build work dispatched.
 
 ## Definition of Done
 - [ ] Plan contract authored and accepted (`scripts/sprint/plan.js`), with β consulted at the plan→design boundary. **Authoring done 2026-07-30** — `PC-20260730-0084`, `scripts/sprint/validate.js` exit 0. Unchecked pending the β verdict.
@@ -128,6 +128,16 @@ Product-lead assessment carried forward: this sprint is **better-evidenced than 
 - Verification performed: `node scripts/sprint/validate.js` on the contract AND on the rewritten `current.yaml`, both exit 0; registry `primary` re-read after both authoring runs and unchanged at `S-VLADW1-01`; contract `sprint:` field read directly and confirmed `S-VLADW1-02`. · Validation run: `node scripts/trackers/validate.js` · Validation result: see Verification log
 - Next action: β consult at the plan→design boundary, then HOLD.
 - Evidence/references: `runtime/vlad-w1/payload-S-VLADW1-02-audit.json`; `.claude/project/sprint/plan-contracts/PC-20260730-0084.yaml`
+
+### 2026-08-11 18:00 UTC — Session e2401456 (the 2026-08-03→11 arc, wrap entry)
+- Agent(s): Alex ε (design conduct), Alex α (wrap author) · Mode: sprint
+- Work performed: full design bundle authored and committed (`5313a68b`); D-2 falsifier RUN at source — conclusion confirmed, mechanic corrected to not-port-the-`applyFoundersChecklist`-penalty-pass (folds `1742df0a` + `7ec9f676`); AC-9.4 expected-divergence disclosure added (bounded to decision-traceable divergence); β `e2a7c5b8` any-disposition aggregate amendment applied verbatim to DoD line 18 + mirrored as AC-8.9; corpus gate cleared 2026-08-04 and written in (read-only, purpose-scoped, not a general lift).
+- Files changed: this tracker; `.claude/project/sprint/requirements/S-VLADW1-02/*`; `PC-20260730-0084` (corpus + evidence_level).
+- Decisions: fixture-vs-corpus evidence split (AC-9.1/9.2 ungated-synthetic vs gated-real, now both unlocked); build sequenced behind the engine sprint's custody lane.
+- Issues discovered: None new this arc beyond those recorded in S-VLADW1-01 (shared-arc issues live there).
+- Definitions added/changed: None
+- State change: Planning → Designed (build queued) · Completion change: 10% → 30%
+- Verification performed: requirement-format-guard exit 0 on the criteria files (2026-08-03/04). · Validation run: `node scripts/trackers/validate.js` · Validation result: green at the 2026-08-11 wrap
 
 ## Change log
 ### 2026-07-30 00:00 UTC — Session 2026-07-29-release-and-pass
