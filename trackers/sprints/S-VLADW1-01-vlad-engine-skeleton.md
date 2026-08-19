@@ -10,25 +10,58 @@
 - **Current state:** Building (as of 2026-08-19) — design complete (`5313a68b`, four-tool surface SETTLED: get_status/get_readiness/run_job/cancel_job) and β-cleared at both boundaries; the design→build gate was struck 2026-08-04 via the β `d7f31a68` ESCALATE → dated-operator-act chain. ~~ENGINE lane complete and green (25 AC-mapped tests).~~ **CORRECTED 2026-08-19 (β `3d9a71c4`, row 301, condition 1 — the claim was FALSE and is struck in place rather than deleted):** the engine lane is **NOT complete**. `qa-reviewer` F11 in the 2026-08-18 gauntlet found **S-9 (quota-exhaustion detection, AC-9.1–9.5) and S-12 (branding guard, AC-12.1–12.2) have ZERO artifacts** — no implementation, no tests, no grep hit for "quota" or "branding" anywhere under `engine/`. Seven acceptance criteria, in scope in the acceptance criteria AND in this tracker's § Scope and DoD, with **no deferral record anywhere**. What IS built and green in the engine lane is the four-tool MCP surface, the job/state/journal/receipt core, the permission levels and the driver. Custody lane 4 of 4 chunks built (`b80f9a2`, `7fbfb43`): SDK dependency + A1 justification, seams + audited shims, P1/P2 scanners, P3 decoy + P4 outbound walk, claim lint + A1–A4 verbatim presence, A5 wiring-presence, AC-14 tests, ship-set assertion. Suite **83/83 exit 0** + `check:custody` exit 0 at worktree HEAD `7fbfb43` on `wt/S-VLADW1-01-engine` — **and those green gates are the floor, not the verdict: the 2026-08-18 gauntlet FAILED on all four lanes with 46 findings (~22 HIGH), telemetry-gate PASS so every FAIL is a real judgment.** Remaining, per β `3d9a71c4` sequencing: custody fix bundles 1–4 → **S-9 + S-12 (BUILD, six binding conditions)** → **ONE** gauntlet re-run over the union (no partial re-run in between) → release-prep.
 - **Percent completion:** 65% (as of 2026-08-19) — **revised DOWN from the 70% recorded 2026-08-11, which was computed against the false "engine lane complete" claim.** Plan + design + both boundary gates done; custody lane 4/4 chunks built; engine lane built EXCEPT S-9 and S-12; first gauntlet run COMPLETE and FAILED (that is progress — it is evidence, not a setback); fix cycle in flight; S-9/S-12 not started; re-run and release-prep not yet run. **AC-14 stays OPEN until its committed test runs. ED-340 stays OPEN** on the roster half (A5 is in `check:custody` nowhere and its only invoker does not ship — β `3d9a71c4` Q2, dispositive alone) and on AC-8.4's committed-re-runnable-test bar (`engine/test/custody-runtime.test.js::negative-fixture-goes-red-when-scrub-removed` does not exist). The 2026-08-18 conductor claim that ED-340's closing conditions "look met" is **WITHDRAWN**.
 
+## CLOSE-OUT — 2026-08-19 — CLOSED AT HONEST STATE, **NOT COMPLETE**, NO RELEASE
+
+**α applied β's pre-committed release rule verbatim** at the close of `runtime/vlad-w1/gauntlet-r4-final/`
+(the artifact-anchored gate per β row 303). Ruling: `runtime/vlad-w1/gauntlet-r4-final/ALPHA-RULING-R1-R4.md`.
+
+| | Verdict | Basis |
+|---|---|---|
+| **R1** zero execution-proven leaks | **HOLDS** (unanimous) | No lane observed a real child obtaining a real secret against a green gate. Every round-3 bypass re-run and REFUSED; a TOCTOU battery (stateful `toString`, prototype chain, stateful getter, Proxy `get` trap, `String` object, array value, own-`__proto__`) produced nothing. |
+| **R2** zero PROVEN-over-unproven in shipped copy | **FAILS** | CUSTODY.md ships P2 as **PROVEN** asserting a raw bypass "is REFUSED" while the same artifact names raw-launch detection as THE ceiling; and the "FIRST STATEMENT, before every other import" claim is false under ESM hoisting, in two entry points and a test message. |
+| **R3** shape-independent control + ordering test + mutant RED | **FAILS AS STATED** | The control exists and its mutant went RED — but the standing proof that it is wired into the shipped graph is vacuous: the walker exempts bare `child_process`, `createRequire`, and dependency-reached spawn (**including the Agent SDK, the one production dependency that launches a child**), classifies `server-entry.js` as non-spawn-capable so deleting its scrub call stays green, and its non-vacuity control is `assert.ok(… c.canSpawn \|\| true)`. |
+| **R4** AC-8.4 committed re-runnable mutant, observed RED | **HOLDS** | security + qa confirm; qa re-derived the twin/P3 opposite-polarity argument. backend reported "not assessed" — honest, not a negative. |
+
+**Outcome: NO RELEASE, NO fourth fix attempt.** Per the rule as written, and deliberately **not**
+reshaped into a clearance because the near-miss is real and the remaining fixes are small — nor into a
+firing beyond the rule, because **R1 holding is durable, tested progress**: the runtime custody boundary
+now refuses every demonstrated bypass, with standing regression tests carrying raw controls.
+
+**What this sprint actually produced, stated without inflation:** a working plain-node engine and
+four-tool MCP surface; a job/state/journal/receipt core; subscription-primary model access verified by
+one live credentialed call; a six-enforcer custody set that runs in the product's own ship-time check;
+capture-then-scrub closing the env-inheritance channel; argv, prototype-chain, non-string and TOCTOU
+carriers closed; S-9 and S-12 built from zero; 206 passing tests. **What it did not produce:** a shipped
+statement whose every claim survives scrutiny, and a wiring proof that can go red on removal.
+
+**Unmet DoD items are recorded UNMET below with their residuals named** — not softened, not re-scoped.
+**ED-340 stays OPEN** (roster half + AC-8.4 lineage; A5 is wired but the shipped-graph reachability
+proof is vacuous). Remaining work → **`S-VLADW1-03` — custody residuals to release**, sequenced FIRST on
+the vlad surface ahead of S-VLADW1-02's build, since S-02 consumes this seam.
+
 ## Definition of Done
-- [ ] Plan contract authored and accepted (`scripts/sprint/plan.js`), with β consulted at the plan→design boundary. **Authoring done 2026-07-30** — `PC-20260730-0085`, `scripts/sprint/validate.js` exit 0. Unchecked pending the β verdict.
+- [x] Plan contract authored and accepted (`scripts/sprint/plan.js`), with β consulted at the plan→design boundary. **Authoring done 2026-07-30** — `PC-20260730-0085`, `scripts/sprint/validate.js` exit 0. **TICKED at close 2026-08-19:** the β plan→design verdict landed (`7c4e2b96`, DECIDE, class B, 0.88), which is what this item was waiting on.
 - [x] `/sprint:design` artifacts exist and the design→build gate is cleared by the operator. **CLEARED 2026-08-04.** Artifacts: `.claude/project/sprint/requirements/S-VLADW1-01/` (committed `5313a68b`, refined through `75dfa937`). **Clearing act:** operator ruling 2026-08-04, verbatim *"yes to all"*, answering the three-part question β drafted at its escalation — a question that named these artifacts and the four-tool decision explicitly. *(Provenance stated honestly: relayed to ε by team-lead; ε did not receive the operator's words directly.)* **Ruling chain, per β's own requirement:** this DoD item → β `d7f31a68-9c24-4e05-b3a7-16e8f4d02b59` (ESCALATE, class C, 0.89, betaEvents row 297) → operator act 2026-08-04. β's decisive ground for the ESCALATE was that the *prior* instruction offered as clearance **predated the design artifacts** and so could not be an approval of them; this act **postdates** commit `5313a68b` and answers a question that named them, which is exactly the form β specified. The earlier CLEARED-ON-CONDITION reading was disputed and is **superseded, not revived** — it is not part of this chain. Supplemented by β `a91c46e2-7b35-4d80-95f1-2e604fb8c731` (DECIDE, class A, 0.91, row 298), which corrected β's own Q2 reasoning without altering the gate.
 
 > **SCOPE OF THE OPERATOR ACT — read this before citing it for anything else (β rider, 2026-08-04).** The 2026-08-04 *"yes to all"* establishes **CLEARANCE TO PROCEED with the build**. It does **NOT** establish operator **ratification of the four-tool surface (D-1)**. The question offered the operator the option to skim the four-tool decision first; they did not indicate taking it, so their answer authorizes proceeding — it does not adjudicate the design. **D-1 rests on its own basis** — ε's falsification brief to product-lead (briefed to kill the inference rather than ratify it) plus β's review on the merits — which is sufficient, and is simply a *different claim* from operator ratification. Do not let a future reader upgrade a proceed-authorization into a design ratification; if D-1 is ever reopened, it is argued on its own evidence, not defended by citing this act.
-- [ ] Engine runs as a plain-node Agent SDK app; the four-tool MCP surface answers over stdio.
-- [ ] Job state machine + journal writer land, with the receipt emitted as a **versioned envelope with an untyped interior** (`schema_version` + three named slots), journalled and returned opaquely, never validated or branched on.
-- [ ] **Model access is SUBSCRIPTION-PRIMARY** per the operator ruling of 2026-08-01: the user's OWN Claude subscription, powering an agent they themselves invoke, local MCP topology, **no developer credentials anywhere in the path**. The seam is built **auth-agnostically** so the API-key route via the TypeScript Agent SDK — engineered and ready as the **fallback** per β `7c4e2b96` — is a swap, not a rework, if Anthropic ever closes or meters the subscription path. *(SUPERSEDED-2026-08-01; prior wording preserved: "Model access is the user's own Anthropic API key via the TypeScript Agent SDK.")* **No path reads or inherits ambient credential state** — `ANTHROPIC_API_KEY` and, under subscription-primary, the user's OAuth/subscription state; env passing is allowlist-based.
+- [x] Engine runs as a plain-node Agent SDK app; the four-tool MCP surface answers over stdio.
+- [x] Job state machine + journal writer land, with the receipt emitted as a **versioned envelope with an untyped interior** (`schema_version` + three named slots), journalled and returned opaquely, never validated or branched on.
+- [x] **Model access is SUBSCRIPTION-PRIMARY** per the operator ruling of 2026-08-01: the user's OWN Claude subscription, powering an agent they themselves invoke, local MCP topology, **no developer credentials anywhere in the path**. The seam is built **auth-agnostically** so the API-key route via the TypeScript Agent SDK — engineered and ready as the **fallback** per β `7c4e2b96` — is a swap, not a rework, if Anthropic ever closes or meters the subscription path. *(SUPERSEDED-2026-08-01; prior wording preserved: "Model access is the user's own Anthropic API key via the TypeScript Agent SDK.")* **No path reads or inherits ambient credential state** — `ANTHROPIC_API_KEY` and, under subscription-primary, the user's OAuth/subscription state; env passing is allowlist-based.
 - [ ] **A fail-closed credential-custody enforcer exists.** REWORDED 2026-07-30 on β's verdict `7c4e2b96` — the previous wording ("the key must never leave their machine / no transmit") was **unachievable as written**, because the Agent SDK authenticates to Anthropic's API *with* that key, so transmitting it is the mechanism, not a leak. The achievable and provable obligation: **the product never becomes a credential intermediary** — the **HELD SECRET** is used solely as the SDK/agent's own auth to Anthropic's endpoint and reaches **no other destination**: no log, no telemetry, no proxy, no third party, and no child process (env passing allowlist-only). **EXTENDED 2026-08-01:** the control guards **whichever secret the seam carries** — the user's OAuth/subscription ambient state under the live subscription-primary ruling, the user's API key on the fallback seam. This is not a softening; it is precisely β's generic-held-secret condition, and it is why the seam ruling changed *which* secret the control guards rather than *whether* it works. **This DoD item is unaffected by the 2026-08-01 ruling and still binds.** Report-only does not satisfy it. The enforcer must prove three things, not two: (a) no key-shaped secret in the scanned surface; (b) every child-spawn site passes an explicit env excluding the key **and the enforcer refuses any raw `spawn`/`exec`/`fork` that bypasses the audited wrapper** — a scrubbing wrapper alone re-opens the defect the moment one caller goes around it; (c) a **runtime negative fixture** poisoning the ambient env with a decoy key, spawning a child, and asserting the child cannot see it, which must go RED if the scrub is removed. It is a **product-layer** control that must ship to and run on the user's machine — an enforcer running only in our CI proves something about our source and nothing about their runtime.
+
+  > **UNMET at close 2026-08-19 — and it is close.** (a) P1 exists and runs. (b) P2 exists and refuses a raw bypass, and the runtime wrapper now refuses **every demonstrated carrier** (env values, renamed keys, case variants, key names, argv, prototype chain, non-strings, TOCTOU) — **but the shipped claim about it exceeds what it proves (R2), and the standing proof that the control is wired into the shipped graph is vacuous (R3)**. (c) P3 exists AND its committed re-runnable mutant twin is observed RED — **R4 holds**. The product-layer clause is the sharp one: the controls SHIP and are WIRED into `check:custody`, but **AC-8.6 — the self-check invoked at server/job-runner start — has zero artifacts**, so nothing in a user's install ever invokes P3. Residuals: R2 wording; R3 walker non-vacuity; AC-8.6; `initCredentialCustody` idempotence (a later-provisioned credential is never scrubbed). → `S-VLADW1-03` items 1–4.
 - [ ] A quota-exhaustion detector exists, **empirically characterized before ship**, with **three** buckets per β: recognized success, recognized quota-exhaustion, and unrecognized → `could-not-run` with the raw signal surfaced. Never success, and equally never silently classified **as quota** — that tells a founder to buy credits when the fault is elsewhere. `could-not-run` must not become a euphemism that resolves to the likeliest cause.
-- [ ] Branding: ships as "Vlad, powered by Claude" — never "Claude Code", never Claude-Code-mimicking visuals. Enforcer named.
-- [ ] Host-free driver exists so the MCP surface is exercisable without a host (non-negotiable — it is what makes the surface testable at all).
+
+  > **UNMET at close 2026-08-19 — built, but the DoD's own word is not earned.** S-9 IS built (AC-9.1–9.5, five tests) and the three buckets behave correctly, with `could-not-run` as the **DEFAULT** branch so an unknown signal degrades rather than lies. The corpus is the SDK's own `USAGE_LIMIT_ERROR_PREFIXES`, verified byte-for-byte — **but it is DOCUMENTATION-DERIVED, not "empirically characterized"**, and per β `3d9a71c4` that word may not be used until a real termination has been observed. **This clause therefore stays OPEN with its trigger named: it binds at Wave-1 ship, not at sprint close.** Honest residual, recorded and deliberately not escalated per β: provoking a real exhaustion under subscription-primary would consume the operator's own quota — an account side-effect outside the spend envelope. Further residuals: the classifier has **no production consumer**, so AC-9.5's "the state machine consumes only the enum" is satisfied vacuously; and recognition is position-dependent on a multi-entry `errors` array (only element 0 can match). → `S-VLADW1-03` items 5–6.
+- [x] Branding: ships as "Vlad, powered by Claude" — never "Claude Code", never Claude-Code-mimicking visuals. Enforcer named.
+- [x] Host-free driver exists so the MCP surface is exercisable without a host (non-negotiable — it is what makes the surface testable at all).
 
 ## Related definitions
 - Validator, Verification, Evidence, Completion — see ../../TRACKER.md
 
 ## Tasks
 - [x] Marshal the banked product-lead substance into a schema-valid plan-contract payload (`runtime/vlad-w1/w1-planning-inputs.md` §2, schema gotchas in §4.2). Done 2026-07-30 — payload `runtime/vlad-w1/payload-S-VLADW1-01-engine.json`, contract `PC-20260730-0085`.
-- [ ] β consult at plan→design, front-loaded, on the named surfaces: the credential-custody enforcer and the honest-degradation ("NOT verified") language.
+- [x] β consult at plan→design, front-loaded, on the named surfaces: the credential-custody enforcer and the honest-degradation ("NOT verified") language. **DONE** — β `7c4e2b96` ruled on both surfaces and its A1/A2 corrections landed in all three artifacts.
 - [x] Route the epic amendment to α via `/epic:fold` — **not ε** — because it reverses an operator-ratified decision (see Blockers). Landed; verified 2026-07-30 across all six previously-stale locations in both artifacts (see Evidence log).
 - [ ] Verify each cited port source before porting: `score.js:134`, `phases/preflight.js`, `permission-profile.js`, `transaction.js`, `registry.js` are all `inferred_from_repo`, never read.
 
@@ -116,6 +149,50 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 ## Session log
 <!-- Append-only (§24). See SESSION_LOG_TEMPLATE.md for the full field set. -->
 
+### 2026-08-19 — Session 2026-08-18 (Alex ε as "Epsilon"): sprint closed at honest state — two retro inputs
+
+- **Changed:** the sprint is CLOSED (not complete, not released) per α's verbatim application of β's
+  pre-committed release rule. DoD ticked only where proven; two items UNMET with residuals named;
+  percent revised to 85% counting **work proven, not work attempted**. Successor `S-VLADW1-03` minted.
+- **Reason:** β row 302 (`9b2f60ae`) Q2 pre-committed R1–R4 before any result existed; β row 303
+  (`e4c7d20f`) anchored the firing point to the artifact. α applied it at `gauntlet-r4-final/`'s close.
+
+**RETRO INPUT 1 — the sprint's signature defect: a control built, verified in isolation, and never
+wired to the surface it protects. THREE instances, each found by a gauntlet lane and never by a gate.**
+1. **A5 was wired into nothing** (r2-F4) — the enforcer-of-enforcers existed, passed its own tests, and
+   appeared in no run. The conductor's own gate evidence had to invoke it by hand, which was the tell.
+2. **The claim lint scanned one file** (r2-F9) while its acceptance criterion said "any shipped copy".
+3. **The scrub never ran in the shipped server process** (r3) — `server-entry.js` did not import the
+   seam, so the control was absent, not bypassed, in the one long-lived process an MCP host launches
+   with the user's full environment.
+And then, after a fix explicitly scoped by β to close it **as a class**, the class check itself was
+vacuous: the walker exempted three spawn-capable spellings and its non-vacuity control was
+`assert.ok(… c.canSpawn || true)`. **So the fourth instance was inside the fix for the third.**
+*Discriminator for the next sprint:* a control is not done when it passes its own test; it is done when
+a test **fails on its removal from the shipped surface**. Every "the enforcer exists" claim should be
+read as a question: *what run invokes it, and what goes red if that invocation is deleted?*
+
+**RETRO INPUT 2 — a correction driven by a finding list inherits that list's blind spots. THREE
+recurrences, all mine.**
+1. Corrected the tracker for S-9/S-12 (the gaps I was handed) — **AC-8.6 survived**, because I corrected
+   the named gaps rather than re-deriving the full AC set.
+2. Recorded "seven `verified_by` pointers do not resolve" — the real number, independently re-derived,
+   is **15 of 48**, and my own follow-up misfiled AC-8.6 as missing-FILE when it is missing-NAME, in the
+   exact sentence whose job is keeping it distinguishable from clerical drift.
+3. Corrected the carrier note on the two claims β named — and **left a third wrong** in the same
+   paragraph of both files.
+*Discriminator:* when correcting a class of error, **re-derive the population from the source of truth,
+never from the list of instances you were handed.** I asked the qa lane to re-derive rather than check
+my list *because I expected to repeat this*, and I repeated it anyway — which is the evidence that the
+instinct is not sufficient and the practice has to be structural.
+
+**Worth recording as the counterweight, because a close-out that reads as only failure is its own kind
+of inaccuracy:** R1 held **unanimously** against a lane that had spent three rounds successfully
+breaking this boundary, with every demonstrated bypass now refused and pinned by standing regression
+tests that each carry a raw control proving a real child obtains the value when the guard is absent.
+The gauntlet found a real defect in every single round — including four in work the conductor had
+verified and reported green. That is the process functioning, not failing.
+
 ### 2026-08-19 04:00 UTC — Session 2026-08-18 (Alex ε as "Epsilon"): chunk 4 closed, gauntlet FAILED on all four lanes, "ENGINE lane complete" corrected
 
 - **Changed:** Current state (line 10) and Percent completion (line 11). The claim **"ENGINE lane complete and green (25 AC-mapped tests)"** is struck in place as FALSE. Percent revised **70% → 65%**, because the 70% was computed against that false claim. Added S-9, S-12 and AC-14 to the Remaining line. Recorded ED-340 as OPEN on both halves.
@@ -175,6 +252,119 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-19 — THE GATE-BEARING GAUNTLET (`runtime/vlad-w1/gauntlet-r4-final/`): R1 HOLDS unanimously; R2/R3 disputed; the sharpest findings are against the conductor's own claims
+
+Run at `e4c75c7` after fix attempt 3 (206/206, `check:ship` exit 0, `check:pointers` exit 1 by design).
+Telemetry gate PASS — four well-formed records, no `no-record`. Per β row 303 this directory is the
+successor of `gauntlet-r3/`, so **its close is where α applies R1–R4 verbatim.** All four lanes returned
+FAIL as verdicts, which β ruled decides nothing either way.
+
+**R1 HOLDS, unanimously, and it is the round's real result.** Every round-3 bypass is refused, verified
+by independent execution. The security lane re-ran its own three attacks plus a TOCTOU battery —
+stateful `toString`, prototype chain, stateful getter, **Proxy `get` trap**, `String` object, array
+value, own-`__proto__` key — and produced no leak; confirmed the object scanned IS the object spawned
+on all three carriers; found **no false negative in the widened predicate** ("monotone widening over
+all six shapes, confirmed by differential"); and traced every credential consumer, finding nothing that
+writes a credential to stdin, a temp file, cwd or an inherited fd. The backend lane was careful that its
+`execution_proven:true` flags mean *"I ran code that demonstrated this defect"*, **not** *"a child got a
+secret"* — a distinction that matters because R1 turns on exactly that.
+
+**THE FINDING THAT MATTERS MOST IS AGAINST THIS CONDUCTOR.** All three Claude lanes independently
+proved by execution that `server-entry.js`'s *"FIRST STATEMENT, before every other import below"* is
+**false** — ESM hoists imports, so eight production module bodies evaluate with the credential still
+present (no leak today; none of them reads `process.env`). The damning part is not the error but its
+provenance: **`model-seam.js` had already corrected this exact overclaim about itself in the same fix
+attempt**, and the corrected-away wording was reintroduced verbatim in two entry points, baked into a
+test's assertion message, and **carried upward in the conductor's own WHAT-CHANGED summary.** The
+sprint's signature defect — a claim outrunning its code — appearing one final time inside the artifact
+reported as condition zero satisfied.
+
+**And the non-vacuity proof was itself vacuous.** The class-level walker's sanity control reads
+`assert.ok(classified.every((c) => c.canSpawn || true), "always true — kept as an explicit
+placeholder")`. The conductor wrote *"with a sanity control proving the walker is not vacuously true"*
+into both the commit and the gauntlet header. **That claim was false.** Worse, the walker classifies
+spawn-capability by exact `node:child_process` match, so it exempts bare `child_process`,
+`createRequire`, and spawn reached through an npm dependency — **including the Agent SDK, this
+package's one production dependency, which launches a child.** The security lane showed
+`server-entry.js` itself classifies `canSpawn=FALSE`, so **the class test would stay green if the scrub
+call were deleted**: a class check that excludes the very instance it was built for.
+
+**Two more conductor corrections, both from qa.** The `check:pointers` non-composition was ruled
+*"honest scoping, **under-argued**"* — the decisive reason was never written down: the resolver reads an
+acceptance-criteria file **that does not exist in the vlad repo**, so composing it into `check:ship`
+would redden the ship gate on every machine but this one. And `package.json#vladPointerLint`
+**misfiles AC-8.6 as missing-FILE when it is missing-NAME** — an error in the exact sentence whose
+purpose is keeping AC-8.6 distinguishable from clerical drift.
+
+**R2/R3 disputed.** qa reads R2 as holding (both round-3 defects genuinely fixed in the user-facing
+statement); security and backend read it as failing — P2 still ships **PROVEN** asserting a raw bypass
+"is REFUSED" while the round's own header names raw-launch detection as THE ceiling. backend reads R3 as
+failing as stated, on the walker exemptions and the vacuous control. **R4 holds** — security and qa
+both confirm, qa re-deriving the twin/P3 opposite-polarity argument rather than restating it; backend
+reported R4 **not assessed rather than guessed**.
+
+**Cross-family lane calibration improved.** agy marked every finding `execution_proven:false` this
+round, not repeating its round-3 mis-flagging. Two lanes reached **opposite filing judgments** on
+`opts.cwd` — agy filed it MEDIUM; the claude lane deliberately did not file it *"because inflating it
+would corrupt this rule"* — and both reasonings are preserved in the evidence so the decision-maker sees
+the disagreement rather than one side of it.
+
+### 2026-08-19 — GAUNTLET ROUND 3 (the LAST round per β `9b2f60ae`): R1 DISPUTED between lanes
+
+Run at `c876364` (173/173 pass, `check:ship` exit 0 across six enforcers). Telemetry gate PASS.
+Records: qa `d-mszqqyfh-04494fa9`, security `d-mszqqyh9-1febe434`, agy landed. `backend-reviewer`
+returned mid-work with **no verdict** — absence was NOT read as a pass; the agent was resumed for its
+JSON. Full verdicts: `runtime/vlad-w1/gauntlet-r3/evidence-*.md` + `out-security-agy.json`.
+
+**THE DISPUTE — and it is a real one, not a wording difference.**
+`security_claude_hunter` ruled **R1 FAILS** on three bypasses it EXECUTED against the real wrapper:
+(1) `secretValueScanHook` compiles `patternSource` VERBATIM and patternSource is **start-anchored**, so
+one leading character defeats the whole value scan — `--api-key=<secret>` in argv and
+`"Bearer <secret>"` as an env value both passed, with a real child observed holding each; the control
+that round-2's T4 pins IS refused, so **the fix covers exactly the shape its test pins and nothing
+adjacent.** (2) Check 1 is case-SENSITIVE while Windows env lookup is case-INSENSITIVE —
+`{anthropic_api_key: …}` passed and the real child read it back under the canonical name; no pattern is
+involved, so the decoy-vs-real-value question is provably irrelevant. (3) env KEY names are never
+scanned. `qa-reviewer` ruled **R1 HOLDS** — but it attacked the scrub, the `??` fallback, argv and third
+carriers, and **never attempted the anchored-patternSource or case-sensitivity attacks**. Its ruling is
+"I found none", not a refutation, and is recorded that way so the surface contradiction does not mislead.
+
+**The sharpest lesson in the round, and it is about repetition, not novelty.** The anchored-pattern bug
+class was already found and fixed TWICE in this same tree — `no-held-secret-in-surface.js` strips the
+leading `^` ("an anchored ^-test against the WHOLE token silently misses it") and the driver's redactor
+strips BOTH anchors ("patternSource is authored for matching a WHOLE token value in ISOLATION"). Each
+fix carries a comment explaining exactly why. **The runtime custody boundary is the one consumer that
+never got it** — three hand-rolled derivations of one pattern, and the defect lives in the derivation
+nobody revisited. The cross-family lane found the same shape one carrier over: `args` are stringified
+to be CHECKED and the originals passed to `spawn()`, so a stateful `toString()` walks through — *"the
+lesson learned for `env` (normalize first) was omitted here."*
+
+**R3 and R4 hold, and are genuinely earned.** `qa-reviewer` ran six mutants in an isolated copy,
+reporting DELTAS from a known-bad baseline rather than absolute counts: one lever, one red test, every
+time — including **M5 driving P3's own fixture RED**, which substantiates the "proves its own removal
+goes red" claim round 2 filed as unproven. It also **reversed its own round-2 R4 ruling** and mapped
+artifact-to-clause precisely rather than restating a verdict.
+
+**A caveat both lanes proved independently, filed as a finding rather than an R3 failure:**
+`src/server-entry.js` — the shipped MCP server — does not import `model-seam.js`, so **the
+capture-then-scrub never runs in the product's own entry-point process.** Not a leak today (nothing
+spawns there), but Amendment 4's "nothing remains to inherit" is process-scoped. Shape-independence is
+earned; **process-independence is not, and the product's main process is the one without it.**
+
+**Calibration flag raised by the conductor against a lane, not by the lane:** agy marked two findings
+`execution_proven: true` about `model-seam.js` — the file it states it could not read (33KB, over its
+~32KB argv ceiling, withheld rather than truncated). Those two must not be weighted as executed evidence.
+
+**Three findings against the conductor's own work, recorded because they are a pattern and not
+incidents.** (a) The tracker's "seven `verified_by` pointers do not resolve" **undercounts: the real
+number is 15 of 48**, re-derived independently. (b) The carrier correction fixed the two claims β named
+and left a third wrong in the same paragraph of both files — "P2/P4 both exempt only this named call
+site's module" is true of P4 and false of P2. (c) `SANCTIONED_CARRIER_NOTE` has **zero importers**, so
+nothing mechanically ties CUSTODY.md's A5 to the code — the hand-off "just moved from 'never happened'
+to 'happened once, by hand'." All three are the same shape: **a correction driven by a finding list
+inherits that list's blind spots.** The conductor asked qa to re-derive rather than check its list
+precisely because it expected to repeat the error, and it did.
+
 ### 2026-08-18 — FIRST GAUNTLET RUN: FAILED on all four lanes, 46 findings, telemetry gate PASS
 
 Run at worktree `7fbfb43`. Registry-resolved roster (backend + security unit, no UI unit, so `frontend-reviewer` / `visual-review` / `design-quality` correctly did not fire; no `*.spec.ts` for this feature, so no `test-runner`). **All four blocking lanes returned FAIL.**
@@ -305,9 +495,9 @@ The sprint task required verifying each cited port source before porting, becaus
 ~~The remaining next action is therefore: open `/sprint:design` on fresh in-session operator authorization…~~ **SUPERSEDED BY EXECUTION (2026-08-03→10):** design opened, settled all three named items, and closed; the design→build gate was struck 2026-08-04 (β `d7f31a68` + dated operator act); build ran through custody chunk 3b. **Next action as of 2026-08-11: dispatch custody chunk 4** (claim lint + A1–A4 presence + A5 ship-time wiring + AC-14 tests + ship-set-resolves), then the gauntlet lanes per β `f5b2c9d4` (row 300), then release-prep. The 2026-08-10 integrity event (a fabricated relayed dispatch id, self-caught; binding copy-paste-only envelope rule + α ledger-verify mirror adopted) is recorded in the Session log and feeds the retro.
 
 ## Completion record
-- Final state: Not yet complete
-- Percent completion: 70% (as of 2026-08-11)
-- Completion timestamp: n/a
+- **Final state: CLOSED AT HONEST STATE — NOT COMPLETE, NOT RELEASED** (2026-08-19). α applied β's pre-committed release rule verbatim at the close of `gauntlet-r4-final/`: **R1 HOLDS · R2 FAILS · R3 FAILS AS STATED · R4 HOLDS** → no release, no fourth fix attempt. Ruling: `runtime/vlad-w1/gauntlet-r4-final/ALPHA-RULING-R1-R4.md`. Remaining work carried to **`S-VLADW1-03` — custody residuals to release**.
+- **Percent completion: 85%** (as of 2026-08-19) — revised from the 65% recorded 2026-08-19 earlier in the day, because attempt 3 landed real work: capture-then-scrub, all four `auditedSpawn` bypasses closed with standing regression tests carrying raw controls, S-9 and S-12 built from zero, the claim lint bound to code, and **R1 holding unanimously against a lane that spent three rounds breaking this boundary**. It is NOT 100% and will not be rounded there: two of four release criteria fail, one DoD item is unmet with named residuals, one is open on a trigger, AC-8.6 has zero artifacts, and ED-340 stays open. **The percentage counts work proven, not work attempted.**
+- Completion timestamp: n/a — the sprint is closed, not completed. Closed 2026-08-19.
 - Definition of done used: the Definition of Done above
 - Evidence of completion: n/a
 - Session IDs / dates / agents: 2026-07-29 — Alex ε (tracker creation); 2026-07-30 — Alex ε as "EpsilonW1" (plan contract `PC-20260730-0085`)
@@ -317,7 +507,9 @@ The sprint task required verifying each cited port source before porting, becaus
   - **S-9 — quota-exhaustion detection, AC-9.1–9.5.** Zero artifacts (`qa-reviewer` F11). β ruled **BUILD**. Binding conditions on it: the recognized-signal corpus is **DOCUMENTATION-DERIVED** and must be labeled so in code and in any user-facing string — the word *"characterized"* may not be used until a real termination has been observed. The DoD's "empirically characterized before ship" therefore stays **OPEN with its trigger named**, binding at Wave-1 ship rather than at sprint close. Honest residual, recorded and explicitly not escalated: under subscription-primary, provoking a real exhaustion consumes the operator's own subscription quota — an account side-effect the $50 envelope does not cover. **AC-9.3 is load-bearing**: its test must prove an unrecognized signal reaches NEITHER `success` NOR `quota` (both wrong directions), degrading fail-closed to `could-not-run`, never to a lie.
   - **S-12 — branding guard, AC-12.1–12.2.** Zero artifacts. β ruled **BUILD**, on the condition that its enforcer is built on the **same resolved-ship-set walker** that the claim-lint's F9 fix and A5's ship-set assertion use — one surface-resolution primitive, three consumers. Widen a family, never add one.
   - **AC-14** — remains OPEN until its committed test runs; the tests landed at `b80f9a2` and run green, and the qa lane found the encoded red-branch set **incomplete** (`verifyAll([])` passes green; a malformed record crashes instead of naming the citation), both now in fix bundle 4a.
-  - **ED-340** — OPEN on the roster half (A5 wired nowhere; its only invoker does not ship) and on AC-8.4's committed-re-runnable-test bar. **Rider owed: ADR-0041 Amendment 3, FORWARD-only**, tightening ED-340's closing condition to AC-8.4's committed-re-runnable-test form — naming the invariant, not the live state.
+  - **ED-340** — OPEN on the roster half (A5 wired nowhere; its only invoker does not ship) and on AC-8.4's committed-re-runnable-test bar. **Rider owed: ADR-0041 Amendment 3, FORWARD-only**, tightening ED-340's closing condition to AC-8.4's committed-re-runnable-test form — naming the invariant, not the live state. *(Amendment 3 FILED 2026-08-19, `4b65d7b3`, now on `main`. A5 is WIRED as of `a5e65e7` and `custody-runtime.test.js` exists — but round 2's qa lane found that test never imports `auditedSpawn`, so deleting the wrapper's checks leaves it green. Formal bar met, substantive bar not. Closure remains β's call.)*
+  - **AC-8.6 — SECOND UNDISCLOSED ABSENCE, found 2026-08-19 by the round-2 qa lane (F4), and it SURVIVED the correction above.** *"Given the packaged product runs on a user machine, when the server or job runner starts, then the product-layer custody self-check is invoked."* **Zero artifacts** — no implementation, no test, and the string `AC-8.6` appears nowhere under `engine/`. Its `verified_by` names `engine/test/custody-runtime.test.js::selfcheck-runs-on-user-machine`, which does not exist; that file contains two tests and neither is it. `src/server-entry.js` and `src/job-manager.js` invoke no custody check at startup. **This is the same shape as F11 (S-9/S-12), one AC over, and the correction that was supposed to name what is missing did not find it** — because the conductor corrected the *named* gaps rather than re-deriving the full set from the acceptance criteria. AC-8.6 is the criterion that distinguishes "our CI" from "their runtime": it is the substantive half of the ceiling `a5-wiring-presence.js` discloses ("SHIPPED + WIRED, not EXECUTED IN THE USER'S RUNTIME"). The residual disclosed the ceiling while the criterion written to lower it was silently unbuilt. **Either build it or record an explicit deferral — with the same strike-in-place discipline used for "ENGINE lane complete".**
+  - **Seven `verified_by` pointers name files or tests that do not exist** (AC-7.2, AC-8.6, AC-8.7, AC-8.9, AC-8.10, AC-8.11, AC-8.12). Six are naming drift with the substance present elsewhere; AC-8.6 is a genuine absence and AC-8.4 a mis-aimed lever. The qa lane's point is the one that matters: *"When six of seven resolve to nothing, the two that resolve to nothing because the WORK is missing become indistinguishable from clerical drift — which is how AC-8.6 survived a correction whose whole purpose was to name what is missing."* Owed: repoint every `verified_by` in one pass, and add a linkage resolver to the ship-time gate that exits non-zero on any `verified_by` naming a file or test the runner cannot find.
   - **Two LIVE ADR-0041 violations in SHIPPED copy**, to be fixed in the claim-lint/A5 bundle: `CUSTODY.md:41-45` ships `Status: PROVEN` for the AC-8.4 clause with no standing test behind it (**if the test slips, the claim comes down first — a claim may never outlive its proof**); and `engine/package.json:27` states A5 "asserts, on every run, …" when A5 is in no run at all. The second sits inside exactly the unlinted surface F9 identifies, which is the argument for F9's fix.
 - Related untracked work: None
 - ../../TRACKER.md updated: Yes (1.2.0 marker NEXT-ACTION item 4 names the Wave-1 conduct) · Roadmap reconciled: Yes (ROADMAP row added by the mint, `fd519ab1`)

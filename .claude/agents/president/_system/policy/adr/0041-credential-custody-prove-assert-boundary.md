@@ -303,3 +303,71 @@ promotion path. This amendment adds the corollary that has been implicit and was
 mutant proof that is not re-runnable is not a mutant proof for promotion purposes.** A claim may never
 outlive its proof — if the standing test is removed or slips, the claim that rests on it comes down
 first, in the same change.
+
+### Amendment 4 — 2026-08-19 — the env-inheritance channel is closed by CAPTURE-THEN-SCRUB, not by enumerating call-site shapes
+
+Authority: β verdict `9b2f60ae-3c14-4d87-a5f6-71e0c8d3b429` (`paths.betaEvents` row 302, DECIDE, Class B,
+confidence 0.88, `OPEN_ADR: true`), at the S-VLADW1-01 gauntlet-r2 boundary. Filed by ε. Distinct from
+Amendment 3 (the ED-340 closing-condition rider) and does not modify it.
+
+**The problem this closes.** P2's raw-launch half is a syntactic enumeration of call-site shapes, and two
+gauntlet rounds proved the enumeration is unbounded in practice. Each round widened the patterns; each
+round a fresh composite got through — an interposed comment (`spawn /* c8 ignore */ (`, which defeats
+every call-site matcher in all three scanners, verified 6 of 6), computed member access
+(`cp['spawnSync'](`), `createRequire`, `globalThis['fetch']`. The reviewing lane's conclusion, and it is
+the right one: *"The individual patterns were widened; the CLASS was not. Fixing these four patterns
+alone will reproduce this finding a third time."*
+
+**Two tempting answers, both rejected, and why the rejections matter.**
+- *Relabel the static scanners advisory and state the ceiling honestly.* **Rejected as scope reduction
+  wearing honesty's clothes.** The DoD requires an enforcer that REFUSES a raw spawn bypassing the
+  wrapper, and this ADR's own Consequences say report-only satisfies no proven clause. Being candid
+  about a weakened control does not restore the obligation it dropped.
+- *Hold the release for AST-based parsing.* **Rejected as deferral-shaped.** AST buys precision, not
+  closure: it still does not reach a spawn inside a dependency, which is A1 and unclosable by any
+  in-repo enforcer. It trades the release for an improvement that leaves the class open one layer out.
+
+**The decision.** Stop enumerating the shapes and **remove the secret from the channel every one of them
+exploits.** Every bypass — present and future — leaks by a child inheriting the parent environment. So
+`model-seam.js` **captures** every `ENV_DENYLIST` value into a module-private at startup and then
+**deletes** those names from `process.env`. Nothing remains to inherit, and **how a child was spawned
+stops being load-bearing.** This is Amendment 1's discriminator (deny-by-default is immune to shape
+drift; pattern-matching must enumerate classes) applied to call-site shape rather than secret shape.
+
+**Capture must precede deletion.** The API_KEY fallback reads `process.env.ANTHROPIC_API_KEY` at
+`buildSessionEnv` time; a blanket scrub without capture breaks the fallback seam. Ordering is not a
+detail here — it is the difference between a control and an outage.
+
+**The source fact that makes this proportionate.** Under SUBSCRIPTION mode — the live default —
+`buildSessionEnv` places **no credential in the child env at all**; the credential lives in the Claude
+Code CLI's login store on disk and is read by the SDK subprocess. `ANTHROPIC_API_KEY` enters a
+constructed env only in the API_KEY fallback branch. So the live exposure was never engine-constructed
+carriage; it was **ambient inheritance of variables the user's shell already carries** — exactly what
+the scrub eliminates.
+
+**What this amendment does NOT claim, stated because the sprint that produced it kept finding claims
+that outran their controls.**
+- It closes the **env inheritance** channel only. **ARGV is a separate carrier** and is not covered by
+  it; a secret passed as a command-line argument passes every runtime gate unless the wrapper inspects
+  args, which must land in the same change or the guarantee is overstated. argv is world-readable to
+  any same-user process on Windows and via `/proc` on Linux.
+- It does not bound what a **dependency** does on its own initiative. That remains A1.
+- The static scanners **keep their DoD role and stay fail-closed** for the surfaces they genuinely bound
+  — committed files, log call sites and telemetry builders (P1), outbound call sites (P4). The one
+  honest named ceiling is **P2's raw-launch detection specifically**, bounded by syntactic enumeration.
+  Name that one thing; do not demote the set.
+- A comment/string-stripping tokenizer may accompany this, and it is worth having — but it **widens the
+  existing matcher family; it does not close the class.** The scrub closes the class. Labelling the
+  tokenizer as the closure would re-commit the defect this amendment exists to end.
+
+**Falsifiable premise, to be verified rather than asserted.** The scrub assumes the SDK's bundled binary
+needs no denylisted variable in the PARENT environment under subscription mode (`sdk.d.ts:1435-1441`
+says a supplied env replaces the subprocess env entirely, which predicts yes). This must be checked with
+a real subscription-mode call before any user-facing ceiling sentence is written. If the binary does need
+one, the scrub is narrowed to the variables it does not need **and the narrowing is disclosed**.
+
+**Enforcement.** The scrub's own mutant is the standing proof: remove the scrub, spawn a raw child by a
+path no scanner matches, and the child must be observed seeing the secret. Per Amendment 3, that mutant
+must be a committed, re-runnable test — a one-time observation does not satisfy it. Ordering is asserted
+by its own standing test, because a deletion test that does not prove order would pass while anything
+imported earlier still inherits.
