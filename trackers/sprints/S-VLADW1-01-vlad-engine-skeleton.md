@@ -175,6 +175,62 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-19 — GAUNTLET ROUND 3 (the LAST round per β `9b2f60ae`): R1 DISPUTED between lanes
+
+Run at `c876364` (173/173 pass, `check:ship` exit 0 across six enforcers). Telemetry gate PASS.
+Records: qa `d-mszqqyfh-04494fa9`, security `d-mszqqyh9-1febe434`, agy landed. `backend-reviewer`
+returned mid-work with **no verdict** — absence was NOT read as a pass; the agent was resumed for its
+JSON. Full verdicts: `runtime/vlad-w1/gauntlet-r3/evidence-*.md` + `out-security-agy.json`.
+
+**THE DISPUTE — and it is a real one, not a wording difference.**
+`security_claude_hunter` ruled **R1 FAILS** on three bypasses it EXECUTED against the real wrapper:
+(1) `secretValueScanHook` compiles `patternSource` VERBATIM and patternSource is **start-anchored**, so
+one leading character defeats the whole value scan — `--api-key=<secret>` in argv and
+`"Bearer <secret>"` as an env value both passed, with a real child observed holding each; the control
+that round-2's T4 pins IS refused, so **the fix covers exactly the shape its test pins and nothing
+adjacent.** (2) Check 1 is case-SENSITIVE while Windows env lookup is case-INSENSITIVE —
+`{anthropic_api_key: …}` passed and the real child read it back under the canonical name; no pattern is
+involved, so the decoy-vs-real-value question is provably irrelevant. (3) env KEY names are never
+scanned. `qa-reviewer` ruled **R1 HOLDS** — but it attacked the scrub, the `??` fallback, argv and third
+carriers, and **never attempted the anchored-patternSource or case-sensitivity attacks**. Its ruling is
+"I found none", not a refutation, and is recorded that way so the surface contradiction does not mislead.
+
+**The sharpest lesson in the round, and it is about repetition, not novelty.** The anchored-pattern bug
+class was already found and fixed TWICE in this same tree — `no-held-secret-in-surface.js` strips the
+leading `^` ("an anchored ^-test against the WHOLE token silently misses it") and the driver's redactor
+strips BOTH anchors ("patternSource is authored for matching a WHOLE token value in ISOLATION"). Each
+fix carries a comment explaining exactly why. **The runtime custody boundary is the one consumer that
+never got it** — three hand-rolled derivations of one pattern, and the defect lives in the derivation
+nobody revisited. The cross-family lane found the same shape one carrier over: `args` are stringified
+to be CHECKED and the originals passed to `spawn()`, so a stateful `toString()` walks through — *"the
+lesson learned for `env` (normalize first) was omitted here."*
+
+**R3 and R4 hold, and are genuinely earned.** `qa-reviewer` ran six mutants in an isolated copy,
+reporting DELTAS from a known-bad baseline rather than absolute counts: one lever, one red test, every
+time — including **M5 driving P3's own fixture RED**, which substantiates the "proves its own removal
+goes red" claim round 2 filed as unproven. It also **reversed its own round-2 R4 ruling** and mapped
+artifact-to-clause precisely rather than restating a verdict.
+
+**A caveat both lanes proved independently, filed as a finding rather than an R3 failure:**
+`src/server-entry.js` — the shipped MCP server — does not import `model-seam.js`, so **the
+capture-then-scrub never runs in the product's own entry-point process.** Not a leak today (nothing
+spawns there), but Amendment 4's "nothing remains to inherit" is process-scoped. Shape-independence is
+earned; **process-independence is not, and the product's main process is the one without it.**
+
+**Calibration flag raised by the conductor against a lane, not by the lane:** agy marked two findings
+`execution_proven: true` about `model-seam.js` — the file it states it could not read (33KB, over its
+~32KB argv ceiling, withheld rather than truncated). Those two must not be weighted as executed evidence.
+
+**Three findings against the conductor's own work, recorded because they are a pattern and not
+incidents.** (a) The tracker's "seven `verified_by` pointers do not resolve" **undercounts: the real
+number is 15 of 48**, re-derived independently. (b) The carrier correction fixed the two claims β named
+and left a third wrong in the same paragraph of both files — "P2/P4 both exempt only this named call
+site's module" is true of P4 and false of P2. (c) `SANCTIONED_CARRIER_NOTE` has **zero importers**, so
+nothing mechanically ties CUSTODY.md's A5 to the code — the hand-off "just moved from 'never happened'
+to 'happened once, by hand'." All three are the same shape: **a correction driven by a finding list
+inherits that list's blind spots.** The conductor asked qa to re-derive rather than check its list
+precisely because it expected to repeat the error, and it did.
+
 ### 2026-08-18 — FIRST GAUNTLET RUN: FAILED on all four lanes, 46 findings, telemetry gate PASS
 
 Run at worktree `7fbfb43`. Registry-resolved roster (backend + security unit, no UI unit, so `frontend-reviewer` / `visual-review` / `design-quality` correctly did not fire; no `*.spec.ts` for this feature, so no `test-runner`). **All four blocking lanes returned FAIL.**
