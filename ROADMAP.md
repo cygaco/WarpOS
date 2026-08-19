@@ -848,6 +848,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [S-VLADW1-03](.claude/project/sprint/sprints/S-VLADW1-03/) | Vlad Wave-1 custody residuals to release | planning | 2026-08-19T19:23:19.551Z |  |  |
 | [S-VLADW1-01](.claude/project/sprint/sprints/S-VLADW1-01/) | SP-VLAD-W1-ENGINE — Engine skeleton: plain-node TS Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port + API-key model-access seam (ToS NO-GO forced; credential-custody enforcer) | planning | 2026-07-30T00:52:06.179Z |  |  |
 | [S-VLADW1-02](.claude/project/sprint/sprints/S-VLADW1-02/) | SP-VLAD-W1-AUDIT — Job #1: port lastmile detect/score/adapters; WarpOS-refusal edits in the ported copy; intake fallback; readiness-score adoption (score.js, no checklist proxy); receipt schema v1 from portfolio dogfood | planning | 2026-07-30T00:52:06.116Z |  |  |
 | [SP-20260725-002](.claude/project/sprint/sprints/SP-20260725-002/) | memory-verify — agent-memory integrity detector + separately gated all-or-nothing apply + /memory:verify skill | planning | 2026-07-28T22:02:30.701Z |  |  |

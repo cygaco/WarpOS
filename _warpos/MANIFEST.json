@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-19T08:04:52.503Z",
+  "generatedAt": "2026-08-19T22:39:17.438Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "20ba631aea53076673863ed531b2d0656b98b410b8d7a3f50effeababe28bf68",
-      "installedSha": "20ba631aea53076673863ed531b2d0656b98b410b8d7a3f50effeababe28bf68"
+      "sha256": "876028dd0a63bbb9342c3901c8bb0140b4cfa07736058a63a2ac7553818f3091",
+      "installedSha": "876028dd0a63bbb9342c3901c8bb0140b4cfa07736058a63a2ac7553818f3091"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -17544,6 +17544,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/S-VLADW1-03/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-VLADW1-03/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/S-VLADW1-02/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -28447,8 +28455,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
       "kind": "md",
-      "sha256": "f7e32a460a787de4df6cfccba3b223e8edcc10fb493b681fcdc901c83f5683f8",
-      "installedSha": "f7e32a460a787de4df6cfccba3b223e8edcc10fb493b681fcdc901c83f5683f8"
+      "sha256": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df",
+      "installedSha": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",

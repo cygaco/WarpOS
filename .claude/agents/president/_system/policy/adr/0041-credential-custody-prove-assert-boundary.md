@@ -371,3 +371,72 @@ path no scanner matches, and the child must be observed seeing the secret. Per A
 must be a committed, re-runnable test — a one-time observation does not satisfy it. Ordering is asserted
 by its own standing test, because a deletion test that does not prove order would pass while anything
 imported earlier still inherits.
+
+---
+
+#### Annotation to Amendment 4 — 2026-08-19 — the control's FIRING POINT is `src/bootstrap.js`, and its re-invoking choke-point is `auditedSpawn`
+
+Authority: β verdict `5a1d83bc-7e46-4f92-b3c0-2d95e07a41f8` (`paths.betaEvents` row 304) condition 6, the
+A5 obligation, carried forward by β `7c05e9d1-4b82-4a37-9f6e-8d3410b2ca65` (row 305) Q4. Filed by ε at the
+S-VLADW1-03 build close. **This is an annotation, not a new amendment: it does not change Amendment 4's
+decision, only records where the decided control actually fires and corrects one placement sentence that
+implementation has overtaken.**
+
+**Placement, corrected.** Amendment 4 says "`model-seam.js` captures ... and then deletes". That was the
+implementation at the time and it is no longer where the control fires. The mechanism now lives in
+`engine/src/env-scrub.js`, a **zero-import** module — a module with no imports of its own cannot have a
+dependency's top-level body evaluate ahead of it. `model-seam.js` retains its own call, but it is no
+longer the load-bearing site, because `model-seam.js` statically imports the SDK's transitive graph and
+therefore cannot be the earliest firing point in any process that reaches it.
+
+**The firing point.** `engine/src/bootstrap.js` is the single shared static-import surface. Each real
+entry point (`src/server-entry.js`, `driver/host-free-driver.js`) statically imports **exactly one**
+specifier — `bootstrap.js` — calls `initCredentialCustody()`, and only then reaches the rest of the
+program by **dynamic** `import(...)`. The invariant is defined once, in one file, so the standing
+regression test checks one shared shape rather than asserting two independently maintained copies stay in
+step.
+
+**The ordering claim, stated truthfully — this is the part worth reading.** The sprint that produced this
+annotation shipped, in both entry headers, the sentence *"initCredentialCustody() runs before any other
+module in this package's graph evaluates."* **That sentence is false**, and a gauntlet lane proved it by
+executing a faithful mirror of the shipped chain: `env-scrub.js` and `bootstrap.js` are both modules in
+this package's graph and both evaluate to completion first. It is the predecessor's own false
+"FIRST STATEMENT" claim reproduced one hop out. The **true** statement of the property is:
+
+> The only modules that evaluate before the scrub call are `src/env-scrub.js`, which imports nothing, and
+> `src/bootstrap.js`, which does nothing but re-export it. `node:` builtins still resolve first.
+
+The security property Amendment 4 decided is intact — nothing that could carry or observe a credential
+evaluates first. **What failed was the claim, not the control**, which is precisely the PROVE/ASSERT
+failure mode this ADR exists to prevent, occurring inside the amendment that closes it. Recorded here so
+the next author re-derives the sentence from the code rather than inheriting a prior draft's phrasing.
+
+**The re-invoking choke-point (row 305, Q4).** β made re-scrub-on-call conditional on naming the site that
+re-invokes it, on the ground that "re-scrub-on-call without a later call site is single-shot wearing a
+class label." It is named: `auditedSpawn()` in `engine/src/spawn-shim.js` re-invokes
+`initCredentialCustody()` before every real launch. Semantics are **absorption, not re-capture** — a name
+whose captured slot already holds a real value is never overwritten, because a naive full re-capture would
+read `undefined` for already-deleted names and silently destroy the captured credential.
+
+**Residuals of the annotated control, named rather than discovered later.**
+- **Credential rotation is not covered, and fails silently.** Verified by execution: when a real value was
+  captured at startup and the operator rotates the credential mid-session, the re-scrub keeps the stale
+  value, deletes the new one from `process.env`, and the fallback goes on serving the stale credential
+  with no error and no signal.
+- **Prototype-named keys are not captured.** The snapshot is an ordinary object, so a name colliding with
+  `Object.prototype` (`__proto__`, `toString`, `constructor`) is never captured and the getter returns a
+  non-string. Not reachable in the shipped shape — every shipped caller passes a fixed name list — but it
+  is a defect in a security primitive.
+- **Worker-thread realm.** A `node:worker_threads` Worker gets a fresh module registry and its own
+  `process.env` copy, so the captured state is not visible inside it.
+- **Preload precedes everything.** `NODE_OPTIONS`, `--require` and `--import` evaluate before the entry's
+  ESM graph. Reaching that requires control of the launch command line, which is outside the shipped
+  launch shape — but it bounds "nothing can run before the scrub" and belongs in any ceiling sentence.
+
+**Enforcement status — OPEN, and not to be read as satisfied by this annotation.** Amendment 4's standing
+mutant is satisfied for `src/server-entry.js` (removing its scrub call is observed RED). It is **NOT**
+satisfied for `driver/host-free-driver.js`: removing that entry's own call leaves every gate green,
+because the walker asserts module **reachability** rather than call **invocation**, and the driver reaches
+`env-scrub.js` three independent ways. Until the walker asserts invocation and that mutant is observed
+RED, the driver entry's scrub call is **not load-bearing and no control detects its removal.** Evidence:
+`runtime/vlad-w1/s03/gauntlet-1/ROUND-ADJUDICATION.md`.
