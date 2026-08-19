@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "95fea782b95911e66ae2786a98803de9dc3c7a24",
-  "installedAt": "2026-08-19T19:23:45.392Z",
+  "installedCommit": "cdf107b0d2261a91493f033511238adb32a00944",
+  "installedAt": "2026-08-19T22:39:17.218Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -924,8 +924,8 @@
       "dest": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "f7e32a460a787de4df6cfccba3b223e8edcc10fb493b681fcdc901c83f5683f8",
-      "currentHashAtInstall": "f7e32a460a787de4df6cfccba3b223e8edcc10fb493b681fcdc901c83f5683f8",
+      "installedHash": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df",
+      "currentHashAtInstall": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df",
       "introducedIn": "0.0.0"
     },
     {
