@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-19T07:58:58.462Z",
+  "generatedAt": "2026-08-19T08:04:52.503Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -5056,6 +5056,10 @@
       "managed": false
     },
     "trackers/sprints/S-VLADW1-02-vlad-audit-lastmile-port.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-03-vlad-custody-residuals-to-release.md": {
       "owner": "runtime",
       "managed": false
     },
