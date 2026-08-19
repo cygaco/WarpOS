@@ -61,3 +61,17 @@
 - **Upstream status:** open.
 - **Recommended upstream fix:** Phase 0 should add a tiny billable test call per provider (cheap model, ≤5 tokens) and classify the result: `insufficient_quota`/429-credits ⇒ "engine unavailable — top up billing at the provider," distinct from "key missing." This turns an async mid-run failure into a clear up-front skip with an actionable message.
 - **Verify-in-canonical hint:** with a depleted key, `curl -s https://api.openai.com/v1/models -H "Authorization: Bearer $K" | grep deep-research` still lists the models, but a real submit→poll returns `status:failed, error.code:insufficient_quota`; `/research:deep` Phase 0 currently treats "models listed" as ready.
+
+## WG-4 — `/portfolio:new` scaffolds `Write(path)` permission rules the harness does not honor for file tools
+
+- **Layer:** framework (`/portfolio:new` product-repo template → the scaffolded `.claude/settings.json` in every new product repo).
+- **ID:** WG-4
+- **Severity:** L
+- **Subsystem:** portfolio
+- **Symptom:** A build-chain agent dispatched into a freshly-scaffolded product repo emits harness warnings that the `Write(...)` allow-rules in the repo's `.claude/settings.json` are not matched for file tools — the honored form is `Edit(path)`. Observed 2026-08-04 in the `vlad` product repo during S-VLADW1-01: a completed builder run wrote 1227 bytes of stderr consisting **only** of these warnings. The rules are simply inert, so the effect is noise rather than breakage — but it is noise **on the exact channel used to distinguish dispatch-failure classes**.
+- **Root cause:** the scaffold template declares file-write permissions using `Write(path)` syntax; the harness matches file-tool permissions under `Edit(path)`. Every repo created by `/portfolio:new` inherits the mismatch, so it is a template defect rather than a per-repo one.
+- **Why it is worth fixing despite being benign:** stderr is the **only** signal separating three dispatch-death classes that are otherwise identical at the completion ledger (no record / no bytes / no diff) — **refusal** (guard rejects pre-spawn), **reap** (harness kills the wrapper), and **starvation** (process alive, permissions ignored, burns the clamp waiting on approvals that cannot arrive). This session, reading stderr twice prevented acting on a wrong-but-plausible diagnosis. Predictable benign noise on that channel raises the cost of the one read that matters, and trains readers to skim it.
+- **Local status:** not worked around — recorded only. The warnings are inert and the builder writes correctly; suppressing them locally would defeat the point above.
+- **Upstream status:** open.
+- **Recommended upstream fix:** change the `/portfolio:new` settings template to emit `Edit(path)` for file-write permissions (keeping `Write(...)` only where the harness genuinely honors it), and add a scaffold-time assertion that the rendered `.claude/settings.json` produces no permission-syntax warnings on a trivial dispatch.
+- **Verify-in-canonical hint:** scaffold a repo with `/portfolio:new`, dispatch any build-chain role into it via `scripts/dispatch-claude.js --worktree`, and read stderr: the `Write(...)` rules are reported as unmatched for file tools while the write itself succeeds.

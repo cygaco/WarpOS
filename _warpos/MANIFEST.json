@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-02T03:07:39.110Z",
+  "generatedAt": "2026-08-19T04:54:53.737Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "939785e091a0a8c82dff707d4e4b84e0f2e99d9cbaf6f825d9c60e3008b9e6fe",
-      "installedSha": "939785e091a0a8c82dff707d4e4b84e0f2e99d9cbaf6f825d9c60e3008b9e6fe"
+      "sha256": "54914d29eebecbd531531d0984b3c4bc07476388b7ed931c6859f6f8c8519196",
+      "installedSha": "54914d29eebecbd531531d0984b3c4bc07476388b7ed931c6859f6f8c8519196"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -7951,8 +7951,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289",
-      "installedSha": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289"
+      "sha256": "c322fec8f81f61ebadec6b69d6f1dd31d413672883da9b20bdd46e204060ef98",
+      "installedSha": "c322fec8f81f61ebadec6b69d6f1dd31d413672883da9b20bdd46e204060ef98"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -8245,8 +8245,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "8193c8a041762b777768b746f43385eacb9a6eb5ffd6ebc447fa6808d0925c92",
-      "installedSha": "8193c8a041762b777768b746f43385eacb9a6eb5ffd6ebc447fa6808d0925c92"
+      "sha256": "4382457380a007e37d4c048cb83cd8a5b9d488e19b8e42300f458db2fbf230d5",
+      "installedSha": "4382457380a007e37d4c048cb83cd8a5b9d488e19b8e42300f458db2fbf230d5"
     },
     "scripts/sprint/heartbeat.js": {
       "owner": "framework",
@@ -20428,6 +20428,86 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/requirements/S-VLADW1-02/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-02/trace.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/acceptance-criteria.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/copy.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/granular-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/high-level-stories.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/inputs.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/prd.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/qa-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/redteam-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/release-plan.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/requirements/S-VLADW1-01/trace.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/requirements/S-PF-01/acceptance-criteria.md": {
       "owner": "runtime",
       "managed": false
@@ -27693,8 +27773,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1",
-      "installedSha": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1"
+      "sha256": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03",
+      "installedSha": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",
@@ -27797,8 +27877,8 @@
       "managed": true,
       "source": ".claude/agents/_org/role-registry.json",
       "kind": "json",
-      "sha256": "8a1037365cc50c2f1f862370d8af46feb351a32f0359129eace4a33b9f0f3e04",
-      "installedSha": "8a1037365cc50c2f1f862370d8af46feb351a32f0359129eace4a33b9f0f3e04"
+      "sha256": "81b100b6f3a68e2b57acfe5476375a8ac57d8d68a6e96a9d4ea2cb8628a9cf13",
+      "installedSha": "81b100b6f3a68e2b57acfe5476375a8ac57d8d68a6e96a9d4ea2cb8628a9cf13"
     },
     ".claude/agents/_org/skill-hook-points.json": {
       "owner": "framework",
@@ -27869,8 +27949,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/qa-reviewer.md",
       "kind": "md",
-      "sha256": "99d6b59ae6cc20330d120dd7e3e2b45460c8bdaed8191ee69dac178f257bc666",
-      "installedSha": "99d6b59ae6cc20330d120dd7e3e2b45460c8bdaed8191ee69dac178f257bc666"
+      "sha256": "252c6e0d9fcc54837ea06475fad7f9ed8ab143b3f0e91b72878263ff89f3b858",
+      "installedSha": "252c6e0d9fcc54837ea06475fad7f9ed8ab143b3f0e91b72878263ff89f3b858"
     },
     ".claude/agents/product/quality/test-runner.md": {
       "owner": "framework",
@@ -28358,13 +28438,21 @@
       "sha256": "04c45c91b625067dba7d5243db77258b3a1a58c764ea971a089eb078c93ebd2c",
       "installedSha": "04c45c91b625067dba7d5243db77258b3a1a58c764ea971a089eb078c93ebd2c"
     },
+    ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md": {
+      "owner": "framework",
+      "managed": true,
+      "source": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
+      "kind": "md",
+      "sha256": "928d7e5b7dd58c52cc34aec505978c4234f979712bdc76130837c165ae9cde8b",
+      "installedSha": "928d7e5b7dd58c52cc34aec505978c4234f979712bdc76130837c165ae9cde8b"
+    },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/INDEX.md",
       "kind": "md",
-      "sha256": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180",
-      "installedSha": "59272cd5a361bad21347413b656ef562ebc48d3d4853c0578eb59a7c03212180"
+      "sha256": "9bf3668d2d7abd9432bc4e46566cb8593e1374010b624f216ad58bb40ef90d3c",
+      "installedSha": "9bf3668d2d7abd9432bc4e46566cb8593e1374010b624f216ad58bb40ef90d3c"
     },
     ".claude/agents/president/_system/oneshot/ENV-SETUP.md": {
       "owner": "framework",
@@ -28437,16 +28525,16 @@
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "kind": "md",
-      "sha256": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7",
-      "installedSha": "077e1a02c37d75a7755f4f3945efb59b14642d5a2f26be0615d16cb50153a4f7"
+      "sha256": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
+      "installedSha": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a"
     },
     ".claude/agents/president/_system/beta/judgement-model.md": {
       "owner": "framework",
       "managed": true,
       "source": ".claude/agents/president/_system/beta/judgement-model.md",
       "kind": "md",
-      "sha256": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b",
-      "installedSha": "c6153cd640d6813695f7713fa8703d72ddd0d2cb2d0134ad8a4fc4f7729ef54b"
+      "sha256": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
+      "installedSha": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e"
     },
     ".claude/agents/president/_system/alpha/events.jsonl": {
       "owner": "runtime",
@@ -28586,8 +28674,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/frontend/reviewer.md",
       "kind": "md",
-      "sha256": "16a7b8f20913a1dc87362192eee5d084042e3738b7e21f04dee72502df7df0d5",
-      "installedSha": "16a7b8f20913a1dc87362192eee5d084042e3738b7e21f04dee72502df7df0d5"
+      "sha256": "33e09bb0b812ae1e64b57fc561b725d11633c9705e411c9b02d0ff60ec9b8596",
+      "installedSha": "33e09bb0b812ae1e64b57fc561b725d11633c9705e411c9b02d0ff60ec9b8596"
     },
     ".claude/agents/engineering/backend/backend-lead.md": {
       "owner": "framework",
@@ -28618,8 +28706,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/backend/reviewer.md",
       "kind": "md",
-      "sha256": "8efbb2a35171f1eba78e5ea734893f0f8a2d15b51942b3bd6db4e54ebf49c9a6",
-      "installedSha": "8efbb2a35171f1eba78e5ea734893f0f8a2d15b51942b3bd6db4e54ebf49c9a6"
+      "sha256": "a6ac61cd9885b220f988957996787d30b20bd44a579758ef9dba46cae8781703",
+      "installedSha": "a6ac61cd9885b220f988957996787d30b20bd44a579758ef9dba46cae8781703"
     }
   }
 }

@@ -98,7 +98,10 @@
     "beta": "openai",
     "gamma": "claude",
     "delta": "claude",
-    "epsilon": "claude"
+    "epsilon": "claude",
+    "qa-reviewer": "claude",
+    "frontend-reviewer": "claude",
+    "backend-reviewer": "claude"
   },
   "buildCommands": {},
   "fileOwnership": {

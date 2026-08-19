@@ -44,6 +44,15 @@ const WALK_SKIP_DIRS = new Set([
   "WarpOS-v1", // operator's v1-rebuild charter corpus (root, in-flight planning scratch, same class as _planning / WarpOS-Update); kept local + gitignored, never shipped. Clears the 24-file --strict unmanifested delta (crud-sweep 2026-07-16).
   "_reports", // per-project report OUTPUT (sprint/milestone/session/checkpoint reports via /report); created on use like runtime/ — NOT framework content. The /report skill (.claude/commands/) + framework/templates/report/ ship and seed it; the emitted reports themselves never ship. (SP-20260531-001)
   "agent-memory", // .claude/agent-memory/<teammate>/ — per-agent teammate memory store (e.g. Beta's accumulated judgment); runtime/local like the home memory dir + gitignored, NOT framework content. Without this skip the builder can't classify it and the build fails (session-end 2026-06-05).
+  // .claude/agents/.system/dispatch-backups/ — the dispatch backup ring (last 50), written
+  // per-dispatch by scripts/dispatch/backup.js with timestamped subdirs plus an index.jsonl.
+  // Transient runtime state, never shipped framework content. This exclusion already existed in
+  // FIVE sibling tools — generate-framework-manifest.js, hooks/path-guard.js, hooks/ref-checker.js,
+  // hooks/version-bump-guard.js, path-lint.js — and was missing HERE, which is precisely the
+  // duplication-drift bug class this file's header names. Observed 2026-08-18: a live ring left
+  // `index.jsonl` unclassified and the manifest build exited 1, blocking commit. (The timestamped
+  // subdirs' own contents happened to classify; the index file at the ring root did not.)
+  "dispatch-backups",
 ]);
 
 // Individual files never enumerated in the shipping manifest.

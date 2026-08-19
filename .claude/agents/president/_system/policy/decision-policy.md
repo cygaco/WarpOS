@@ -131,6 +131,26 @@ This complements — and is distinct from — the rename-hygiene rule (which is 
 
 ---
 
+## Severity discriminator — report-vs-store falsehood (operator-ruled 2026-08-04, DP-gap #45)
+
+When rating a dishonesty/incoherence finding, name the discriminator BEFORE rating, then rate at source:
+a **store-state falsehood** — the SYSTEM is in a broken or other-than-reported state and the report hides it —
+is **HIGH**; **report-field incoherence over an honest store** — the system is fine, only the report about it
+contradicts itself or a sibling surface — is **MEDIUM**. Fixed here so it is not re-derived differently per
+sprint. Consumer: β loads this file on every invocation and carries the bar as P-093; live precedent: the
+2026-08-03 seventh-surface sweep rated MEDIUM on exactly this discriminator.
+
+## Pre-committed gate criteria (operator-ruled 2026-08-04, DP-gap #46)
+
+Any escalation-terminal, round-limit, or reserved-pass gate MUST state its firing criterion BEFORE the round it
+governs, then apply it literally and record the outcome verbatim — reshaped neither into a clearance nor into a
+firing. Convergence on a re-confirmed HIGH is not a new HIGH. Applies to the gauntlet-terminal contract and any
+gate that can halt work after N rounds. Composes with AP-15: fixed criteria are what make post-hoc alteration
+detectable, in both directions (raising the bar to avoid stopping; inflating the count to force a stop).
+Enforcement: β refuses gate outcomes lacking a pre-stated criterion (P-094); the mechanical lint is owed as
+ED-344 (`paths.enforcementDebt`) — a terminal record must reference a criterion artifact that predates the
+round's start.
+
 ## Tech-introduction rule
 
 Do not introduce a new service, framework, database, queue, vendor, or major dependency unless **all four** conditions hold:
