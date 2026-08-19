@@ -1169,7 +1169,7 @@
         "src": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
         "dest": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
         "kind": "agent",
-        "sha256": "0a6c745857420acf324d92e664f6b5229da2816b8083e25179d329309af08509",
+        "sha256": "928d7e5b7dd58c52cc34aec505978c4234f979712bdc76130837c165ae9cde8b",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

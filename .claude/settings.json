@@ -422,7 +422,9 @@
       "Bash(git restore *)",
       "Edit",
       "Bash(git push *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(git push origin main)",
+      "Bash(git push origin HEAD:main)"
     ]
   },
   "_compiledBy": "warpos/settings-compiler/v1",

@@ -180,6 +180,13 @@ exist in the product repo and **both** the P3 and P4 mutant runs have gone RED a
 amends the row, never closes it. Amendment 1 raised the count from six and added the second mutant; a range or
 count reference that silently excludes a new clause is exactly the half-applied-amendment defect).
 
+> **TIGHTENED by Amendment 3 (2026-08-19, β `3d9a71c4`, FORWARD-ONLY) — read that amendment before closing
+> this row.** "Gone RED at least once" above is satisfiable by a one-time hand-run recorded in a commit
+> message, which is not re-executable by the reader asked to trust it. The closing condition is now a
+> **committed, re-runnable test** in the shape AC-8.4 names. Also note the roster's A5 row says the four
+> enforcers must be **wired into the product's own ship-time check run** — an enforcer that exists but is
+> named in no run does not satisfy it, and that alone held this row open.
+
 ## Scope
 
 Binding on the Vlad product's model-access seam under **either** seam, and on any future WarpOS-family product
@@ -253,3 +260,46 @@ boundary and the rule.
   request is **cancelled permanently** — it must never be re-surfaced to the operator or re-proposed by any
   agent at any boundary. The residual-risk RECORD stands unchanged (it is history, not an open item); the
   engineered API-key fallback seam is the **sole** mitigation. No other clause of this ADR changes.
+
+### Amendment 3 — 2026-08-19 — ED-340's closing condition tightened to a committed re-runnable test (FORWARD-ONLY)
+
+Authority: β verdict `3d9a71c4-6f28-4b53-8e17-2a5c0db94f61` (`paths.betaEvents` row 301, DECIDE, Class B,
+confidence 0.90, `OPEN_ADR: true`), issued at the S-VLADW1-01 gauntlet boundary. Filed by ε.
+
+**What changes.** ED-340's closing condition read that the row closes when all seven enforcers exist and
+"**both** the P3 and P4 mutant runs have gone RED **at least once**". That wording is satisfiable by a
+one-time hand-run recorded in a commit message. It is hereby tightened to the form AC-8.4 already
+requires: **a COMMITTED, RE-RUNNABLE TEST** — specifically the shape named by
+`engine/test/custody-runtime.test.js::negative-fixture-goes-red-when-scrub-removed`. A mutant observation
+that cannot be re-executed by anyone who checks out the tree does not satisfy this clause.
+
+**Why.** ADR-0041's own standing rule is that an enforcer with no observed red state is enforcement debt
+wearing a green badge. A one-time observation is the *same defect one step out*: the badge is now the
+commit message. It is not shipped, not re-runnable, and not visible to the reader who is asked to trust
+it — so the fixture rots forever-green the moment the scrub is removed again. On S-VLADW1-01 the P3 mutant
+was observed by hand on 2026-08-10 and recorded in `c8040c7b`; four months from now that record proves
+nothing about the tree. P4's mutant, by contrast, IS a standing test in `custody-static.test.js`, which is
+the form this amendment generalizes.
+
+**FORWARD-ONLY — this is the load-bearing constraint on this amendment.** It names the INVARIANT, not the
+live state. It does **not** retroactively invalidate any prior closure, and it must not be read as a
+post-hoc goalpost move against work already judged: the P-094 rule bars goalpost moves *in both
+directions*, and tightening a bar to reach a conclusion you already wanted is the same violation as
+loosening one. This amendment is legitimate specifically because **AC-8.4 predates the round that
+surfaced the gap** (`5313a68b`, 2026-08-03), so the bar was already written down and simply was not
+reflected in ED-340's own wording. Had AC-8.4 not predated it, the correct action would have been to
+close ED-340 on its wording as written and file the tighter rule for the next row.
+
+**Status of ED-340 at the time of this amendment (recorded, not decided here).** OPEN, on two
+independently dispositive grounds: (1) the ROSTER half — the A5 row requires the four enforcers be
+"wired into the product's own ship-time check run", and A5 appeared in `check:custody` nowhere while its
+only invoker was absent from `package.json#files`, so it never executed in a user's install; (2) the
+MUTANT half — AC-8.4's named verifier did not exist. A conductor claim that the closing conditions
+"look met" was made in `7fbfb43` and is **withdrawn**.
+
+**Consequence for the labeling rule.** Clause 4 of the labeling rule already says a promotion from
+ASSERTED to PROVEN requires a named enforcer with a mutant proof, and that increased confidence is not a
+promotion path. This amendment adds the corollary that has been implicit and was therefore missed: **a
+mutant proof that is not re-runnable is not a mutant proof for promotion purposes.** A claim may never
+outlive its proof — if the standing test is removed or slips, the claim that rests on it comes down
+first, in the same change.
