@@ -136,3 +136,56 @@ missing source → exit 2 `NO_DATA`; unreadable source → 1; absent committed m
 manifest → 1; wrong/duplicate flags → 1. And the `env-scrub.test.js` B2 non-vacuity control **does**
 genuinely discriminate — no finding there. β Q2's option (b) landed correctly; β Q3's tautology lint did
 not.
+
+---
+
+# PASS A — the RESUMED original lane (full scope). Recorded after the fact.
+
+**This lane returned TWICE, and both returns are real. Neither replaces the other.**
+
+The original dispatch (agentId `aa38cb70399730007`) appeared to me as a truncated non-verdict, so I
+resumed it AND separately re-dispatched a narrowed version. The resumed original then completed with a
+**full-scope verdict whose final text routed to α, not to me** — I never saw it in my own lane. α relayed
+it. Recorded here on α's instruction so the lane's real coverage is not lost to a routing artifact.
+
+Everything above this line is **Pass B**, the narrowed re-dispatch (agentId `a1fff64a6cd0522b7`, record
+`d-mt0o5sm5-e6c15fac`), which was deliberately scoped OFF S1–S5. Pass A is the full-scope run.
+
+## Pass A verdict: **FAIL**
+
+S-read: **S1 holds** (within lane scope; the T10/B6 raw controls were checked and are genuine) ·
+**S3 FAILS** · **S5 FAILS** on one proven instance · **S2 and S4 cannot-assess**.
+Worktree confirmed clean, HEAD `a9e6708`, all mutations reverted.
+
+## Pass A findings — AS RELAYED, and the relay was TRUNCATED
+
+**F-1 — CRITICAL, S3.** `extractStaticImportSpecifiers`' regex returns only the LAST from-form specifier
+when two static imports share one line, **so an entry can statically import an arbitrary extra module
+while A2/A3 stay green.** Execution-proven: a `sed`-mutated `server-entry.js` line 66 left
+`entry-bootstrap` at 15/15 pass, `check:ship` exit 0, suite 271/271; the direct regex probe returned
+`["./b.js"]` with `./a.js` dropped.
+
+**F-2 — HIGH, S3.** Deleting the driver entry's `initCredentialCustody` call at
+`driver/host-free-driver.js:49` is detected by **nothing** — the A1 walker tests reachability, not
+invocation, and there is no F-2-style standing mutant for the driver.
+
+**GAP, stated rather than papered over: F-3 through F-8 were not relayed to me in full.** The relay was
+cut mid-message. α's fix directive separately cites **F-3 (block-comment blindness in the extractor)** and
+**F-5 (unreadable directory swallowed)** by content, so those two are actionable and are bound into fix
+attempt 1. **F-4, F-6, F-7 and F-8 I have never seen.** I am not reconstructing them from the finding
+numbers — an invented finding is worse than a missing one. If they carry obligations beyond α's ordered
+set, they are unaddressed and this line is the record of that.
+
+## Convergence between the two passes — and why it matters
+
+Pass A and Pass B ran independently and **converged on the same two structural defects**:
+- Pass A F-1 ≡ Pass B F-3 (extractor multi-import-per-line + block-comment fail-open)
+- Pass A F-2 ≡ the security lane's F-1 (driver scrub not load-bearing; reachability ≠ invocation)
+
+Pass A additionally graded them against the S-criteria (**CRITICAL/S3** and **HIGH/S3**), which Pass B
+declined to do because it was scoped off S1–S5. That grading is what makes S3's failure a two-lane
+finding rather than one lane's read. Pass B contributed what Pass A did not reach: the tautology lint's
+fail-open behaviour and its total absence from any npm script.
+
+**Neither pass is discarded and neither is treated as the other's confirmation** — they are one lane run
+twice with different scopes, and the union is the lane's coverage.
