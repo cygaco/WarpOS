@@ -169,11 +169,31 @@ agree — keep them in sync.
 | conversion-lead | openai | gpt-5.6-terra xhigh — conversion copy + landing page (DISPATCH.md §8 flip claude→GPT) |
 | marketing-lead | openai | gpt-5.6-terra high — paid media / campaigns / EQ scoring (DISPATCH.md §8 flip claude→GPT) |
 | research-lead | antigravity | gemini-3.1-pro-high (agy) — audience research, thinking-on (DISPATCH.md §8 flip claude→antigravity) |
-| frontend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude FE builder |
-| backend-reviewer | openai | gpt-5.5 xhigh — code-quality review of the Claude BE builder |
-| qa-reviewer | openai | gpt-5.5 xhigh — traceability + integrity + functional |
+| frontend-reviewer | claude | claude-opus-5 — code-quality review of the Claude FE builder (see CROSS-PROVIDER FALLBACK note below) |
+| backend-reviewer | claude | claude-opus-5 — code-quality review of the Claude BE builder (see CROSS-PROVIDER FALLBACK note below) |
+| qa-reviewer | claude | claude-opus-5 — traceability + integrity + functional (see CROSS-PROVIDER FALLBACK note below) |
 | security-reviewer | antigravity | gemini-3.1-pro-high via agy (Gemini lab; individual gemini CLI sunset) — 3-lab panel: + gpt-5.6-sol hunter + claude-opus-4-8@max in-process hunter + fable-5 planner/judge (ADR-0016; DISPATCH.md §8) |
 | cabinet | openai | freeform cross-provider consult / second opinion — NO strict output schema (formerly `advisor`/`consult`) |
+
+> **CROSS-PROVIDER FALLBACK — 2026-08-18, temporary, and it costs something.** codex CLI credits are
+> EXHAUSTED and the `openai` provider breaker is tripped for 7 days, so the three code-review lanes
+> above are **repinned `openai → claude` / `claude-opus-5`** in the registry, `providers.js` and
+> `catalog.js`. This doc row is the fourth surface and is cut over here to match — a repin that lands in
+> the code tables but not the doc is the doc-vs-code drift class `dispatch-routing-parity.js` (BC-23)
+> exists to catch, and it went red on exactly that gap.
+>
+> **Name the consequence rather than letting a green gate hide it:** the gauntlet's *corpus diversity*
+> is temporarily gone on these three lanes. The independence invariant "no agent judges work it
+> authored" still holds — a reviewer is a different agent from the builder — but a Claude reviewer
+> reading a Claude builder's output shares the author's blind spots in a way a GPT reviewer did not.
+> Treat a clean sweep from these three lanes as **weaker evidence than the same sweep pre-2026-08-18**,
+> and say so in any release note that leans on it. `security-reviewer` keeps its non-Claude lane
+> (antigravity/gemini), which is now the only cross-family judgment in the gauntlet.
+>
+> **Reverting:** when codex credits return, clear the breaker (`provider-breaker('openai')`) and repin
+> all four surfaces back together — registry, `providers.js`, `catalog.js`, and this row. The other
+> `openai` rows above are unchanged because their registry pins are unchanged; the breaker handles
+> their runtime fallback without a repin, which is why they do not appear in the parity diff.
 
 > **The GPT product-leadership chain (`design-lead`, `product-lead`, `director-of-product`, `director-of-growth`) is dispatched like a reviewer, NOT like a manager (the door to use).** These are the product/growth judgment + requirement-authoring roles on a non-Claude provider — RULE 4 (operator: GPT is best at product design/UX/flows + product requirements), the deliberate `cross_provider_consult_lead` class (E-DISPATCH-PERFECT-001 W2). So reach each via a subprocess (example shown for design-lead; identical for the other three):
 > ```bash

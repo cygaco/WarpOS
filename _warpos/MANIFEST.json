@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-11T18:18:18.945Z",
+  "generatedAt": "2026-08-19T03:42:23.696Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -7951,8 +7951,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/warpos/manifest/walk-skip.js",
-      "sha256": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289",
-      "installedSha": "805e08c370b517754c17ff8eb3493b04bba00c26e9851474c359840bf112e289"
+      "sha256": "c322fec8f81f61ebadec6b69d6f1dd31d413672883da9b20bdd46e204060ef98",
+      "installedSha": "c322fec8f81f61ebadec6b69d6f1dd31d413672883da9b20bdd46e204060ef98"
     },
     "scripts/warpos/lib/content-hash.js": {
       "owner": "framework",
@@ -8245,8 +8245,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/sprint/full.js",
-      "sha256": "d7a0cffd0092ea9202c77bbc9017d360c0c034cfd7e53843caf57739c127ae91",
-      "installedSha": "d7a0cffd0092ea9202c77bbc9017d360c0c034cfd7e53843caf57739c127ae91"
+      "sha256": "4382457380a007e37d4c048cb83cd8a5b9d488e19b8e42300f458db2fbf230d5",
+      "installedSha": "4382457380a007e37d4c048cb83cd8a5b9d488e19b8e42300f458db2fbf230d5"
     },
     "scripts/sprint/heartbeat.js": {
       "owner": "framework",
@@ -27773,8 +27773,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1",
-      "installedSha": "976d1f9a03b7708baa5664c993400dcfbd5e38b51743bfc8321aad87cd1e64b1"
+      "sha256": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03",
+      "installedSha": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",
@@ -27877,8 +27877,8 @@
       "managed": true,
       "source": ".claude/agents/_org/role-registry.json",
       "kind": "json",
-      "sha256": "8a1037365cc50c2f1f862370d8af46feb351a32f0359129eace4a33b9f0f3e04",
-      "installedSha": "8a1037365cc50c2f1f862370d8af46feb351a32f0359129eace4a33b9f0f3e04"
+      "sha256": "81b100b6f3a68e2b57acfe5476375a8ac57d8d68a6e96a9d4ea2cb8628a9cf13",
+      "installedSha": "81b100b6f3a68e2b57acfe5476375a8ac57d8d68a6e96a9d4ea2cb8628a9cf13"
     },
     ".claude/agents/_org/skill-hook-points.json": {
       "owner": "framework",
@@ -27949,8 +27949,8 @@
       "managed": true,
       "source": ".claude/agents/product/quality/qa-reviewer.md",
       "kind": "md",
-      "sha256": "99d6b59ae6cc20330d120dd7e3e2b45460c8bdaed8191ee69dac178f257bc666",
-      "installedSha": "99d6b59ae6cc20330d120dd7e3e2b45460c8bdaed8191ee69dac178f257bc666"
+      "sha256": "252c6e0d9fcc54837ea06475fad7f9ed8ab143b3f0e91b72878263ff89f3b858",
+      "installedSha": "252c6e0d9fcc54837ea06475fad7f9ed8ab143b3f0e91b72878263ff89f3b858"
     },
     ".claude/agents/product/quality/test-runner.md": {
       "owner": "framework",
@@ -28674,8 +28674,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/frontend/reviewer.md",
       "kind": "md",
-      "sha256": "16a7b8f20913a1dc87362192eee5d084042e3738b7e21f04dee72502df7df0d5",
-      "installedSha": "16a7b8f20913a1dc87362192eee5d084042e3738b7e21f04dee72502df7df0d5"
+      "sha256": "33e09bb0b812ae1e64b57fc561b725d11633c9705e411c9b02d0ff60ec9b8596",
+      "installedSha": "33e09bb0b812ae1e64b57fc561b725d11633c9705e411c9b02d0ff60ec9b8596"
     },
     ".claude/agents/engineering/backend/backend-lead.md": {
       "owner": "framework",
@@ -28706,8 +28706,8 @@
       "managed": true,
       "source": ".claude/agents/engineering/backend/reviewer.md",
       "kind": "md",
-      "sha256": "8efbb2a35171f1eba78e5ea734893f0f8a2d15b51942b3bd6db4e54ebf49c9a6",
-      "installedSha": "8efbb2a35171f1eba78e5ea734893f0f8a2d15b51942b3bd6db4e54ebf49c9a6"
+      "sha256": "a6ac61cd9885b220f988957996787d30b20bd44a579758ef9dba46cae8781703",
+      "installedSha": "a6ac61cd9885b220f988957996787d30b20bd44a579758ef9dba46cae8781703"
     }
   }
 }

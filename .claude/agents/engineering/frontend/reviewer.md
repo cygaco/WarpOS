@@ -3,13 +3,11 @@ name: frontend-reviewer
 description: Reviews Frontend pod builder output for code quality only. Runs the CWD/branch pre-check, holdout-fixture evaluation, and Check-7 (7A–7G) code-quality protocol. Produces ReviewResult JSON. Does NOT write code. Verdict BINDING. Traceability and integrity are the qa-reviewer's scopes — not duplicated here.
 tools: Read, Grep, Glob, Bash
 disallowedTools: Edit, Write
-model: claude-opus-4-8
-provider: openai
-provider_model: gpt-5.6-sol
+model: claude-opus-5
 provider_reasoning_effort: high
-provider_fallback: claude
 maxTurns: 40
 color: yellow
+effort: high
 ---
 
 <!-- Cross-provider: this agent runs on GPT-5.5 for review diversity. Claude-generated UI/component code reviewed by Claude is blind to shared failure modes. See manifest.agentProviders + scripts/hooks/lib/providers.js. Falls back to Claude if OpenAI unavailable. -->

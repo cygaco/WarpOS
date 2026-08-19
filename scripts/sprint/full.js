@@ -783,7 +783,13 @@ function maybeConsultBeta(state, boundary, args) {
   // which reads the full events corpus and BLOCKS the release on a duplicate.
   // Kill switch WARPOS_BETA_SUBSTANCE_GATE=off (default ON) — fail-closed, never warn-only;
   // an off-switch (like dispatch-route-guard's) is a rollout/emergency lever, not a soften.
-  if (process.env.WARPOS_BETA_SUBSTANCE_GATE !== "off") {
+  //
+  // SINGLE READ (task #12 — β single-read hygiene): the gate below and the row stamp further
+  // down MUST agree. Two independent process.env reads can disagree if anything mutates the
+  // env between them, letting the gate run while the row records "off" (or the reverse) —
+  // invisible to the exact audit designed to catch an off-switch flip (AP-15 in env-var costume).
+  const substanceGateOn = process.env.WARPOS_BETA_SUBSTANCE_GATE !== "off";
+  if (substanceGateOn) {
     const m = betaMessage.trim();
     const tokenRe = /\b(DECIDE|DIRECTIVE|ESCALATE|DECISION|CLASS\s+[ABC]\b|conf(?:idence)?|0\.\d{2})\b/i;
     const groundRe = /\b(SP-\d|T-\d|EVT-|RI-\d|DP-|LRN-|L-20|ADR-|per\b|because\b|precedent|rubric|reversib|blast[- ]radius|trade-?off)\b/i;
@@ -832,7 +838,8 @@ function maybeConsultBeta(state, boundary, args) {
     // β finding 2026-08-04 (c17d5e92): the substance gate must stamp its own state into the
     // row on BOTH paths — an off-switch flip is otherwise invisible to the exact audit
     // designed to catch it (AP-15 in env-var costume). Written whether the gate ran or not.
-    substance_gate: process.env.WARPOS_BETA_SUBSTANCE_GATE !== "off" ? "on" : "off",
+    // Reads the SAME const the gate above branched on — never a second process.env read.
+    substance_gate: substanceGateOn ? "on" : "off",
   });
 
   state.betaConsultations.push({
