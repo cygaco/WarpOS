@@ -175,6 +175,63 @@ One residual worth knowing rather than acting on: the epic's **append-only** Cha
 - Plan contract `PC-20260730-0085` authored and validated. Blocker count corrected from four to three — the epic-staleness blocker is CLOSED (amendment verified across six locations) and was never an operator gate. Added a risk for quota-exhaustion misclassification, retired the contradicted-contract risk in place rather than deleting it, and recorded the un-enumerated four-core tool surface plus the unowned `safe-spawn` env-allowlist amendment as open questions.
 
 ## Evidence log
+### 2026-08-19 — THE GATE-BEARING GAUNTLET (`runtime/vlad-w1/gauntlet-r4-final/`): R1 HOLDS unanimously; R2/R3 disputed; the sharpest findings are against the conductor's own claims
+
+Run at `e4c75c7` after fix attempt 3 (206/206, `check:ship` exit 0, `check:pointers` exit 1 by design).
+Telemetry gate PASS — four well-formed records, no `no-record`. Per β row 303 this directory is the
+successor of `gauntlet-r3/`, so **its close is where α applies R1–R4 verbatim.** All four lanes returned
+FAIL as verdicts, which β ruled decides nothing either way.
+
+**R1 HOLDS, unanimously, and it is the round's real result.** Every round-3 bypass is refused, verified
+by independent execution. The security lane re-ran its own three attacks plus a TOCTOU battery —
+stateful `toString`, prototype chain, stateful getter, **Proxy `get` trap**, `String` object, array
+value, own-`__proto__` key — and produced no leak; confirmed the object scanned IS the object spawned
+on all three carriers; found **no false negative in the widened predicate** ("monotone widening over
+all six shapes, confirmed by differential"); and traced every credential consumer, finding nothing that
+writes a credential to stdin, a temp file, cwd or an inherited fd. The backend lane was careful that its
+`execution_proven:true` flags mean *"I ran code that demonstrated this defect"*, **not** *"a child got a
+secret"* — a distinction that matters because R1 turns on exactly that.
+
+**THE FINDING THAT MATTERS MOST IS AGAINST THIS CONDUCTOR.** All three Claude lanes independently
+proved by execution that `server-entry.js`'s *"FIRST STATEMENT, before every other import below"* is
+**false** — ESM hoists imports, so eight production module bodies evaluate with the credential still
+present (no leak today; none of them reads `process.env`). The damning part is not the error but its
+provenance: **`model-seam.js` had already corrected this exact overclaim about itself in the same fix
+attempt**, and the corrected-away wording was reintroduced verbatim in two entry points, baked into a
+test's assertion message, and **carried upward in the conductor's own WHAT-CHANGED summary.** The
+sprint's signature defect — a claim outrunning its code — appearing one final time inside the artifact
+reported as condition zero satisfied.
+
+**And the non-vacuity proof was itself vacuous.** The class-level walker's sanity control reads
+`assert.ok(classified.every((c) => c.canSpawn || true), "always true — kept as an explicit
+placeholder")`. The conductor wrote *"with a sanity control proving the walker is not vacuously true"*
+into both the commit and the gauntlet header. **That claim was false.** Worse, the walker classifies
+spawn-capability by exact `node:child_process` match, so it exempts bare `child_process`,
+`createRequire`, and spawn reached through an npm dependency — **including the Agent SDK, this
+package's one production dependency, which launches a child.** The security lane showed
+`server-entry.js` itself classifies `canSpawn=FALSE`, so **the class test would stay green if the scrub
+call were deleted**: a class check that excludes the very instance it was built for.
+
+**Two more conductor corrections, both from qa.** The `check:pointers` non-composition was ruled
+*"honest scoping, **under-argued**"* — the decisive reason was never written down: the resolver reads an
+acceptance-criteria file **that does not exist in the vlad repo**, so composing it into `check:ship`
+would redden the ship gate on every machine but this one. And `package.json#vladPointerLint`
+**misfiles AC-8.6 as missing-FILE when it is missing-NAME** — an error in the exact sentence whose
+purpose is keeping AC-8.6 distinguishable from clerical drift.
+
+**R2/R3 disputed.** qa reads R2 as holding (both round-3 defects genuinely fixed in the user-facing
+statement); security and backend read it as failing — P2 still ships **PROVEN** asserting a raw bypass
+"is REFUSED" while the round's own header names raw-launch detection as THE ceiling. backend reads R3 as
+failing as stated, on the walker exemptions and the vacuous control. **R4 holds** — security and qa
+both confirm, qa re-deriving the twin/P3 opposite-polarity argument rather than restating it; backend
+reported R4 **not assessed rather than guessed**.
+
+**Cross-family lane calibration improved.** agy marked every finding `execution_proven:false` this
+round, not repeating its round-3 mis-flagging. Two lanes reached **opposite filing judgments** on
+`opts.cwd` — agy filed it MEDIUM; the claude lane deliberately did not file it *"because inflating it
+would corrupt this rule"* — and both reasonings are preserved in the evidence so the decision-maker sees
+the disagreement rather than one side of it.
+
 ### 2026-08-19 — GAUNTLET ROUND 3 (the LAST round per β `9b2f60ae`): R1 DISPUTED between lanes
 
 Run at `c876364` (173/173 pass, `check:ship` exit 0 across six enforcers). Telemetry gate PASS.
