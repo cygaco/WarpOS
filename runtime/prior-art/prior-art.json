@@ -767,6 +767,95 @@
       "most_load_bearing_property": "The auditability rule — a beta verdict only counts if it cites a persistent-teammate ledger row. That is an enforcer, and enforcers are where this framework's real, if unpatentable, value sits."
     }
   },
+  "granularity_rule": {
+    "statement": "Verdicts are given at TWO grains because they disagree and both are honest. At the PRIMITIVE grain (resume, checkpoints, compaction, hooks) the vendors were first nearly every time. At the SYSTEM grain (the composed loop those primitives add up to) several WarpOS capabilities have no vendor equivalent.",
+    "example": "'Session handoff: vendor-first' and 'session recovery system: WarpOS-first' are both true statements about the same code.",
+    "caution": "A system verdict is NOT automatically WarpOS-first — it requires that no vendor shipped the composed capability earlier."
+  },
+  "session_recovery_system": {
+    "loop_closed": "2026-06-10",
+    "loop_closed_hash": "39acab5a",
+    "earliest_form": "2026-03-19 (handoff.md)",
+    "parts": [
+      {"part": "/session:end — cognitive chain (learn/mine/sleep/integrate) -> tracker reconcile+validate -> handoff -> land -> fresh branch -> team teardown", "hash": "bf894984", "date": "2026-06-01"},
+      {"part": "/session:dump -> DUMP.md prescriptive next-session brief with verbatim payloads and anti-instructions", "hash": "c305b555", "date": "2026-05-18"},
+      {"part": "/session:handoff", "date": "2026-03-19"},
+      {"part": "handoff-live.js — Layer-1 git-ground-truth snapshot", "hash": "6f5b7f07", "date": "2026-06-08"},
+      {"part": "/session:checkpoint + periodic checkpoint hook — captures what git cannot recover", "date": "2026-04-12"},
+      {"part": "/session:resume made ACTIVE — load DUMP -> reconcile against TRACKER (tracker outranks handoff) -> re-enter mode -> re-spawn persistent team with readiness pings -> re-apply turbo -> EXECUTE next action", "hash": "39acab5a", "date": "2026-06-10"},
+      {"part": "mode-set fresh-entry posture banner", "date": "2026-05-01"},
+      {"part": "tracker-reality-drift.js (verify-don't-inherit)", "date": "2026-06-16"},
+      {"part": "adhoc-team-hygiene.js (team reconciliation)", "date": "2026-05-26"},
+      {"part": "dispatch death/orphan detection; provider breaker; cross-session board"}
+    ],
+    "scoring_criteria": {"a": "writes an executable next-session brief", "b": "reconciles it against an enforced source of truth", "c": "re-establishes a multi-agent team and permissions", "d": "resumes EXECUTION autonomously", "e": "survives a crash mid-build (checkpoint + dead-dispatch detection)"},
+    "vendor_candidates": [
+      {"candidate": "Claude Code /resume + checkpoints / /rewind", "date": "2025-09-29", "a": false, "b": false, "c": false, "d": false, "e": "partial", "covers": "0.5/5"},
+      {"candidate": "Claude Code /goal — completion condition, keeps working across turns", "date": "2026-05-11", "version": "v2.1.139", "a": false, "b": false, "c": false, "d": true, "e": false, "covers": "1/5"},
+      {"candidate": "Auto memory / MEMORY.md", "date": "2026-02-26", "a": "partial", "b": false, "c": false, "d": false, "e": false, "covers": "0.5/5"},
+      {"candidate": "Agent View — list every session", "date": "2026-05-11", "version": "v2.1.139", "a": false, "b": false, "c": false, "d": false, "e": false, "covers": "0/5"},
+      {"candidate": "Agent worktree isolation + WorktreeCreate/Remove hooks", "version": "v2.1.49-50", "a": false, "b": false, "c": false, "d": false, "e": "partial", "covers": "0.5/5"},
+      {"candidate": "Codex resume + cloud-task durability", "date": "2025-2026", "a": false, "b": false, "c": false, "d": "partial", "e": "partial", "covers": "1/5"}
+    ],
+    "verdict_system": "WARPOS-FIRST, 2026-06-10, uncontested — best vendor candidate covers 1 of 5.",
+    "honest_qualifier": "/goal shipped the AUTONOMY property on 2026-05-11, a month before WarpOS closed the loop, so autonomous continuation is Anthropic's first. What has no vendor equivalent is the composition around it.",
+    "verdict_components": "VENDOR-FIRST — every core primitive predates WarpOS entirely.",
+    "changelog_finding": "'handoff' and 'session handoff' appear NOWHERE in the Claude Code CHANGELOG, so the 'desktop session handoff' item in SkillSweep's timeline is not a CLI feature."
+  },
+  "agent_control_system": {
+    "composition_closed": "2026-06-07",
+    "earliest_form": "2026-04-15",
+    "parts": [
+      {"part": "Org model — one identity in five faces (alpha/beta/gamma/delta/epsilon) over departments of directors -> leads -> pods of builder/reviewer/fixer", "files": "AGENTS.md, AGENT-STRUCTURE.md", "hash": "f504decf", "date": "2026-04-15"},
+      {"part": "Team guard — only beta/gamma as teammates; build-chain agents Gamma-only", "hash": "e0f25200", "date": "2026-04-16"},
+      {"part": "Scope-contract guard on every spawn", "hash": "6779f6e6", "date": "2026-05-01"},
+      {"part": "Evidence-bound completion records + gauntlet-verify liveness", "hash": "03cf48cd", "date": "2026-05-26"},
+      {"part": "scan:role-parity — roster drift self-detecting", "hash": "c3219d6d", "date": "2026-05-30"},
+      {"part": "Sprint hook-point registry (ADR-0009)", "hash": "ac566028", "date": "2026-06-02"},
+      {"part": "Role-registry KEYSTONE — adding an agent is one row; orchestrator never edits itself (ADR-0007 org rewrite 2026-06-04)", "hash": "4a134933", "date": "2026-06-03"},
+      {"part": "Dispatch-contract validate — CLI mandatory, API only when no CLI", "hash": "06409e86", "date": "2026-06-07"}
+    ],
+    "control_properties": [
+      {"n": 1, "property": "Declarative roster as single source of truth", "warpos": "2026-06-03", "vendor": "Custom agent definitions (--agent, disallowedTools)", "vendor_date": "2025-07-24", "verdict": "VENDOR-FIRST"},
+      {"n": 2, "property": "Fixed rosters + binding verdicts (separation of powers)", "warpos": "2026-05-26", "vendor": "none — no vendor makes a reviewer FAIL unoverridable", "verdict": "NO-VENDOR-ANALOG"},
+      {"n": 3, "property": "Scope contracts per spawn, hook-enforced", "warpos": "2026-05-01", "vendor": "Hooks exist; scope contracts do not", "vendor_date": "2025-06-30", "verdict": "Substrate vendor-first"},
+      {"n": 4, "property": "Evidence-bound liveness — no fake green", "warpos": "2026-05-26", "vendor": "none found", "verdict": "NO-VENDOR-ANALOG"},
+      {"n": 5, "property": "Context isolation via envelopes", "warpos": "2026", "vendor": "Orchestrator-worker — subagent returns result, not trace", "vendor_date": "2025-04", "verdict": "VENDOR-FIRST"},
+      {"n": 6, "property": "One identity, many faces + persistent judge", "warpos": "2026-04-12", "vendor": "Subagent roles; no persistent adjudicating peer", "vendor_date": "2025-07-24", "verdict": "Partly vendor-first"},
+      {"n": 7, "property": "Cross-provider routing under one registry", "warpos": "2026-04-16", "vendor": "none — structurally out of scope for both", "verdict": "NO-VENDOR-ANALOG"},
+      {"n": 8, "property": "Parity scans making roster drift self-detecting", "warpos": "2026-05-30", "vendor": "none found", "verdict": "NO-VENDOR-ANALOG"}
+    ],
+    "answer_to_operator_claim": {
+      "claim": "ai's didn't do that in my way until some future claude and codex updates",
+      "verdict": "Half right — and the right half is the governance half.",
+      "they_were_ahead_on_orchestration": "Agent Teams (2026-02-05), Agent View + /goal (2026-05-11), Dynamic Workflows (2026-05-28) all predate the 2026-06-07 closure. Running many agents is not what WarpOS did first.",
+      "nobody_shipped_the_governance": "Properties 2, 4, 7, 8 — fixed rosters, binding verdicts, evidence-bound liveness, cross-provider registry, parity scans — have no vendor equivalent to date.",
+      "pieces_that_landed_after": ["Codex multi-agent V2 2026-07-21", "Codex agents dashboard 2026-08-20", "Anthropic cross-session messaging 2026-08-07"],
+      "industry": "MetaGPT encoded company SOPs with PM/architect/engineer/QA roles in 2023; CrewAI hierarchical process and LangGraph supervisor followed in 2024. The org-chart idea is theirs; the enforcement of it is not."
+    }
+  },
+  "granularity_pass": [
+    {"family": "memory-learning", "primitive_verdict": "VENDOR-FIRST — auto memory 2026-02-26; memory tool 2025-09-29", "system": "Scored learnings -> validation -> decay -> sleep consolidation -> promotion into ENFORCERS, as one loop", "system_verdict": "NO-VENDOR-ANALOG — vendors store memories; none promote them into executable checks"},
+    {"family": "modes-teams", "primitive_verdict": "VENDOR-FIRST — Agent Teams 2026-02-05", "system": "Faces + department org + persistent judge + hook-point roster + registry", "system_verdict": "WARPOS-FIRST — closed 2026-06-07"},
+    {"family": "sprint-lifecycle", "primitive_verdict": "VENDOR-FIRST — ADK 2025-04; Dynamic Workflows 2026-05-28", "system": "plan->design->build->gauntlet->release->retro with beta gates, mutant evidence, brokered land", "system_verdict": "INCONCLUSIVE — genuinely composed, but ADK shipped phased workflow agents a year earlier"},
+    {"family": "enforcement", "primitive_verdict": "NO-VENDOR-ANALOG — claude plugin eval checks plugins, not policy", "system": "Debt ledger + 'every policy names its enforcer' + /scan:full + hook wiring", "system_verdict": "WARPOS-FIRST — uncontested on both axes"}
+  ],
+  "missed_items_sweep": {
+    "sources_read": ["systems manifest (.claude/project/memory/systems.jsonl — 93 named systems)", "AGENTS.md", "AGENT-STRUCTURE.md", "ADR index", "ROADMAP.md"],
+    "top_ten": [
+      {"system": "Ingest firewall", "date": "2026-05-30", "what": "Fail-closed audit of ingested docs/research for prompt injection; external content is data, never instructions", "vendor": "Both publish injection guidance; neither ships a repo-side fail-closed auditor", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "/etc authoring + eval harness", "date": "2026-05-30", "what": "Author a skill/prompt with a sibling eval-pack; evaluate it, emit a validated decision record", "vendor": "claude plugin eval (2026); OpenAI Evals (2023)", "verdict": "VENDOR-FIRST on evals; decision-record contract unmatched"},
+      {"system": "memory:verify", "date": "2026-07-25", "what": "Verifies auto-memory against code/disk/git/tracker and corrects contradicted entries", "vendor": "Anthropic ships auto-memory; nothing verifies it against ground truth", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "Launch-readiness cockpit", "date": "2026-06-13", "what": "Cross-product composite readiness %, blockers, owner-action work left", "vendor": "Agent View lists sessions, not products", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "Panel registry + coverage enforcer", "date": "2026-06-14", "what": "Every GUI panel is a registry row whose opener must resolve to a real target", "vendor": "none", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "Knowledge layer (company 'brain')", "date": "2026-06-05", "what": "LIBRARY vs STORE domains wired into consumer specs with a placement ledger", "vendor": "CLAUDE.md + @-imports; Agent Skills", "verdict": "VENDOR-FIRST on substrate; placement ledger unmatched"},
+      {"system": "Scaffold coverage enforcer", "date": "2026-05-30", "what": "Fail-closed check that a scaffolded product ships a real component library", "vendor": "none", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "Enforcement sweep", "date": "2026-07-28", "what": "Finds unfiled debt — deferral comments, suppressions, skipped tests — and reconciles against the ledger", "vendor": "none", "verdict": "NO-VENDOR-ANALOG"},
+      {"system": "Privacy + Docker-secret scans", "date": "2026-05-04 / 2026-06-02", "what": "Flags secrets a broad COPY . would bake into an image layer", "vendor": "/security-review (2025-08-06); gitleaks long before", "verdict": "VENDOR-FIRST"},
+      {"system": "Step registry", "date": "2026-04-20", "what": "Regenerates step tables in canonical docs from a single source", "vendor": "none", "verdict": "Docs tooling — no meaningful comparand"}
+    ],
+    "remaining_uncovered": "The fourteen scan:warpos-* distribution-integrity checks (already graded composite); model-chain enforcer; version-coherence and version-quorum; layer-diff; migration coverage/presence/applied; tracked-transients; ship-coverage; path-resolution; structure-parity; staleness; capsule-resolvability; install-baseline; manifest honesty and coverage; playbook; favourites; linters; node-procs; timeline; patterns; coherence; regression scans. All internal-hygiene tooling with no external comparand."
+  },
   "skill_sweep_summary": {
     "note": "Companion exhaustive pass (SkillSweep) over every skill in .claude/commands, vs the ~50 capabilities sampled elsewhere in this document. Summary only — full detail in the sweep files.",
     "source_files": {
@@ -776,29 +865,55 @@
       "data_bytes": 136940,
       "schema": "warpos.skill-sweep/1"
     },
+    "reconciled_to": "SkillSweep v2 (schema warpos.skill-sweep/2), which re-grades every family on two axes: PRIMARY = Anthropic + OpenAI only; SECONDARY = Google and the wider industry. Matches the priority rule used throughout this document.",
     "totals": {
       "skills": 237,
       "live_skills": 230,
       "deprecated_aliases": 7,
       "families": 35,
-      "families_by_verdict": {"THEY-WERE-FIRST": 30, "WARPOS-FIRST": 3, "INCONCLUSIVE": 1, "N/A-COMPOSITE": 1},
-      "skills_by_verdict": {"THEY-WERE-FIRST": 204, "WARPOS-FIRST": 13, "INCONCLUSIVE": 2, "N/A-COMPOSITE": 18}
+      "families_by_primary_verdict": {"VENDOR-FIRST": 17, "NO-VENDOR-ANALOG": 9, "INCONCLUSIVE": 4, "WARPOS-FIRST": 4, "N/A-COMPOSITE": 1},
+      "skills_by_primary_verdict": {"VENDOR-FIRST": 108, "NO-VENDOR-ANALOG": 66, "INCONCLUSIVE": 25, "WARPOS-FIRST": 20, "N/A-COMPOSITE": 18},
+      "families_by_secondary_verdict": {"THEY-WERE-FIRST": 31, "WARPOS-FIRST": 2, "INCONCLUSIVE": 1, "N/A-COMPOSITE": 1},
+      "skills_by_secondary_verdict": {"THEY-WERE-FIRST": 206, "WARPOS-FIRST": 11, "INCONCLUSIVE": 2, "N/A-COMPOSITE": 18}
     },
-    "interpretation": "~86% of families and ~86% of skills have an earlier analog. Widening the aperture from 50 capabilities to 237 skills surfaced ONE new uncontested pair (guides/knowledge integration) and otherwise reinforced the sampled conclusion — it did not produce new priority claims.",
-    "top_five": [
-      {"rank": 1, "family": "sleep-dream", "why": "The flagship, reused from the dreaming comparison. +24 d vs Anthropic, -356 d vs Letta."},
-      {"rank": 2, "family": "enforcement-debt", "skills": 5, "why": "Uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived."},
-      {"rank": 3, "family": "paths-registry", "skills": 6, "why": "Uncontested but SELF-DEFLATING, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly."},
-      {"rank": 4, "family": "guides-knowledge", "skills": 2, "detail": "/guides:integrate (2026-05-31) + /knowledge:integrate (2026-06-05)", "why": "THE ONE GENUINELY NEW FINDING. Analogs (Cursor @Docs, Devin Knowledge, Backstage TechDocs) all INDEX documentation for retrieval; these PLACE a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another ENFORCER — a placement ledger makes missing wiring self-detecting."},
-      {"rank": 5, "family": "cross-session-inbox", "why": "See reconciliation — the sweep's INCONCLUSIVE row is superseded by the CHANGELOG-based WARPOS-FIRST +117d verdict."}
+    "interpretation": "Reading the two axes together is the point. Against Anthropic and OpenAI alone, WarpOS is first in 4 families / 20 skills, and neither vendor entered 9 more families. Widen to the industry and that collapses to 2 families / 11 skills. The vendor-scoped picture is meaningfully better than the industry-scoped one — and both belong in the document, because quoting only the first would be the dishonest version.",
+    "primary_warpos_first_families": [
+      {"rank": 1, "family": "cross-session-inbox", "margin": "+117 d vs Anthropic; uncontested vs OpenAI", "why": "Cleanest non-dreaming claim. /session:write -> /session:read is a durable file-backed board landed 2026-04-12; Anthropic shipped messaging BETWEEN sessions on 2026-08-07.", "caveats": "It is a file convention plus two skills, NOT a transport — Anthropic's is a real cross-process channel with liveness. And 2026-04-12 is the extraction commit, so the true date is earlier and unprovable."},
+      {"rank": 2, "family": "sleep-dream", "margin": "+24 d vs Anthropic; uncontested vs OpenAI", "why": "The flagship. Secondary axis: -356 d vs Letta."},
+      {"rank": 3, "family": "sprint-lifecycle", "margin": "+17 d vs Anthropic (conservative); +71 d vs OpenAI", "contestable": true, "sweep_words_verbatim": "The Agents SDK's handoffs primitive is 2025-03-11 and is arguably the real vendor ancestor, which would make this VENDOR-FIRST by 14 months; I judged handoffs to be agent delegation rather than a lifecycle, and that judgement is contestable.", "other_caveats": "Different layer — Anthropic ships a JS orchestration API, WarpOS a markdown-skill lifecycle driven by a hook-point registry. The secondary axis kills it: Google ADK workflow agents, 2025-04.", "guidance": "Do not lead with this one."},
+      {"rank": 4, "family": "karpathy-autoresearch", "margin": "+18 d vs Anthropic; uncontested vs OpenAI", "why": "Weakest of the four — Anthropic's Outcomes is goal definition rather than self-optimization, and the industry axis is ~-20 months."}
     ],
+    "also_worth_keeping": {
+      "family": "guides-knowledge",
+      "detail": "/guides:integrate (2026-05-31) + /knowledge:integrate (2026-06-05)",
+      "why": "Analogs (Cursor @Docs, Devin Knowledge, Backstage TechDocs) all INDEX documentation; these PLACE a doc at a declared anchor inside named consumer specs and log it in a JSONL ledger. That ledger makes missing wiring self-detecting — another ENFORCER, the pattern identified elsewhere as this framework's real value.",
+      "v2_primary_verdict": "VENDOR-FIRST (CLAUDE.md + @-imports, ~-15 mo). The distinctive part is the placement mechanism, not the category."
+    },
     "reconciliation_cross_session": {
-      "disagreement": "SkillSweep graded cross-session-inbox INCONCLUSIVE by comparing against Agent Teams SendMessage (2026-02-05), which predates WarpOS.",
-      "why_that_comparand_is_wrong": "Agent Teams SendMessage is IN-SESSION: teammates inside one session's team, and the mailbox dies with the session. It is not session-to-session messaging.",
-      "correct_comparand": "Claude Code cross-session SendMessage + ListAgents, first shipped in v2.1.224 on 2026-08-07, established by walking the complete official CHANGELOG in version order.",
-      "authoritative_verdict": "WARPOS-FIRST, +117 days — see cross_session_and_session_management.headline",
-      "sweep_findings_that_still_stand": "LangChain Agent Inbox (2025-01-14) is a HUMAN inbox for reviewing agent output; A2A is inter-vendor RPC. Neither is a session-to-session broadcast board.",
-      "status": "The sweep's row is superseded, not wrong about its own narrower comparison."
+      "status": "RESOLVED — v2 concurs.",
+      "v1_error": "SkillSweep v1 graded cross-session-inbox INCONCLUSIVE against the wrong comparand: in-session Agent Teams messaging (2026-02-05), whose mailbox dies with the session.",
+      "v2_verdict": "WARPOS-FIRST, +117 days, against cross-session SendMessage + ListAgents (2026-08-07). Both passes now agree; no contradiction remains in this document.",
+      "secondary_findings_that_stand": "LangChain Agent Inbox (2025-01-14) is a HUMAN approval inbox; A2A is inter-vendor RPC. Neither is a session-to-session broadcast board — hence INCONCLUSIVE on the secondary axis rather than they-were-first."
+    },
+    "warnings_that_must_travel_with_these_numbers": {
+      "no_vendor_analog_is_not_a_win": {
+        "families": ["roadmap", "enforcement-debt", "issue-register", "paths-registry", "growth-marketing", "ui-design-review", "bootstrap-onramp", "portfolio-multiproduct", "docs-maps-discovery-reporting"],
+        "detail": "These 9 are 'first' only VACUOUSLY — neither vendor entered the category at all, and 7 of the 9 have a 4-to-19-year-old analog elsewhere (project trackers, issue registers, marketing tooling, design-review tools, scaffolders, docs generators). Only enforcement-debt and paths-registry are uncontested on BOTH axes.",
+        "risk": "Presenting the other seven as priority wins would be the single easiest way to discredit this document."
+      },
+      "hosted_changelog_gives_wrong_dates": {
+        "problem": "code.claude.com/docs/en/changelog exposes only ~v2.1.22x onward, so first-mention lookups against it return dates that are WRONG, not merely incomplete.",
+        "authoritative_method": "Fetch anthropics/claude-code CHANGELOG.md via the GitHub contents API (587,814 bytes, v0.2.21 -> v2.1.251) and walk it in version order.",
+        "also_closes": "SkillSweep's own open item — its 2026-08-07 anchor came from a third-party timeline; the CHANGELOG walk makes that date first-party."
+      }
+    },
+    "ahead_of_openai_but_not_anthropic": {
+      "status": "Recorded, NOT claimable — the primary axis is both vendors, and Anthropic got there first in every case. 'First among some vendors' is not a priority claim; listed so the finding is preserved rather than quietly dropped.",
+      "families": [
+        {"families": ["memory-learning", "session-state-handoff", "hooks-mgmt"], "margin": "~+100 d vs Codex"},
+        {"families": ["model-routing-dispatch"], "margin": "+50 d vs Codex"},
+        {"families": ["warp-distribution"], "margin": "+6 d vs Codex Plugins (while -139 d vs Anthropic plugins)"}
+      ]
     },
     "na_composite_note": {
       "family": "warpos-distribution-integrity",
