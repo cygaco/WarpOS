@@ -1,3 +1,5 @@
+> **RULED — see [`ALPHA-RULING-S1-S5.md`](ALPHA-RULING-S1-S5.md):** S1 HOLDS · **S2 FAILS** · S3 HOLDS · S4 HOLDS (α executed F-1/F-4/F-5 itself at close — `alpha-s4-f1-f4-f5-execution.tap`) · S5 HOLDS-at-close. **TERMINAL applied: NO RELEASE, no fix attempt 3.** `wt/S-VLADW1-01-engine` is NOT merged; `b2583d6` is the surface S-VLADW1-04 starts from.
+
 # S-VLADW1-03 — GAUNTLET 3 — THE QUALIFYING RUN — CONDUCTOR ADJUDICATION
 
 Conductor: Alex ε · commit `b2583d6` · evidence `runtime/vlad-w1/s03/gauntlet-3/`
@@ -21,6 +23,15 @@ Release rule S1–S5 pre-committed by β at row 305 (`7c05e9d1`), before any res
 
 **`gauntlet-verify`: PASS, exit 0** (`gauntlet-verify.txt`) — *"All required gauntlet roles produced a
 well-formed completion record."* 10 records considered in window.
+
+**CLARIFICATION on the backend record, added post-ruling per β row 307 (`b6d38f04`) rigor item 1 — a
+clarification, not a rewrite.** `d-mtdf0prn-8bfbfe9b` reads `ok:true` and is timestamped at the moment I
+wrote it on resume, **not** at the moment the lane ran. The `ok:true` is derived from the evidence bytes,
+and those bytes ARE the lane's own verbatim Agent return — the lane was NOT re-run and nothing about its
+verdict is synthetic. But the record's timing asserts an observation that did not occur at that instant
+(P-092). β's disposition: **fix the field, not the behaviour**; the outcome is robust regardless, since S2
+fails independently on the qa, agy and security grounds. Recording it here so the record is not read as
+more than it is.
 
 **Two honesty notes on that gate.** (1) The `fell-back` flag on `security-reviewer` (6 records) is my own
 two failed agy attempts inside the window — the argv-ceiling BLOCK and the missing-time-unit rejection —
