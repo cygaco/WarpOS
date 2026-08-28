@@ -1,0 +1,283 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260828-0086
+created_at: "2026-08-28T22:40:00.000Z"
+updated_at: "2026-08-28T22:40:00.000Z"
+sprint: S-VLADW1-04
+source_request: >-
+  Not a fresh operator message. This contract marshals the nine residuals α named when it applied
+  S-VLADW1-03's pre-committed release rule and fired the terminal:
+  runtime/vlad-w1/s03/gauntlet-3/ALPHA-RULING-S1-S5.md, confirmed by β at row 307 (msg_id
+  b6d38f04-71ac-4e29-85f3-90cb1e7a2d5b). The tracker minted at that close —
+  trackers/sprints/S-VLADW1-04-custody-claims-un-invertible.md — is the scope of record. Every item here
+  traces to a gauntlet-3 lane finding with a path, not to a fresh design.
+source_request_verbatim: >-
+  "S-VLADW1-04 (to be minted by ε at this close, before the sprint registry is touched): custody claims
+  made un-invertible *for real* — refuse-not-skip derivation, bind moves with corrections, absorb/delete
+  symmetry, the args.map scan door, AC-8.6 built, class-form residual either enforced (a general 'every
+  shipped control is invoked by a product-layer path' assertion) or shipped as a disclosed ceiling.
+  Qualifying-run discipline unchanged: β mints a fresh rule before results exist."
+request_type: bug_fix
+interpreted_intent: >-
+  Make the mechanism that binds custody claims actually un-invertible, then close the residual controls
+  the qualifying gauntlet named. The predecessor delivered the class fixes its rule demanded and still
+  failed S2, because the bind it built (a) silently SKIPS any Asserted/Ceiling paragraph whose lead-in is
+  not an exact em-dash, and (b) now PINS two execution-falsified sentences so that correcting them turns
+  check:ship red. This sprint fixes the mechanism at the layer above the one the predecessor fixed:
+  refuse-not-skip, bind-moves-with-correction, and a near-miss battery that proves what the predicate
+  cannot see. It also closes the args.map scan door, restores absorb/delete symmetry, builds AC-8.6, and
+  disposes of the class-form residual.
+user_or_business_outcome: >-
+  A user reading CUSTODY.md can trust every sentence in it. Today four independent review lanes found
+  eight execution-proven false or overclaimed strings on that surface, behind gates that were all green.
+  The engine cannot be released while its own shipped statement of what it proves is untrue, and it has
+  now failed that criterion on two consecutive qualifying gauntlets.
+
+affected_surfaces:
+  - surface: "engine/scripts/checks/custody-claim-lint.js — the derivation predicate and BOUND_PARAGRAPHS"
+    evidence_level: verified_from_repo
+    notes: >-
+      Predicates read at b2583d6: ASSERTED_PARAGRAPH_MARKER and CEILING_PARAGRAPH_MARKER both require an
+      exact em-dash (lines 381, 383); extractBindableParagraphs continues on non-match at line 410 with no
+      violation recorded. Execution-proven by the gauntlet-3 backend lane over seven authorings, controls first.
+  - surface: "engine/CUSTODY.md — the shipped claim surface"
+    evidence_level: verified_from_repo
+    notes: >-
+      Carries the header promise at lines 7-11 that every bolded Ceiling lead-in is bound (false), the
+      preload-Ceiling 'not named on any other surface' sentence (falsified by 10c's own commit at
+      entry-bootstrap.test.js:687), the 10d attribution sentence, the argv-refusal sentence at 59-62 and
+      the four-channels sentence at 113-115 (both falsified by the args.map attack).
+  - surface: "engine/src/spawn-shim.js — normArgs stringification and the structural-impossibility comment"
+    evidence_level: verified_from_repo
+    notes: >-
+      Line 262 stringifies via args.map, and args.map is caller-controlled. The comment at 411-415
+      (repeated 256-260) asserts that 'Check one object, spawn a different one' is structurally impossible
+      for command/args — true for env, false for args. Shipped surface: the file is in package.json#files.
+  - surface: "engine/src/env-scrub.js — absorb/delete symmetry"
+    evidence_level: verified_from_repo
+    notes: >-
+      The absorption loop iterates the current call's namesArr while the deletion loop sweeps the full
+      capturedNames history, so an omitted previously-captured name is deleted without being absorbed.
+      Found by the cross-family lane (agy F-1); unreachable via shipped callers, which all pass full lists.
+  - surface: "engine/src/server-entry.js + engine/driver/host-free-driver.js — AC-8.6's invocation point"
+    evidence_level: verified_from_repo
+    notes: >-
+      No selfcheck exists in src/ or driver/ (grep exit 1 at b2583d6). The driver's scrub call is also
+      load-bearing only at text/AST level — neutering it leaves the environment scrubbed because
+      model-seam.js scrubs anyway.
+  - surface: "engine/test/custody-runtime.test.js — AC-8.6's named test node"
+    evidence_level: verified_from_repo
+    notes: >-
+      Holds exactly two test nodes, both AC-8.4. check:pointers classifies
+      custody-runtime.test.js::selfcheck-runs-on-user-machine as missing-NAME (RED line 313), not
+      missing-file. Verified by direct read at b2583d6.
+  - surface: "The class-form residual — no shipped surface currently carries it"
+    evidence_level: verified_from_repo
+    notes: >-
+      grep for the class-form wording over src/, driver/, CUSTODY.md and package.json returns zero matches
+      (qa F-6 and security F-6 independently). It is recorded in
+      runtime/vlad-w1/s03/fix-attempt-2/ROUND-RECORD.md section 4 and carried in the S-04 tracker.
+
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: >-
+    vlad wt/S-VLADW1-01-engine at b2583d6, NOT merged to vlad main. Suite 318 pass / 0 fail / 0 skipped /
+    0 todo; check:ship exit 0; check:pointers exit 1 (RED by design, deliberately not in check:ship);
+    engine working tree clean. A clean checkout of b2583d6 is byte-identical to the working tree
+    (.gitattributes eol=lf landed in 10c). Every gate is green and the shipped copy is not true — that
+    conjunction is the sprint's subject.
+
+desired_behavior: >-
+  The claim bind refuses what it cannot classify instead of skipping it, and a committed near-miss battery
+  proves it: a paragraph that looks like an Asserted or Ceiling lead-in under any dash, colon or
+  indentation is bound or REFUSED by name, never silently passed over. Correcting a bound claim moves the
+  claim text and its canonical copy in one atomic change, so an honest correction never turns the ship gate
+  red. The two currently-pinned false sentences are corrected, not merely unpinned. auditedSpawn
+  stringifies its arguments through a route the caller cannot supply, with a committed Array-subclass
+  regression fixture. Absorb and delete cover the same population, or the narrower claim ships. AC-8.6
+  exists as real product-layer work with its named test resolving. The class-form residual is either
+  asserted by an enforcer or shipped as a disclosed ceiling.
+
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "The subject IS the enforcement mechanism, so a defective fix is invisible to the gate it defects — the exact failure of the predecessor."
+    - "Two false sentences are currently GATE-ENFORCED: correcting them requires claim text and canonical copy to move together or check:ship goes red mid-sprint."
+    - "AC-8.6 is new product surface (a runtime self-check on both entry paths) rather than repair, and it contends with the entry files another residual also touches."
+    - "The args.map door is a security primitive on the shipped surface; the fix must not widen what auditedSpawn accepts."
+    - "Three consecutive sprints have produced a new defect one layer out from the thing they fixed."
+
+scope_variants:
+  minimal_safe:
+    summary: >-
+      Residuals S2-a and S2-b only: refuse-not-skip with its near-miss battery, and correct the two pinned
+      false sentences with the bind moving atomically. Leaves the args.map door, absorb/delete, AC-8.6 and
+      the class-form residual open and disclosed.
+    tradeoffs:
+      - "Closes the criterion that failed twice, and nothing else."
+      - "Leaves a known-defeatable control (args.map) documented but open — a third gauntlet would refile it."
+      - "AC-8.6 slips a third sprint; its pointer stays RED and its disclosure must stay exact."
+  recommended:
+    summary: >-
+      All nine residuals plus AC-8.6 and the class-form disposition, sequenced so the bind work lands FIRST
+      (it is the gate every later claim correction must pass through), then the mechanism fixes, then
+      AC-8.6, then the disposition.
+    tradeoffs:
+      - "Largest surface, but every item is already evidenced by a lane finding with a path — no discovery work."
+      - "AC-8.6 must own the entry files exclusively, so the driver-strength residual sequences with it rather than in parallel."
+      - "Requires the bind to land before any claim correction, or corrections turn the ship gate red mid-sprint."
+  expanded:
+    summary: >-
+      The recommended set plus a general enforcer asserting the class-form property (every shipped control
+      is invoked by some product-layer path), rather than shipping it as a disclosed ceiling.
+    tradeoffs:
+      - "Turns the class-form residual from disclosure into enforcement — the honest end state."
+      - "A general 'every control is invoked' assertion is a new detection capability, not wiring; it is the shape most likely to become the NEXT overclaim."
+      - "Recommend deferring unless β rules the general form in — the predecessor failed precisely by building a general mechanism that overclaimed its own coverage."
+
+assumptions:
+  safe:
+    - "b2583d6 is the starting surface and is not merged; the branch is left in place deliberately."
+    - "The 318-test suite and check:ship exit 0 are the working baseline; the floor for any bundle is 318."
+    - "check:pointers is RED by design and deliberately outside check:ship; its non-zero exit is not a defect."
+    - "S-VLADW1-03's S1, S3, S4 and S5 held and are not reopened."
+  unsafe:
+    - "That the em-dash predicate is the ONLY shape-blindness in the bind. Nobody has enumerated the other bound-paragraph rules for the same class of near-miss; the security lane named this as the obvious next place to look and said nobody had looked."
+    - "That correcting the two pinned sentences is a text edit. Each is bound, so each requires the canonical copy to move in the same change; a partial correction leaves the ship gate red."
+    - "That AC-8.6 is small. It is the only new product surface in the sprint and it touches both entry points, which another residual also touches."
+  needs_user_or_beta_review:
+    - "Whether the class-form residual is ENFORCED (a general assertion) or SHIPPED as a disclosed ceiling. The expanded variant builds new detection capability, which is the shape that has failed three times."
+    - "Whether AC-8.6 stays in scope at all, given it has now slipped twice and is not itself a release-blocking criterion under any rule β has yet minted."
+
+open_questions:
+  blocking:
+    - "None. Every item traces to a lane finding with a path; no question blocks authoring the design."
+  non_blocking:
+    - "Does the refuse-not-skip rule apply to the OTHER bound-paragraph rules (the A5 carrier-note sentence binding, the status-token separation rules), or only to the Asserted/Ceiling derivation? Design should answer by reading, not assume."
+    - "Should the driver entry's scrub gain a runtime-observable consequence, so a mutation is caught by a runtime test rather than only a text/AST classifier? S3 held either way."
+    - "Is Array.from plus own-property iteration sufficient for the args.map door, or must the scan reject non-plain-Array argument objects outright? The conservative-by-construction reading favours the latter."
+
+non_goals:
+  - "Re-litigating S-VLADW1-03's ruling. S1, S3, S4 and S5 held."
+  - "The write path and the agent face (Wave 2)."
+  - "Adopting the four parked SDK credential vars (operator ruling 2026-08-18); they stay disclosed-open with a standing drift test."
+  - "Merging wt/S-VLADW1-01-engine. It stays unmerged until a qualifying gauntlet clears a fresh rule."
+  - "Any new custody CONTROL not named in the nine residuals. A new scanner is unreviewed surface; if one seems necessary it goes to β first."
+
+requirement_areas:
+  - "Claim-bind correctness (refuse-not-skip, near-miss battery, atomic claim-plus-canonical edits)"
+  - "Shipped claim truthfulness (the two pinned false sentences, the header's not-bound list)"
+  - "Spawn-argument custody (the args.map scan door)"
+  - "Credential-capture symmetry (absorb vs delete population)"
+  - "Product-layer invocation (AC-8.6 and the class-form residual)"
+  - "Wiring-proof strength (the driver entry's runtime consequence)"
+
+high_level_story_candidates:
+  - "As a user deciding whether to trust this engine with my API key, I want every sentence in CUSTODY.md to be true of the code I am installing."
+  - "As a maintainer adding a new custody claim, I want the gate to refuse my paragraph if it cannot bind it, rather than silently ignoring it."
+  - "As a maintainer correcting a false claim, I want the correction to be a single atomic change rather than one that turns the ship gate red."
+
+granular_story_candidates:
+  - "A new Asserted or Ceiling paragraph authored with an en-dash, hyphen, colon or indentation is REFUSED by name."
+  - "A caller passing a hostile Array subclass to auditedSpawn cannot get an unstringified argument to the child."
+  - "A credential provisioned mid-session and omitted from a later partial call is not destroyed without being captured."
+  - "A custody self-check runs when the server or job runner starts, in a user's own install, and its named test resolves."
+
+workstream_candidates:
+  - "Bind correctness (custody-claim-lint.js plus its test) — must land FIRST"
+  - "Claim corrections (CUSTODY.md plus canonical copies, atomic)"
+  - "Spawn-argument hardening (spawn-shim.js plus fixture)"
+  - "Capture symmetry (env-scrub.js)"
+  - "AC-8.6 plus class-form disposition (entries, custody-runtime.test.js, pointer manifest)"
+
+preliminary_ticket_candidates:
+  allowed: false
+  notes: >-
+    Tickets are not minted at plan time for this sprint. The build is NOT authorized, no registry entry
+    exists, and bundle decomposition is a design-phase output sized under the ED-257 12000 B floor.
+
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: "No external service. The Agent SDK is a build-time dependency already present in the tree."
+
+approval_boundaries:
+  - "No builder may be dispatched until the operator authorizes the build."
+  - "No sprint-registry entry until build authorization — add-sprint.js overwrites reg.primary unconditionally."
+  - "The vlad branch is not merged and not pushed."
+  - "Final user-facing custody register wording remains Class C (operator territory); builders correct technical claims, not the trust summary."
+
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: no_recommendation
+mode_invocation_required_by_user: true
+
+lane:
+  type: worktree
+  value: "C:/Users/Vlad/Desktop/Claude/Projects/vlad/.worktrees/engine-lane (branch wt/S-VLADW1-01-engine)"
+  isolation_notes: >-
+    Existing worktree at b2583d6, reused rather than recreated. Gauntlet lanes that mutate the tree run
+    SERIALIZED on it; isolated per-lane copies are rejected — junctioned node_modules is refused by the
+    enforcers (correctly) and a real copy costs 303 MB per lane for no fidelity gain now that
+    .gitattributes makes a clean checkout byte-identical.
+
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "A third sprint on the same custody surface with no release. The honest framing is that two criteria classes remain open, not that progress stalled."
+  overbuild_risks:
+    - "The expanded variant's general 'every shipped control is invoked' enforcer is new detection capability. Building a general mechanism that overclaims its own coverage is exactly how the predecessor failed."
+    - "AC-8.6 could grow into a broad runtime self-check framework; it is one invocation and one named test."
+  missing_context_risks:
+    - "Nobody has enumerated the bind's OTHER rules for the same near-miss blindness. Design must read them rather than assume the em-dash predicate was the only instance."
+
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "The full set of near-miss authorings the predicate misses is known for Asserted/Ceiling but not for the other bound rules."
+    - "Whether the args.map fix can be made conservative-by-construction without narrowing legitimate caller shapes has not been tested."
+  fail_reasons: []
+
+goal_verification:
+  origin_evidence: >-
+    runtime/vlad-w1/s03/gauntlet-3/ALPHA-RULING-S1-S5.md (nine residuals, S2 FAILS) and the four lane
+    evidence files: evidence-backend-reviewer.md (F-1 HIGH, seven authorings with controls first),
+    evidence-security-claude-hunter.md (args.map, execution-proven, plus the bind-pins-a-falsehood
+    second-order finding), evidence-qa-reviewer.md (three MEDIUM claim falsehoods),
+    evidence-security-agy.md (absorb/delete asymmetry, cross-family).
+  bug_classes_closed:
+    - "Fail-open-by-skip in a derived enforcer: a candidate that fails a shape predicate is silently dropped rather than refused (ED-358)."
+    - "Gate-enforced falsehood: a byte-for-byte bind holding a false sentence in place so that correcting it turns the gate red."
+    - "Caller-controlled normalization: a wrapper delegating its own single normalization point to a method the caller owns (T8/T4 TOCTOU class)."
+    - "Asymmetric capture: a deletion sweep covering a wider population than the absorption that precedes it."
+  reproduction: executable
+  cited_tests:
+    - file: "engine/test/custody-claim-lint.test.js"
+      test_name: "Rule 4 non-vacuity: the derivation finds the real document's Asserted AND Ceiling paragraphs, and every one of them is bound"
+    - file: "engine/test/env-scrub.test.js"
+      test_name: "F-3 (mutant proof, standing, OBSERVED RED): deleting the ABSORB assignment from a COPY of src/env-scrub.js leaves a credential provisioned AFTER the first call uncaptured"
+    - file: "engine/test/custody-runtime.test.js"
+      test_name: "AC-8.4 (Mutation twin, non-negotiable): sentinelHook goes RED against a genuinely unscrubbed spawn, for EVERY secret class"
+  fixture_path: null
+
+next_recommended_command: "/sprint:design — then route the design-to-build beta consult so beta mints S-04's fresh release rule BEFORE any result exists."
+resume_instructions: >-
+  Plan and design only; the build is NOT authorized. Do not dispatch a builder, do not mint a registry
+  entry, do not merge or push. Resume at the design-to-build boundary with beta's fresh rule.
+
+tracker_paths:
+  sprint_tracker: "trackers/sprints/S-VLADW1-04-custody-claims-un-invertible.md"
+  predecessor_tracker: "trackers/sprints/S-VLADW1-03-vlad-custody-residuals-to-release.md"
+  epic: "trackers/epics/E-VLAD-001-vlad-v1-agent-mcp-cofounder.md"
+
+reports:
+  ruling: "runtime/vlad-w1/s03/gauntlet-3/ALPHA-RULING-S1-S5.md"
+  predecessor_round_record: "runtime/vlad-w1/s03/fix-attempt-2/ROUND-RECORD.md"
+  predecessor_retro: ".claude/project/sprint/history/S-VLADW1-03/retro.md"
+  beta_confirmation: "runtime/beta-consult/S-VLADW1-03-close-confirmation-b6d38f04.md"
+  design_dir: "runtime/vlad-w1/s04/"
+
+created_by: epsilon
+updated_by: epsilon
