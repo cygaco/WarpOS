@@ -292,12 +292,13 @@
   <header class="masthead">
     <p class="eyebrow">WarpOS · Evidence Audit</p>
     <h1>Prior Art Ledger</h1>
-    <p class="dek">What WarpOS shipped before the vendors did — and, just as carefully, what it didn't.</p>
+    <p class="dek">What WarpOS shipped before the vendors did — and, just as carefully, what it didn't. Two verified wins against Anthropic: a cross-session inbox by 117 days, and dreaming by 24.</p>
     <div class="metastrip">
       <span><b>Compiled</b> 2026-08-28</span>
       <span><b>Repo</b> <a href="https://github.com/cygaco/WarpOS">github.com/cygaco/WarpOS</a> · public</span>
       <span><b>History</b> 2026-03-02 → 2026-08-19</span>
-      <span><b>Compared</b> 18 vendor pairs · 17 industry pairs</span>
+      <span><b>Compared</b> 18 vendor · 17 industry · 16 machinery pairs</span>
+      <span><b>Swept</b> 237 skills · 35 families</span>
     </div>
     <nav>
       <a class="navchip" href="#frame">The honest frame</a>
@@ -305,6 +306,11 @@
       <a class="navchip" href="#flagship">The dreaming case</a>
       <a class="navchip" href="#industry">vs everyone else</a>
       <a class="navchip" href="#profiles">Official channels</a>
+      <a class="navchip" href="#machinery">Dispatch &amp; state</a>
+      <a class="navchip" href="#loops">Improvement loops</a>
+      <a class="navchip" href="#sessions">Cross-session inbox</a>
+      <a class="navchip" href="#beta">β &amp; digital twins</a>
+      <a class="navchip" href="#sweep">Skill sweep</a>
       <a class="navchip" href="#strengthen">Strengthening this</a>
     </nav>
   </header>
@@ -527,9 +533,297 @@
     </div>
   </section>
 
+  <!-- ===================== MACHINERY ===================== -->
+  <section id="machinery">
+    <span class="sectnum">Section 05</span>
+    <h2>Dispatch, workflows, state, and the model layer</h2>
+    <p class="lede">A deeper pass into the machinery — how work is dispatched, how lifecycles are driven, how state survives a crash — and below the harness into model-level features. This is the most one-sided section in the document.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">16</span><span class="l">Compared</span></div>
+      <div class="score us"><span class="n">0</span><span class="l">WarpOS first</span></div>
+      <div class="score them"><span class="n">16</span><span class="l">They were first</span></div>
+      <div class="score inc"><span class="n">0</span><span class="l">Inconclusive</span></div>
+    </div>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>#</th><th>WarpOS capability</th><th>Landed</th><th>Closest public analog</th><th>Their date</th><th>Verdict</th><th>Margin</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">01</td><td class="feat">Registry-driven lifecycle runtime; declarative hook-points</td><td class="mono">2026-06-05</td><td><b>Google ADK workflow agents</b> — Sequential/Parallel/Loop, graph runtime with routing, fan-out/fan-in, retry, state, HITL, nested workflows</td><td class="mono">2025-04</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−14 mo</td></tr>
+          <tr><td class="num">02</td><td class="feat">Registry-driven lifecycle runtime</td><td class="mono">2026-06-05</td><td><b>Claude Code Dynamic Workflows</b> — <code>agent()</code>/<code>parallel()</code>/<code>pipeline()</code>, deterministic JS orchestration, up to 1,000 agents</td><td class="mono">2026-05-28</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−8 d</td></tr>
+          <tr><td class="num">03</td><td class="feat">Registry-driven lifecycle runtime</td><td class="mono">2026-06-05</td><td><b>CrewAI Flows</b> — event-driven structured workflows</td><td class="mono">2024 mid</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="num">04</td><td class="feat">Envelope-not-content doctrine</td><td class="mono">2026</td><td><b>Anthropic's own orchestrator-worker pattern</b> — the orchestrator receives only the result, not the intermediate reasoning trace</td><td class="mono">2025-04</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 yr</td></tr>
+          <tr><td class="num">05</td><td class="feat">In-process roster dispatch, evidence-bound completion</td><td class="mono">2026-06-05</td><td>Claude Code <b>Subagents</b> · <b>Codex Subagents</b> GA · Codex Multi-Agent v2</td><td class="mono">2025-07-24<br>2026-06-04</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−11 mo</td></tr>
+          <tr><td class="num">06</td><td class="feat">Cross-provider CLI routing via role registry</td><td class="mono">2026-04-16</td><td><b>A2A protocol</b> — cross-vendor agent discovery + coordination</td><td class="mono">2025-04</td><td><span class="v v-them">First on concept</span></td><td class="marg neg">~−12 mo</td></tr>
+          <tr><td class="num">07</td><td class="feat">Completion ledger — PENDING vs started vs final; death records</td><td class="mono">2026-06-06</td><td><b>Job-queue heartbeat + reaper</b> — resque_worker_heartbeat, delayed_job_heartbeat_plugin, Solid Queue</td><td class="mono">~2012</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 yr</td></tr>
+          <tr><td class="num">08</td><td class="feat">Orphan reaper</td><td class="mono">2026-06-19</td><td>Supervisor prunes expired heartbeats, marks claimed jobs failed</td><td class="mono">~2012</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 yr</td></tr>
+          <tr><td class="num">09</td><td class="feat">Controller fence + conductor lease on protected refs</td><td class="mono">2026-07-20</td><td><b>Fencing tokens + leases</b> — monotonic token, resource rejects any lower one</td><td class="mono">2016-02</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 yr</td></tr>
+          <tr><td class="num">10</td><td class="feat">Durable, resumable lifecycle across crashes</td><td class="mono">2026-06-05</td><td><b>LangGraph checkpointers</b> — per-superstep state, threads, time travel, HITL</td><td class="mono">2024</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="num">11</td><td class="feat">Durable, resumable lifecycle across crashes</td><td class="mono">2026-06-05</td><td><b>Temporal</b> durable execution; OpenAI Agents SDK integration GA</td><td class="mono">2026-03-23</td><td><span class="v v-them">They were first</span></td><td class="marg neg">—</td></tr>
+          <tr><td class="num">12</td><td class="feat">Session checkpoint / resume</td><td class="mono">2026-04-12</td><td><b>Gemini CLI checkpointing</b> — snapshot before tool edits, instant revert</td><td class="mono">2025-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 mo</td></tr>
+          <tr><td class="num">13</td><td class="feat">Events ledger with citable ids (agent tracing)</td><td class="mono">2026-04-16</td><td><b>LangSmith</b> · <b>Langfuse</b> agent tracing · OpenAI Agents SDK built-in tracing</td><td class="mono">2023</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="num">14</td><td class="feat">Learnings lifecycle / memory promotion</td><td class="mono">2026-04-12</td><td><b>Claude memory tool + context editing</b> (API beta)</td><td class="mono">2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 mo</td></tr>
+          <tr><td class="num">15</td><td class="feat">Turbo TTL grants; permission pre-authorization</td><td class="mono">2026-05-13</td><td><b>OpenAI Agents SDK guardrails</b>; Claude Code auto mode</td><td class="mono">2025-03-11</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−14 mo</td></tr>
+          <tr><td class="num">16</td><td class="feat">Per-role effort/model selection</td><td class="mono">2026-06-01</td><td><b>Extended thinking</b> · <b>Gemini thinking budgets</b> · <b>GPT-5 <code>reasoning_effort</code></b></td><td class="mono">2025-02-24<br>2025-08-07</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−15 mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The model layer</h3>
+    <p>Looking below the harness changes what a "WarpOS invented this" claim can even mean:</p>
+    <ul class="plain">
+      <li><b>Dreaming is not purely a harness feature.</b> Anthropic announced it as a capability of <b>Managed Agents</b> — server-side, scheduled, emitting a reviewable diff — with Claude Code's <code>/dream</code> as the surfaced end of it. WarpOS's <code>/sleep:deep</code> is a prompt-and-script procedure the model executes. Same problem, different layer: the timing claim stands, but the two are not the same artifact.</li>
+      <li><b>Persistent agent memory moved into the API, not just the CLI.</b> The <a href="https://www.anthropic.com/news/context-management">memory tool and context editing</a> shipped 2025-09-29 on the Claude Developer Platform, Bedrock and Vertex — predating WarpOS's learnings lifecycle and making memory a model-platform primitive rather than a framework invention.</li>
+      <li><b>Effort control was a model-level knob before WarpOS routed on it.</b> <a href="https://www.anthropic.com/news/visible-extended-thinking">Extended thinking</a> with a configurable budget (2025-02-24), <a href="https://developers.googleblog.com/en/start-building-with-gemini-25-flash/">Gemini thinking budgets</a> (2025-04-17), <a href="https://openai.com/index/introducing-gpt-5/">GPT-5 <code>reasoning_effort</code></a> (2025-08-07). The dispatch console routes across those knobs; it did not invent them.</li>
+    </ul>
+
+    <h3>Is anything here genuinely distinctive? No — and here is the search that settled it</h3>
+    <p>A distinctiveness claim was only to be made if no earlier analog turned up after a real search. Five candidates were tested. <b>Every one has a well-established earlier analog, so no claim survives.</b></p>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>Candidate</th><th>What was searched</th><th>Earlier analog found</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="feat">Pre-committed release rules minted before results exist</td><td>preregistration + AI-agent evaluation + post-hoc threshold tuning</td><td><b>Preregistration</b> — decades old in clinical trials and psychology, now explicitly ported to agents in <a href="https://arxiv.org/abs/2606.11217">arXiv:2606.11217</a>, which names the exact failure mode (outcome-contingent redesign, specification search) and prescribes ex-ante success criteria</td></tr>
+          <tr><td class="feat">Mutant/falsifier gauntlet evidence</td><td>mutation testing + false-green / perpetually-green test suites</td><td><b>Mutation testing</b> — concept from 1971, mainstream via <a href="https://github.com/hcoles/pitest">pitest</a> and <a href="https://www.thoughtworks.com/radar/techniques/mutation-testing">Thoughtworks Radar</a>; catching tests that pass regardless of logic changes is its textbook purpose</td></tr>
+          <tr><td class="feat">Fenced protected-ref broker with conductor lease</td><td>fencing token + lease + distributed lock safety</td><td><b>Fencing tokens</b> — <a href="https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html">Kleppmann, 2016</a>: monotonically increasing token, resource rejects any lower token. Leases go back to Gray &amp; Cheriton (1989)</td></tr>
+          <tr><td class="feat">PENDING-vs-death ledger discrimination</td><td>job queue heartbeat + dead worker + stale claim reaper</td><td><b>Heartbeat + reaper</b> — <a href="https://github.com/forward3d/resque_worker_heartbeat">resque_worker_heartbeat</a>, delayed_job_heartbeat_plugin, Solid Queue. "No heartbeat for N seconds = worker is dead" is standard practice</td></tr>
+          <tr><td class="feat">Envelope doctrine</td><td>subagent context isolation + orchestrator receives only the result</td><td><b>Anthropic's own</b> <a href="https://www.anthropic.com/engineering/multi-agent-research-system">multi-agent research system</a> — the orchestrator receives the result, not the intermediate reasoning trace; shipped in Research, April 2025</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <p><b>What this actually says.</b> WarpOS's dispatch, workflow and state layers are a competent import of mature distributed-systems and software-engineering patterns — fencing tokens, leases, heartbeat reapers, mutation testing, preregistration, durable checkpointing — into an agent-orchestration context. That is good engineering and a real reason to trust the system. It is <b>not</b> prior art, and it should never be pitched as invention. The composition argument remains the only defensible originality claim, and this section narrows even that: the parts are all borrowed, knowingly so.</p>
+    </div>
+  </section>
+
+  <!-- ===================== LOOPS ===================== -->
+  <section id="loops">
+    <span class="sectnum">Section 06</span>
+    <h2>Thought · work · self-assessment loops</h2>
+    <p class="lede">The operator's theory: <em>"AI models basically improve through thought, work, and self-assessment loops — some of which I built into WarpOS."</em> Each row leads with the Anthropic/OpenAI comparison; the research lineage follows as context.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">10</span><span class="l">Loops</span></div>
+      <div class="score us"><span class="n">3</span><span class="l">WarpOS first vs vendors</span></div>
+      <div class="score them"><span class="n">7</span><span class="l">Vendor first</span></div>
+    </div>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>Loop</th><th>WarpOS</th><th>Anthropic / OpenAI closest</th><th>Their date</th><th>Verdict</th><th>Also — research lineage</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="feat">Reasoning frameworks + fix-quality scoring + traces</td><td class="mono">cd37d410<br>2026-04-12</td><td><b>Claude extended thinking</b> · <b>OpenAI o1</b> test-time reasoning</td><td class="mono">2025-02-24<br>2024-09</td><td><span class="v v-them">Vendor first</span></td><td>Chain-of-thought (<a href="https://arxiv.org/abs/2201.11903">2201.11903</a>, 2022-01); self-consistency 2022-03</td></tr>
+          <tr><td class="feat">Learnings lifecycle — validation → effective → decay</td><td class="mono">cd37d410<br>2026-04-12</td><td><b>Claude memory tool + context editing</b>; auto memory</td><td class="mono">2025-09-29<br>2026-02</td><td><span class="v v-them">Vendor first</span></td><td>MemGPT 2023-10; Voyager skill library (<a href="https://arxiv.org/abs/2305.16291">2305.16291</a>)</td></tr>
+          <tr><td class="feat">Sleep / dream consolidation</td><td class="mono">cd37d410<br>2026-04-12</td><td><b>Anthropic Dreaming</b> (Managed Agents)</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d · but Letta 2025-04-21 first industry-wide</td></tr>
+          <tr><td class="feat">β independent judge + self-correction</td><td class="mono">cd37d410<br>2026-04-12</td><td><b>Constitutional AI</b> critique/revision; <code>/code-review</code></td><td class="mono">2022-12<br>2025-10</td><td><span class="v v-them">Vendor first</span></td><td>LLM-as-a-judge 2023-06; Self-Rewarding LMs (<a href="https://arxiv.org/abs/2401.10020">2401.10020</a>)</td></tr>
+          <tr><td class="feat">Retro → learn:integrate → enforcers</td><td class="mono">6779f6e6<br>2026-05-01</td><td>Claude Code <b>auto memory</b></td><td class="mono">2026-02</td><td><span class="v v-them">Vendor first</span></td><td>Reflexion (<a href="https://arxiv.org/abs/2303.11366">2303.11366</a>); Self-Refine (<a href="https://arxiv.org/abs/2303.17651">2303.17651</a>), both 2023-03</td></tr>
+          <tr><td class="feat">ops-analyst — cycle-level environment adjustment</td><td class="mono">a071e801<br>2026-06-07</td><td>Anthropic <b>"Outcomes"</b></td><td class="mono">2026-05-06</td><td><span class="v v-them">Vendor first</span></td><td>STaR (<a href="https://arxiv.org/abs/2203.14465">2203.14465</a>, 2022-03)</td></tr>
+          <tr><td class="feat">Karpathy autoresearch loop</td><td class="mono">38d771bf<br>2026-04-18</td><td>Anthropic <b>"Outcomes"</b></td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+18 d · AI Scientist 2024-08 first</td></tr>
+          <tr><td class="feat">Gauntlet fix-cycles with mutant evidence</td><td class="mono">2026-07</td><td>Claude Code <code>/code-review</code>; OpenAI evals graders</td><td class="mono">2025-10<br>2024</td><td><span class="v v-them">Vendor first</span></td><td>Mutation testing, 1971</td></tr>
+          <tr><td class="feat">Enforcement-debt ledger</td><td class="mono">cd37d410<br>2026-04-12</td><td>No vendor equivalent</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td>Nothing comparable found</td></tr>
+          <tr><td class="feat">Oneshot state machine — cycles + points</td><td class="mono">cd37d410<br>2026-04-12</td><td><b>Claude Code Dynamic Workflows</b></td><td class="mono">2026-05-28</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+46 d · LangGraph 2024 first</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Assessing the theory against the literature</h3>
+    <p><b>Where it holds.</b> The strongest form is training-time: <b>RL on verifiable rewards</b> demonstrably improves models — o1 (2024-09) and <a href="https://arxiv.org/abs/2501.12948">DeepSeek-R1</a> (2025-01) show large gains from optimizing against checkable outcomes, and STaR showed self-bootstrapped reasoning traces back in 2022. Constitutional AI (2022-12) is the canonical self-assessment loop that actually changed weights. Memory consolidation is now shipped product on both sides.</p>
+    <p><b>Where it is contested.</b> <em>Intrinsic</em> self-correction — improving an answer with no external signal — is the weak link. Huang et al., <a href="https://arxiv.org/abs/2310.01798">"Large Language Models Cannot Self-Correct Reasoning Yet"</a> (ICLR 2024), found LLMs struggle to self-correct without external feedback, and specifically critiques Reflexion and Self-Refine. Gains are real but bounded, and they depend on having a <em>verifier</em> — which is exactly why WarpOS's gauntlets, mutant evidence and enforcers matter more than its reflection prompts.</p>
+    <div class="note">
+      <p><b>The load-bearing caveat.</b> Harness loops do not update model weights. Nothing in WarpOS improves Claude. The improvement lives entirely in the <b>scaffold and the memory</b> — better context, better procedures, accumulated learnings, enforcers that catch regressions. That is a real kind of improvement, but it is a <em>system</em> getting better, not a <em>model</em> getting better. "AI models improve through these loops" overclaims; "an AI <b>system</b> improves through these loops, and models improve through the training-time versions of them" is defensible and still interesting.</p>
+    </div>
+
+    <h3>What WarpOS's own telemetry could measure to test it</h3>
+    <p>The framework already emits enough to falsify or support the claim, and nobody has run the numbers:</p>
+    <ol class="steps">
+      <li><b>Learnings validated ratio over time</b> — of learnings reaching <code>effective</code>, what share survive 90 days without being contradicted? Rising means the consolidation loop works; flat means it is bookkeeping.</li>
+      <li><b>β self-correction rate</b> — how often does <code>beta:mine</code> → <code>beta:integrate</code> move a later verdict toward what the operator actually chose? That is the proxy-accuracy curve.</li>
+      <li><b>Gauntlet pass-rate per fix attempt</b> — if attempt 1 → 2 → 3 rates are not improving across sprints, the fix loop is retrying, not learning.</li>
+      <li><b>Enforcement-debt burn-down vs recurrence</b> — do closed debts stay closed? Recurrence means the enforcer, not the policy, was the gap.</li>
+    </ol>
+  </section>
+
+  <!-- ===================== SESSIONS ===================== -->
+  <section id="sessions">
+    <span class="sectnum">Section 07</span>
+    <h2>Cross-session messaging, session management &amp; crash recovery</h2>
+    <p class="lede">The operator's claim: <em>"Recently Anthropic published that you can run two sessions together. They use a shared inbox. I built that a long time ago!"</em> This one checks out — and it is the largest verified margin in the document.</p>
+
+    <div class="callout" style="border-left-color: var(--ok);">
+      <span class="tag" style="color: var(--ok);">✓ Verified — WarpOS first by 117 days</span>
+      <p><b>WarpOS</b> — <code>/session:write</code> ("post a message to the cross-session inbox so other Alex sessions can see it") and <code>/session:read</code> landed in <code>cd37d410</code> on <b>2026-04-12</b>, inside the framework-extraction commit, so they were built earlier still.</p>
+      <p><b>Anthropic</b> — cross-session <code>SendMessage</code> + <code>ListAgents</code> first appears in <b>v2.1.224</b>, released <b>2026-08-07</b>.</p>
+      <p><b>Method:</b> I pulled the complete <code>anthropics/claude-code</code> CHANGELOG (587,814 bytes, v0.2.21 → v2.1.251) via the GitHub contents API and walked it in version order, so "first appearance" is a mechanical result rather than a recollection.</p>
+      <p><b>Caveat, stated plainly:</b> the two designs are not identical. WarpOS's is a file-backed broadcast board — a session posts, others read when they choose. Anthropic's is addressed, discoverable, cross-machine peer messaging with delivery, approval gating and idle notifications. WarpOS built the simpler thing first; Anthropic built the harder thing later. The priority claim is sound; "we built SendMessage" would not be.</p>
+    </div>
+
+    <h3>Vendor milestones on the way there</h3>
+    <ul class="plain">
+      <li><b>v2.1.32</b> (2026-02-05) — agent teams research preview. Teammates share a task list and message each other, but only <em>inside</em> one session's team.</li>
+      <li><b>v2.1.178</b> (2026-06-15) — <code>TeamCreate</code>/<code>TeamDelete</code> removed; every session gets one implicit team.</li>
+      <li><b>v2.1.207</b> — first <code>mailbox</code> mention, a crash-loop fix on malformed teammate mailbox messages.</li>
+      <li><b>v2.1.224</b> (2026-08-07) — cross-session <code>SendMessage</code> + <code>ListAgents</code>, plus <code>crossSessionInbound</code>/<code>dialogExpiry</code> settings holding messages for approval.</li>
+      <li><b>v2.1.236</b> — <code>notify_when_idle</code> added to cross-session <code>SendMessage</code>.</li>
+    </ul>
+    <p><b>Industry:</b> no earlier analog found in the coding-agent space — Devin, Cursor background agents and Codex multi-agent all coordinate <em>within</em> a session or task tree, not between independent user sessions.</p>
+
+    <h3>Session management commands — vendor-first, decisively</h3>
+    <p>Every core session primitive predates WarpOS's entire history, most by more than a year. All dates from the same CHANGELOG scan.</p>
+    <div class="rail">
+      <table>
+        <thead><tr><th>Capability</th><th>WarpOS</th><th>Anthropic (Claude Code)</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Resume / continue a conversation</td><td class="mono">2026-04-12</td><td><code>claude --continue</code> / <code>--resume</code> — <b>v0.2.93</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Resume picker</td><td class="mono">2026-04-12</td><td><code>/resume</code> — <b>v1.0.27</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Undo / rewind conversation + code</td><td class="mono">—</td><td><code>/rewind</code> — <b>v2.0.0</b> (2025-09-29)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Context compaction</td><td class="mono">—</td><td>auto-compact — <b>v0.2.98</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Session-start hook</td><td class="mono">2026-05-01</td><td><code>SessionStart</code> hook — <b>v1.0.62</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Session-end hook</td><td class="mono">2026-06-01</td><td><code>SessionEnd</code> hook — <b>v1.0.85</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Export / share a conversation</td><td class="mono">2026-05-01</td><td><code>/export</code> — <b>v1.0.44</b> (2025)</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Fork a session</td><td class="mono">—</td><td><code>--fork-session</code> — <b>v2.0.73</b></td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Background tasks</td><td class="mono">—</td><td><code>&amp;</code> background tasks — <b>v2.0.45</b></td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat"><b>Prescriptive handoff document</b></td><td class="mono">2026-05-18</td><td>No equivalent — <code>/export</code> shares a transcript, auto-memory accumulates facts; neither produces an executable next-session brief</td><td><span class="v v-inc">Narrowly distinct</span></td></tr>
+          <tr><td class="feat"><b>Cognitive-chain session wrap</b></td><td class="mono">2026-06-01</td><td>No equivalent</td><td><span class="v v-inc">Narrowly distinct</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Crash recovery</h3>
+    <div class="rail">
+      <table>
+        <thead><tr><th>Class</th><th>WarpOS</th><th>Anthropic / OpenAI</th><th>Their date</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Session checkpoint</td><td class="mono">2026-04-12</td><td>Auto-checkpoints + <code>/rewind</code></td><td class="mono">2025-09-29</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Resume after crash</td><td class="mono">2026-04-12</td><td><code>--continue</code>/<code>--resume</code>; <code>SessionStart</code> resume context</td><td class="mono">2025</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Live git-ground-truth handoff</td><td class="mono">2026-06-08</td><td>No direct equivalent; auto-memory nearest</td><td class="mono">2026-02</td><td><span class="v v-inc">Inconclusive</span></td></tr>
+          <tr><td class="feat">Crash-safe loop state</td><td class="mono">2026-05-11</td><td>Dynamic Workflows (resumable runs)</td><td class="mono">2026-05-28</td><td><span class="v v-us">WarpOS first · +17 d</span></td></tr>
+          <tr><td class="feat">Dead-dispatch detection</td><td class="mono">2026-06</td><td>No vendor equivalent at this layer</td><td class="mono">—</td><td><span class="v v-them">Job queues first</span></td></tr>
+          <tr><td class="feat">Team reconciliation on resume</td><td class="mono">2026-05-26</td><td>Agent teams v2.1.32</td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== BETA ===================== -->
+  <section id="beta">
+    <span class="sectnum">Section 08</span>
+    <h2>β — proxy judgment and digital-twin agents</h2>
+    <p class="lede">β "simulates user judgment for autonomous decision-making — read-only, fast, precedent-aware", returning DECIDE / DIRECTIVE / ESCALATE. It landed <code>cd37d410</code> on 2026-04-12, with <code>beta:integrate</code> following on 2026-04-16.</p>
+
+    <div class="rail">
+      <table>
+        <thead><tr><th>Aspect of β</th><th>Anthropic / OpenAI closest</th><th>Their date</th><th>Verdict</th><th>Also — industry</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Judging output against written principles</td><td><b>Constitutional AI</b> — critique-and-revision; RLAIF</td><td class="mono">2022-12</td><td><span class="v v-them">Vendor first</span></td><td>LLM-as-a-judge / MT-Bench 2023-06</td></tr>
+          <tr><td class="feat">Read-only reviewer agent gating work</td><td>Claude Code <code>/code-review</code>, <code>security-review</code></td><td class="mono">2025-10</td><td><span class="v v-them">Vendor first</span></td><td>—</td></tr>
+          <tr><td class="feat">Goal/criterion arbitration for an autonomous agent</td><td>Managed Agents <b>"Outcomes"</b>; OpenAI evals graders</td><td class="mono">2026-05-06<br>2024</td><td><span class="v v-them">Vendor first</span></td><td>—</td></tr>
+          <tr><td class="feat">An agent standing in for the human user</td><td><i>No first-party vendor equivalent</i></td><td class="mono">—</td><td><span class="v v-them">Industry first</span></td><td><b>AutoGen <code>UserProxyAgent</code></b> — "conceptually a proxy agent for humans", 2023-09; <b>CAMEL</b> (<a href="https://arxiv.org/abs/2303.17760">2303.17760</a>, 2023-03)</td></tr>
+          <tr><td class="feat">A digital clone trained on one person's corpus</td><td>—</td><td class="mono">—</td><td><span class="v v-them">Industry first</span></td><td><b>Delphi</b> (2023) · <b>Personal AI</b> (founded 2020) · <b>Reid AI</b> (2024, GPT-4 on 20 years of content)</td></tr>
+          <tr><td class="feat">Precedent-aware judgment (P-nnn ledger)</td><td>—</td><td class="mono">—</td><td><span class="v v-them">First by decades</span></td><td><b>Case-based reasoning</b> in legal AI — <i>stare decisis</i> modelling, 1980s–90s</td></tr>
+          <tr><td class="feat">One identity in several modes (α/β/γ/δ/ε)</td><td>Claude Code <code>--agent</code> roles / subagents</td><td class="mono">2025-07-24</td><td><span class="v v-them">Vendor first</span></td><td>Cursor modes; Devin persona</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Is anything about β distinctive?</h3>
+    <p>I searched AutoGen's UserProxyAgent, CAMEL role-playing agents, LLM user simulators for dialogue evaluation, the digital-clone products (Delphi, Personal AI, Reid AI), Constitutional AI, LLM-as-judge, case-based reasoning and precedent, and preregistration for AI-agent experiments. <b>Every individual component is prior art:</b> simulating the user (AutoGen, 2023-09), learning one person's judgment from their corpus (Delphi and Personal AI, 2023 and earlier), judging against written principles (Constitutional AI, 2022-12), precedent-based reasoning (case-based reasoning, 1980s), and pre-committed criteria (preregistration).</p>
+    <p><b>What I could not find an exact analog for</b> — offered as an observation, not a claim: a read-only proxy of one <em>named principal</em> that (a) arbitrates live decisions for an autonomous system rather than impersonating the principal for an audience, (b) refines itself by mining that principal's own recorded decisions, (c) must cite a <code>msg_id</code>-backed ledger row so a claimed verdict is auditable, and (d) must pre-commit release criteria before results exist. The clone products do (b) but aim at presence and impersonation; the reviewer agents do (a) but are generic, not a model of a specific person, and not self-refining from that person's history.</p>
+    <div class="note">
+      <p><b>Verdict: inconclusive, leaning they-were-first.</b> The combination looks unusual and nothing was found doing exactly it — but "I searched and didn't find it" is weak evidence in a field this crowded, and every part is demonstrably older. Describe β as an unusual composition, never as an invention. The one property worth flagging as load-bearing is the <b>auditability rule</b>: a β verdict only counts if it cites a persistent-teammate ledger row. That is an enforcer — and enforcers are where this framework's real, if unpatentable, value sits.</p>
+    </div>
+  </section>
+
+  <!-- ===================== SKILL SWEEP ===================== -->
+  <section id="sweep">
+    <span class="sectnum">Section 09</span>
+    <h2>Skill sweep — 237 skills in 35 families</h2>
+    <p class="lede">A companion pass walked <em>every</em> skill in <code>.claude/commands</code>, rather than the ~50 capabilities sampled above, and graded each family against its closest Anthropic/OpenAI analog.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">237</span><span class="l">Skills · 35 families</span></div>
+      <div class="score us"><span class="n">3</span><span class="l">Families WarpOS first</span></div>
+      <div class="score them"><span class="n">30</span><span class="l">Families they were first</span></div>
+      <div class="score inc"><span class="n">1</span><span class="l">Inconclusive · 1 composite</span></div>
+    </div>
+
+    <p>237 skills = <b>230 live + 7 deprecated aliases</b>. At skill level the split is <b>204</b> they-were-first, <b>13</b> WarpOS-first, <b>2</b> inconclusive, <b>18</b> composite. The exhaustive pass confirms the sampled one: <b>~86% of families and ~86% of skills have an earlier analog.</b> Widening the aperture from 50 capabilities to 237 skills did not surface new priority claims — it surfaced one new <em>uncontested</em> pair and otherwise reinforced the same conclusion.</p>
+
+    <div class="rail">
+      <table>
+        <thead><tr><th>Family</th><th>Skills</th><th>First landed</th><th>Primary Anthropic/OpenAI analog</th><th>Their date</th><th>Verdict</th><th>Margin</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><code>enforcement-debt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td><code>claude plugin eval</code> (evaluates plugins, not unenforced policy)</td><td class="mono">2026</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="feat"><code>paths-registry</code></td><td class="mono">6</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="feat"><code>sleep-dream</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Anthropic <b>Dreaming</b> (Managed Agents)</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d · −356 d vs Letta</td></tr>
+          <tr><td class="feat"><code>cross-session-inbox</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Agent Teams <code>SendMessage</code> (in-session, session-scoped)</td><td class="mono">2026-02-05</td><td><span class="v v-inc">Superseded</span></td><td class="marg">see reconciliation</td></tr>
+          <tr><td class="feat"><code>warpos-distribution-integrity</code></td><td class="mono">18</td><td class="mono">2026-05-04</td><td>—</td><td class="mono">—</td><td><span class="v v-inc">N/A composite</span></td><td class="marg">—</td></tr>
+          <tr><td class="feat"><code>admin-panels-cockpit</code></td><td class="mono">10</td><td class="mono">2026-06-13</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−7 yr</td></tr>
+          <tr><td class="feat"><code>agent-roster</code></td><td class="mono">5</td><td class="mono">2026-05-04</td><td>Claude Code <b>Subagents</b> (<code>/agents</code>)</td><td class="mono">2025-07-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 mo</td></tr>
+          <tr><td class="feat"><code>beta-judgment</code></td><td class="mono">3</td><td class="mono">2026-04-12</td><td><code>/code-review</code>, <code>security-review</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="feat"><code>bootstrap-onramp</code></td><td class="mono">3</td><td class="mono">2026-05-25</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr</td></tr>
+          <tr><td class="feat"><code>commit-land</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Claude Code git integration; Copilot commit messages</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 yr</td></tr>
+          <tr><td class="feat"><code>docs-maps-discovery-reporting</code></td><td class="mono">18</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
+          <tr><td class="feat"><code>enforced-trackers</code></td><td class="mono">2</td><td class="mono">2026-06-05</td><td>Agent-teams shared task list; TodoWrite</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>epic-tracking</code></td><td class="mono">10</td><td class="mono">2026-06-09</td><td>Agent-teams shared task list</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>events-telemetry</code></td><td class="mono">2</td><td class="mono">2026-05-04</td><td>OpenAI Agents SDK built-in tracing</td><td class="mono">2025-03-11</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>growth-marketing</code></td><td class="mono">10</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−4.5 yr</td></tr>
+          <tr><td class="feat"><code>guides-knowledge</code></td><td class="mono">6</td><td class="mono">2026-05-31</td><td>Agent Skills / plugin skills as the delivery shape</td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr on indexing</td></tr>
+          <tr><td class="feat"><code>hooks-mgmt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td>Claude Code <b>hooks</b> (v1.0.38)</td><td class="mono">2025-06-30</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−262 d</td></tr>
+          <tr><td class="feat"><code>issue-register</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−17 yr</td></tr>
+          <tr><td class="feat"><code>karpathy-autoresearch</code></td><td class="mono">3</td><td class="mono">2026-04-18</td><td>Anthropic <b>Outcomes</b> / capability curves</td><td class="mono">2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg">~−20 mo industry · <b>+18 d vs Anthropic</b></td></tr>
+          <tr><td class="feat"><code>memory-learning</code></td><td class="mono">7</td><td class="mono">2026-04-12</td><td>Auto Memory / <code>MEMORY.md</code>; memory tool + context editing</td><td class="mono">2026-02<br>2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.5 yr</td></tr>
+          <tr><td class="feat"><code>model-routing-dispatch</code></td><td class="mono">8</td><td class="mono">2026-05-18</td><td>Fallback model chains (within-provider)</td><td class="mono">~2026-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>modes-teams</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Claude Code <b>Agent Teams</b></td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.7 yr</td></tr>
+          <tr><td class="feat"><code>oneshot-build</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Background / headless agents</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="feat"><code>permissions-turbo</code></td><td class="mono">4</td><td class="mono">2026-05-13</td><td>Claude Code <b>auto mode</b></td><td class="mono">2026-03-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−50 d</td></tr>
+          <tr><td class="feat"><code>portfolio-multiproduct</code></td><td class="mono">8</td><td class="mono">2026-05-22</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>qa-redteam-security</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>security-review</code> · vulnerability scanner</td><td class="mono">2025-10<br>2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.8 yr</td></tr>
+          <tr><td class="feat"><code>reasoning-frameworks</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Extended thinking · plan mode</td><td class="mono">2025-02-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−15 mo</td></tr>
+          <tr><td class="feat"><code>research</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>OpenAI <b>deep research</b></td><td class="mono">2025-02-02</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−16 mo</td></tr>
+          <tr><td class="feat"><code>roadmap</code></td><td class="mono">8</td><td class="mono">2026-05-19</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>session-state-handoff</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>/resume</code>, checkpoints/rewind (v2.0)</td><td class="mono">2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 mo</td></tr>
+          <tr><td class="feat"><code>skills-meta</code></td><td class="mono">9</td><td class="mono">2026-04-12</td><td>Agent Skills · <code>/skill-doctor</code> · <code>claude plugin eval</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 to −3 yr</td></tr>
+          <tr><td class="feat"><code>sprint-lifecycle</code></td><td class="mono">13</td><td class="mono">2026-04-16</td><td><b>Dynamic Workflows</b></td><td class="mono">2026-05-28</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−14 mo</td></tr>
+          <tr><td class="feat"><code>system-health-scans</code></td><td class="mono">4</td><td class="mono">2026-04-16</td><td>Claude Code <code>/doctor</code></td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 to −19 yr</td></tr>
+          <tr><td class="feat"><code>ui-design-review</code></td><td class="mono">2</td><td class="mono">2026-04-15</td><td>Claude Code + Playwright MCP visual review</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
+          <tr><td class="feat"><code>warp-distribution</code></td><td class="mono">20</td><td class="mono">2026-03-19</td><td>Plugins &amp; marketplaces</td><td class="mono">2025-10-31</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−168 d</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The five strongest cases</h3>
+    <ol class="steps">
+      <li><b><code>sleep-dream</code></b> — the flagship, reused from the dreaming case. +24 d vs Anthropic, −356 d vs Letta.</li>
+      <li><b><code>enforcement-debt</code></b> (5 skills) — uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived.</li>
+      <li><b><code>paths-registry</code></b> (6 skills) — uncontested but <b>self-deflating</b>, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly.</li>
+      <li><b><code>/guides:integrate</code> + <code>/knowledge:integrate</code></b> (2026-05-31 / 2026-06-05) — <b>the one genuinely new finding.</b> The obvious analogs (Cursor <code>@Docs</code>, Devin Knowledge, Backstage TechDocs) all <em>index</em> documentation for retrieval. These instead <b>place</b> a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another <b>enforcer</b> — a placement ledger makes missing wiring self-detecting.</li>
+      <li><b><code>cross-session-inbox</code></b> — see the reconciliation below.</li>
+    </ol>
+
+    <h3>Reconciliation — the cross-session verdict</h3>
+    <div class="note">
+      <p><b>The two passes disagree, and the CHANGELOG evidence wins.</b> The sweep graded <code>cross-session-inbox</code> inconclusive by comparing it against <b>Agent Teams <code>SendMessage</code></b> (2026-02-05), which predates WarpOS. But that feature is <em>in-session</em>: teammates inside one session's team, and the mailbox dies with the session. The correct comparand is Claude Code's <b>cross-session <code>SendMessage</code> + <code>ListAgents</code>, first shipped in v2.1.224 on 2026-08-07</b>.</p>
+      <p>Against the right feature the verdict is <b>WarpOS-first by 117 days</b>. The sweep's secondary industry findings still stand and are worth keeping: LangChain's <b>Agent Inbox</b> (2025-01-14) is a <em>human</em> inbox for reviewing agent output, and <b>A2A</b> is inter-vendor RPC — neither is a session-to-session broadcast board. The sweep's row is superseded, not wrong about its own narrower comparison.</p>
+    </div>
+
+    <h3>Why 18 skills carry no verdict</h3>
+    <p><b><code>warpos-distribution-integrity</code></b> (the <code>scan:warpos-*</code> family) is graded <b>N/A-composite</b> rather than given a verdict, and that is the honest call: these skills verify <em>WarpOS's own</em> distribution invariants — capsule resolvability, manifest honesty, layer diffs, migration coverage, version quorum. There is no external analog because there is no external artifact to compare against; they are self-referential integrity checks for one framework. Counting them as WarpOS-first would be meaningless, and counting them as they-were-first would be false. They are excluded from both totals, which is why 18 skills sit outside the split.</p>
+
+    <p class="caption">Full detail: <code>runtime/prior-art/SKILL-SWEEP-2026-08-28.md</code> (108 KB) and <code>runtime/prior-art/skill-sweep.json</code> (137 KB, schema <code>warpos.skill-sweep/1</code>).</p>
+  </section>
+
   <!-- ===================== STRENGTHEN ===================== -->
   <section id="strengthen">
-    <span class="sectnum">Section 05</span>
+    <span class="sectnum">Section 10</span>
     <h2>How to strengthen this</h2>
     <p class="lede">The dreaming claim currently rests on author-supplied git timestamps in an unsigned commit. Anyone can set <code>GIT_AUTHOR_DATE</code>. Here is what would make it adversarially defensible, in order of leverage.</p>
 

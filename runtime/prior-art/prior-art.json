@@ -590,6 +590,222 @@
       "https://mem0.ai/blog/how-memory-works-in-codex-cli"
     ]
   },
+  "dispatch_workflows_state_model": {
+    "note": "Scope addition 2. Deeper pass into dispatch machinery, workflow lifecycles, state management, and model-level features. The most one-sided section in this document.",
+    "totals": {"pairs": 16, "warpos_first": 0, "they_were_first": 16, "inconclusive": 0},
+    "warpos_dates": {
+      "dispatch": [
+        {"capability": "Cross-provider CLI dispatch (GPT + Gemini as peer roles)", "hash": "29908188", "date": "2026-04-16", "path": "scripts/dispatch-agent.js"},
+        {"capability": "Dispatch-route-guard hook (blocks raw CLI / API-when-CLI)", "hash": "b3a5ab06", "date": "2026-05-11", "path": "scripts/hooks/dispatch-route-guard.js"},
+        {"capability": "Model router / dispatch console (role->provider->model->effort)", "hash": "fcaaa242", "date": "2026-06-01", "path": ".claude/commands/models/router.md"},
+        {"capability": "Bounded Claude-dispatch wrapper (makes silent builder reap loud)", "hash": "d86eee75", "date": "2026-06-02", "path": "scripts/dispatch-claude.js"},
+        {"capability": "recordAgentDispatch — fake-green guard, ok derived from real bytes", "hash": "392ed50b", "date": "2026-06-05", "path": "scripts/sprint/epsilon-runtime.js"},
+        {"capability": "Evidence-bound record-inprocess for the Agent-tool roster", "hash": "b57aa406", "date": "2026-06-05", "path": "epsilon runtime Increment B"},
+        {"capability": "Completion ledger — PENDING/started/final rows", "hash": "c13e0e9c", "date": "2026-06-06", "path": ".claude/runtime/dispatch-completions.jsonl"},
+        {"capability": "Provider breaker", "hash": "b91e1285", "date": "2026-06-10", "path": "scripts/dispatch/"},
+        {"capability": "Foreground-aware 540s timeout clamp + death-record-on-bound", "hash": "ad8147e5", "date": "2026-06-10", "path": "dispatch wrapper (T-304)"},
+        {"capability": "Orphan reaper", "hash": "615e718d", "date": "2026-06-19", "path": "scripts/dispatch/reap-orphans.js"}
+      ],
+      "workflows": [
+        {"capability": "Karpathy closed-loop autoresearch", "hash": "38d771bf", "date": "2026-04-18", "path": ".claude/commands/karpathy/run.md"},
+        {"capability": "Sprint workflow v0.1", "hash": "d460de4b", "date": "2026-05-11", "path": "sprint skills"},
+        {"capability": "Declarative sprint hook-point registry", "hash": "ac566028", "date": "2026-06-02", "path": ".claude/agents/_org/sprint-hook-points.json"},
+        {"capability": "Registry-driven epsilon lifecycle runtime (ADR-0009)", "hash": "392ed50b", "date": "2026-06-05", "path": "scripts/sprint/epsilon-runtime.js"},
+        {"capability": "Brokered protected-ref land — controller fence + conductor lease", "hash": "9f0c6d90", "date": "2026-07-20", "path": "scripts/dispatch/trusted-controller.js, scripts/hooks/protected-ref-transaction.js"},
+        {"capability": "Broker merge", "hash": "fd2fb7c2", "date": "2026-07-21", "path": "scripts/dispatch/broker-merge.js"}
+      ],
+      "state": [
+        {"capability": "Session handoff", "hash": "cd37d410", "date": "2026-04-12", "path": ".claude/commands/session/handoff.md"},
+        {"capability": "Append-only events ledger + betaEvents with msg_id citations", "hash": "bb06646d", "date": "2026-04-16", "path": "paths.eventsFile, paths.betaEvents"},
+        {"capability": "Paths registry source->generated", "hash": "bb06646d", "date": "2026-04-16", "path": "framework/paths.registry.json"},
+        {"capability": "Turbo TTL grants with snapshot/restore", "hash": "684e37d2", "date": "2026-05-13", "path": "scripts/turbo/apply.js"},
+        {"capability": "DUMP.md prescriptive handoff", "hash": "c305b555", "date": "2026-05-18", "path": ".claude/commands/session/dump.md"},
+        {"capability": "Enforced TRACKER + 20-check validator, hook-enforced", "hash": "e386d70a", "date": "2026-06-05", "path": "scripts/trackers/validate.js"},
+        {"capability": "Enforcement-debt ledger (genesis/update rows)", "hash": "cd37d410", "date": "2026-04-12", "path": "paths.enforcementDebt"},
+        {"capability": "Learnings lifecycle (pending_validation->effective, decay)", "hash": "cd37d410", "date": "2026-04-12", "path": "paths.learningsFile"}
+      ]
+    },
+    "pairs": [
+      {"id": "lifecycle-vs-google-adk", "warpos": "Registry-driven lifecycle runtime; declarative hook-points", "warpos_date": "2026-06-05", "analog": "Google ADK workflow agents — Sequential/Parallel/Loop, graph runtime with routing, fan-out/fan-in, retry, state management, HITL, nested workflows", "company": "Google", "their_date": "2025-04", "sources": ["https://developers.googleblog.com/en/agent-development-kit-easy-to-build-multi-agent-applications/", "https://adk.dev/"], "verdict": "THEY-WERE-FIRST", "margin_note": "~14 months"},
+      {"id": "lifecycle-vs-dynamic-workflows", "warpos": "Registry-driven lifecycle runtime", "warpos_date": "2026-06-05", "analog": "Claude Code Dynamic Workflows — agent()/parallel()/pipeline(), deterministic JS orchestration, up to 1,000 agents, CLI v2.1.154, shipped with Opus 4.8", "company": "Anthropic", "their_date": "2026-05-28", "sources": ["https://www.infoq.com/news/2026/06/dynamic-workflows-claude-code/", "https://alexop.dev/posts/claude-code-workflows-deterministic-orchestration/"], "verdict": "THEY-WERE-FIRST", "margin_days": -8},
+      {"id": "lifecycle-vs-crewai-flows", "warpos": "Registry-driven lifecycle runtime", "warpos_date": "2026-06-05", "analog": "CrewAI Flows — event-driven structured workflows", "company": "CrewAI", "their_date": "2024-mid", "sources": ["https://docs.crewai.com/en/concepts/flows"], "verdict": "THEY-WERE-FIRST", "margin_note": "~2 years"},
+      {"id": "envelope-vs-anthropic-orchestrator", "warpos": "Envelope-not-content doctrine (orchestrator holds envelopes)", "warpos_date": "2026", "analog": "Anthropic's own orchestrator-worker pattern — subagent context isolation; the orchestrator receives only the result, not the intermediate reasoning trace", "company": "Anthropic", "their_date": "2025-04", "sources": ["https://www.anthropic.com/engineering/multi-agent-research-system"], "verdict": "THEY-WERE-FIRST", "margin_note": "~1 year", "note": "Research shipped April 2025; engineering post June 2025"},
+      {"id": "inprocess-roster-vs-subagents", "warpos": "In-process roster dispatch with evidence-bound completion", "warpos_date": "2026-06-05", "analog": "Claude Code Subagents; Codex Subagents GA; Codex Multi-Agent v2 (CLI v0.137)", "company": "Anthropic / OpenAI", "their_date": "2025-07-24", "their_dates_all": {"claude_subagents": "2025-07-24", "codex_subagents_ga": "2026-03", "codex_multiagent_v2": "2026-06-04"}, "sources": ["https://codex.danielvaughan.com/2026/06/08/parallel-subagent-race-codex-cli-multi-agent-v2-claude-dynamic-workflows-architecture-comparison/"], "verdict": "THEY-WERE-FIRST", "margin_note": "~11 months"},
+      {"id": "crossprovider-vs-a2a", "warpos": "Cross-provider CLI routing via role registry", "warpos_date": "2026-04-16", "analog": "A2A protocol — cross-vendor agent discovery and coordination; transferred to Linux Foundation 2025-06", "company": "Google / Linux Foundation", "their_date": "2025-04", "sources": ["https://en.wikipedia.org/wiki/Agent2Agent"], "verdict": "THEY-WERE-FIRST", "margin_note": "~12 months, on the concept"},
+      {"id": "ledger-vs-job-queue-heartbeat", "warpos": "Completion ledger — PENDING vs started vs final; death records", "warpos_date": "2026-06-06", "analog": "Job-queue heartbeat + reaper — resque_worker_heartbeat, delayed_job_heartbeat_plugin, Rails Solid Queue; stale-claim detection", "company": "OSS ecosystem", "their_date": "~2012", "sources": ["https://github.com/forward3d/resque_worker_heartbeat", "https://github.com/salsify/delayed_job_heartbeat_plugin", "https://github.com/rails/solid_queue"], "verdict": "THEY-WERE-FIRST", "margin_note": "~10 years"},
+      {"id": "reaper-vs-supervisor-prune", "warpos": "Orphan reaper", "warpos_date": "2026-06-19", "analog": "Supervisor prunes expired heartbeats, marks claimed jobs failed", "company": "OSS ecosystem", "their_date": "~2012", "sources": ["https://github.com/rails/solid_queue"], "verdict": "THEY-WERE-FIRST", "margin_note": "~10 years"},
+      {"id": "fence-vs-fencing-tokens", "warpos": "Controller fence + conductor lease on protected refs", "warpos_date": "2026-07-20", "analog": "Fencing tokens + leases — monotonically increasing token, resource rejects any lower token", "company": "Kleppmann / distributed-systems literature", "their_date": "2016-02", "sources": ["https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html"], "verdict": "THEY-WERE-FIRST", "margin_note": "~10 years; leases go back to Gray & Cheriton 1989"},
+      {"id": "durable-vs-langgraph-checkpointers", "warpos": "Durable, resumable lifecycle across crashes", "warpos_date": "2026-06-05", "analog": "LangGraph checkpointers — per-superstep state, threads, time travel, HITL, durable execution", "company": "LangChain", "their_date": "2024", "sources": ["https://docs.langchain.com/oss/python/langgraph/checkpointers"], "verdict": "THEY-WERE-FIRST", "margin_note": "~2 years"},
+      {"id": "durable-vs-temporal", "warpos": "Durable, resumable lifecycle across crashes", "warpos_date": "2026-06-05", "analog": "Temporal durable execution; OpenAI Agents SDK integration GA", "company": "Temporal", "their_date": "2026-03-23", "sources": ["https://temporal.io/solutions/ai"], "verdict": "THEY-WERE-FIRST"},
+      {"id": "checkpoint-vs-gemini-cli", "warpos": "Session checkpoint / resume", "warpos_date": "2026-04-12", "analog": "Gemini CLI checkpointing — snapshot before tool edits, instant revert; also Claude Code rewind", "company": "Google", "their_date": "2025-06", "sources": ["https://geminicli.com/docs/cli/checkpointing/"], "verdict": "THEY-WERE-FIRST", "margin_note": "~10 months"},
+      {"id": "events-vs-agent-tracing", "warpos": "Events ledger with citable ids (agent tracing)", "warpos_date": "2026-04-16", "analog": "LangSmith; Langfuse agent tracing; OpenAI Agents SDK built-in tracing (traces and spans over LLM generations, tool calls, handoffs, guardrails)", "company": "LangChain / Langfuse / OpenAI", "their_date": "2023", "their_dates_all": {"langsmith": "2023", "langfuse_agent_tracing": "2024-07", "openai_agents_sdk_tracing": "2025-03-11"}, "sources": ["https://langfuse.com/blog/2024-07-ai-agent-observability-with-langfuse", "https://openai.github.io/openai-agents-python/tracing/"], "verdict": "THEY-WERE-FIRST", "margin_note": "~3 years"},
+      {"id": "learnings-vs-memory-tool", "warpos": "Learnings lifecycle / memory promotion", "warpos_date": "2026-04-12", "analog": "Claude memory tool + context editing (Developer Platform, Bedrock, Vertex)", "company": "Anthropic", "their_date": "2025-09-29", "sources": ["https://www.anthropic.com/news/context-management", "https://www.techmeme.com/250929/p33"], "verdict": "THEY-WERE-FIRST", "margin_note": "~6 months"},
+      {"id": "turbo-vs-guardrails", "warpos": "Turbo TTL grants; permission pre-authorization", "warpos_date": "2026-05-13", "analog": "OpenAI Agents SDK guardrails (input/output validation); Claude Code auto mode", "company": "OpenAI / Anthropic", "their_date": "2025-03-11", "sources": ["https://developers.openai.com/api/docs/guides/agents"], "verdict": "THEY-WERE-FIRST", "margin_note": "~14 months"},
+      {"id": "effort-routing-vs-model-knobs", "warpos": "Per-role effort/model selection", "warpos_date": "2026-06-01", "analog": "Extended thinking with configurable thinking budget; Gemini 2.5 thinking budgets; GPT-5 reasoning_effort", "company": "Anthropic / Google / OpenAI", "their_date": "2025-02-24", "their_dates_all": {"claude_extended_thinking": "2025-02-24", "gemini_thinking_budgets": "2025-04-17", "gpt5_reasoning_effort": "2025-08-07"}, "sources": ["https://www.anthropic.com/news/visible-extended-thinking", "https://developers.googleblog.com/en/start-building-with-gemini-25-flash/", "https://openai.com/index/introducing-gpt-5/"], "verdict": "THEY-WERE-FIRST", "margin_note": "~15 months", "note": "WarpOS routes across these knobs; it did not invent them"}
+    ],
+    "model_layer_findings": [
+      "Dreaming is not purely a harness feature — Anthropic announced it as a Managed Agents capability (2026-05-06): server-side, scheduled, emitting a reviewable diff, with Claude Code /dream as the surfaced end. WarpOS's /sleep:deep is a prompt-and-script procedure the model executes. Same problem, different layer; the timing claim stands but the two are not the same artifact.",
+      "Persistent agent memory moved into the API, not just the CLI — memory tool + context editing shipped 2025-09-29 on the Claude Developer Platform (plus Bedrock and Vertex), predating WarpOS's learnings lifecycle and making memory a model-platform primitive rather than a framework invention.",
+      "Effort/thinking control was a model-level knob before WarpOS routed on it — extended thinking with configurable budget 2025-02-24, Gemini thinking budgets 2025-04-17, GPT-5 reasoning_effort 2025-08-07."
+    ],
+    "distinctiveness_search": {
+      "conclusion": "NO claim survives. All five candidates have well-established earlier analogs. WarpOS's dispatch/workflow/state layers are a competent IMPORT of mature distributed-systems and software-engineering patterns into an agent-orchestration context — good engineering and a real reason to trust the system, but NOT prior art, and never to be pitched as invention.",
+      "candidates": [
+        {"candidate": "Pre-committed release rules minted by an in-team judge before results exist", "searched": "preregistration + AI-agent evaluation + post-hoc threshold tuning", "earlier_analog": "Preregistration — decades old in clinical trials and psychology, now explicitly ported to agents", "source": "https://arxiv.org/abs/2606.11217", "note": "The paper names the exact failure mode (outcome-contingent redesign, specification search) and prescribes ex-ante success criteria"},
+        {"candidate": "Mutant/falsifier gauntlet evidence ('observed RED on mutation')", "searched": "mutation testing + false-green / perpetually-green test suites", "earlier_analog": "Mutation testing — concept from 1971, mainstream via pitest and Thoughtworks Radar", "source": "https://www.thoughtworks.com/radar/techniques/mutation-testing", "note": "Catching 'perpetually green' tests that pass regardless of logic changes is its textbook purpose"},
+        {"candidate": "Fenced protected-ref broker with conductor lease", "searched": "fencing token + lease + distributed lock safety", "earlier_analog": "Fencing tokens — monotonically increasing token, resource rejects any lower token", "source": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html", "note": "Kleppmann 2016; leases go back to Gray & Cheriton 1989"},
+        {"candidate": "PENDING-vs-death ledger discrimination", "searched": "job queue heartbeat + dead worker + stale claim reaper", "earlier_analog": "Heartbeat + reaper — 'no heartbeat for N seconds = worker is dead, mark claimed jobs failed' is standard job-queue practice", "source": "https://github.com/forward3d/resque_worker_heartbeat"},
+        {"candidate": "Envelope doctrine (orchestrator holds envelopes, not content)", "searched": "subagent context isolation + orchestrator receives only the result", "earlier_analog": "Anthropic's own multi-agent research system — orchestrator receives the result, not the intermediate reasoning trace", "source": "https://www.anthropic.com/engineering/multi-agent-research-system", "note": "Shipped in Research, April 2025"}
+      ]
+    }
+  },
+  "improvement_loops": {
+    "note": "Scope addition 3. Operator theory, verbatim: 'ai models basically improve through thought, work, and self-assessment loops. some of which i built into warpos.' Each row leads with the Anthropic/OpenAI comparison per the priority rule; research lineage is secondary.",
+    "totals": {"loops": 10, "warpos_first_vs_vendors": 3, "vendor_first": 7},
+    "loops": [
+      {"loop": "Reasoning frameworks + fix-quality scoring (0-4) + reasoning traces", "warpos": "cd37d410 2026-04-12", "vendor": "Claude extended thinking with budget; OpenAI o1 test-time reasoning", "vendor_date": "2025-02-24 / 2024-09", "verdict": "VENDOR-FIRST", "research_lineage": "Chain-of-thought (arXiv 2201.11903, 2022-01); self-consistency 2022-03; Tree of Thoughts 2023-05"},
+      {"loop": "Learnings lifecycle — pending_validation -> effective -> decay", "warpos": "cd37d410 2026-04-12", "vendor": "Claude memory tool + context editing; Claude Code auto memory", "vendor_date": "2025-09-29 / 2026-02", "verdict": "VENDOR-FIRST", "research_lineage": "MemGPT 2023-10; Voyager skill library (arXiv 2305.16291, 2023-05)"},
+      {"loop": "Sleep / dream consolidation (/sleep:*)", "warpos": "cd37d410 2026-04-12", "vendor": "Anthropic Dreaming (Managed Agents)", "vendor_date": "2026-05-06", "verdict": "WARPOS-FIRST", "margin_days": 24, "research_lineage": "Letta sleep-time compute 2025-04-21 — they-were-first industry-wide"},
+      {"loop": "Beta independent judge + self-correction (beta:mine / beta:integrate)", "warpos": "cd37d410 2026-04-12; integrate e0f25200 2026-04-16", "vendor": "Constitutional AI critique/revision; Claude Code /code-review, security-review", "vendor_date": "2022-12 / 2025-10", "verdict": "VENDOR-FIRST", "research_lineage": "LLM-as-a-judge / MT-Bench 2023-06; Self-Rewarding LMs (arXiv 2401.10020, 2024-01)"},
+      {"loop": "Retro -> /learn:integrate -> promotion into enforcers", "warpos": "6779f6e6 2026-05-01", "vendor": "Claude Code auto memory (captures learnings automatically)", "vendor_date": "2026-02", "verdict": "VENDOR-FIRST", "research_lineage": "Reflexion (arXiv 2303.11366, 2023-03); Self-Refine (arXiv 2303.17651, 2023-03); Generative Agents reflection 2023-04"},
+      {"loop": "ops-analyst ('learner') — cycle-level environment adjustment", "warpos": "a071e801 2026-06-07 (as 'learner' 6779f6e6 2026-05-01)", "vendor": "Anthropic 'Outcomes' for Managed Agents", "vendor_date": "2026-05-06", "verdict": "VENDOR-FIRST", "research_lineage": "STaR self-taught reasoner (arXiv 2203.14465, 2022-03)"},
+      {"loop": "Karpathy autoresearch loop — metric-driven self-optimization of agent specs", "warpos": "38d771bf 2026-04-18", "vendor": "Anthropic 'Outcomes'", "vendor_date": "2026-05-06", "verdict": "WARPOS-FIRST", "margin_days": 18, "research_lineage": "Sakana AI Scientist 2024-08; AlphaEvolve 2025-05 — they-were-first"},
+      {"loop": "Gauntlet fix-cycles with mutant/falsifier evidence + fix-attempt budgets", "warpos": "2026-07", "vendor": "Claude Code /code-review; OpenAI evals graders", "vendor_date": "2025-10 / 2024", "verdict": "VENDOR-FIRST", "research_lineage": "Mutation testing 1971; pitest"},
+      {"loop": "Enforcement-debt ledger — every policy names its enforcer", "warpos": "cd37d410 2026-04-12", "vendor": "no vendor equivalent", "vendor_date": null, "verdict": "WARPOS-FIRST", "research_lineage": "nothing exactly comparable found"},
+      {"loop": "Oneshot state machine with cycles + points", "warpos": "cd37d410 2026-04-12", "vendor": "Claude Code Dynamic Workflows", "vendor_date": "2026-05-28", "verdict": "WARPOS-FIRST", "margin_days": 46, "research_lineage": "LangGraph 2024 — they-were-first"}
+    ],
+    "theory_assessment": {
+      "well_supported": "Training-time RL on verifiable rewards demonstrably improves models — o1 (2024-09) and DeepSeek-R1 (arXiv 2501.12948, 2025-01); STaR (2022-03) showed self-bootstrapped reasoning traces earlier. Constitutional AI / RLAIF (2022-12) is the canonical self-assessment loop that actually changed weights. Memory consolidation is now shipped product on both sides (Letta 2025-04, Anthropic Dreaming 2026-05).",
+      "contested": "Intrinsic self-correction — improving an answer with no external signal — is the weak link. Huang et al., 'Large Language Models Cannot Self-Correct Reasoning Yet' (arXiv 2310.01798, ICLR 2024) found LLMs struggle to self-correct without external feedback and specifically critiques Reflexion and Self-Refine. Gains are real but bounded and depend on having a verifier.",
+      "load_bearing_caveat": "Harness loops do NOT update model weights. Nothing in WarpOS improves Claude. The improvement lives in the scaffold and the memory — better context, procedures, accumulated learnings, enforcers catching regressions. That is a SYSTEM getting better, not a MODEL getting better. 'AI models improve through these loops' overclaims; 'an AI SYSTEM improves through these loops, and models improve through the training-time versions of them' is defensible and still interesting.",
+      "telemetry_to_test_it": [
+        "Learnings validated ratio over time — of learnings reaching effective, what share survive 90 days uncontradicted? Rising = the consolidation loop works; flat = bookkeeping.",
+        "Beta self-correction rate — how often does beta:mine -> beta:integrate change a later verdict toward what the operator actually chose? That is the proxy-accuracy curve.",
+        "Gauntlet pass-rate per fix attempt — if attempt 1->2->3 rates aren't improving across sprints, the fix loop is retrying, not learning.",
+        "Enforcement-debt burn-down vs recurrence — do closed debts stay closed? Recurrence means the enforcer, not the policy, was the gap."
+      ],
+      "bottom_line": "Directionally right about the mechanism class, wrong about the locus. WarpOS invented none of these loops — vendors and the literature got to all of them first, with two 18-24 day exceptions — but it instruments them unusually well and is one of the few setups that could measure whether they pay off."
+    }
+  },
+  "cross_session_and_session_management": {
+    "note": "Scope additions 4 and 6. Operator claim, verbatim: 'recently Anthropic published that you can run two sessions together. they use a shared inbox. I built that a long time ago!' The claim CHECKS OUT and is the largest verified margin in this document.",
+    "headline": {
+      "warpos": "/session:write ('post a message to the cross-session inbox so other Alex sessions can see it') and /session:read",
+      "warpos_first_landed": "2026-04-12",
+      "warpos_hash": "cd37d410",
+      "warpos_paths": [".claude/commands/session/write.md", ".claude/commands/session/read.md"],
+      "warpos_evidence": "git --diff-filter=A; the string 'cross-session' first appears in the same framework-extraction commit, so it was built earlier still",
+      "vendor": "Claude Code cross-session SendMessage + ListAgents — 'Claude Code sessions can now message each other, on any of your machines, with ListAgents to discover them (macOS and Linux)'",
+      "vendor_version": "v2.1.224",
+      "vendor_date": "2026-08-07",
+      "vendor_evidence": "Official anthropics/claude-code CHANGELOG.md pulled server-side via the GitHub contents API (587,814 bytes, v0.2.21 -> v2.1.251) and walked in version order; earliest occurrence of both 'cross-session' and 'ListAgents' is v2.1.224. Mechanical result, not recollection.",
+      "verdict": "WARPOS-FIRST",
+      "margin_days": 117,
+      "caveat": "The designs are NOT identical. WarpOS's is a file-backed broadcast board — a session posts, others read when they choose. Anthropic's is addressed, discoverable, cross-machine peer messaging with delivery, approval gating and idle notifications. WarpOS built the simpler thing first; Anthropic built the harder thing later. Do not overstate this as 'we built SendMessage'.",
+      "industry": "No earlier analog found in the coding-agent space — Devin, Cursor background agents and Codex multi-agent coordinate within a session or task tree, not between independent user sessions."
+    },
+    "vendor_milestones": [
+      {"version": "v2.1.32", "date": "2026-02-05", "what": "agent teams research preview — teammates share a task list and message each other, but only inside one session's team"},
+      {"version": "v2.1.178", "date": "2026-06-15", "what": "TeamCreate/TeamDelete removed; every session gets one implicit team"},
+      {"version": "v2.1.207", "what": "first 'mailbox' mention — crash-loop fix on malformed teammate mailbox messages"},
+      {"version": "v2.1.224", "date": "2026-08-07", "what": "cross-session SendMessage + ListAgents; crossSessionInbound / dialogExpiry settings hold messages for approval"},
+      {"version": "v2.1.236", "what": "notify_when_idle added to cross-session SendMessage"}
+    ],
+    "session_management": [
+      {"capability": "Resume / continue a conversation", "warpos": "/session:resume cd37d410 2026-04-12", "vendor": "claude --continue / --resume", "vendor_version": "v0.2.93", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Resume picker", "warpos": "same", "vendor": "/resume slash command", "vendor_version": "v1.0.27", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Undo / rewind conversation + code", "warpos": "none", "vendor": "/rewind", "vendor_version": "v2.0.0", "vendor_date": "2025-09-29", "verdict": "VENDOR-FIRST"},
+      {"capability": "Context compaction", "warpos": "none", "vendor": "auto-compact", "vendor_version": "v0.2.98", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Session-start hook", "warpos": "mode-set.js posture banner 6779f6e6 2026-05-01", "vendor": "SessionStart hook", "vendor_version": "v1.0.62", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Session-end hook", "warpos": "/session:end bf894984 2026-06-01", "vendor": "SessionEnd hook", "vendor_version": "v1.0.85", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Export / share a conversation", "warpos": "/session:recap 6779f6e6 2026-05-01", "vendor": "/export", "vendor_version": "v1.0.44", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"capability": "Fork a session", "warpos": "none", "vendor": "--fork-session", "vendor_version": "v2.0.73", "verdict": "VENDOR-FIRST"},
+      {"capability": "Background tasks", "warpos": "none", "vendor": "& background tasks", "vendor_version": "v2.0.45", "verdict": "VENDOR-FIRST"},
+      {"capability": "Prescriptive handoff document", "warpos": "/session:dump -> DUMP.md c305b555 2026-05-18 — context, verbatim payloads, dispatch instructions AND anti-instructions, for a fresh session to read once and execute", "vendor": "no equivalent — /export shares a transcript, auto-memory accumulates facts; neither produces an executable next-session brief", "verdict": "INCONCLUSIVE — narrowly WarpOS-distinct"},
+      {"capability": "Cognitive-chain session wrap", "warpos": "/session:end bf894984 2026-06-01 — learn/mine/sleep -> integrate -> validate TRACKER -> handoff -> land -> fresh branch", "vendor": "no equivalent", "verdict": "INCONCLUSIVE — narrowly WarpOS-distinct"}
+    ],
+    "crash_recovery": [
+      {"class": "Session checkpoint", "warpos": "/session:checkpoint + .session-checkpoint.json cd37d410 2026-04-12", "vendor": "Claude Code auto-checkpoints + /rewind (v2.0.0)", "vendor_date": "2025-09-29", "verdict": "VENDOR-FIRST", "industry": "Gemini CLI checkpointing 2025-06 — THEY-WERE-FIRST"},
+      {"class": "Resume after crash", "warpos": "/session:resume priority load: DUMP -> handoff -> checkpoint -> TRACKER", "vendor": "--continue / --resume; SessionStart hook resume context", "vendor_date": "2025", "verdict": "VENDOR-FIRST"},
+      {"class": "Live git-ground-truth handoff", "warpos": "handoff-live.js 6f5b7f07 2026-06-08", "vendor": "no direct equivalent; auto-memory nearest", "vendor_date": "2026-02", "verdict": "INCONCLUSIVE"},
+      {"class": "Crash-safe loop state", "warpos": "/sprint:execute crash-safe progress d460de4b 2026-05-11", "vendor": "Claude Code Dynamic Workflows (resumable runs)", "vendor_date": "2026-05-28", "verdict": "WARPOS-FIRST", "margin_days": 17, "industry": "LangGraph checkpointers / Temporal 2024 — THEY-WERE-FIRST"},
+      {"class": "Dead-dispatch detection", "warpos": "completion ledger PENDING-vs-final, shape field, 540s clamp c13e0e9c/ad8147e5 2026-06", "vendor": "no vendor equivalent at this layer", "verdict": "THEY-WERE-FIRST", "industry": "job-queue heartbeat/reaper ~2012"},
+      {"class": "Orphan reaping", "warpos": "reap-orphans.js 615e718d 2026-06-19", "verdict": "THEY-WERE-FIRST", "industry": "same lineage"},
+      {"class": "Verify-don't-inherit drift check", "warpos": "tracker-reality-drift.js a74ed329 2026-06-16", "vendor": "no vendor equivalent", "verdict": "INCONCLUSIVE"},
+      {"class": "Team reconciliation on resume", "warpos": "adhoc-team-hygiene.js 03cf48cd 2026-05-26", "vendor": "agent teams v2.1.32 predates it; implicit teams v2.1.178", "vendor_date": "2026-02-05", "verdict": "VENDOR-FIRST"}
+    ]
+  },
+  "beta_proxy_and_digital_twins": {
+    "note": "Scope addition 5. Operator ask: 'look at who else made agents like beta / your virtual self or digital clone.'",
+    "warpos_dates": {
+      "beta_spec": {"path": ".claude/agents/president/beta.md", "hash": "cd37d410", "date": "2026-04-12", "desc": "Simulates user judgment for autonomous decision-making. Read-only, fast, precedent-aware. Returns DECIDE / DIRECTIVE / ESCALATE."},
+      "judgement_model": {"hash": "25ce1750", "date": "2026-04-15"},
+      "beta_mine": {"hash": "cd37d410", "date": "2026-04-12"},
+      "beta_integrate": {"hash": "e0f25200", "date": "2026-04-16"},
+      "decision_policy": {"hash": "6779f6e6", "date": "2026-05-01"}
+    },
+    "pairs": [
+      {"aspect": "A model that critiques and judges another model's output against written principles", "vendor": "Constitutional AI — critique-and-revision against a written constitution; RLAIF", "vendor_date": "2022-12", "verdict": "VENDOR-FIRST", "margin_note": "~3.3 years", "industry": "LLM-as-a-judge / MT-Bench 2023-06"},
+      {"aspect": "A read-only reviewer agent gating work", "vendor": "Claude Code /code-review, security-review skills", "vendor_date": "2025-10", "verdict": "VENDOR-FIRST"},
+      {"aspect": "Goal/criterion arbitration for an autonomous agent", "vendor": "Anthropic Managed Agents 'Outcomes'; OpenAI evals graders", "vendor_date": "2026-05-06 / 2024", "verdict": "VENDOR-FIRST"},
+      {"aspect": "An agent that stands in for the human user", "vendor": "no first-party vendor equivalent", "verdict": "THEY-WERE-FIRST (industry)", "industry": "AutoGen UserProxyAgent — 'conceptually a proxy agent for humans', 2023-09; CAMEL role-play AI-user agent (arXiv 2303.17760, 2023-03); LLM user simulators for dialogue eval (arXiv 2402.13374, 2024-02)"},
+      {"aspect": "A digital clone trained on one person's corpus", "vendor": "none", "verdict": "THEY-WERE-FIRST (industry)", "industry": "Delphi (founded 2022-12, launched 2023) — clone from your emails, transcripts, podcasts; Personal AI (founded 2020) personal language models; Reid AI (2024) — GPT-4 trained on 20 years of Hoffman's content", "sources": ["https://venturebeat.com/ai/you-can-now-make-an-ai-clone-of-yourself-or-anyone-else-living-or-dead-with-delphi", "https://www.personal.ai/", "https://www.heygen.com/customer-stories/reid-ai"]},
+      {"aspect": "Precedent-aware judgment (P-nnn ledger)", "vendor": "none", "verdict": "THEY-WERE-FIRST", "margin_note": "decades", "industry": "Case-based reasoning in legal AI — Ashley et al., stare decisis modelling, 1980s-90s"},
+      {"aspect": "One identity in several modes (alpha/beta/gamma/delta/epsilon faces)", "vendor": "Claude Code --agent roles / subagents", "vendor_date": "2025-07-24", "verdict": "VENDOR-FIRST", "industry": "Cursor modes; Devin persona"}
+    ],
+    "distinctiveness_search": {
+      "searched": ["AutoGen UserProxyAgent / human proxy agent", "CAMEL role-playing agents", "LLM user simulator for dialogue evaluation", "digital clone / digital twin products (Delphi, Personal AI, Reid AI)", "Constitutional AI critique model", "LLM-as-judge", "case-based reasoning and precedent", "preregistration for AI-agent experiments"],
+      "every_component_is_prior_art": [
+        "Simulating the user -> AutoGen UserProxyAgent (2023-09) is literally a proxy for the human",
+        "Learning a specific person's judgment from their corpus -> Delphi and Personal AI productized this in 2023 and earlier; Reid AI 2024",
+        "Judging against written principles -> Constitutional AI, 2022-12",
+        "Precedent-based reasoning -> case-based reasoning, 1980s",
+        "Pre-committed criteria -> preregistration (see distinctiveness_search in dispatch_workflows_state_model)"
+      ],
+      "no_exact_analog_found_for": "A read-only proxy of one NAMED PRINCIPAL that (a) arbitrates live decisions for an autonomous system rather than impersonating the principal for an audience, (b) refines itself by mining that principal's own recorded decisions (beta:mine -> beta:integrate), (c) must cite a msg_id-backed ledger row so a claimed verdict is auditable, and (d) must pre-commit release criteria before results exist. Digital-clone products do (b) but aim at presence/impersonation, not decision arbitration; reviewer/judge agents do (a) but are generic, not a model of a specific person and not self-refining from that person's history.",
+      "verdict": "INCONCLUSIVE, leaning THEY-WERE-FIRST. The combination looks unusual and nothing was found doing exactly it — but 'I searched and didn't find it' is weak evidence in a crowded field, and every part is demonstrably older. Describe as an unusual composition, never as an invention.",
+      "most_load_bearing_property": "The auditability rule — a beta verdict only counts if it cites a persistent-teammate ledger row. That is an enforcer, and enforcers are where this framework's real, if unpatentable, value sits."
+    }
+  },
+  "skill_sweep_summary": {
+    "note": "Companion exhaustive pass (SkillSweep) over every skill in .claude/commands, vs the ~50 capabilities sampled elsewhere in this document. Summary only — full detail in the sweep files.",
+    "source_files": {
+      "report": "runtime/prior-art/SKILL-SWEEP-2026-08-28.md",
+      "report_bytes": 108283,
+      "data": "runtime/prior-art/skill-sweep.json",
+      "data_bytes": 136940,
+      "schema": "warpos.skill-sweep/1"
+    },
+    "totals": {
+      "skills": 237,
+      "live_skills": 230,
+      "deprecated_aliases": 7,
+      "families": 35,
+      "families_by_verdict": {"THEY-WERE-FIRST": 30, "WARPOS-FIRST": 3, "INCONCLUSIVE": 1, "N/A-COMPOSITE": 1},
+      "skills_by_verdict": {"THEY-WERE-FIRST": 204, "WARPOS-FIRST": 13, "INCONCLUSIVE": 2, "N/A-COMPOSITE": 18}
+    },
+    "interpretation": "~86% of families and ~86% of skills have an earlier analog. Widening the aperture from 50 capabilities to 237 skills surfaced ONE new uncontested pair (guides/knowledge integration) and otherwise reinforced the sampled conclusion — it did not produce new priority claims.",
+    "top_five": [
+      {"rank": 1, "family": "sleep-dream", "why": "The flagship, reused from the dreaming comparison. +24 d vs Anthropic, -356 d vs Letta."},
+      {"rank": 2, "family": "enforcement-debt", "skills": 5, "why": "Uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived."},
+      {"rank": 3, "family": "paths-registry", "skills": 6, "why": "Uncontested but SELF-DEFLATING, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly."},
+      {"rank": 4, "family": "guides-knowledge", "skills": 2, "detail": "/guides:integrate (2026-05-31) + /knowledge:integrate (2026-06-05)", "why": "THE ONE GENUINELY NEW FINDING. Analogs (Cursor @Docs, Devin Knowledge, Backstage TechDocs) all INDEX documentation for retrieval; these PLACE a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another ENFORCER — a placement ledger makes missing wiring self-detecting."},
+      {"rank": 5, "family": "cross-session-inbox", "why": "See reconciliation — the sweep's INCONCLUSIVE row is superseded by the CHANGELOG-based WARPOS-FIRST +117d verdict."}
+    ],
+    "reconciliation_cross_session": {
+      "disagreement": "SkillSweep graded cross-session-inbox INCONCLUSIVE by comparing against Agent Teams SendMessage (2026-02-05), which predates WarpOS.",
+      "why_that_comparand_is_wrong": "Agent Teams SendMessage is IN-SESSION: teammates inside one session's team, and the mailbox dies with the session. It is not session-to-session messaging.",
+      "correct_comparand": "Claude Code cross-session SendMessage + ListAgents, first shipped in v2.1.224 on 2026-08-07, established by walking the complete official CHANGELOG in version order.",
+      "authoritative_verdict": "WARPOS-FIRST, +117 days — see cross_session_and_session_management.headline",
+      "sweep_findings_that_still_stand": "LangChain Agent Inbox (2025-01-14) is a HUMAN inbox for reviewing agent output; A2A is inter-vendor RPC. Neither is a session-to-session broadcast board.",
+      "status": "The sweep's row is superseded, not wrong about its own narrower comparison."
+    },
+    "na_composite_note": {
+      "family": "warpos-distribution-integrity",
+      "skills": 18,
+      "rationale": "These skills verify WarpOS's OWN distribution invariants — capsule resolvability, manifest honesty, layer diffs, migration coverage, version quorum. There is no external analog because there is no external artifact to compare against; they are self-referential integrity checks for one specific framework. Counting them as WarpOS-first would be meaningless; counting them as they-were-first would be false. They are excluded from both totals, which is why 18 skills sit outside the verdict split."
+    }
+  },
   "official_profiles": {
     "verification_legend": {
       "verified": "URL appeared directly in search results or was fetched successfully",
