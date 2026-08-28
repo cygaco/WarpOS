@@ -3,7 +3,9 @@
     "allow": [
       "Edit",
       "Bash(git push *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(node scripts/dispatch-claude.js *)",
+      "Bash(WARPOS_DISPATCH_BACKGROUND=1 node scripts/dispatch-claude.js *)"
     ]
   }
 }
