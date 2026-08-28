@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: S-VLADW1-03
+primary: S-VLADW1-04
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1321,5 +1321,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/S-VLADW1-03"
     created_at: "2026-08-19T19:23:19.551Z"
     updated_at: "2026-08-19T19:23:19.551Z"
+  - id: S-VLADW1-04
+    title: Vlad Wave-1 custody claims made un-invertible
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/S-VLADW1-04"
+    created_at: "2026-08-28T22:20:03.841Z"
+    updated_at: "2026-08-28T22:20:03.841Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-08-19T19:23:19.551Z"
+updated_at: "2026-08-28T22:20:03.841Z"

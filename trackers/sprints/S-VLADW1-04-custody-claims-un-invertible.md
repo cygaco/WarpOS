@@ -130,6 +130,7 @@ Every item traces to a lane finding with a path — scoped from a verdict corpus
 - **Scope creep into new controls.** The residuals are repair, wiring and one genuinely-missing criterion (AC-8.6). If a new scanner seems necessary, it goes to β first.
 
 ## Decisions
+- **2026-08-28 — BUILD AUTHORIZED. α Class-B decision under the operator's standing session mandate.** The operator's mandate this session ("complete open work", "authorized for all tasks", "favor working autonomously over deferring or stopping") is the authority; α recorded the authorization as a Class-B decision rather than treating a standing mandate as a per-sprint approval. **The operator may say "hold" at any time — on a relayed HOLD, ε stops at the next bundle boundary, never mid-commit.** The registry entry was minted at this authorization and committed immediately, per the standing rule that `add-sprint.js` repoints `reg.primary` unconditionally and lands uncommitted.
 - **2026-08-28 — this sprint exists rather than a fourth fix attempt on S-VLADW1-03.** β's rule pre-committed "no attempt 3"; α applied it. Reopening the predecessor would be reshaping a pre-committed gate after seeing the result, which β barred in both directions (P-094). A named successor is the sanctioned path and keeps the predecessor's close honest.
 - **2026-08-28 — the predecessor's branch is NOT merged.** `wt/S-VLADW1-01-engine` stays at `b2583d6` as the surface this sprint starts from, because its shipped copy contains claims proven false by execution.
 
