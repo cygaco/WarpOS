@@ -1,7 +1,12 @@
 # BUILD SPEC — S-VLADW1-04 (design-from-evidence)
 
 Plan contract: `PC-20260828-0086` · Tracker: `trackers/sprints/S-VLADW1-04-custody-claims-un-invertible.md`
-Surface: vlad `wt/S-VLADW1-01-engine` @ `b2583d6`, NOT merged. **Build NOT authorized.** No registry entry.
+Surface: vlad `wt/S-VLADW1-01-engine` @ `b2583d6`, NOT merged. **Builder dispatch AUTHORIZED by α override
+2026-08-28** (see the tracker's Decisions; β row 311 `c5d0e293` — not AP-15). Registry entry minted and
+committed `d358296d`. **The override reaches BUILDER DISPATCH ONLY. Still gated, unchanged:** the merge of
+`wt/S-VLADW1-01-engine` is gated on the release rule; every push is per-action; the user-facing custody
+register wording stays Class C. **Halt granularity is the bundle boundary, never mid-bundle** — a
+half-applied claim+canonical edit is the S4-3 defect itself.
 Record-trust gate: `runtime/vlad-w1/s04/RECORD-TRUST-GATE-S-VLADW1-04.md` (blocking design→build exit).
 
 Every item carries β's **four required fields**: 1 mechanism · 2 file · 3 the standing test that must go RED
