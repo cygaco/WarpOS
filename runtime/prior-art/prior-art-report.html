@@ -1,0 +1,555 @@
+<title>Prior Art Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --paper:        #f7f8fa;
+    --surface:      #ffffff;
+    --surface-sunk: #eef0f5;
+    --ink:          #16202e;
+    --ink-soft:     #4a5768;
+    --ink-faint:    #77839a;
+    --rule:         #d8dde6;
+    --rule-strong:  #b9c1cf;
+    --accent:       #40509b;
+    --accent-soft:  #e6e9f6;
+    --ok:           #1f6f52;
+    --ok-soft:      #e0efe8;
+    --bad:          #8a4b3c;
+    --bad-soft:     #f4e7e3;
+    --warn:         #8a6a1f;
+    --warn-soft:    #f4ecd9;
+    --shadow:       0 1px 2px rgba(22,32,46,.06), 0 8px 24px -16px rgba(22,32,46,.30);
+
+    --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --f-body:    "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --f-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --pad:     clamp(1.1rem, 4vw, 2.6rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:        #10151d;
+      --surface:      #161d27;
+      --surface-sunk: #1b2330;
+      --ink:          #e4e9f0;
+      --ink-soft:     #a5b0c1;
+      --ink-faint:    #7a8598;
+      --rule:         #2a3442;
+      --rule-strong:  #3d4957;
+      --accent:       #93a2e8;
+      --accent-soft:  #232c48;
+      --ok:           #6cc4a0;
+      --ok-soft:      #1a3229;
+      --bad:          #d99a88;
+      --bad-soft:     #33231e;
+      --warn:         #d9b96c;
+      --warn-soft:    #322a17;
+      --shadow:       0 1px 2px rgba(0,0,0,.40), 0 8px 24px -16px rgba(0,0,0,.80);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:        #10151d;
+    --surface:      #161d27;
+    --surface-sunk: #1b2330;
+    --ink:          #e4e9f0;
+    --ink-soft:     #a5b0c1;
+    --ink-faint:    #7a8598;
+    --rule:         #2a3442;
+    --rule-strong:  #3d4957;
+    --accent:       #93a2e8;
+    --accent-soft:  #232c48;
+    --ok:           #6cc4a0;
+    --ok-soft:      #1a3229;
+    --bad:          #d99a88;
+    --bad-soft:     #33231e;
+    --warn:         #d9b96c;
+    --warn-soft:    #322a17;
+    --shadow:       0 1px 2px rgba(0,0,0,.40), 0 8px 24px -16px rgba(0,0,0,.80);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 var(--pad) 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .col  { max-width: var(--measure); }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible,
+  .navchip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding: clamp(2.4rem, 6vw, 4.2rem) 0 1.6rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: .69rem; font-weight: 700;
+    letter-spacing: .17em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 1.1rem;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(2.5rem, 7vw, 4.1rem); line-height: 1.02;
+    letter-spacing: -.022em; margin: 0 0 .7rem; text-wrap: balance;
+  }
+  .dek {
+    font-family: var(--f-display); font-size: clamp(1.06rem, 2.3vw, 1.3rem);
+    font-style: italic; color: var(--ink-soft); max-width: 56ch; margin: 0 0 2rem;
+    text-wrap: pretty;
+  }
+  .metastrip {
+    display: flex; flex-wrap: wrap; gap: .5rem 2.2rem;
+    font-family: var(--f-mono); font-size: .73rem; color: var(--ink-faint);
+    padding-bottom: .3rem;
+  }
+  .metastrip b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---------- nav ---------- */
+  nav { display: flex; flex-wrap: wrap; gap: .45rem; padding: 1.3rem 0 0; }
+  .navchip {
+    font-family: var(--f-mono); font-size: .72rem; letter-spacing: .04em;
+    color: var(--ink-soft); text-decoration: none;
+    border: 1px solid var(--rule); border-radius: 2px;
+    padding: .34rem .62rem; background: var(--surface);
+  }
+  .navchip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- sections ---------- */
+  section { padding-top: 3.4rem; }
+  h2 {
+    font-family: var(--f-display); font-weight: 600;
+    font-size: clamp(1.55rem, 3.4vw, 2.05rem); line-height: 1.18;
+    letter-spacing: -.014em; margin: 0 0 .35rem; text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--f-body); font-weight: 700; font-size: 1rem;
+    letter-spacing: -.006em; margin: 2.1rem 0 .5rem;
+  }
+  .sectnum {
+    font-family: var(--f-mono); font-size: .69rem; font-weight: 700;
+    letter-spacing: .17em; text-transform: uppercase;
+    color: var(--ink-faint); display: block; margin-bottom: .5rem;
+  }
+  .lede { color: var(--ink-soft); margin: 0 0 1.4rem; max-width: var(--measure); text-wrap: pretty; }
+  p { margin: 0 0 1rem; max-width: var(--measure); }
+
+  /* ---------- callout ---------- */
+  .callout {
+    margin: 2.2rem 0 0; padding: 1.5rem 1.6rem;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 3px solid var(--bad); border-radius: 3px; box-shadow: var(--shadow);
+  }
+  .callout .tag {
+    font-family: var(--f-mono); font-size: .68rem; font-weight: 700;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--bad);
+    display: block; margin-bottom: .7rem;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout strong { font-weight: 700; }
+
+  .note {
+    margin: 1.6rem 0; padding: 1.15rem 1.3rem;
+    background: var(--surface-sunk); border: 1px solid var(--rule);
+    border-radius: 3px; font-size: .93rem; color: var(--ink-soft);
+  }
+  .note p:last-child { margin-bottom: 0; }
+  .note b { color: var(--ink); }
+
+  /* ---------- tables ---------- */
+  .rail {
+    overflow-x: auto; margin: 1.5rem 0 .6rem;
+    border: 1px solid var(--rule); border-radius: 3px; background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .845rem; min-width: 780px; }
+  thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface-sunk); color: var(--ink-soft);
+    font-family: var(--f-mono); font-size: .66rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; text-align: left;
+    padding: .7rem .8rem; border-bottom: 1px solid var(--rule-strong); white-space: nowrap;
+  }
+  tbody td { padding: .66rem .8rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-sunk); }
+  .num  { font-family: var(--f-mono); font-size: .74rem; color: var(--ink-faint); white-space: nowrap; }
+  .mono { font-family: var(--f-mono); font-size: .76rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .feat { font-weight: 600; min-width: 15ch; }
+  .marg { font-family: var(--f-mono); font-size: .76rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .marg.pos { color: var(--ok); font-weight: 700; }
+  .marg.neg { color: var(--bad); }
+  .caption { font-size: .8rem; color: var(--ink-faint); margin: 0 0 0; max-width: var(--measure); }
+
+  /* ---------- verdict chips ---------- */
+  .v {
+    display: inline-block; font-family: var(--f-mono); font-size: .64rem; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+    padding: .2rem .44rem; border-radius: 2px; border: 1px solid;
+  }
+  .v-us   { color: var(--ok);   background: var(--ok-soft);   border-color: var(--ok); }
+  .v-them { color: var(--bad);  background: var(--bad-soft);  border-color: var(--bad); }
+  .v-inc  { color: var(--warn); background: var(--warn-soft); border-color: var(--warn); }
+
+  .st {
+    display: inline-block; font-family: var(--f-mono); font-size: .64rem; font-weight: 700;
+    letter-spacing: .05em; white-space: nowrap; padding: .18rem .4rem;
+    border-radius: 2px; border: 1px solid;
+  }
+  .st-ok    { color: var(--ok);   background: var(--ok-soft);   border-color: var(--ok); }
+  .st-warn  { color: var(--warn); background: var(--warn-soft); border-color: var(--warn); }
+  .st-stop  { color: var(--bad);  background: var(--bad-soft);  border-color: var(--bad); }
+
+  /* ---------- scoreboard ---------- */
+  .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .8rem; margin: 1.6rem 0 0; }
+  .score {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 3px;
+    padding: .95rem 1rem; box-shadow: var(--shadow);
+  }
+  .score .n {
+    font-family: var(--f-mono); font-size: 1.85rem; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; display: block; margin-bottom: .4rem;
+  }
+  .score .l {
+    font-family: var(--f-mono); font-size: .63rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .score.us   .n { color: var(--ok); }
+  .score.them .n { color: var(--bad); }
+  .score.inc  .n { color: var(--warn); }
+  .score.tot  .n { color: var(--ink); }
+
+  /* ---------- evidence chain ---------- */
+  .chain { list-style: none; margin: 1.6rem 0 0; padding: 0 0 0 1.6rem; border-left: 2px solid var(--rule-strong); }
+  .chain li { position: relative; padding: 0 0 1.5rem .3rem; }
+  .chain li::before {
+    content: ""; position: absolute; left: calc(-1.6rem - 6px); top: .42rem;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--paper); border: 2px solid var(--rule-strong);
+  }
+  .chain li.mark::before { background: var(--ok); border-color: var(--ok); }
+  .chain li.vend::before { background: var(--bad); border-color: var(--bad); }
+  .chain .when {
+    font-family: var(--f-mono); font-size: .72rem; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--accent);
+    display: block; margin-bottom: .18rem; letter-spacing: .02em;
+  }
+  .chain li.vend .when { color: var(--bad); }
+  .chain .what { font-weight: 600; display: block; margin-bottom: .18rem; }
+  .chain .how  { font-size: .87rem; color: var(--ink-soft); max-width: 62ch; }
+  .chain code { font-family: var(--f-mono); font-size: .8rem; background: var(--surface-sunk); padding: .04rem .26rem; border-radius: 2px; }
+
+  /* ---------- steps ---------- */
+  ol.steps { counter-reset: s; list-style: none; margin: 1.5rem 0 0; padding: 0; }
+  ol.steps > li {
+    counter-increment: s; position: relative; padding: 0 0 1.15rem 2.7rem;
+    max-width: var(--measure);
+  }
+  ol.steps > li::before {
+    content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: .1rem;
+    font-family: var(--f-mono); font-size: .74rem; font-weight: 700;
+    color: var(--accent); background: var(--accent-soft);
+    border-radius: 2px; padding: .12rem .34rem;
+  }
+  ol.steps b { font-weight: 700; }
+  ul.plain { margin: 1rem 0; padding-left: 1.1rem; max-width: var(--measure); }
+  ul.plain li { margin-bottom: .5rem; }
+
+  code { font-family: var(--f-mono); font-size: .84em; }
+  .k { font-family: var(--f-mono); font-size: .82em; background: var(--surface-sunk); padding: .05rem .28rem; border-radius: 2px; border: 1px solid var(--rule); }
+
+  footer {
+    margin-top: 4.5rem; padding-top: 1.5rem; border-top: 2px solid var(--ink);
+    font-family: var(--f-mono); font-size: .72rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: .45rem 2.2rem;
+  }
+  footer b { color: var(--ink-soft); font-weight: 500; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .chain { padding-left: 1.25rem; }
+    .chain li::before { left: calc(-1.25rem - 6px); }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">WarpOS · Evidence Audit</p>
+    <h1>Prior Art Ledger</h1>
+    <p class="dek">What WarpOS shipped before the vendors did — and, just as carefully, what it didn't.</p>
+    <div class="metastrip">
+      <span><b>Compiled</b> 2026-08-28</span>
+      <span><b>Repo</b> <a href="https://github.com/cygaco/WarpOS">github.com/cygaco/WarpOS</a> · public</span>
+      <span><b>History</b> 2026-03-02 → 2026-08-19</span>
+      <span><b>Compared</b> 18 vendor pairs · 17 industry pairs</span>
+    </div>
+    <nav>
+      <a class="navchip" href="#frame">The honest frame</a>
+      <a class="navchip" href="#vendors">vs Anthropic &amp; OpenAI</a>
+      <a class="navchip" href="#flagship">The dreaming case</a>
+      <a class="navchip" href="#industry">vs everyone else</a>
+      <a class="navchip" href="#profiles">Official channels</a>
+      <a class="navchip" href="#strengthen">Strengthening this</a>
+    </nav>
+  </header>
+
+  <!-- ===================== FRAME ===================== -->
+  <section id="frame">
+    <span class="sectnum">Section 00</span>
+    <h2>Read this first</h2>
+    <p class="lede">Three facts constrain every claim below. Stating them up front is what makes the one real prior-art case credible.</p>
+
+    <ol class="steps">
+      <li><b>This repo's history begins 2026-03-02.</b> Anything Anthropic shipped before that date is vendor-first, full stop. Claude Code hooks (2025-06-30), subagents (2025-07), Agent Skills (2025-10-16) and plugins (2025-10-31) all predate WarpOS's first commit.</li>
+      <li><b>WarpOS is built <i>on</i> Claude Code primitives, not in parallel with them.</b> WarpOS hooks <i>are</i> Claude Code hooks; WarpOS skills are Claude Code slash commands. Claiming priority on those would be false, so they are listed as vendor-first deliberately.</li>
+      <li><b>The framework was extracted from an earlier private project on 2026-04-12</b> (<code>cd37d410</code>, "full framework extraction from Jobzooka"). The sleep system arrived <i>fully formed</i> in that commit, meaning it was built earlier — but those earlier dates are not provable from this repo, and are treated as unproven throughout.</li>
+    </ol>
+
+    <div class="callout">
+      <span class="tag">⚠ Scope correction — read before making any public claim</span>
+      <p>The vendor table compares WarpOS <strong>against Anthropic and OpenAI only</strong>. Widening the field to <em>any company</em> changes the headline materially: <strong>Letta shipped "sleep-time compute"</strong> — a dedicated background agent that consolidates and reorganizes another agent's memory during idle time — on <strong>2025-04-21</strong>, roughly <strong>356 days before</strong> WarpOS's sleep cycle. MemGPT, its predecessor, dates to October 2023.</p>
+      <p>So the defensible claim is precisely this: <strong>WarpOS shipped dreaming before <em>Anthropic</em> did — not before the industry did.</strong> Leading with "we invented dreaming" is falsifiable in a single search.</p>
+    </div>
+  </section>
+
+  <!-- ===================== VENDOR TABLE ===================== -->
+  <section id="vendors">
+    <span class="sectnum">Section 01</span>
+    <h2>Scope A — versus Anthropic &amp; OpenAI</h2>
+    <p class="lede">Eighteen features dated from git history, each matched to the closest vendor feature and its public launch date.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">18</span><span class="l">Compared</span></div>
+      <div class="score us"><span class="n">5</span><span class="l">WarpOS first</span></div>
+      <div class="score them"><span class="n">9</span><span class="l">Vendor first</span></div>
+      <div class="score inc"><span class="n">4</span><span class="l">Inconclusive</span></div>
+    </div>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>#</th><th>WarpOS feature</th><th>Landed</th><th>Nearest vendor feature</th><th>Vendor date</th><th>Verdict</th><th>Margin</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">01</td><td class="feat">Sleep cycle w/ REM "dreaming"</td><td class="mono">cd37d410<br>2026-04-12</td><td>Anthropic <b>Dreaming</b> — agent memory consolidation</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d<br>+4 d public</td></tr>
+          <tr><td class="num">02</td><td class="feat">Cross-provider CLI dispatch</td><td class="mono">29908188<br>2026-04-16</td><td>No equivalent. Closest: fallback model chains (within-provider)</td><td class="mono">~2026-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="num">03</td><td class="feat">Centralized paths registry</td><td class="mono">bb06646d<br>2026-04-16</td><td>No vendor equivalent</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="num">04</td><td class="feat">Enforcement-debt ledger</td><td class="mono">cd37d410<br>2026-04-12</td><td>Closest: <code>claude plugin eval</code></td><td class="mono">2026</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="num">05</td><td class="feat">Karpathy autoresearch loop</td><td class="mono">38d771bf<br>2026-04-18</td><td>Anthropic <b>Outcomes</b> / capability curve</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+18 d</td></tr>
+          <tr><td class="num">06</td><td class="feat">Model router / dispatch console</td><td class="mono">fcaaa242<br>2026-06-01</td><td>Fallback model chains + per-agent cost attribution</td><td class="mono">~2026-06</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">needs exact date</td></tr>
+          <tr><td class="num">07</td><td class="feat">β independent-judgment consult</td><td class="mono">cd37d410<br>2026-04-12</td><td><code>/code-review</code>, <code>security-review</code> skills — review, not arbitration</td><td class="mono">2025-10-16</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">different job</td></tr>
+          <tr><td class="num">08</td><td class="feat">smart-context prompt enrichment</td><td class="mono">cd37d410<br>2026-04-12</td><td><code>UserPromptSubmit</code> hook (the substrate) + auto-memory injection</td><td class="mono">2025 / 2026-02</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">built on vendor</td></tr>
+          <tr><td class="num">09</td><td class="feat">Enforced TRACKER system</td><td class="mono">e386d70a<br>2026-06-05</td><td>Agent-teams shared task list</td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−120 d</td></tr>
+          <tr><td class="num">10</td><td class="feat">Memory stores + learnings lifecycle</td><td class="mono">cd37d410<br>2026-04-12</td><td>Claude Code <b>Auto Memory</b> / <code>MEMORY.md</code> (v2.1.59)</td><td class="mono">2026-02</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−45 d</td></tr>
+          <tr><td class="num">11</td><td class="feat">Named agent faces / adhoc team</td><td class="mono">cd37d410<br>2026-04-12</td><td>Claude Code <b>Agent Teams</b></td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−66 d</td></tr>
+          <tr><td class="num">12</td><td class="feat"><code>/session:turbo</code> pre-authorization</td><td class="mono">4c3bc3f9<br>2026-05-13</td><td>Claude Code <b>auto mode</b> (classifier)</td><td class="mono">2026-03-24</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−50 d</td></tr>
+          <tr><td class="num">13</td><td class="feat">Hooks system + guards</td><td class="mono">c7db0a2b<br>2026-03-19</td><td>Claude Code <b>hooks</b> (v1.0.38)</td><td class="mono">2025-06-30</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−262 d</td></tr>
+          <tr><td class="num">14</td><td class="feat">Skills library</td><td class="mono">afd31592<br>2026-03-19</td><td>Slash commands → <b>Agent Skills</b></td><td class="mono">2025-10-16</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−154 d</td></tr>
+          <tr><td class="num">15</td><td class="feat">Subagent roster / role specs</td><td class="mono">cd37d410<br>2026-04-12</td><td>Claude Code <b>Subagents</b> (<code>/agents</code>)</td><td class="mono">2025-07-24</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−262 d</td></tr>
+          <tr><td class="num">16</td><td class="feat">Session handoff / <code>DUMP.md</code></td><td class="mono">afd31592<br>2026-03-19</td><td><code>/resume</code>; checkpoints &amp; rewind (Claude Code 2.0)</td><td class="mono">2025-09-29</td><td><span class="v v-them">Vendor first</span></td><td class="marg">date unconfirmed</td></tr>
+          <tr><td class="num">17</td><td class="feat">Distribution capsule</td><td class="mono">e44b78ad<br>2026-04-17</td><td>Plugins &amp; marketplaces</td><td class="mono">2025-10-31</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−168 d</td></tr>
+          <tr><td class="num">18</td><td class="feat">Red-team / security gauntlet</td><td class="mono">f504decf<br>2026-04-15</td><td><code>security-review</code> skill; vulnerability scanner</td><td class="mono">2025-10 / 2026-05-06</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">needs ship date</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Margins in days. "Public" margin uses the GitHub-visible tag date rather than the local commit date.</p>
+  </section>
+
+  <!-- ===================== FLAGSHIP ===================== -->
+  <section id="flagship">
+    <span class="sectnum">Section 02</span>
+    <h2>The flagship case — dreaming</h2>
+    <p class="lede">One comparison carries real weight. It is worth laying out as a chronology, because the order of these events <em>is</em> the argument.</p>
+
+    <p>WarpOS's <code>/sleep:deep</code> is a six-phase, biologically-modelled consolidation cycle. Its own description, as it stood on 2026-04-12: <em>"Full sleep cycle — all 6 phases: NREM consolidation, cleanup, replay, REM dreaming, repair, growth."</em> The spec maps hippocampal→neocortical transfer onto <code>pending_validation → effective</code> promotion, sharp-wave ripple replay onto selective learning replay, and synaptic homeostasis onto decay of unreferenced entries.</p>
+
+    <ol class="chain">
+      <li class="mark">
+        <span class="when">2026-03-02 · 19:53:12Z</span>
+        <span class="what">Public repo created</span>
+        <span class="how">GitHub's own clock, not author-supplied. <code>visibility: "public"</code>, <code>private: false</code>. Bounds the entire history from below.</span>
+      </li>
+      <li class="mark">
+        <span class="when">2026-04-12 · 18:35:49Z</span>
+        <span class="what">Sleep cycle lands — <code>cd37d410</code></span>
+        <span class="how">The REM-dreaming phase arrives fully formed in the framework-extraction commit. Medium strength: git dates are author-supplied and the commit is unsigned (<code>verification.verified: false</code>).</span>
+      </li>
+      <li class="mark">
+        <span class="when">2026-04-22 &amp; 04-25</span>
+        <span class="what">The cycle is actually run, twice</span>
+        <span class="how">Dated execution artifacts: <code>scripts/sleep-20260422-consolidate.js</code>, <code>-analyze.js</code>, <code>-prune.js</code>, <code>-log-events.js</code>, and <code>one-off-sleep-2026-04-25.js</code>. Strong corroboration — the feature was in production use, not merely specified.</span>
+      </li>
+      <li class="mark">
+        <span class="when">2026-05-02 · 03:07:12Z</span>
+        <span class="what">Public tag <code>warpos@0.1.4</code> → <code>de9ba8eb</code></span>
+        <span class="how">A public, pre-announcement artifact. <code>.claude/commands/sleep/deep.md</code> (19,921 bytes) confirmed present <em>at that ref</em> server-side via the GitHub contents API. Four days ahead of the vendor.</span>
+      </li>
+      <li class="vend">
+        <span class="when">2026-05-06</span>
+        <span class="what">Anthropic announces Dreaming</span>
+        <span class="how">At Code with Claude 2026, San Francisco — "Claude Managed Agents with Dreaming, Outcomes, and multi-agent orchestration". Reported by <a href="https://www.infoq.com/news/2026/05/code-with-claude/">InfoQ</a> and corroborated by <a href="https://letsdatascience.com/news/anthropic-introduces-dreaming-for-claude-agent-memory-consol-32a279c9">Let's Data Science</a> and <a href="https://www.softpagecms.com/2026/05/23/anthropic-claude-dreaming-agent-memory-consolidation/">others</a>. <b>First-party source unreached</b> — see below.</span>
+      </li>
+    </ol>
+
+    <div class="note">
+      <p><b>The vendor's own date is the weaker half of this comparison.</b> The canonical announcement URL <code>anthropic.com/news/code-with-claude-2026</code> returns HTTP 404, and <code>anthropic.com</code> is blocked by the browser extension's domain permissions — so neither route reaches a first-party page. The 2026-05-06 date rests on InfoQ plus secondary outlets, while the WarpOS side is GitHub-confirmed. Closing this needs an allowlist entry or an operator-run fetch.</p>
+    </div>
+
+    <h3>Verified negatives — how quietly Anthropic shipped this</h3>
+    <p>Three checks, each reproducible, all of which <em>support</em> the timing claim by showing how little Anthropic publicized the feature:</p>
+    <ul class="plain">
+      <li><b><code>/dream</code> has never appeared in the official CHANGELOG.</b> Fetched <code>anthropics/claude-code/CHANGELOG.md</code> server-side and base64-decoded it — the head reads <span class="k">## 2.1.250</span>, so the fetch succeeded — then grepped case-insensitively for "dream": <b>zero matches across the whole file</b>. There is therefore no "first changelog version and date" to cite; Anthropic never changelogged it.</li>
+      <li><b>It is absent from the official memory docs.</b> <a href="https://code.claude.com/docs/en/memory">code.claude.com/docs/en/memory</a> contains no occurrence of "dream", "dreaming", or "memory consolidation" — it documents <code>CLAUDE.md</code> and auto-memory only.</li>
+      <li><b>Neither official X account ever posted about it.</b> The search <code>(from:AnthropicAI OR from:claudeai) dreaming</code> returned zero results. A control search for "Code with Claude" surfaced the 2025-05-22 keynote post, confirming the absence is real rather than a search artifact.</li>
+    </ul>
+
+    <h3>Verdict</h3>
+    <p><b>WarpOS-first versus Anthropic. They-were-first versus the industry.</b> WarpOS shipped a REM-dreaming consolidation phase 24 days before Anthropic announced Dreaming, and had executed it twice in production beforehand. Both systems solve the same problem — offline consolidation of an agent's persistent memory — and both borrow the sleep metaphor explicitly, so the analogy is close rather than stretched. But Letta got there a year before either of them. Frame this as <em>convergent prior art</em>, never as influence: nothing suggests Anthropic saw this repo.</p>
+  </section>
+
+  <!-- ===================== INDUSTRY TABLE ===================== -->
+  <section id="industry">
+    <span class="sectnum">Section 03</span>
+    <h2>Scope B — versus everyone else</h2>
+    <p class="lede">Same evidence standard, wider field. This is where most WarpOS priority claims die — and that is the correct outcome.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">17</span><span class="l">Compared</span></div>
+      <div class="score us"><span class="n">1</span><span class="l">WarpOS first</span></div>
+      <div class="score them"><span class="n">14</span><span class="l">They were first</span></div>
+      <div class="score inc"><span class="n">2</span><span class="l">Inconclusive</span></div>
+    </div>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>#</th><th>WarpOS feature</th><th>Landed</th><th>Closest analog — any company</th><th>Their date</th><th>Verdict</th><th>Margin</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">01</td><td class="feat">Sleep cycle / REM dreaming</td><td class="mono">2026-04-12</td><td><b>Letta</b> — sleep-time compute; a sleep agent reorganizes memory during idle time</td><td class="mono">2025-04-21</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−356 d</td></tr>
+          <tr><td class="num">02</td><td class="feat">Memory + learnings lifecycle</td><td class="mono">2026-04-12</td><td><b>MemGPT</b> — tiered agent memory (Letta's predecessor)</td><td class="mono">2023-10</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.5 yr</td></tr>
+          <tr><td class="num">03</td><td class="feat">Memory + learnings lifecycle</td><td class="mono">2026-04-12</td><td><b>Cursor Memories</b> (1.0) · <b>Windsurf</b> Wave 1 memories</td><td class="mono">2025-06-04<br>2025-01</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−11 mo</td></tr>
+          <tr><td class="num">04</td><td class="feat">Enforced TRACKER — epics, sprints, tickets</td><td class="mono">2026-06-05</td><td><b>Linear</b> (exited private beta) · Jira 2002 · Shortcut 2014</td><td class="mono">2020-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="num">05</td><td class="feat"><code>/research:deep</code> pipeline</td><td class="mono">2026-04-12</td><td><b>Gemini Deep Research</b> · OpenAI deep research · <b>Perplexity Deep Research</b></td><td class="mono">2024-12-11<br>2025-02-14</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−16 mo</td></tr>
+          <tr><td class="num">06</td><td class="feat">Agent faces + department org chart</td><td class="mono">2026-04-12</td><td><b>MetaGPT</b> — "first AI software company", PM/architect/engineer/QA roles</td><td class="mono">2023-08</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.7 yr</td></tr>
+          <tr><td class="num">07</td><td class="feat">Named multi-agent teams</td><td class="mono">2026-04-12</td><td><b>AutoGen</b> · <b>CrewAI</b> · <b>LangGraph</b></td><td class="mono">2023-09-25<br>2024-01-08</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.3 yr</td></tr>
+          <tr><td class="num">08</td><td class="feat">Cross-provider dispatch</td><td class="mono">2026-04-16</td><td><b>OpenRouter</b> · <b>LiteLLM</b> — unified multi-provider routing</td><td class="mono">2023</td><td><span class="v v-them">First on concept</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="num">09</td><td class="feat">Model router / dispatch console</td><td class="mono">2026-06-01</td><td><b>OpenRouter</b> · LiteLLM proxy · Portkey</td><td class="mono">2023</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="num">10</td><td class="feat">Red-team / security gauntlet</td><td class="mono">2026-04-15</td><td><b>garak</b> (NVIDIA) · <b>PyRIT</b> (Microsoft) · promptfoo</td><td class="mono">2023-06-13<br>2024-02-22</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.8 yr</td></tr>
+          <tr><td class="num">11</td><td class="feat"><code>/karpathy:run</code> autoresearch loop</td><td class="mono">2026-04-18</td><td><b>Sakana AI Scientist</b> · <b>AlphaEvolve</b> · ShinkaEvolve</td><td class="mono">2024-08<br>2025-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−20 mo</td></tr>
+          <tr><td class="num">12</td><td class="feat">Skills library — encoded procedures</td><td class="mono">2026-03-19</td><td><b>Cursor Rules</b> · <b>Devin</b> Playbooks/Knowledge · Windsurf rules</td><td class="mono">2024</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 yr</td></tr>
+          <tr><td class="num">13</td><td class="feat">Parallel builders in worktrees</td><td class="mono">2026-04-12</td><td><b>Devin</b> · <b>Cursor Background Agent</b> · Copilot coding agent</td><td class="mono">2024-03<br>2025-05-15</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−11 mo</td></tr>
+          <tr><td class="num">14</td><td class="feat">β second-opinion judge</td><td class="mono">2026-04-12</td><td><b>LLM-as-a-judge</b> (MT-Bench) · Aider architect/editor split</td><td class="mono">2023 / 2024</td><td><span class="v v-them">First on concept</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="num">15</td><td class="feat">Session handoff / <code>DUMP.md</code></td><td class="mono">2026-03-19</td><td><b>Cline Memory Bank</b> · Roo Code</td><td class="mono">2025</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">needs exact date</td></tr>
+          <tr><td class="num">16</td><td class="feat">Centralized paths registry</td><td class="mono">2026-04-16</td><td>None found in any product</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="num">17</td><td class="feat">Enforcement-debt ledger</td><td class="mono">2026-04-12</td><td>SonarQube tech-debt registers · ADR logs — none tracks policy <em>lacking</em> an enforcer</td><td class="mono">—</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">nothing comparable</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Primary sources for the Letta correction</h3>
+    <p>Both are first-party and independently checkable — cite these, not the summary above:</p>
+    <ul class="plain">
+      <li><a href="https://www.letta.com/blog/sleep-time-compute/">letta.com/blog/sleep-time-compute</a> — published <b>2025-04-21</b>; date read off the page itself. Describes a dual-agent model where a sleep agent activates during downtime to analyze past conversations and reorganize memory, because "memory formation is incremental, so memories may become messy and disorganized over time."</li>
+      <li><a href="https://arxiv.org/abs/2504.13171">arXiv:2504.13171</a> — <i>Sleep-time Compute: Beyond Inference Scaling at Test-time</i>. The identifier <code>2504</code> encodes April 2025, which makes the date immutable.</li>
+    </ul>
+
+    <h3>Name collision worth knowing about</h3>
+    <p><a href="https://en.wikipedia.org/wiki/Warp_(terminal)">Warp</a> (warp.dev) is an established terminal company — founded 2020, public launch April 2022, Warp AI April 2023, and Warp 2.0 billed as "the first Agentic Development Environment" on 2025-06-24. That is adjacent territory: AI agents in a developer terminal. "WarpOS" as a public-facing name carries real confusion and trademark risk, which is a reason to keep the internal-only naming boundary rather than relax it.</p>
+
+    <h3>What this section is actually good for</h3>
+    <p>The honest read is not that WarpOS invented nothing. It is that <b>priority claims on individual primitives are unavailable</b> — memory, multi-agent teams, deep research, trackers, model routing, red-teaming and autoresearch each have an earlier analog by one to six years. The defensible originality claim is <b>compositional</b>: no competitor combines a department org-chart of named agent faces, cross-provider dispatch, a sleep/dreaming consolidation cycle, an enforcement-debt ledger, a paths registry and validator-enforced trackers in one self-modifying framework. Claim the composition, cite dreaming as the single timing datapoint, and pre-empt the Letta comparison yourself — an audience that finds it first discounts everything else.</p>
+  </section>
+
+  <!-- ===================== PROFILES ===================== -->
+  <section id="profiles">
+    <span class="sectnum">Section 04</span>
+    <h2>Official channels</h2>
+    <p class="lede">Thirty-two accounts and properties, each marked with how its status was established. Verification matters here: one plausible-looking handle is a trap.</p>
+
+    <div class="rail">
+      <table>
+        <thead>
+          <tr><th>Org</th><th>Platform</th><th>Account / property</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">Anthropic</td><td>X</td><td><a href="https://x.com/AnthropicAI">@AnthropicAI</a></td><td><span class="st st-ok">Verified</span></td><td>Company account</td></tr>
+          <tr><td class="mono">Anthropic</td><td>X</td><td><a href="https://x.com/claudeai">@claudeai</a></td><td><span class="st st-ok">Browser-verified</span></td><td>Active; latest post checked 2026-08-26, 135K views. Launch announced 2025-07-30</td></tr>
+          <tr><td class="mono">Anthropic</td><td>X</td><td><a href="https://x.com/ClaudeCode">@ClaudeCode</a></td><td><span class="st st-stop">Do not use</span></td><td><b>Not official.</b> Joined July 2025 but has 0 posts, 75 followers, no verification badge — dormant or squatted. Claude Code news goes out via @AnthropicAI / @claudeai</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Discord</td><td><a href="https://discord.com/invite/anthropic">discord.com/invite/anthropic</a></td><td><span class="st st-ok">Verified</span></td><td>Official server, 123K+ members</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Reddit</td><td><a href="https://reddit.com/r/ClaudeAI">r/ClaudeAI</a></td><td><span class="st st-ok">Browser-verified</span></td><td><b>1.6M members</b> — corrects the "~500k" a secondary source gave. Carries an "Official Claude Resources" section but is community-run</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Reddit</td><td><a href="https://reddit.com/r/ClaudeCode">r/ClaudeCode</a></td><td><span class="st st-ok">Browser-verified</span></td><td>754K members, public, not marked official — community-run</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Reddit</td><td><a href="https://reddit.com/r/Anthropic">r/Anthropic</a></td><td><span class="st st-warn">Unverified</span></td><td>Community-run; not confirmed this pass</td></tr>
+          <tr><td class="mono">Anthropic</td><td>LinkedIn</td><td><a href="https://www.linkedin.com/company/anthropicresearch/">company/anthropicresearch</a></td><td><span class="st st-ok">Browser-verified</span></td><td>~4.66M followers, Research Services, 501–1K employees; slug confirmed</td></tr>
+          <tr><td class="mono">Anthropic</td><td>LinkedIn</td><td>Showcase: <b>Claude</b> · <b>Claude for Business</b></td><td><span class="st st-ok">Browser-verified</span></td><td>Official showcase pages under the company page</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Newsroom</td><td><a href="https://www.anthropic.com/news">anthropic.com/news</a></td><td><span class="st st-ok">Verified</span></td><td>Cited as the official source by third parties</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Blog</td><td><a href="https://www.anthropic.com/engineering">anthropic.com/engineering</a></td><td><span class="st st-ok">Verified</span></td><td>e.g. <code>/claude-code-auto-mode</code></td></tr>
+          <tr><td class="mono">Anthropic</td><td>Docs</td><td><a href="https://code.claude.com/docs/en/">code.claude.com/docs/en</a></td><td><span class="st st-ok">Verified</span></td><td>Claude Code documentation; fetched</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Changelog</td><td><a href="https://code.claude.com/docs/en/changelog">code.claude.com/docs/en/changelog</a></td><td><span class="st st-ok">Verified</span></td><td>Fetched; searched for "dream" — no match</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Changelog</td><td><a href="https://code.claude.com/docs/en/whats-new/2026-w27">What's New — weekly</a></td><td><span class="st st-ok">Verified</span></td><td>Per-week release notes</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Docs</td><td><a href="https://docs.anthropic.com">docs.anthropic.com</a></td><td><span class="st st-ok">Verified</span></td><td>API documentation</td></tr>
+          <tr><td class="mono">Anthropic</td><td>GitHub</td><td><a href="https://github.com/anthropics">github.com/anthropics</a></td><td><span class="st st-warn">Unverified</span></td><td>Includes <code>anthropics/claude-code</code>; well-known, not re-fetched</td></tr>
+          <tr><td class="mono">Anthropic</td><td>Standard</td><td><a href="https://agentskills.io">agentskills.io</a></td><td><span class="st st-warn">Unverified</span></td><td>Agent Skills open standard; cited by third party</td></tr>
+          <tr><td class="mono">Anthropic</td><td>YouTube</td><td>Anthropic channel</td><td><span class="st st-stop">Blocked</span></td><td>youtube.com is blocked by the browser extension's domain permissions</td></tr>
+
+          <tr><td class="mono">OpenAI</td><td>X</td><td><a href="https://x.com/OpenAI">@OpenAI</a></td><td><span class="st st-ok">Verified</span></td><td>Company account</td></tr>
+          <tr><td class="mono">OpenAI</td><td>X</td><td><a href="https://x.com/OpenAIDevs">@OpenAIDevs</a></td><td><span class="st st-ok">Verified</span></td><td>"Official updates for developers building with Codex &amp; the OpenAI Platform"</td></tr>
+          <tr><td class="mono">OpenAI</td><td>X</td><td><a href="https://x.com/OpenAINewsroom">@OpenAINewsroom</a></td><td><span class="st st-ok">Verified</span></td><td>Official newsroom</td></tr>
+          <tr><td class="mono">OpenAI</td><td>X</td><td><a href="https://x.com/open_ai">@open_ai</a></td><td><span class="st st-stop">Impostor</span></td><td>Not official. OpenAI's X account has been hijacked by crypto scammers before — verify handles before citing</td></tr>
+          <tr><td class="mono">OpenAI</td><td>X</td><td>Codex-specific handle</td><td><span class="st st-warn">None found</span></td><td>Codex news goes out via @OpenAIDevs</td></tr>
+          <tr><td class="mono">OpenAI</td><td>LinkedIn</td><td><a href="https://www.linkedin.com/company/openai/">company/openai</a></td><td><span class="st st-ok">Browser-verified</span></td><td>~12M followers; slug confirmed</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Reddit</td><td><a href="https://reddit.com/r/codex">r/codex</a></td><td><span class="st st-ok">Browser-verified</span></td><td>378K members, public, "Codex coding tools by OpenAI"; no official designation — community-run</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Reddit</td><td><a href="https://reddit.com/r/OpenAI">r/OpenAI</a></td><td><span class="st st-warn">Unverified</span></td><td>Community-run; not confirmed this pass</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Docs</td><td><a href="https://learn.chatgpt.com/docs/">learn.chatgpt.com/docs</a></td><td><span class="st st-ok">Verified</span></td><td>Codex docs; <code>developers.openai.com/codex/*</code> now 308-redirects here</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Platform</td><td><a href="https://developers.openai.com">developers.openai.com</a></td><td><span class="st st-ok">Verified</span></td><td>Developer platform</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Blog</td><td><a href="https://openai.com/news">openai.com/news</a></td><td><span class="st st-warn">Unverified</span></td><td>Not fetched this pass</td></tr>
+          <tr><td class="mono">OpenAI</td><td>GitHub</td><td><a href="https://github.com/openai">github.com/openai</a></td><td><span class="st st-warn">Unverified</span></td><td>Includes <code>openai/codex</code>; not re-fetched</td></tr>
+          <tr><td class="mono">OpenAI</td><td>Discord</td><td><a href="https://discord.com/invite/openai">discord.com/invite/openai</a></td><td><span class="st st-stop">Unresolved</span></td><td>Page returned no readable text — canvas/JS-only render</td></tr>
+          <tr><td class="mono">OpenAI</td><td>YouTube</td><td>OpenAI channel</td><td><span class="st st-stop">Blocked</span></td><td>youtube.com is blocked by the browser extension's domain permissions</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== STRENGTHEN ===================== -->
+  <section id="strengthen">
+    <span class="sectnum">Section 05</span>
+    <h2>How to strengthen this</h2>
+    <p class="lede">The dreaming claim currently rests on author-supplied git timestamps in an unsigned commit. Anyone can set <code>GIT_AUTHOR_DATE</code>. Here is what would make it adversarially defensible, in order of leverage.</p>
+
+    <ol class="steps">
+      <li><b>Query GH Archive for the push event.</b> GitHub's Events API retains only ~90 days, so the April window has closed there — but <a href="https://gharchive.org">GH Archive</a> keeps every public <code>PushEvent</code> and <code>CreateEvent</code> permanently, queryable via BigQuery. A <code>PushEvent</code> for <code>cygaco/WarpOS</code> dated 2026-04-12, or a <code>CreateEvent</code> for tag <code>warpos@0.1.4</code>, recorded by <em>GitHub's</em> clock in a third-party archive, is the single strongest artifact available — and it is almost certainly already sitting there. <b>Highest-value next action.</b></li>
+      <li><b>Lead with the repo-creation timestamp.</b> <code>created_at = 2026-03-02T19:53:12Z</code> comes from the GitHub API, is not author-supplied, and bounds the whole history from below.</li>
+      <li><b>Sign commits and tags from here on.</b> Every commit checked returns <code>verification.verified: false</code>. Signing cannot fix history, but it makes everything from today forward verifiable — and demonstrating the practice raises the credibility of the unsigned record too.</li>
+      <li><b>Timestamp the current tree externally.</b> An OpenTimestamps attestation over the repo's tree hash, plus a check of <a href="https://archive.softwareheritage.org">Software Heritage</a>, which ingests public GitHub repos and records <em>its own</em> ingest date — it may already hold snapshots predating 2026-05-06.</li>
+      <li><b>Establish the pre-history.</b> The sleep system arrived complete in the extraction commit, so it was built earlier in the originating project. If that repo is also on GitHub, its history plus GH Archive would push the margin well past 24 days. <em>Blocked:</em> cross-project access needs explicit operator sign-off.</li>
+      <li><b>Pair the run artifacts with execution logs.</b> The dated sleep scripts prove the cycle ran, in filenames independent of git metadata. An <code>events.jsonl</code> entry from April, dated before 2026-05-06, beats a spec file.</li>
+      <li><b>Pin the vendor date harder.</b> Find the real Anthropic announcement page, archive it to the Wayback Machine, and capture the announcing post with its timestamp. A vendor date resting on InfoQ plus three blogs is weaker than the WarpOS side of the same comparison.</li>
+      <li><b>Frame it as convergent prior art, never as influence.</b> The claim is strictly that WarpOS independently shipped and ran an equivalent capability first. Overreaching past that is what would get the whole document dismissed.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span><b>Generated</b> 2026-08-28</span>
+    <span><b>Source</b> runtime/prior-art/PRIOR-ART-EVIDENCE-2026-08-28.md</span>
+    <span><b>Data</b> runtime/prior-art/prior-art.json</span>
+    <span><b>Method</b> git history + vendor docs, changelogs, X, Reddit</span>
+  </footer>
+
+</div>
