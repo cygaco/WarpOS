@@ -69,6 +69,22 @@ all six hold at the close of the qualifying gauntlet:
 | **S4-5** | **AC-8.6 AT THE CAPPED SHAPE** — invoked from the product-layer entry path, RF-7 RED **at runtime** not text/AST, `check:pointers` resolving the node. Capped at one invocation + one named test. **Either-or sub-clause:** the driver entry's scrub gains a runtime-observable consequence, OR the header states plainly it is load-bearing only at text/AST level. **Silence does not satisfy it.** |
 | **S4-6** | **RESIDUALS TRAVEL** — every field-4 residual in build-spec items 1–7, **plus the two design-phase findings deliberately NOT fixed** (R2's NBSP tolerance, R4's rollup blindness), appears at close on the surface where its claim's reader is. The class-form residual ships as a Ceiling paragraph under P3 in strong actionable form. |
 
+**Binding name map (β row 310, `3a5f81c7`)** — the near-miss battery's rule ids and the record-trust gate's
+path ids are the same objects: **R1=RT-1 · R2=RT-2 · R3=RT-7 · R4=RT-8.** S4-2(c) governs **RT-7** (closed by
+a NAMED CANONICAL TRANSFORM — case-fold + whitespace-collapse + dash-class fold; **enumerating the four
+observed variants does not satisfy it**). S4-6 covers **RT-8** (CLASS disclosure, safe *because* S4-1's
+reviewer read is the actual control for rollup truth — the linter never was) and **RT-2's NBSP tolerance**.
+
+**RF-2 vs S4-2(d) — not the same obligation.** RF-2 is **satisfied at design** and is NOT in S4-4's
+falsifier set. **S4-2(d) is a separate close-time obligation**: a gauntlet lane — not ε — re-runs the
+battery against the predicate **as built**, population including bundle A's newly-authored class-form
+paragraph. **"RF-2 passed" does not discharge S4-2(d).**
+
+**The design-phase battery is cited by CONTENT-INVARIANT, not path** — *the run against `b2583d6`,
+controls-first, 6/6 controls RED, baseline clean, zero files mutated* — wherever that table lives. The
+filename changed once inside a single consult cycle, so a path-only citation in a release rule would
+already be dangling.
+
 **ε may observe falsifiers RED (β Q2) only if ALL FOUR hold:** the mutation logic lives in the committed
 test; the raw artifact is committed with its command line and sha; the no-op⇒FAIL guard is present; and **α
 re-executes at close with agreeing output.** Absent any one, observation belongs to a lane.
