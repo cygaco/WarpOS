@@ -231,6 +231,103 @@ lesson was a 16810 B brief that hit the bound 22 seconds after committing.
 
 ---
 
+---
+
+# β ROW 309 (`e7a4b619`) — THE RELEASE RULE, PRE-COMMITTED. Acceptance criteria amended.
+
+Full text: `runtime/beta-consult/S-VLADW1-04-r2-release-rule-e7a4b619.md`. Minted at the design→build
+boundary against these criteria, before any build result existed. **ATTEMPT COUNT: ONE** — gauntlet-1
+(diagnostic, NON-qualifying) → fix attempt 1 → **gauntlet-2 = the QUALIFYING run**. **No exception clause,
+deliberately**: a "mechanical failures only" carve-out would require adjudicating mechanical-vs-truth at the
+moment of maximum pressure to release, which is where goalpost-moving lives.
+
+## AMENDMENT 1 — bundle A implements a CANONICAL TRANSFORM, not a variant list (S4-2c)
+
+**This changes what bundle A builds and is the most important amendment here.** My design proposed closing
+R3 by handling the four observed near-miss spellings. **β refuses that shape**: R3 must be closed by a
+**NAMED CANONICAL TRANSFORM — case-fold + whitespace-collapse + dash-class fold, compared on the rendered
+form** — and *"an enumeration of the four observed variants does NOT satisfy this."*
+
+β is right and the reason is this sprint's whole subject: **enumerating observed variants is the same
+fail-open shape as the em-dash predicate**, one level up. It closes the four spellings a battery happened to
+try and stays blind to the fifth. A canonical transform closes the *class* — any spelling that renders to
+the same token is the same token.
+
+Bundle A therefore builds: a named transform function, applied to BOTH sides of every status-token
+comparison, with its own name in the header so the ceiling is legible. The same reasoning applies to R1's
+predicate — prefer a normalized comparison over a dash-character enumeration.
+
+## AMENDMENT 2 — the battery re-run is a LANE's job, not mine (S4-2d)
+
+β requires the near-miss battery re-run **against the predicate AS BUILT, by a gauntlet lane and not by ε**,
+with the population including **bundle A's newly-authored class-form paragraph** — citing P-097: *bundle A
+controls both the artifact and the thing judging it.*
+
+**My design-phase battery does not discharge this.** It ran against the predicate as it exists at
+`b2583d6`, before bundle A changes it, and I am the party whose design is being judged. `NEAR-MISS-BATTERY.md`
+is the design-phase baseline and the method reference; the qualifying evidence is the lane's re-run. The
+gauntlet brief must state the population explicitly, including the new paragraph.
+
+## BINDING NAME MAP (β row 310, `3a5f81c7`) — use these ids, they are not interchangeable
+
+The battery's rule ids and the record-trust gate's path ids are the same objects under two names. β pinned
+the map so no bundle or lane mis-cites one for the other:
+
+| battery id | record-trust id | governed by |
+|---|---|---|
+| **R1** derivation | **RT-1** | S4-2(a), S4-2(b) |
+| **R2** carrier-note | **RT-2** | S4-6 (its NBSP tolerance travels as a residual) |
+| **R3** status-token | **RT-7** | **S4-2(c)** — the canonical transform |
+| **R4** aggregate/rollup | **RT-8** | S4-6 (CLASS disclosure) |
+
+Also pinned: **RF-2 is DISCHARGED at design** (the battery ran; it is not a build deliverable), and
+**S4-2(d) is a SEPARATE close-time obligation** on the predicate *as built* — discharging RF-2 does not
+discharge S4-2(d), and the two must not be conflated in any envelope.
+
+## AMENDMENT 3 — R4/RT-8 ships as a CLASS disclosure (S4-1, S4-6; β Q6 ratified my proposal)
+
+β ratified disclosing rather than widening, with a specific distinction worth carrying: **R3's four are
+near-miss SPELLINGS of one token, closable by a canonical transform; R4's two are semantically-equivalent
+DIFFERENT sentences, which a lint cannot close.** The disclosure must therefore be stated as a CLASS, not as
+two examples — the shape being: **a rollup claim must be reviewed, not linted.**
+
+Bundle A authors that into the header's not-bound list. Naming only "spelled-out numerals and `every`" would
+reproduce the enumeration error at the level of the disclosure — **β called that "itself a false
+disclosure."**
+
+**β supplied the required substance verbatim; bundle A ships this content, adapted only to the document's
+voice:**
+
+> the rollup rule matches a named lexical family (digit-form counts, `all`); it does not detect semantically
+> equivalent rollups in other wordings, and no enumeration of wordings will close this — a rollup claim must
+> be reviewed, not linted.
+
+β's reasoning for why R4 differs from R3, which the disclosure must not blur: **R3's four are near-miss
+SPELLINGS of one token, closable by a canonical transform; R4's two are semantically-equivalent,
+lexically-unrelated prose** — widening would enumerate an unbounded family (`each`, `the entire set`,
+`100% of`) and manufacture false coverage.
+
+## AMENDMENT 4 — S4-5's either-or on the driver entry, and silence fails
+
+Item 6 gains an explicit either-or: **the driver entry's scrub gains a runtime-observable consequence, OR
+the header states plainly that it is load-bearing only at text/AST level.** Either satisfies S4-5;
+**silence does not.** Bundle E must do one and say which in its envelope.
+
+## AMENDMENT 5 — S4-1 may never be satisfied by mechanism evidence
+
+**A green bind, a green lint and a green battery are not evidence that a sentence is true.** S4-1 is
+established by reviewer read alone, and it is deliberately separated from S4-2 for exactly this reason. No
+bundle envelope may cite a green gate as evidence of claim truth, and no lane may either.
+
+## AMENDMENT 6 — the bar for ε observing a falsifier RED (β Q2)
+
+ε may observe RED **only if all four hold**: mutation logic lives in the committed test; the raw artifact is
+committed with its command line and sha; the no-op⇒FAIL guard is present; and **α re-executes at close with
+agreeing output.** Absent any one, observation belongs to a lane. Written here so bundles are built to
+produce that artifact rather than retrofitting it at close.
+
+---
+
 ## What this spec does NOT decide — β's design→build consult
 
 The release rule. It is minted fresh by β at the design→build boundary, against these acceptance criteria
