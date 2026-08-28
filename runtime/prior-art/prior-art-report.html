@@ -292,7 +292,7 @@
   <header class="masthead">
     <p class="eyebrow">WarpOS · Evidence Audit</p>
     <h1>Prior Art Ledger</h1>
-    <p class="dek">What WarpOS shipped before the vendors did — and, just as carefully, what it didn't. Two verified wins against Anthropic: a cross-session inbox by 117 days, and dreaming by 24.</p>
+    <p class="dek">A one-person framework beat Anthropic to a shared inbox between sessions by four months, and to agent dreaming by three weeks — with the receipts to prove it, and an honest account of everything it came second to.</p>
     <div class="metastrip">
       <span><b>Compiled</b> 2026-08-28</span>
       <span><b>Repo</b> <a href="https://github.com/cygaco/WarpOS">github.com/cygaco/WarpOS</a> · public</span>
@@ -301,7 +301,8 @@
       <span><b>Swept</b> 237 skills · 35 families</span>
     </div>
     <nav>
-      <a class="navchip" href="#frame">The honest frame</a>
+      <a class="navchip" href="#firsts">What we got to first</a>
+      <a class="navchip" href="#frame">And what we didn't</a>
       <a class="navchip" href="#vendors">vs Anthropic &amp; OpenAI</a>
       <a class="navchip" href="#flagship">The dreaming case</a>
       <a class="navchip" href="#industry">vs everyone else</a>
@@ -310,27 +311,48 @@
       <a class="navchip" href="#loops">Improvement loops</a>
       <a class="navchip" href="#sessions">Cross-session inbox</a>
       <a class="navchip" href="#beta">β &amp; digital twins</a>
+      <a class="navchip" href="#control">Running the agents</a>
       <a class="navchip" href="#sweep">Skill sweep</a>
       <a class="navchip" href="#strengthen">Strengthening this</a>
     </nav>
   </header>
 
+  <!-- ===================== FIRSTS ===================== -->
+  <section id="firsts">
+    <span class="sectnum">The short version</span>
+    <h2>What WarpOS got to first</h2>
+    <p class="lede">Eight things this framework shipped before Anthropic or OpenAI did. Every date below is checkable, and the tables further down are the receipts.</p>
+
+    <ol class="steps">
+      <li><b>A shared inbox between sessions — four months early.</b> WarpOS sessions have been posting to a common board and reading each other's notes since <b>12 April 2026</b>. Anthropic shipped session-to-session messaging on <b>7 August 2026</b>. Theirs is the better engineering — a real cross-process channel — but the idea was running here first.</li>
+      <li><b>Agent dreaming — three weeks early, and already in production.</b> The six-phase sleep cycle landed <b>12 April 2026</b> and had been <em>run twice on real memory</em> by 25 April. Anthropic announced Dreaming at Code with Claude on <b>6 May 2026</b>. (Letta got to sleep-time memory consolidation a year before either of us — see below.)</li>
+      <li><b>A session that picks itself back up and keeps working.</b> On <b>10 June 2026</b> the loop closed end-to-end: wrap a session into a written brief, reload it, reconcile it against the tracker, rebuild the agent team, and start executing the next action without being asked. Vendors shipped every piece of this separately; nobody shipped the loop.</li>
+      <li><b>A company org chart that agents actually obey.</b> By <b>7 June 2026</b> the control model was complete: one registry row adds an agent, reviewers are fixed rather than chosen, a reviewer's FAIL can't be overridden by the manager who dispatched them, and drift in any of it trips a scan. Neither vendor ships separation of powers between agents.</li>
+      <li><b>Enforcement debt.</b> Every policy has to name the thing that catches its violation — or the gap gets logged and shows up in the next scan. Landed <b>12 April 2026</b>; nothing comparable exists in either vendor's toolchain.</li>
+      <li><b>Docs that get placed, not indexed.</b> <code>/guides:integrate</code> and <code>/knowledge:integrate</code> (<b>31 May / 5 June 2026</b>) write a document into a declared anchor inside the agents that need it, and log every placement. Everyone else builds a search index and hopes the agent looks.</li>
+      <li><b>A build loop with cycles and points — 46 days early.</b> The oneshot state machine landed <b>12 April 2026</b>; Claude Code's Dynamic Workflows arrived <b>28 May 2026</b>.</li>
+      <li><b>A self-optimizing research loop — 18 days early.</b> The karpathy loop tunes an agent spec against a score in an isolated worktree, from <b>18 April 2026</b>. Anthropic's "Outcomes" followed on <b>6 May</b>.</li>
+    </ol>
+
+    <div class="note">
+      <p><b>How we checked.</b> WarpOS dates are first-landed commits from git history (<code>--diff-filter=A</code>), cross-checked against the public repo — which GitHub's own clock says was created 2026-03-02, with the sleep skill present in a public tag dated 2026-05-02. Anthropic dates come from walking the complete <code>anthropics/claude-code</code> <code>CHANGELOG.md</code> (587,814 bytes, v0.2.21 → v2.1.251) in version order, so "first appearance" is mechanical rather than remembered. <b>What's still soft:</b> git dates are author-supplied and the commits are unsigned; the framework was extracted from an earlier private repo on 2026-04-12, so several of these are genuinely older than we can prove; and Anthropic's Dreaming date rests on conference reporting, because the first-party announcement page 404s.</p>
+    </div>
+  </section>
+
   <!-- ===================== FRAME ===================== -->
   <section id="frame">
     <span class="sectnum">Section 00</span>
-    <h2>Read this first</h2>
-    <p class="lede">Three facts constrain every claim below. Stating them up front is what makes the one real prior-art case credible.</p>
+    <h2>And what it didn't</h2>
+    <p class="lede">The list above is short on purpose. Most of what's in WarpOS was somewhere else first, and the tables say so.</p>
 
-    <ol class="steps">
-      <li><b>This repo's history begins 2026-03-02.</b> Anything Anthropic shipped before that date is vendor-first, full stop. Claude Code hooks (2025-06-30), subagents (2025-07), Agent Skills (2025-10-16) and plugins (2025-10-31) all predate WarpOS's first commit.</li>
-      <li><b>WarpOS is built <i>on</i> Claude Code primitives, not in parallel with them.</b> WarpOS hooks <i>are</i> Claude Code hooks; WarpOS skills are Claude Code slash commands. Claiming priority on those would be false, so they are listed as vendor-first deliberately.</li>
-      <li><b>The framework was extracted from an earlier private project on 2026-04-12</b> (<code>cd37d410</code>, "full framework extraction from Jobzooka"). The sleep system arrived <i>fully formed</i> in that commit, meaning it was built earlier — but those earlier dates are not provable from this repo, and are treated as unproven throughout.</li>
-    </ol>
+    <p><b>WarpOS is built on Claude Code, not alongside it.</b> The hooks are Claude Code hooks. The skills are Claude Code slash commands. Subagents, plugins, checkpoints, <code>/resume</code> — all Anthropic's, all before this repo's first commit on 2026-03-02. Those are marked vendor-first throughout.</p>
 
-    <div class="callout">
-      <span class="tag">⚠ Scope correction — read before making any public claim</span>
-      <p>The vendor table compares WarpOS <strong>against Anthropic and OpenAI only</strong>. Widening the field to <em>any company</em> changes the headline materially: <strong>Letta shipped "sleep-time compute"</strong> — a dedicated background agent that consolidates and reorganizes another agent's memory during idle time — on <strong>2025-04-21</strong>, roughly <strong>356 days before</strong> WarpOS's sleep cycle. MemGPT, its predecessor, dates to October 2023.</p>
-      <p>So the defensible claim is precisely this: <strong>WarpOS shipped dreaming before <em>Anthropic</em> did — not before the industry did.</strong> Leading with "we invented dreaming" is falsifiable in a single search.</p>
+    <p><b>And on dreaming, Anthropic wasn't the first mover either.</b> <a href="https://www.letta.com/blog/sleep-time-compute/">Letta shipped "sleep-time compute"</a> — a background agent that reorganizes another agent's memory while it idles — on <b>21 April 2025</b>, a year ahead of both. The honest sentence is "we beat Anthropic to it," not "we invented it."</p>
+
+    <div class="callout" style="border-left-color: var(--accent);">
+      <span class="tag" style="color: var(--accent);">Two grains, both true</span>
+      <p>Verdicts here are given at <b>two levels, because they disagree and both are honest.</b> At the <b>primitive</b> level — resume, checkpoints, compaction, hooks — the vendors were there first almost every time. At the <b>system</b> level — the composed loop those primitives add up to — several WarpOS capabilities have no vendor equivalent at all.</p>
+      <p>"Session handoff: vendor-first" and "session recovery system: WarpOS-first" are both correct statements about the same code. Where a family is a composed system, the tables show both columns.</p>
     </div>
   </section>
 
@@ -580,8 +602,8 @@
       <li><b>Effort control was a model-level knob before WarpOS routed on it.</b> <a href="https://www.anthropic.com/news/visible-extended-thinking">Extended thinking</a> with a configurable budget (2025-02-24), <a href="https://developers.googleblog.com/en/start-building-with-gemini-25-flash/">Gemini thinking budgets</a> (2025-04-17), <a href="https://openai.com/index/introducing-gpt-5/">GPT-5 <code>reasoning_effort</code></a> (2025-08-07). The dispatch console routes across those knobs; it did not invent them.</li>
     </ul>
 
-    <h3>Is anything here genuinely distinctive? No — and here is the search that settled it</h3>
-    <p>A distinctiveness claim was only to be made if no earlier analog turned up after a real search. Five candidates were tested. <b>Every one has a well-established earlier analog, so no claim survives.</b></p>
+    <h3>This layer is borrowed engineering, done well</h3>
+    <p>Five candidates looked novel enough to check. All five turned out to have a well-established earlier analog — which is fine: fencing tokens, heartbeat reapers, mutation testing and preregistration are load-bearing precisely <em>because</em> they are old and proven. Here is what was searched and what came back.</p>
 
     <div class="rail">
       <table>
@@ -599,7 +621,7 @@
     </div>
 
     <div class="note">
-      <p><b>What this actually says.</b> WarpOS's dispatch, workflow and state layers are a competent import of mature distributed-systems and software-engineering patterns — fencing tokens, leases, heartbeat reapers, mutation testing, preregistration, durable checkpointing — into an agent-orchestration context. That is good engineering and a real reason to trust the system. It is <b>not</b> prior art, and it should never be pitched as invention. The composition argument remains the only defensible originality claim, and this section narrows even that: the parts are all borrowed, knowingly so.</p>
+      <p><b>The takeaway.</b> WarpOS's dispatch, workflow and state layers import mature distributed-systems and software-engineering patterns — fencing tokens, leases, heartbeat reapers, mutation testing, preregistration, durable checkpointing — into agent orchestration, and wire them together properly. That's a reason to trust the system, not a claim to have invented it. What's distinctive here is the composition, and the sections above and below are where that shows up.</p>
     </div>
   </section>
 
@@ -676,8 +698,34 @@
     </ul>
     <p><b>Industry:</b> no earlier analog found in the coding-agent space — Devin, Cursor background agents and Codex multi-agent all coordinate <em>within</em> a session or task tree, not between independent user sessions.</p>
 
-    <h3>Session management commands — vendor-first, decisively</h3>
-    <p>Every core session primitive predates WarpOS's entire history, most by more than a year. All dates from the same CHANGELOG scan.</p>
+    <h3>The session recovery system — graded as one thing</h3>
+    <p>Read as separate commands, every session primitive below is vendor-first. Read as the machine they add up to, the picture inverts — so here it is at system grain.</p>
+
+    <p><b>What it is.</b> <code>/session:end</code> (2026-06-01) runs the cognitive chain — learn, mine, sleep, integrate — then reconciles and validates the tracker, writes a handoff, lands the branch, cuts a fresh one and tears down the team. <code>/session:dump</code> (2026-05-18) writes <code>DUMP.md</code>: a prescriptive brief for the next session with verbatim payloads and explicit <em>anti</em>-instructions. <code>handoff-live.js</code> (2026-06-08) snapshots git ground truth. A periodic checkpoint hook catches what git can't. And <code>/session:resume</code> became <b>active</b> on <b>10 June 2026</b> — it loads the dump, reconciles it against <code>TRACKER.md</code> (the tracker outranks the handoff when they disagree), re-enters the mode, re-spawns the persistent team with readiness pings, re-applies turbo, and <em>executes the next action</em>. Around it: the fresh-entry posture banner, verify-don't-inherit drift checks, team reconciliation, dispatch death and orphan detection, provider-breaker fallback, and the cross-session board.</p>
+    <p><b>Loop closed end-to-end: 10 June 2026.</b> Earliest form: <code>handoff.md</code>, 19 March 2026.</p>
+
+    <p>Scoring the vendor candidates on the five things the system actually does — (a) write an executable next-session brief, (b) reconcile it against an enforced source of truth, (c) re-establish a multi-agent team and permissions, (d) resume execution autonomously, (e) survive a crash mid-build with checkpointing and dead-dispatch detection:</p>
+
+    <div class="rail">
+      <table>
+        <thead><tr><th>Vendor capability</th><th>Date</th><th>a</th><th>b</th><th>c</th><th>d</th><th>e</th><th>Covers</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Claude Code <code>/resume</code> + checkpoints/<code>/rewind</code></td><td class="mono">2025-09-29</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">partial</td><td class="mono">0.5 / 5</td></tr>
+          <tr><td class="feat">Claude Code <code>/goal</code> — completion condition, keeps working across turns</td><td class="mono">2026-05-11</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono"><b>yes</b></td><td class="mono">—</td><td class="mono">1 / 5</td></tr>
+          <tr><td class="feat">Auto memory / <code>MEMORY.md</code></td><td class="mono">2026-02-26</td><td class="mono">partial</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">0.5 / 5</td></tr>
+          <tr><td class="feat">Agent View — list every session</td><td class="mono">2026-05-11</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">0 / 5</td></tr>
+          <tr><td class="feat">Agent worktree isolation + <code>WorktreeCreate</code>/<code>Remove</code> hooks</td><td class="mono">v2.1.49–50</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">partial</td><td class="mono">0.5 / 5</td></tr>
+          <tr><td class="feat">Codex <code>resume</code> + cloud-task durability</td><td class="mono">2025–2026</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">partial</td><td class="mono">partial</td><td class="mono">1 / 5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <p><b>Verdict at system grain: WarpOS-first, 10 June 2026 — uncontested.</b> The best vendor candidate covers one of five. Nobody shipped a brief that reconciles against an enforced tracker, rebuilds a team, and resumes execution on its own. <b>The honest qualifier:</b> <code>/goal</code> shipped the autonomy piece on 11 May 2026, a month before WarpOS closed the loop — so the <em>autonomous-continuation</em> idea is Anthropic's first. What has no vendor equivalent is the composition around it.</p>
+    </div>
+
+    <h3>Components: vendor-first</h3>
+    <p>The same code, graded one command at a time. Every core primitive predates WarpOS's entire history, most by more than a year — all dates from the same CHANGELOG walk.</p>
     <div class="rail">
       <table>
         <thead><tr><th>Capability</th><th>WarpOS</th><th>Anthropic (Claude Code)</th><th>Verdict</th></tr></thead>
@@ -738,82 +786,178 @@
     <p>I searched AutoGen's UserProxyAgent, CAMEL role-playing agents, LLM user simulators for dialogue evaluation, the digital-clone products (Delphi, Personal AI, Reid AI), Constitutional AI, LLM-as-judge, case-based reasoning and precedent, and preregistration for AI-agent experiments. <b>Every individual component is prior art:</b> simulating the user (AutoGen, 2023-09), learning one person's judgment from their corpus (Delphi and Personal AI, 2023 and earlier), judging against written principles (Constitutional AI, 2022-12), precedent-based reasoning (case-based reasoning, 1980s), and pre-committed criteria (preregistration).</p>
     <p><b>What I could not find an exact analog for</b> — offered as an observation, not a claim: a read-only proxy of one <em>named principal</em> that (a) arbitrates live decisions for an autonomous system rather than impersonating the principal for an audience, (b) refines itself by mining that principal's own recorded decisions, (c) must cite a <code>msg_id</code>-backed ledger row so a claimed verdict is auditable, and (d) must pre-commit release criteria before results exist. The clone products do (b) but aim at presence and impersonation; the reviewer agents do (a) but are generic, not a model of a specific person, and not self-refining from that person's history.</p>
     <div class="note">
-      <p><b>Verdict: inconclusive, leaning they-were-first.</b> The combination looks unusual and nothing was found doing exactly it — but "I searched and didn't find it" is weak evidence in a field this crowded, and every part is demonstrably older. Describe β as an unusual composition, never as an invention. The one property worth flagging as load-bearing is the <b>auditability rule</b>: a β verdict only counts if it cites a persistent-teammate ledger row. That is an enforcer — and enforcers are where this framework's real, if unpatentable, value sits.</p>
+      <p><b>Verdict: inconclusive, leaning they-were-first.</b> Every part of β is older than β. What's unusual is the combination, and the most useful piece of it is the <b>auditability rule</b> — a β verdict only counts if it cites a persistent-teammate ledger row. That's an enforcer, which is the pattern that keeps recurring as the genuinely good idea in this framework.</p>
     </div>
   </section>
 
-  <!-- ===================== SKILL SWEEP ===================== -->
-  <section id="sweep">
+  <!-- ===================== CONTROL ===================== -->
+  <section id="control">
     <span class="sectnum">Section 09</span>
-    <h2>Skill sweep — 237 skills in 35 families</h2>
-    <p class="lede">A companion pass walked <em>every</em> skill in <code>.claude/commands</code>, rather than the ~50 capabilities sampled above, and graded each family against its closest Anthropic/OpenAI analog.</p>
+    <h2>Running a company of agents</h2>
+    <p class="lede">How dozens of agents get dispatched, constrained, and kept honest — graded as one system, because that is what it is.</p>
 
-    <div class="scores">
-      <div class="score tot"><span class="n">237</span><span class="l">Skills · 35 families</span></div>
-      <div class="score us"><span class="n">3</span><span class="l">Families WarpOS first</span></div>
-      <div class="score them"><span class="n">30</span><span class="l">Families they were first</span></div>
-      <div class="score inc"><span class="n">1</span><span class="l">Inconclusive · 1 composite</span></div>
-    </div>
-
-    <p>237 skills = <b>230 live + 7 deprecated aliases</b>. At skill level the split is <b>204</b> they-were-first, <b>13</b> WarpOS-first, <b>2</b> inconclusive, <b>18</b> composite. The exhaustive pass confirms the sampled one: <b>~86% of families and ~86% of skills have an earlier analog.</b> Widening the aperture from 50 capabilities to 237 skills did not surface new priority claims — it surfaced one new <em>uncontested</em> pair and otherwise reinforced the same conclusion.</p>
+    <p><b>What it is.</b> One named identity (Alex) works in five faces — α architect, β judge, γ adhoc, δ oneshot, ε sprint — over departments of directors, leads and pods of builder / reviewer / fixer. The keystone is <code>role-registry.json</code> (<b>3 June 2026</b>, with the org rewrite landing 4 June): adding an agent is one registry row, and the orchestrator never edits itself. Reviewer rosters are <b>registry-fixed</b> — a lead cannot pick friendlier reviewers — and a reviewer's FAIL is <b>binding</b>: neither the lead who dispatched them nor the director above can overturn it. Every spawn carries a scope contract, a team guard limits who may be a teammate, a no-cascade rule stops a summoned consult from dispatching builders, and a dispatch contract makes CLI routing mandatory. Completion records are evidence-bound so a green result has to be backed by real bytes, and parity scans make roster drift self-detecting.</p>
+    <p><b>Composition closed: 7 June 2026.</b> Earliest form: <code>AGENTS.md</code> and the team guard, 15–16 April 2026.</p>
 
     <div class="rail">
       <table>
-        <thead><tr><th>Family</th><th>Skills</th><th>First landed</th><th>Primary Anthropic/OpenAI analog</th><th>Their date</th><th>Verdict</th><th>Margin</th></tr></thead>
+        <thead><tr><th>Control property</th><th>WarpOS</th><th>Closest Anthropic / OpenAI</th><th>Their date</th><th>Verdict</th></tr></thead>
         <tbody>
-          <tr><td class="feat"><code>enforcement-debt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td><code>claude plugin eval</code> (evaluates plugins, not unenforced policy)</td><td class="mono">2026</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
-          <tr><td class="feat"><code>paths-registry</code></td><td class="mono">6</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
-          <tr><td class="feat"><code>sleep-dream</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Anthropic <b>Dreaming</b> (Managed Agents)</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d · −356 d vs Letta</td></tr>
-          <tr><td class="feat"><code>cross-session-inbox</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Agent Teams <code>SendMessage</code> (in-session, session-scoped)</td><td class="mono">2026-02-05</td><td><span class="v v-inc">Superseded</span></td><td class="marg">see reconciliation</td></tr>
-          <tr><td class="feat"><code>warpos-distribution-integrity</code></td><td class="mono">18</td><td class="mono">2026-05-04</td><td>—</td><td class="mono">—</td><td><span class="v v-inc">N/A composite</span></td><td class="marg">—</td></tr>
-          <tr><td class="feat"><code>admin-panels-cockpit</code></td><td class="mono">10</td><td class="mono">2026-06-13</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−7 yr</td></tr>
-          <tr><td class="feat"><code>agent-roster</code></td><td class="mono">5</td><td class="mono">2026-05-04</td><td>Claude Code <b>Subagents</b> (<code>/agents</code>)</td><td class="mono">2025-07-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 mo</td></tr>
-          <tr><td class="feat"><code>beta-judgment</code></td><td class="mono">3</td><td class="mono">2026-04-12</td><td><code>/code-review</code>, <code>security-review</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
-          <tr><td class="feat"><code>bootstrap-onramp</code></td><td class="mono">3</td><td class="mono">2026-05-25</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr</td></tr>
-          <tr><td class="feat"><code>commit-land</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Claude Code git integration; Copilot commit messages</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 yr</td></tr>
-          <tr><td class="feat"><code>docs-maps-discovery-reporting</code></td><td class="mono">18</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
-          <tr><td class="feat"><code>enforced-trackers</code></td><td class="mono">2</td><td class="mono">2026-06-05</td><td>Agent-teams shared task list; TodoWrite</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
-          <tr><td class="feat"><code>epic-tracking</code></td><td class="mono">10</td><td class="mono">2026-06-09</td><td>Agent-teams shared task list</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
-          <tr><td class="feat"><code>events-telemetry</code></td><td class="mono">2</td><td class="mono">2026-05-04</td><td>OpenAI Agents SDK built-in tracing</td><td class="mono">2025-03-11</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
-          <tr><td class="feat"><code>growth-marketing</code></td><td class="mono">10</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−4.5 yr</td></tr>
-          <tr><td class="feat"><code>guides-knowledge</code></td><td class="mono">6</td><td class="mono">2026-05-31</td><td>Agent Skills / plugin skills as the delivery shape</td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr on indexing</td></tr>
-          <tr><td class="feat"><code>hooks-mgmt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td>Claude Code <b>hooks</b> (v1.0.38)</td><td class="mono">2025-06-30</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−262 d</td></tr>
-          <tr><td class="feat"><code>issue-register</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−17 yr</td></tr>
-          <tr><td class="feat"><code>karpathy-autoresearch</code></td><td class="mono">3</td><td class="mono">2026-04-18</td><td>Anthropic <b>Outcomes</b> / capability curves</td><td class="mono">2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg">~−20 mo industry · <b>+18 d vs Anthropic</b></td></tr>
-          <tr><td class="feat"><code>memory-learning</code></td><td class="mono">7</td><td class="mono">2026-04-12</td><td>Auto Memory / <code>MEMORY.md</code>; memory tool + context editing</td><td class="mono">2026-02<br>2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.5 yr</td></tr>
-          <tr><td class="feat"><code>model-routing-dispatch</code></td><td class="mono">8</td><td class="mono">2026-05-18</td><td>Fallback model chains (within-provider)</td><td class="mono">~2026-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
-          <tr><td class="feat"><code>modes-teams</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Claude Code <b>Agent Teams</b></td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.7 yr</td></tr>
-          <tr><td class="feat"><code>oneshot-build</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Background / headless agents</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
-          <tr><td class="feat"><code>permissions-turbo</code></td><td class="mono">4</td><td class="mono">2026-05-13</td><td>Claude Code <b>auto mode</b></td><td class="mono">2026-03-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−50 d</td></tr>
-          <tr><td class="feat"><code>portfolio-multiproduct</code></td><td class="mono">8</td><td class="mono">2026-05-22</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
-          <tr><td class="feat"><code>qa-redteam-security</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>security-review</code> · vulnerability scanner</td><td class="mono">2025-10<br>2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.8 yr</td></tr>
-          <tr><td class="feat"><code>reasoning-frameworks</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Extended thinking · plan mode</td><td class="mono">2025-02-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−15 mo</td></tr>
-          <tr><td class="feat"><code>research</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>OpenAI <b>deep research</b></td><td class="mono">2025-02-02</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−16 mo</td></tr>
-          <tr><td class="feat"><code>roadmap</code></td><td class="mono">8</td><td class="mono">2026-05-19</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
-          <tr><td class="feat"><code>session-state-handoff</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>/resume</code>, checkpoints/rewind (v2.0)</td><td class="mono">2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 mo</td></tr>
-          <tr><td class="feat"><code>skills-meta</code></td><td class="mono">9</td><td class="mono">2026-04-12</td><td>Agent Skills · <code>/skill-doctor</code> · <code>claude plugin eval</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 to −3 yr</td></tr>
-          <tr><td class="feat"><code>sprint-lifecycle</code></td><td class="mono">13</td><td class="mono">2026-04-16</td><td><b>Dynamic Workflows</b></td><td class="mono">2026-05-28</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−14 mo</td></tr>
-          <tr><td class="feat"><code>system-health-scans</code></td><td class="mono">4</td><td class="mono">2026-04-16</td><td>Claude Code <code>/doctor</code></td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 to −19 yr</td></tr>
-          <tr><td class="feat"><code>ui-design-review</code></td><td class="mono">2</td><td class="mono">2026-04-15</td><td>Claude Code + Playwright MCP visual review</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
-          <tr><td class="feat"><code>warp-distribution</code></td><td class="mono">20</td><td class="mono">2026-03-19</td><td>Plugins &amp; marketplaces</td><td class="mono">2025-10-31</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−168 d</td></tr>
+          <tr><td class="feat">1 · Declarative roster as single source of truth</td><td class="mono">2026-06-03</td><td>Custom agent definitions (per-file, <code>--agent</code>, <code>disallowedTools</code>)</td><td class="mono">2025-07-24</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">2 · Fixed rosters + binding verdicts (separation of powers)</td><td class="mono">2026-05-26</td><td><i>none</i> — no vendor makes a reviewer's FAIL unoverridable</td><td class="mono">—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">3 · Scope contracts on every spawn, enforced by hooks</td><td class="mono">2026-05-01</td><td>Hooks exist (2025-06-30); scope contracts do not</td><td class="mono">2025-06-30</td><td><span class="v v-inc">Substrate vendor-first</span></td></tr>
+          <tr><td class="feat">4 · Evidence-bound liveness — no fake green</td><td class="mono">2026-05-26</td><td><i>none found</i></td><td class="mono">—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">5 · Context isolation via envelopes</td><td class="mono">2026</td><td>Orchestrator-worker: subagent returns the result, not the trace</td><td class="mono">2025-04</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">6 · One identity, many faces + a persistent judge</td><td class="mono">2026-04-12</td><td>Subagent roles; no persistent adjudicating peer</td><td class="mono">2025-07-24</td><td><span class="v v-inc">Partly vendor-first</span></td></tr>
+          <tr><td class="feat">7 · Cross-provider routing under one registry</td><td class="mono">2026-04-16</td><td><i>none</i> — structurally out of scope for both</td><td class="mono">—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">8 · Parity scans that make roster drift self-detecting</td><td class="mono">2026-05-30</td><td><i>none found</i></td><td class="mono">—</td><td><span class="v v-us">No vendor analog</span></td></tr>
         </tbody>
       </table>
     </div>
 
-    <h3>The five strongest cases</h3>
-    <ol class="steps">
-      <li><b><code>sleep-dream</code></b> — the flagship, reused from the dreaming case. +24 d vs Anthropic, −356 d vs Letta.</li>
-      <li><b><code>enforcement-debt</code></b> (5 skills) — uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived.</li>
-      <li><b><code>paths-registry</code></b> (6 skills) — uncontested but <b>self-deflating</b>, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly.</li>
-      <li><b><code>/guides:integrate</code> + <code>/knowledge:integrate</code></b> (2026-05-31 / 2026-06-05) — <b>the one genuinely new finding.</b> The obvious analogs (Cursor <code>@Docs</code>, Devin Knowledge, Backstage TechDocs) all <em>index</em> documentation for retrieval. These instead <b>place</b> a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another <b>enforcer</b> — a placement ledger makes missing wiring self-detecting.</li>
-      <li><b><code>cross-session-inbox</code></b> — see the reconciliation below.</li>
-    </ol>
+    <h3>Answering the claim directly</h3>
+    <p>The operator's read was that the vendors didn't work this way until later updates. Checked against dates, that's <b>half right, and the half that's right is the governance half.</b></p>
+    <ul class="plain">
+      <li><b>They were ahead on orchestration.</b> Agent Teams (2026-02-05), Agent View and <code>/goal</code> (2026-05-11) and Dynamic Workflows (2026-05-28) all predate WarpOS's control model closing on 7 June. Running many agents is not the thing WarpOS did first.</li>
+      <li><b>Nobody has shipped the governance.</b> Fixed reviewer rosters, verdicts a manager cannot overturn, scope contracts per spawn, evidence-bound liveness, parity scans for roster drift — properties 2, 4, 7 and 8 have no equivalent in either vendor's product to date. That is the real answer to "they didn't do it my way."</li>
+      <li><b>Some pieces did land after.</b> Codex multi-agent V2 (2026-07-21), the Codex agents dashboard (2026-08-20) and Anthropic's cross-session messaging (2026-08-07) all arrived after WarpOS closed its model.</li>
+      <li><b>Industry, for completeness:</b> MetaGPT encoded company SOPs with PM/architect/engineer/QA roles in 2023; CrewAI's hierarchical process and LangGraph's supervisor pattern followed in 2024. The org-chart-of-agents idea is theirs. The <em>enforcement</em> of it isn't.</li>
+    </ul>
 
-    <h3>Reconciliation — the cross-session verdict</h3>
-    <div class="note">
-      <p><b>The two passes disagree, and the CHANGELOG evidence wins.</b> The sweep graded <code>cross-session-inbox</code> inconclusive by comparing it against <b>Agent Teams <code>SendMessage</code></b> (2026-02-05), which predates WarpOS. But that feature is <em>in-session</em>: teammates inside one session's team, and the mailbox dies with the session. The correct comparand is Claude Code's <b>cross-session <code>SendMessage</code> + <code>ListAgents</code>, first shipped in v2.1.224 on 2026-08-07</b>.</p>
-      <p>Against the right feature the verdict is <b>WarpOS-first by 117 days</b>. The sweep's secondary industry findings still stand and are worth keeping: LangChain's <b>Agent Inbox</b> (2025-01-14) is a <em>human</em> inbox for reviewing agent output, and <b>A2A</b> is inter-vendor RPC — neither is a session-to-session broadcast board. The sweep's row is superseded, not wrong about its own narrower comparison.</p>
+    <h3>Two grains, applied to the rest</h3>
+    <p>Four other families were graded only as primitives. Here they are at both levels.</p>
+    <div class="rail">
+      <table>
+        <thead><tr><th>Family</th><th>As primitives</th><th>As a composed system</th><th>System verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><code>memory-learning</code></td><td><span class="v v-them">Vendor first</span> — auto memory 2026-02-26; memory tool 2025-09-29</td><td>Scored learnings → validation → decay → sleep consolidation → promotion into <em>enforcers</em>, as one loop</td><td><span class="v v-us">No vendor analog</span> — vendors store memories; none promote them into executable checks</td></tr>
+          <tr><td class="feat"><code>modes-teams</code></td><td><span class="v v-them">Vendor first</span> — Agent Teams 2026-02-05</td><td>Faces + department org + persistent judge + hook-point roster + registry</td><td><span class="v v-us">WarpOS first</span> · closed 2026-06-07 — see the control table above</td></tr>
+          <tr><td class="feat"><code>sprint-lifecycle</code></td><td><span class="v v-them">Vendor first</span> — ADK 2025-04; Dynamic Workflows 2026-05-28</td><td>plan → design → build → gauntlet → release → retro, with β gates, mutant evidence and a brokered land</td><td><span class="v v-inc">Inconclusive</span> — the lifecycle is genuinely composed, but ADK shipped phased workflow agents a year earlier</td></tr>
+          <tr><td class="feat"><code>enforcement</code></td><td><span class="v v-inc">No vendor analog</span> — <code>claude plugin eval</code> checks plugins, not policy</td><td>Debt ledger + "every policy names its enforcer" + <code>/scan:full</code> + hook wiring</td><td><span class="v v-us">WarpOS first</span> · uncontested on both axes</td></tr>
+        </tbody>
+      </table>
     </div>
+
+    <h3>Things we hadn't looked at yet</h3>
+    <p>A sweep of the systems manifest (93 named systems), <code>AGENTS.md</code>, the ADR index and the roadmap turned up ten capabilities not covered anywhere above. Graded quickly, at both grains.</p>
+    <div class="rail">
+      <table>
+        <thead><tr><th>System</th><th>Landed</th><th>What it does</th><th>Closest vendor</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Ingest firewall</td><td class="mono">2026-05-30</td><td>Fail-closed audit of ingested docs/research for prompt injection — treats external content as data, never instructions</td><td>Both vendors publish injection guidance; neither ships a repo-side fail-closed auditor</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat"><code>/etc</code> authoring + eval harness</td><td class="mono">2026-05-30</td><td>Author a skill/prompt with a sibling eval-pack; evaluate it, emit a validated decision record</td><td><code>claude plugin eval</code> (2026); OpenAI Evals (2023)</td><td><span class="v v-them">Vendor first</span> on evals; the decision-record contract is unmatched</td></tr>
+          <tr><td class="feat"><code>memory:verify</code></td><td class="mono">2026-07-25</td><td>Verifies auto-memory against code/disk/git/tracker and corrects contradicted entries</td><td>Anthropic ships auto-memory; nothing verifies it against ground truth</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">Launch-readiness cockpit</td><td class="mono">2026-06-13</td><td>Cross-product composite readiness %, blockers, owner-action work left</td><td>Agent View lists sessions, not products</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">Panel registry + coverage enforcer</td><td class="mono">2026-06-14</td><td>Every GUI panel is a registry row whose opener must resolve to a real target</td><td>—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">Knowledge layer (the company "brain")</td><td class="mono">2026-06-05</td><td>LIBRARY vs STORE domains wired into consumer specs with a placement ledger</td><td><code>CLAUDE.md</code> + @-imports; Agent Skills</td><td><span class="v v-them">Vendor first</span> on the substrate; placement ledger unmatched</td></tr>
+          <tr><td class="feat">Scaffold coverage enforcer</td><td class="mono">2026-05-30</td><td>Fail-closed check that a scaffolded product ships a real component library</td><td>—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">Enforcement sweep</td><td class="mono">2026-07-28</td><td>Finds unfiled debt — deferral comments, suppressions, skipped tests — and reconciles it against the ledger</td><td>—</td><td><span class="v v-us">No vendor analog</span></td></tr>
+          <tr><td class="feat">Privacy + Docker-secret scans</td><td class="mono">2026-05-04 · 06-02</td><td>Flags secrets a broad <code>COPY .</code> would bake into an image layer</td><td>Anthropic's <code>/security-review</code> (2025-08-06); gitleaks and friends long before</td><td><span class="v v-them">Vendor first</span></td></tr>
+          <tr><td class="feat">Step registry</td><td class="mono">2026-04-20</td><td>Regenerates step tables in canonical docs from a single source</td><td>—</td><td><span class="v v-inc">Docs tooling — no meaningful comparand</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">Also uncovered, one line each: model-chain enforcer, version-coherence and quorum scans, layer-diff, migration coverage, applied-migrations, tracked-transients, ship-coverage, path-resolution, structure-parity, staleness, capsule-resolvability, install-baseline, manifest honesty and coverage — the fourteen <code>scan:warpos-*</code> integrity checks already graded as composite; plus playbook, favourites, linters, node-procs, timeline, patterns, coherence and regression scans, all internal-hygiene tooling with no external comparand.</p>
+  </section>
+
+  <!-- ===================== SKILL SWEEP ===================== -->
+  <section id="sweep">
+    <span class="sectnum">Section 10</span>
+    <h2>Skill sweep — 237 skills in 35 families</h2>
+    <p class="lede">A companion pass walked <em>every</em> skill in <code>.claude/commands</code>, rather than the ~50 capabilities sampled above, and graded each family against its closest Anthropic/OpenAI analog.</p>
+
+    <p class="caption" style="margin-bottom:1.2rem;">Reconciled to <b>SkillSweep v2</b>, which re-grades every family on two axes: <b>primary</b> = Anthropic + OpenAI only, <b>secondary</b> = Google and the wider industry.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">237</span><span class="l">Skills · 35 families</span></div>
+      <div class="score us"><span class="n">4</span><span class="l">Primary WarpOS first</span></div>
+      <div class="score them"><span class="n">17</span><span class="l">Primary vendor first</span></div>
+      <div class="score inc"><span class="n">9</span><span class="l">No vendor analog</span></div>
+    </div>
+
+    <div class="rail" style="margin-top:1rem;">
+      <table>
+        <thead><tr><th>Axis</th><th>Vendor / they first</th><th>WarpOS first</th><th>No vendor analog</th><th>Inconclusive</th><th>Composite</th></tr></thead>
+        <tbody>
+          <tr><td class="feat">Primary — families (35)</td><td class="mono">17</td><td class="mono">4</td><td class="mono">9</td><td class="mono">4</td><td class="mono">1</td></tr>
+          <tr><td class="feat">Primary — skills (237)</td><td class="mono">108</td><td class="mono">20</td><td class="mono">66</td><td class="mono">25</td><td class="mono">18</td></tr>
+          <tr><td class="feat">Secondary — families (35)</td><td class="mono">31</td><td class="mono">2</td><td class="mono">—</td><td class="mono">1</td><td class="mono">1</td></tr>
+          <tr><td class="feat">Secondary — skills (237)</td><td class="mono">206</td><td class="mono">11</td><td class="mono">—</td><td class="mono">2</td><td class="mono">18</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Reading the two axes together is the whole point. Against <b>Anthropic and OpenAI alone</b>, WarpOS is first in <b>4 families / 20 skills</b>, and neither vendor even entered <b>9 more families</b>. Widen to the industry and that collapses to <b>2 families / 11 skills</b>. The vendor-scoped picture is meaningfully better than the industry-scoped one — and both are here deliberately, because quoting only the first would be the dishonest version.</p>
+
+    <div class="rail">
+      <table>
+        <thead><tr><th>Family</th><th>Skills</th><th>Keystone</th><th>Anthropic analog</th><th>Their date</th><th>Primary verdict</th><th>Margin</th><th>Secondary (industry)</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><code>cross-session-inbox</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Cross-session <code>SendMessage</code> + <code>ListAgents</code></td><td class="mono">2026-08-07</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+117 d</td><td><span class="v v-inc">Inconclusive</span></td></tr>
+          <tr><td class="feat"><code>sleep-dream</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td><b>Dreaming</b> (Managed Agents)</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d</td><td><span class="v v-them">−356 d vs Letta</span></td></tr>
+          <tr><td class="feat"><code>sprint-lifecycle</code></td><td class="mono">13</td><td class="mono">2026-05-11</td><td><b>Dynamic Workflows</b> — <code>agent()</code>/<code>parallel()</code>/<code>pipeline()</code></td><td class="mono">2026-05-28</td><td><span class="v v-us">WarpOS first</span> <b>contestable</b></td><td class="marg pos">+17 d · +71 d vs OpenAI</td><td><span class="v v-them">~−14 mo</span></td></tr>
+          <tr><td class="feat"><code>karpathy-autoresearch</code></td><td class="mono">3</td><td class="mono">2026-04-18</td><td>Outcomes / capability curves</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span> <i>weakest</i></td><td class="marg pos">+18 d</td><td><span class="v v-them">~−20 mo</span></td></tr>
+          <tr><td class="feat"><code>admin-panels-cockpit</code></td><td class="mono">10</td><td class="mono">2026-06-13</td><td>Desktop multi-session workspace; Agent View</td><td class="mono">2026-04-14<br>2026-05-11</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">predates by 33–131 d</td><td><span class="v v-them">~−7 yr</span></td></tr>
+          <tr><td class="feat"><code>beta-judgment</code></td><td class="mono">3</td><td class="mono">2026-04-12</td><td><code>/security-review</code>; <code>/code-review</code>; Agent Skills</td><td class="mono">2025-08-06<br>2025-10-16</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">—</td><td><span class="v v-them">~−2 yr</span></td></tr>
+          <tr><td class="feat"><code>model-routing-dispatch</code></td><td class="mono">8</td><td class="mono">2026-06-01</td><td>Fallback model chains + per-agent cost attribution</td><td class="mono">~2026-06</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">vendor date unpinned</td><td><span class="v v-them">~−3 yr</span></td></tr>
+          <tr><td class="feat"><code>system-health-scans</code></td><td class="mono">4</td><td class="mono">2026-04-16</td><td><code>/doctor</code>; <code>claude plugin eval</code></td><td class="mono">2025</td><td><span class="v v-inc">Inconclusive</span></td><td class="marg">—</td><td><span class="v v-them">~−9 to −19 yr</span></td></tr>
+          <tr><td class="feat"><code>enforcement-debt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td><code>claude plugin eval</code> evaluates <em>plugins</em>, not unenforced policy</td><td class="mono">2026</td><td><span class="v v-inc">No vendor analog</span></td><td class="marg">uncontested vs both</td><td><span class="v v-us">WarpOS first</span></td></tr>
+          <tr><td class="feat"><code>paths-registry</code></td><td class="mono">6</td><td class="mono">2026-05-01</td><td><i>none found</i></td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span></td><td class="marg">uncontested vs both</td><td><span class="v v-us">WarpOS first</span></td></tr>
+          <tr><td class="feat"><code>bootstrap-onramp</code></td><td class="mono">3</td><td class="mono">2026-05-25</td><td><i>none found</i> — no idea→on-screen→monetize on-ramp</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−1.5 yr</span></td></tr>
+          <tr><td class="feat"><code>docs-maps-discovery-reporting</code></td><td class="mono">18</td><td class="mono">2026-04-12</td><td><i>none found</i> — no architecture-map / reference-integrity feature</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−9 yr</span></td></tr>
+          <tr><td class="feat"><code>growth-marketing</code></td><td class="mono">10</td><td class="mono">2026-05-01</td><td><i>none found</i> — no marketing-copy surface</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−4.5 yr</span></td></tr>
+          <tr><td class="feat"><code>issue-register</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td><i>none found</i> — no recurring-issue register</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−17 yr</span></td></tr>
+          <tr><td class="feat"><code>portfolio-multiproduct</code></td><td class="mono">8</td><td class="mono">2026-05-22</td><td><i>none found</i> — Agent View lists sessions, not products</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−6 yr</span></td></tr>
+          <tr><td class="feat"><code>roadmap</code></td><td class="mono">8</td><td class="mono">2026-05-19</td><td><i>none found</i> — no roadmap/prioritization surface</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−3 yr</span></td></tr>
+          <tr><td class="feat"><code>ui-design-review</code></td><td class="mono">2</td><td class="mono">2026-04-15</td><td><i>none found</i> first-party — browser-driven review is a pattern</td><td class="mono">—</td><td><span class="v v-inc">No vendor analog</span> <i>vacuous</i></td><td class="marg">—</td><td><span class="v v-them">~−9 yr</span></td></tr>
+          <tr><td class="feat"><code>warpos-distribution-integrity</code></td><td class="mono">18</td><td class="mono">2026-05-04</td><td>n/a — asserts WarpOS's own distribution properties</td><td class="mono">—</td><td><span class="v v-inc">N/A composite</span></td><td class="marg">—</td><td><span class="v v-inc">N/A composite</span></td></tr>
+          <tr><td class="feat"><code>agent-roster</code></td><td class="mono">5</td><td class="mono">2026-05-04</td><td>Custom Subagents via <code>/agents</code></td><td class="mono">2025-07-24</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−284 d</td><td><span class="v v-them">~−9 mo</span></td></tr>
+          <tr><td class="feat"><code>commit-land</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Git use since the research preview</td><td class="mono">2025-02-24</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−13.5 mo</td><td><span class="v v-them">~−1 yr</span></td></tr>
+          <tr><td class="feat"><code>enforced-trackers</code></td><td class="mono">2</td><td class="mono">2026-06-05</td><td>Agent Teams shared task list; <code>/goal</code></td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−120 d</td><td><span class="v v-them">~−6 yr</span></td></tr>
+          <tr><td class="feat"><code>epic-tracking</code></td><td class="mono">10</td><td class="mono">2026-06-09</td><td>Agent Teams shared task list; <code>/goal</code></td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−124 d</td><td><span class="v v-them">~−6 yr</span></td></tr>
+          <tr><td class="feat"><code>events-telemetry</code></td><td class="mono">2</td><td class="mono">2026-05-04</td><td><i>no first-party trace ledger beyond OTel export</i></td><td class="mono">—</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−14 mo (OpenAI)</td><td><span class="v v-them">~−3 yr</span></td></tr>
+          <tr><td class="feat"><code>guides-knowledge</code></td><td class="mono">6</td><td class="mono">2026-05-31</td><td><code>CLAUDE.md</code> + @-file imports; Agent Skills</td><td class="mono">2025-02-24<br>2025-10-16</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−15 mo</td><td><span class="v v-them">~−1.5 yr</span></td></tr>
+          <tr><td class="feat"><code>hooks-mgmt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td>Hooks (v1.0.38)</td><td class="mono">2025-06-30</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−287 d</td><td><span class="v v-them">−262 d</span></td></tr>
+          <tr><td class="feat"><code>memory-learning</code></td><td class="mono">7</td><td class="mono">2026-04-12</td><td>memory tool + context editing; Auto Memory</td><td class="mono">2025-09-29<br>2026-02-26</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−45 d</td><td><span class="v v-them">~−2.5 yr</span></td></tr>
+          <tr><td class="feat"><code>modes-teams</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Agent Teams (with Opus 4.6)</td><td class="mono">2026-02-05</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−66 d</td><td><span class="v v-them">~−2.7 yr</span></td></tr>
+          <tr><td class="feat"><code>oneshot-build</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>GitHub Actions for background tasks at GA</td><td class="mono">2025-05-22</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−11 mo</td><td><span class="v v-them">~−2 yr</span></td></tr>
+          <tr><td class="feat"><code>permissions-turbo</code></td><td class="mono">4</td><td class="mono">2026-05-13</td><td>Auto mode — classifier screens tool calls</td><td class="mono">2026-03-24</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−50 d</td><td><span class="v v-them">~−14 mo</span></td></tr>
+          <tr><td class="feat"><code>qa-redteam-security</code></td><td class="mono">8</td><td class="mono">2026-04-15</td><td><code>/security-review</code> + GitHub Action</td><td class="mono">2025-08-06</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−252 d</td><td><span class="v v-them">~−2.8 yr</span></td></tr>
+          <tr><td class="feat"><code>reasoning-frameworks</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Extended thinking w/ budget; Plan Mode</td><td class="mono">2025-02-24<br>2025-10-27</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−14 mo</td><td><span class="v v-them">decades</span></td></tr>
+          <tr><td class="feat"><code>research</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Research — orchestrator + parallel subagents</td><td class="mono">2025-04</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−14 mo (OpenAI)</td><td><span class="v v-them">~−16 mo</span></td></tr>
+          <tr><td class="feat"><code>session-state-handoff</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td>Checkpoints + <code>/rewind</code>; Desktop session handoff</td><td class="mono">2025-09-29<br>2026-02-20</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">~−6.5 mo</td><td><span class="v v-them">~−10 mo</span></td></tr>
+          <tr><td class="feat"><code>skills-meta</code></td><td class="mono">9</td><td class="mono">2026-04-12</td><td>Custom slash commands; Agent Skills</td><td class="mono">2025-10-16</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−178 d</td><td><span class="v v-them">~−1 to −3 yr</span></td></tr>
+          <tr><td class="feat"><code>warp-distribution</code></td><td class="mono">20</td><td class="mono">2026-03-19</td><td>Plugins &amp; marketplaces</td><td class="mono">2025-10-31</td><td><span class="v v-them">Vendor first</span></td><td class="marg neg">−139 d</td><td><span class="v v-them">~−6 yr</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The four primary WarpOS-first families, in confidence order</h3>
+    <ol class="steps">
+      <li><b><code>cross-session-inbox</code> — +117 d.</b> The cleanest non-dreaming claim. <code>/session:write</code> → <code>/session:read</code> is a durable file-backed board landed 2026-04-12; Anthropic shipped messaging <em>between</em> sessions on 2026-08-07. The sweep's own caveats, kept: it is a file convention plus two skills, <b>not a transport</b> — Anthropic's is a real cross-process channel with liveness — and 2026-04-12 is the extraction commit, so the true date is earlier and unprovable.</li>
+      <li><b><code>sleep-dream</code> — +24 d.</b> The flagship. Uncontested vs OpenAI; −356 d vs Letta.</li>
+      <li><b><code>sprint-lifecycle</code> — +17 d vs Anthropic, +71 d vs OpenAI. Contestable, in the sweep's own words:</b> <em>"The Agents SDK's <code>handoffs</code> primitive is 2025-03-11 and is arguably the real vendor ancestor, which would make this VENDOR-FIRST by 14 months; I judged handoffs to be agent delegation rather than a lifecycle, and that judgement is contestable."</em> Also a different layer — Anthropic ships a JS orchestration API, WarpOS a markdown-skill lifecycle driven by a hook-point registry — and the secondary axis kills it outright (Google ADK workflow agents, 2025-04). <b>Do not lead with this one.</b></li>
+      <li><b><code>karpathy-autoresearch</code> — +18 d. Weakest of the four.</b> Anthropic's "Outcomes" is goal definition rather than self-optimization, and the industry axis is ~−20 months.</li>
+    </ol>
+    <p>Also worth keeping from the earlier pass: <b><code>/guides:integrate</code> + <code>/knowledge:integrate</code></b>. The analogs (Cursor <code>@Docs</code>, Devin Knowledge, Backstage TechDocs) all <em>index</em> documentation, while these <b>place</b> a document at a declared anchor inside named consumer specs and log it in a JSONL ledger — making missing wiring self-detecting, i.e. another <b>enforcer</b>. On the v2 primary axis the family still grades vendor-first (<code>CLAUDE.md</code> + @-imports, ~−15 mo); the distinctive part is the placement mechanism, not the category.</p>
+
+    <h3>Reconciliation — v2 concurs</h3>
+    <div class="note">
+      <p><b>Resolved.</b> SkillSweep v1 graded <code>cross-session-inbox</code> inconclusive against the wrong comparand — in-session Agent Teams messaging (2026-02-05), whose mailbox dies with the session. <b>v2 concurs with the cross-session section: WarpOS-first, +117 days</b>, against cross-session <code>SendMessage</code> + <code>ListAgents</code> (2026-08-07). Both passes now agree and no contradiction remains in this document.</p>
+      <p>The sweep's secondary findings still stand: LangChain's <b>Agent Inbox</b> (2025-01-14) is a <em>human</em> approval inbox, and <b>A2A</b> is inter-vendor RPC — neither is a session-to-session broadcast board, which is why the secondary axis grades inconclusive rather than they-were-first.</p>
+    </div>
+
+    <h3>Two warnings that must travel with these numbers</h3>
+    <div class="callout">
+      <span class="tag">⚠ "No vendor analog" is not a win</span>
+      <p>Nine families — <code>roadmap</code>, <code>enforcement-debt</code>, <code>issue-register</code>, <code>paths-registry</code>, <code>growth-marketing</code>, <code>ui-design-review</code>, <code>bootstrap-onramp</code>, <code>portfolio-multiproduct</code>, <code>docs-maps-discovery-reporting</code> — are "first" only <b>vacuously</b>: neither vendor entered the category at all, and <b>7 of the 9 have a 4-to-19-year-old analog elsewhere</b> (project trackers, issue registers, marketing tooling, design-review tools, scaffolders, docs generators). Only <b><code>enforcement-debt</code></b> and <b><code>paths-registry</code></b> are uncontested on <em>both</em> axes. Those two are worth claiming; the other seven aren't.</p>
+    </div>
+    <div class="note">
+      <p><b>The hosted changelog gives wrong dates — use the GitHub file.</b> <code>code.claude.com/docs/en/changelog</code> exposes only ~v2.1.22x onward, so first-mention lookups against it return dates that are <em>wrong</em>, not merely incomplete. The authoritative method is the one used for the cross-session finding: fetch <code>anthropics/claude-code</code> <b><code>CHANGELOG.md</code></b> via the GitHub contents API (587,814 bytes, v0.2.21 → v2.1.251) and walk it in version order. That also <b>closes the sweep's own open item</b> — its 2026-08-07 anchor came from a third-party timeline; the CHANGELOG walk makes the date first-party.</p>
+    </div>
+
+    <h3>Ahead of OpenAI but not Anthropic — recorded, not claimable</h3>
+    <p>Several families lead <b>Codex</b> while trailing Claude Code. Worth recording and <b>not</b> worth claiming, because the primary axis is both vendors and Anthropic got there first in every case: <code>memory-learning</code>, <code>session-state-handoff</code> and <code>hooks-mgmt</code> at <b>~+100 d vs Codex</b>; <code>model-routing-dispatch</code> at <b>+50 d</b>; <code>warp-distribution</code> at <b>+6 d vs Codex Plugins</b> while sitting −139 d behind Anthropic's. "First among some vendors" is not a priority claim — listed so the finding is preserved rather than quietly dropped.</p>
 
     <h3>Why 18 skills carry no verdict</h3>
     <p><b><code>warpos-distribution-integrity</code></b> (the <code>scan:warpos-*</code> family) is graded <b>N/A-composite</b> rather than given a verdict, and that is the honest call: these skills verify <em>WarpOS's own</em> distribution invariants — capsule resolvability, manifest honesty, layer diffs, migration coverage, version quorum. There is no external analog because there is no external artifact to compare against; they are self-referential integrity checks for one framework. Counting them as WarpOS-first would be meaningless, and counting them as they-were-first would be false. They are excluded from both totals, which is why 18 skills sit outside the split.</p>
@@ -823,7 +967,7 @@
 
   <!-- ===================== STRENGTHEN ===================== -->
   <section id="strengthen">
-    <span class="sectnum">Section 10</span>
+    <span class="sectnum">Section 11</span>
     <h2>How to strengthen this</h2>
     <p class="lede">The dreaming claim currently rests on author-supplied git timestamps in an unsigned commit. Anyone can set <code>GIT_AUTHOR_DATE</code>. Here is what would make it adversarially defensible, in order of leverage.</p>
 
@@ -835,7 +979,7 @@
       <li><b>Establish the pre-history.</b> The sleep system arrived complete in the extraction commit, so it was built earlier in the originating project. If that repo is also on GitHub, its history plus GH Archive would push the margin well past 24 days. <em>Blocked:</em> cross-project access needs explicit operator sign-off.</li>
       <li><b>Pair the run artifacts with execution logs.</b> The dated sleep scripts prove the cycle ran, in filenames independent of git metadata. An <code>events.jsonl</code> entry from April, dated before 2026-05-06, beats a spec file.</li>
       <li><b>Pin the vendor date harder.</b> Find the real Anthropic announcement page, archive it to the Wayback Machine, and capture the announcing post with its timestamp. A vendor date resting on InfoQ plus three blogs is weaker than the WarpOS side of the same comparison.</li>
-      <li><b>Frame it as convergent prior art, never as influence.</b> The claim is strictly that WarpOS independently shipped and ran an equivalent capability first. Overreaching past that is what would get the whole document dismissed.</li>
+      <li><b>Say "we got there first", not "they copied us".</b> There's no evidence anyone at Anthropic saw this repo, and the independent-arrival version of the story is both true and more interesting.</li>
     </ol>
   </section>
 
