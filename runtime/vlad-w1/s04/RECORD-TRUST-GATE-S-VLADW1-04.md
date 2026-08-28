@@ -112,9 +112,72 @@ those are **accuracy failures too** — the fix is the mechanism or the claim, n
 suppression marker. Any exemption must be **code-level with a structural reason**, never a marker a document
 author can set, because a settable exemption in a claim-binding gate is the same hole in a new place.
 
+## β row 308 (`9c2e5d38`) — folded into this gate
+
+**Q2 changes RT-1's guard obligation and RT-2's atomicity width.**
+
+- **RT-1 gains a compliance clause.** Refuse-not-skip converts every currently-SKIPPED paragraph into a
+  violation, so the bundle that lands the guard must also land compliance for every real paragraph the new
+  predicate refuses — **in the same change, with no report-only ramp.** A guard that ships red-on-arrival is
+  a guard someone will disable.
+  **MEASURED AT `b2583d6`: that set is EMPTY.** 14 paragraphs match the canonical predicate; 0 are newly
+  refused; `Status` / `Enforcer` / `Proof scope` metadata is correctly not matched, so refuse-not-skip does
+  not turn P-clause lines into violations. Evidence: `NEAR-MISS-BATTERY.md`. **The clause is retained as a
+  bundle-A exit condition** — re-run the scan against the predicate AS BUILT, because a wider resemblance
+  predicate could refuse real paragraphs. The empty set is a property of this predicate at this commit.
+- **RT-2's atomic width is TWO files, and this was re-verified rather than inherited.** β's note that
+  `CUSTODY.md`'s Asserted paragraphs are ADR-sourced (implying a three-file edit) was read during fix
+  attempt 2; β directed re-verification at `b2583d6`. Result: **`ADR-0041` does not exist in the vlad repo
+  at all** (it lives in WarpOS under `.claude/agents/president/_system/policy/adr/`, so an ADR-sourced
+  correction is a *cross-repo* edit), and the verbatim obligation covers **A1–A4 only** — `CUSTODY.md:162`
+  says "the four paragraphs immediately below", and the ADR contains `**A1`–`**A4` and no others (A6/A7/A8
+  absent). **Decision: the class-form ceiling ships as a `Ceiling` paragraph under P3 — two-file
+  atomicity** (`CUSTODY.md` + the lint's stored copy).
+
+**Q4 extends the falsifier set: the near-miss class was NOT confined to RT-1.** The battery found
+**13 blindnesses across three rules**, two of them outside the nine residuals:
+
+- **RT-1 derivation — 7** (en-dash, hyphen, minus, colon, indent, and both `Ceiling` variants). In scope.
+- **RT-7 (NEW) — status-token separation, 4 blindnesses.** A near-miss Asserted status token
+  (`ASSERTED – NOT VERIFIED` with an en-dash, hyphen, lowercase, or extra spacing) placed in the **Proven**
+  section evades `status-token-conflation` entirely. **This is a record-trust path in its own right and is
+  hereby added to the enumeration**: the reader is the label-separation rule, the trusted field is the
+  status token's exact bytes, and the gated action is shipping a claim under the wrong PROVEN/ASSERTED
+  label. Same choke-point family, same fix shape, proposed into bundle A.
+- **RT-8 (NEW) — aggregate/worded-rollup, 2 blindnesses.** Spelled-out numerals and `every` (vs `all`)
+  evade. **Proposed as a DISCLOSED blindness rather than a repair**: widening a prose-pattern matcher is the
+  move whose ceiling S-03 already documented, and it is the shape most likely to become the next overclaim.
+  β's call at the design→build consult.
+- **RT-2 carrier-note — 0 blindnesses, 2 TOLERANCES** (double space, NBSP). The rule binds "modulo
+  line-wrap whitespace" by design, so tolerance is correct behaviour, not a defect. Named in the header
+  rather than narrowed — narrowing invites the false-RED class the companion doctrine warns about.
+
+**Q1/Q3 do not change this gate.** The class-form residual is DISCLOSED (strong actionable form), which is a
+claim-truthfulness obligation rather than a record-trust surface; AC-8.6's cap bounds RT-6 to one invocation
+plus one named test plus `check:pointers` resolving the node.
+
 ## Design→build EXIT (blocking)
 
-Build entry is refused unless: every RT-1..RT-6 path names its choke-point and structural guard (done
-above); RF-1 and RF-3..RF-7 exist as named committed test files and are observed RED under their own
-mutation; RF-2's disposition is settled by β (Q4); and the atomic claim+canonical bundle-ownership rule is
-written into the build spec's scope contracts rather than left to builder judgement.
+Build entry is refused unless:
+
+1. Every **RT-1..RT-8** path names its choke-point and structural guard — done above, with RT-7 and RT-8
+   added by the battery.
+2. **RF-1 and RF-2 EXIST AND HAVE BEEN RUN — SATISFIED AT DESIGN.** β made this a design exit condition
+   rather than a build deliverable. `NEAR-MISS-BATTERY.md` records the run: **controls first, 6/6 controls
+   RED, baseline clean, zero files mutated** (probed through `lintCustodyStatement(content)`, a pure
+   function, so the live tree was never touched and no revert was needed). Every variant is recorded as RED
+   or as a **named blindness carried into build scope**.
+3. RF-3..RF-7 are written into the build spec as required-present committed fixtures, each with the
+   "present AND OBSERVED RED under its own mutation" bar.
+4. The atomic claim+canonical bundle-ownership rule is written into the build spec's **scope contracts**,
+   not left to builder judgement — and the A→B serialization is stated as a consequence of it.
+5. β mints S-04's release rule at the design→build boundary, against these final criteria, before any
+   result exists.
+
+**Bundle-ordering consequence of Q2, checked rather than assumed.** Bundle A owns `CUSTODY.md`'s header
+block, the class-form `Ceiling` under P3, and any newly-refused paragraph (measured empty). Bundle B owns
+`CUSTODY.md`'s two false sentences plus their canonical copies. **Both bundles edit `CUSTODY.md`, which is
+exactly why A→B is forced-serial rather than a preference** — and Q2's compliance clause does not widen
+A's `CUSTODY.md` footprint at this commit, because the newly-refused set is empty. If a wider predicate is
+built and that set becomes non-empty, A's footprint grows and A→B remains correct; the ordering does not
+need to change, only A's brief.

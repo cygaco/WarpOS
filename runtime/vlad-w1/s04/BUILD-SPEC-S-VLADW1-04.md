@@ -166,7 +166,7 @@ the new predicate newly refuses — compliance in the same change, no report-onl
 **MEASURED, AND IT CHANGES THE PREMISE:** at `b2583d6` that set is **EMPTY** — 14 paragraphs match the
 canonical predicate, **0 are newly refused**, and the non-canonical bolded lead-ins (`Status`, `Enforcer`,
 `Proof scope`) are correctly not matched, so metadata does not become violations. Evidence:
-`NEAR-MISS-BATTERY-RESULTS.md`. **The requirement is retained as a bundle-A EXIT CONDITION anyway** — re-run
+`NEAR-MISS-BATTERY.md`. **The requirement is retained as a bundle-A EXIT CONDITION anyway** — re-run
 the scan against the predicate AS BUILT, because a wider resemblance predicate could refuse real paragraphs.
 The empty set is a property of this predicate at this commit, not a general fact.
 
@@ -179,7 +179,7 @@ exceeded it and must stop.
 
 ## Q4 DIRECTIVE — the battery EXISTS and HAS BEEN RUN. Results change the scope.
 
-`NEAR-MISS-BATTERY-RESULTS.md`, run at design against `b2583d6` on the real document, **controls first, 6/6
+`NEAR-MISS-BATTERY.md`, run at design against `b2583d6` on the real document, **controls first, 6/6
 controls RED, baseline clean, zero files mutated** (pure-function probe). **13 blindnesses across THREE
 rules, two of which were NOT in the nine residuals:**
 

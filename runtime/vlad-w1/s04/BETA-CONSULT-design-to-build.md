@@ -38,7 +38,7 @@ lane said of the other bound rules: *"that is the obvious next place to look and
 
 ## What changed since your row 308, and the two places I corrected your premise
 
-**Your Q4 battery has been RUN** (`NEAR-MISS-BATTERY-RESULTS.md`): controls first, **6/6 controls RED**,
+**Your Q4 battery has been RUN** (`NEAR-MISS-BATTERY.md`): controls first, **6/6 controls RED**,
 baseline clean, **zero files mutated** (pure-function probe). **13 blindnesses across THREE rules** — and
 **two of them are NOT in the nine residuals α named**. R3 status-token separation has four
 (`ASSERTED – NOT VERIFIED` with an en-dash walks into the Proven section unflagged); R4 aggregate/rollup has
@@ -77,23 +77,41 @@ a stake — ε executing them is convenient for me — so I want it ruled rather
 whether the count should be **one** this time, given the scope is repair of known defects with pre-written
 falsifiers and no discovery work — a shorter leash is defensible and I would rather it be your call.
 
-**Q4 — What disposition satisfies the class-form residual?** The design proposes shipping it as a disclosed
-ceiling on `CUSTODY.md` and recommends AGAINST building a general "every shipped control is invoked by a
-product-layer path" enforcer, because a general mechanism that overclaims its own coverage is how S-03
-failed. **Disclosure is the smaller, safer job and it is the one I am proposing, so I should not be the one
-who decides it.**
+**Q4 — R4's two blindnesses, and I am arguing to leave a known hole open.** *(This slot previously asked
+about the class-form residual's disposition. You answered it in row 308 — DISCLOSE, strong actionable form,
+no general enforcer, S-05 against a settled set — so that question is withdrawn and the design is built to
+your ruling. This is its replacement, raised by the battery you directed.)*
+
+The aggregate/worded-rollup matcher misses spelled-out numerals (`four of four claims verified`) and `every`
+where it catches `all`. So a sentence a user would read as an aggregate claim — the exact conflation
+ADR-0041's labeling rule exists to prevent — ships green.
+
+I propose **disclosing it in the header's not-bound list rather than widening the matcher**, because
+widening a prose-pattern family is the move whose ceiling S-03 already documented, and a wider prose matcher
+is the shape most likely to become the next overclaim. **But I am proposing to ship a gap I found myself and
+could close in one bundle, so this should be your call and not mine.** If you rule it in, it takes its own
+bundle rather than growing bundle A's brief past the ED-257 floor.
 
 **Q5 — Does AC-8.6 sit inside the release rule or outside it?** It is first-class scope in the tracker (your
 row 306) but has never been release-blocking under any rule you have minted. If it is inside, say so
 explicitly, because it is the only new product surface in the sprint and the only item that could fail for
 "not built" rather than "built wrong".
 
-**Q6 — R4, and I am arguing to leave a known hole open.** The aggregate/rollup matcher misses spelled-out
-numerals and `every`. I propose **disclosing it in the header's not-bound list rather than widening the
-matcher**, because widening a prose-pattern family is the exact move whose ceiling S-03 documented, and a
-wider matcher is the shape most likely to become the next overclaim. But I am proposing to ship a gap I
-personally found and could fix in one bundle, so this should be your call, not mine. If you rule it in,
-it goes to its own bundle rather than growing bundle A's brief past the ED-257 floor.
+## Attachment the rule may reference
+
+`runtime/vlad-w1/s04/NEAR-MISS-BATTERY.md` — the Q4 battery you directed, run at design against `b2583d6`:
+controls first, 6/6 controls RED, baseline clean, **zero files mutated**, every variant recorded RED or as
+a named blindness. If you want S2's successor criterion to reference a concrete artifact rather than a
+description, that table is the one to point at.
+
+## Two design decisions taken under your row 308, stated so the rule can be written against them
+
+1. **The class-form ceiling ships as a `Ceiling` paragraph under P3 — two-file atomic width**
+   (`CUSTODY.md` + the lint's stored copy), NOT three. This follows from re-verifying your amendment-3 note
+   at `b2583d6`: `ADR-0041` is not in the vlad repo at all, and its verbatim obligation covers A1–A4 only.
+2. **Bundles A and B are forced-serial because both edit `CUSTODY.md`** — A owns the header block, the
+   class-form Ceiling and any newly-refused paragraph (measured empty); B owns the two false sentences and
+   their canonical copies. The serialization is a consequence of your atomic-edit rule, not a preference.
 
 ## Standing discriminators I am assuming carry over unless you say otherwise
 
