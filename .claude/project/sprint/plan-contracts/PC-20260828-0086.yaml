@@ -203,10 +203,11 @@ external_service_dependencies:
   notes: "No external service. The Agent SDK is a build-time dependency already present in the tree."
 
 approval_boundaries:
-  - "No builder may be dispatched until the operator authorizes the build."
-  - "No sprint-registry entry until build authorization — add-sprint.js overwrites reg.primary unconditionally."
-  - "The vlad branch is not merged and not pushed."
-  - "Final user-facing custody register wording remains Class C (operator territory); builders correct technical claims, not the trust summary."
+  - "OVERRIDDEN 2026-08-28 by alpha, Class B, reversible (tracker Decisions; beta row 311 c5d0e293) - ORIGINAL TEXT RETAINED so the override is visible rather than erased: 'No builder may be dispatched until the operator authorizes the build.' The override reaches BUILDER DISPATCH ONLY."
+  - "DISCHARGED 2026-08-28 - ORIGINAL TEXT RETAINED: 'No sprint-registry entry until build authorization - add-sprint.js overwrites reg.primary unconditionally.' The entry was minted at authorization and committed immediately (d358296d), which is what this boundary asked for."
+  - "STANDING, NOT overridden: the vlad branch is not merged and not pushed. The merge stays gated on the release rule (rows 309/310); every push is per-action, because the classifier sits above permissions.allow."
+  - "STANDING, NOT overridden: final user-facing custody register wording remains Class C (operator territory); builders correct technical claims, not the trust summary."
+  - "Halt granularity is the BUNDLE BOUNDARY, never mid-bundle - a half-applied claim-plus-canonical edit is the S4-3 defect itself."
 
 design_required: true
 execution_allowed_without_design: false
@@ -264,8 +265,13 @@ goal_verification:
 
 next_recommended_command: "/sprint:design — then route the design-to-build beta consult so beta mints S-04's fresh release rule BEFORE any result exists."
 resume_instructions: >-
-  Plan and design only; the build is NOT authorized. Do not dispatch a builder, do not mint a registry
-  entry, do not merge or push. Resume at the design-to-build boundary with beta's fresh rule.
+  BUILD DISPATCH AUTHORIZED BY alpha OVERRIDE 2026-08-28 (see the tracker's Decisions; beta row 311
+  c5d0e293). The override reaches BUILDER DISPATCH ONLY. Registry entry minted and committed d358296d.
+  Release rule pre-committed by beta rows 309 (e7a4b619) + 310 (3a5f81c7), ONE fix attempt, no exception
+  clause. STILL GATED, unchanged by the override: the merge of wt/S-VLADW1-01-engine is gated on the
+  release rule; every push is per-action; the user-facing custody register wording stays Class C. Halt
+  granularity is the bundle boundary, never mid-bundle - a half-applied claim-plus-canonical edit is the
+  S4-3 defect itself.
 
 tracker_paths:
   sprint_tracker: "trackers/sprints/S-VLADW1-04-custody-claims-un-invertible.md"
