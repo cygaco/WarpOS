@@ -54,10 +54,29 @@ CLASS form is disclosed nowhere on the shipped surface. Two gauntlet-3 lanes (qa
 independently reached this by grep and flagged the same tension: a `CUSTODY.md` reader is handed the
 instance without the class. This sprint either enforces the general form or ships it as a disclosed ceiling.
 
+## Release rule — PRE-COMMITTED, β row 309 (`e7a4b619`)
+
+Minted 2026-08-28 at the design→build boundary, against the final acceptance criteria, **before any build
+result existed**. Full text: `runtime/beta-consult/S-VLADW1-04-r2-release-rule-e7a4b619.md`. RELEASE iff
+all six hold at the close of the qualifying gauntlet:
+
+| id | criterion, in brief |
+|---|---|
+| **S4-1** | **TRUTH**, unconditioned — every custody claim string on a shipped surface (what `npm pack --dry-run` resolves) is TRUE at close, by reviewer read. **May NEVER be satisfied by mechanism evidence**: a green bind, lint or battery is not evidence a sentence is true. |
+| **S4-2** | **MECHANISM** — RF-1 RED for all seven near-miss authorings plus both controls; RF-3 RED on reverting the refusal to `continue`; **R3 closed by a NAMED CANONICAL TRANSFORM** (case-fold + whitespace-collapse + dash-class fold on the rendered form) — **enumerating the four observed variants does NOT satisfy it**; battery re-run against the predicate AS BUILT **by a gauntlet lane, not by ε**, population including bundle A's newly-authored class-form paragraph. |
+| **S4-3** | **ATOMICITY** — RF-4 RED: a claim edit without its canonical edit fails inside the owning bundle's own run, not at gauntlet. |
+| **S4-4** | **FALSIFIERS OBSERVED** — RF-1, RF-3, RF-4, RF-5, RF-6, RF-7 each OBSERVED RED under its own mutation at close, every mutant carrying the no-op⇒FAIL guard. **A pass-total is not an observation-count.** |
+| **S4-5** | **AC-8.6 AT THE CAPPED SHAPE** — invoked from the product-layer entry path, RF-7 RED **at runtime** not text/AST, `check:pointers` resolving the node. Capped at one invocation + one named test. **Either-or sub-clause:** the driver entry's scrub gains a runtime-observable consequence, OR the header states plainly it is load-bearing only at text/AST level. **Silence does not satisfy it.** |
+| **S4-6** | **RESIDUALS TRAVEL** — every field-4 residual in build-spec items 1–7, **plus the two design-phase findings deliberately NOT fixed** (R2's NBSP tolerance, R4's rollup blindness), appears at close on the surface where its claim's reader is. The class-form residual ships as a Ceiling paragraph under P3 in strong actionable form. |
+
+**ε may observe falsifiers RED (β Q2) only if ALL FOUR hold:** the mutation logic lives in the committed
+test; the raw artifact is committed with its command line and sha; the no-op⇒FAIL guard is present; and **α
+re-executes at close with agreeing output.** Absent any one, observation belongs to a lane.
+
 ## Definition of Done
 
 - [ ] Plan contract authored and accepted, with β consulted at the plan→design boundary.
-- [ ] **A release rule is minted FRESH by β and PRE-COMMITTED at the design→build boundary — before any result exists.** S-VLADW1-03's S1–S5 do not carry over automatically. The pre-commitment is the point: a gate written after the result is not a gate.
+- [x] **A release rule is minted FRESH by β and PRE-COMMITTED at the design→build boundary — before any result exists.** **DONE 2026-08-28: β row 309, msg_id `e7a4b619-2f83-4d5c-9b01-63cf8ea27d15`**, full text `runtime/beta-consult/S-VLADW1-04-r2-release-rule-e7a4b619.md`, minted against the final acceptance criteria with no build result in existence. S-VLADW1-03's S1–S5 do not carry over. **ATTEMPT COUNT: ONE** — gauntlet-1 (diagnostic, NON-qualifying) → fix attempt 1 → gauntlet-2 = the QUALIFYING run, anchored to evidence dirs under `runtime/vlad-w1/s04/`, never an ordinal. **No exception clause, deliberately.** TERMINAL: any one of S4-1…S4-6 failing at that close → NO RELEASE, no attempt 2, honest close, remainder to a named successor.
 - [ ] **Residual 1 (S2-a) — the derivation REFUSES rather than skips.** A paragraph that looks like an Asserted or Ceiling lead-in under any dash, colon or indentation is bound or refused by name, never silently skipped. Falsifier: each of the seven authorings the gauntlet-3 backend lane used must be RED, not only the em-dash pair.
 - [ ] **Residual 2 (S2-b) — the two false bound sentences corrected, with the bind moving in the same change.** Correcting a bound claim must not require a second commit to make the gate green again.
 - [ ] **Residual 3 (S2-c) — the header's what-is-NOT-bound list matches what the lint actually leaves unbound**, including P1–P4 body prose.
