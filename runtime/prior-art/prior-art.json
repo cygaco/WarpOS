@@ -767,6 +767,45 @@
       "most_load_bearing_property": "The auditability rule — a beta verdict only counts if it cites a persistent-teammate ledger row. That is an enforcer, and enforcers are where this framework's real, if unpatentable, value sits."
     }
   },
+  "skill_sweep_summary": {
+    "note": "Companion exhaustive pass (SkillSweep) over every skill in .claude/commands, vs the ~50 capabilities sampled elsewhere in this document. Summary only — full detail in the sweep files.",
+    "source_files": {
+      "report": "runtime/prior-art/SKILL-SWEEP-2026-08-28.md",
+      "report_bytes": 108283,
+      "data": "runtime/prior-art/skill-sweep.json",
+      "data_bytes": 136940,
+      "schema": "warpos.skill-sweep/1"
+    },
+    "totals": {
+      "skills": 237,
+      "live_skills": 230,
+      "deprecated_aliases": 7,
+      "families": 35,
+      "families_by_verdict": {"THEY-WERE-FIRST": 30, "WARPOS-FIRST": 3, "INCONCLUSIVE": 1, "N/A-COMPOSITE": 1},
+      "skills_by_verdict": {"THEY-WERE-FIRST": 204, "WARPOS-FIRST": 13, "INCONCLUSIVE": 2, "N/A-COMPOSITE": 18}
+    },
+    "interpretation": "~86% of families and ~86% of skills have an earlier analog. Widening the aperture from 50 capabilities to 237 skills surfaced ONE new uncontested pair (guides/knowledge integration) and otherwise reinforced the sampled conclusion — it did not produce new priority claims.",
+    "top_five": [
+      {"rank": 1, "family": "sleep-dream", "why": "The flagship, reused from the dreaming comparison. +24 d vs Anthropic, -356 d vs Letta."},
+      {"rank": 2, "family": "enforcement-debt", "skills": 5, "why": "Uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived."},
+      {"rank": 3, "family": "paths-registry", "skills": 6, "why": "Uncontested but SELF-DEFLATING, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly."},
+      {"rank": 4, "family": "guides-knowledge", "skills": 2, "detail": "/guides:integrate (2026-05-31) + /knowledge:integrate (2026-06-05)", "why": "THE ONE GENUINELY NEW FINDING. Analogs (Cursor @Docs, Devin Knowledge, Backstage TechDocs) all INDEX documentation for retrieval; these PLACE a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another ENFORCER — a placement ledger makes missing wiring self-detecting."},
+      {"rank": 5, "family": "cross-session-inbox", "why": "See reconciliation — the sweep's INCONCLUSIVE row is superseded by the CHANGELOG-based WARPOS-FIRST +117d verdict."}
+    ],
+    "reconciliation_cross_session": {
+      "disagreement": "SkillSweep graded cross-session-inbox INCONCLUSIVE by comparing against Agent Teams SendMessage (2026-02-05), which predates WarpOS.",
+      "why_that_comparand_is_wrong": "Agent Teams SendMessage is IN-SESSION: teammates inside one session's team, and the mailbox dies with the session. It is not session-to-session messaging.",
+      "correct_comparand": "Claude Code cross-session SendMessage + ListAgents, first shipped in v2.1.224 on 2026-08-07, established by walking the complete official CHANGELOG in version order.",
+      "authoritative_verdict": "WARPOS-FIRST, +117 days — see cross_session_and_session_management.headline",
+      "sweep_findings_that_still_stand": "LangChain Agent Inbox (2025-01-14) is a HUMAN inbox for reviewing agent output; A2A is inter-vendor RPC. Neither is a session-to-session broadcast board.",
+      "status": "The sweep's row is superseded, not wrong about its own narrower comparison."
+    },
+    "na_composite_note": {
+      "family": "warpos-distribution-integrity",
+      "skills": 18,
+      "rationale": "These skills verify WarpOS's OWN distribution invariants — capsule resolvability, manifest honesty, layer diffs, migration coverage, version quorum. There is no external analog because there is no external artifact to compare against; they are self-referential integrity checks for one specific framework. Counting them as WarpOS-first would be meaningless; counting them as they-were-first would be false. They are excluded from both totals, which is why 18 skills sit outside the verdict split."
+    }
+  },
   "official_profiles": {
     "verification_legend": {
       "verified": "URL appeared directly in search results or was fetched successfully",

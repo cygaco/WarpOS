@@ -298,6 +298,7 @@
       <span><b>Repo</b> <a href="https://github.com/cygaco/WarpOS">github.com/cygaco/WarpOS</a> · public</span>
       <span><b>History</b> 2026-03-02 → 2026-08-19</span>
       <span><b>Compared</b> 18 vendor · 17 industry · 16 machinery pairs</span>
+      <span><b>Swept</b> 237 skills · 35 families</span>
     </div>
     <nav>
       <a class="navchip" href="#frame">The honest frame</a>
@@ -309,6 +310,7 @@
       <a class="navchip" href="#loops">Improvement loops</a>
       <a class="navchip" href="#sessions">Cross-session inbox</a>
       <a class="navchip" href="#beta">β &amp; digital twins</a>
+      <a class="navchip" href="#sweep">Skill sweep</a>
       <a class="navchip" href="#strengthen">Strengthening this</a>
     </nav>
   </header>
@@ -740,9 +742,88 @@
     </div>
   </section>
 
+  <!-- ===================== SKILL SWEEP ===================== -->
+  <section id="sweep">
+    <span class="sectnum">Section 09</span>
+    <h2>Skill sweep — 237 skills in 35 families</h2>
+    <p class="lede">A companion pass walked <em>every</em> skill in <code>.claude/commands</code>, rather than the ~50 capabilities sampled above, and graded each family against its closest Anthropic/OpenAI analog.</p>
+
+    <div class="scores">
+      <div class="score tot"><span class="n">237</span><span class="l">Skills · 35 families</span></div>
+      <div class="score us"><span class="n">3</span><span class="l">Families WarpOS first</span></div>
+      <div class="score them"><span class="n">30</span><span class="l">Families they were first</span></div>
+      <div class="score inc"><span class="n">1</span><span class="l">Inconclusive · 1 composite</span></div>
+    </div>
+
+    <p>237 skills = <b>230 live + 7 deprecated aliases</b>. At skill level the split is <b>204</b> they-were-first, <b>13</b> WarpOS-first, <b>2</b> inconclusive, <b>18</b> composite. The exhaustive pass confirms the sampled one: <b>~86% of families and ~86% of skills have an earlier analog.</b> Widening the aperture from 50 capabilities to 237 skills did not surface new priority claims — it surfaced one new <em>uncontested</em> pair and otherwise reinforced the same conclusion.</p>
+
+    <div class="rail">
+      <table>
+        <thead><tr><th>Family</th><th>Skills</th><th>First landed</th><th>Primary Anthropic/OpenAI analog</th><th>Their date</th><th>Verdict</th><th>Margin</th></tr></thead>
+        <tbody>
+          <tr><td class="feat"><code>enforcement-debt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td><code>claude plugin eval</code> (evaluates plugins, not unenforced policy)</td><td class="mono">2026</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="feat"><code>paths-registry</code></td><td class="mono">6</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-us">WarpOS first</span></td><td class="marg">uncontested</td></tr>
+          <tr><td class="feat"><code>sleep-dream</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Anthropic <b>Dreaming</b> (Managed Agents)</td><td class="mono">2026-05-06</td><td><span class="v v-us">WarpOS first</span></td><td class="marg pos">+24 d · −356 d vs Letta</td></tr>
+          <tr><td class="feat"><code>cross-session-inbox</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>Agent Teams <code>SendMessage</code> (in-session, session-scoped)</td><td class="mono">2026-02-05</td><td><span class="v v-inc">Superseded</span></td><td class="marg">see reconciliation</td></tr>
+          <tr><td class="feat"><code>warpos-distribution-integrity</code></td><td class="mono">18</td><td class="mono">2026-05-04</td><td>—</td><td class="mono">—</td><td><span class="v v-inc">N/A composite</span></td><td class="marg">—</td></tr>
+          <tr><td class="feat"><code>admin-panels-cockpit</code></td><td class="mono">10</td><td class="mono">2026-06-13</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−7 yr</td></tr>
+          <tr><td class="feat"><code>agent-roster</code></td><td class="mono">5</td><td class="mono">2026-05-04</td><td>Claude Code <b>Subagents</b> (<code>/agents</code>)</td><td class="mono">2025-07-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 mo</td></tr>
+          <tr><td class="feat"><code>beta-judgment</code></td><td class="mono">3</td><td class="mono">2026-04-12</td><td><code>/code-review</code>, <code>security-review</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="feat"><code>bootstrap-onramp</code></td><td class="mono">3</td><td class="mono">2026-05-25</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr</td></tr>
+          <tr><td class="feat"><code>commit-land</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Claude Code git integration; Copilot commit messages</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 yr</td></tr>
+          <tr><td class="feat"><code>docs-maps-discovery-reporting</code></td><td class="mono">18</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
+          <tr><td class="feat"><code>enforced-trackers</code></td><td class="mono">2</td><td class="mono">2026-06-05</td><td>Agent-teams shared task list; TodoWrite</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>epic-tracking</code></td><td class="mono">10</td><td class="mono">2026-06-09</td><td>Agent-teams shared task list</td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>events-telemetry</code></td><td class="mono">2</td><td class="mono">2026-05-04</td><td>OpenAI Agents SDK built-in tracing</td><td class="mono">2025-03-11</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>growth-marketing</code></td><td class="mono">10</td><td class="mono">2026-05-01</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−4.5 yr</td></tr>
+          <tr><td class="feat"><code>guides-knowledge</code></td><td class="mono">6</td><td class="mono">2026-05-31</td><td>Agent Skills / plugin skills as the delivery shape</td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1.5 yr on indexing</td></tr>
+          <tr><td class="feat"><code>hooks-mgmt</code></td><td class="mono">5</td><td class="mono">2026-04-12</td><td>Claude Code <b>hooks</b> (v1.0.38)</td><td class="mono">2025-06-30</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−262 d</td></tr>
+          <tr><td class="feat"><code>issue-register</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−17 yr</td></tr>
+          <tr><td class="feat"><code>karpathy-autoresearch</code></td><td class="mono">3</td><td class="mono">2026-04-18</td><td>Anthropic <b>Outcomes</b> / capability curves</td><td class="mono">2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg">~−20 mo industry · <b>+18 d vs Anthropic</b></td></tr>
+          <tr><td class="feat"><code>memory-learning</code></td><td class="mono">7</td><td class="mono">2026-04-12</td><td>Auto Memory / <code>MEMORY.md</code>; memory tool + context editing</td><td class="mono">2026-02<br>2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.5 yr</td></tr>
+          <tr><td class="feat"><code>model-routing-dispatch</code></td><td class="mono">8</td><td class="mono">2026-05-18</td><td>Fallback model chains (within-provider)</td><td class="mono">~2026-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>modes-teams</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Claude Code <b>Agent Teams</b></td><td class="mono">2026-02-05</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.7 yr</td></tr>
+          <tr><td class="feat"><code>oneshot-build</code></td><td class="mono">4</td><td class="mono">2026-04-12</td><td>Background / headless agents</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2 yr</td></tr>
+          <tr><td class="feat"><code>permissions-turbo</code></td><td class="mono">4</td><td class="mono">2026-05-13</td><td>Claude Code <b>auto mode</b></td><td class="mono">2026-03-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−50 d</td></tr>
+          <tr><td class="feat"><code>portfolio-multiproduct</code></td><td class="mono">8</td><td class="mono">2026-05-22</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−6 yr</td></tr>
+          <tr><td class="feat"><code>qa-redteam-security</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>security-review</code> · vulnerability scanner</td><td class="mono">2025-10<br>2026-05-06</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−2.8 yr</td></tr>
+          <tr><td class="feat"><code>reasoning-frameworks</code></td><td class="mono">6</td><td class="mono">2026-04-12</td><td>Extended thinking · plan mode</td><td class="mono">2025-02-24</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−15 mo</td></tr>
+          <tr><td class="feat"><code>research</code></td><td class="mono">2</td><td class="mono">2026-04-12</td><td>OpenAI <b>deep research</b></td><td class="mono">2025-02-02</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−16 mo</td></tr>
+          <tr><td class="feat"><code>roadmap</code></td><td class="mono">8</td><td class="mono">2026-05-19</td><td>—</td><td class="mono">—</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−3 yr</td></tr>
+          <tr><td class="feat"><code>session-state-handoff</code></td><td class="mono">8</td><td class="mono">2026-04-12</td><td><code>/resume</code>, checkpoints/rewind (v2.0)</td><td class="mono">2025-09-29</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−10 mo</td></tr>
+          <tr><td class="feat"><code>skills-meta</code></td><td class="mono">9</td><td class="mono">2026-04-12</td><td>Agent Skills · <code>/skill-doctor</code> · <code>claude plugin eval</code></td><td class="mono">2025-10-16</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−1 to −3 yr</td></tr>
+          <tr><td class="feat"><code>sprint-lifecycle</code></td><td class="mono">13</td><td class="mono">2026-04-16</td><td><b>Dynamic Workflows</b></td><td class="mono">2026-05-28</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−14 mo</td></tr>
+          <tr><td class="feat"><code>system-health-scans</code></td><td class="mono">4</td><td class="mono">2026-04-16</td><td>Claude Code <code>/doctor</code></td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 to −19 yr</td></tr>
+          <tr><td class="feat"><code>ui-design-review</code></td><td class="mono">2</td><td class="mono">2026-04-15</td><td>Claude Code + Playwright MCP visual review</td><td class="mono">2025</td><td><span class="v v-them">They were first</span></td><td class="marg neg">~−9 yr</td></tr>
+          <tr><td class="feat"><code>warp-distribution</code></td><td class="mono">20</td><td class="mono">2026-03-19</td><td>Plugins &amp; marketplaces</td><td class="mono">2025-10-31</td><td><span class="v v-them">They were first</span></td><td class="marg neg">−168 d</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The five strongest cases</h3>
+    <ol class="steps">
+      <li><b><code>sleep-dream</code></b> — the flagship, reused from the dreaming case. +24 d vs Anthropic, −356 d vs Letta.</li>
+      <li><b><code>enforcement-debt</code></b> (5 skills) — uncontested; no analog found in any product. Consistent with the distinctiveness search, where it was the only candidate that survived.</li>
+      <li><b><code>paths-registry</code></b> (6 skills) — uncontested but <b>self-deflating</b>, and the sweep says so: configuration hygiene, not a product category, and a weak thing to claim publicly.</li>
+      <li><b><code>/guides:integrate</code> + <code>/knowledge:integrate</code></b> (2026-05-31 / 2026-06-05) — <b>the one genuinely new finding.</b> The obvious analogs (Cursor <code>@Docs</code>, Devin Knowledge, Backstage TechDocs) all <em>index</em> documentation for retrieval. These instead <b>place</b> a document at a declared anchor inside named consumer agent specs and record every placement in a JSONL ledger. No analog found. Note the shape: it is another <b>enforcer</b> — a placement ledger makes missing wiring self-detecting.</li>
+      <li><b><code>cross-session-inbox</code></b> — see the reconciliation below.</li>
+    </ol>
+
+    <h3>Reconciliation — the cross-session verdict</h3>
+    <div class="note">
+      <p><b>The two passes disagree, and the CHANGELOG evidence wins.</b> The sweep graded <code>cross-session-inbox</code> inconclusive by comparing it against <b>Agent Teams <code>SendMessage</code></b> (2026-02-05), which predates WarpOS. But that feature is <em>in-session</em>: teammates inside one session's team, and the mailbox dies with the session. The correct comparand is Claude Code's <b>cross-session <code>SendMessage</code> + <code>ListAgents</code>, first shipped in v2.1.224 on 2026-08-07</b>.</p>
+      <p>Against the right feature the verdict is <b>WarpOS-first by 117 days</b>. The sweep's secondary industry findings still stand and are worth keeping: LangChain's <b>Agent Inbox</b> (2025-01-14) is a <em>human</em> inbox for reviewing agent output, and <b>A2A</b> is inter-vendor RPC — neither is a session-to-session broadcast board. The sweep's row is superseded, not wrong about its own narrower comparison.</p>
+    </div>
+
+    <h3>Why 18 skills carry no verdict</h3>
+    <p><b><code>warpos-distribution-integrity</code></b> (the <code>scan:warpos-*</code> family) is graded <b>N/A-composite</b> rather than given a verdict, and that is the honest call: these skills verify <em>WarpOS's own</em> distribution invariants — capsule resolvability, manifest honesty, layer diffs, migration coverage, version quorum. There is no external analog because there is no external artifact to compare against; they are self-referential integrity checks for one framework. Counting them as WarpOS-first would be meaningless, and counting them as they-were-first would be false. They are excluded from both totals, which is why 18 skills sit outside the split.</p>
+
+    <p class="caption">Full detail: <code>runtime/prior-art/SKILL-SWEEP-2026-08-28.md</code> (108 KB) and <code>runtime/prior-art/skill-sweep.json</code> (137 KB, schema <code>warpos.skill-sweep/1</code>).</p>
+  </section>
+
   <!-- ===================== STRENGTHEN ===================== -->
   <section id="strengthen">
-    <span class="sectnum">Section 09</span>
+    <span class="sectnum">Section 10</span>
     <h2>How to strengthen this</h2>
     <p class="lede">The dreaming claim currently rests on author-supplied git timestamps in an unsigned commit. Anyone can set <code>GIT_AUTHOR_DATE</code>. Here is what would make it adversarially defensible, in order of leverage.</p>
 
