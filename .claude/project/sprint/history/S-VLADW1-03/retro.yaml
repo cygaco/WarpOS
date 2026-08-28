@@ -1,0 +1,206 @@
+schema: warpos/sprint/sprint-retrospective/v1
+sprint_id: S-VLADW1-03
+plan_contract_id: null
+synthesis_mode: llm
+summary: >-
+  S-VLADW1-03 closed at honest state 2026-08-28, NOT released, at 85%. The qualifying gauntlet closed
+  S1 HOLDS, S2 FAILS, S3 HOLDS, S4 HOLDS, S5 HOLDS, and beta's pre-committed TERMINAL was applied
+  verbatim: no release, no fix attempt 3. The work that landed is real and survives at vlad
+  wt/S-VLADW1-01-engine @ b2583d6 (deliberately unmerged) - the inert invocation control closed at a
+  shared lexer, fourteen paragraphs byte-bound by derivation, the false node-builtins ordering clause
+  removed, the re-scrub guarantee made true of the mechanism, every mutant no-op-guarded, suite
+  294 to 318, check:ship exit 0. It failed on the one criterion that decides whether shipped copy can
+  be trusted, and it failed there because the mechanism built to make claims un-invertible became the
+  new overclaim: its derivation predicate matches only an exact em-dash, so it skips silently instead
+  of refusing, and it now pins two execution-falsified sentences into the ship gate.
+
+outcomes_shipped:
+  - outcome: "The gauntlet-2 inert invocation control closed at the MECHANISM, not the instance - one shared comment-and-string lexer, both analyzers routed through it, and the lane's bypass committed as a required-RED fixture."
+    planned: true
+    evidence:
+      - "commit 49fa49f fix(10a)"
+      - "conductor execution: src/bootstrap.js raw source matches CALLS_SCRUB_RE (true) but does not match after either lexer pass; both exports length-preserving"
+  - outcome: "Claim binding moved from a hand-kept list to a derivation over CUSTODY.md's own structure, with 14 paragraphs bound byte-for-byte, and the bind proven on a real unannounced edit."
+    planned: true
+    evidence:
+      - "commit d5fca1d fix(10b); check:ship: '14 bindable paragraph(s) derived from the document and matched against 14 canonical copies byte-for-byte'"
+      - "bind fired in BOTH directions on 10c's B1 edit: paragraph-not-verbatim AND bound-paragraph-missing"
+  - outcome: "The false 'node: builtins still resolve first' clause removed from both entry points and the ordering sentence qualified and pinned whole (fragment-pin replaced by CLAIM_FIRST_LINE + CLAIM_PARAGRAPHS)."
+    planned: true
+    evidence:
+      - "commit 977ab14 fix(10c); grep for the clause exits 1 in both entries"
+      - "conductor node:module load-hook probe: 2 module bodies evaluate before the scrub under the process-entry reading, 8 under the driver reading"
+  - outcome: "The re-scrub guarantee made true of the MECHANISM rather than of the call sites - full-history deletion using the module's existing capturedNames bookkeeping."
+    planned: true
+    evidence:
+      - "commit 55fc6a3 fix(10d); RED-on-removal observed by reverting the deletion loop"
+  - outcome: "Every mutant test made EOL-agnostic and guarded so a mutation that does not mutate FAILS instead of passing; clean checkout made byte-identical to the working tree via .gitattributes eol=lf."
+    planned: false
+    evidence:
+      - "commits 977ab14, 4f12cfb, b2583d6"
+      - "clean-checkout probe at b2583d6: CUSTODY.md CRLF 0 / bare LF 282 / 24536 bytes on BOTH sides; suite 318/318; FULL failure list EMPTY"
+  - outcome: "S1 re-established rather than cited, and S4 moved from unmeasured to observed - F-2, F-3 and AC-8.4 driven RED by lanes, F-1/F-4/F-5 executed by alpha at close."
+    planned: true
+    evidence:
+      - "evidence-security-claude-hunter.md (S1 holds; three falsifiers driven RED)"
+      - "alpha-s4-f1-f4-f5-execution.tap"
+
+outcomes_missed:
+  - outcome: "R2 - every claim in shipped copy is true."
+    reason: "Eight independent execution-proven false or overclaimed strings at close, each a fix-attempt-2 regression. The sharpest: the new derivation predicate accepts only an exact em-dash, so en-dash / hyphen / colon / indented Ceiling paragraphs ship GREEN while the shipped sentence promises EVERY bolded Ceiling lead-in is bound."
+    disposition: "carried to S-VLADW1-04 as residuals S2-a, S2-b, S2-c, S2-d"
+  - outcome: "AC-8.6 - the product-layer custody self-check."
+    reason: "Deliberately DEFERRED at fix attempt 2 to avoid new product surface on the terminal attempt and to keep bundle file-ownership disjoint. Beta ruled the deferral is not a gate reshape (row 306)."
+    disposition: "first-class scope in S-VLADW1-04; INSTANCE residual ships in CUSTODY.md, CLASS-form residual carried in the successor tracker"
+  - outcome: "ONE production consumer wired for createModelSession / classifyProviderSignal."
+    reason: "Not reached; not among the nine residuals the ruling names."
+    disposition: "carried as pre-existing scope"
+
+plan_quality_actual:
+  predicted_status: "unknown - no Plan Contract artifact for this sprint"
+  actual_status: "drifted"
+  predicted_confidence: "unknown"
+  evidence_gaps_predicted: []
+  notes: >-
+    The sprint was scoped from a verdict corpus rather than a plan contract, and the scope held: every
+    item traced to a lane finding with a path. What drifted was the assumption that a class fix closes
+    a class. Three rounds running, the repair produced a new defect one layer out from the thing it
+    fixed - and in the final round the defect was inside the very mechanism built to prevent the class.
+
+scope_variant_actual:
+  planned_variant: "recommended"
+  actual_variant: "recommended"
+  adhered: true
+  drift_notes: >-
+    Scope held. The one deliberate reduction was AC-8.6, deferred with beta's ruling rather than
+    silently dropped. The one deliberate addition was bundle 10f, a coordinated two-file edit that
+    existed only because 10c correctly refused to reach outside its scope contract and left the tree red.
+
+surprises:
+  - surprise: "A builder refused to allowlist 83 pre-existing broken doc refs it never touched in order to make its own commit pass, stopped, and reported - leaving correct work uncommitted rather than suppressing a check."
+    evidence: ["10a builder envelope; commit landed by the conductor as 49fa49f after independent verification; ED-356"]
+  - surprise: "The claim-binding mechanism caught US: 10c's honest one-word truthfulness edit turned check:ship red, in both directions, on a paragraph the bind had never seen."
+    evidence: ["custody-claim-lint RED paragraph-not-verbatim + bound-paragraph-missing at CUSTODY.md:137"]
+  - surprise: "The cross-family lane found, for the third gauntlet running, a real defect all three Claude lanes missed - and the backend lane had circled the same code, tried to construct the case, and explicitly could not."
+    evidence: ["evidence-security-agy.md F-1; evidence-backend-reviewer.md F-4"]
+
+friction_points:
+  - friction: "A build-chain dispatch fired through a background lane without WARPOS_DISPATCH_BACKGROUND=1 is fail-closed clamped to 540s, and the death is indistinguishable from a hang except by reading elapsed_ms."
+    category: "tooling"
+    severity: "high"
+    evidence: ["10a d-mtd4r3xg-c8128c73 elapsed 540153", "10b d-mtd4tq0x-bd7503d9 elapsed 540156", "ED-353"]
+  - friction: "The ED-257 right-sizing warning fired correctly at dispatch time and went unread; the 16810B brief then hit the 20-minute bound 22 seconds after committing."
+    category: "process"
+    severity: "high"
+    evidence: ["err-10c.log", "10c d-mtdb7tjj-4f21bd39 elapsed 1200177; commit 977ab14 at 19:12:56Z; bound at 19:13:18Z"]
+  - friction: "Three distinct dispatch death signatures had to be separated by hand before any could be diagnosed: clamp (540xxx + uncommitted work), nothing-spawned (no ledger row at all), bound-timeout-after-commit (1200177 + committed, clean tree)."
+    category: "tooling"
+    severity: "medium"
+    evidence: ["fix-attempt-2/ROUND-RECORD.md section 1"]
+  - friction: "A dispatch the operator fired via ! never started: the Git Bash env-prefix form is invalid PowerShell, so the command died in the shell before the wrapper ran, leaving no row, no process and no artifact anywhere."
+    category: "tooling"
+    severity: "medium"
+    evidence: ["five independent checks at 18:52Z: no ledger row since 16:05Z, no ledger written anywhere in 20 min, no process, no out/err files, HEAD unmoved"]
+  - friction: "The conductor died at a usage limit mid-gauntlet, between a lane returning and its completion record being written."
+    category: "infrastructure"
+    severity: "medium"
+    evidence: ["backend-reviewer evidence file written 12:52; record d-mtdf0prn-8bfbfe9b written on resume; lane NOT re-run"]
+  - friction: "Isolated per-lane worktrees were built and had to be abandoned: junctioned node_modules is refused by the enforcers (correctly), and a fresh checkout was not byte-faithful (CRLF vs LF) until .gitattributes landed."
+    category: "tooling"
+    severity: "medium"
+    evidence: ["no-held-secret-in-surface: 'dirent is neither a directory nor a regular file - refusing to silently skip it'", "CUSTODY.md live 282 bare LF / clean checkout 282 CRLF"]
+  - friction: "Shell escaping: \"${B}\\\\${L}\" escapes the dollar, producing a literal iso${L} directory holding a 303 MB node_modules that the conductor created and did not notice; beta found it."
+    category: "tooling"
+    severity: "low"
+    evidence: ["beta row 307 rigor item 2; directory removed, untracked, never committed"]
+  - friction: "The same enforcement gap was filed twice in 33 minutes by two agents who each diagnosed it independently."
+    category: "process"
+    severity: "low"
+    evidence: ["ED-353 (alpha, 16:12Z) and ED-355 (epsilon, 16:45Z, now duplicate-of)"]
+
+action_items:
+  - action: "Set WARPOS_DISPATCH_BACKGROUND=1 on EVERY backgrounded build-chain dispatch, at first fire - not after losing one."
+    owner: "epsilon"
+    linked_friction: "540s fail-closed clamp"
+  - action: "Right-size every builder brief under the ED-257 12000B floor, and READ the wrapper's stderr at fire time rather than only on failure."
+    owner: "epsilon"
+    linked_friction: "unread ED-257 warning"
+  - action: "Apply the refuse-not-skip fix shape to the claim-lint derivation: a paragraph that LOOKS like an Asserted/Ceiling lead-in under any dash, colon or indentation must be bound or REFUSED, never silently skipped."
+    owner: "S-VLADW1-04"
+    linked_friction: "the bind's own predicate"
+    due_by: "S-VLADW1-04 first bundle"
+  - action: "Treat claim-text and its canonical copy as ONE atomic edit owned by one bundle, so correcting a bound claim never requires a second commit to make the gate green."
+    owner: "S-VLADW1-04"
+    linked_friction: "bind pins a falsehood"
+  - action: "Do not junction node_modules for lane isolation - use a real copy or serialize the lanes. Serializing cost ~25 min and zero fidelity risk."
+    owner: "epsilon"
+    linked_friction: "isolation scaffold"
+  - action: "Assign an owner at the moment an enforcement gap is observed, or two agents will write it up."
+    owner: "alpha"
+    linked_friction: "duplicate ED filing"
+  - action: "Keep naming, in each lane brief, the specific failure that happened to THAT lane before, with an instruction to cut scope rather than run out of room before emitting JSON."
+    owner: "epsilon"
+    linked_friction: "truncated mid-thought lane returns"
+
+tickets_completed: []
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+
+beta_decisions_reviewed:
+  - "row 305 (7c05e9d1) - S1-S5 release rule pre-committed at the design-to-build boundary, before any result existed"
+  - "row 306 (4e1b7a92) - the AC-8.6 deferral is not a gate reshape; item 6's residual may travel via a round record or the successor tracker, but not via the spec that named it"
+  - "row 307 (b6d38f04) - alpha's application of the rule CONFIRMED, no AP-15 in either direction, with two record corrections neither of which changes an outcome"
+
+key_tradeoffs:
+  - "Deferred AC-8.6 rather than building new product surface on the terminal fix attempt, accepting an unmet DoD item to protect bundle disjointness. Beta ruled the deferral sound."
+  - "Serialized the three mutating gauntlet lanes instead of isolating them, paying ~25 minutes of wall time to avoid judging a tree that was not byte-faithful to the one under review."
+  - "Held the qualifying gauntlet rather than firing it with two known-false source claims, because the qualifying run is terminal and spending it on a known hole is the one thing the rule forbids."
+  - "Graded the args.map attack as a defeated CONTROL (S2) rather than a leak (S1), because it needs a hostile caller already holding the plaintext and no shipped call site has that shape."
+
+learning_candidates:
+  - learning: "Watching a control fire tells you nothing about what it cannot see. Verifying a mechanism by observing it catch a real case is confirmation, not coverage - the next step is enumerating the inputs it silently skips."
+    promote_via: "learn:integrate"
+    evidence:
+      - "10b's bind was verified by watching it catch 10c's real edit, and its predicate still skipped en-dash, hyphen, colon and indented Ceiling paragraphs"
+      - "evidence-backend-reviewer.md F-1: seven authorings, controls first, five green"
+  - learning: "A detector that SKIPS a non-matching input is fail-open; one that REFUSES it is fail-closed. Any derivation over authored text must refuse what it cannot classify, never continue past it."
+    promote_via: "learn:integrate"
+    evidence: ["custody-claim-lint.js:410 continues on non-match with no violation recorded", "ED-358"]
+  - learning: "Binding a claim byte-for-byte makes it un-editable, not true. If the bound text is false, the bind now enforces the falsehood and an honest correction turns the gate red."
+    promote_via: "learn:integrate"
+    evidence: ["evidence-security-claude-hunter.md regressions_from_fix_attempt_2: check:ship requires a proven-false sentence to be present verbatim"]
+  - learning: "A dispatch record and the worktree are two independent witnesses; neither alone classifies a death. elapsed_ms plus the tree state separates clamp from timeout-after-commit from never-spawned."
+    promote_via: "learn:integrate"
+    evidence: ["fix-attempt-2/ROUND-RECORD.md section 1 death-signature table"]
+  - learning: "A cross-family reviewer is not redundancy. Three gauntlets, three defects the same-family lanes missed - once on code a same-family lane had read and explicitly failed to break."
+    promote_via: "learn:integrate"
+    evidence: ["evidence-security-agy.md F-1 vs evidence-backend-reviewer.md F-4"]
+  - learning: "Naming a lane's own prior failure mode in its brief changes its behaviour. Three lane-runs were lost to truncated returns across two gauntlets; after each brief named that failure and told the lane to cut scope before emitting, all three returned JSON on the first dispatch."
+    promote_via: "learn:integrate"
+    evidence: ["gauntlet-3 lane briefs DISPATCH NOTE sections; 3/3 first-dispatch returns"]
+
+release_record_ref: null
+
+synthesis_metadata:
+  source: "runtime/vlad-w1/s03/RETRO-INPUT.md"
+  written_by: "epsilon"
+  note: >-
+    Written from the skill's template rather than by scripts/sprint/retrospective.js. The skill exits 3
+    because the registry entry for S-VLADW1-03 still reads status planning, and the only sanctioned
+    transition to closed runs through /sprint:release - which this sprint deliberately did not have.
+    The conductor did not mutate the registry to make the gate pass; the stale status is surfaced to
+    the lead as a separate decision.
+
+signed_off_by: "epsilon"
+signed_off_at: "2026-08-28T22:10:00Z"
+
+retro_metadata:
+  synthesized_at: "2026-08-28T22:10:00Z"
+  writer_version: "template-fallback-1"
+  history_record: ".claude/project/sprint/history/S-VLADW1-03/retro.yaml"
+  force_overwrite: false
+
+created_at: "2026-08-28T22:10:00Z"
+updated_at: "2026-08-28T22:10:00Z"
