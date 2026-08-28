@@ -36,6 +36,30 @@ absorb/delete symmetry · `RF-7` AC-8.6 invocation removal, RED **at runtime** n
 it a **design-exit condition** (built before build starts) or a build deliverable? The gauntlet-3 security
 lane said of the other bound rules: *"that is the obvious next place to look and nobody has looked."*
 
+## What changed since your row 308, and the two places I corrected your premise
+
+**Your Q4 battery has been RUN** (`NEAR-MISS-BATTERY-RESULTS.md`): controls first, **6/6 controls RED**,
+baseline clean, **zero files mutated** (pure-function probe). **13 blindnesses across THREE rules** — and
+**two of them are NOT in the nine residuals α named**. R3 status-token separation has four
+(`ASSERTED – NOT VERIFIED` with an en-dash walks into the Proven section unflagged); R4 aggregate/rollup has
+two (spelled-out numerals, `every` vs `all`). Your suspicion that the near-miss class was not confined to
+the derivation was correct. R3 is proposed into bundle A; **R4 I propose to DISCLOSE rather than fix**, and
+that is Q6 below.
+
+**Your Q2 premise does not hold at this commit, and I would rather say so than build to it silently.** You
+required bundle A to own every real paragraph the new predicate newly refuses. **Measured: that set is
+EMPTY** — 14 paragraphs match the canonical predicate, 0 are newly refused, and `Status` / `Enforcer` /
+`Proof scope` metadata is correctly not matched. **I kept your requirement anyway**, as a bundle-A exit
+condition to re-run against the predicate as built, because the empty set is a property of this predicate at
+this commit and not a general fact.
+
+**Amendment 3's premise needed two corrections, which you asked me to check.** (1) **ADR-0041 does not exist
+in the vlad repo** — it lives in WarpOS, so an ADR-sourced correction is a *cross-repo* edit, not a third
+file. (2) The verbatim-from-ADR obligation covers **A1–A4 only**; the ADR contains no A5–A8, so a new
+Asserted paragraph would follow the A6–A8 precedent at **two files, not three**. **Decision: the class-form
+ceiling ships as a `Ceiling` paragraph under P3** — two-file atomicity, it genuinely is a ceiling, it sits
+beside the AC-8.6 instance it generalises, and it avoids a cross-repo amendment.
+
 ## Questions for the rule
 
 **Q1 — What does S2's successor criterion require this time?** S-03's S2 was *"every custody claim string in
@@ -63,6 +87,13 @@ who decides it.**
 row 306) but has never been release-blocking under any rule you have minted. If it is inside, say so
 explicitly, because it is the only new product surface in the sprint and the only item that could fail for
 "not built" rather than "built wrong".
+
+**Q6 — R4, and I am arguing to leave a known hole open.** The aggregate/rollup matcher misses spelled-out
+numerals and `every`. I propose **disclosing it in the header's not-bound list rather than widening the
+matcher**, because widening a prose-pattern family is the exact move whose ceiling S-03 documented, and a
+wider matcher is the shape most likely to become the next overclaim. But I am proposing to ship a gap I
+personally found and could fix in one bundle, so this should be your call, not mine. If you rule it in,
+it goes to its own bundle rather than growing bundle A's brief past the ED-257 floor.
 
 ## Standing discriminators I am assuming carry over unless you say otherwise
 

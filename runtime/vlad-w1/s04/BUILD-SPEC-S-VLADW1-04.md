@@ -144,6 +144,93 @@ to 540 s, and the death is indistinguishable from a hang except by reading `elap
 The successor-tracker carry-forward of the class-form residual is already discharged (S-04 tracker). ED-340
 stays OPEN with ED-354 as its concrete instance; ED-358's fix shape is item 1 and closes with it.
 
+---
+
+# β ROW 308 (`9c2e5d38`) — DIRECTIVES FOLDED IN
+
+## Q1 DECIDE — `recommended`; class-form residual DISCLOSED, no general enforcer
+
+Item 7 is settled: **disclose, do not enforce.** No general "every shipped control is invoked" enforcer this
+sprint — it goes to S-05 against a settled set. β requires the **strong, actionable** form, not a hedge. The
+paragraph must tell a reader what is true of *their* install:
+
+> This package does not verify that its controls are invoked in YOUR install. AC-8.6 covers one control at
+> start-up; the rest are proven by our test run only.
+
+## Q2 DECIDE — atomic claim+canonical RATIFIED, and bind-first alone is NOT sufficient
+
+Ratified: claim text and canonical copy are one atomic edit, one bundle. β adds that refuse-not-skip makes
+every currently-skipped paragraph a violation, so **bundle A must also own every real `CUSTODY.md` paragraph
+the new predicate newly refuses — compliance in the same change, no report-only ramp.**
+
+**MEASURED, AND IT CHANGES THE PREMISE:** at `b2583d6` that set is **EMPTY** — 14 paragraphs match the
+canonical predicate, **0 are newly refused**, and the non-canonical bolded lead-ins (`Status`, `Enforcer`,
+`Proof scope`) are correctly not matched, so metadata does not become violations. Evidence:
+`NEAR-MISS-BATTERY-RESULTS.md`. **The requirement is retained as a bundle-A EXIT CONDITION anyway** — re-run
+the scan against the predicate AS BUILT, because a wider resemblance predicate could refuse real paragraphs.
+The empty set is a property of this predicate at this commit, not a general fact.
+
+## Q3 DECIDE — AC-8.6 IN, CAPPED
+
+Cap: **one invocation + one named test + `check:pointers` resolving
+`custody-runtime.test.js::selfcheck-runs-on-user-machine`.** Anything beyond the cap returns to β before
+build. Bundle E is written to that cap; a builder that finds itself designing a self-check *framework* has
+exceeded it and must stop.
+
+## Q4 DIRECTIVE — the battery EXISTS and HAS BEEN RUN. Results change the scope.
+
+`NEAR-MISS-BATTERY-RESULTS.md`, run at design against `b2583d6` on the real document, **controls first, 6/6
+controls RED, baseline clean, zero files mutated** (pure-function probe). **13 blindnesses across THREE
+rules, two of which were NOT in the nine residuals:**
+
+- **R1 derivation — 7 blindnesses** (en-dash, hyphen, minus, colon, indent, Ceiling en-dash, Ceiling colon).
+  Already in scope as item 1.
+- **R3 status-token separation — 4 blindnesses, NEW.** `ASSERTED – NOT VERIFIED` (en-dash), hyphen,
+  lowercase and extra-spaced variants **all evade conflation detection in the Proven section** — the exact
+  mislabelling ADR-0041's separation rule exists to prevent. **Proposed INTO bundle A** (same file, same fix
+  shape: normalize the token comparison or refuse a near-miss token in the wrong section).
+- **R4 aggregate/worded rollup — 2 blindnesses, NEW.** Spelled-out numerals (`four of four claims verified`)
+  and `every` vs `all` both ship green. **Proposed NOT in scope**, disclosed in the header's not-bound list
+  instead: widening a prose-pattern matcher is precisely the "widen the matcher family" move whose ceiling
+  S-03 already documented, and it is the shape most likely to become the next overclaim. **β's call at the
+  design→build consult.**
+- **R2 carrier-note — 0 blindnesses, 2 tolerances.** Double-space and NBSP are tolerated; the rule binds
+  "modulo line-wrap whitespace" by design, so double-space is correct behaviour. NBSP is named as a
+  tolerance in the header rather than repaired — narrowing it risks the false-RED class.
+
+## AMENDMENT 3 — placement decided, and β's premise CORRECTED by re-verification
+
+β directed me to re-verify its ADR-0041 note at `b2583d6` before designing to it, flagging that the note was
+read during fix attempt 2. **I re-verified, and the premise needs two corrections:**
+
+1. **`ADR-0041` does not exist in the vlad repo at all.** `find` returns nothing. It lives in **WarpOS** at
+   `.claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md`, so an
+   ADR-sourced correction is a **cross-repo** edit, not merely a third file.
+2. **The verbatim-from-ADR obligation covers A1–A4 ONLY.** `CUSTODY.md:162` says *"The four paragraphs
+   immediately below are reproduced verbatim from ADR-0041 ... an ADR amendment to this wording must update
+   both this file and the lint's stored copy."* Confirmed against the ADR itself: it contains `**A1`–`**A4`
+   and no others; A6/A7/A8 are **not** ADR-sourced (grep for their text in the ADR returns 0).
+
+**Consequence:** a NEW Asserted paragraph would follow the A6–A8 precedent and be **two files, not three** —
+unless we chose to make the ADR its source, which would add a cross-repo amendment for no gain.
+
+**DECISION — the class-form ceiling ships as a `Ceiling` paragraph under P3.** Reasons: (a) atomicity width
+is **two files** (`CUSTODY.md` + the lint's stored copy), the narrowest correct width; (b) it *is* a ceiling
+— a statement of what is not proven — not an assertion about the threat model like A1–A4; (c) it sits
+directly beside the AC-8.6 instance disclosure it generalises, which is exactly "disclosure lives where the
+claim's reader is"; (d) it avoids a cross-repo ADR amendment. **Residual 2's "bind moves with the
+correction" rule is therefore stated at the two-file width** for this paragraph.
+
+## Bundle A scope, as amended
+
+Bundle A now owns: `custody-claim-lint.js`, `custody-claim-lint.test.js`, `CUSTODY.md` (header block, the
+class-form Ceiling under P3, and any paragraph the built predicate newly refuses — measured empty at
+`b2583d6`), items **1, 2, 7, and R3**. Brief target rises to **≤ 10 KB**, still under the ED-257 12000 B
+floor. If R3 pushes it past that, R3 splits into its own bundle rather than the brief growing — the S-03
+lesson was a 16810 B brief that hit the bound 22 seconds after committing.
+
+---
+
 ## What this spec does NOT decide — β's design→build consult
 
 The release rule. It is minted fresh by β at the design→build boundary, against these acceptance criteria
