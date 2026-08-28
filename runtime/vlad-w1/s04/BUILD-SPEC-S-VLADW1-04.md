@@ -280,9 +280,17 @@ the map so no bundle or lane mis-cites one for the other:
 | **R3** status-token | **RT-7** | **S4-2(c)** — the canonical transform |
 | **R4** aggregate/rollup | **RT-8** | S4-6 (CLASS disclosure) |
 
-Also pinned: **RF-2 is DISCHARGED at design** (the battery ran; it is not a build deliverable), and
-**S4-2(d) is a SEPARATE close-time obligation** on the predicate *as built* — discharging RF-2 does not
-discharge S4-2(d), and the two must not be conflated in any envelope.
+**RF-2 is DISCHARGED AT DESIGN and is NOT in S4-4's falsifier set.** It is not a build deliverable.
+**S4-2(d) is a SEPARATE close-time obligation** — a lane's re-run of the predicate *as built*, population
+including bundle A's newly-authored class-form paragraph. **"RF-2 passed" does NOT discharge S4-2(d)**, and
+no envelope or lane report may treat them as one. S4-2(d) is not RF-2's resurrection; it is a different
+obligation against a different predicate at a different time.
+
+**The battery is pinned by PATH AND CONTENT-INVARIANT, not path alone.** β's reason is worth keeping:
+*"The filename changed inside a single consult cycle — a path-only citation in a release rule would already
+be dangling."* (It did: I wrote `NEAR-MISS-BATTERY-RESULTS.md`, the lead specified `NEAR-MISS-BATTERY.md`.)
+The criterion is satisfied by **the design-phase battery run against `b2583d6`, controls-first, 6/6 controls
+RED, baseline clean, zero files mutated — wherever that table lives.** Cite the invariant, not the path.
 
 ## AMENDMENT 3 — R4/RT-8 ships as a CLASS disclosure (S4-1, S4-6; β Q6 ratified my proposal)
 
@@ -306,6 +314,13 @@ voice:**
 SPELLINGS of one token, closable by a canonical transform; R4's two are semantically-equivalent,
 lexically-unrelated prose** — widening would enumerate an unbounded family (`each`, `the entire set`,
 `100% of`) and manufacture false coverage.
+
+**And the load-bearing half, which β directed be carried INTO the disclosure's own reasoning (row 310):
+disclosure is safe BECAUSE S4-1 backstops it.** *"The actual control for the truth of a rollup claim is
+S4-1 — a reviewer read explicitly immune to mechanism evidence; the linter never was that control."*
+So the disclosure must not read as an apology for a gap. It states the true division of labour: the lint
+matches a named lexical family, and **the reviewer read is what actually establishes a rollup claim's
+truth.** Widening the lint would manufacture the appearance of coverage — which is what failed S-03 twice.
 
 ## AMENDMENT 4 — S4-5's either-or on the driver entry, and silence fails
 

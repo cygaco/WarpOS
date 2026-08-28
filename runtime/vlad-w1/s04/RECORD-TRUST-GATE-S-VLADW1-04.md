@@ -156,6 +156,40 @@ author can set, because a settable exemption in a claim-binding gate is the same
 claim-truthfulness obligation rather than a record-trust surface; AC-8.6's cap bounds RT-6 to one invocation
 plus one named test plus `check:pointers` resolving the node.
 
+## β rows 309 + 310 — the binding name map, and what discharges what
+
+**BINDING NAME MAP (row 310, `3a5f81c7`).** This gate's RT-n ids and the battery's R-n ids are the same
+objects under two names. Written here as well as in the build spec so the criteria cannot be mis-applied at
+close:
+
+| battery id | this gate's id | governed by |
+|---|---|---|
+| R1 derivation | **RT-1** | S4-2(a), S4-2(b) |
+| R2 carrier-note | **RT-2** | S4-6 — its NBSP **tolerance** travels as a residual |
+| R3 status-token | **RT-7** | **S4-2(c)** — closed by a NAMED CANONICAL TRANSFORM |
+| R4 aggregate/rollup | **RT-8** | S4-6 — CLASS disclosure, not a fix |
+
+**RT-7 is closed by a canonical transform, NOT by the four variants.** β: *"an enumeration of the four
+observed variants does NOT satisfy this."* Case-fold + whitespace-collapse + dash-class fold, compared on
+the rendered form. Enumerating observed variants is the same fail-open shape as the em-dash predicate one
+level up — it closes the sample, not the class.
+
+**RT-8 is disclosed rather than fixed, and the reason is structural, not a concession:** the actual control
+for a rollup claim's truth is **S4-1's reviewer read, which is explicitly immune to mechanism evidence**.
+The linter never was that control. Widening it would manufacture the appearance of coverage.
+
+**What discharges what — do not conflate these two:**
+- **RF-2 is SATISFIED AT DESIGN** (this gate's exit item 2) and is **NOT in S4-4's falsifier set**. It is
+  not a build deliverable.
+- **S4-2(d) is a SEPARATE close-time obligation**: a **gauntlet lane** — not ε — re-runs the battery
+  against the predicate **AS BUILT**, with the population including bundle A's newly-authored class-form
+  paragraph (P-097: bundle A controls both the artifact and the thing judging it). **"RF-2 passed" does not
+  discharge S4-2(d).**
+
+**The design-phase battery is pinned by CONTENT-INVARIANT, not by path** (row 310 FIX 1): the design exit is
+satisfied by *the run against `b2583d6`, controls-first, 6/6 controls RED, baseline clean, zero files
+mutated* — wherever that table lives. The filename already changed once inside a single consult cycle.
+
 ## Design→build EXIT (blocking)
 
 Build entry is refused unless:
