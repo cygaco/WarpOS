@@ -42,6 +42,8 @@ Closed at honest state 2026-08-28, NOT released. S2 failed the qualifying gauntl
 - Building a Windows path in bash, `"${B}\\${L}"` renders as a literal `\${L}` — the backslash escapes the `$`. It bit me three times in a row (junction creation, robocopy target) before I separated the backslash into its own variable. **β then found the wreckage:** a directory literally named `iso${L}` holding a full 5555-file `node_modules`, which I had created and not noticed. Untracked, never committed, now removed.
 - Same family: `cmd /c mklink /J` needs `MSYS_NO_PATHCONV=1` or MSYS rewrites `/J` into a path.
 - Lesson: when a shell command fails twice on quoting, **stop and check what it actually created** rather than adjusting the quoting a third time. The failed attempts left an artifact I did not look for.
+- **There is no script to repair** — the isolation harness was an ad-hoc command, never committed (checked: no tracked `.js`/`.sh`/`.md` carries the pattern; the `scripts/dispatch/gui.js` hits are JS template literals, a different thing). So the durable fix is the working form, recorded here for S-04 rather than re-derived: build the separator as its own variable — `BS='\'` then `TGT="${B}${BS}${L}${BS}engine"` — because `"${B}\\${L}"` escapes the `$`. And prefix `MSYS_NO_PATHCONV=1` for any `cmd /c mklink /J`.
+- **Do not junction `node_modules` for lane isolation.** `no-held-secret-in-surface` correctly refuses to walk a non-regular dirent (*"dirent is neither a directory nor a regular file — refusing to silently skip it"*). Use a real copy (robocopy `/E /MT:16`, ~5555 files) or serialize the lanes. Serializing is what this round did, and it cost ~25 min of wall time and zero fidelity risk.
 
 ## Process
 
