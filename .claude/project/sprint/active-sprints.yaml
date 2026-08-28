@@ -1312,7 +1312,7 @@ sprints:
     updated_at: "2026-07-30T00:52:06.179Z"
   - id: S-VLADW1-03
     title: Vlad Wave-1 custody residuals to release
-    status: planning
+    status: closed
     lane:
       type: default
       value: null
