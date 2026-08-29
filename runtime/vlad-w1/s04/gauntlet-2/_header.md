@@ -26,12 +26,12 @@ not the conductor. Your job is to make the criteria assessable on evidence.
 
 ## The commit under review
 
-**`<<<COMMIT_SHA>>>`** on branch `wt/S-VLADW1-01-engine`, worktree
+**`6a105f2`** on branch `wt/S-VLADW1-01-engine`, worktree
 `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`. Verify with
 `git -C <worktree> log --oneline -1` and report what you actually saw in `commit_reviewed`. If it does not
 match, stop and say so rather than reviewing a different tree.
 
-The diagnostic run reviewed `b9b8df3`. `git diff b9b8df3..<<<COMMIT_SHA>>>` is the fix attempt. Bundles:
+The diagnostic run reviewed `b9b8df3`. `git diff b9b8df3..6a105f2` is the fix attempt. Bundles:
 
     G  the rendered-form canonical transform (S4-2(c) as a PROPERTY), emphasis/block-prefix candidates
     H  counts removed; "only shipped place/surface" removed as a CLASS and refused by the lint;
@@ -50,7 +50,7 @@ The diagnostic run reviewed `b9b8df3`. `git diff b9b8df3..<<<COMMIT_SHA>>>` is t
        process.binding("spawn_sync") route, with the standing fixture as its witness
 
 **Conductor-measured at this commit, for you to CHECK rather than trust:** suite exit 0,
-**<<<PASS>>> pass / 0 fail / 0 skipped / 0 todo**; `npm run check:ship` exit 0; `npm run check:pointers`
+**366 pass / 0 fail / 0 skipped / 0 todo**; `npm run check:ship` exit 0; `npm run check:pointers`
 exit 1 — **RED BY DESIGN**, deliberately outside `check:ship`.
 
 ## THE RELEASE RULE — β rows 309 (`e7a4b619`), 310 (`3a5f81c7`), 312 (`f2b71e58`)

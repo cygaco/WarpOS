@@ -41,14 +41,14 @@ do not decide; criteria do.**
 
 Commit `<<<COMMIT_SHA>>>`, branch `wt/S-VLADW1-01-engine`. The fix attempt is `b9b8df3..<<<COMMIT_SHA>>>`.
 
-## THE PACKAGE, in one paragraph
+## THE PACKAGE
 
-A Node ESM package that holds an API credential and launches child processes. Its controls: an audited
-spawn wrapper that refuses implicit env inheritance and secret-shaped values in command/args; a
-capture-then-scrub of the environment at entry; static enforcers that scan source text for raw launch
-shapes and for env objects; and a custody-claim lint that binds prose in `CUSTODY.md` to canonical copies so
-a claim cannot drift from what was reviewed. **`CUSTODY.md` ships** — it is what `npm pack --dry-run`
-resolves — so a false sentence in it is a shipped defect, not a documentation nit.
+A Node ESM package holding an API credential and launching child processes. Controls: an audited spawn
+wrapper refusing implicit env inheritance and secret-shaped command/args; a capture-then-scrub of the
+environment at entry; static enforcers scanning source text for raw-launch and env-object shapes; and a
+custody-claim lint binding `CUSTODY.md` prose to canonical copies so a claim cannot drift from what was
+reviewed. **`CUSTODY.md` ships** — it is what `npm pack --dry-run` resolves — so a false sentence in it is
+a shipped defect, not a documentation nit.
 
 ## THE CRITERIA you are assessing against
 
@@ -71,31 +71,29 @@ resolves — so a false sentence in it is a shipped defect, not a documentation 
 
 ## What the fix attempt changed (`b9b8df3..<<<COMMIT_SHA>>>`)
 
-    G  rendered-form canonical transform; emphasis/block-prefix candidates; comma separator deliberately
-       NOT folded (measured false-RED cost); confusable fold is an ENUMERATION over a named alphabet set
-    H  stale counts removed; "only shipped place/surface" removed as a CLASS and refused by the lint;
-       the rollup residual restated in CLASS form
-    I  `names` coerced to primitives once before the swept population is derived; the `Array.isArray`
-       gate annotated LOAD-BEARING for the prototype check downstream
-    J  `createRequire` banned outside the spawn wrapper, with a code-level structural exemption and
-       DELIBERATELY no suppression marker; a standing EXPECTED-BYPASS witness committed
-    K  the prose describing the transform rewritten to match the transform as built
-    L  the raw-launch clause's heading scoped to matched shapes; its ceiling's named example re-pointed
-       to a route that is open and execution-proven  <<<DROP THIS LINE IF L DID NOT RUN>>>
+Seven bundles: the canonical transform widened to match on the RENDERED form (comma separator
+deliberately NOT folded, on a measured false-RED cost; the confusable fold an ENUMERATION over a named
+alphabet set); false and count-bearing sentences corrected and an exhaustiveness class refused by the lint;
+a swept population coerced to primitives once; a launch primitive banned outside its wrapper with a
+code-level structural exemption, DELIBERATELY no suppression marker, and a standing EXPECTED-BYPASS witness
+committed; the transform's shipped description rewritten to match it as built; internal process vocabulary
+scrubbed from shipped surfaces; a clause heading scoped to what its enforcer actually matches, and that
+clause's ceiling re-pointed to a route that is open and EXECUTION-PROVEN.
+
+**You have the complete diff of the shipped claim surface below. Read it rather than this summary** — the
+summary is what the fix attempt believes it did.
 
 ## Where to look hardest
 
-1. **Every new sentence.** Each bundle authored prose. Read each claim under the least flattering
-   interpretation a user could take, and ask what would have to be true of the code for it to hold.
-2. **Over-refusal, not only under-refusal.** A transform that folds too much manufactures false REDs and
-   pushes authors to route around the lint. That is a real failure mode with a green gate.
-3. **The enumeration boundaries.** The confusable fold covers a named alphabet set; scripts outside it
-   evade. This is DISCLOSED — so it is a re-confirmation, not a new finding, **unless** you can show the
-   prose implies a coverage the code does not have.
-4. **The gap between a heading and its body.** A section heading that states a universal while its body
-   enumerates shapes is the exact defect class this attempt was fixing. Check whether any survive.
-5. **Anything that reads as reassurance rather than as a bound.** "Effectively", "in practice",
-   "generally" around a control claim.
+1. **Every new sentence**, under the least flattering interpretation a user could take: what would have to
+   be true of the code for it to hold?
+2. **Over-refusal, not only under-refusal.** A transform folding too much manufactures false REDs and pushes
+   authors around the lint — a real failure mode with a green gate.
+3. **Enumeration boundaries.** The confusable fold covers a named alphabet set; scripts outside evade. That
+   is DISCLOSED, so it is a re-confirmation **unless** the prose implies a coverage the code lacks.
+4. **The gap between a heading and its body** — a heading stating a universal over a body that enumerates
+   shapes is the exact class this attempt was fixing. Check whether any survive.
+5. **Reassurance wearing the clothes of a bound** — "effectively", "in practice", "generally".
 
 ## Output contract
 

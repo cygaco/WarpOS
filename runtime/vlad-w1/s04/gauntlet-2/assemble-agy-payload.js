@@ -35,14 +35,14 @@ const SPEC = [
   {
     file: "engine/src/spawn-shim.js",
     mode: "lines",
-    ranges: [[228, 252], [300, 330]],
-    why: "THE REGION THAT PRODUCED A FALSE FINDING LAST TIME. the first range holds the Array.isArray gate at line 238 — the refuting code that sat outside the gauntlet-1 window; the second holds the prototype check downstream of it. You are being given the gate this time, deliberately.",
+    ranges: [[228, 252]],
+    why: "THE GATE THAT REFUTED A FALSE FINDING LAST TIME — the Array.isArray gate at line 238, with the annotation above it marking it LOAD-BEARING for the prototype check downstream. It sat outside the gauntlet-1 window and a lane reasoned correctly to a wrong conclusion without it; you are being given it deliberately. NOTE WHAT YOU DO NOT HAVE: the prototype check itself (~lines 300-330) was cut for the argv ceiling, so any claim about what that check accepts or rejects is a files_i_could_not_see entry, not a finding.",
   },
   {
     file: "engine/scripts/checks/custody-claim-lint.js",
     mode: "lines",
-    ranges: [[100, 140], [185, 215]],
-    why: "THE TRANSFORM, in code and in its own comment block. Bundle K rewrote CUSTODY.md's DESCRIPTION of this. Compare the description you read in the CUSTODY.md diff against this — if they disagree, that is an S4-1 finding and it is yours to file.",
+    ranges: [[185, 215]],
+    why: "THE TRANSFORM's fold constants and the confusable ceiling comment. Bundle K rewrote CUSTODY.md's DESCRIPTION of this and L1 calibrated it. Compare the description you read in the CUSTODY.md diff against this code — if they disagree, that is an S4-1 finding and it is yours to file. NOTE what you do NOT have: the transform's main comment block (~lines 95-145) and the function body itself were cut for the argv ceiling, so a claim about a fold you cannot see here is a files_i_could_not_see entry.",
   },
 ];
 
@@ -71,7 +71,7 @@ function main() {
     const totalLines = fs.readFileSync(abs, "utf8").split("\n").length;
 
     if (item.mode === "diff") {
-      const body = run(["diff", "-U2", `${base}..${headSha}`, "--", item.file]);
+      const body = run(["diff", "-U1", `${base}..${headSha}`, "--", item.file]);
       if (!body.trim()) {
         console.error(`FATAL: empty diff for ${item.file} between ${base}..${headSha}.`);
         process.exit(1);

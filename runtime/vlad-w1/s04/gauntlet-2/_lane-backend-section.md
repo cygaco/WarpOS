@@ -6,7 +6,7 @@ Scope: **code quality, mechanism correctness, and the enforcers themselves.** Yo
 things rather than reading about them.
 
 Worktree `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`, branch
-`wt/S-VLADW1-01-engine`, commit `<<<COMMIT_SHA>>>`. Paths relative to `engine/`.
+`wt/S-VLADW1-01-engine`, commit `6a105f2`. Paths relative to `engine/`.
 
 ## YOU OWN S4-2(d). It is owed AGAIN at this run and it is the reason this lane exists.
 
@@ -61,7 +61,7 @@ already cover**.
 
 ## Code quality on the fix attempt
 
-`git diff b9b8df3..<<<COMMIT_SHA>>>` is the change set. Read it as an engineer, not only as an auditor:
+`git diff b9b8df3..6a105f2` is the change set. Read it as an engineer, not only as an auditor:
 
 - **Bundle I** coerced `names` to primitives once before deriving the swept population, and annotated the
   `Array.isArray` gate in `src/spawn-shim.js` as **LOAD-BEARING for D1**. Judge whether that annotation is

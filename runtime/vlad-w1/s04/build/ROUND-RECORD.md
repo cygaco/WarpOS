@@ -297,3 +297,54 @@ made the re-dispatch a brief edit rather than a re-derivation.
 transform-description paragraph, the disclosed-not-mechanised count-of-surfaces family, L1's
 "unbound ≠ re-wrap is free" finding, and the stale assertion message in a non-shipping test file (which
 cannot fail S4-1 and is deliberately not worth a dispatch at a qualifying boundary).
+
+## L2 — `4022ac3` / `96398c7` / `6a105f2` — fix attempt 1 CLOSED
+
+`d-mtdqf3am-0772db4d`, exit 0, **760 474 ms**, 18 097-byte envelope, `ok:true`, not reaped. Conductor
+re-verified on a clean tree with no builder live: suite **366 / 366 / 0 fail**, `check:ship` exit 0.
+
+**The attack ran BEFORE the claim was written**, which was the point of the bundle. The J witness executed:
+child status 0, stdout `CHILD_SAW:J-PLACEHOLDER-NOT-A-SECRET`, and `scanSpawnSurface` returned
+`filesScanned=1, violations=[], ok=true` — the scanner sees nothing AND a real child ran. **That pair
+falsified P2's old heading**, and only then was the heading scoped to "the raw-launch and import call-site
+SHAPES this enforcer matches in source text". Both halves of the clause survive; no hedge word
+("effectively" / "in practice" / "generally") was used — verified independently by the conductor.
+
+**RF-4 observed RED in BOTH directions before the pair completed** (`paragraph-not-verbatim` +
+`bound-paragraph-missing`, exit 1 read directly, not through a pipe), then landed as ONE commit — verified:
+`96398c7` touches `CUSTODY.md` and `custody-claim-lint.js` together.
+
+**The ceiling's named example is now execution-proven rather than conceivable**, and L2 confirmed BOTH
+directions: the new route (`process.binding("spawn_sync")` via a computed key) scans clean and launches a
+real child; the OLD route (`J-ban-works`) now goes RED under `spawn-env-allowlist/create-require-banned`,
+so re-pointing was necessary rather than cosmetic.
+
+**β row 314's count-form class disclosed on the shipped surface and mirrored in the rule header.** L2
+proved the gap live rather than asserting it: three count-form phrasings UNDETECTED, and a phrase-form
+control DETECTED — the control is what makes the probe non-vacuous. It confirmed L1 did not widen by
+reading L1's actual diff, so β's disclose branch was the right one.
+
+**Internal ids gone from the ship set's user-visible surface.** All three `S4-3` hits cleared; the
+ship-set-wide sweep now returns 6 hits, **all maintainer comments, none user-visible**, and L2 deliberately
+left the `RF-n`/`RT-n` hits alone as legitimate provenance pointing at real named tests.
+
+### L2's own prose turned the tree RED — the most reusable finding of the attempt
+
+Its first draft of the ceiling sentence **named the banned primitive literally**, and the enforcer refused
+both files (`create-require-banned`), dropping the suite to 365/1. **A text-matching enforcer cannot
+distinguish a violation from a description of one.** It rewrote to describe the primitive instead of
+spelling it, restored 366/0, and caught this before commit. K hit the same class one bundle earlier when
+its draft quoted the Asserted adjacency literally. **Two bundles, same trap, from opposite directions.**
+
+### One judgement call, flagged by the builder rather than buried
+
+Task 4(a) named "the paragraph that discloses this lint's limits", but the three numbered limits paragraphs
+were (1) resemblance, (2) rollup, (3) transform — and `forbiddenFiles` listed (2) and (3) as L1 regions,
+while a fourth numbered item was impossible because L1's preamble pins "the three numbered
+limits-of-this-checker paragraphs". L2 appended to (2), the topical twin carrying the same
+unbounded-family / do-not-widen / human-review doctrine, which `allowedFiles` explicitly authorised one
+clause in. **Conductor verified it did not touch L1's edited sentence** (`git diff 02e4776..HEAD` shows
+zero removed lines containing "human review") and that the bind stayed 15/15. Accepted.
+
+**Fix attempt 1 is CLOSED at `6a105f2`.** Bundles G, H, I, J, K, L1, L2. The qualifying gauntlet is next and
+there is no attempt 2.
