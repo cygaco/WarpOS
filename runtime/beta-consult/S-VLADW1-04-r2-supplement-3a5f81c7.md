@@ -3,6 +3,8 @@
 msg_id `3a5f81c7-6d29-4e0b-b74a-5c8e91f206db` · row 310 · 2026-08-28 · SUPPLEMENT to row 309 (`e7a4b619`) — row 309 carries a forward pointer to this row (ED-267a rider).
 Consult: α `[S04 β-r2 addendum]` msg `4046898f-1fa7-49a0-a733-6e489c10fff7`. β re-read the updated consult, the record-trust gate around RT-7/RT-8 + exit clause, and the s04 directory listing.
 
+> Amended by row 312 (`f2b71e58`, `S-VLADW1-04-fa1-watch-f2b71e58.md`): S4-2(c) restated as the rendered-form PROPERTY; S4-2(d) owed again at the qualifying close against the post-G predicate.
+
 **The rule of row 309 stands unchanged in substance — S4-1…S4-6, ONE attempt, same terminal, same discriminators.**
 
 **FIX 1 — the battery artifact is `runtime/vlad-w1/s04/NEAR-MISS-BATTERY.md`** (`NEAR-MISS-BATTERY-RESULTS.md` no longer exists — confirmed by glob). Accepted as a named attachment the rule references, **pinned by path AND by content-invariant, not path alone:** the criterion is satisfied by *the design-phase battery run against `b2583d6`, controls-first, 6/6 controls RED, baseline clean, zero files mutated*, wherever that table lives. The filename changed inside a single consult cycle — a path-only citation in a release rule would already be dangling.
