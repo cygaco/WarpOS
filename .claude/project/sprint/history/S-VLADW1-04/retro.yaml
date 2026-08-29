@@ -1,0 +1,262 @@
+schema: warpos/sprint/sprint-retrospective/v1
+sprint_id: S-VLADW1-04
+plan_contract_id: PC-20260828-0086
+synthesis_mode: llm
+summary: >-
+  S-VLADW1-04 closed at honest state 2026-08-29, NOT released, at 80%. The qualifying gauntlet closed
+  S4-1 FAILS, S4-2(c) FAILS, S4-3 HOLDS, S4-4 HOLDS, S4-5 HOLDS, S4-6 HOLDS, and beta's pre-committed
+  TERMINAL was applied verbatim: no release, no fix attempt 2. The work that landed is real and survives
+  at vlad wt/S-VLADW1-01-engine @ 6a105f2 (deliberately unmerged) - refuse-not-skip closing all seven
+  near-miss authorings, a rendered-form canonical transform, the args.map door re-attacked with twelve
+  live-child shapes for zero leaks, AC-8.6 built with RF-7 RED at runtime, createRequire banned with a
+  standing EXPECTED-BYPASS witness, suite 339 to 366 with every mutant no-op-guarded, check:ship exit 0,
+  and S4-2(d) discharged TWICE independently with controls first. It failed on the same class as its
+  predecessor, one layer out: the fix attempt authored NEW false sentences about its own mechanisms, and
+  left one dimension of the rendered-form property implemented BESIDE the shared transform rather than
+  inside it. Every failing instance was in prose or code that the full approval chain - epsilon reviewed,
+  beta recommended, alpha approved - had passed.
+
+outcomes_shipped:
+  - outcome: "Refuse-not-skip landed on the claim-lint derivation: a paragraph resembling an Asserted/Ceiling lead-in is bound or REFUSED by name, never silently skipped. All seven near-miss authorings RED plus both em-dash controls RED."
+    planned: true
+    evidence:
+      - "bundle A + bundle G; verified INDEPENDENTLY by two gauntlet-2 lanes, controls firing the correct DISTINCT rule (unbound-paragraph for controls vs unbindable-paragraph-shape for near-misses)"
+      - "backend lane disclosed and re-ran its own invalid first battery rather than report rows refusing for the wrong reason"
+  - outcome: "A NAMED CANONICAL TRANSFORM matching on the RENDERED form: NFKD, default-ignorables stripped BY PROPERTY, combining marks deleted, a confusable fold, the dash class by \\p{Pd} plus U+2212, whitespace collapse, case fold - 26 of 27 rendered-form dimensions caught under adversarial probing."
+    planned: true
+    evidence:
+      - "bundle G; bundle K's ten falsification attempts each observed a flip, including the NFKD-vs-NFKC discriminator isolated exactly (accented RED->GREEN under NFKC while fullwidth stays RED)"
+      - "security lane drove 27 dimensions; 26 caught"
+  - outcome: "Two false bound sentences corrected with the bind moving in the same change, and S4-3 held at close: 15 bindable paragraphs matched against 15 canonical copies byte-for-byte."
+    planned: true
+    evidence:
+      - "bundle B; RF-4 observed RED in BOTH directions inside the owning bundles' own runs (H-prime, L1, L2 envelopes carry the real rule output)"
+      - "alpha re-execution at close: RF-4 both directions confirmed"
+  - outcome: "The args.map scan door closed with an indexed loop and no method lookup, then RE-ATTACKED at the qualifying gauntlet with twelve live-child shapes for zero leaks."
+    planned: true
+    evidence:
+      - "bundle D + RF-5a/b/c; security lane: Array subclass, Object.create(Array.prototype) with counting getter, Proxy args, stateful toString, prototype-chain secrets - 9 refused, 3 launched clean, 0 decoy deliveries"
+      - "stateful toString() called exactly ONCE (no TOCTOU re-read); refused-container getters invoked ZERO times"
+  - outcome: "AC-8.6 built at the capped shape: one invocation from the product-layer entry, one named test, and RF-7 RED at RUNTIME rather than at text/AST level."
+    planned: true
+    evidence:
+      - "bundle C; the mutant still starts and still CONTAINS the function definition, and goes red on the ABSENCE of the custody-selfcheck record"
+      - "check:pointers resolves custody-runtime.test.js::selfcheck-runs-on-user-machine; the missing-NAME line is gone"
+  - outcome: "The driver entry's scrub gained a real runtime-observable consequence - it re-reads process.env after its own scrub call, before any dynamic import, and throws at load if a credential-shaped name survives."
+    planned: true
+    evidence:
+      - "bundle E route (a); S4-5's either-or satisfied by the FIRST arm, not by silence"
+  - outcome: "The CLASS-form residual shipped as a bound Ceiling paragraph under P3 in strong actionable form, stating that AC-8.6's landing does not make that control an exception."
+    planned: true
+    evidence:
+      - "S4-6 HOLDS; qa lane quoted all three required elements verbatim and confirmed CLASS form rather than instance form - the question beta left explicitly open at row 312"
+  - outcome: "createRequire banned outside the spawn wrapper with a code-level structural exemption and DELIBERATELY no suppression marker, plus a committed EXPECTED-BYPASS witness re-pointed to a route that is still open and execution-proven."
+    planned: false
+    evidence:
+      - "bundle J; the witness launches a real child echoing a labelled placeholder while the scanner reports clean"
+      - "three lanes judged the prose describing it accurate; none filed it as a defect"
+  - outcome: "Internal process vocabulary scrubbed from the shipped surface, including a user-visible violation message, with a ship-set-wide sweep."
+    planned: false
+    evidence:
+      - "bundles L1 + L2; conductor's own sweep leaves exactly one S4-n hit, a maintainer comment"
+
+outcomes_missed:
+  - outcome: "S4-1 TRUTH - two independent, execution-proven false sentences on the shipped surface, BOTH newly authored by the fix attempt."
+    reason: >-
+      The confusable-fold calibration asserts a script-level closure over a letter-level sample (the fold
+      reaches 36 of 52 Latin letters; Ceiling needs l, n, g and the map has none of them), so in-script
+      Cyrillic and Greek homoglyphs of unmapped letters ship GREEN - reached by the very accident vector
+      the paragraph names. And "two escapes REMAIN" is false with a third class execution-proven, in a
+      paragraph that narrates its own predecessor being false for the same reason.
+  - outcome: "S4-2(c) MECHANISM - markdown-emphasis canonicalization is not on the status-token path."
+    reason: >-
+      Emphasis canonicalization exists twice in the same file but neither instance is on the comparison
+      S4-2(c) governs, so '**ASSERTED** - NOT VERIFIED' plants green inside the Proven section. Bundle G's
+      own comment says the two sites "must share one transform"; the shared transform was applied and
+      emphasis was implemented beside it.
+  - outcome: "The sprint's actual goal - a RELEASABLE custody set."
+    reason: >-
+      Two criteria failed at the qualifying close, so the terminal applied. What exists is a surface the
+      successor starts from rather than one a user receives.
+
+plan_quality_actual:
+  - dimension: "scope accuracy"
+    assessment: >-
+      Accurate. Every one of the nine carried residuals plus AC-8.6 was built, and eight of them survived
+      the qualifying gauntlet. Nothing in the plan turned out to be the wrong work.
+  - dimension: "risk identification"
+    assessment: >-
+      The plan named "the predecessor's signature defect recurring one layer up" as its first risk and
+      prescribed the right mitigation (no control is done until a test fails on its removal AND the control
+      is attacked at the layer above). The mitigation was applied to MECHANISMS and not to SENTENCES, and
+      the sprint failed on sentences. The risk was seen; its scope was drawn too narrowly.
+  - dimension: "approval boundaries"
+    assessment: >-
+      The contract's operator-authorization boundary was OVERRIDDEN by alpha under a standing mandate that
+      predated the boundary. Recorded honestly at the time as an override rather than an authorization,
+      which is what made it auditable. Beta fenced it to builder dispatch only, and the fence held.
+
+scope_variant_actual:
+  - variant: "Fix attempt 1 grew from four bundles (G/H/I/J) to seven (G/H/I/J/K/L1/L2)."
+    driver: >-
+      Beta rows 313 and 314 raised five flags on a read of the tree, and bundle J routed a finding it could
+      not act on because another bundle owned the file. Each addition was authorized, small, and inside the
+      single fix attempt - attempts are counted by GAUNTLET RUNS, not by bundles.
+  - variant: "Bundle L was split into a serial pair L1 -> L2."
+    driver: "CUSTODY.md must never have two concurrent editors; the split is the same defect class the sprint exists to close, applied to its own process."
+
+surprises:
+  - surprise: "The approval chain passed a false sentence three times over."
+    detail: >-
+      The confusable calibration was recommended by beta, approved by alpha, reviewed by epsilon, and is
+      false of the code. Beta graded its own recommendation as correctly false at row 316, declaring the
+      conflict first and running the position-swap.
+  - surprise: "A text-matching enforcer cannot distinguish a violation from a description of one."
+    detail: >-
+      Bundle K's draft quoted the Asserted adjacency literally and the lint refused CUSTODY.md itself;
+      bundle L2's draft named the banned primitive literally and turned the tree RED in both files. Two
+      bundles, opposite directions, same trap, both caught before commit.
+  - surprise: "The cross-family lane's false HIGHs cost two commands instead of a fix bundle."
+    detail: >-
+      agy filed two HIGHs from a false Unicode belief, but marked both execution_proven:false and supplied
+      the exact refuting command. The refuting line was INSIDE the window it was given, so this was a
+      factual belief rather than a scope gap - the what_would_confirm_or_refute field is what saved it.
+  - surprise: "Builders refused conductor premises with evidence three times, and were right every time."
+    detail: >-
+      J refuted 'zero executable uses' with a grep; K proved the paragraph it was told to bind atomically
+      is not bound at all; L2 halted rather than make an uncommittable edit after the brief named the wrong
+      cwd. An unrefusable brief converts the conductor's error into shipped code.
+
+friction_points:
+  - friction: "brief premises written from belief"
+    detail: >-
+      Three briefs asserted 'X is missing' or 'X is required' without an attached grep or read. L2's cost a
+      whole dispatch cycle, and it was avoidable: L1 had reported the same cwd mismatch in a free-text
+      field and the conductor read it without acting on it. ED-363.
+  - friction: "enforcement sweep scoped to the instance, not the class"
+    detail: >-
+      The internal-id sweep was scoped to CUSTODY.md because that is where the instance was found, so a
+      shipped internal id in a user-visible message one file over survived it and needed a second bundle.
+  - friction: "idle-while-polling"
+    detail: >-
+      The conductor said 'polling in-turn' and then yielded, repeatedly, after correction. Alpha's watchers
+      carried every wait in this run. The fix is mechanical: arm the waiter in the same turn as the fire.
+  - friction: "reading a mid-write tree as clean"
+    detail: "Caught before reporting. The rule is tree-clean AND no live builder; the second half was skipped."
+  - friction: "WarpOS commit race between alpha and epsilon"
+    detail: "Main briefly diverged. Resolved by naming every hash in the status that follows the commit."
+  - friction: "an unverified claim in the conductor's own commit message"
+    detail: >-
+      A commit said RETRO-INPUT.md had been trimmed to its 45-line cap; it was 60 lines. Compliance asserted
+      without measuring. Corrected at a measured 31 lines, with the miss recorded IN the retro rather than
+      quietly fixed - the smallest possible instance of the sprint's own finding.
+  - friction: "ED-356 merge-guard denied three builders' commits"
+    detail: >-
+      Pre-existing broken refs in .claude/ docs blocked builder commits three times. All three refused to
+      use --no-verify or an allowlist entry; the conductor verified the staged trees and landed them. One
+      builder re-ran the identical denied command and self-flagged it against blocked-is-not-retry.
+  - friction: "agy served on a fallback model"
+    detail: "gemini-3.1-pro-high, not the pinned model. Well-formed record, pin not honoured; gauntlet-verify PASS must not be read as covering it."
+
+action_items:
+  - action: "Move the emphasis fold INSIDE canonicalizeClaimText (or route containsStatusToken through flattenForAssertionScan) so both comparison sites share one transform, as the code's own comment already requires."
+    owner: "S-VLADW1-05"
+    linked_friction: "beside-not-inside fold"
+    due_by: "S-VLADW1-05 first bundle"
+  - action: "State coverage as the letter set actually mapped, or vendor a Unicode confusables table. Never as 'scripts closed'."
+    owner: "S-VLADW1-05"
+    linked_friction: "coverage-granularity class"
+  - action: "Replace every escape COUNT with a named CLASS. A count is a property of the day it is read."
+    owner: "S-VLADW1-05"
+    linked_friction: "coverage-granularity class"
+  - action: "Extend refuse-not-skip to the LEAD-IN path for every prefix class, heading markers included."
+    owner: "S-VLADW1-05"
+    linked_friction: "coverage-granularity class"
+  - action: "Attach a grep or read proof line to every 'X is missing' or 'X is required' in a builder brief, and tell builders explicitly they may refuse a premise with evidence."
+    owner: "epsilon"
+    linked_friction: "brief premises written from belief"
+  - action: "Scope every enforcement sweep to where the CLASS lives, not to where the instance was found."
+    owner: "epsilon"
+    linked_friction: "enforcement sweep scoped to the instance"
+  - action: "Arm the paired waiter in the SAME turn as every background dispatch, rather than narrating a poll and yielding."
+    owner: "epsilon"
+    linked_friction: "idle-while-polling"
+  - action: "Document in the scanner's own header that prose naming a banned primitive trips the ban, so the next author writing about it does not rediscover it."
+    owner: "S-VLADW1-05"
+    linked_friction: "text matcher cannot distinguish violation from description"
+
+tickets_completed: []
+tickets_deferred: []
+tickets_abandoned: []
+tickets_reopened: []
+issues_encountered: []
+
+beta_decisions_reviewed:
+  - "row 309 (e7a4b619) - S4-1..S4-6 release rule pre-committed at the design-to-build boundary, before any result existed, with NO exception clause deliberately"
+  - "row 310 (3a5f81c7) - three citation fixes; battery pinned by content-invariant, binding R-to-RT name map, RF-2 discharged at design is not S4-2(d)"
+  - "row 311 (c5d0e293) - the build authorization is an alpha OVERRIDE of its own written boundary, not a mandate-authorization; a standing mandate cannot consent to a boundary that did not exist when it was given"
+  - "row 312 (f2b71e58) - S4-2(c) AMENDED from a fold LIST to a rendered-form PROPERTY; S4-2(d) owed AGAIN at the qualifying close against the post-G predicate"
+  - "row 313 (d4a8e0b2) - five flags on beta's own read of the tree; NFKD and the Cyrillic/Greek enumeration ratified as S4-2(c)-conforming"
+  - "row 314 (b1c7f45a) - the count-form exhaustiveness class DISCLOSED rather than mechanised; widening is the rejected RT-8 move"
+  - "row 316 (6e2d94af) - alpha's application CONFIRMED, no AP-15 in either direction, with beta grading its OWN row-313 recommended wording as correctly FALSE, conflict declared first and the position-swap run"
+
+key_tradeoffs:
+  - "Ran a DIAGNOSTIC gauntlet before the qualifying one, spending a full gauntlet to buy one real iteration - which found six defects that would otherwise have consumed the single attempt."
+  - "Disclosed the count-of-surfaces class rather than widening the matcher to catch it, because count phrasing is unbounded and widening manufactures the appearance of coverage. Bundle L1 measured a candidate pattern with zero false positives and still declined to land it, which does not overturn the ruling: beta's ground was unboundedness, not over-refusal."
+  - "Dropped the D1 prototype-check window from the cross-family payload to stay under the 32KB argv wall, keeping the gate region that refuted the previous round's false HIGH and stating the absence in the lane's own terms."
+  - "Left the transform's own description paragraph UNBOUND rather than fake a bind, because binding it properly requires changing a test fixture builder that was out of scope at a qualifying boundary."
+  - "Serialized the three mutating Claude lanes again rather than isolate them, and ran the cross-family lane alongside because it mutates nothing."
+
+learning_candidates:
+  - learning: "Approval is not a truth check. A sentence recommended by the judgment face, approved by the orchestrator and reviewed by the conductor can still be false of the code, because none of those three is an execution. No shipped claim without its attack."
+    promote_via: "learn:integrate"
+    evidence:
+      - "beta row 316: 'approval is not a truth check, and beta's recommendation is worth exactly nothing against the shipped bytes'"
+      - "the confusable calibration was beta-recommended, alpha-approved, epsilon-reviewed, and execution-proven false"
+  - learning: "A coverage claim stated at a coarser granularity than the mechanism has is a distinct, recurring defect class. 'The two scripts the fold covers' asserted a script-level closure over a letter-level sample; three instances appeared in one sprint."
+    promote_via: "learn:integrate"
+    evidence:
+      - "S4-1a (script-vs-letter), S4-1b (two escapes vs thirteen prefix shapes), S4-1c (NOT-bound enumeration vs headings) - beta row 316 named them one class"
+      - "ED-358, second instance one layer out"
+  - learning: "A comment stating an invariant is not an enforcer of it. Bundle G's own comment said two comparison sites 'must share one transform'; the transform was applied to one and the missing fold was implemented beside the other, and nothing detected the divergence."
+    promote_via: "learn:integrate"
+    evidence: ["S4-2(c) found independently by two lanes; flattenForAssertionScan holds the missing fold one function away"]
+  - learning: "A text-matching enforcer cannot distinguish a violation from a description of one. Any prose written ABOUT a banned pattern will trip the ban."
+    promote_via: "learn:integrate"
+    evidence: ["bundle K refused CUSTODY.md itself by quoting the Asserted adjacency", "bundle L2 turned the tree RED in two files by naming the banned primitive"]
+  - learning: "A brief is a claim surface like any other. An unrefusable brief converts the author's error into shipped code, so every 'X is missing' needs an attached proof and every builder needs standing permission to refuse a premise with evidence."
+    promote_via: "learn:integrate"
+    evidence: ["three refusals, three correct: J's grep, K's unbound proof, L2's halt", "ED-363"]
+  - learning: "A read-scope-limited reviewer that reports what it could NOT see, and names the check that would refute its own finding, is worth more than one that is merely right. The refutation cost two commands instead of a fix bundle."
+    promote_via: "learn:integrate"
+    evidence: ["agy marked both HIGHs execution_proven:false with what_would_confirm_or_refute; ED-362's machinery"]
+  - learning: "Lane independence is not ceremony. Two lanes that never saw each other's work found the same decisive mechanism defect, and a third found a different false sentence."
+    promote_via: "learn:integrate"
+    evidence: ["backend and security_claude_hunter both filed S4-2(c) independently; qa filed a different S4-1 sentence"]
+  - learning: "Refusing an exception clause when minting a rule is load-bearing, and its value shows up only at the close. The single failure was one fold implemented beside the shared transform - exactly the defect a 'mechanical failures only' carve-out would have been argued into."
+    promote_via: "learn:integrate"
+    evidence: ["beta row 309 refused the carve-out deliberately; beta row 316 confirms it was load-bearing"]
+
+release_record_ref: null
+
+synthesis_metadata:
+  source: "runtime/vlad-w1/s04/RETRO-INPUT.md"
+  written_by: "epsilon"
+  note: >-
+    Written from the skill's template rather than by scripts/sprint/retrospective.js. The script exits on
+    loadPlanContract, which reads sprintCurrent.plan_contract from a sprint current.yaml this sprint never
+    had - it ran conductor-driven rather than through the /sprint:* state machine. The plan contract does
+    exist at .claude/project/sprint/plan-contracts/PC-20260828-0086.yaml with sprint: S-VLADW1-04, so
+    plan_contract_id is recorded here rather than nulled. No YAML was flipped to make any gate pass.
+
+signed_off_by: "epsilon"
+signed_off_at: "2026-08-29T04:10:00Z"
+
+retro_metadata:
+  synthesized_at: "2026-08-29T04:10:00Z"
+  writer_version: "template-fallback-1"
+  history_record: ".claude/project/sprint/history/S-VLADW1-04/retro.yaml"
+  force_overwrite: false
+
+created_at: "2026-08-29T04:10:00Z"
+updated_at: "2026-08-29T04:10:00Z"
