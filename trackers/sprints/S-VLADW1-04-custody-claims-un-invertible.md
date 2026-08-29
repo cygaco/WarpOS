@@ -146,3 +146,40 @@ Every item traces to a lane finding with a path — scoped from a verdict corpus
 - Remaining follow-up items: all DoD items above; the four parked SDK credential vars remain disclosed-open per the operator's 2026-08-18 ruling and are NOT this sprint's scope.
 - Related untracked work: None
 - ../../TRACKER.md updated: Yes · Roadmap reconciled: pending the registry mint at build authorization
+
+## Residuals for the named successor — accumulated during fix attempt 1
+
+Recorded as they were found, so the close does not have to reconstruct them. **None of these is a defect
+this sprint is failing to fix; each is a bounded thing deliberately not attempted at a qualifying boundary.**
+
+1. **The transform's own description paragraph is UNBOUND.** Nothing pins `CUSTODY.md`'s description of
+   `canonicalizeClaimText` byte-for-byte, so a later edit to it is invisible to every check — the most
+   load-bearing prose about the mechanism this sprint is about. **It cannot be closed cheaply:** adding a
+   `BOUND_PARAGRAPHS` entry makes Rule 4b (`findBoundParagraphPresenceViolations`) demand the text appear in
+   the clean test fixture, and that fixture is built only from keys matching `^Ceiling` or `^A\d+$`, so the
+   "clean fixture lints clean" test would go RED. Closing it needs the fixture builder in
+   `test/custody-claim-lint.test.js` extended, with its own falsifier. Bundle K escalated rather than faked
+   it. **Disclosed, not hidden:** the preamble's NOT-bound class covers it, and after L1 the enumeration
+   names it explicitly.
+
+2. **The count-of-surfaces exhaustiveness family is disclosed but not mechanised.** `only-surface-assertion`
+   matches exhaustiveness PHRASES inside bound paragraphs, not COUNTS, so a future bound paragraph could
+   re-introduce a surface count and ship green. β row 314 ruled DISCLOSE rather than widen — count phrasing
+   is unbounded ("one", "a single", "two", "both", "the sole", "no other") and widening manufactures the
+   appearance of coverage. **L1 measured a candidate pattern anyway** and it produced zero hits across all
+   15 bound paragraphs while not refusing the three legitimate count-ish phrasings in the same paragraph;
+   the measurement is handed forward, and it does NOT overturn row 314, whose ground was unboundedness
+   rather than over-refusal.
+
+3. **"Unbound" does not mean re-wrapping is free** — a trap for any future doc-scoped bundle. Bundle L1
+   falsified this premise on itself: its first wrap of the NOT-bound enumeration split `P1–P4 BODY PROSE`
+   across a newline and turned a test RED, because header substrings are pinned across wraps INDEPENDENTLY
+   of the canonical-copy bind. It fixed its own wrap rather than the test. "Unbound" governs the
+   canonical-copy bind only.
+
+4. **A stale assertion MESSAGE in a non-shipping test.** After L1 changed the shipped prose to "human
+   review", the task-4 assertion's failure message still says "must name the reviewer read as the control".
+   The regex it enforces (`/must be reviewed, not linted/`) is unaffected and green, and
+   `test/custody-claim-lint.test.js` is **not in the ship set** (`package.json#files` ships exactly one
+   test), so **it cannot fail S4-1**. Named rather than fixed: a follow-up dispatch at the qualifying
+   boundary is not worth its risk.

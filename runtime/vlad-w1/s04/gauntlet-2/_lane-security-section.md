@@ -6,7 +6,7 @@ Scope: **attack the controls.** You are the lane that tries to make the mechanis
 entire subject is a held credential and the claims made about it.
 
 Worktree `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`, branch
-`wt/S-VLADW1-01-engine`, commit `<<<COMMIT_SHA>>>`. Paths relative to `engine/`.
+`wt/S-VLADW1-01-engine`, commit `6a105f2`. Paths relative to `engine/`.
 
 ## The distinction that decides how your findings are graded
 

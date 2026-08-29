@@ -19,9 +19,9 @@ conductor's process is now fixed** (that reconciliation is mandatory before any 
 
 ### LINE-RANGE MANIFEST — exactly what you were given, and therefore what you were not
 
-- **engine/CUSTODY.md** — the COMPLETE diff for this file (94 changed lines). The file is 383 lines total; **every unchanged line is NOT included.** THE SHIPPED CLAIM SURFACE. S4-1 is the decisive criterion and it is decided by reading these sentences. You get 100% of what the fix attempt CHANGED here, and none of what it did not.
-- **engine/src/spawn-shim.js** — lines 228-252, 300-330 ONLY (56 of 553 lines, 10%). **The other 497 lines are NOT included.** THE REGION THAT PRODUCED A FALSE FINDING LAST TIME. the first range holds the Array.isArray gate at line 238 — the refuting code that sat outside the gauntlet-1 window; the second holds the prototype check downstream of it. You are being given the gate this time, deliberately.
-- **engine/scripts/checks/custody-claim-lint.js** — lines 100-140, 185-215 ONLY (72 of 1499 lines, 5%). **The other 1427 lines are NOT included.** THE TRANSFORM, in code and in its own comment block. Bundle K rewrote CUSTODY.md's DESCRIPTION of this. Compare the description you read in the CUSTODY.md diff against this — if they disagree, that is an S4-1 finding and it is yours to file.
+- **engine/CUSTODY.md** — the COMPLETE diff for this file (132 changed lines). The file is 405 lines total; **every unchanged line is NOT included.** THE SHIPPED CLAIM SURFACE. S4-1 is the decisive criterion and it is decided by reading these sentences. You get 100% of what the fix attempt CHANGED here, and none of what it did not.
+- **engine/src/spawn-shim.js** — lines 228-252 ONLY (25 of 553 lines, 5%). **The other 528 lines are NOT included.** THE GATE THAT REFUTED A FALSE FINDING LAST TIME — the Array.isArray gate at line 238, with the annotation above it marking it LOAD-BEARING for the prototype check downstream. It sat outside the gauntlet-1 window and a lane reasoned correctly to a wrong conclusion without it; you are being given it deliberately. NOTE WHAT YOU DO NOT HAVE: the prototype check itself (~lines 300-330) was cut for the argv ceiling, so any claim about what that check accepts or rejects is a files_i_could_not_see entry, not a finding.
+- **engine/scripts/checks/custody-claim-lint.js** — lines 185-215 ONLY (31 of 1515 lines, 2%). **The other 1484 lines are NOT included.** THE TRANSFORM's fold constants and the confusable ceiling comment. Bundle K rewrote CUSTODY.md's DESCRIPTION of this and L1 calibrated it. Compare the description you read in the CUSTODY.md diff against this code — if they disagree, that is an S4-1 finding and it is yours to file. NOTE what you do NOT have: the transform's main comment block (~lines 95-145) and the function body itself were cut for the argv ceiling, so a claim about a fold you cannot see here is a files_i_could_not_see entry.
 
 **Nothing else was included.** No other file of this package is in this payload at all — not `src/env-scrub.js`, not `driver/host-free-driver.js`, not `scripts/checks/spawn-env-allowlist.js`, not `package.json`, and no test file. If a judgement needs one of them, that is a `files_i_could_not_see` entry, and it will be reconciled rather than discarded.
 
@@ -43,16 +43,16 @@ verbatim, and any one criterion failing means **NO RELEASE, no attempt 2**. Two 
 a real finding, and do not inflate a weak one — β ruled both directions equally forbidden. **Lane verdicts
 do not decide; criteria do.**
 
-Commit `5b9b757`, branch `wt/S-VLADW1-01-engine`. The fix attempt is `b9b8df3..5b9b757`.
+Commit `6a105f2`, branch `wt/S-VLADW1-01-engine`. The fix attempt is `b9b8df3..6a105f2`.
 
-## THE PACKAGE, in one paragraph
+## THE PACKAGE
 
-A Node ESM package that holds an API credential and launches child processes. Its controls: an audited
-spawn wrapper that refuses implicit env inheritance and secret-shaped values in command/args; a
-capture-then-scrub of the environment at entry; static enforcers that scan source text for raw launch
-shapes and for env objects; and a custody-claim lint that binds prose in `CUSTODY.md` to canonical copies so
-a claim cannot drift from what was reviewed. **`CUSTODY.md` ships** — it is what `npm pack --dry-run`
-resolves — so a false sentence in it is a shipped defect, not a documentation nit.
+A Node ESM package holding an API credential and launching child processes. Controls: an audited spawn
+wrapper refusing implicit env inheritance and secret-shaped command/args; a capture-then-scrub of the
+environment at entry; static enforcers scanning source text for raw-launch and env-object shapes; and a
+custody-claim lint binding `CUSTODY.md` prose to canonical copies so a claim cannot drift from what was
+reviewed. **`CUSTODY.md` ships** — it is what `npm pack --dry-run` resolves — so a false sentence in it is
+a shipped defect, not a documentation nit.
 
 ## THE CRITERIA you are assessing against
 
@@ -73,33 +73,31 @@ resolves — so a false sentence in it is a shipped defect, not a documentation 
 - **S4-6 — RESIDUALS TRAVEL.** A residual bounding a SHIPPED claim must be on the SHIPPED surface, in
   strong actionable form, stated as a CLASS where the class is what is open.
 
-## What the fix attempt changed (`b9b8df3..5b9b757`)
+## What the fix attempt changed (`b9b8df3..6a105f2`)
 
-    G  rendered-form canonical transform; emphasis/block-prefix candidates; comma separator deliberately
-       NOT folded (measured false-RED cost); confusable fold is an ENUMERATION over a named alphabet set
-    H  stale counts removed; "only shipped place/surface" removed as a CLASS and refused by the lint;
-       the rollup residual restated in CLASS form
-    I  `names` coerced to primitives once before the swept population is derived; the `Array.isArray`
-       gate annotated LOAD-BEARING for the prototype check downstream
-    J  `createRequire` banned outside the spawn wrapper, with a code-level structural exemption and
-       DELIBERATELY no suppression marker; a standing EXPECTED-BYPASS witness committed
-    K  the prose describing the transform rewritten to match the transform as built
-    L  the raw-launch clause's heading scoped to matched shapes; its ceiling's named example re-pointed
-       to a route that is open and execution-proven  <<<DROP THIS LINE IF L DID NOT RUN>>>
+Seven bundles: the canonical transform widened to match on the RENDERED form (comma separator
+deliberately NOT folded, on a measured false-RED cost; the confusable fold an ENUMERATION over a named
+alphabet set); false and count-bearing sentences corrected and an exhaustiveness class refused by the lint;
+a swept population coerced to primitives once; a launch primitive banned outside its wrapper with a
+code-level structural exemption, DELIBERATELY no suppression marker, and a standing EXPECTED-BYPASS witness
+committed; the transform's shipped description rewritten to match it as built; internal process vocabulary
+scrubbed from shipped surfaces; a clause heading scoped to what its enforcer actually matches, and that
+clause's ceiling re-pointed to a route that is open and EXECUTION-PROVEN.
+
+**You have the complete diff of the shipped claim surface below. Read it rather than this summary** — the
+summary is what the fix attempt believes it did.
 
 ## Where to look hardest
 
-1. **Every new sentence.** Each bundle authored prose. Read each claim under the least flattering
-   interpretation a user could take, and ask what would have to be true of the code for it to hold.
-2. **Over-refusal, not only under-refusal.** A transform that folds too much manufactures false REDs and
-   pushes authors to route around the lint. That is a real failure mode with a green gate.
-3. **The enumeration boundaries.** The confusable fold covers a named alphabet set; scripts outside it
-   evade. This is DISCLOSED — so it is a re-confirmation, not a new finding, **unless** you can show the
-   prose implies a coverage the code does not have.
-4. **The gap between a heading and its body.** A section heading that states a universal while its body
-   enumerates shapes is the exact defect class this attempt was fixing. Check whether any survive.
-5. **Anything that reads as reassurance rather than as a bound.** "Effectively", "in practice",
-   "generally" around a control claim.
+1. **Every new sentence**, under the least flattering interpretation a user could take: what would have to
+   be true of the code for it to hold?
+2. **Over-refusal, not only under-refusal.** A transform folding too much manufactures false REDs and pushes
+   authors around the lint — a real failure mode with a green gate.
+3. **Enumeration boundaries.** The confusable fold covers a named alphabet set; scripts outside evade. That
+   is DISCLOSED, so it is a re-confirmation **unless** the prose implies a coverage the code lacks.
+4. **The gap between a heading and its body** — a heading stating a universal over a body that enumerates
+   shapes is the exact class this attempt was fixing. Check whether any survive.
+5. **Reassurance wearing the clothes of a bound** — "effectively", "in practice", "generally".
 
 ## Output contract
 
@@ -109,7 +107,7 @@ lane that returns prose reads downstream as a dead lane and its work is not coun
     {
       "lane": "security-reviewer",
       "verdict": "PASS" | "FAIL",
-      "commit_reviewed": "5b9b757",
+      "commit_reviewed": "6a105f2",
       "s_criteria": { "S4-1": "holds|FAILS|cannot-assess", "S4-2": "...", "S4-3": "...",
                       "S4-4": "...", "S4-5": "...", "S4-6": "..." },
       "criteria_reasoning": { "S4-1": "<why, citing what you read>", "...": "..." },
@@ -130,15 +128,28 @@ excerpts is less trustworthy, not more.
 
 # THE CODE YOU WERE GIVEN
 
-### engine/CUSTODY.md — UNIFIED DIFF b9b8df3..5b9b757 (complete for this file)
+### engine/CUSTODY.md — UNIFIED DIFF b9b8df3..6a105f2 (complete for this file)
 
 ```diff
 diff --git a/engine/CUSTODY.md b/engine/CUSTODY.md
-index 5b122fb..aada3c0 100644
+index 5b122fb..cc00e7f 100644
 --- a/engine/CUSTODY.md
 +++ b/engine/CUSTODY.md
-@@ -23,27 +23,63 @@ Three limits of this file's own checker, named here rather than left to be disco
- 
+@@ -13,7 +13,8 @@ everywhere else: every Proven claim carries its clause id, and nothing conflates
+ bound byte-for-byte, said plainly rather than generalised: prose that is neither an Asserted nor a Ceiling
+-paragraph — this preamble, the P1–P4 status/enforcer/proof-scope lines, the P1–P4 BODY PROSE (the substantive
+-sentences under each clause heading stating what that enforcer actually scans — a lane proved three flat
+-falsehoods there ship green, so this omission is named, not implied), A1's `Live measurement` follow-on
+-paragraph, and the commentary paragraphs around A5 — which the structural and forbidden-phrase rules check, but no
+-stored copy pins. A5 is the hybrid: its own paragraph is pinned here byte-for-byte, and the three sentences of the
++paragraph — this preamble, the three numbered limits-of-this-checker paragraphs below (including (3)'s
++description of `canonicalizeClaimText` itself), the P1–P4 status/enforcer/proof-scope lines, the
++P1–P4 BODY PROSE (the substantive sentences under each clause heading stating what that enforcer actually
++scans — a lane proved three flat falsehoods there ship green, so this omission is named, not implied), A1's
++`Live measurement` follow-on paragraph, and the commentary paragraphs around A5 — which the structural and
++forbidden-phrase rules check, but no stored copy pins. A5 is the hybrid: its own paragraph is pinned here byte-for-byte, and the three sentences of the
+ carrier note it quotes are pinned byte-for-byte to `src/model-seam.js`'s exported `SANCTIONED_CARRIER_NOTE`, while
+@@ -24,25 +25,73 @@ Three limits of this file's own checker, named here rather than left to be disco
  (1) THE RESEMBLANCE CEILING. A lead-in that fails the canonical Asserted or Ceiling shape is no longer skipped:
 -the lint refuses it by name when it RESEMBLES one — bolded, opening with an `A<n>`, `Asserted` or `Ceiling`
 -keyword, followed by any Unicode dash, a colon, or whitespace. Before this, five near-miss authorings of a new
@@ -177,13 +188,19 @@ index 5b122fb..aada3c0 100644
 -rollup claim's truth is the reviewer read, and the linter never was that control. This states a division of
 -labour; it is not an apology for a gap.
 +does not detect semantically equivalent rollups in ANY other wording, and no enumeration of wordings will close this,
-+because the family of equivalent phrasings is unbounded. A rollup claim must be reviewed, not linted: S4-1's
-+reviewer read is the actual control, and the linter never was that control. The residual is stated as the CLASS
++because the family of equivalent phrasings is unbounded. A rollup claim must be reviewed, not linted: human
++review is the actual control, and the linter never was that control. The residual is stated as the CLASS
 +it is, deliberately WITHOUT a list of the wordings that happen to slip past today. Naming the instances we
 +happened to observe would itself be a false disclosure: it reads as an enumerable gap when the gap is unbounded,
 +and it invites the one repair that makes matters worse. Widening the matcher to swallow each newly-noticed
 +wording manufactures false coverage without narrowing the class, so the matcher is deliberately NOT widened.
-+This states a division of labour; it is not an apology for a gap.
++This states a division of labour; it is not an apology for a gap. The sibling exhaustiveness rule
++(`custody-claim-lint/only-surface-assertion`) sits under that same division of labour and is disclosed here
++rather than in a numbered item of its own: it matches exhaustiveness PHRASES inside bound paragraphs, it has no
++count branch, and it therefore does not detect count-form exhaustiveness claims — the same assertion carried by
++a number or a quantifier instead of by the phrase. A count standing inside a bound paragraph is not checked.
++That family is unbounded for the same reason the rollup family is, so widening the matcher to swallow count
++wordings is refused on the same grounds, and human review is the control there too.
  
  (3) NON-BREAKING SPACE. Every token comparison in the lint renders BOTH sides through one named canonical
 -transform, `canonicalizeClaimText`, which folds the Unicode dash class to a single hyphen, collapses whitespace
@@ -205,9 +222,15 @@ index 5b122fb..aada3c0 100644
 +PROPERTY, and that difference is real rather than cosmetic: the dash fold closes a Unicode category by
 +definition, while the confusable fold is an ENUMERATION over Cyrillic and Greek, because Unicode exposes no
 +confusable property to lean on. Armenian, Cherokee, Coptic, Deseret and Lisu lookalikes therefore still evade it;
-+a Cherokee and an Armenian spelling of the `Ceiling` keyword were each observed GREEN. Closing that class needs a
-+vendored Unicode confusables data file and is out of scope here; named, not repaired. Markdown is canonicalized
-+before a lead-in is tested for resemblance: nested list-item and blockquote prefixes and any indentation are
++a Cherokee and an Armenian spelling of the `Ceiling` keyword were each observed GREEN. The two scripts the fold
++DOES cover are the two a homoglyph reaches BY MISTAKE — a paste from mixed-script text, an editor substitution, an
++identifier copied out of a document that was never all-Latin — whereas a keyword spelled in Armenian, Cherokee,
++Coptic, Deseret or Lisu is essentially only reachable by someone doing it ON PURPOSE. Read the split that way:
++the fold is calibrated against accident, and what remains is a class reachable by a deliberate hand — which is a
++statement about who reaches it, NOT a claim that the remainder is closed, and not a claim that the list of
++evading scripts above is complete. Closing that class needs a vendored Unicode confusables data file and is out
++of scope here; named, not repaired. Markdown is canonicalized before a lead-in is tested for resemblance:
++nested list-item and blockquote prefixes and any indentation are
 +stripped, and an emphasis run opened before the keyword or closed around it is folded away. The token comparison
 +that consumes the transform also tolerates separator variance between the words of a multi-word status token —
 +any run of dash, colon, tilde, pipe, slash or whitespace, including an EMPTY run — with comma, semicolon and
@@ -219,23 +242,38 @@ index 5b122fb..aada3c0 100644
 +being asserted about somewhere else. That transform's whitespace fold also tolerates a non-breaking space, which
 +is not line-wrap whitespace. Named, not repaired: narrowing it would invite false REDs.
  
- <!-- OPERATOR-PENDING: a top-of-file, one-paragraph, user-facing summary of what this file means for someone
-@@ -146,5 +182,5 @@ variable) used to start the process: a preload module injected through any of th
- launch command line or the environment `NODE_OPTIONS` reads from — a capability outside the shipped launch
+@@ -69,3 +118,3 @@ unrecognized seam value fails closed rather than silently narrowing the scan.
+ 
+-### P2 — Every `auditedSpawn` call site passes an explicit env object naming no denylisted variable, and a raw bypass of the audited wrapper is refused
++### P2 — Every `auditedSpawn` call site passes an explicit env object naming no denylisted variable, and the raw-launch and import call-site SHAPES this enforcer matches in source text are refused
+ 
+@@ -103,4 +152,13 @@ ceiling further each time. But widening a matcher family narrows a ceiling; it d
+ call-site-shape class the family describes — a launch reached through a route this pattern family does not name
+-(for one example, an aliased reference to an already-imported launch function) is outside what a text matcher
+-can see, by construction. `src/env-scrub.js`'s capture-then-scrub mechanism (ADR-0041 Amendment 4) is what
++(for one example, `process.binding("spawn_sync")` driven through a computed member key, which is not a
++conceivable route but an EXECUTION-PROVEN one: the standing witness committed at `ff6d483`,
++`test/fixtures/J-expected-bypass/reflective-launcher.js`, is scanned clean by this enforcer and still launches a
++real child that echoes back the placeholder env pair it was handed) is outside what a text matcher
++can see, by construction. So a green result from this enforcer means the call-site shapes it names are absent
++from the text it scanned; it does not mean no raw launch is present there, and it must not be read as though it
++did. The example above is re-pointed rather than kept: the aliased-requirer route this paragraph named when it
++was authored has since been closed by bundle J's ban on the requirer-constructing primitive, and a closed route
++cannot witness a ceiling.
++Routes reached through `eval`, `Function()`, WASM, or a native addon remain open by construction and are not
++enumerated here. `src/env-scrub.js`'s capture-then-scrub mechanism (ADR-0041 Amendment 4) is what
+ covers that residual class AT RUNTIME, independent of whether any given call site was caught statically. Stated
+@@ -147,3 +205,3 @@ launch command line or the environment `NODE_OPTIONS` reads from — a capabilit
  shape this package documents (`node src/server-entry.js` / `node driver/host-free-driver.js`, no preload
 -flags) — named here so the entry reads as a calibrated ceiling, not an alarm. This residual is also named on one INTERNAL surface: `test/entry-bootstrap.test.js` states it in that file's own ceiling note, points back to this Ceiling by name, and then USES `--import` to launch a child — a live demonstration of the residual, not merely a mention of it. That file is not in this package's ship set (`package.json`'s `files` ships exactly one test, `test/credential-custody-decoy.test.js`), so among SHIPPED surfaces this document remains the only place the residual is named.
-+flags) — named here so the entry reads as a calibrated ceiling, not an alarm. This residual is also named on one INTERNAL surface: `test/entry-bootstrap.test.js` states it in that file's own ceiling note, refers back to this Ceiling by DESCRIPTION rather than by its lead-in text (a grep for this Ceiling's lead-in text in that file returns zero hits), and then USES `--import` to launch a child — a live demonstration of the residual, not merely a mention of it. That file is not in this package's ship set (`package.json`'s `files` ships exactly one test, `test/credential-custody-decoy.test.js`). Among SHIPPED surfaces this residual is named both here and in `scripts/checks/custody-claim-lint.js`, which holds this paragraph verbatim as its canonical copy — an exhaustiveness claim about disclosure surfaces is not available to a bound paragraph at all, because binding is what creates the second shipped copy.
++flags) — named here so the entry reads as a calibrated ceiling, not an alarm. This residual is also named on an INTERNAL surface: `test/entry-bootstrap.test.js` states it in that file's own ceiling note, refers back to this Ceiling by DESCRIPTION rather than by its lead-in text (a grep for this Ceiling's lead-in text in that file returns zero hits), and then USES `--import` to launch a child — a live demonstration of the residual, not merely a mention of it. That file is not in this package's ship set (`package.json`'s `files` ships exactly one test, `test/credential-custody-decoy.test.js`). Among SHIPPED surfaces this residual is named both here and in `scripts/checks/custody-claim-lint.js`, which holds this paragraph verbatim as its canonical copy — an exhaustiveness claim about disclosure surfaces is not available to a bound paragraph at all, because binding is what creates the second shipped copy.
  
- **Ceiling — `opts.cwd` and `opts.stdio` are not scanned by `auditedSpawn` itself.** The runtime checks above refuse
-@@ -189,5 +225,5 @@ present in `test/custody-runtime.test.js` and its `verified_by` pointer RESOLVES
- narrowly, because it is ONE control on ONE path: it does not wire THIS fixture into your install — nothing does
+@@ -190,3 +248,3 @@ narrowly, because it is ONE control on ONE path: it does not wire THIS fixture i
  — and `check:pointers` as a whole remains RED by design, with other pointers deliberately left unresolved. The
 -class-form Ceiling immediately below still holds for every control except that one.
 +class-form Ceiling immediately below is NOT lifted for that one control: what this self-check verifies is an OUTCOME, not the presence or the passing of any control — stated in full there.
  
- **Ceiling — this package does not verify that its controls are invoked in YOUR install.** Every enforcer named
-@@ -195,8 +231,16 @@ above runs only when someone runs it — `npm run check:custody`, `npm run check
- `node --test` suite, against a tree they already have. AC-8.6 is the single criterion aimed at closing that gap,
+@@ -196,6 +254,14 @@ above runs only when someone runs it — `npm run check:custody`, `npm run check
  and it is scoped to ONE control at start-up rather than to the set; as of S-VLADW1-04 (2026-08-28) it HAS landed
 -for that one control on that one path, as the Ceiling immediately above records. That single exception aside,
 -the controls above are proven by our own test run, on our tree, at the moment we ran it. That is a real result,
@@ -254,7 +292,6 @@ index 5b122fb..aada3c0 100644
 +`src/server-entry.js`; it is repeated here because a residual that lives only in a code comment is not
 +disclosed to the person this document is written for.
  
- ### P4 — No outbound request originating in the shipped tree carries the held secret, other than the SDK's own authenticated call to Anthropic's endpoint
 ```
 
 
@@ -288,88 +325,6 @@ index 5b122fb..aada3c0 100644
 252| 
 ```
 
-### engine/src/spawn-shim.js — LINES 300-330 (verbatim)
-
-```js
-300|   //
-301|   // WHERE THIS SENTENCE LEANS ON THE B1 GATE ABOVE (bundle I Task 2). The
-302|   // narrowing claim is true of the FUNCTION, not of this block read alone,
-303|   // and the difference is not academic: a cross-family review lane read this
-304|   // block in isolation and reported the sentence FALSE, on the grounds that
-305|   // `Object.create(Array.prototype)` passes the prototype check below (it
-306|   // does — its prototype IS exactly Array.prototype) while the previous
-307|   // `Array.isArray()` check would have refused it. The premise is that D1
-308|   // REPLACED that check. It did not: `Array.isArray()` is still the FIRST
-309|   // thing this function does (the B1 gate at the top), and D1 was added
-310|   // BELOW it. An `Object.create(Array.prototype)` is refused there and never
-311|   // reaches this block at all — RF-I2 observes that its own `length` getter
-312|   // is never invoked.
-313|   //
-314|   // SO: THE B1 `Array.isArray()` GATE IS LOAD-BEARING FOR D1 AND MUST NOT BE
-315|   // REMOVED as redundant. D1's prototype check does NOT subsume it —
-316|   // arrayness is an internal slot, not a prototype relationship, so a
-317|   // non-array can hold Array.prototype as its prototype and satisfy D1.
-318|   // Delete B1 and that shape becomes a REAL widening, which is the exact
-319|   // defect the review lane described one gate too late. RF-I2 is red against
-320|   // that removal.
-321|   const normCommand = String(command);
-322| 
-323|   // D1(1) — Proxy FIRST: refused before any other inspection, because every
-324|   // inspection below (`Object.getPrototypeOf` included) is itself trappable.
-325|   if (nodeTypes.isProxy(args)) {
-326|     throw new Error(
-327|       "spawn-shim: `args` must be a plain array — the given container is a Proxy. A Proxy's traps can " +
-328|         "answer this wrapper's own checks with one set of values and Node's spawn() with another, so no " +
-329|         "inspection of it is trustworthy. Pass a plain array.",
-330|     );
-```
-
-
-### engine/scripts/checks/custody-claim-lint.js — LINES 100-140 (verbatim)
-
-```js
-100| //
-101| // BUNDLE G, WHY IT WIDENED. The bundle-A transform folded dash class,
-102| // whitespace and case — three dimensions of ASCII spelling — and performed
-103| // NO Unicode normalization and NO confusable fold. Execution against a
-104| // green gate showed the transform was defeated one alphabet over: exact
-105| // `PROVEN` went RED, while `PRO<U+200B>VEN` (zero-width space) and
-106| // `PR<U+041E>VEN` (CYRILLIC CAPITAL O) both shipped GREEN, exit 0. The root
-107| // cause is one line of the old implementation: JavaScript's `\s` does not
-108| // match U+200B, so a zero-width space survived the whitespace fold intact
-109| // and split the token. Homoglyphs were never addressed at all. Five more
-110| // folds are therefore named below.
-111| //
-112| // It folds these dimensions, and names each:
-113| //
-114| //   (1) COMPATIBILITY NORMALIZATION — NFKD. Chosen over NFKC deliberately.
-115| //       Where a decision turns on VISUAL equivalence, decomposition is the
-116| //       stronger primitive: NFKD splits a precomposed character into base
-117| //       plus combining marks, which lets fold (3) below delete the marks so
-118| //       a claim spelled with an acute accent renders to its unaccented
-119| //       skeleton. NFKC would immediately RECOMPOSE those marks and put the
-120| //       accent back, leaving the evasion open. Both forms are compatibility
-121| //       (K) mappings, so both already fold the full-width forms, the
-122| //       mathematical alphanumerics and the letterlike symbols; only the
-123| //       decomposing form additionally EXPOSES the marks for removal. That
-124| //       is the whole reason for the D.
-125| //   (2) DEFAULT-IGNORABLE CODE POINTS — deleted, by Unicode PROPERTY
-126| //       (\p{Default_Ignorable_Code_Point}), not by hand-list. This covers
-127| //       the zero-width space U+200B and zero-width non-joiner U+200C that
-128| //       were execution-proven to evade, and with them the zero-width
-129| //       joiner, the word joiner U+2060, the bidi marks LRM U+200E / RLM
-130| //       U+200F and the embedding controls, the variation selectors, the
-131| //       Hangul fillers and the BOM U+FEFF. SOFT HYPHEN U+00AD is also
-132| //       default-ignorable and folds here. An invisible character nobody
-133| //       here has seen is deleted because the Unicode property says it is
-134| //       invisible, not because someone remembered to list it.
-135| //   (3) COMBINING MARKS — every \p{Mn} deleted. Only meaningful because
-136| //       fold (1) decomposes; see the NFKD rationale above.
-137| //   (4) CONFUSABLE FOLD over the TOKEN ALPHABET — the Cyrillic and Greek
-138| //       homoglyphs of the Latin letters this file's tokens are spelled
-139| //       from (PROVEN, ASSERTED, Ceiling, NOT VERIFIED) map to their Latin
-140| //       skeleton. This is the one fold that is NECESSARILY an enumeration
-```
 
 ### engine/scripts/checks/custody-claim-lint.js — LINES 185-215 (verbatim)
 

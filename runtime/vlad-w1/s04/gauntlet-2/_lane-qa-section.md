@@ -6,7 +6,7 @@ Scope: **functional correctness + traceability + integrity.** You are the lane t
 against the CODE and asks, sentence by sentence, whether it is TRUE.
 
 Worktree `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`, branch
-`wt/S-VLADW1-01-engine`, commit `<<<COMMIT_SHA>>>`. Paths relative to `engine/`.
+`wt/S-VLADW1-01-engine`, commit `6a105f2`. Paths relative to `engine/`.
 
 ## You are the deciding lane for S4-1, and S4-1 is the criterion this sprint family keeps dying on
 
@@ -69,7 +69,7 @@ by G–L, and that any that remains is either re-derived-true or restated as an 
 
 - Run the test suite and `npm run check:ship` yourself, **each as its own command with its own exit code
   read** — never piped through `tail`/`head` in a `&&` chain. Report the real numbers.
-- `git diff b9b8df3..<<<COMMIT_SHA>>> -- test/` — **did any test title disappear, and was it replaced by
+- `git diff b9b8df3..6a105f2 -- test/` — **did any test title disappear, and was it replaced by
   something strictly stronger or something weaker?** Did any assertion loosen? Did a `t.skip()` or `.todo`
   appear? A suite that grew while quietly weakening an existing assertion is a regression no count shows.
 - **`pass-total ≠ observation-count`.** For S4-4, read the mutant tests **per-description**: the count of
