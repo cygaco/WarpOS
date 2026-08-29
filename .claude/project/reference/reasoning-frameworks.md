@@ -148,6 +148,8 @@ This is the routing table for Alex's reasoning engine. When facing a problem, cl
 
 **Context Engineering** — Matters more than framework choice. Full history (<5 steps), sliding window (5-15 steps), summarization (15+ steps). Critical info at start AND end of context.
 
+**Accretion against a global bound** — the failure class where EACH ADDITION IS LOCALLY CORRECT, THE CONSTRAINT IS GLOBAL, and nothing ever re-evaluates the whole against the ceiling: briefs vs a size floor, context windows, dependency lists, acceptance criteria. The fix is an explicit **allocation step at every append** — "what does the *whole* now cost against the bound?" — not a review at the end. **Humility corollary:** a blunt prohibition written to prevent a defect can be WORSE than the defect-aware design a builder finds (ε's no-seam-wiring rule vs the frozen-unfiltered-constant design the builder proposed — safer AND simpler). When that happens, re-narrow the rule to match reality instead of holding the prohibition.
+
 ### Product & UX Frameworks
 
 **Jobs-to-Be-Done (JTBD)**

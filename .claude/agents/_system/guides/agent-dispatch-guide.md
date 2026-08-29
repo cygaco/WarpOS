@@ -131,6 +131,51 @@ part** (load-bearing, deterministic); per-chunk-savepoint detection is harder
 (needs cross-dispatch chunk tracking) — its companion signal is a
 per-chunk-savepoint field in the completion record, not the prompt lint alone.
 
+### Window budgeting and dead-dispatch triage (S-VLADW1 arc, 2026-08)
+
+Right-sizing above answers *how big*. These four rules answer *what the window is
+spent on*, *what to do when it clamps*, and *how to tell the death apart*.
+
+1. **Budget the window by what it will be SPENT on, not by how much there is to
+   write.** Any known slow non-writing operation donates the whole window — `npm
+   install`, a long test run, and the invisible one: **reading obligations imposed
+   in prose** (cite-your-source requirements, "read X before you start"). An
+   install is a command you can see; mandatory reading is an obligation you don't.
+   Pre-do it conductor-side, give it its own chunk deliberately, or distil it into
+   an interface sheet.
+2. **Treat every builder dispatch as ONE ~540 s window that WILL clamp.** On a
+   clamp: checkpoint-commit whatever landed (in unverified-disclosure form), READ
+   the artifacts to derive the VERIFIED gap, mint a completion brief scoped to only
+   that gap, redispatch. Never identical-retry a clamp, and never assume the final
+   report survived — **stdout dies with the clamp, so the files ARE the report**.
+3. **Dead dispatches present IDENTICALLY at the ledger** (no record or a timeout
+   row, 0 bytes, no diff). The family — guard **REFUSAL** (pre-spawn, exit 2),
+   harness **REAP**, permission **STARVATION** (untrusted workspace; `Ignoring N
+   permissions.allow entries` in stderr), **READ-DONATION** (window eaten by
+   reading), genuine **SCOPE TIMEOUT**. Only **stderr** separates them, and the
+   wrapper writes its pre-flight right-sizing warnings at dispatch time — so read
+   **stderr AT DISPATCH**, not only post-mortem. Each member has a different
+   remedy; pattern-matching to the wrong one burns a full window proving nothing.
+4. **Completion waiters** — (a) presence ≠ completeness: wrappers pre-create
+   out-files at 0 bytes, so gate on NON-EMPTY or a ledger row, never on existence;
+   (b) key on the DISPATCH ID, never on a ledger-line-count baseline — positions lag
+   and race, identity doesn't; (c) ledger-verify any RELAYED id before arming (a
+   relayed identifier is a claim, not a fact); (d) the filter must fire on every
+   terminal state, not just success.
+
+**Interface sheets transfer doctrine, not just facts.** A conductor-authored
+interface sheet (contracts + `path:line` refs distilled from the conductor's OWN
+verified reads) collapses builder read-cost without transferring trust: the builder
+keeps the **stop-on-mismatch** obligation, because a drifted sheet is MORE dangerous
+than no sheet. Carry the custody/claim-scope rules in the sheet too — a builder that
+saw them only through the sheet wrote honest claim-scope into its own file header
+unprompted.
+
+**Enforcer:** stderr-at-dispatch and waiter-identity discipline are behavioral here;
+the mechanical halves are tracked as **ED-353** (background-lane dispatches must
+carry the clamp signal or the wrapper must warn) and **ED-366** (a detector that
+enumerates zero candidates must report UNKNOWN, not "clean").
+
 ### Non-build Claude roles → raw fallback is allowed
 
 ```bash
@@ -501,6 +546,23 @@ When a builder hits maxTurns mid-feature:
    the partial commit.
 4. Compose a continuation prompt listing already-done files and remaining files.
 5. Re-dispatch.
+
+### Integration pattern — verify before merge, never blind-merge a flagged worktree
+
+When an isolation-worktree builder reports a **stale-base / odd-base signal**, do
+NOT merge its branch. Instead: (1) **diff its output vs canonical** and confirm the
+change is ADDITIVE — original logic and ids intact; (2) **run its tests against the
+CANONICAL tree** (`CLAUDE_PROJECT_DIR=<canonical>`), not against the worktree that
+produced them; (3) spot-read the subtle logic yourself; (4) **apply the file(s)
+yourself**. Precedent: a backend-builder flagged that its worktree HEAD predated the
+validator; its +671-line extension was clean, but it was verified-then-applied
+(20/20 live + 55/55 selftest on canonical) rather than merged from a messy branch.
+(Learning `L-2026-06-06-worktree-builder-verify-before-merge`.)
+
+**When multiple chunks or builders touch ONE test file**, the brief must say
+**APPEND, DO NOT REWRITE**, and the integration check must assert the **suite count
+never shrinks** — a suite that shrinks while staying green is the quietest
+regression available, because dropped tests read as passing.
 
 ---
 

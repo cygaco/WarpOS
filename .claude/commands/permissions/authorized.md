@@ -73,6 +73,24 @@ node scripts/warpos/settings/compile.js
 ```
 Expect `compile OK → …`. If it reports a conflict (exit 1 — e.g. the same string in `deny`), resolve before proceeding. Recompile regenerates `paths.settings` as defaults ∪ local, so the new rule is active for the harness immediately.
 
+**Hook ADDED/DROPPED integrity diff — required before you trust the recompile.** A recompile can
+**silently drop hooks that are live in `paths.settings` but missing from Layer 1**
+(`_warpos/settings/defaults.json`) — pre-existing drift, not something this skill introduced. Diff
+the recompiled hook list against the committed one and fix any defaults drift FIRST:
+
+```bash
+git show HEAD:.claude/settings.json | grep -o 'scripts/hooks/[a-z0-9-]*\.js' | sort -u > before.hooks
+grep -o 'scripts/hooks/[a-z0-9-]*\.js' .claude/settings.json | sort -u > after.hooks
+comm -23 before.hooks after.hooks    # DROPPED — must be empty
+comm -13 before.hooks after.hooks    # ADDED   — must be only what you intended
+```
+
+Any line from the first `comm` means Layer 1 is missing a live hook — add it to `defaults.json` and
+recompile again before proceeding. (Write the two scratch files under your scratchpad dir, not the
+repo.) Precedent (`L-2026-06-06-settings-recompile-integrity-check`): a
+naive recompile would have dropped two live security hooks (`settings-edit-guard.js` PreToolUse and
+`untrusted-content-firewall.js` PostToolUse) that existed only in the compiled layer.
+
 ### Step 5 — Verify + report
 Confirm the new entries appear in `permissions.allow` of the compiled `paths.settings`. Report what was authorized and the revoke path (below).
 
