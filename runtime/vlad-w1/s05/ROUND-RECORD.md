@@ -516,3 +516,83 @@ antigravity/gemini-3.1-pro-high → openai/gpt-5.6-sol → claude/claude-opus-5 
 **Both non-security lanes are the same model family.** The independence that matters for a gauntlet is
 independence from the BUILDERS, which holds; but the corpus diversity lives entirely in the security
 lane's three passes. Flagged to β as a composition question for α rather than decided by ε.
+
+---
+
+# DIAGNOSTIC GAUNTLET (round 1) — pinned at `6c64021`
+
+Four lanes fired. **Two returned, two died on conductor brief errors.** Records for the two in-process
+lanes were written via `record-inprocess`, so their `ok:true` is **derived from real return bytes**.
+
+## backend-reviewer — **FAIL (45), THREE HIGH** · `d-mtezntaw-91171dbc` · evidence 8187 B
+
+- **B-1 HIGH (wiring).** `resemblesBindableLeadIn` opts OUT of fold (8) at L848 and **opts back IN at
+  L866**; its own comment at L838-841 says the opposite. Because `EMPHASIS_RUN` is `/^[*_]+/`, that
+  re-entry is **the only mechanism admitting backtick/tilde separators**. Mutating L866 to match its
+  comment turned a near-miss from refused-by-name into **silently skipped — with 107/107 still
+  passing.** A maintainer "fixing the inconsistency" reopens the fail-open N exists to close.
+- **B-2 HIGH (pre-existing).** The forbidden-claim family and both rollup patterns never touch the
+  shared transform, though L92 claims `canonicalizeClaimText` is *"the ONE rendering function every
+  token-level comparison runs over BOTH sides"*. Shown **inside one function on one line**: the
+  status-token check matched plain/homoglyph/ZWSP/bold; the forbidden-claim check matched only plain.
+- **B-3 HIGH — INTRODUCED BY BUNDLE Q.** `findOnlySurfaceAssertionViolations` iterates the **derived**
+  population (15), not `BOUND_PARAGRAPHS` (16). Q added the first bound-but-not-derived paragraph, so a
+  **byte-identical** "only place" claim is **green in item (3)** and **refused in a derived Ceiling**.
+  Undisclosed by `TRANSFORM_DESCRIPTION_KEY`'s "WHAT IT DOES NOT CLOSE".
+
+## qa-reviewer — **S5-4 DISCHARGED** · `d-mteznt8t-9c9195c3` · evidence 7370 B
+
+Never loaded `run-battery.mjs`. Own populations, own mutants, no simulation layer; rule and limits
+stated per class. Two runs differed per class: **30/72 · 15/43 · 3/30 (+1)**. **Class 3b is exhaustive
+over a stated finite domain** — 547 code points across the five disclosed-unfolded script blocks, zero
+of them keys of `CONFUSABLE_FOLD`.
+
+**Its no-op⇒FAIL guard caught a defect in its own work:** the first `BLOCK_PREFIX` mutant was malformed
+by heredoc escaping and **still differed from built (25/43 rows)** — a diff-only guard would have
+passed it. **Adopted as a standing lesson: "the two runs differed" is not sufficient; the mutant source
+must be read back.**
+
+Findings: F-QA-03 (a valid GFM table row with no space ships an unbound Ceiling, 0 violations, while
+the prose lists table-cell delimiters unqualified) · F-QA-04 (the label alternative is narrower than
+described in three undisclosed ways) · F-QA-01/02 (a row count beside a class mechanism; the accident
+class has two mechanisms where the document names one) · F-QA-05..08 LOW.
+
+**Both lanes independently disclosed the same gap:** neither read `custody-claim-lint.test.js` end to
+end, and qa noted it therefore **cannot confirm the committed tests assert in the direction their names
+claim**. Given B-1 (a mutation leaving 107/107 green), **"the suite passes" is weaker evidence for
+S5-5 than it looks** — flagged to β, not self-ruled.
+
+## ⚠️ TWO LANES DIED — BOTH CONDUCTOR BRIEF ERRORS
+
+- **security-reviewer: exit 1, elapsed 11095 ms — ELEVEN SECONDS**, a permission wall not a timeout:
+  *"a tool required the `command` permission that headless mode cannot prompt for, so it was
+  auto-denied."* **The brief's FIRST ACTION told it to run `git log`** — the one thing its headless
+  route cannot do.
+- **claim-grader: exit 1, elapsed 900274 ms — the 900 s ceiling, zero output.** **The brief was sized
+  too large again** ("grade *every* claim sentence" over 589 lines with end-to-end mechanism reads) —
+  the identical mistake made earlier today with lane A1 and repeated.
+
+Neither will be re-fired reshaped: the security lane gets a brief with **no shell commands at all**
+(its route cannot execute them), and the claim-grader gets **split by document section**. Adding
+`--dangerously-skip-permissions` was available and refused — that is reshaping past a permission
+boundary, not fixing a brief.
+
+## 🔴 STRUCTURAL — `dispatch-review.js` IS ABSENT; the 3-pass security review has never fired
+
+Verified three ways: `epsilon-runtime.js:601` routes multi-pass roles to `scripts/dispatch-review.js`,
+which **does not exist in the live tree** (`find` locates it only inside a *failed* install-matrix
+fixture); `dispatch-agent.js` contains **zero** references to `second_pass`/`third_pass`/`passesOf`;
+and **the ledger shows every `security-reviewer` dispatch — today's and two historical — producing
+only `antigravity` rows.** The openai and claude passes have never run on this route.
+
+**ED-371's class landing on the sprint's own gauntlet route.** It also means
+`security-pass-count.js`'s "the 3-provider review actually FIRED" assertion — already flagged by
+ED-374 as only checkable under `--strict` — guards a path that cannot currently happen.
+
+**And it makes a conductor statement false.** ε told α and β that *"the cross-family diversity lives
+entirely in the security lane's three passes."* That was read from the registry's `passesOf()` and
+assumed of the dispatch. **Fifth characterisation error of the session, same shape as the other four:
+describing a mechanism from its DECLARATION rather than its EXECUTION.** Corrected to β directly
+(`27935e94`); it bears on β's Q3, where β had carefully directed *different-reader-reading-bytes*
+rather than *different-family* — a distinction that turns out to be load-bearing, since the roster's
+only non-Claude gauntlet lane was never firing.
