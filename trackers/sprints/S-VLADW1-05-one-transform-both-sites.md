@@ -156,6 +156,11 @@ surface, so the sweep IS the criterion.**
 - [ ] Every shipped claim sentence carries a `falsification_attempts` entry naming the attack that was RUN.
 - [ ] ED-340 / ED-354 / ED-358 dispositions restated at close.
 - [ ] No claim of completeness over a category the mechanism only samples (ED-358's class).
+- [ ] **THE CLOSE STATES THE CLASS'S STATUS HONESTLY — verbatim, whatever the outcome** (β row 318's amended TERMINAL; placed here at MINT so it cannot be forgotten at close):
+      > *this sprint fixes three known instances of a class whose size is unknown, with the four un-audited shipped surfaces named and carried to the successor*
+
+      **A close that reads as "the coverage-granularity class is closed" is the class one layer out, in the sprint that exists to end it.** This box is checkable only by the close text itself, and it applies to a NO-RELEASE close exactly as much as to a release.
+- [ ] **The four-file list resolved by a READ** of the gauntlet-2 `what_i_could_not_assess` fields before the close — β relied on ε's report for it and flagged it as unverified and load-bearing. **Done 2026-08-29 at design; see `runtime/vlad-w1/s05/ROUND-RECORD.md` for the result and the conductor's own frame correction.** Re-affirm at close.
 
 ## Decisions
 
