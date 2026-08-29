@@ -208,3 +208,64 @@ key, so L is a live RF-4 exercise.
   including bundle A's class-form paragraph plus ZWSP / homoglyph / emphasis / prefix variants. Row 312.
 - **S4-1** — established by reviewer read only. Nothing above is evidence of it.
 - **RT-8 class-vs-instances** — β row 312 flagged it unverified; a qa lane resolves it by read at the close.
+
+---
+
+## L1 — `131eb9e` / `735bbc1` / `02e4776` — β row 313's flags, closed and observed
+
+`d-mtdpvauh-ac699000`, exit 0, **594 754 ms**, 12 419-byte envelope, `ok:true`, not reaped. Conductor
+re-ran the gates on a clean tree with no builder live: suite **366 / 366 / 0 fail**, `check:ship` exit 0,
+and an independent `grep -rn "S4-[0-9]" CUSTODY.md` returning **empty**.
+
+Three tasks, three commits, each verified against β rows 313/314 as it landed rather than at the end:
+the internal criterion id removed from the shipped statement; the NOT-bound enumeration completed with the
+three limits-of-this-checker paragraphs (including `(3)`'s description of the transform itself), taking the
+add-to-the-list option and leaving the load-bearing P1–P4 body-prose entry intact; the disclosure-surface
+COUNT changed to an indefinite with the document and its canonical copy in ONE commit; the confusable
+ceiling calibrated as mistake-reachable vs deliberate-hand, explicitly **"a statement about who reaches it,
+NOT a claim that the remainder is closed"**; and both anti-staleness pins rewritten to say closing the gap
+is GOOD, give the order of operations (disclosure first, then the assertion), and add the anti-gaming
+clause — *"Do not restore the escape to make this green"* / *"Do not narrow the fold back to make this
+green"*. Message strings only; both `assert.equal` predicates byte-identical.
+
+**RF-4 OBSERVED, not asserted.** The document-only edit produced `custody-claim-lint/paragraph-not-verbatim`
+and `custody-claim-lint/bound-paragraph-missing`, exit 1, and only then was the pair completed.
+
+### L1 measured the option it declined
+
+Offered the optional widen-to-counts, L1 **measured** a candidate pattern rather than guessing: it fired on
+the original wording and produced ZERO hits across all 15 bound paragraphs, and did not refuse the three
+legitimate count-ish phrasings in the same paragraph. It then **declined to land it on scope** — a new rule
+needs a body, a wiring line and a both-directions test, all outside its scopeContract — and handed the
+pattern over. **This does not overturn β row 314:** β's ground was that count phrasing is *unbounded*, not
+that widening would over-refuse. Zero false positives is not coverage. Disclosure stands; L2 carries it.
+
+### A trap for every future doc-scoped bundle
+
+L1 falsified a premise it held itself: **"unbound means re-wrapping is free."** Its first wrap of the
+NOT-bound enumeration split `P1–P4 BODY PROSE` across a newline and turned a test RED — header substrings
+are pinned across wraps INDEPENDENTLY of the canonical-copy bind. It fixed its own wrap rather than the
+test. "Unbound" governs the canonical-copy bind only.
+
+## L2's first dispatch — halted with zero worktree effect, and it was RIGHT to
+
+`d-mtdqa9k7-abfb180d`, 122 349 ms, exit 0, no edits, no commits, HEAD unmoved. The brief's first line said
+the builder's cwd would be the vlad engine-lane worktree. **It is not**: dispatch places the process in a
+WarpOS agent worktree (`.claude/worktrees/<name>`, branch `worktree-<name>`). When it tried to inspect the
+vlad tree the worktree-isolation guard refused, and it (a) did not reshape the denied command to slip past
+it and (b) refused to edit files it could not commit — citing the brief's own rule that a half-applied claim
+edit with no canonical edit is the exact defect this bundle exists to close. Both judgements correct. It
+also verified the content premises read-only and returned corrected line numbers.
+
+**The halt was avoidable and L1 is the proof.** L1 hit the identical situation and got through: the guard
+refuses command COMPLEXITY, not the cross-repo target — it denied a compound `cd X && git commit <<heredoc`
+and a piped `git commit | tail`, its own message said to split into plain commands, and a plain
+`git -C <abs path> add` was then ALLOWED. L1 landed three real commits that way. **L1 reported the cwd
+mismatch in `what_i_could_not_do` and the conductor read it without acting on it**, so the next bundle hit
+the same wall and stopped.
+
+**Third brief-premise defect of this attempt, same root as the other two** (J's "zero executable uses",
+K's atomicity requirement): the brief stated the environment from belief rather than from what the
+dispatcher does. **ED candidate:** a dispatch brief asserts a cwd the dispatcher does not establish —
+enforcer shape is either the wrapper injecting the true cwd and target path into the prompt, or a preflight
+that fails a dispatch whose brief names a cwd the process will not get.

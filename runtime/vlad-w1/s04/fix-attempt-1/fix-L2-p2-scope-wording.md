@@ -1,10 +1,55 @@
 # Fix brief — bundle L2 — P2's scope wording vs the execution-proven bypass
 
-You are a **backend-fixer** working in the vlad engine worktree.
+You are a **backend-fixer**. The work is in the vlad engine worktree — which is NOT where your process
+starts. Read the next section before doing anything else.
 
-- **Worktree (your cwd):** `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`
-- **Branch:** `wt/S-VLADW1-01-engine` — already checked out. Do NOT create a branch, do NOT merge, do NOT push.
-- **Package root:** `engine/`
+## READ THIS FIRST — YOUR CWD IS NOT THE TARGET REPO
+
+**Your process will start in a WarpOS agent worktree** (something like
+`C:\Users\Vlad\Desktop\Claude\Projects\WarpOS\.claude\worktrees\<name>`, on a branch named
+`worktree-<name>`). That is the dispatch harness's isolation worktree. **It is not where the work is, and
+this is expected — do not treat it as a blocking fault.** A previous attempt at this bundle halted here.
+
+- **TARGET REPO (where every file below lives):**
+  `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`
+- **TARGET BRANCH:** `wt/S-VLADW1-01-engine`, already checked out there. Do NOT branch, merge or push.
+- **Package root inside it:** `engine/`
+
+**THE COMMAND SHAPE THAT WORKS, established by the bundle that ran immediately before you (L1, which
+successfully landed three commits on the target branch from exactly this situation):**
+
+- Use **plain, single** git commands with `-C` and an absolute path:
+  `git -C "C:/Users/Vlad/Desktop/Claude/Projects/vlad/.worktrees/engine-lane" add engine/CUSTODY.md`
+- Commit with a message FILE, not a heredoc:
+  `git -C "<abs path>" commit -F "<abs path to msg file>"`
+- Read and edit files by **absolute path**. `node`/`npm` runs: pass the absolute directory.
+
+**What the worktree-isolation guard actually refuses is command COMPLEXITY, not the cross-repo target.**
+L1 measured this: it was denied on a compound `cd X && git commit <<heredoc` and on a piped
+`git commit | tail`, the guard's own message told it to split into plain commands, and a plain
+`git -C <path> add` was then **ALLOWED**. So:
+
+- **Never** `cd X && …`. **Never** pipe a git command through `tail`/`head`. **Never** a heredoc commit.
+- If a command is denied, **do not reshape it to slip past the guard** — but DO read the guard's message:
+  if it names a simpler permitted form, using that form is compliance, not tunneling. Splitting a compound
+  command into two plain commands is the sanctioned response, and it is what L1 did.
+- If a **plain** `git -C` command against the target path is still refused, stop and report it — that is a
+  real block, and the conductor lands the work instead. Say so in `what_i_could_not_do` with the output.
+
+**Do not edit without being able to commit.** If you determine you cannot commit to the target branch at
+all, make NO edits and halt — an uncommittable claim edit with no paired canonical edit is the exact defect
+this bundle exists to close. That judgement was correct when a previous attempt made it.
+
+## LINE NUMBERS — CORRECTED, verified after bundle L1 landed
+
+The earlier revision of this brief carried pre-L1 numbers. The real ones now:
+
+- P2 heading — **line 113**
+- the `Ceiling — half (b)'s raw-launch and import-graph rules are a text-matcher family…` paragraph — **line 137**
+- `(for one example, an aliased reference to an already-imported launch function)` — **line 147**
+- the three `S4-[0-9]` hits in `scripts/checks/custody-claim-lint.js` — **1273, 1279, 1398**
+
+Still locate by the quoted TEXT and report the real line you found; these are a starting point, not a pin.
 
 Bundle **L1** edited `CUSTODY.md` immediately before you and has finished. You are the only editor of that
 file now. **L1's regions are not yours** — it touched the preamble's NOT-bound enumeration, the rollup-class
@@ -20,10 +65,6 @@ from belief rather than a read and were rightly refused by their builders. Check
 **allowedFiles**
 - `engine/CUSTODY.md` — the P2 section (the `### P2 …` heading and the ceiling paragraph beginning `**Ceiling — half (b)'s raw-launch and import-graph rules are a text-matcher family…**`), PLUS the one clause added by task 4(a) to the paragraph that discloses this lint's limits. Nothing else in the file.
 - `engine/scripts/checks/custody-claim-lint.js` — four places only: the `BOUND_PARAGRAPHS` canonical copy of the ceiling paragraph you edit (task 3), the `only-surface-assertion` rule's header comment (task 4a mirror), its user-visible `detail` message at ~line 1398 (task 4b), and — only if you judge it lossless — the two maintainer comments at ~1273/1279. Nothing else in the file.
-
-**LINE NUMBERS IN THIS BRIEF ARE APPROXIMATE AND WERE READ BEFORE BUNDLE L1 COMMITTED.** L1 edited this
-file, so every number below may have shifted. Locate by the quoted TEXT, never by the number, and report the
-real line you found.
 
 **forbiddenFiles** (do not edit, for any reason)
 - Every other paragraph of `engine/CUSTODY.md` — in particular anything describing `canonicalizeClaimText`, the transform, P1, P3, P4, A5–A8, or any other Ceiling paragraph. In particular the four regions bundle L1 has just edited: the preamble's NOT-bound enumeration, the rollup-class paragraph, the preload Ceiling's disclosure-surface sentence, and the transform paragraph's confusable disclosure. You are the only editor of this file now, but you own two paragraphs of it, not the file.
@@ -45,7 +86,7 @@ consequence is two defects, both on a SHIPPED surface (`CUSTODY.md` is resolved 
 
 ## Task 1 — the P2 heading states an unqualified universal that is now false
 
-`engine/CUSTODY.md:84` currently reads:
+`engine/CUSTODY.md:113` currently reads:
 
 > `### P2 — Every auditedSpawn call site passes an explicit env object naming no denylisted variable, and a raw bypass of the audited wrapper is refused`
 
@@ -143,8 +184,16 @@ would damage a maintainer-facing argument, leave them and say why in `residuals_
 
 Proof line for the whole item: `grep -n "S4-[0-9]" scripts/checks/custody-claim-lint.js` returns exactly
 three hits — 1273, 1279, 1398. **Re-run it after your edit and report the full output.** Also run
-`grep -rn "S4-[0-9]\|ED-[0-9]" src/ driver/ scripts/ CUSTODY.md` and report it, so the sweep covers the whole
-ship set rather than one file.
+`grep -rn "S4-[0-9]\|ED-[0-9]\|RT-[0-9]\|RF-[0-9]" src/ driver/ scripts/ CUSTODY.md package.json` plus any
+shipped README or file header in the ship set, and report the FULL output — the sweep covers the whole ship
+set (`package.json#files` = `src/`, `scripts/`, `driver/`, `test/credential-custody-decoy.test.js`,
+`CUSTODY.md`), not one file. Scoping an enforcement sweep to where the instance was found rather than to
+where the class lives is how `:1398` survived the sweep that fixed `CUSTODY.md`.
+
+**Distinguish the two surfaces when you report.** A token inside a MAINTAINER comment is not a user-surface
+leak; a token inside a string a user can see when a check fires IS one. Fix the second; judge the first and
+leave it if removing it would damage the argument. `RF-n` and `RT-n` hits may be legitimate in test names or
+maintainer prose — report them, do not reflexively scrub them.
 
 ## How to work
 
