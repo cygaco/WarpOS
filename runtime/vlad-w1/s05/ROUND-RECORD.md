@@ -287,9 +287,37 @@ read **ran nothing** so the 28 cannot-determines are *unresolved* rather than be
 disclosure-not-repair ruling is unchanged; P repairs none of them.
 
 **Not discharged by this lane:** β's own read of the four files at close (row 318 residual) is β's
-item and stays open. **Raised to α and β rather than filed quietly:** 30 false shipped claims is a
-large residual to carry as one sentence; it likely wants its own successor sprint. S6-7 / S5-7 carry
-it by name either way.
+item and stays open.
+
+#### α RULING — the 30 become S-VLADW1-06. Recorded NOW so the close cannot quietly file it.
+
+Raised to α and β rather than filed quietly. **α ruling (Class B, reversible):
+disclosure-not-repair STANDS for S-05 exactly as row 318 says** — repairing them would be scope creep
+on a one-attempt sprint whose own rule fenced them.
+
+**The finding becomes the successor: `S-VLADW1-06` — "the four untouched files: 30 false / 28
+unresolved coverage claims"** — minted **TRACKER-ONLY at S-05's close** (the S-05 / ED-365 pattern:
+no registry entry until build authorization, because `add-sprint.js` repoints `primary`
+unconditionally).
+
+**Residual groups it must carry, verbatim:**
+1. The per-file **64 / 30 / 28** table, with the lane's dispatch_id (`d-mtew0q7m-70d95fa2`) and the
+   sha it read (`fbda0dc`). The numbers do not travel without the table.
+2. The **closure-flag classes**: `EVERY` / `ONLY` / `NEVER` / `no other`; and the
+   *"stated deliberately WITHOUT a count"* sitting beside *"Exactly two"* in the same file.
+3. The **28 cannot-determines as UNRESOLVED, not benign** — the read executed nothing, so they are
+   un-assessed rather than assessed-and-cleared.
+4. **β's own still-owed read** of the four files (row 318 residual) — the successor's design→build β
+   consult inherits it; S-05's close does not discharge it.
+
+#### RETRO HEADLINE CANDIDATE — "a disclosure is a claim"
+
+**The disclosure sentence written to prevent false claims was itself false until the gate ran.** P
+task 5 was briefed to state the four files carry prose *"no lane has read end to end"*; the read that
+was the precondition for drafting it made it false, and it would have shipped inside the very sentence
+whose purpose was to prevent this class. P-117 / AP-17 demonstrated on the conductor's own draft
+rather than on a builder's. The **"un-audited" frame is retired everywhere in P's output** — they were
+audited, once, statically, by one lane, and saying otherwise is now the false frame.
 
 ### Bundle P — DISPATCHED `d-mtewjw6n-88034685` after the gate was met.
 
