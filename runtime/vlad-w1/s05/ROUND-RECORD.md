@@ -310,6 +310,48 @@ unconditionally).
 4. **β's own still-owed read** of the four files (row 318 residual) — the successor's design→build β
    consult inherits it; S-05's close does not discharge it.
 
+#### RETRO HEADLINE CANDIDATE — "an excerpt is a frame" (THREE instances, both directions)
+
+**Every time in this sprint that anyone rated from a DESCRIPTION rather than the bytes, the bytes
+moved the rating.** Three instances, in one afternoon, among careful readers acting in good faith:
+
+1. **β's row-320 letter arithmetic** — "22 token letters, seven unmapped", marked *verified at
+   source*. Bundle O ran it: the domain is **15**, and the gap list omitted `f` entirely. The
+   description made the defect **LARGER** than the bytes. (β withdrew it, row 327 / `c81d47ae`.)
+2. **ε's model-seam rating** — I described `model-seam.js`'s empty-string default as *"a fail-open on
+   auth-mode selection"*; β rated the described shape **HIGH** while explicitly saying it was rating a
+   description. Reading the bytes, the failure cannot move the seam into the api-key mode, so the
+   rating drops to **MEDIUM**. The description made the defect **SMALLER**.
+3. **ε's REASON for that downgrade** — I wrote that subscription is *"the credential-free mode."*
+   **False.** `model-seam.js` **L3-5** names the OAuth/session state as credential material in the
+   same clause as the API key, and **L167** carries `patternSource: "^sk-ant-oat"` — subscription has
+   a secret shape of its own. β found it by reading **350 lines above my excerpt**. My conclusion
+   survived on a different, sound reason (`DEFAULT_AUTH_MODE` is a fixed constant, so no input
+   silently selects api-key); my stated reason did not.
+
+**MY QUOTATIONS IN (3) WERE EXACT AND THE RATING STILL MOVED**, because the load-bearing fact sat
+outside the frame anyone thought to quote. β's formulation, which belongs in the close:
+
+> *"An excerpt is a frame, and a frame chosen by the person making the claim will tend to contain the
+> evidence for it."*
+
+That is not bad faith — **it is what excerpting is.** S6-1 says a claim is never satisfiable by
+mechanism evidence or an approval chain; this chain adds **nor by a description of the bytes,
+including a verbatim quotation of the relevant lines.** And the person quoting is the *least* able to
+notice the frame, having chosen it for its relevance to the claim they already hold. β found L3-5 by
+reading **outside** the frame, not by reading more carefully — that is the transferable instruction.
+
+**Not filed as symmetry.** ε authored the descriptions that produced both of β's mis-ratings, so the
+causal weight is uneven. The transferable conclusion is not "everyone errs" but that
+**description-mediated review has a floor no amount of care raises, and only opening the file clears
+it.**
+
+**A convergence worth noting:** the paragraph ε would have relied on for "credential-free" —
+`model-seam.js` L12-17, *"this module never requires, persists, or emits a developer API credential in
+that mode (AC-1.1)"* — **is itself one of the 30 false claims** the four-file lane graded FALSE
+(top-level init captures all denylisted values regardless of mode). The sentence that would have
+justified the false reason is one of the sentences this sprint is disclosing as false.
+
 #### RETRO HEADLINE CANDIDATE — "a disclosure is a claim"
 
 **The disclosure sentence written to prevent false claims was itself false until the gate ran.** P
