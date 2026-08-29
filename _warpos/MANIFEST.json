@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-19T22:39:17.438Z",
+  "generatedAt": "2026-08-29T11:56:38.656Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "876028dd0a63bbb9342c3901c8bb0140b4cfa07736058a63a2ac7553818f3091",
-      "installedSha": "876028dd0a63bbb9342c3901c8bb0140b4cfa07736058a63a2ac7553818f3091"
+      "sha256": "fc7f81fdcc9e0e2c3b10183f0ec1783096a96d4a73a2c1182179849eb0ed249c",
+      "installedSha": "fc7f81fdcc9e0e2c3b10183f0ec1783096a96d4a73a2c1182179849eb0ed249c"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -5060,6 +5060,14 @@
       "managed": false
     },
     "trackers/sprints/S-VLADW1-03-vlad-custody-residuals-to-release.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-04-custody-claims-un-invertible.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/sprints/S-VLADW1-05-one-transform-both-sites.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -17544,6 +17552,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/S-VLADW1-04/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-VLADW1-04/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/S-VLADW1-03/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -21728,6 +21744,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260828-0086.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -22005,6 +22025,22 @@
       "managed": false
     },
     ".claude/project/sprint/history/SP-20260512-001/sprint-history.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-VLADW1-04/retro.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-VLADW1-04/retro.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-VLADW1-03/retro.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-VLADW1-03/retro.yaml": {
       "owner": "runtime",
       "managed": false
     },
