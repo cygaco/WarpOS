@@ -22,9 +22,11 @@ permitted form if the guard names one; if a plain `git -C` is still refused, STO
 
 **Do not edit what you cannot commit.** If you cannot commit at all, make NO edits and halt.
 
-**Gates, each as its OWN command with its real exit code read**: suite from `engine/` (floor = the
-post-P pass count — verify it yourself before starting; it was 377 after M) and
-`npm run check:ship` (exit 0). `check:pointers` exits 1 by design, outside `check:ship`.
+**Gates, each as its OWN command with its real exit code read**: suite from `engine/`
+(**floor 393, 0 fail** — the count after bundles M/N/O/P/P′; **verify it yourself before you start**
+and use what you measure) and `npm run check:ship` (exit 0). Also run
+`node scripts/checks/custody-claim-lint.js` (exit 0). `check:pointers` exits 1 **by design**, outside
+`check:ship`, and is not a defect.
 
 ---
 
@@ -58,7 +60,7 @@ there after M/N/O/P, not what this brief's author saw.** Read the current text b
 
 ---
 
-## TASKS (3 — ED-257: task count drives duration)
+## TASKS (4 — ED-257: task count drives duration; task 4 added after bundle P surfaced an unpinned execution-proven finding)
 
 1. **Extend the clean-fixture builder** so a paragraph whose key matches neither `^Ceiling` nor
    `^A\d+$` can be bound without turning the clean-fixture test red. Report the mechanism you chose
@@ -69,6 +71,21 @@ there after M/N/O/P, not what this brief's author saw.** Read the current text b
 3. **RF-Q1, pre-written falsifier:** editing that paragraph **without** moving its canonical copy is
    **RED**. Committed mutation logic, **no-op ⇒ FAIL guard**, and you must **observe it RED** before
    keeping it — a falsifier that has never been seen failing proves nothing.
+
+4. **PIN THE BACKTICK/TILDE LEAD-IN EVASIONS.** Bundle P proved **by execution** that a lead-in
+   emphasised only with a **backtick** (a code span) or a **tilde** (a strikethrough) evades
+   `resemblesBindableLeadIn` — but the committed test `G-3` pins only two classes, so that finding
+   currently ships as **"confirmed by execution, and UNPINNED"** in `CUSTODY.md`. P could not pin it:
+   test files were outside its `allowedFiles`. **They are inside yours.**
+
+   Add committed test cases asserting the behaviour for both — a backtick-only lead-in and a
+   tilde-only lead-in — in the same shape as `G-3`. **Verify the behaviour yourself first**
+   (call the function directly and observe), then pin what you observed. **If your run disagrees with
+   P's finding, report that and pin what is true** — do not pin a result you did not reproduce.
+
+   ⚠️ **Do NOT change `CUSTODY.md` to say "pinned".** Prose is bundle P's surface, not yours, and the
+   sentence may only change once the pin exists. Report in your envelope that the pin has landed and
+   at which sha, so the conductor can decide whether a later prose bundle updates the wording.
 
 **Atomicity:** if you edit a bound paragraph, it moves with its canonical copy **in the same commit**.
 
