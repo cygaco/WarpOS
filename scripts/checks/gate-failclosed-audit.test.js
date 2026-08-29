@@ -100,6 +100,94 @@ test("no-op mutation guard: a predicate that does nothing differently must still
   );
 });
 
+// ---------------------------------------------------------------------------
+// SP-20260829-001 bundle B2': nested-try scan-continuation fix. Prior to this
+// fix, findCatchHandlers() advanced tryRe.lastIndex to `handlerEnd + 1` after
+// matching an outer try/catch, skipping back over that outer pair's own span
+// — so a try/catch nested inside the outer try's BODY (before the outer's
+// own catch keyword) was never independently examined. Discovered by bundle
+// B2 reading 4 real registry sites the live detector could not reach; see
+// gate-failclosed-registry.json's tool_correlation_note.
+// ---------------------------------------------------------------------------
+test("NESTED-TRY: a try/catch nested inside an outer try's body — BOTH permissive handlers are found", () => {
+  const src = readFixture("nt-both-permissive.js");
+  const findings = analyzeSource(src);
+  const lines = findings.map((f) => f.line).sort((a, b) => a - b);
+  assert.equal(findings.length, 2, `expected both the inner and outer handler flagged, got ${JSON.stringify(findings)}`);
+  assert.deepEqual(lines, [15, 20], "expected the inner process.exit(0) at line 15 AND the outer success-shaped return at line 20");
+});
+
+test("NESTED-TRY no-op⇒FAIL guard: a mutation that restores the old skip-ahead behavior must miss the inner finding", () => {
+  // Reproduces the OLD (buggy) scan-continuation behavior inline, independent
+  // of the fixed module, to prove the fixture actually discriminates between
+  // the old and new traversal — a mutation that does nothing differently
+  // must still be caught wrong by this fixture.
+  const { cleanSource } = require("./gate-failclosed-audit.js");
+  function oldFindCatchHandlers(clean) {
+    const out = [];
+    const tryRe = /\btry\b/g;
+    let m;
+    while ((m = tryRe.exec(clean))) {
+      const tryIdx = m.index;
+      if (precedingNonSpaceCharLocal(clean, tryIdx) === ".") continue;
+      const afterTry = nextNonSpaceIndexLocal(clean, tryIdx + 3);
+      if (clean[afterTry] !== "{") continue;
+      const tryBlockEnd = matchDelimLocal(clean, afterTry);
+      if (tryBlockEnd === -1) continue;
+      let pos = nextNonSpaceIndexLocal(clean, tryBlockEnd + 1);
+      if (clean.slice(pos, pos + 5) !== "catch") continue;
+      const afterCatchWord = pos + 5;
+      if (/[A-Za-z0-9_$]/.test(clean[afterCatchWord] || "")) continue;
+      let p = nextNonSpaceIndexLocal(clean, afterCatchWord);
+      if (clean[p] === "(") {
+        const parenEnd = matchDelimLocal(clean, p);
+        if (parenEnd === -1) continue;
+        p = nextNonSpaceIndexLocal(clean, parenEnd + 1);
+      }
+      if (clean[p] !== "{") continue;
+      const handlerEnd = matchDelimLocal(clean, p);
+      if (handlerEnd === -1) continue;
+      out.push({ catchIdx: pos, handlerStart: p + 1, handlerEnd });
+      tryRe.lastIndex = handlerEnd + 1; // the REVERTED (buggy) behavior
+    }
+    return out;
+  }
+  function precedingNonSpaceCharLocal(clean, idx) {
+    let k = idx - 1;
+    while (k >= 0 && /\s/.test(clean[k])) k--;
+    return k >= 0 ? clean[k] : "";
+  }
+  function nextNonSpaceIndexLocal(clean, idx) {
+    let k = idx;
+    while (k < clean.length && /\s/.test(clean[k])) k++;
+    return k;
+  }
+  function matchDelimLocal(clean, openIdx) {
+    const open = clean[openIdx];
+    const pairs = { "{": "}", "(": ")", "[": "]" };
+    const close = pairs[open];
+    if (!close) return -1;
+    let depth = 0;
+    for (let k = openIdx; k < clean.length; k++) {
+      if (clean[k] === open) depth++;
+      else if (clean[k] === close) {
+        depth--;
+        if (depth === 0) return k;
+      }
+    }
+    return -1;
+  }
+
+  const src = readFixture("nt-both-permissive.js");
+  const clean = cleanSource(src);
+  const oldHandlers = oldFindCatchHandlers(clean);
+  assert.equal(
+    oldHandlers.length,
+    1,
+    "the reverted (pre-fix) traversal must still miss the nested handler on this fixture — if it now finds both, the fixture no longer discriminates",
+  );
+});
+
 test("real brace matching: nested handler >1 level deep with mixed delimiters still finds process.exit(0)", () => {
   const src = `
     function h() {
