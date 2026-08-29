@@ -79,10 +79,25 @@ importantly, the nine are not twelve unrelated bugs — they are **three named s
 what makes a general fix possible without a noisy lint:
 
 > ⚠️ **VARIANT A'S MECHANISM AS STATED BELOW IS SUPERSEDED — see §6c-bis.** `process.exit(2)`
-> *terminates* rather than throws, so the `catch` never intercepted the decision. The accurate
-> statement is **"a pre-decision failure is converted into a permissive exit before the gate's
-> decision can be reached"**, and the mechanical test **"no catch may span both" is WITHDRAWN and must
-> not be built** — the testable property is *every pre-decision failure path terminates non-zero*.
+> *terminates* rather than throws, so the `catch` never intercepted the decision. The mechanical test
+> **"no catch may span both" is WITHDRAWN and must not be built.** β endorsed that test by name at
+> row 323 §5 and has withdrawn the endorsement (row 326, `f3d82b45`).
+>
+> **THE PROPERTY THAT REPLACES IT — β's corrected wording, row 326, adopted VERBATIM:**
+>
+> > **Every failure on a path the decision depends on must terminate on the restrictive side of that
+> > gate's own decision — never at a permissive outcome reached by having skipped the decision.**
+> > *(Pre-decision failure kinds seen so far include payload parse, store read, validator run and
+> > discriminator read; the list is illustrative, not definitional.)*
+>
+> My own first replacement — *"every pre-decision failure path terminates non-zero"* — **is withdrawn**
+> and had two defects β named: it **re-breaks category 3** (`authorization-gate.js:390` is a *grant*
+> gate, where a pre-decision failure SHOULD exit 0, so "terminates non-zero" would flag as a defect the
+> case we established makes the system less safe — the polarity qualifier had gone missing), and it
+> **enumerates inside a property** (naming four failure kinds definitionally, so a fifth — an env read,
+> a clock, a network call, a `require` — escapes it: AP-19 in the sentence meant to replace an
+> enumeration).
+>
 > The site list and every disposition below are unaffected. Left in place rather than rewritten so the
 > error and its correction are both on the record.
 
@@ -282,6 +297,40 @@ worktree-preflight 1 · **edit-watcher 0**.
 **Derived from the table:** high-concern filter output **12** · not-a-gate (filter false positives)
 **2** · defects **10** · variant A **6**, variant B **2**, variant C **2** (6+2+2 = 10).
 
+### THREE DENOMINATORS ARE LIVE. All three stated, with what moved and why (S6-2)
+
+β caught that my reported figures changed between messages without remark, which is the S6-2 class
+happening inside the note celebrating S6-2. Recorded rather than absorbed:
+
+| figure | denominator | source | status |
+|---|---|---|---|
+| **9 defects / 3 defensible** | 12 filter-output sites | §3b as first written (commit `3cd44fb9`) | **WITHDRAWN — never derived** |
+| **10 defects / 2 not-a-gate** | 12 filter-output sites | §6c table | current, derived from the table |
+| **11 defects / 2 not-a-gate** | 13 sites | lane A2's instrument | correct for A2's denominator |
+
+**What moved, 9/3 → 10/2 — and the honest answer is that the 9/3 was never derivable from my own
+document.** §3b simultaneously listed **twelve** sites across variants A(7) + B(3) + C(2), *all
+presented as defect variants*, **and** asserted "nine are real defects; three are defensible" — 15
+dispositions over 12 sites. The two statements contradicted each other, which is exactly why β
+blocked the registry seed on it.
+
+Reconstructing from `git show 3cd44fb9`, the named "**Defensible (3 of 12)**" were
+`edit-watcher.js:674`, *"`ownership-guard.js:66`'s absent-half as documented"*, and *"the narrow
+`version-bump-guard.js` bypass sentinels"*. **Only the first is a population member.** The second is a
+**sub-path of a site I simultaneously classified a defect**; the third names **explicit early returns
+that are not `catch` sites at all** and were never in the 65. So two of the three "defensible" were
+not sites, and the sites they notionally covered were already inside the defect list. Separately,
+`edit-watcher.js:897` — counted a defect under variant A — was reclassified **not-a-gate**. Net: +1
+defect, and a "defensible" bucket that dissolves into "not-a-gate ×2".
+
+**So the movement is not a reclassification story: it is an underived assertion being replaced by a
+count derived from an emitted table.** That is the whole argument for emitted sets, demonstrated
+against my own numbers. And 10/2-over-12 vs A2's 11/2-over-13 is a third, separate thing — a
+denominator difference (`gate-check.js:48-52`, carried outside the probe population), not a
+disagreement; A2 named it itself and its dispositions match mine exactly.
+
+**None of these three numbers may travel without its table.**
+
 ### Two errors of mine that β's block surfaced
 
 1. **"nine defects / three defensible" was wrong.** The correct figures are **10 defects and 2
@@ -370,7 +419,21 @@ as written; the testable property is that **every pre-decision failure path term
 source-derived. Its `what_would_confirm_or_refute` asks for fault injection through the real hook
 harness — forcing each named parse/read/git failure on a valid event and asserting the resulting
 allow/block. **That is the right shape for the enforcer's own fixtures**, and it is stronger than
-anything currently planned.
+anything currently planned. Lane A1 converged on the same shape independently.
+
+**⚠️ RIDER, non-optional (β row 326 §5): the fault injection carries a no-op⇒FAIL guard.** A harness
+that silently fails to inject the fault reports green and certifies nothing — **that is ED-366's
+blind-scanner class** (`orphanCount: 0` while `scanned: 0`), the exact shape already guarded against
+in `probe-failopen.js`. If the fault did not actually fire, the fixture **FAILS** rather than passes.
+
+**⚠️ AND A CORRECTION TO MY OWN OVERCLAIM (β row 326 §3).** I argued to β that the corrected property
+is *"checkable WITHOUT reachability analysis"*. **That is an overclaim and is withdrawn.** The
+accurate statement: **more often locally checkable; the general case remains a reachability question.**
+Trivial for `catch { process.exit(0) }`; not trivial for a catch that sets a flag and falls through to
+a later exit. And the polarity half stays manual by design regardless. It does not disturb the Q1
+ruling — that rested on the tech rule's conjunction (conditions 3 and 4 unmet) and needs no help — but
+under **S6-1** a sentence overstating what a property makes checkable is precisely the class this
+sprint exists to close, so it is corrected here rather than in the build spec.
 
 ## 6d. ED-353 SECOND INSTANCE — the clamp on the `dispatch-agent.js` route (2026-08-29)
 
