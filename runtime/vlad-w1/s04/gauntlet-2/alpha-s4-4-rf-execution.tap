@@ -1,0 +1,47 @@
+✔ test\a5-wiring.test.js (150.4082ms)
+✔ test\branding.test.js (144.1933ms)
+✔ test\cancel.test.js (139.8794ms)
+✔ test\credential-custody-decoy.test.js (141.4847ms)
+✔ RF-1 CONTROLS FIRST: both em-dash authorings of a new unbound paragraph are RED (a control that does not fire invalidates the row) (26.9122ms)
+✔ RF-1: all seven NEAR-MISS lead-in authorings are REFUSED by name, never skipped (the headline fail-open) (55.1397ms)
+✔ RF-1 NO OVER-REFUSAL: the P-clause metadata lines (Status/Enforcer/Proof scope) are not claim paragraphs and must never be refused (1.9958ms)
+✔ RF-3 (lever): reverting the refusal to a bare `continue` re-opens every near-miss — the reverted derivation is GREEN where the shipped one is RED (8.1129ms)
+✔ RF-4 ATOMICITY: editing ANY shipped claim paragraph without moving its canonical copy is RED, for every paragraph in the document (20.548ms)
+✔ RF-4 ATOMICITY, the other direction: a canonical copy that drifts from the document is RED (0.6646ms)
+{"ts":"2026-08-29T03:07:14.273Z","event":"custody-selfcheck","ok":false,"checkedNames":1,"residualNames":["VLAD_AC86_SYNTHETIC_RESIDUAL"],"detail":"CUSTODY SELF-CHECK FAILED: the names listed are still readable in this process's env and would be inherited by any child launched from it"}
+{"ts":"2026-08-29T03:07:14.274Z","event":"custody-selfcheck","ok":true,"checkedNames":1,"residualNames":[],"detail":"no credential-shaped env var is readable in this process"}
+✔ AC-8.6: selfcheck-runs-on-user-machine — the product-layer custody self-check is INVOKED when the server starts, and deleting that invocation goes RED at RUNTIME (RF-7) (165.5598ms)
+✔ test\custody-static.test.js (153.564ms)
+✔ test\driver.test.js (150.0118ms)
+✔ test\entry-bootstrap.test.js (156.7226ms)
+✔ RF-6 (fix E): a previously-captured name, PROVISIONED mid-session and OMITTED from a later PARTIAL call, is ABSORBED before it is deleted — the history-wide deletion loop must never destroy a value the absorption loop was never offered (48.7779ms)
+✔ RF-6 mutant proof: reverting ONLY the absorption loop to the current call's `names` — the pre-fix asymmetric population — destroys the mid-session value, so the RF-6 assertion above is load-bearing rather than decorative (48.5351ms)
+✔ test\env-scrub.test.js (104.5654ms)
+✔ test\journal.test.js (156.9687ms)
+✔ test\lifecycle.test.js (94.5916ms)
+✔ test\mcp-surface.test.js (211.6078ms)
+✔ test\model-seam.test.js (144.0289ms)
+✔ test\no-tautological-assertions.test.js (77.6283ms)
+✔ test\permission.test.js (74.6357ms)
+✔ test\port-refs.test.js (151.6764ms)
+✔ test\quota.test.js (143.956ms)
+✔ test\receipt.test.js (70.9122ms)
+✔ test\seam-boundary.test.js (136.6463ms)
+✔ test\ship-set.test.js (151.8459ms)
+{"ts":"2026-08-29T03:07:14.209Z","event":"audited-spawn","command":"C:\\Program Files\\nodejs\\node.exe","argCount":3}
+{"ts":"2026-08-29T03:07:14.243Z","event":"audited-spawn","command":"C:\\Program Files\\nodejs\\node.exe","argCount":3}
+✔ RF-5a (bundle D, `args.map` scan door — part 1, REFUSAL): an Array SUBCLASS whose own map() ignores its callback cannot deliver an unscanned value to a real child, and — proven RED against a real MUTANT of this wrapper — the pre-D1 `args.map` route genuinely let one through (37.9195ms)
+{"ts":"2026-08-29T03:07:14.273Z","event":"audited-spawn","command":"C:\\Program Files\\nodejs\\node.exe","argCount":3}
+{"ts":"2026-08-29T03:07:14.299Z","event":"audited-spawn","command":"C:\\Program Files\\nodejs\\node.exe","argCount":3}
+✔ RF-5b (bundle D, `args.map` scan door — part 2, THE ROUTE): a genuinely PLAIN array carrying an own hostile `map` is NOT refused, yet its map() is never called and the real child receives exactly the elements the checks scanned — proven RED against a real MUTANT, where the same shape leaks (55.8191ms)
+✔ RF-5c (bundle D, the ROUTE's read discipline — CHARACTERIZATION, not a lever): on a plain array whose own index GETTER is stateful AND mutates `length` mid-walk, auditedSpawn reads `length` once and each index exactly once, so the value the real child receives is the same one the checks scanned (27.7368ms)
+✔ test\status.test.js (65.8142ms)
+✔ test\verified-by-resolver.test.js (59.7725ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.5144
