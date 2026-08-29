@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T21:37:54.723Z",
+  "generatedAt": "2026-08-29T21:53:51.164Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -11914,6 +11914,34 @@
       "source": "scripts/checks/gate-failclosed-audit.test.js",
       "sha256": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
       "installedSha": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641"
+    },
+    "scripts/checks/gate-failclosed-baseline.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-baseline.json",
+      "sha256": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6",
+      "installedSha": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6"
+    },
+    "scripts/checks/gate-failclosed-enforcer.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-enforcer.js",
+      "sha256": "0c9765ea5c465584f018fbf06370586f8e7760718240198b2c5782c69f176b79",
+      "installedSha": "0c9765ea5c465584f018fbf06370586f8e7760718240198b2c5782c69f176b79"
+    },
+    "scripts/checks/gate-failclosed-enforcer.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-enforcer.test.js",
+      "sha256": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4",
+      "installedSha": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4"
+    },
+    "scripts/checks/gate-failclosed-registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-registry.json",
+      "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
+      "installedSha": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42"
     },
     "scripts/checks/greek-office-parity.js": {
       "owner": "framework",

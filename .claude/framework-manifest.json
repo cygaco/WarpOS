@@ -14,7 +14,7 @@
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 208,
+    "check_tool": 212,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1737,
+  "total": 1741,
   "assets": {
     "agent": [
       {
@@ -8884,6 +8884,54 @@
         "dest": "scripts/checks/gate-failclosed-audit.test.js",
         "kind": "check_tool",
         "sha256": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-baseline.json",
+        "src": "scripts/checks/gate-failclosed-baseline.json",
+        "dest": "scripts/checks/gate-failclosed-baseline.json",
+        "kind": "check_tool",
+        "sha256": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-enforcer.js",
+        "src": "scripts/checks/gate-failclosed-enforcer.js",
+        "dest": "scripts/checks/gate-failclosed-enforcer.js",
+        "kind": "check_tool",
+        "sha256": "0c9765ea5c465584f018fbf06370586f8e7760718240198b2c5782c69f176b79",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-enforcer.test.js",
+        "src": "scripts/checks/gate-failclosed-enforcer.test.js",
+        "dest": "scripts/checks/gate-failclosed-enforcer.test.js",
+        "kind": "check_tool",
+        "sha256": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-registry.json",
+        "src": "scripts/checks/gate-failclosed-registry.json",
+        "dest": "scripts/checks/gate-failclosed-registry.json",
+        "kind": "check_tool",
+        "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

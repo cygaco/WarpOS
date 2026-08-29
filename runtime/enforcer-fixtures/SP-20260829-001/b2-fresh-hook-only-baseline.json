@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "sprint": "SP-20260829-001",
+  "bundle": "B2",
+  "purpose": "S6-6 support fixture: a baseline that DOES contain fresh-hook.js's live site, so the regression-only and clean-run CLI scenarios do not also trip the new-entrant failure mode.",
+  "detector_sha": "f3c6f51f",
+  "root_scanned": "runtime/enforcer-fixtures/SP-20260829-001/b2-new-entrant-root",
+  "files_scanned": 1,
+  "files_unreadable": [],
+  "site_count": 1,
+  "site_ids": [
+    "runtime/enforcer-fixtures/SP-20260829-001/b2-new-entrant-root/fresh-hook.js:12"
+  ]
+}
