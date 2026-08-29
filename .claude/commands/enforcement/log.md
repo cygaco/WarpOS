@@ -52,6 +52,16 @@ If any required field is missing from the natural-language input, ask once for t
 - **Don't auto-promote.** Logging debt is not approval to ship without an enforcer. It's a record that you noticed. The right next move is still to enforce; logging just stops the gap from disappearing.
 - **Don't log noise.** Style preferences, formatting, taste calls — not policies. A policy has a violation case that produces a real bad outcome (lost work, drift, broken consumer, silent regression). If the worst case is "code looks slightly different," skip.
 - **Don't enumerate exhaustively.** Better to log the 5 highest-severity gaps and act on them than to log 50 and act on none.
+- **A comment stating the invariant is not an enforcer of it.** "These two sites must share one transform" written as a code comment detects nothing; S-VLADW1-04 shipped exactly that comment, implemented the fold beside the shared transform instead of inside it, and nothing noticed. If you catch yourself writing the invariant into prose next to the code, either make the divergence self-detecting (one shared call site, a test that fails on the fork) or log the debt here — those are the only two honest endings.
+- **A "clean" enforcer that enumerated zero candidates must report UNKNOWN.** Zero findings over zero inputs is not a pass (**ED-366**).
+
+## Before you accept an enforcer as closing the debt
+
+Three failure modes that make an enforcer look green while the gap stays open. Check each before flipping `status: "enforced"`:
+
+1. **Coverage derived from a shape predicate must REFUSE near-misses, not skip them.** A regex/AST match over the artifact it protects silently narrows the population it judges, and the gate then reports success over the narrowed set. Pair every derived-coverage enforcer with a committed near-miss mutation battery (variant dashes/colons/indent/spacing/casing) that goes RED when the predicate narrows. Watching the enforcer catch one real case is confirmation, not coverage (**ED-358**; the full discipline is `paths.reference`/`reasoning-frameworks.md` § *Confirmation is not coverage*).
+2. **A text-matching enforcer cannot tell a violation from a description of one.** Prose written ABOUT the banned pattern trips the ban — including the doc explaining the enforcer and this ledger entry. Document the trap in the scanner's OWN header so the next author meets it in the code rather than at a red gate.
+3. **State the enforcer's coverage at the grain it actually has.** "Covers the two scripts" over a letter-level sample is a false coverage claim in the debt record itself. Name the enumerated unit; never a count.
 
 ## Related
 

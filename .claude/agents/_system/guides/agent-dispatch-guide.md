@@ -156,6 +156,13 @@ spent on*, *what to do when it clamps*, and *how to tell the death apart*.
    wrapper writes its pre-flight right-sizing warnings at dispatch time — so read
    **stderr AT DISPATCH**, not only post-mortem. Each member has a different
    remedy; pattern-matching to the wrong one burns a full window proving nothing.
+   **Two independent witnesses, never one:** the ledger record and the WORKTREE
+   are separate observations, and neither alone classifies a death. `elapsed_ms`
+   plus tree state is the discriminator — `540xxx` + uncommitted work = the
+   foreground clamp; no ledger row at all = nothing ever spawned; `1200xxx` +
+   a committed, clean tree = bound-timeout AFTER the work landed (resume, do not
+   rebuild). Read both before naming the family. (S-VLADW1-03 had to separate
+   three signatures by hand before any could be diagnosed.)
 4. **Completion waiters** — (a) presence ≠ completeness: wrappers pre-create
    out-files at 0 bytes, so gate on NON-EMPTY or a ledger row, never on existence;
    (b) key on the DISPATCH ID, never on a ledger-line-count baseline — positions lag
@@ -252,6 +259,20 @@ not the default for the review layer — cross-provider diversity is the point.
 **Cross-provider diversity is mandatory.** Same-model self-review is blind to
 shared failure modes. Every gauntlet must include at least one non-Anthropic
 reviewer.
+
+> **A cross-family lane is not redundancy — it is the only lane buying a
+> different blind spot.** Three consecutive S-VLADW1 gauntlets, three real
+> defects that every same-family Claude lane missed — once on code a Claude lane
+> had circled, tried to break, and explicitly reported it could not. Treat the
+> cross-family lane as load-bearing coverage, not as a spare: dropping it for
+> cost, for argv budget, or because the Claude lanes came back clean converts a
+> clean sweep into an unmeasured one, and the release note must say so.
+>
+> **Lane independence is not ceremony either.** In S-VLADW1-04 two lanes that
+> never saw each other's work filed the SAME decisive mechanism defect and a
+> third filed a different false sentence — the redundancy that looks wasteful
+> from the outside is what produced the finding. Do not collapse lanes to save a
+> window; cut each lane's scope instead.
 
 **Security runs as a 3-lab panel.** `security-reviewer` (which supersedes `redteam`)
 fires the Gemini lab via Antigravity `agy` (primary, corpus-diverse — the individual
@@ -376,6 +397,33 @@ expected.
 Always `wc -c <prompt-file>` before dispatch. A 0-byte or near-0-byte prompt
 means a compose script failed silently — dispatch it and you get a 1-byte or
 empty output (the auth-failure / maxTurns-at-zero signature).
+
+### Brief content contract — a brief is a claim surface
+
+Size and inlining are §6's *shape* rules. These are its *truth* rules. An
+unrefusable brief converts the author's error into shipped code, so:
+
+1. **Attach a proof line to every premise.** No brief asserts "X is missing",
+   "X is required", "X does not exist", or names a working directory / repo path
+   without an attached `grep`/read/`ls` output that the dispatcher actually ran.
+   A premise written from belief is the single cheapest way to spend a whole
+   dispatch cycle. (**ED-362** — proof-attached premises; **ED-363** — a brief
+   must not assert a cwd the dispatcher does not establish.)
+2. **Builders may REFUSE a premise with evidence — say so in the brief.** Give
+   every builder standing permission to halt and return a refutation instead of
+   building against a false premise. In S-VLADW1-04 three builders refused a
+   conductor premise (a `grep` refuting "zero executable uses", a proof that the
+   paragraph it was told to bind atomically was not bound at all, a halt on a
+   wrong-cwd brief) and were right all three times. A refusal returned in ten
+   minutes is cheaper than a bundle built on a false sentence.
+3. **Name the lane's OWN prior failure mode in its brief.** Add a DISPATCH NOTE
+   naming the specific way *that* lane failed before, with an explicit instruction
+   to cut scope rather than run out of room before emitting its envelope. Three
+   lane-runs were lost to truncated mid-thought returns across two gauntlets;
+   after each brief named that failure, all three returned JSON on first dispatch.
+4. **Do not pre-list a residual as a "ceiling" to the lane assessing it** — that
+   primes silence and the lane's verdict stops being an independent assessment.
+   Name ceilings to the *other* lanes, or to β after the independent pass.
 
 ---
 
@@ -623,6 +671,36 @@ Every build-chain agent ends its output with a fenced JSON block:
 `parseProviderJson` extracts the **last** ```json fence in the response. Any
 narrative before it is "prose-leak" — logged as a warning but the envelope
 still parses.
+
+### Review / lane envelopes — the negative-space fields
+
+A reviewer envelope that reports only what it FOUND is half an envelope. Every
+review or gauntlet lane (cross-provider or in-process) additionally emits, per
+lane and per finding:
+
+| Field | Scope | Why |
+|---|---|---|
+| `what_i_could_not_assess` | lane | Names the questions the lane could not answer. Silence on a question is otherwise indistinguishable from a clean result. |
+| `files_i_could_not_see` | lane | Read-scope limits (excerpt-fed cross-provider lanes, argv-capped payloads). A "clean" verdict is scoped to what was in the window. |
+| `execution_proven` | finding | `true` only when the lane RAN something that observed the defect. Belief-derived findings are still worth filing — mislabelled ones are not. |
+| `what_would_confirm_or_refute` | finding | The exact command that settles it. |
+
+**Conductor obligations** (the fields are worthless unread):
+
+- A finding from a read-scope-limited lane must be **verified against the full
+  file** before it is graded or briefed as a fix, and `files_i_could_not_see`
+  must be reconciled against every finding touching or adjacent to those regions.
+- A lane that names its own blind spots and supplies its refuting command is
+  worth more than one that is merely right: in S-VLADW1-04 the cross-family lane
+  filed two HIGHs from a false Unicode belief, marked both `execution_proven:false`
+  and supplied the refuting line — cost, two commands instead of a fix bundle.
+- **Never aggregate lane silence into a claim.** "Every lane said so" is a
+  coverage claim about the lanes; count the envelopes that actually said it.
+- Enumerating zero candidates is **UNKNOWN**, not "clean" (**ED-366**).
+
+**Enforcer:** behavioral at the envelope; the conductor-side halves are **ED-362**
+(verify a read-scope-limited finding at source) and **ED-364** (no shipped claim
+without its attack).
 
 ---
 

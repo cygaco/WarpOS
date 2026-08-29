@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T20:02:27.651Z",
+  "generatedAt": "2026-08-29T20:09:49.518Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -21756,6 +21756,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260829-0087.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260829-0087.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -22036,11 +22044,19 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/history/S-VLADW1-04/addendum-2026-08-29-learn-integrate.md": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/history/S-VLADW1-04/retro.md": {
       "owner": "runtime",
       "managed": false
     },
     ".claude/project/sprint/history/S-VLADW1-04/retro.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/history/S-VLADW1-03/addendum-2026-08-29-learn-integrate.md": {
       "owner": "runtime",
       "managed": false
     },
@@ -25205,8 +25221,8 @@
       "managed": true,
       "source": ".claude/project/reference/reasoning-frameworks.md",
       "kind": "md",
-      "sha256": "4b3efc87bc2d75362e50feccb0fdf948f7021fd0ecb2f38ee2d96bedcddd097b",
-      "installedSha": "4b3efc87bc2d75362e50feccb0fdf948f7021fd0ecb2f38ee2d96bedcddd097b"
+      "sha256": "d117b411e7fb08624f5220ba8961b5a70b5ed079f5045fc619daf24314735130",
+      "installedSha": "d117b411e7fb08624f5220ba8961b5a70b5ed079f5045fc619daf24314735130"
     },
     ".claude/project/reference/record-trust-gate.md": {
       "owner": "framework",
@@ -27607,8 +27623,8 @@
       "managed": true,
       "source": ".claude/commands/enforcement/log.md",
       "kind": "md",
-      "sha256": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26",
-      "installedSha": "7a79ceb68ff780491dd092e9994b126ffa66400023cda5d7b9d5b9d12490db26"
+      "sha256": "d3fa84afda1bfd771aa1d1fd5ee147a08fad8f0130f8c1d06c869d536bbcb719",
+      "installedSha": "d3fa84afda1bfd771aa1d1fd5ee147a08fad8f0130f8c1d06c869d536bbcb719"
     },
     ".claude/commands/enforcement/sweep.md": {
       "owner": "framework",
@@ -27839,8 +27855,8 @@
       "managed": true,
       "source": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "kind": "md",
-      "sha256": "8a6bd1fee1eea235aed54d95885681075499456a38a9e037722f59a8d78f1b1f",
-      "installedSha": "8a6bd1fee1eea235aed54d95885681075499456a38a9e037722f59a8d78f1b1f"
+      "sha256": "dff3ffb40177626a6d7b392c8a857c99e01dd16ed5be12912b0135cd7ff54b6e",
+      "installedSha": "dff3ffb40177626a6d7b392c8a857c99e01dd16ed5be12912b0135cd7ff54b6e"
     },
     ".claude/agents/_system/guides/gauntlet-contract.md": {
       "owner": "framework",
