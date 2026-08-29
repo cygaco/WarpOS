@@ -62,9 +62,19 @@ mechanism green over false text, which S4-1 explicitly forbids as evidence.**
 case but performs **no Unicode confusable or normalization fold**, so `PRO​VEN` (ZWSP) and `PRОVEN`
 (Cyrillic О) ship GREEN where exact `PROVEN` goes RED. **This is the class β refused a variant enumeration
 to close, defeated one alphabet over.** The backend lane's F-3 is the same shape from another direction
-(dash COUNT/ABSENCE/zero-whitespace). **S4-2(d) is DISCHARGED** — the backend lane re-ran the battery
-against the predicate as built, population including bundle A's own paragraph, and found the undisclosed
-`**Ceiling** — ` fail-open.
+(dash COUNT/ABSENCE/zero-whitespace). **S4-2(d) — SATISFIED AT GAUNTLET-1 AGAINST THE PRE-G PREDICATE; OWED AGAIN AT THE QUALIFYING CLOSE.**
+The backend lane re-ran the battery against the predicate as built *at `b9b8df3`*, population including
+bundle A's own paragraph, and found the undisclosed `**Ceiling** — ` fail-open. **An earlier revision of
+this line said "DISCHARGED", which was wrong** (β row 312, msg_id `f2b71e58-4c93-4d07-a86e-51e0c3d9b874`):
+**bundle G changes the predicate**, so a gauntlet-1 result about the pre-G predicate says nothing about the
+one that will exist at close. A lane must re-run the battery at **gauntlet-2** against the predicate as
+built *then*, with the population including bundle A's class-form paragraph **and** the new
+ZWSP / homoglyph / emphasis / block-prefix variants.
+
+This is exactly the reasoning ε applied to its own design-phase measurement — *"the empty set is a property
+of this predicate at this commit, not a general fact"* — and failed to apply to a lane's result one level
+over. Row 310 FIX 3 already drew the line (RF-2's discharge does not discharge S4-2(d)); this is the same
+line one step further along, and it is now written into the gauntlet-2 backend brief.
 
 **S4-3 ATOMICITY — FAILS** on the same missing fold: an unbound Ceiling with a ZWSP in the lead-in ships
 GREEN, so the bind can be evaded rather than merely drifted.
