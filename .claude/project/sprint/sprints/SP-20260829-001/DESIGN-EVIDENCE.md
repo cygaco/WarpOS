@@ -515,6 +515,48 @@ not apply to their route.
    write."* That instruction was added to the re-split briefs and is the lever that should have been
    pulled on the first re-fire.
 
+## 6f. ED-381 — isolation worktrees are cut from a STALE BASE (observed, OUT OF SCOPE for this sprint)
+
+**Filed by α as ED-381.** Recorded here as an observed instance with its proof, and explicitly **not**
+in this sprint's scope — it is dispatch infrastructure, and a successor/enforcer-sprint candidate.
+
+**The defect.** `dispatch-claude.js -w` cuts the isolation worktree from the **session's starting
+commit** rather than the current branch HEAD. Every builder dispatched after the first therefore
+starts on a tree that no longer exists.
+
+**Proof, run rather than asserted.** Bundle B2′'s worktree base was **`c3b8654f`** — this session's
+opening commit — although B1 (`e10200c7`), B2 (`09232d15`), the reviewed allowlist commit
+(`fde68483`) and three manifest regenerations had already landed on `session/2026-08-29`:
+
+```
+git merge-base --is-ancestor 09232d15 <B2′ base>   →  NOT an ancestor
+git -C <B2′ worktree> log --oneline -1 HEAD~4      →  c3b8654f
+```
+
+**Consequences OBSERVED in this sprint, not theorised:**
+1. **A builder had to hand-sync its own prerequisites.** B2′ found none of `gate-failclosed-*` in its
+   tree and resolved it with file-level `git checkout <sha> -- <paths>` (correctly refusing to run
+   `git merge`), then flagged it prominently rather than fixing it silently.
+2. **An already-reviewed governance decision was re-applied by a builder.** B2′ had to re-add the
+   allowlist entries its worktree was missing, and said so precisely: *"I did not author a new
+   allowlist decision; I re-applied an accepted one this worktree was missing."* A stale base turns a
+   settled conductor decision into work a builder must redo — and redoing it is exactly the act the
+   sprint's own discipline forbids builders from doing.
+3. **Every one of the conductor's four merges hit generated-file conflicts.** Each stale-based
+   worktree regenerates `.claude/framework-manifest.json` and `_warpos/MANIFEST.json` from a tree that
+   is missing prior landings, so the manifests diverge by construction. **This was not four unrelated
+   accidents; it was one defect firing four times**, and it was misread as ordinary merge friction
+   until B2′ named the base.
+
+**Why it belongs to the enforcer family rather than to hygiene.** The failure is silent by
+construction: nothing in the dispatch path tells the builder its base is stale, and the symptom
+(missing files) is indistinguishable from a scope error by the builder. That is the same shape as
+every ED-369-class finding in this sprint — **a condition the actor cannot detect from inside.**
+
+**Enforcer candidates (not built here):** have the wrapper stamp the base sha into the prompt and into
+the completion record so a stale base is visible in the ledger; or resolve the worktree base from the
+current branch HEAD at spawn; or fail the dispatch when the requested base is not an ancestor of HEAD.
+
 ## 7. What I would file regardless of scope
 
 `secret-guard.js:94` is a real, unfiled fail-open on a credential control. Whatever scope β rules,
