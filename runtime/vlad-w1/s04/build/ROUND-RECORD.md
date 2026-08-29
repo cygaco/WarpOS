@@ -111,6 +111,29 @@ population rather than a guess.
 builder self-report). The builder self-report is the cheapest of the three and the only one that happened
 before a gate ran.
 
+## A NEAR-MISS ON THE CONDUCTOR'S OWN PART — tested before filed, and refuted
+
+Recorded because the discipline is the point, not the outcome.
+
+During fix attempt 1 I reasoned that bundle G's new **NFKD** normalization would decompose a non-breaking
+space (U+00A0) to a plain space, which would have **closed RT-2's NBSP tolerance** — and therefore made the
+shipped sentence *"that transform's whitespace fold also tolerates a non-breaking space"* **FALSE**, breaking
+S4-6's requirement that the residual travel. That would have been a genuine finding, and I was about to
+report it.
+
+**I ran it first:**
+
+    canonicalizeClaimText("a b") === canonicalizeClaimText("a b")   →   true
+
+**The hypothesis was backwards.** Folding NBSP *to* a space means the two still compare **equal**, so an
+NBSP substitution inside a bound sentence still passes — **the tolerance is preserved, not closed.** The
+shipped sentence is TRUE and RT-2's residual still travels.
+
+**The lesson is not "I was careful once."** It is that a mechanism-change hypothesis about a *disclosure* is
+exactly as falsifiable as a builder's claim, and it earns the same treatment. Had I filed it, α would have
+been weighing a fabricated S4-6 break against a real one at the qualifying close. **The same rule the
+builders are held to — no claim without its attack — applies to the conductor's findings about them.**
+
 ## Open at this point in the round
 
 - **S4-2(d)** — the battery re-run by a LANE against the built predicate, population including A's new
