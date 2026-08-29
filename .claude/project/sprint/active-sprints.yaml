@@ -1323,7 +1323,7 @@ sprints:
     updated_at: "2026-08-19T19:23:19.551Z"
   - id: S-VLADW1-04
     title: Vlad Wave-1 custody claims made un-invertible
-    status: planning
+    status: closed
     lane:
       type: default
       value: null
