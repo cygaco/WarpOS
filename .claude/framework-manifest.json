@@ -7,14 +7,14 @@
     "skill": 237,
     "kernel": 42,
     "reference": 30,
-    "maps_baseline": 26,
+    "maps_baseline": 25,
     "hook": 83,
     "hook_lib": 25,
     "tool": 2,
     "pattern": 6,
     "fixture": 23,
     "warpos_script": 65,
-    "check_tool": 206,
+    "check_tool": 208,
     "agent_tool": 3,
     "decision_tool": 1,
     "runtime_tool": 1,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1736,
+  "total": 1737,
   "assets": {
     "agent": [
       {
@@ -5457,18 +5457,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -8872,6 +8860,30 @@
         "dest": "scripts/checks/framework-purity.test.js",
         "kind": "check_tool",
         "sha256": "b9354c299c60310d59705efc595a0fc16c0251098f1abd325a4ca25aec843631",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-audit.js",
+        "src": "scripts/checks/gate-failclosed-audit.js",
+        "dest": "scripts/checks/gate-failclosed-audit.js",
+        "kind": "check_tool",
+        "sha256": "5efd81a8006ad8bd724d15e24b71affa1cce25cd30acb94d8d9d3f15a43fda49",
+        "owner": "framework",
+        "mergeStrategy": "replace_if_unmodified",
+        "introducedIn": "0.0.0",
+        "removedIn": null,
+        "replaces": null
+      },
+      {
+        "id": "check_tool.gate-failclosed-audit.test.js",
+        "src": "scripts/checks/gate-failclosed-audit.test.js",
+        "dest": "scripts/checks/gate-failclosed-audit.test.js",
+        "kind": "check_tool",
+        "sha256": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
