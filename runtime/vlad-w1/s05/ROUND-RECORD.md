@@ -53,6 +53,11 @@ is written before there is any result to be tempted by.
 the disclosure obligation stands unchanged — the **data** was right. The **frame** rounded up from one
 lane to all lanes.
 
+**Recorded as a conductor-side instance under the ED-364 amendment** (cited, not re-filed): the frame
+discipline — *no shipped claim without its attack, and no coverage claim at a coarser granularity than
+the evidence has* — applies to **consult text and round records**, not only to shipped surfaces. This
+file is itself in that scope.
+
 **This is the sprint's own class, committed by the conductor, inside the consult that established it,
 while arguing for a criterion against it.** β's Q2 distinction — *"β's S4-1a sentence's DATA was right and
 its FRAME was the falsehood"* — describes this exactly. Recorded rather than quietly corrected, because a
