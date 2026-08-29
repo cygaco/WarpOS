@@ -83,6 +83,40 @@ ratifying it; and prefer tightening a definition over adding a class, because an
 set is itself an escape hatch and widening the taxonomy requires the terminal RE-RATIFIED rather than
 silently re-scoped. (`.claude/agents/president/_system/policy/adr/0040-finding-class-boundaries-bf-th-no-relabelling.md` §B3.)
 
+**An ARMED check reports on its SUBJECT, not on itself — three check-honesty rules (2026-08).**
+(1) Before trusting a `NO_DATA` or a green, verify the **subject's emitter is even reachable**: the
+AP-1 stream's entire recorded history turned out to be its own smoke-test fixtures — the production
+path had never run once, and the check was green about nothing. (2) **An enforcer with no OBSERVED
+red state is enforcement debt wearing a green badge** — run the mutant before believing the gate.
+(3) **Verify the mutant hits the RIGHT lever**: run the plant first and learn which rule actually
+trips, because a wrong-lever mutant is FALSE reassurance, not weak reassurance. Same family as the
+false-green/false-RED pair above: this one covers gates that are *pointed at the wrong world*.
+
+**Guards must cover EVERY input channel, or fail-closed on the ones they don't (2026-08).** A
+mismatch guard wired only to the SUPPORTED channel structurally cannot catch the unsupported one:
+`plan.js`'s sanity WARN fired only on `--sprint` disagreement, so a `payload.sprint` caller got
+exit 0, a success line, and a contract written against the WRONG sprint — and the authoring tool
+validated nothing it produced. Enumerate a guard's input channels at design time; any channel the
+guard cannot read must be refused, not silently accepted. (Enforcer class: ED-358.)
+
+**Citation verification is TWO passes, and pass 1 passing is not verification (2026-08).**
+Pass 1 = the cited paths RESOLVE. Pass 2 = **read the contents against the claimed role**. Pass 1
+cleared all five port citations in one review; pass 2 found that one cited file was a WarpOS install
+gate that would have made the product refuse every stranger repo, and that a bare basename matched
+three unrelated wrong files. Pass 2 is the verification; pass 1 is only its prerequisite. (Companion
+to ED-362 — a read-scope-limited lane's finding must be checked against the full file.)
+
+**Completion claims are records too — don't rationalize "done" to hit 100% (2026-06/2026-08).**
+When a DoD item is genuinely unmet (a hard enforcement hook vs a procedural consult), hold the
+epic at an honest ~95% Active and SURFACE the choice — build it, or govern it as tracked debt —
+rather than silently reclassifying to complete. The enforcement-debt pattern is a legitimate
+interim; the spec's DoD is still the completion bar. And for an item that **cannot** close under
+delivery pressure, **split it**: an ungated half that closes now, plus a gated half that names its
+external blocker — then state the weaker half's LIMITS rather than softening them (e.g. fixtures
+recorded as unable to surface real stack shapes, repo size, or odd git states). An unclosable DoD
+item under pressure is how fudged evidence enters a record. Pairs with
+`[[feedback_never_claim_done_without_proof]]`.
+
 ## Related — the regex-guard ceiling
 
 The structural guards above are today regex-based and share an undecidable residual (broadening the
