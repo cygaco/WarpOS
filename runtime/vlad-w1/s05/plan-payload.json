@@ -1,0 +1,142 @@
+{
+  "source_request": "S-VLADW1-05 — one transform, both sites. Successor to S-VLADW1-04's honest close.",
+  "source_request_verbatim": "The class this sprint is aimed at, in β's words: coverage asserted at a coarser granularity than the mechanism has — 'the two scripts the fold DOES cover' asserted a script-level closure over a letter-level sample (CONFUSABLE_FOLD contains no lowercase l, n, g — three of Ceiling's seven letters). Three instances: S4-1a, S4-1b, S4-1c. Aim at the class, not the three sentences. || Why this sprint exists, stated plainly: S-VLADW1-04's fix attempt closed every finding gauntlet-1 raised, discharged S4-2(d) twice over, held four of six criteria, and grew the suite 339 -> 366 with every mutant guarded. It failed on the same class the sprint pair exists to close, one layer out: it authored new false sentences about its own mechanisms, and it left one dimension of the rendered-form property implemented beside the shared transform rather than inside it. The finding to carry above every process one: those sentences were in prose the conductor reviewed and passed, and one carried β's recommendation and α's approval. The approval chain is not a truth check. || Residual groups carried VERBATIM from the ruling: (1) S4-1a — confusable-fold calibration paragraph false: the fold is a 56-entry map (36/52 Latin skeleton letters); l n g etc. unmapped in both scripts; in-script homoglyphs of unmapped letters evade; the 'mistake-reachable scripts closed / remainder attacker-only' framing is false because unmapped letters are reachable by the paragraph's own accident vector. Fix shape: state coverage as the letter set actually mapped (or vendor a confusables table), never as 'scripts closed'; enforcer comment corrected to match. (2) S4-1b — 'two escapes REMAIN' false: ATX-heading-prefixed (and twelve other prefix shapes) bolded lead-ins silently skipped. Fix shape: refuse-not-skip must extend to heading/list/blockquote prefixes on the LEAD-IN path, and the escape count must be replaced by a named class, not a number. (3) S4-2(c) — emphasis canonicalization is not on the status-token path; **ASSERTED** — NOT VERIFIED plants green in Proven. Fix shape: move the emphasis fold INTO canonicalizeClaimText (or have containsStatusToken call flattenForAssertionScan) so both sites share one transform as G's comment already requires; near-miss battery gains emphasis-split status-token variants, controls first. (3b) S4-1c — the NOT-bound enumeration omits P1-P4 headings (an inverted P2 heading ships green): a coverage claim stated at a coarser granularity than the mechanism has, with an execution-proven evasion, inside a list the preamble introduces as 'said plainly rather than generalised.' Third instance of the S4-1a/S4-1b class. (4) Security lane MEDIUM — spawn-shim.js's split-secret worked example is false (fail-safe direction); qa MEDIUM — a third unnamed escape class; qa LOWs as filed. (5) agy fallback — the cross-family lane served on gemini-3.1-pro-high, not the pinned model (ED-230 class); noted, not counted against any criterion. (6) Successor-carried from fix attempt 1: the transform's description paragraph is UNBOUND (needs the fixture builder); 'unbound != re-wrap is free' (header substrings pinned across wraps); the task-4 assertion message ('reviewer read') in a non-shipping test; a text-matching enforcer cannot distinguish a violation from a description of one. (7) ED-340 remains OPEN, carried; ED-354 OPEN; ED-358 OPEN — this ruling is its second instance one layer out. New this sprint and cited: ED-360, ED-361, ED-362, ED-363; ED-257 amendment; ED-356 recurrence x3. (8) Process residuals for the retro: three brief-premise defects; the excerpt-window false HIGHs; ε's idle-while-polling pattern; ε's 'clean tree' reading a mid-write tree; the α/ε WarpOS commit race; usage-limit risk not realised.",
+  "request_type": "successor_sprint",
+  "interpreted_intent": "Make the custody bind's coverage claims true at the granularity the mechanisms actually have; put the emphasis fold inside the one shared transform so both comparison sites receive it; bind the transform's own description; and re-run the S4-style gauntlet under a fresh pre-committed rule. Aim at the CLASS (coverage asserted coarser than the mechanism), not at the three known sentences.",
+  "user_or_business_outcome": "The shipped custody surface stops making claims about its own mechanisms that the mechanisms do not support. The predecessor failed twice on exactly this; the approval chain (β recommended, α approved, conductor reviewed) did not catch it, so the remedy has to be mechanical — emitted coverage sets and a transform that cannot silently stop being shared.",
+  "affected_surfaces": [
+    {
+      "surface": "engine/scripts/checks/custody-claim-lint.js",
+      "evidence_level": "verified_from_repo",
+      "notes": "Verified at vlad wt/S-VLADW1-01-engine @6a105f2 (HEAD + engine/ clean re-confirmed by ε at mint time). β row 320 read at source: containsStatusToken (~954-956) puts both sides through the transform with NO emphasis handling — S4-2(c) confirmed. BLOCK_PREFIX (~612) covers list/ordered/blockquote only; headings #, |, <p>, quotes/parens/brackets, bullet, 'Note:' genuinely uncovered — S4-1b's third class real. CONFUSABLE_FOLD (~213-230): d/g/n/t are case-asymmetry gaps (uppercase partners mapped, lowercasing happens LAST at ~254 so an uppercase-only entry gives the lowercase letter no protection); R/r/l have no entry in either case and may be genuinely unmappable from the two covered scripts. THREE emphasis-handling sites, not two: flattenForAssertionScan (~1358) and resemblesBindableLeadIn TWICE (opener ~672, closing strip ~680)."
+    },
+    {
+      "surface": "engine/scripts/checks/custody-claim-lint.js — CONFUSABLE_FOLD header comment (~203-209)",
+      "evidence_level": "verified_from_repo",
+      "notes": "A FALSE DISCLOSURE live at 6a105f2, inside the block bundle O edits: the comment claims the fold 'closes exactly the two scripts listed and no others'. Script-granularity over a letter-granularity map — Cyrillic lowercase т/ԁ/ԍ are IN a listed script and evade today. S4-1a verbatim, still shipping. Once bundle O edits this block it is sprint-authored and inside S5-2's full scope (row 318); editing around it would be AP-17 disclosure-as-launder. Added to bundle O as ordinary work."
+    },
+    {
+      "surface": "engine/CUSTODY.md",
+      "evidence_level": "verified_from_repo",
+      "notes": "Limits paragraphs (1)-(3), the P2 heading, the confusable calibration paragraph, the 'two escapes' sentence, the NOT-bound enumeration. ALL of CUSTODY.md is in S5-2's full scope per row 318, whether or not this sprint edits a given paragraph."
+    },
+    {
+      "surface": "engine/test/custody-claim-lint.test.js",
+      "evidence_level": "asserted_from_predecessor",
+      "notes": "The clean-fixture builder currently builds only from keys matching ^Ceiling or ^A\\d+$, so binding the transform's description paragraph makes Rule 4b demand text the fixture cannot contain and the 'clean fixture lints clean' test goes RED (bundle K established this and escalated rather than faking it). NOT re-read by ε at mint; the builder re-verifies. β also did not read this file, so 'the suite catches Trap 1 loudly' is expectation, not verified."
+    },
+    {
+      "surface": "engine/scripts/checks/spawn-env-allowlist.js",
+      "evidence_level": "asserted_from_tracker",
+      "notes": "createRequire ban header. Carried from the tracker's affected-surface list; not re-verified by ε."
+    },
+    {
+      "surface": "src/env-scrub.js, src/model-seam.js, driver/host-free-driver.js, src/server-entry.js",
+      "evidence_level": "verified_from_gauntlet2_evidence",
+      "notes": "The four un-audited shipped files. Resolved by READ of the gauntlet-2 what_i_could_not_assess fields at design (ROUND-RECORD.md): the qa lane names all four verbatim; the backend lane independently corroborates two (env-scrub.js header-and-greps only; server-entry.js greps and the RF-7 region only); the security lane does NOT say it. DISCLOSURE not repair (row 318). β row 319 Q2 adds a SEQUENCING constraint: the list must be RESOLVED BY READ before bundle P task 5's sentence is DRAFTED, and task 5 must name what EACH lane said, never 'the lanes said'."
+    }
+  ],
+  "current_behavior": {
+    "evidence_level": "verified_from_repo",
+    "notes": "vlad wt/S-VLADW1-01-engine @6a105f2, engine/ clean, DELIBERATELY UNMERGED to vlad main. Suite 366/366, check:ship exit 0, check:pointers exit 1 by design (34/48, outside check:ship). The three S4 defects are live at this commit and three of them were re-verified at source by β at row 320."
+  },
+  "desired_behavior": "One shared transform reaches every comparison site that needs it, with the asymmetry between sites handled explicitly rather than by a comment; coverage claims state the letter set / prefix class / paragraph keys the mechanism actually enumerates, emitted from the data rather than hand-typed; escape counts are replaced by named classes; the transform's own description is bound; and the four un-audited shipped files are disclosed by name with what each lane actually said.",
+  "scope": {
+    "size": "l",
+    "risk_level": "high",
+    "complexity_drivers": [
+      "ONE attempt: diagnostic gauntlet -> one fix -> qualifying gauntlet. No exception clause (row 317). A burned fix cycle is the sprint.",
+      "TRAP 1 (β row 320): the naive S4-2(c) fix breaks resemblesBindableLeadIn in the FAIL-OPEN direction — it requires an emphasis run at ~670-673, so folding emphasis inside canonicalizeClaimText makes every lead-in return null and silent-skip everywhere. The two sites are ASYMMETRIC: emphasis is noise to containsStatusToken and required shape data to the lead-in detector.",
+      "TRAP 2 (β row 320): flattenForAssertionScan replaces emphasis with SPACE; run-battery.mjs FIX A uses EMPTY. Opposite answers on the mid-word ASS**ERTED** row. Alphabets also differ ([*_] vs [*_`~]). S5-3's seven-not-eight bound is CONTINGENT on the choice — no shipped sentence may restate the number until it is re-derived against the built transform.",
+      "A third emphasis site the build spec does not name (resemblesBindableLeadIn strips twice) — an inventory is owed before the fix, or 'both sites share one transform' ships with site 3 stripping on its own: S4-2(c) recurring one site over.",
+      "Case-closing CONFUSABLE_FOLD by construction is S5-2(c)-shaped but COLLIDES: the map already has ν->v, so case-closing Ν->N emits ν->n. The builder must resolve the collision explicitly."
+    ]
+  },
+  "scope_variants": {
+    "minimal_safe": {
+      "summary": "S4-2(c) fix + the three S4-1 sentences rewritten at mechanism granularity.",
+      "included": ["bundle M", "bundle P (partial)"]
+    },
+    "recommended": {
+      "summary": "PINNED BY β ROW 317. minimal + refuse-not-skip on all lead-in prefix classes + bind the description paragraph via the fixture builder. Bundles M, N, O, P, Q in that order; CUSTODY.md never has two editors; P runs LAST because its input is O's emitted set.",
+      "included": ["bundle M", "bundle N", "bundle O", "bundle P", "bundle Q"]
+    },
+    "expanded": {
+      "summary": "RULED OUT by β row 317 (DECIDE 0.89): + a vendored Unicode confusables table. 'A vendored table has its own version and curated ceiling — it relocates the discipline.' If vendored later, S5-2 applies unchanged: name the version and the ceiling.",
+      "included": []
+    }
+  },
+  "assumptions": {
+    "safe": [
+      "vlad wt/S-VLADW1-01-engine @6a105f2 with engine/ clean is the surface — re-verified by ε at mint time (git -C log/status), matching DUMP and the tracker.",
+      "The release rule is row 317 as amended by row 318, minted before any result existed; build authorization is β row 319.",
+      "The seven-unmapped-letters premise (R d g l n r t over a 22-letter alphabet derived from the exported tokens) — independently derived at source by β at row 320."
+    ],
+    "unsafe": [
+      "That the three known instances exhaust the coverage-granularity class. β row 317 CONFIRMED THIS UNSAFE: the same shape is available in every Proof scope line, every A1-A8 paragraph and every enforcer header — and row 320 then found a live fourth instance (the CONFUSABLE_FOLD header comment). The terminal must state that this sprint fixes three known instances of a class whose size is unknown.",
+      "That run-battery.mjs's numbers are trustworthy as-is. β did not read it at r1/r2 and flagged it as ε's account, load-bearing for every AS-IS/FIXED cell; row 320 then read it and found four ceilings: FIXED cells prove transform sufficiency NOT wiring; FIX C simulates the ruled-out vendored table so bundle O's real mechanism is untested by the battery; counts are sample sizes not coverage; and line 12 hardcodes the worktree path with no commit pin, so a re-run after the build silently tests a moved tree.",
+      "That the test suite will catch TRAP 1 loudly. β expects it but did NOT read engine/test/custody-claim-lint.test.js; treat as expectation.",
+      "That SEPARATOR_VARIANCE / TOKEN_WORD_SPLIT / escapeRegex do not move the seven-not-eight bound — β did not read them and named them as owed-by-read before S5-3's count is relied on."
+    ],
+    "needs_beta_review": [
+      "Already ruled: scope (recommended, row 317), attempt count (ONE, row 317), S5-2 scope (row 318), build authorization (row 319), the four-file read-before-draft sequencing (row 319 Q2). No open plan-phase question — the rule is pre-committed and must NOT be re-opened."
+    ]
+  },
+  "open_questions": {
+    "blocking": [],
+    "non_blocking": [
+      "Emphasis replacement semantics (space vs empty) and alphabet ([*_] vs [*_`~]) are the builder's explicit choice per row 320 — they must be STATED, and S5-3's count re-derived against the built transform."
+    ]
+  },
+  "non_goals": [
+    "Vendoring a Unicode confusables table (expanded scope, ruled out by row 317).",
+    "Merging wt/S-VLADW1-01-engine into vlad main — barred under every outcome.",
+    "Repairing coverage claims in the four un-audited shipped files — disclosure, not repair (row 318).",
+    "Re-opening S-VLADW1-03 or S-VLADW1-04, or re-litigating rows 305-316."
+  ],
+  "requirement_areas": [
+    "R-1 one transform reaching both comparison sites, with the lead-in/status-token asymmetry handled explicitly (bundle M)",
+    "R-2 refuse-not-skip across every lead-in prefix class, written as a class not the twelve probed shapes (bundle N)",
+    "R-3 confusable coverage stated at letter granularity, emitted from a domain derived from the module's exported tokens (bundle O)",
+    "R-4 the prose, drafted after the attacks, incl. the four-file un-audited disclosure naming what each lane said (bundle P)",
+    "R-5 the transform's own description paragraph bound, with the fixture builder extended (bundle Q)"
+  ],
+  "approval_boundaries": [
+    "Build authorization: the operator authorized a session posture (2026-08-29 ~19:55Z); β ruled at row 319 (msg 4c81f2ba-6d37-4e5a-9b02-7ea415d3c860, DECIDE B 0.88) that the posture reaches S-05. NOT 'the operator authorized S-05'.",
+    "α applies S5-1..S5-7 at the close — not ε, not β.",
+    "No merge of wt/S-VLADW1-01-engine to vlad main under any outcome. No push without the operator."
+  ],
+  "design_required": true,
+  "execution_allowed_without_design": false,
+  "recommended_mode": "sprint",
+  "lane": {
+    "type": "worktree",
+    "value": "isolation worktree off wt/S-VLADW1-01-engine @6a105f2",
+    "isolation_notes": "Lane A of a two-lane session; lane B (SP-20260829-001) is WarpOS-side and shares no files. Builders are dispatched from the WarpOS root; their process cwd is a WarpOS isolation worktree and the TARGET is the vlad path — briefs must not assert a cwd the dispatcher does not establish (ED-363)."
+  },
+  "beta_review": {
+    "required": true,
+    "likely_founder_rejection_risks": [
+      "A close that reads as 'the coverage-granularity class is closed' when three known instances of an unbounded class were fixed — the class one layer out, in the sprint that exists to end it."
+    ],
+    "overbuild_risks": [
+      "Vendoring a confusables table (ruled out); chasing a complete mechanism when the lesson was that the SENTENCE was too broad, not that the fold was too small."
+    ],
+    "missing_context_risks": [
+      "run-battery.mjs's cells being cited without their four stated ceilings; the seven-not-eight bound being restated before it is re-derived against the built transform."
+    ]
+  },
+  "plan_quality": {
+    "status": "design_complete",
+    "confidence": "high",
+    "evidence_gaps": [
+      "engine/test/custody-claim-lint.test.js not read by ε or β.",
+      "SEPARATOR_VARIANCE / TOKEN_WORD_SPLIT / escapeRegex unread — owed before S5-3's count is relied on.",
+      "spawn-env-allowlist.js carried from the tracker, not re-verified."
+    ],
+    "fail_reasons": []
+  },
+  "next_recommended_command": "/sprint:execute",
+  "created_by": "epsilon",
+  "updated_by": "epsilon"
+}

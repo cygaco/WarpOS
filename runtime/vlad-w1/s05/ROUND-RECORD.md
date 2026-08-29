@@ -70,6 +70,56 @@ itself over-claims its evidence would be the class a third time in the same spri
 
 ---
 
+## BUILD LOG — bundle outcomes as they land (ε, observed not narrated)
+
+### Bundle M — LANDED `3596c2d` (parent `6a105f2`), 2026-08-29
+
+- **Liveness:** `d-mteu276t-7b184189`, `ok:true`, exit 0, elapsed 817689 ms, stdout non-zero.
+  Diff read by the conductor: 2 files, +482/−25. Worktree clean after.
+- **Gates, read separately by the builder:** `npm --prefix engine test` exit 0, **377 pass / 0 fail**
+  (floor was 366); `npm --prefix engine run check:ship` exit 0.
+- **TRAP 1 cleared with an OBSERVED-RED falsifier:** the fix is an `{ emphasisFold: false }` opt-out on
+  `resemblesBindableLeadIn`. The builder reverted the real opt-out line in real source, ran the suite,
+  got **4 genuine failures** (RF-1, RF-3, G-3, M-1), restored, re-ran 86/86 green. Not a described
+  attack — a run one.
+- **TRAP 2 decided and STATED:** alphabet `` [*_`~] `` (not the narrower `[*_]`); replacement **SPACE,
+  not empty**, because empty would collapse `**only**place` → `onlyplace` and silently break
+  `flattenForAssertionScan`'s own documented anti-evasion — verified by re-running that existing
+  battery row post-refactor. `SEPARATOR_VARIANCE` / `TOKEN_WORD_SPLIT` / `escapeRegex` (β's
+  owed-by-read items, row 320 "not read") were **read** and need no change, with the reason given.
+- **RF-M2 asserts the CALL PATH**, not just output — verified by swapping in an unwired
+  reimplementation of `containsStatusToken`, caught by 13 tests.
+- **A FOURTH emphasis site** surfaced by the required inventory: `BOLD_LEAD_IN` (~554), scoped out with
+  reasoning (raw-text structural id-derivation, not comparison-hiding) rather than silently ignored.
+
+#### ⚠️ S5-3's "seven" — RE-DERIVED AS SIX. Flagged to α, not resolved by ε.
+
+The builder **refused the brief's "seven, not eight" premise with evidence** — a correct return under
+the standing discipline, and the third builder in this sprint family to refuse a false premise.
+Executed against the transform **as built**: **six close by design** (bold-each-word,
+underscore-each-word, bold-first, bold-last, backtick-each-word, single-asterisk-each) · **one already
+red by accident** (strikethrough — tilde is already a `SEPARATOR_VARIANCE` member independent of any
+fold) · **one remains open**, disclosed and pinned (mid-word bold `ASS**ERTED**`, the stated cost of
+choosing SPACE over deletion). Run twice — a scratch script pre-commit, then re-verified as committed.
+The builder states it did not adjust code to preserve "seven".
+
+**Why this is the sanctioned path, not a violation:** β row 320 pre-authorized exactly this —
+*"S5-3's seven-not-eight bound is contingent on that choice; no shipped sentence may restate the
+number until it is re-derived against the built transform."* The re-derivation is the required act.
+
+**Why ε does not resolve it:** S5-3's literal text says seven, results now exist, and the rule is
+frozen in both directions after results. Whether S5-3 binds the **literal number** or the **property**
+(no shipped sentence overstates the fold's yield) is α's application call at the close, not the
+conductor's. **Bundle P must not write "seven" under either reading**, and any sentence about the
+fold's yield must be sourced from the executed six/one/one with the open residual named.
+
+### Bundle N — dispatched `d-mteukug9-b8ccf260`, in flight
+Brief updated against M's actual return before firing: suite floor raised 366 → 377, and an explicit
+section that M's `emphasisFold:false` opt-out is load-bearing, guarded by M-1, and must not be removed
+or bypassed; M's mid-word residual named as M's, not N's to close or restate.
+
+---
+
 ## Standing notes for whoever conducts the build
 
 - **Bundle order is load-bearing:** M → N → O → P → Q. `CUSTODY.md` must never have two editors, and
