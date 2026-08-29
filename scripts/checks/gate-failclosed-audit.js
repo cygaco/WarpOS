@@ -395,7 +395,20 @@ function findCatchHandlers(clean) {
     const handlerEnd = matchDelim(clean, p);
     if (handlerEnd === -1) continue;
     out.push({ catchIdx: pos, handlerStart: p + 1, handlerEnd });
-    tryRe.lastIndex = handlerEnd + 1;
+    // NESTED-TRY FIX (SP-20260829-001 bundle B2'): do NOT jump the scan
+    // cursor to `handlerEnd + 1` here. `tryRe` is a global regex; after
+    // `exec()` matched `\btry\b`, its `lastIndex` already auto-advanced to
+    // just past THIS try's own keyword (tryIdx + 3). Leaving that alone (no
+    // explicit reassignment) lets the next `exec()` call find a `try`
+    // keyword textually nested inside the try block or the catch handler
+    // just matched — e.g. `try { try {...} catch(e){...} } catch(e){...}` —
+    // which the previous `handlerEnd + 1` jump skipped over entirely,
+    // producing an invisible blind spot on any nested handler (documented in
+    // CEILING_TEXT and gate-failclosed-registry.json's tool_correlation_note
+    // before this fix; 4 real registry sites were unreachable for exactly
+    // this reason). Every `continue` branch above already relies on this
+    // same default auto-advance, so this restores consistent behavior across
+    // both the success and skip paths, not a special case.
   }
   return out;
 }
