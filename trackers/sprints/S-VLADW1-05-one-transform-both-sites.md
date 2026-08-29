@@ -53,7 +53,8 @@ passed, and one carried β's recommendation and α's approval. **The approval ch
 
 ## Standing discipline — binding on this sprint
 
-- **Every shipped claim sentence is drafted AFTER the attack that would falsify it — including sentences β recommends and α approves.** This run shows the approval chain is not a truth check. A `falsification_attempts` entry per shipped claim, and an entry whose `attack_run` is a description rather than something that was run is not an entry.
+- **Every shipped claim sentence is drafted AFTER the attack that would falsify it — including sentences β recommends and α approves.** β's own words at row 316, carried verbatim because β wrote them about its own recommendation being graded false:
+  > **"approval is not a truth check, and β's recommendation is worth exactly nothing against the shipped bytes."** A `falsification_attempts` entry per shipped claim, and an entry whose `attack_run` is a description rather than something that was run is not an entry.
 - **β mints a FRESH rule before any result exists.** S4-1…S4-6 do NOT carry over automatically; the predecessor's numbering must never be mis-cited into this sprint.
 - **A brief may not assert "X is missing" or "X is required" without an attached grep/read proof** (ED-363), and a builder is entitled to refuse a false premise with evidence — that is a correct return, not a failed bundle.
 - **A finding from a read-scope-limited lane is reconciled against the full file before it is graded** (ED-362).
