@@ -131,8 +131,21 @@ class a third time in the same sprint.
 letter counts) unless you source it from the emitted artifact in the same breath. A number that
 travels without its list is an exhaustiveness claim.
 
-**Envelope:** a `falsification_attempts` array with one entry per sentence shipped — for prose, the
-`attack_run` is the specific input you constructed to try to make the sentence false, and what
-happened. Also report: every sentence changed with before/after, the emitted set you sourced from,
-the diagnostic lane output you cited for task 5, the atomicity falsifier's raw output, both gate exit
-codes read separately, and anything you could not do.
+## ENVELOPE — required fields
+
+A `falsification_attempts` array with one entry per sentence shipped — for prose, the `attack_run` is
+the specific input you constructed to try to make the sentence false, and what happened. Plus: every
+sentence changed with before/after, the emitted set you sourced from, the diagnostic lane output you
+cited for task 5, the atomicity falsifier's raw output, and both gate exit codes read separately.
+
+**These four fields are REQUIRED and are read downstream (ED-377). An omitted field is read as
+UNKNOWN, never as "nothing to report" — so an empty `files_i_could_not_see` must be an explicit,
+deliberate empty, not an absent key:**
+
+- **`what_i_could_not_assess`** — anything you could not judge, and why.
+- **`files_i_could_not_see`** — every file or region you sampled rather than read end to end. This
+  field is load-bearing in THIS bundle: task 5's entire subject is four files nobody read end to end,
+  and a disclosure about un-audited surfaces that under-reports its own reading is the defect twice.
+- **`execution_proven`** — which of your claims you RAN versus reasoned about. Separate them.
+- **`what_would_confirm_or_refute`** — for anything you are unsure of, the specific check that would
+  settle it.

@@ -90,7 +90,20 @@ there after M/N/O/P, not what this brief's author saw.** Read the current text b
    A correct return, not a failed bundle.
 6. **Halt at a bundle boundary, never mid-bundle.**
 
-**Envelope:** a `falsification_attempts` array with one entry per claim shipped or relied on (a
-description is not an entry). Also report: the fixture-builder mechanism and why the bind is not
-decorative, the exact paragraph(s) bound, RF-Q1's observed-RED raw output, both gate exit codes read
-separately, and anything you could not do.
+## ENVELOPE — required fields
+
+A `falsification_attempts` array with one entry per claim shipped or relied on (an entry whose
+`attack_run` is a *description* rather than something RUN is not an entry). Plus: the fixture-builder
+mechanism and why the bind is not decorative, the exact paragraph(s) bound, RF-Q1's observed-RED raw
+output, and both gate exit codes read separately.
+
+**These four fields are REQUIRED and are read downstream (ED-377). An omitted field is read as
+UNKNOWN, never as "nothing to report" — so an empty `files_i_could_not_see` must be an explicit,
+deliberate empty, not an absent key:**
+
+- **`what_i_could_not_assess`** — anything you could not judge, and why.
+- **`files_i_could_not_see`** — every file or region you sampled rather than read end to end.
+- **`execution_proven`** — which of your claims you RAN versus reasoned about. Separate them. For
+  this bundle specifically: whether you OBSERVED RF-Q1 red, or only wrote it.
+- **`what_would_confirm_or_refute`** — for anything you are unsure of, the specific check that would
+  settle it.

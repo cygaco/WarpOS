@@ -171,7 +171,20 @@ its stated domain; "scripts closed" does not.
    seven-letter set or the ν collision does not reproduce, say so and stop.
 6. **Halt at a bundle boundary, never mid-bundle.**
 
-**Envelope:** a `falsification_attempts` array with one entry per claim shipped or relied on (a
-description is not an entry). Also report: the derived domain and how you derived it, the emitted
-coverage set with the three groups distinguished, your ν-collision resolution, the rewritten header
-comment text, both gate exit codes read separately, and anything you could not do.
+## ENVELOPE — required fields
+
+A `falsification_attempts` array with one entry per claim shipped or relied on (an entry whose
+`attack_run` is a *description* rather than something RUN is not an entry). Plus: the derived domain
+and how you derived it, the emitted coverage set with the three groups distinguished, your
+ν-collision resolution, the rewritten header comment text, and both gate exit codes read separately.
+
+**These four fields are REQUIRED and are read downstream (ED-377). An omitted field is read as
+UNKNOWN, never as "nothing to report" — so an empty `files_i_could_not_see` must be an explicit,
+deliberate empty, not an absent key:**
+
+- **`what_i_could_not_assess`** — anything you could not judge, and why.
+- **`files_i_could_not_see`** — every file or region you sampled rather than read end to end. Be
+  exact; a later finding that touches a region on this list gets re-verified before it is graded.
+- **`execution_proven`** — which of your claims you RAN versus reasoned about. Separate them.
+- **`what_would_confirm_or_refute`** — for anything you are unsure of, the specific check that would
+  settle it.
