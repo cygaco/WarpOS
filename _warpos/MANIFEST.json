@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T22:16:45.052Z",
+  "generatedAt": "2026-08-29T22:20:12.757Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -11919,8 +11919,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-baseline.json",
-      "sha256": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6",
-      "installedSha": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6"
+      "sha256": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
+      "installedSha": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62"
     },
     "scripts/checks/gate-failclosed-enforcer.js": {
       "owner": "framework",
