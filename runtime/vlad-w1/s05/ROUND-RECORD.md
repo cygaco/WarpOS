@@ -204,7 +204,73 @@ would have none of N's context, so any answer would be a reconstruction rather t
 ordering (the field list was added to O/P/Q after N had already been fired), and it is the conductor's
 cost, not the builder's.
 
-### Bundle O — dispatched `d-mtev4sj5-b40d1781`, in flight
+### Bundle O — LANDED `fbda0dc` (parent `1fb5b31`), 2026-08-29
+
+- **Liveness:** `d-mtev4sj5-b40d1781`, `ok:true`, exit 0, **elapsed 1140905 ms** (19 min — inside the
+  1200 s *builder* bound with 59 s to spare; the 900 s reviewer route would have killed it).
+  stdout 6445 bytes. Worktree clean.
+- **Gates, read separately, before AND after:** suite **393 pass / 0 fail** (floor 383);
+  `check:ship` exit 0; `check:pointers` exit 1 by design.
+
+#### ⚠️ O REFUTED TWO CARRIED FIGURES BY EXECUTION — both originating in β row 320
+
+Row 320 stated *"Verified at source — the seven-unmapped-letters premise is CORRECT (derived
+independently from `CONFUSABLE_FOLD` 213-230)"*, over a 22-letter alphabet. ε carried both into the
+brief as measured fact. The builder refused both **and ran them**:
+
+- *"the exported tokens give a 22-letter alphabet"* → re-derived by direct character iteration over
+  the four source strings, **not** via the module's extraction code. **RUN: 15, not 22.**
+- *"missing `R d g l n r t` — seven letters"* → computed per-letter coverage against the actual
+  `CONFUSABLE_FOLD.values()`. **RUN: `F` is also missing** (absent from the list), and the true
+  post-closure gaps are `n` (claimed-elsewhere) + `L`,`R` (no-candidate) — a different, smaller,
+  differently-reasoned set.
+
+It restated neither number anywhere in shipped code or tests; it pinned its own measured values in a
+test and the commit message. **A verification-by-reading at the governance layer, relayed by the
+conductor, was wrong in both its domain size and its gap set — and only execution caught it.** Third
+premise-refusal by a builder in this sprint family, third time correct.
+
+- **A silent no-op caught BEFORE shipping:** entries added *after* `CONFUSABLE_PATTERN` is built exist
+  in the Map but the replace never fires (stale regex). O's first implementation had this; it ran a
+  scratch test, caught it, fixed by placement, re-verified. The fold would have looked correct and
+  done nothing.
+- **β's ν collision call CONFIRMED by execution:** enumerated programmatically over the real map —
+  **exactly one** real conflict (differing derived-vs-existing value), `ν`; all other same-key hits
+  harmless (derived === existing). Resolved by keeping the deliberate pre-existing entry, disclosed
+  in-code and in the coverage report.
+- **RF-O1 observed RED three independent ways:** local pre-closure reconstruction; the shipped
+  functions; and — beyond the brief — **disabling the real case-closure loop in shipped source**,
+  watching tests 95/99/100/101 go `not ok`, then restoring.
+- **Task 3 shipped as mechanism, not prose:** `tokenAlphabetDomain()` (~1681) reads the domain from
+  `PROVEN_STATUS_TOKEN` / `ASSERTED_STATUS_TOKEN` / `RESEMBLANCE_KEYWORD.source`;
+  `getTokenAlphabetCoverage()` (~1730) returns three groups (`covered` / `claimedElsewhere` with
+  reason / `noCandidate`), tested for exhaustive non-overlapping partition. `CONFUSABLE_PATTERN` is
+  now built FROM the post-closure map so the two cannot drift.
+- **Task 4:** the false script-granularity ceiling sentence rewritten at letter granularity, sourced
+  from task 3's function, **pinned by a test that greps the live source**.
+- **Ceiling stated at its own strength:** O reports that `L`/`R` being *provably* unmappable is
+  **"a bounded, disclosed belief, not a proof"** — reasoned from letterforms, deliberately no vendored
+  table (correct per scope) — and says so in the code comment AND the exported function's doc comment.
+  `what_would_confirm_or_refute` names UTS #39 as the check that would settle it. That is S5-2(c)
+  arriving unprompted.
+
+### Bundle P — HELD, not dispatched. A sequencing gap found before firing.
+
+β row 319 Q2 (reaffirmed row 324) requires the four un-audited files be **resolved by read before P
+task 5's sentence is drafted**, and assigned that read to the *diagnostic lane's* secondary
+objective — **but the diagnostic gauntlet runs AFTER the build, and P is a build bundle.** The
+prerequisite was scheduled after its dependent. P as briefed would have reached task 5, found no lane
+output to cite, and halted — a wasted bundle under ONE attempt. Not a defect in the ruling; a
+conductor-side scheduling gap.
+
+**Resolved by dispatching the read as its own lane:** `d-mtew0q7m-70d95fa2`, read-only, reads all four
+end to end, returns per-file quoted coverage claims with true/false/cannot-determine verdicts.
+P fires when it returns; Q is held behind P.
+
+P's brief re-checked against O and N before firing: sources from O's real exports by name; **bars any
+letter figure from an earlier document** (O measured the carried ones wrong); requires O's `L`/`R`
+ceiling to travel as the disclosed belief it is; and carries N's finding that *"two escapes remain"*
+**undercounts**.
 Brief re-checked against N's actual return before firing: floor 377 → 383; N's widened `BLOCK_PREFIX`
 and its disclosed-enumeration residual marked as N's and not to be re-opened; the stale
 "two escapes remain" sentence marked as P's, not O's.
