@@ -140,3 +140,71 @@ builders are held to — no claim without its attack — applies to the conducto
   class-form paragraph. Not discharged by ε's sanity check.
 - **S4-1** — claim truth is established by reviewer read only. No green gate above is evidence of it.
 - Bundles C, D, E and the gauntlets.
+
+---
+
+## K — `5b9b757` — and the second time this attempt a builder refused my premise
+
+K rewrote `CUSTODY.md`'s description of `canonicalizeClaimText` to match the transform as built. Dispatch
+`d-mtdp2k6s-d61bd131`, exit 0, **619 206 ms**, 12 624-byte envelope, not reaped. Envelope `ok:false` — the
+doc-ref-integrity merge-guard denied its commit over the same **83 pre-existing** broken refs in `.claude/**`
+(ED-356, third occurrence this attempt). K stopped after ONE denial, proved the guard pre-existing by
+re-running it with its change stashed, did not use `--no-verify`, did not reshape into git plumbing, staged
+by path and reported. The conductor verified the staged tree (`engine/CUSTODY.md` only), ran the gates and
+landed it: suite **366 / 366 / 0 fail**, `check:ship` exit 0, each run as its own command.
+
+**Two premises in my brief were false, and K refused both with evidence.** Verified by the conductor rather
+than accepted:
+
+1. **"The canonical copy must move atomically with the claim."** FALSE for this paragraph — it is header
+   prose, not a `**Ceiling —` / `**A<n> —` lead-in, so `extractBindableParagraphs` never derives it and it
+   has no `BOUND_PARAGRAPHS` entry. K proved it: document-side edit alone, 366/0, `check:custody` exit 0,
+   15 bindable paragraphs before and after. **RF-4 cannot fire for it.** K then observed RF-4 RED on a
+   paragraph it *does* cover (`Ceiling — argv is not scanned…`) with real `paragraph-not-verbatim` +
+   `bound-paragraph-missing` output and 5 failing tests, and restored.
+2. **"`custody-claim-lint.js` carries a stale copy to update."** FALSE — its comment block already
+   documented NFKD with the NFKC rationale, `\p{Default_Ignorable_Code_Point}` by property, and the
+   confusable-enumeration ceiling naming Armenian/Cherokee/Coptic/Deseret/Lisu. Confirmed by grep. The
+   staleness was one-sided, in `CUSTODY.md`, exactly as G reported.
+
+**This is the conductor's defect, twice in one attempt** — J's brief asserted "zero executable uses" of
+`createRequire` (falsified: `test/model-seam.test.js:16`), K's asserted an atomicity requirement that does
+not exist. Both times the builder caught it and refused. **ED-362's builder-direction half is doing real
+work, and the rule it implies is now unconditional: a brief may not assert "X is missing" or "X is
+required" without an attached grep/read proof line.**
+
+**Ten falsification attempts, each observing a flip.** The one that matters for β's amended S4-2(c): under
+NFKC substituted for NFKD, the accented spelling flips RED→GREEN (marks recompose, the evasion reopens)
+**while the fullwidth spelling stays RED** — the clause's exact discriminator, isolated rather than asserted.
+The comma exclusion was re-measured in both directions: adding the comma closes the attack GREEN→RED *and*
+refuses ordinary prose GREEN→RED, so the exclusion is a measurement, not a preference. During authoring K's
+own first draft quoted the Asserted adjacency literally and **the lint refused `CUSTODY.md` itself at line
+79** — the accepted false-RED cost demonstrating itself rather than being asserted about.
+
+### New residual — the transform's own description is UNBOUND
+
+Nothing pins it byte-for-byte; a later edit to it is invisible to every check. K could not close it: adding a
+`BOUND_PARAGRAPHS` entry makes Rule 4b (`findBoundParagraphPresenceViolations`) demand the text appear in the
+clean test fixture, and that fixture is built only from keys matching `^Ceiling` or `^A\d+$`, so the "clean
+fixture lints clean" test would go RED. Closing it properly needs the fixture builder in
+`test/custody-claim-lint.test.js` — a forbidden file. **K escalated rather than faked it.** Successor
+candidate; deliberately NOT attempted at a qualifying boundary, because it needs a test-file change with its
+own falsifier and that is not a bundle-sized job here.
+
+### Routed by J, verified by the conductor, pending on L
+
+J's envelope routed a change it could not make (bundle H owned `CUSTODY.md` that wave). Verified against the
+file rather than taken: **P2's heading states an unqualified universal** — "a raw bypass of the audited
+wrapper is refused" — while half (b)'s body is shape-enumerated, and `process.binding("spawn_sync")` through
+a computed key IS a raw bypass that is not refused (execution-proven, `ff6d483`, a real child returning
+status 0). And **the ceiling's only named open route is the one J closed** (`createRequire` aliasing), so
+after J the shipped residual illustrates itself with a closed route while the execution-proven open one goes
+unnamed. Unlike K's, L's atomicity premise is grep-proven: that ceiling paragraph IS a `BOUND_PARAGRAPHS`
+key, so L is a live RF-4 exercise.
+
+### Open at the end of the fix attempt
+
+- **S4-2(d)** — owed AGAIN at the qualifying close, by a LANE, against the post-G predicate, population
+  including bundle A's class-form paragraph plus ZWSP / homoglyph / emphasis / prefix variants. Row 312.
+- **S4-1** — established by reviewer read only. Nothing above is evidence of it.
+- **RT-8 class-vs-instances** — β row 312 flagged it unverified; a qa lane resolves it by read at the close.
