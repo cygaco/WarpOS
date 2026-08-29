@@ -470,3 +470,49 @@ Q pinned the backtick/tilde evasion at `4d15e4b`, but `CUSTODY.md`'s sentence st
 edit it (prose is P's surface). Correcting it needs a small P″; leaving it ships a sentence known to
 be stale. **α's call**, and it is precisely the "a disclosure is a claim" shape this sprint keeps
 finding.
+
+### ⚠️ `run-battery.mjs` IS NOW UNRUNNABLE AS WRITTEN — β's row-320 risk, realized
+
+Proven at source before the diagnostic lanes were briefed:
+
+- **L12** hardcodes `file:///C:/Users/Vlad/.../vlad/.worktrees/engine-lane/engine` — **no commit pin**.
+- **L2** of its own header asserts it runs *"against the SHIPPED predicate at `6a105f2`"*. Nothing
+  checks that.
+- **That tree is now at `4d15e4b`.** Verified the imported module is the FIXED one:
+  `EMPHASIS_FOLD_PATTERN` present (bundle M), `tokenAlphabetDomain` present (bundle O).
+
+**Consequence — the two columns have collapsed into one.** The battery's design is AS-IS vs FIXED,
+where FIXED simulates the fix by transforming the *input* before calling the real matcher. Re-run
+today, **both** columns call a matcher that already has the fix, so the AS-IS column no longer
+measures as-is and **the controls that must go RED would come back GREEN.**
+
+That is the exact failure the battery's own header records — its first draft was discarded *"because
+its own controls went GREEN"* — reappearing not through a reimplemented matcher but through a **moved
+tree**. β wrote at row 320: *"a lane re-deriving the battery from another checkout silently tests THIS
+worktree — and the build will move this tree."* No longer a risk; the state.
+
+**S5-4's reading is therefore live and is β's to give.** S5-4 requires *"BATTERY RE-RUN BY A LANE,
+AGAINST THE PREDICATE AS BUILT."* Two readings satisfy the substance: **(a)** pin `6a105f2` for AS-IS
+and the current tree for FIXED, reconstructing the original comparison; **(b)** re-derive the
+near-miss population against the **built** predicate directly — no simulation layer.
+
+**ε recommends (b), and recorded that it is the HARDER reading for the conductor** (it discards a
+ready-made harness and makes the lane build its population from scratch): it is what S5-4's own words
+ask for, it removes the simulation layer β flagged as unverified and load-bearing for every cell, and
+(a) reconstructs a historical comparison that no longer describes what ships. **A gauntlet that
+certifies the artifact should test the artifact.** Sent to β as `6019bde4`; **not decided by ε** —
+results do not yet exist for S5-4 and the reading is recorded before any lane reports against it.
+
+Note also: the battery's `PREFIX_FIX`, its three-letter and twelve-prefix samples were always *the
+battery's chosen* set, never a class. Under reading (b) the lane derives its own population, which
+makes that limitation moot rather than inherited.
+
+### Registry-fixed gauntlet roster (resolved from the hook-point registry, not chosen by ε)
+
+`backend-reviewer` (claude-opus-5, in-process `claude-agent`, BLOCK) · `qa-reviewer` (claude-opus-5
+xhigh, in-process, BLOCK) · `security-reviewer` (`dispatch-agent`, BLOCK, **three passes**:
+antigravity/gemini-3.1-pro-high → openai/gpt-5.6-sol → claude/claude-opus-5 max).
+
+**Both non-security lanes are the same model family.** The independence that matters for a gauntlet is
+independence from the BUILDERS, which holds; but the corpus diversity lives entirely in the security
+lane's three passes. Flagged to β as a composition question for α rather than decided by ε.
