@@ -150,10 +150,64 @@ so the 377/0 suite, the 86/86 restoration, the 13 RF-M2 tests and the 4 genuine 
 of the builder's envelope, unverified. **A gauntlet lane must verify the tests assert what they are
 said to assert.**
 
-### Bundle N — dispatched `d-mteukug9-b8ccf260`, in flight
-Brief updated against M's actual return before firing: suite floor raised 366 → 377, and an explicit
+### Bundle N — LANDED `1fb5b31` (parent `3596c2d`), 2026-08-29
+
+Brief updated against M's actual return before firing: suite floor raised 366 → 377, plus an explicit
 section that M's `emphasisFold:false` opt-out is load-bearing, guarded by M-1, and must not be removed
 or bypassed; M's mid-word residual named as M's, not N's to close or restate.
+
+- **Liveness:** `d-mteukug9-b8ccf260`, `ok:true`, exit 0, elapsed 852745 ms, stdout 4771 bytes. Diff
+  read by the conductor: 2 files, +248/−20. Worktree clean after.
+- **Gates, read separately:** `npm --prefix engine test` exit 0, **383 pass / 0 fail** (floor 377
+  confirmed pre-change, +6 new); `check:ship` exit 0.
+- **The class, implemented as a class:** two genuine Unicode **properties** (`\p{Ps}` open-punctuation,
+  `\p{Pi}` initial-quote) and two **grammars** (HTML start tag `<[a-zA-Z][^<>]*>` — any tag name;
+  label-colon `\p{L}[\p{L}\p{N}]*:` — any label word), proven with rows using two different tag names
+  and two different label words. **Not a copy of the battery's twelve probed shapes.**
+- **The honest partial, disclosed IN-SOURCE:** what remains an enumeration is named as one — the
+  bullet/dingbat set `[-*+•‣◦]` (no backing Unicode property) and the two ASCII quote characters
+  (neither `"` nor `'` is Ps or Pi). Property where a property exists; enumeration named as an
+  enumeration where it does not. This is the shape S5-2(c) asks for.
+- **RF-N1 pulled on REAL source:** reverted `BLOCK_PREFIX`, observed `not ok 88` / `not ok 89`,
+  restored, reverified 92/92. Not merely described.
+- **Over-refusal proven AS BUILT** (not by citing the battery): `## Proven` / `## Asserted` → null;
+  keyword-bearing prose → null; `**Status:** PROVEN` plus six sibling shapes under the seven new prefix
+  wrappers → null; real `CUSTODY.md` still derives 0 violations, `lintCustodyStatement` `ok:true`.
+- **A false positive found BY EXECUTION and fixed in the right direction:** N's own synthetic fixture
+  isolated `Status: **ASSERTED — NOT VERIFIED**.` onto a column-1 line, which the widened label
+  alternative correctly flags — structurally it IS a candidate when isolated. N verified the real
+  `CUSTODY.md` never isolates it that way, then **fixed the FIXTURE rather than narrowing the
+  mechanism**, and disclosed that inline. Narrowing the mechanism to fit a fixture artifact would have
+  been the easy, wrong move.
+- **M's opt-out untouched — verified by the conductor, not taken on N's word:** `emphasisFold: false`
+  appears in N's diff only as a CONTEXT line and is present at HEAD (`custody-claim-lint.js:777`,
+  moved from ~717 by N's insertions). M-1 still in the test file.
+
+#### ⚠️ N surfaced a BUNDLE P item
+
+`CUSTODY.md`'s **"two escapes remain" sentence is now stale and undercounts**: the block-prefix gap N
+closed was a **third, undisclosed escape**. N correctly did not touch it (forbidden file) and reported
+it instead. Folded into O's brief as do-not-touch; **P owns the sentence** and must revisit whether
+only the two bundle-G-disclosed residuals remain.
+
+#### ⚠️ ED-377 ENVELOPE FIELDS ABSENT FROM N — carried as a gauntlet obligation
+
+N's brief went out **before** the ED-377 field list was added to the brief template, so
+`what_i_could_not_assess`, `files_i_could_not_see`, `execution_proven` and
+`what_would_confirm_or_refute` are absent from its envelope. Its closing *"Nothing left undone"* is
+**not** the same claim as `files_i_could_not_see: []`.
+
+All four are treated as **UNKNOWN**, never as "it saw everything" — the ED-362 trap is reading an
+absent scope-list as full coverage. Not re-dispatched to ask: that subprocess is gone and a fresh agent
+would have none of N's context, so any answer would be a reconstruction rather than a report.
+**A gauntlet lane must establish N's read-scope independently.** The cause is the conductor's brief
+ordering (the field list was added to O/P/Q after N had already been fired), and it is the conductor's
+cost, not the builder's.
+
+### Bundle O — dispatched `d-mtev4sj5-b40d1781`, in flight
+Brief re-checked against N's actual return before firing: floor 377 → 383; N's widened `BLOCK_PREFIX`
+and its disclosed-enumeration residual marked as N's and not to be re-opened; the stale
+"two escapes remain" sentence marked as P's, not O's.
 
 ---
 

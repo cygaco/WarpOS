@@ -34,6 +34,17 @@ post-N pass count, 0 fail — it was 377 after M; verify the current number your
 
 ## WHAT M AND N ALREADY LANDED — build on this, do not re-litigate it
 
+**Bundle N (`1fb5b31`, parent `3596c2d`) is IN.** Suite is now **383 pass / 0 fail** — that is your
+floor; verify it yourself before you start. N widened `BLOCK_PREFIX` on the lead-in path to a class
+(Unicode `\p{Ps}`/`\p{Pi}` properties for wrapping punctuation, plus grammars for HTML start tags and
+`label:` tokens), and **disclosed in-source what remains an enumeration** — the bullet/dingbat set
+`[-*+•‣◦]` (no backing Unicode property) and the two ASCII quote characters. Do not re-open that; it is
+N's, disclosed, and the disclosure is the correct shape.
+
+**N reported a finding that belongs to bundle P, not to you** — recorded so you do not act on it:
+`CUSTODY.md`'s "two escapes remain" sentence is now **stale and undercounts**, because the block-prefix
+gap N closed was a third, undisclosed escape. P owns that sentence. **Do not touch `CUSTODY.md`.**
+
 **Bundle M (`3596c2d`)** added **fold (8)** to `canonicalizeClaimText`: markdown emphasis, alphabet
 `` [*_`~] ``, replaced with a **SPACE** (not deletion — deletion was measured and rejected because it
 would collapse `**only**place` → `onlyplace` and reopen an adjacent fixed evasion). It applies by
