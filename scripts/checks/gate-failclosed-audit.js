@@ -44,6 +44,22 @@
  *   the hooks config — it can false-positive if the path string appears in
  *   an unrelated field, and it correctly degrades to "unknown" (never
  *   "false") when settings.json cannot be read or parsed.
+ *   NESTED-TRY BLIND SPOT (found by SP-20260829-001 bundle B2 reading seeded
+ *   registry sites directly, not fixed by B2 — out of that bundle's scope):
+ *   findCatchHandlers() advanced its scan cursor to `handlerEnd + 1` after
+ *   matching an outer try/catch, which skips back OVER that outer pair's own
+ *   span — so a try/catch textually NESTED inside the outer try's body (or
+ *   inside its already-matched catch handler) was never independently
+ *   examined. This is a DIFFERENT failure shape than the "flag-then-later-
+ *   SIBLING-exit" reachability gap stated above: it is an EARLIER, NESTED
+ *   site the scan never revisits, not a later one it never looks ahead to.
+ *   Confirmed against 4 real, directly-read registry sites this module's own
+ *   live scan could not reach for exactly this reason (see
+ *   scripts/checks/gate-failclosed-registry.json's tool_correlation_note).
+ *   This means the enumeration this module claims ("the N sites this
+ *   detector found") was narrower than even its own reachable-syntax ceiling
+ *   implied — a new, untriaged site sitting inside an already-matched outer
+ *   try was invisible to it.
  *
  * Output is *"the N sites this detector at <sha> found, ceiling as stated"*
  * — never "the population", never "all fail-open sites". No bare count
@@ -74,7 +90,17 @@ const CEILING_TEXT =
   "event-emitter error handlers, cross-file propagation, nested template " +
   "literals inside ${...} (masked opaquely), regex-vs-division " +
   "disambiguation (heuristic), and structural (vs. substring) settings.json " +
-  "hook-wiring parse.";
+  "hook-wiring parse. NESTED-TRY BLIND SPOT (found by SP-20260829-001 bundle " +
+  "B2, not fixed by B2): findCatchHandlers() previously advanced its scan " +
+  "cursor past an outer try/catch's own span after matching it, so a " +
+  "try/catch nested inside that outer try's body or its already-matched " +
+  "catch handler was never independently examined — a different shape than " +
+  "the flag-then-later-SIBLING-exit gap above (this is an earlier, NESTED " +
+  "site the scan never revisits, not a later one it never looks ahead to). " +
+  "Confirmed against 4 real registry sites the live scan could not reach " +
+  "for exactly this reason; see gate-failclosed-registry.json's " +
+  "tool_correlation_note. The detector's own enumeration was narrower than " +
+  "its stated reachable-syntax ceiling implied.";
 
 const SKIP_DIRS = new Set([
   ".git",
