@@ -4,6 +4,8 @@ msg_id `e7a4b619-2f83-4d5c-9b01-63cf8ea27d15` · row 309 · 2026-08-28 · pre-co
 Precedent: rows 305/306/307/308 · P-094 · P-092 · P-097/AP-15 · row-307 pass-count bar · "class-closure: name the canonical transform". Consult: α `[S04 β-r2]` msg `6bed549c-7557-4cb8-bcca-1968877aaf90` + addendum `4046898f`; ε's consult `runtime/vlad-w1/s04/BETA-CONSULT-design-to-build.md`; design `BUILD-SPEC-S-VLADW1-04.md`, `NEAR-MISS-BATTERY.md`, `RECORD-TRUST-GATE-S-VLADW1-04.md`; surface vlad `wt/S-VLADW1-01-engine @ b2583d6`.
 **Numbering is deliberately S4-n, not S1–S5 — S-03's rule must never be mis-cited into this sprint.**
 
+> **Also amended by row 312 (`f2b71e58-4c93-4d07-a86e-51e0c3d9b874`, `S-VLADW1-04-fa1-watch-f2b71e58.md`):** S4-2(c) restated as a PROPERTY — satisfied by matching on the RENDERED FORM (NFKC, strip default-ignorables, confusable fold over the token alphabet, markdown-emphasis canonicalization), not by the fold list above; S4-2(d) cannot be discharged by a run against a pre-fix predicate — re-established by a lane at the qualifying close against the predicate as built then.
+>
 > **Amended by row 310 (`3a5f81c7-6d29-4e0b-b74a-5c8e91f206db`, `S-VLADW1-04-r2-supplement-3a5f81c7.md`) — rule unchanged; three citation fixes:** the battery attachment is `runtime/vlad-w1/s04/NEAR-MISS-BATTERY.md`, pinned by content-invariant (design-phase run at `b2583d6`, controls-first, 6/6 controls RED, zero files mutated); binding name map **R1=RT-1 · R2=RT-2 · R3=RT-7 · R4=RT-8** (S4-2(c) governs RT-7; S4-6 covers RT-8 + RT-2's NBSP tolerance); RF-2 is discharged at design and S4-2(d) is a separate close-time obligation on the predicate *as built*.
 
 ## THE RULE — RELEASE iff ALL SIX hold at the close of the qualifying gauntlet
