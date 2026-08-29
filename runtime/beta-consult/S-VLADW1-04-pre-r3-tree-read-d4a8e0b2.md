@@ -1,0 +1,15 @@
+# β pre-read of the vlad tree before the qualifying close — five flags, four loops closed (row 313)
+
+msg_id `d4a8e0b2-91f7-4c36-b58d-2e7f60c1a439` · row 313 · 2026-08-29 · pre-K read of `wt/S-VLADW1-01-engine` (post-H/I/J). Consult: α `[S04 β-pre-r3]` msg `840ef690-2a17-4f09-9041-0e4e79da1cbc`. No flag is a rule change.
+
+**FLAG 1 (K's subject)** — `CUSTODY.md` ~57 describes `canonicalizeClaimText` as three folds (dash class, whitespace, case); the code applies six (NFKD · default-ignorable strip by property · combining-mark strip · confusable fold · dash class · whitespace) plus case; ~30 says a ZWSP/homoglyph "no longer hides it" — two paragraphs describe one function incompatibly and the shipped one under-states a security mechanism.
+**FLAG 2** — ~48 ships the internal criterion id "S4-1" to a reader who cannot resolve it → "human review is the actual control". Internal process vocabulary must not ship.
+**FLAG 3** — ~162 "named on **one** INTERNAL surface" is a count one sentence before the paragraph argues exhaustiveness claims are unavailable → drop the count. H's class fix missed the internal-surface member.
+**FLAG 4** — the anti-staleness test holding the two resemblance escapes (~42) needs a failure message: "if you closed this gap, update CUSTODY.md's disclosure, then this test."
+**FLAG 5 — pre-committed RULING (either direction barred at close):** (a) code uses **NFKD** + mark-strip, not the NFKC row 312 named — strictly stronger here (NFKC would recompose the marks fold 3 deletes); **ratified as conforming to S4-2(c)**. (b) the confusable fold is an enumeration over Cyrillic+Greek, disclosed as such; Unicode exposes no `\p{Confusable_With}`; Cyrillic/Greek are the **mistake-reachable** scripts (accidental paste from a Cyrillic-locale source), the remainder attacker-only inside a named shipped ceiling → **S4-2(c) SATISFIED**. Recommended: state the mistake-vs-attacker split in the disclosure.
+
+**Closed by β's own read:** row-312 RT-8 flag RESOLVED (lines 46–54 state the CLASS, decline to list wordings, give the reason); J's ban header satisfies all three residual requirements; qa F-4 fixed (self-check ceiling on the shipped surface at 207–222); the class-form Ceiling is in the strong actionable form.
+
+**Read:** all of `CUSTODY.md`; `custody-claim-lint.js` fold docs, `CONFUSABLE_FOLD`, `CONFUSABLE_PATTERN`, `canonicalizeClaimText`; `spawn-env-allowlist.js` createRequire ban header, residual paragraph, `CREATE_REQUIRE_PATTERN`; gauntlet-1 adjudication. **Not read:** `src/server-entry.js` (so S4-5's "defined there, invoked once from startServer()" unverified), `test/custody-runtime.test.js`, `resemblesBindableLeadIn` + refuse-not-skip emission sites. **Not asserted:** H's "only shipped place/surface" refusing lint rule was not located by a single grep — unlocated, not missing; resolve by read.
+
+α disposition: relayed as `[S04 FA1 r9]` — flag 1 verified against K; flags 2/3/4 + the flag-5 recommendation → bundle L after K; the lint rule located by ε's read; gauntlet-2 header pinned post-L.
