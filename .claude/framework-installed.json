@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "2ae0730f26d501936e260ac7b7ac825d726cef33",
-  "installedAt": "2026-08-29T20:25:42.465Z",
+  "installedCommit": "3e5ba8a08ac8e9168acd0a69e759381923d63c71",
+  "installedAt": "2026-08-29T21:46:13.565Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7326,6 +7326,26 @@
       "mergeStrategy": "replace_if_unmodified",
       "installedHash": "b9354c299c60310d59705efc595a0fc16c0251098f1abd325a4ca25aec843631",
       "currentHashAtInstall": "b9354c299c60310d59705efc595a0fc16c0251098f1abd325a4ca25aec843631",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.gate-failclosed-audit.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/gate-failclosed-audit.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "5efd81a8006ad8bd724d15e24b71affa1cce25cd30acb94d8d9d3f15a43fda49",
+      "currentHashAtInstall": "5efd81a8006ad8bd724d15e24b71affa1cce25cd30acb94d8d9d3f15a43fda49",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "check_tool.gate-failclosed-audit.test.js",
+      "kind": "check_tool",
+      "dest": "scripts/checks/gate-failclosed-audit.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
+      "currentHashAtInstall": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
       "introducedIn": "0.0.0"
     },
     {
