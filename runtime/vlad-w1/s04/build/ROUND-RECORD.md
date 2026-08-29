@@ -269,3 +269,31 @@ K's atomicity requirement): the brief stated the environment from belief rather 
 dispatcher does. **ED candidate:** a dispatch brief asserts a cwd the dispatcher does not establish —
 enforcer shape is either the wrapper injecting the true cwd and target path into the prompt, or a preflight
 that fails a dispatch whose brief names a cwd the process will not get.
+
+### ED-363 — filed by the lead for the brief-cwd premise (cited, not re-filed)
+
+The class above is **ED-363**: a dispatch brief asserts a cwd the dispatcher does not establish. Enforcer
+shape as filed — the wrapper injects the true cwd and target path into the prompt; a preflight fails a
+dispatch whose brief names a different cwd; and **guard refusals are echoed into the envelope schema so a
+silent workaround like L1's is visible** rather than buried in a free-text field the conductor may read
+without acting on. That last clause is the part that would actually have caught this: L1's workaround WAS
+reported, and reading it without acting is what let the next bundle walk into the same wall.
+
+**L2's first dispatch is recorded as a CORRECT HALT, not a failed bundle.** Its two refusals, quoted:
+
+> "That is a guard denial. Per the brief's rule 4 and the standing 'Blocked ≠ retry' rule, I did **not**
+> reshape it into `git -C <vlad path>` to slip past — reformulating a denied command is exactly the
+> tunneling both documents forbid."
+
+> "The filesystem would have let me `sed` those two files. I stopped because the bundle is defined by its
+> commits, not its edits. … Editing without the ability to commit would have manufactured precisely the
+> defect L2 exists to correct."
+
+It also verified the content premises read-only and returned corrected line numbers (P2 heading 113,
+ceiling 137, closed-route example 147, the three `S4-n` hits confirmed at 1273/1279/1398), which is what
+made the re-dispatch a brief edit rather than a re-derivation.
+
+**Four residuals for the named successor are recorded in the sprint tracker**, not here: the unbound
+transform-description paragraph, the disclosed-not-mechanised count-of-surfaces family, L1's
+"unbound ≠ re-wrap is free" finding, and the stale assertion message in a non-shipping test file (which
+cannot fail S4-1 and is deliberately not worth a dispatch at a qualifying boundary).
