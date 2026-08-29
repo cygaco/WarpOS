@@ -97,3 +97,25 @@ you ran it**. A security finding without a reproduction is a hypothesis; label i
 per-lane attribution, and a conductor already shipped one false sentence by rounding one lane up to all
 lanes. **If a previous lane's finding is wrong, say that too** — two builders refuted figures marked
 "verified" today and both were right.
+
+---
+
+## ⚠️ TWO BINDING ADDITIONS (β rows 331 / 332)
+
+**1. REPORT BEHAVIOUR, NEVER A COLOUR WORD.** The sprint's design battery uses
+`R = (b) => b ? "RED" : "GREEN"` where the boolean is *the token was MATCHED* — so in that file
+**RED = caught, GREEN = evades**. A test suite's habit is the opposite (mutate the code, the *test*
+goes red). **The two conventions are inverted**, and an earlier draft of a sibling brief had it
+backwards. Write *"input X is not matched by `containsStatusToken`"* or *"the check does not fire"* —
+never a bare RED/GREEN.
+
+**2. ANY POPULATION YOU DERIVE IS YOURS, NOT THE CLASS.** If you construct a set of attack inputs,
+emit them **item by item**, state the **RULE** by which you derived them (a stated property, or an
+exhaustive extension over an explicitly stated finite domain), and state **what that rule does NOT
+reach**. "I tried a range of shapes" is not a frame. An attack set without its derivation rule cannot
+support any claim about what remains unreachable — and this sprint exists because a coverage claim
+outran its mechanism.
+
+**And the mutation is what gives an assertion content:** if you claim the mechanism catches something,
+also run it with that mechanism removed and report both results. If the two runs agree, your probe is
+not discriminating — say so rather than reporting a pass.

@@ -1,3 +1,38 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠️ SUPERSEDED — 2026-08-29, by β row 331 (`5c17b3ea`). DO NOT RUN THIS FILE.
+//
+// This file is retained as HISTORICAL EVIDENCE: the AS-IS/FIXED cells it produced
+// at DESIGN time are real and are cited in the design record. It must not be run
+// again, and it does not discharge S5-4.
+//
+// WHY. Line 12 below hardcodes an absolute path to the engine-lane worktree with
+// NO COMMIT PIN, while the header line beneath asserted it ran "against the
+// SHIPPED predicate at 6a105f2". That tree has since advanced through bundles
+// M→Q→P″ and the fixes are BUILT. So both columns now resolve to a matcher that
+// already contains the fix: the AS-IS column no longer measures as-is, and the
+// controls that are supposed to distinguish the two columns stop distinguishing
+// anything. That is the same failure this battery's own history records — its
+// first draft was discarded "because its own controls went GREEN" — arriving
+// this time through a MOVED TREE rather than a reimplemented matcher.
+//
+// A design artifact asserting a pin it does not have is itself a false claim, and
+// the sprint authored it, so S5-2 reaches it. Marked rather than deleted, and
+// marked rather than silently corrected, so the error and its correction are both
+// on the record.
+//
+// WHAT REPLACES IT. S5-4 is discharged by re-deriving the near-miss population
+// against the BUILT predicate at a PINNED sha, with no simulation layer — the
+// gauntlet lane derives its own population, states the RULE by which it derived
+// it, and states what that rule does not reach. See β rows 331 and 332.
+//
+// ⚠️ COLOUR CONVENTION, stated because it is INVERTED relative to test-suite
+// habit and that inversion is a live trap: below, `R = (b) => b ? "RED":"GREEN"`
+// where the boolean is *the token was MATCHED*. So here **RED = caught** and
+// **GREEN = evades** (see the "R3 near-miss GREEN as-is (the S4-2(c) gap)" line).
+// In a test suite, mutating the code makes the TEST go red — the opposite sense.
+// Never brief a lane in colour words. State the behaviour.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // S-VLADW1-05 DESIGN-PHASE NEAR-MISS BATTERY
 // Runs every bound rule against the SHIPPED predicate at 6a105f2 AND against the predicate
 // AS IT WILL BE FIXED. CONTROLS FIRST — a battery whose controls do not go RED proves nothing.

@@ -60,9 +60,19 @@ actually complete** — can a key exist that is neither, and is not picked up? A
 Rule 4b is a pure substring check, so appended text is invisible. **Confirm that ceiling by running
 it**, and check whether anything else in the file relies on Rule 4b being stronger than it is.
 
-**6. TEST QUALITY.** Several falsifiers are asserted to have been "observed RED." **Spot-check that
-the tests fail when they should** — mutate the mechanism a test claims to pin and confirm the test
-goes red. A test that cannot fail is the sprint's own subject.
+**6. TEST QUALITY.** Several falsifiers are asserted to have been observed failing. **Spot-check that
+the tests actually fail when they should** — mutate the mechanism a test claims to pin and confirm the
+test reports a failure. **A test that cannot be made to fail is the sprint's own subject.** If a
+mutation did not actually change the code path, that is a FAILED check, not a passing one.
+
+⚠️ **REPORT BEHAVIOUR, NOT COLOUR WORDS.** The design battery uses `RED = matched/caught`; a test
+suite uses `red = the test failed`. **The two are inverted with respect to each other**, and an
+earlier draft of a sibling brief had it backwards. Write *"with X removed, Y is not matched"* or
+*"the test reports a failure"* — never a bare "RED"/"GREEN".
+
+**7. ANY POPULATION YOU DERIVE IS YOURS, NOT THE CLASS.** If you build probes, emit them item by item,
+state the **rule** by which you derived them (a property, or an exhaustive extension over a stated
+finite domain), and state **what that rule does not reach**. "I built my own set" is not a frame.
 
 ---
 

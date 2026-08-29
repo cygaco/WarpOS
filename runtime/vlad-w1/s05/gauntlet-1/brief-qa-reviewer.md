@@ -57,13 +57,58 @@ predicate, with no simulation layer.**
    letter** (Coptic, Deseret, Lisu) — those are expected to evade; confirm they do and that the
    document says so.
 
-**CONTROLS FIRST.** Before asserting anything is caught, prove your harness can observe a failure:
-run your population against a **deliberately narrowed** predicate and observe RED. **A harness whose
-controls do not fire proves nothing** — if your controls do not go RED, report `cannot-assess` rather
-than a pass. This is also the S5-5 falsifier observation for your classes.
+### ⚠️ STATE THE OBSERVATION AS BEHAVIOUR, NEVER AS A COLOUR
 
-**Report per class:** what you derived, what the built matcher catches, what evades, and **whether the
-shipped prose about that class is true of what you measured.**
+**Do not use "RED" or "GREEN" anywhere in your fixtures or your report.** The design battery's
+convention is `R = (b) => b ? "RED" : "GREEN"` where the boolean is *the token was MATCHED* — so in
+**that** file RED means *caught* and GREEN means *evades*. A test suite's habit is the opposite
+(mutate the code, the *test* goes red). **The two conventions are inverted with respect to each
+other, and a fixture briefed in colour words can assert the wrong direction and pass.** An earlier
+draft of this brief had it backwards.
+
+**Say what happened, in behavioural terms.** The required shape:
+
+> *"With fold (8) removed from `canonicalizeClaimText`, these N authorings are NOT matched by
+> `containsStatusToken`; with it present, they ARE."*
+
+Same shape for the prefix class (mutate `BLOCK_PREFIX`) and the letter class (mutate the case-closure
+loop).
+
+**MUTATION IS WHAT GIVES THE ASSERTION CONTENT.** "Each near-miss is caught" is satisfiable by a
+matcher that catches everything and by a fixture that asserts nothing. So for each class: **run it
+against the built predicate, then run it again with the relevant mechanism removed, and report both
+results.** If the two runs agree, your fixture is not discriminating and you must say so.
+
+⚠️ **NO-OP⇒FAIL GUARD.** If your mutation did not actually change the code path, the fixture **FAILS**
+— it does not pass. A mutation that does not mutate observes nothing. Prove the guard works.
+
+If you cannot get the two runs to differ, report **`cannot-assess`** — never a pass.
+
+### ⚠️ YOUR POPULATION IS YOURS, NOT THE CLASS
+
+Deriving your own population frees you from the battery's samples — **it does not make your set
+complete.** A freshly derived sample is still a sample, and "we built our own" is not a frame.
+Swapping an inherited sample for a fresh one and calling it a class is the same defect in newer
+clothes.
+
+**So your envelope must carry, in your own words:**
+1. **the population you derived, EMITTED item by item** — not a count;
+2. **the RULE by which you derived it** — a stated property, or an exhaustive extension over an
+   explicitly stated finite domain;
+3. **what that rule does NOT reach.**
+
+Without (2) and (3), "the lane derived the population and all were caught" is an exhaustiveness claim
+over a set you chose, and it fails the granularity criterion exactly as the battery's twelve prefixes
+would have.
+
+**Report per class:** what you derived, the rule and its limits, what the built matcher matches, what
+evades, and **whether the shipped prose about that class is true of what you measured.**
+
+### S5-5 IS A SEPARATE OBSERVATION — do not report one as covering the other
+
+S5-4 asks *was it re-derived against the predicate as built?* S5-5 asks *were the falsifiers
+observed?* **Answer both, on separate evidence, and say which evidence answers which.** Neither one
+discharges the other.
 
 ---
 
@@ -91,7 +136,8 @@ State your **verdict** and every **finding** with the file, line, and what you r
 - **`what_i_could_not_assess`**
 - **`files_i_could_not_see`** — every file or region you sampled rather than read end to end
 - **`execution_proven`** — which claims you RAN vs reasoned about, and **explicitly whether your S5-4
-  controls were OBSERVED RED**
+  two runs per class (built predicate vs mechanism-removed) actually DIFFERED** — and that your
+  no-op⇒FAIL guard was itself proven, not merely written
 - **`what_would_confirm_or_refute`**
 - **`read_outside_the_quoted_region`** — when you rate a claim, state what you read **outside** the
   lines you quote. Three ratings in this sprint moved when someone finally opened the file — including
