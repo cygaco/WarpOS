@@ -7,8 +7,10 @@ until the operator gives an explicit in-session word. The 2026-08-28 mandate is 
 - **Surface:** vlad `wt/S-VLADW1-01-engine` @ **`6a105f2`**, package root `engine/`
 - **Predecessor ruling:** `runtime/vlad-w1/s04/gauntlet-2/ALPHA-RULING-S4-1-TO-S4-6.md`
 - **Design battery, RUN:** `runtime/vlad-w1/s05/NEAR-MISS-BATTERY.md` (harness `run-battery.mjs`)
-- **Release rule:** NOT YET MINTED. β mints a fresh **S5-n** rule at design→build, before any result
-  exists. **S4-1…S4-6 do not carry over and must never be mis-cited into this sprint.**
+- **Release rule: MINTED** — β row **317** (`2f8c15e6-9d43-4a70-b1c9-84e06fa3d7b2`), **as amended by
+  row 318** (`7b3e6d21-c48f-4e95-a012-3f9d5c07b6ea`). S5-1…S5-7, ONE attempt, no exception clause.
+  Minted at design→build before any result existed. Read the rule as **317-as-amended-by-318**, never
+  317 alone. **S4-1…S4-6 do not carry over and must never be mis-cited into this sprint.**
 
 ---
 
@@ -139,11 +141,23 @@ paragraph edited (atomic, same commit).
 **forbiddenFiles:** all mechanism code. P runs LAST, after M, N and O have landed and their coverage
 sets exist.
 
-> **BUNDLE P'S ACCEPTANCE SHAPE IS S5-2(a)(b)(c). Every sentence you write is judged against all three,
-> and S5-2 is scoped to EVERY coverage claim on the shipped surface — INCLUDING ENFORCER COMMENTS, not
-> just `CUSTODY.md`.** β confirmed the class is NOT exhausted by the three known instances: the same
-> shape is available in every `Proof scope` line, every A1–A8 paragraph and every enforcer header.
-> **The sweep is the criterion** — there is no separate machinery and no list of three sites to fix.
+> **BUNDLE P'S ACCEPTANCE SHAPE IS S5-2(a)(b)(c). Every sentence you write is judged against all three.**
+>
+> **S5-2's SCOPE — as amended by β row 318 (`7b3e6d21`); the row-317 scope sentence is SUPERSEDED.**
+> S5-2 applies **in full** to every coverage claim this sprint **authors or edits**, and to **all of
+> `CUSTODY.md`**. Sprint-edited enforcer comments ARE in full scope — the `CONFUSABLE_FOLD` header
+> block that bundle O edits is sprint-edited and therefore governed. For shipped coverage claims in
+> files this sprint does **not** touch, the requirement is **DISCLOSURE, NOT REPAIR**:
+> `src/env-scrub.js`, `src/model-seam.js`, `driver/host-free-driver.js`, `src/server-entry.js`.
+> **See bundle P task 5** — it owns that disclosure, and the disclosure is itself a coverage claim,
+> so S5-2(b) governs its frame.
+>
+> Do **not** read this as "sweep every coverage claim on the shipped surface" — that was the row-317
+> wording, and β corrected it precisely because it would have required repairing claims across four
+> files the `recommended` scope excludes, producing a terminal on unbriefed surface. β confirmed the
+> class is NOT exhausted by the three known instances (the same shape is available in every
+> `Proof scope` line, every A1–A8 paragraph and every enforcer header) — but within this sprint's
+> scope, "authored-or-edited + all of CUSTODY.md" is the criterion.
 >
 > - **(a) EMITTED, never hand-typed.** Where the mechanism has an enumerable extension — a fold map, a
 >   prefix set, a bound-paragraph key set — the coverage set in the sentence comes from that data.
@@ -243,7 +257,8 @@ coverage-granularity class is closed" is the class one layer out, in the sprint 
 - [x] **Falsifiers pre-written** — RF-M1, RF-M2, RF-N1, RF-O1, RF-Q1, plus the atomicity observation.
 - [x] **ED-363 environment block** stated at the top of the spec.
 - [x] **Bundles ≤4 verified-run tasks each**, ordered so `CUSTODY.md` never has two editors.
-- [ ] **β mints the fresh S5-n rule** — OWED at design→build, before any result exists.
+- [x] **β mints the fresh S5-n rule** — DONE: row 317 `2f8c15e6`, amended by row 318 `7b3e6d21`,
+      minted at design→build before any result existed.
 - [ ] **Operator authorization for the build** — OWED, explicit and in-session.
 
 ## The record-trust gate
@@ -251,3 +266,18 @@ coverage-granularity class is closed" is the class one layer out, in the sprint 
 Nothing in this sprint adds a reader that trusts a record/field to gate an irreversible action; the
 work is a text predicate and its prose. The gate is therefore **not applicable** and is recorded as
 considered rather than skipped.
+
+---
+
+**2026-08-29 conductor correction (ε), NO SCOPE CHANGE.** Three edits, authorized by the team lead,
+correcting this document against rulings that already existed when it was written: (1) the header's
+"Release rule: NOT YET MINTED" and the design-exit checkbox "β mints the fresh S5-n rule — OWED"
+both contradicted the checked line citing row 317 — the rule was minted before this spec was last
+touched, and two of three statements about it were false; both now read MINTED, citing row **317
+`2f8c15e6` as amended by row 318 `7b3e6d21`**. (2) Bundle P's acceptance block quoted the row-317
+S5-2 scope sentence that **row 318 superseded** ("every coverage claim on the shipped surface"),
+with no pointer to task 5 — a builder reading top-down would have attempted repair on the four
+untouched shipped files, the exact over-reach β corrected; it now states the amended scope
+(authored-or-edited + all of `CUSTODY.md`, including sprint-edited enforcer comments such as the
+`CONFUSABLE_FOLD` header bundle O edits; disclosure-not-repair for the four files) and points to
+task 5. No criterion, bundle, task, falsifier or scope boundary is altered by any of this.

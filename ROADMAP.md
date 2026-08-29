@@ -848,6 +848,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [S-VLADW1-05](.claude/project/sprint/sprints/S-VLADW1-05/) | Vlad Wave-1: one transform, both sites (coverage stated at the granularity the mechanism has) | planning | 2026-08-29T20:24:02.261Z |  |  |
 | [SP-20260829-001](.claude/project/sprint/sprints/SP-20260829-001/) | Fail-closed enforcer sprint: gates that cannot swallow could-not-check into pass | planning | 2026-08-29T20:02:12.838Z |  |  |
 | [S-VLADW1-04](.claude/project/sprint/sprints/S-VLADW1-04/) | Vlad Wave-1 custody claims made un-invertible | planning | 2026-08-28T22:20:03.841Z |  |  |
 | [S-VLADW1-03](.claude/project/sprint/sprints/S-VLADW1-03/) | Vlad Wave-1 custody residuals to release | planning | 2026-08-19T19:23:19.551Z |  |  |

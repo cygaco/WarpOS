@@ -1,0 +1,120 @@
+schema: warpos/sprint/current-sprint/v1
+id: S-VLADW1-05
+title: "Vlad Wave-1: one transform, both sites (coverage stated at the granularity the mechanism has)"
+objective: "Run /sprint:plan to set this."
+status: planning
+created_at: "2026-08-29T20:24:02.261Z"
+updated_at: "2026-08-29T20:25:25.361Z"
+source_request: "S-VLADW1-05 — one transform, both sites. Successor to S-VLADW1-04's honest close."
+interpreted_intent: "Make the custody bind's coverage claims true at the granularity the mechanisms actually have; put the emphasis fold inside the one shared transform so both comparison sites receive it; bind the transform's own description; and re-run the S4-style gauntlet under a fresh pre-committed rule. Aim at the CLASS (coverage asserted coarser than the mechanism), not at the three known sentences."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260829-0088.yaml"
+risk_level: high
+approval_state: none_required
+current_phase: plan
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260829-0088.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:execute"
+  resume_summary: "Plan Contract PC-20260829-0088 created. Next: /sprint:execute."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: worktree
+  value: "isolation worktree off wt/S-VLADW1-01-engine @6a105f2"
+  isolation_notes: "Lane A of a two-lane session; lane B (SP-20260829-001) is WarpOS-side and shares no files. Builders are dispatched from the WarpOS root; their process cwd is a WarpOS isolation worktree and the TARGET is the vlad path — briefs must not assert a cwd the dispatcher does not establish (ED-363)."
