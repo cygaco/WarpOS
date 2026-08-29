@@ -24,7 +24,12 @@
     "../sprints/SP-"
   ],
 
+  "_note_adr0041_owed_scripts": "The three `scripts/checks/*.js` literals below (no-held-secret-in-surface.js, spawn-env-allowlist.js, no-secret-on-outbound.js) are ADR-0041's own P1/P2/P4 rows, each explicitly marked '**OWED** — ED-340' in the doc's own table (planned/aspirational, not yet built) as of that ADR's 2026-08-19 commit — a pre-existing category-2 case per this file's `_comment`. (A fourth doc-ref-integrity break on the same ADR, line 317's inline code span `` `cp['spawnSync'](` ``, is a JS member-access example inside prose that the checker's path-shape heuristic misreads as a path; fixed with an inline <!-- doc-ref-ignore --> on that line instead of an allowlist entry.) Added during SP-20260829-001 bundle B2 (backend-builder) only because they blocked merge-guard for an unrelated commit (the new gate-failclosed registry/enforcer/baseline files); this ADR and its ED-340 debt pre-date this sprint and are untouched by it.",
+
   "literals": [
+    "scripts/checks/no-held-secret-in-surface.js",
+    "scripts/checks/spawn-env-allowlist.js",
+    "scripts/checks/no-secret-on-outbound.js",
     ".claude/scheduled_tasks.lock",
     ".claude/paths.local.json",
     ".claude/project/reference/SPEC_GRAPH.json",
