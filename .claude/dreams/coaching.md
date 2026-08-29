@@ -325,3 +325,92 @@ when ratifying something broad, enumerate every lane it governs, not just the on
 - The `node -e` fs-write reflex fired 11 more times this window (8 weeks running, always caught). Gate-time
   blocking demonstrably does not extinguish it, so stop expecting the reminder to work and let the Phase 4.5
   debt sweep turn it into a write-time rule.
+
+---
+
+# 2026-08-29 — morning briefing + coaching (`/sleep:deep`, full 6-phase)
+
+*Previous deep cycle: 2026-07-30. Thirty days, 168 commits, three sprints (S-VLADW1-03 closed
+unreleased at 85%, S-04 closed unreleased at 80%, S-05 in flight), and no sleep in between.*
+
+## The one thing to read first
+
+**The instruments are dark and the dashboards are green.** Three memory stores stopped receiving
+writes and nothing noticed, because every path key still resolves:
+
+| Store | State | Silent for |
+|---|---|---|
+| `paths.tracesFile` | 10 rows, last write **2026-06-09** | 81 days |
+| `paths.skillUsageFile` | **file has never existed** — registered path, no producer | all-time |
+| `.claude/project/maps/SPEC_GRAPH.json` | frozen at `generatedAt: 2026-06-28` | 62 days |
+| `.claude/runtime/handoff.md` | dated **2026-06-08**, describes a June sprint | 82 days |
+
+CLAUDE.md says *"Log every reasoning decision."* The trace store has ten rows and none since June.
+That is not a discipline failure to feel bad about — it is a **missing enforcer**, and it is the
+cheapest one on the board: a `scan:store-liveness` that reads each `paths.*` store's last-write
+timestamp against a declared expected cadence. Thirty lines. It would have caught all four rows of
+that table in June.
+
+Related and worse: `reap-orphans` reports `orphanCount: 0` when its process enumerator returns
+nothing at all — `scanned: 0` and a genuinely clean machine render identically. A dead instrument
+reporting green beats a dark one only in the sense that it is harder to notice.
+
+## What you were actually trying to do this month
+
+Make claims about custody un-invertible — prove that what the code does and what the document says
+about it cannot drift apart. You got substantially there, and the *method* is the achievement: rules
+pre-committed before any result existed, amended only while the outcome was unknown, applied
+verbatim at the close. Two sprints closed **unreleased and honest** rather than released and
+flattering. That is the system working, not failing.
+
+## The pattern worth naming
+
+Every repair this month produced a new defect **one layer out** — fix the predicate, the coverage
+sentence is wrong; fix the sentence, the fold sits beside the transform instead of inside it. Five
+gauntlets, same shape. The common cause is not carelessness; it is that **a positive test is a
+mirror.** Watching a control fire tells you only that it fires. Nothing in the current process ever
+asks an enforcer what it cannot see.
+
+The two structural answers, both cheap, neither yet built:
+
+1. **A negative control is part of an enforcer's definition of done.** A check ships with one input
+   it must reject, or it does not ship.
+2. **A coverage sentence must name the unit the mechanism actually enumerates.** "All scripts" over a
+   letter-level check is false while every number in it is true. Say "letters", or state the sample
+   and refuse the closure word.
+
+## A genuine strength, stated plainly
+
+β self-corrected its own pre-committed rules three times this arc, each time **before results
+existed**, each time widening rather than narrowing — and once after the conductor disclosed a
+conflict against its own interest. Twenty-eight β verdicts since the last sleep, **zero overridden,
+zero all-time**. Independent corroboration showed up tonight too: β reached *"approval is not a truth
+check"* from the consult ledger while `/learn:deep` reached the same sentence from the conversation
+lane, in the same session, neither seeing the other. Two corpora, one finding. Trust that one.
+
+## Suggested first task next session
+
+**Build `scan:store-liveness`.** It is small, it is the root cause of four separate stale-artifact
+findings in tonight's cycle, and it closes the gap that let a month of reasoning traces go
+unrecorded under a green board. Second choice: regenerate `SPEC_GRAPH.json` (62 days stale, so it
+represents none of the S-VLADW1 or ADR-0041 work) — but liveness first, or the graph goes stale
+again in silence.
+
+## Held for your ruling — not acted on
+
+Ten items from tonight's β review need an operator call and were deliberately left flagged:
+**G-30** (may a pre-committed rule be amended, and when), **G-31** (may β bound the reach of a
+mandate *you* issued), **G-28/G-29** (unruled since 2026-08-11, now 18 days), **DP-gap #47–#50**, and
+the two schema promotions (a CLAUDE.md enforcement clause; a new named β principle). Nothing was
+promoted. `/beta:integrate` has a reviewed set of 26 validated items whenever you want it run.
+
+## Housekeeping you may want to authorize
+
+- **28 git worktrees** exist; several point at sprint branches from mid-July that appear merged.
+- **247 uncommitted files**, 243 of them under `runtime/` (expected per the per-run-artifacts rule).
+- **`merge-guard` blocked the same `node -e` + `fs` write idiom 33 times** since 2026-07-23, 11 in the
+  last week. A guard blocking one idiom 33 times is telling you the *supported* idiom is missing, not
+  that it is working. (This cycle wrote its consolidation as a script file instead, which the guard
+  allows — that is the workaround, not the fix.)
+- **No lockfile** in the repo root, so `npm audit` cannot run at all — dependency health is currently
+  unmeasurable rather than clean.

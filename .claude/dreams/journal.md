@@ -797,3 +797,247 @@ was NOT touched**, no confidence value changed, nothing promoted.
   `test-install-matrix.js`, `event-contract.js` — 0 missing across all 72 wired entries).
 
 ---
+
+---
+
+# Sleep Journal — 2026-08-29 (`/sleep:deep`, full 6-phase — post S-VLADW1-03 close (85%, unreleased) + S-04 close (80%, unreleased) + S-05 in flight)
+
+Run as Phase 3 of `/session:end`, session `6022a3a3`, by the `WrapSleep` teammate. Inputs from the
+same wrap: Phase 1 `/learn:deep` (28 new learnings), Phase 2 `/beta:mine` (37 staged items).
+**Previous deep cycle: 2026-07-30 — 30 days, 168 commits, three sprints ago.**
+
+## NREM Consolidation
+
+- **Learnings: 224 → 226** (0 pruned, 15 promoted to `effective:true`, 0 merged, 2 schemas added).
+  Backup at `learnings.jsonl.bak-20260829-sleepdeep`. Consolidation re-run verified **idempotent**
+  (second pass = full no-op); 226/226 lines parse.
+- **Importance audit: 102 HIGH / 124 MEDIUM / 0 LOW.** 19 normalized from `HIGH`/`MEDIUM` casing;
+  103 inferred where the field was absent (the field existed on only 64 of 224 entries).
+  **0 LOW is a reviewed result, not a default** — the classifier's LOW branch caught exactly three
+  entries ([4] a pipe swallows the real exit code, [10] systems-sync auto-registration as a positive
+  control, [91] reachability smoke before claiming done); each names a concrete mechanism and none is
+  noise, so the branch was corrected rather than the entries downgraded.
+- **Promotions (neocortical transfer), 15 — all evidence-based, none self-rated:**
+  - 13 by artifact verification: `status ∈ {implemented, validated, applied}` **and** every
+    file-shaped `implemented_by` ref resolves on disk today.
+  - 2 by retroactive pattern-promotion: learning [4] is already **verbatim policy** in CLAUDE.md
+    §Tool Use ("Never pipe a gate's exit through tail/head"). The transfer to the neocortex had
+    happened weeks ago; only the record had not caught up. Rule text confirmed present before marking.
+- **Deduplication: 0 merges.** All-pairs Jaccard over the full store peaked at **0.16** (entries 210
+  and 211) — no true duplicates exist. `/learn:deep`'s upstream dedup is working; nothing to compete.
+- **Decay applied: 0 entries removed — and this is the finding, not a skipped step.** Both SHY rules
+  were evaluated and hit: rule A (`score:0 + pending_validation + >14d`) matched **30**, rule B
+  (`effective:null + >21d`) matched **34**. **Every single hit was a false positive**, in two clean
+  classes:
+  - ~19 are `status: implemented|validated` entries carrying real scores (2–3). Their `effective:null`
+    is a **schema artifact** — the field was written null at creation and no pass ever updated it.
+    It is not evidence of non-validation.
+  - ~16 are external research facts (`deep-research/*`, `learn:ingest:*` — CCPA response clocks, the
+    EU AI Act Digital Omnibus, Google Play review-gate policy, WCAG thresholds). These **cannot be
+    validated against this codebase**; there is no code to check them against. Validating them means
+    re-reading external law, which is out of scope for a sleep pass.
+
+    Deleting 34 entries here would have destroyed real signal on a store at **226/1000**, against the
+    skill's own instruction to bias toward keeping. Both classes were instead repaired at the source:
+    the landed ones promoted to `effective:true`, and the external ones marked
+    `validation_class: "external-reference"` so the decay predicate stops reading them as noise.
+
+    **The decay rules are mis-specified against this store's schema** — they key on fields that mean
+    something different here than the rule assumes. Left as-is (changing the skill is a policy edit)
+    but recorded: a pass that applied them literally would have quietly deleted 15% of the store.
+- **Conflicts resolved: 0 detected.** No contradicting pairs surfaced at any similarity threshold.
+- **Pattern promotion → 2 schemas written** (subsuming, not replacing, their clusters):
+  - `SCHEMA-2026-08-29-enforcer-blind-spot` (subsumes 19+): no enforcer is complete until it ships
+    with a **negative control** and a written statement of the class it does not cover. A positive
+    test proves the control fires; it never bounds what the control misses.
+  - `SCHEMA-2026-08-29-grain-match` (subsumes 68): a claim's grain must match the grain of the thing
+    it describes, and it **fails in both directions** — coarser than the mechanism enumerates
+    overstates ("all scripts" over a letter-level check), finer than the composed system understates.
+
+    Both carry `promotion_candidate` pointers and are **HELD**: one targets CLAUDE.md, one a named β
+    principle. Policy-layer edits need an operator ruling.
+- **False memory guard: 18 file-shaped refs checked, 17 resolve, 1 repaired.** Learning [8] pointed at
+  `.claude/agents/03-managers/director-of-product.md` — a **pre-ADR-0007 numbered-directory path**
+  that has not existed since the org rewrite. Repaired to `.claude/agents/product/director-of-product.md`.
+  (An earlier naive check reported 21 "missing"; re-running it properly showed 16 were `type:path`
+  labelled refs my resolver mis-parsed. The zero-result discipline applied to my own tooling.)
+- **Retroactive reclassification (1g): nothing to reclassify — and that is a finding.**
+  `paths.tracesFile` holds **10 rows, last written 2026-06-09 (81 days)**. Zero traces in the last 7
+  days, zero with `quality_score ≥ 2` in the window. CLAUDE.md instructs "Log every reasoning
+  decision"; the store has been cold for three months. **Aspirational, unenforced** — see Repair.
+- **Alex β review (1h): 28 decisions since last sleep — 27 DECIDE, 1 ESCALATE, 0 overridden**
+  (all-time overrides: **0**). Ledger at 318 rows. Escalation `d7f31a68` (E-VLAD-001-W1 design→build)
+  resolved. **No confidence value changed** — following the precedent at item 35 of the 2026-08-11
+  block, the sleep pass reviews and `/beta:integrate` applies. `topic_tags` were absent on all 28
+  in-window rows (only 14 tagged all-time), so per-topic confidence stepping was **not computable**;
+  the topic field carries full verdict prose instead. Recorded as a real gap, not skipped silently.
+
+## Cleanup (Glymphatic)
+
+- **Session files cleared: none needed.** 0 `*.tmp`, 0 `*.bak` under `.claude/`; dispatch-locks holds
+  4 per-provider dirs and no loose lock files. Clean.
+- **Events compacted: 0 — not yet due.** `events.jsonl` 17,778 lines / 5.5 MB spanning 2026-07-23 →
+  today; `tools.jsonl` 2,304 lines / 760 KB from 2026-08-19. **Nothing older than 30 days in either.**
+- **STALE markers: none genuine.** ~140 filename hits were all the substring "stale" inside
+  legitimate staleness tooling, fixtures, and backup copies.
+- **Handoffs: 1 file** (`2026-08-19-2348.md`), older than 7 days, **kept** — it is the only real
+  handoff on disk and its successor is stale (below). Nothing to prune.
+- **Orphan branches / worktrees: 28 worktrees**, several on `sprint/SP-20260720-*` and
+  `SP-20260721-*` branches from mid-July that appear merged. `agent/wt-*` pattern: **0** (the actual
+  convention is `worktree-agent-*`). Not removed — flagged for operator authorization.
+- **Uncommitted: 247 files** — 243 under `runtime/`, 2 `.claude/`, 1 `.worktrees/`, 1 `.warpos-backup/`.
+  Consistent with the per-run-artifacts-under-`runtime/` rule. Branch `session/2026-07-31`, 0 ahead /
+  1 behind main.
+- **Requirement drift: 0 pending.** `paths.requirementsStagedFile` does not exist on disk.
+- **Recurring system issues: 9 curated (RI-001…RI-009), 0 resolution candidates found** — no commit
+  since 2026-07-30 matches any open issue's fix. **5 demote-to-monitoring candidates** (RI-001, -002,
+  -005, -006, -007: last seen late May/early June, count 1, no recurrence). **1 new scan candidate
+  above threshold and untracked:** `merge-guard-blocked :: node -e with fs write` at **11× in 7 days**
+  (33× since 2026-07-23). **Data defect found:** `RI-008` appears **twice** in
+  `paths.recurringIssuesFile`, once well-formed and once with `undefined` title/category/count.
+
+## Replay (Spindle)
+
+- **Today's real goal:** make custody claims un-invertible — force what the code does and what the
+  document says about it to be the same thing. Substantially achieved *as method*: release rules
+  pre-committed before any result existed, amended only while outcomes were unknown, applied verbatim
+  at close. Two sprints closed **unreleased and honest** (85%, 80%) rather than released and
+  flattering. The refusal to ship is the achievement.
+- **Achieved:** 168 commits; ADR-0041 + amendments 1/3/4; the prior-art evidence ledger; S-03 and S-04
+  adjudicated against pre-committed rules; S-05 minted with S5-1…S5-7.
+- **The rule that is NOT holding (third instance):** S-03's action item *"apply refuse-not-skip to the
+  claim-lint derivation — never silently skip"* recurred as S-04's own FAIL (S4-1a/b/c coverage
+  granularity; S4-2(c) the fold implemented beside the shared transform). Now carried into S-05 as
+  four more action items. **Structurally recurring, not fixed** — each repair produced a new defect
+  one layer out, across five gauntlets in two sprints.
+- **The rule that IS holding:** S-03's `WARPOS_DISPATCH_BACKGROUND=1` (ED-353) — commit `aa53e9c7`
+  moved it into the permissions allowlist, removing the remember-to-set-it step. The fix that got
+  mechanized stuck; the fix that stayed an action item recurred. That contrast is the whole lesson.
+- **Blind spots — dormant a month or more:** `.claude/commands/` **2026-07-31 (29d)** ·
+  `framework/` **2026-07-29 (31d)** · `_requirements/` **2026-07-24 (36d)** · `_docs/`
+  **2026-06-12 (78d)**. All effort is concentrated in `runtime/vlad-w1/`, `trackers/sprints/` and
+  ADR/policy. The skill catalog, requirements canon and docs layer have not moved.
+- **Unused skills: 192 of 237 never invoked** (48 ever used — measurable, real signal, not an empty
+  store artifact). Top: `session:turbo` 28 · `session:end` 25 · `mode:sprint` 23 · `enforcement:log` 17
+  · `sprint:full` 16. Note `paths.skillUsageFile` **does not exist** — that store is registered and has
+  no producer; the counts came from `events.jsonl` telemetry instead.
+- **Stale artifacts:** `.claude/runtime/handoff.md` is dated **2026-06-08** (82 days) and describes a
+  June sprint — the real latest handoff is the 2026-08-19 file, whose own footer says *"No retro was
+  created this session."* `SPEC_GRAPH.json` is frozen at `generatedAt: 2026-06-28` (62 days); all 429
+  referenced source files resolve, so it is **stale, not broken** — it simply represents none of the
+  S-VLADW1 or ADR-0041 work.
+- **User style note:** the operator corrects *register* as readily as substance ("an evidence
+  deliverable is a story with receipts, not a legal brief") and sets comparison frames as fixed inputs
+  rather than judgment calls. Both are premises to honour and disclose, not to optimize.
+
+## REM Dreams
+
+- **Dream paintings: 3** saved to `.claude/dreams/2026-08-29.md`, each with a Deep Read.
+  1. *the sentry with one word on his card* — the em-dash predicate. He is awake, he fires, he is
+     watched firing, and the glyph he cannot see is not on his card. A positive control is a mirror.
+  2. *the seal of many hands* — β recommended, α approved, ε reviewed, and the shipped bytes disagreed.
+     Every signature was on the claim; none was on the mechanism. The comment stating the invariant is
+     a policy with no enforcer at a distance of zero lines.
+  3. *the instrument room, and every needle resting* — the cold stores, with `orphanCount: 0` lit and
+     green beside them because its enumerator returned nothing and "nothing" and "clean" render
+     identically.
+- **Two dreams RETURNED unplanned.** "The gate that widened its eyes but never learned the new word"
+  (2026-07-20) is the exact shape of the em-dash bind predicate that failed S-03 **a month later**;
+  "the gate that approval cannot open" (2026-07-18) came back **inverted** — tonight approval opened
+  it and the gate was wrong anyway. The subconscious had this material before the sprints did.
+- **Cross-pollination:** all three paintings are one mechanism at three scales — a *true local report*
+  consumed as a *false global claim*, with the join unwatched. S5-2 was minted against exactly this at
+  the sprint scale, which means the sprint arc independently rediscovered in rule form what the
+  learnings store has been saying for three months (48 entries in the guard-fails-open cluster, 68 in
+  claim-vs-mechanism). **The doctrine is mature; the instrumentation of the doctrine is absent.**
+  Distant association: the cross-family reviewer found three real defects every same-family Claude
+  lane missed, once on code a Claude lane had read and explicitly tried to break — a negative control
+  discovered accidentally and socially. **Buy the blind spot rather than reasoning your way out of it.**
+- **Schema: 2** (above). **Subconscious learnings extracted: 3** — the negative-control rule; that a
+  comment naming an invariant is an unenforced policy nothing classifies as a policy; that the system
+  measures its work far better than it measures its own instruments.
+- **β pattern mining reviewed (not re-run):** `/beta:mine` had already staged 37 items this wrap.
+
+## β recommendations — reviewed, 0 promoted
+
+**37 staged → 26 VALIDATED · 8 HELD-FOR-OPERATOR · 3 CONFIDENCE (0 applied) · 0 REJECTED.**
+Review block appended to `paths.judgmentRecommendations` (634 → 690 lines); staged block untouched.
+
+- **Verified, not assumed:** all 13 cited `paths.betaEvents` rows (305–318) opened and confirmed.
+- **Cross-store corroboration found:** P-111 ("approval is not a truth check") was reached
+  independently by `/learn:deep` from the conversation lane (learning 198) — same sentence, different
+  corpus, same session. P-130 (grain-match) was independently derived at this sleep as
+  `SCHEMA-2026-08-29-grain-match` from clustering 68 learnings, **before** the block was read.
+- **Two downgrades filed:** P-127 reclassified **pattern → instance** (CLAUDE.md's zero-result rule is
+  already cause-agnostic; a vocabulary mismatch is a zero it governs — adding a rule that restates a
+  rule is how the enforcement layer accretes), and marked **unverified-at-source** because its cited
+  `custody-claim-lint.js:1394` is in the out-of-tree vlad repo and the WarpOS-only boundary was held.
+  P-129/P-131 marked **thin (n=1)**.
+- **One citation defect found in the block's own text:** P-128 cites "`DUMP.md` lines 3/48" — line 48
+  is **blank**. The file moved under the citation within hours. Recorded as evidence *for* P-120 (pin
+  a citation by path **and** content-invariant), whose own failure mode it demonstrates.
+- **HELD for operator (8):** G-30 (rule-amendment window), G-31 (may β fence an operator mandate),
+  G-28/G-29 (unruled since 2026-08-11, now **18 days**), DP-gap #47/#48/#49/#50. Plus the two schema
+  promotions above. **Nothing promoted; nothing auto-applied.**
+- **Confidence: 0 applied.** The release-rule-minting RAISE is **condition-unmet on its face** — its
+  own text says "re-check after S-05 closes" and S-05 is the live sprint. The other two recommend
+  "no change".
+- **4th consecutive cycle** the miner's `events.jsonl` / `tools.jsonl` / git-lifecycle / time-of-day
+  lenses went unrun (disclosed by the miner). This pass partially discharged the `learnings.jsonl`
+  lens; four remain owed.
+
+## Repair
+
+- **Security: CLEAN.** 370 files changed-or-dirty since 2026-08-22 scanned for secret shapes.
+  **0 credible leaks.** Three hits were all security-test evidence, not credentials (a regex pattern,
+  a decoy token deliberately built via `["sk","ant"].join("-")` to avoid a fused literal, and an
+  already-redacted `sk-ant-<REDACTED>`). **0 tracked `.env*` files** — only an expected
+  `.env.local.example.tmpl`.
+- **Dependencies: UNMEASURABLE, not clean.** `npm audit` fails `ENOLOCK` — **no `package-lock.json`
+  in the repo root**. Stated as a gap rather than reported as zero vulnerabilities.
+- **Architecture: healthy.** `scripts/path-lint.js` exit **0, 0 critical** (10,457 warnings, almost
+  all inside 10 stale untracked nested worktree copies, not canonical). Manifest `validate.js --json`
+  **ok:true**, 5,138 paths, 0 missing / 0 unmanifested / 0 schema violations — **1 soft drift**, the
+  sha of `judgement-model-recommendations.md`, which was already drifted before this pass and has now
+  been appended to again (expected; a regen closes it). Doc links: 193 targets, 20 sampled,
+  **0 genuine breaks**.
+- **Hooks: intact.** All **66** referenced scripts exist, none 0 bytes, none >60 KB (largest
+  `team-guard.js` at 42 KB). `_disabled_hooks` holds one entry — `smart-context` (UserPromptSubmit),
+  disabled 2026-07-09 per operator directive, re-enable procedure documented inline. **7 real orphan
+  hook scripts** in `scripts/hooks/` unreferenced by settings (plus 8 `.test.js` fixtures, expected).
+- **Mode:** dark. Repairs applied were data-layer only (learnings store, β review marks, dream/journal/
+  coaching) per the skill's "sleep does NOT touch `src/`". No code changed, no commits made.
+
+## Growth
+
+- **System strength: STRENGTHENING in doctrine, STAGNATING in instrumentation.** The judgment layer is
+  genuinely maturing — pre-committed release rules survived two closes, β holds 0 overrides across 318
+  decisions, and two sprints were closed honestly-unreleased under pressure. Meanwhile four memory/
+  telemetry stores went dark for 30–82 days with every dashboard green, 192 of 237 skills have never
+  run, and three whole layers (`_docs/`, `_requirements/`, `framework/`) have not moved in a month.
+  **The system is getting better at judging its work and no better at watching its own instruments.**
+- **Biggest leverage point: build `scan:store-liveness`.** ~30 lines: for each `paths.*` store, read
+  last-write time against a declared expected cadence; red when a should-be-hot store goes quiet. It
+  is the single root cause behind four separate findings tonight (traces cold 81d, `skillUsageFile`
+  never created, SPEC_GRAPH frozen 62d, handoff.md stale 82d) and it is what would have surfaced "Log
+  every reasoning decision" as unenforced in June rather than in August.
+- **Next evolutions proposed (1–3):**
+  1. **`scan:store-liveness`** (above) — highest leverage, smallest build.
+  2. **Negative control as an enforcer's definition of done** — a check ships with one input it must
+     reject, or it does not ship. This is the structural answer to five gauntlets of one-layer-out
+     defects, and it converts "we can't know what we can't see" into a fixture file.
+  3. **Fix the `merge-guard` idiom gap** — 33 blocks of the same `node -e` + `fs` write since
+     2026-07-23, 11 this week, and the pressure once aimed at the authorization layer. A guard
+     blocking one idiom 33 times is a missing-supported-idiom signal, not a success metric.
+- **Morning briefing:** appended to `.claude/dreams/coaching.md` (327 → 416 lines).
+- **False memory check: 18 refs verified against code, 1 stale path repaired** (pre-ADR-0007 numbered
+  dir → department tree). 15 promotions each gated on artifact existence; the CLAUDE.md rule text was
+  read before marking learning [4] promoted.
+
+### Recommended but NOT filed (writes outside this skill's scope)
+
+Three items earned an `paths.enforcementDebt` row tonight and were deliberately left unfiled, since
+the sleep skill directs writes only to the learnings store, β staging, dreams and this journal:
+**(a)** no store-liveness enforcer; **(b)** `RI-008` duplicated with an `undefined` record in
+`paths.recurringIssuesFile`; **(c)** the untracked 33× `merge-guard` idiom pattern (a `/issues:log`
+candidate above threshold).
