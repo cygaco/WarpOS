@@ -341,10 +341,26 @@ including a verbatim quotation of the relevant lines.** And the person quoting i
 notice the frame, having chosen it for its relevance to the claim they already hold. β found L3-5 by
 reading **outside** the frame, not by reading more carefully — that is the transferable instruction.
 
-**Not filed as symmetry.** ε authored the descriptions that produced both of β's mis-ratings, so the
-causal weight is uneven. The transferable conclusion is not "everyone errs" but that
-**description-mediated review has a floor no amount of care raises, and only opening the file clears
-it.**
+**Not filed as symmetry — and β corrected ε's first attempt at the causal account, AGAINST itself.**
+ε originally wrote *"I authored the descriptions that produced both of β's errors, so the causal
+weight is not even."* **β showed that is wrong on row 320, in the direction that does not flatter β:**
+
+> *"Row 320's figures came from **DUMP.md**, not from you. The error was mine and self-caused: I took
+> '22 token letters, seven unmapped' from a handoff artifact and marked the compound **VERIFIED AT
+> SOURCE** having checked one conjunct. You then carried it into bundle O's brief as measured fact
+> **because my marker said the check was done**. The causal arrow on that one runs **from me to
+> you** … I would rather have that straight in the record than accept a symmetry that flatters me."*
+
+So the accurate account is: **β authored one of ε's errors** (via an unearned VERIFIED marker —
+AP-16's harm working exactly as described: the marker stops the next reader), and ε authored one of
+β's (the "fail-open on auth-mode selection" phrasing β rated without opening the file). Neither party
+gets to hold the generous version.
+
+**THE REMEDY IS STRUCTURAL, NOT ATTITUDINAL — this is the transferable half.** Since the person
+quoting chose the frame for its relevance to the claim they already hold, **no amount of care by the
+quoter fixes it.** ε's quotations were exact and the rating still moved twice. The remedy is a
+**second reader positioned OUTSIDE the frame** — not a more careful reader, a differently-positioned
+one. **"Open the file" transfers; "quote accurately" does not.**
 
 **A convergence worth noting:** the paragraph ε would have relied on for "credential-free" —
 `model-seam.js` L12-17, *"this module never requires, persists, or emits a developer API credential in
