@@ -284,6 +284,51 @@ the 12 and none of the other 53 — **this table is my account and is owed an in
 BEFORE the registry is sealed** (β d0c5b2e7 §6), which is the right order precisely because I author
 both the registry and the enforcer that reads it.
 
+## 6d. ED-353 SECOND INSTANCE — the clamp on the `dispatch-agent.js` route (2026-08-29)
+
+Filed here so the enforcer sprint's successor sees the **route gap**, not just the recurrence.
+
+**What happened.** The independent re-derivation lane (`d-mteugj7o-fc57fdcc`, role `cabinet`,
+gpt-5.6-sol) returned `ok:false`, `exit_code 1`, **`elapsed_ms 540402`**, `output: ""`. That elapsed
+figure is the **540 s foreground-clamp signature**: `dispatch-agent.js` clamps the child bound to
+`FOREGROUND_CEILING_MS` unless `WARPOS_DISPATCH_BACKGROUND=1` is present. I fired it as a bare
+`node scripts/dispatch-agent.js …` with no env prefix.
+
+**Not a provider fault, and the error blob proves it** — codex started cleanly: `workdir` correct,
+`model: gpt-5.6-sol`, `sandbox: workspace-write`, session id present, the prompt echoed back. It was
+reading and was killed before it could emit. **A healthy provider start + zero output + `elapsed`
+540xxx is the clamp signature**, and reading it as a provider failure sends you re-litigating the
+wrong layer.
+
+**THE ROUTE GAP — this is the part worth an enforcer.** ED-353's first instance was on
+`dispatch-claude.js`. The mitigations that grew around it are all shaped to *that* route: the
+operator-authorized settings allow-rules are
+`Bash(WARPOS_DISPATCH_BACKGROUND=1 node scripts/dispatch-claude.js *)`, the conductor instructions say
+"builders MUST carry `WARPOS_DISPATCH_BACKGROUND=1`", and my own memory entry was written about
+builders. **`dispatch-agent.js` — the cross-provider reviewer route — has the same clamp and none of
+the surrounding habit.** Cross-provider CLIs buffer output to exit and routinely run 6-10 minutes, so
+the reviewer route is arguably *more* clamp-exposed than the builder route, and it is the one with no
+allow-rule, no instruction text and no memory shaped around it.
+
+**The rule as it should be stated:** the clamp is a property of the **wrapper's timeout policy, not of
+the role**. Any dispatch that can exceed ~9 minutes carries the env var, whichever wrapper it uses.
+
+**Enforcer shape for the successor** (this is a candidate, not a claim that it exists): the wrapper
+itself should emit a stderr advisory at spawn when the resolved bound equals `FOREGROUND_CEILING_MS`
+and no background signal is present — ED-353's own `enforcer_candidate_addendum` already proposes
+exactly this plus a `death_cause:"foreground-clamp"` tag on completion rows so `gauntlet-verify` and
+`epsilon-liveness` report a TIMEOUT rather than a reap. **A doc line is not sufficient** — that
+addendum says so, and this instance is the proof: the doc line existed, on the other route, and the
+gap was the route rather than the knowledge.
+
+**Recovery taken:** re-dispatched **smaller AND larger-bound** (never an identical retry — a death
+exactly at the clamp is a timeout). The one over-large brief was split into
+`d-mteuu37u-98a6a1f7` (population + dispositions) and `d-mteuu4h3-81080e69` (instrument audit +
+priming check), both with `WARPOS_DISPATCH_BACKGROUND=1`. **Disclosed cost of the split:** the two
+lanes cannot cross-reference, so a disagreement with §6c found by lane A cannot be attributed by that
+lane to a probe defect found by lane B. The conductor reconciles them and must say so, rather than
+presenting the pair as a single independent read.
+
 ## 7. What I would file regardless of scope
 
 `secret-guard.js:94` is a real, unfiled fail-open on a credential control. Whatever scope β rules,

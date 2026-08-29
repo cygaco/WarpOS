@@ -68,7 +68,7 @@ not repair** — that is task 5.
 
 ---
 
-## TASKS (5 — ED-257: task count drives duration)
+## TASKS (6 — ED-257: task count drives duration; task 4b was added by β row 324 after this brief was first written)
 
 1. **Rewrite the confusable disclosure to state the LETTER SET the code actually covers** — sourced
    from **bundle O's emitted set**, never hand-typed — and never as "the scripts closed". **Delete the
@@ -84,6 +84,39 @@ not repair** — that is task 5.
    is actually a sample is the S4-1c defect verbatim.
 4. **Atomicity.** Any bound paragraph you edit moves **with its canonical copy in the SAME commit**.
    Observe the atomicity falsifier RED before committing and report the raw output.
+
+## ⛔ TASK 4b — THE EMPHASIS-FOLD YIELD. Four conditions, all four required (β row 324, `b6e1d90f`)
+
+Bundle M added the emphasis fold and **re-derived its yield against the transform as built**. An
+earlier provisional figure of "seven" was **refused by that builder with evidence** — correctly; the
+governance gate has confirmed the refusal was the right call, and has independently re-derived the
+decomposition at source. The rule's criterion S5-3 binds the **PROPERTY** (no shipped sentence
+overstates the fold's yield, stated as an emitted set derived against the built transform), **not the
+literal number.** All four of the following are required — any one missing fails the criterion:
+
+1. **Ship the EMITTED SET BY NAME** — the six authorings the fold closes by design (bold-first,
+   italic-both, underscore, bold-second, code-span, bold-separator), the one that was **already red
+   for an independent reason**, and the one that **remains open**. **Never write "seven". Never write
+   "six". Never a bare count** — a count is an exhaustiveness claim that travels without its list.
+2. **Disclose the mid-word residual as OPEN**, with BOTH halves of its mechanism: emphasis is replaced
+   by a **space**, so `ASS**ERTED**` becomes `ass erted` and the literal token never appears; **and**
+   the reason space beat deletion (deleting would collapse `**only**place` → `onlyplace` and reopen an
+   adjacent already-fixed evasion). The disclosure is itself a claim — an inaccurate one is a NEW
+   finding, not shielded by the residual it describes.
+3. **Do NOT credit strikethrough to the fold.** `~~ASSERTED~~ — NOT VERIFIED` was already caught
+   because the tilde is a member of the `SEPARATOR_VARIANCE` class (`[\-:~|/\s]*`), independent of any
+   emphasis handling. State that reason. Crediting it to the fix restores exactly the overstatement
+   the yield bound exists to prevent.
+4. **No "one place" / "a single site" / "both sites now share one transform" sentence.** That is
+   FALSE as written. What is true: there is **one shared fold** inside `canonicalizeClaimText`, applied
+   by default, with **one documented opt-out** (`resemblesBindableLeadIn`, which needs the raw emphasis
+   run as shape data) — **plus separate shape-recognition uses that are a different mechanism**
+   (`EMPHASIS_RUN` at the lead-in opener and closing strip, and `BOLD_LEAD_IN` ~554 used for structural
+   id-derivation). Say that. A one-place claim fires the granularity clause.
+
+**Also:** bundle M scoped `BOLD_LEAD_IN` out of the shared-transform requirement with a reason. **A
+scope-out is a claim like any other** — if the truth of any sentence you ship depends on that
+scope-out being correct, disclose it rather than relying on it silently.
 
 ## TASK 5 — DISCLOSE the un-audited surfaces (β row 318, amended scope)
 
