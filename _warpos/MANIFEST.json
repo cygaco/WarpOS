@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T22:07:28.113Z",
+  "generatedAt": "2026-08-29T22:24:22.175Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -11925,22 +11925,22 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-audit.js",
-      "sha256": "5efd81a8006ad8bd724d15e24b71affa1cce25cd30acb94d8d9d3f15a43fda49",
-      "installedSha": "5efd81a8006ad8bd724d15e24b71affa1cce25cd30acb94d8d9d3f15a43fda49"
+      "sha256": "5f2c9b08830f396b1ed96758d959e72bae57cd479483e2432d118d4b9fd43c62",
+      "installedSha": "5f2c9b08830f396b1ed96758d959e72bae57cd479483e2432d118d4b9fd43c62"
     },
     "scripts/checks/gate-failclosed-audit.test.js": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-audit.test.js",
-      "sha256": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
-      "installedSha": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641"
+      "sha256": "b94d009411650fa686cf20eb08fbbaa3667d1f0007de65184eba0413fabfaefb",
+      "installedSha": "b94d009411650fa686cf20eb08fbbaa3667d1f0007de65184eba0413fabfaefb"
     },
     "scripts/checks/gate-failclosed-baseline.json": {
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-baseline.json",
-      "sha256": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6",
-      "installedSha": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6"
+      "sha256": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
+      "installedSha": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62"
     },
     "scripts/checks/gate-failclosed-enforcer.js": {
       "owner": "framework",
