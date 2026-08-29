@@ -190,6 +190,32 @@ and the falsifier **fired**. The consults' *reasoning* still holds independently
 so the substance survives; but Q1's ratification now rests on α's merits ruling, **not** on my
 priming claim. I do not get to keep the credit for an unprimed consult I did not run.
 
+**(1b) THE PRIMING FINDING IS NOW CONFIRMED BY AN INDEPENDENT LANE, WITH QUOTED LEXICAL REUSE.**
+The cross-family verification lane (`d-mteuu4h3-81080e69`, gpt-5.6-sol) read both briefs AND both
+consult envelopes — envelopes **nobody had read before**, including β. Its verdict, verbatim:
+
+> *"Verdict: both answers visibly followed the briefs' narrower-scope framing. They added substantive
+> reasoning, but their decisive scope grounds were supplied by the prompts. The conductor's claim that
+> neither consult was primed with a preferred scope is not supportable."*
+
+The evidence it cites is lexical and causal, not impressionistic:
+- My DoP brief line 79-80 — *"Push back if `recommended` is the overbuild reflex — three of the four
+  extra items are different failure shapes"* — returns in the answer as *"They are … different failure
+  **classes**"*. My supplied Lane-A-awaiting-authorization framing (brief lines 62-63) returns as
+  *"Bundling them … threatens Lane A's schedule"*, i.e. my own scheduling cue used as a reason to
+  reject `recommended`.
+- Worse for the product-lead consult: my brief line 64 **supplied the hierarchy** —
+  *"R-1..R-3 are the core. R-4 and R-5 are the `recommended` scope's additions"* — and the answer
+  returns *"Keep R-1 through R-3 as the release slice"* and *"Ship the smallest coherent slice: R-1,
+  R-2, and R-3"*. The conclusion was in the question.
+- It credits both with genuine added work (acceptance criteria, the R-5 split, the Stop-hook judgment)
+  but finds those additions *"reinforce a narrowing conclusion already cued by the brief"*.
+
+**Disposition: BOTH PLAN CONSULTS ARE STRUCK AS EVIDENCE.** They do not support the narrowing, and —
+per β — contaminated support for a conclusion is **not** support for its negation either, so they do
+not support bundling. **The scope decision rests solely on α's merits ruling and β d0c5b2e7 §1**,
+which were reached on grounds neither I nor the briefs authored.
+
 **(2) FALSE MECHANISM IN AN ED FILING — inaccurate disclosure of a real gap (P-110/AP-17).** I
 reported `secret-guard.js:94` as *"the outer catch wraps the entire scan including the file read, so
 an unreadable target file silently permits the write."* **There is no file read in that file at all**
