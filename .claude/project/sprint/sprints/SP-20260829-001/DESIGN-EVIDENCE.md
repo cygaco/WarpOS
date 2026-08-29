@@ -78,6 +78,14 @@ All twelve are now read (not sampled). **Nine are real defects; three are defens
 importantly, the nine are not twelve unrelated bugs — they are **three named sub-shapes**, which is
 what makes a general fix possible without a noisy lint:
 
+> ⚠️ **VARIANT A'S MECHANISM AS STATED BELOW IS SUPERSEDED — see §6c-bis.** `process.exit(2)`
+> *terminates* rather than throws, so the `catch` never intercepted the decision. The accurate
+> statement is **"a pre-decision failure is converted into a permissive exit before the gate's
+> decision can be reached"**, and the mechanical test **"no catch may span both" is WITHDRAWN and must
+> not be built** — the testable property is *every pre-decision failure path terminates non-zero*.
+> The site list and every disposition below are unaffected. Left in place rather than rewritten so the
+> error and its correction are both on the record.
+
 **Variant A — ONE catch spans both the infra-parse and the policy evaluation.** The defensible
 reason for failing open on a malformed *hook payload* silently licenses failing open on the *guarded
 decision*, because both live under the same `catch`.

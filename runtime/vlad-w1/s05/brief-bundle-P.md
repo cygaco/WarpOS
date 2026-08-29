@@ -72,12 +72,36 @@ not repair** — that is task 5.
 
 1. **Rewrite the confusable disclosure to state the LETTER SET the code actually covers** — sourced
    from **bundle O's emitted set**, never hand-typed — and never as "the scripts closed". **Delete the
-   mistake-vs-attacker calibration framing**; that framing was the false sentence. Preserve O's
-   three-way distinction (covered / uncovered-and-closable / uncovered-and-believed-unmappable, with
-   the reason).
+   mistake-vs-attacker calibration framing**; that framing was the false sentence.
+
+   **O has LANDED (`fbda0dc`) and the functions exist — call them, do not re-derive:**
+   `tokenAlphabetDomain()` (custody-claim-lint.js ~1681) reads the domain from `PROVEN_STATUS_TOKEN`,
+   `ASSERTED_STATUS_TOKEN` and `RESEMBLANCE_KEYWORD.source`; `getTokenAlphabetCoverage()` (~1730)
+   returns the three groups — `covered`, `claimedElsewhere` (with reason), `noCandidate`. Your
+   sentence's data comes from those returns.
+
+   ⚠️ **DO NOT USE ANY LETTER FIGURE FROM AN EARLIER DOCUMENT.** Bundle O ran the numbers and
+   **refuted the ones this sprint had been carrying**: the domain was asserted to be 22 letters and
+   measured **15**; the gap set was asserted to be `R d g l n r t` and measured differently, with `F`
+   missing from that list entirely. Those figures came from a source that had "verified at source" by
+   reading. **They were wrong, and only execution caught it.** If a number is not coming out of
+   `getTokenAlphabetCoverage()` in the same breath, it does not go in the sentence.
+
+   ⚠️ **CARRY O's CEILING AT ITS OWN STRENGTH — do not upgrade it.** O states that `L` and `R` being
+   *provably* unmappable from Cyrillic/Greek is **"a bounded, disclosed belief, not a proof"** — it
+   reasoned from letterforms and deliberately did not vendor a confusables table. Your prose must
+   preserve that as a belief with its reason, and must not render it as established. Naming UTS #39 as
+   the check that would settle it is admissible; claiming it settled is not.
 2. **Replace every escape COUNT with a named CLASS.** "Two escapes remain" is the defect. A count is a
    property of the day it is read. Grep `CUSTODY.md` for every count-shaped coverage statement, not
    just the known one.
+
+   ⚠️ **BUNDLE N FOUND THAT SENTENCE IS NOT JUST COUNT-SHAPED — IT UNDERCOUNTS.** N (`1fb5b31`)
+   reported: the block-prefix gap it closed on the lead-in path (headings, tables, HTML, quotes,
+   parens, brackets, labels) **was a third, undisclosed escape** at the time that sentence was
+   written. N correctly did not touch `CUSTODY.md` — it is yours. So the sentence was false in
+   substance as well as wrong in form, and you must confirm by reading the mechanisms as they now
+   stand which residuals actually remain, rather than converting "two" into a class of two.
 3. **Fix the NOT-bound enumeration (S4-1c):** it omits the P1–P4 clause HEADINGS and the section
    preambles, and an inverted P2 heading ships GREEN. **Either complete the enumeration or state that
    the class governs and the list is illustrative — not both.** Saying "said plainly" over a list that
