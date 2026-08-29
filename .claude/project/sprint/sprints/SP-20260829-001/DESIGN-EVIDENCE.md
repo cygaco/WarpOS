@@ -1,0 +1,291 @@
+# SP-20260829-001 — DESIGN-PHASE EVIDENCE
+
+**Status: design IN PROGRESS, blocked at the β plan→design gate on scope (Q1) and the audit's
+blocking mode (Q3). No builder dispatched. No code changed.**
+
+Tree: `session/2026-08-29` @ `8d15c162`. Every claim below was read from the repo at that commit.
+Probes are committed and re-runnable: `probe-failopen.js`, `triage-failopen.js` (both in this
+directory; both exit 2 on a zero enumeration rather than reporting "clean").
+
+---
+
+## 1. The four sweep-named sites — VERIFIED, with one correction to the sweep
+
+| site | wiring | verified shape |
+|---|---|---|
+| `scripts/hooks/gate-check.js` | PreToolUse:Agent | `loadStore()` L48-52 catches ENOENT **and** parse error into one `null`; consumed L153-158 → WARN + `exit(0)`. Separately L181-182 bare `catch { process.exit(0) }` over a 38-line try. |
+| `scripts/hooks/gauntlet-gate.js` | PreToolUse:Agent | L87-93 absent store → WARN + exit 0. **L219-224 outer catch is ALREADY fail-CLOSED** ("infrastructure errors block dispatch"). |
+| `scripts/hooks/tracker-completion-gate.js` | Stop:* | L69 `if (!res) process.exit(0)` inside the catch around `execFileSync(validate.js --json)`. `ENFORCE` (L31) is read only at the FINAL exit L84 → a crashed validator exits 0 **even under `TRACKER_GATE_ENFORCE=1`**. |
+| `scripts/sprint/design.js` | CLI (not hook-wired) | L193-194 `catch { return { ok: true } }` wrapping the R-id trace-integrity check whose own body (L181-192) returns a detailed `ok:false`. |
+
+**CORRECTION carried into every downstream brief.** The sweep report's headline sentence —
+*"gate-check.js and gauntlet-gate.js: corrupt store == absent store → allow"* — is **true of
+gate-check.js and false of gauntlet-gate.js**. gauntlet-gate has only the absent-half; its parse
+path already blocks. Briefing the uncorrected sentence would have had a builder "fix" a path that is
+already correct, and would have shipped a false sentence in a sprint about false sentences.
+
+**The positive shape to copy** (`scripts/enforcement/ed-dup-id-lint.js` L42-47): ENOENT → printed
+`SKIP` + exit 0; anything else → `exit(2)`. A second in-repo example, in the very file ED-356 is
+about: `scripts/hooks/merge-guard.js:302` already fails CLOSED on a crashed `doc-ref-integrity`
+runner ("runner crashed (exit=…) — fail-closed"). The framework already knows how to do this in two
+places; the defect is that it is not done uniformly.
+
+## 2. The population — ε's stated unsafe assumption, now MEASURED
+
+`assumptions.unsafe` in PC-20260829-0087 said the four sites almost certainly do not exhaust the
+class. Measured over **307 non-test files** in `scripts/{hooks,checks,enforcement,sprint,dispatch}`:
+
+- **65 terminal-decision fail-open sites** (a `catch` reaching `process.exit(0)` or
+  `return { ok: true }`) across **47 files**.
+- **64 distinct scripts are hook-wired in `.claude/settings.json`; 45 of them carry ≥1 such site.**
+- Directory split: `scripts/hooks` 64, `scripts/sprint` 1.
+
+The raw shape (including tests and per-item loop skips) is **364 hits across 111 files** — which is
+the evidence that **a write-time lint is the wrong mechanism.** ED-369's third candidate enforcer
+proposes exactly that lint; this sprint should say so rather than build it.
+
+## 3. Triage — evidence, not verdicts
+
+`triage-failopen.js` extracts per site: does the file have any blocking path at all (a "gate" with no
+blocking path is not a gate); is there a justifying comment; how wide is the swallowed `try`; is it
+live-wired and on what event.
+
+- sites in files that have a blocking path (gate-like): **18**
+- sites with no justifying comment nearby: **33**
+- sites whose `try` spans > 40 lines (wide swallow): **21**
+- **highest-concern slice — live-wired AND blocking-path AND no justifying comment: 12**
+
+The 12: `dependency-admission-guard.js:33` · `edit-watcher.js:674,897` · `gate-check.js:181` ·
+`ownership-guard.js:66` · `retro-presence-check.js:50,81` · `secret-guard.js:94` ·
+`version-bump-guard.js:101,136,160` · `worktree-preflight.js:160`.
+
+**Four read closely, and they land in three different categories** — which is why the count must
+never be reported as a defect count:
+
+1. **Real defect.** `secret-guard.js:94` — the outer `catch { process.exit(0) }` spans **86 lines**,
+   wrapping the file read *and* the credential pattern loop. An unreadable/throwing target file
+   means the credential scan silently permits the write. No justifying comment. Unfiled anywhere.
+   Same shape as ED-369, on a security control, found inside the sprint scoped to fix ED-369.
+2. **Documented and defensible.** `untrusted-content-firewall.js:44` ("infra, not a content threat");
+   `format.js:70` ("formatting failure shouldn't block work").
+3. **Fail-open IS fail-safe.** `authorization-gate.js:390` wraps a decision that *grants* elevated
+   permission (turbo); failing open means NOT granting it. Repairing this would make the system less
+   safe. Any mechanism that treats the shape as the defect gets this one backwards.
+
+## 3b. The 12 high-concern sites, ALL READ — and the structural root
+
+All twelve are now read (not sampled). **Nine are real defects; three are defensible.** More
+importantly, the nine are not twelve unrelated bugs — they are **three named sub-shapes**, which is
+what makes a general fix possible without a noisy lint:
+
+**Variant A — ONE catch spans both the infra-parse and the policy evaluation.** The defensible
+reason for failing open on a malformed *hook payload* silently licenses failing open on the *guarded
+decision*, because both live under the same `catch`.
+- `secret-guard.js:94` (86-line try wrapping the file read AND the credential loop)
+- `worktree-preflight.js:160` (41 lines, wraps the blocking smoke-marker `exit(2)`)
+- `retro-presence-check.js:81` (36 lines, wraps the `--enforce` `exit(2)`)
+- `dependency-admission-guard.js:33` (wraps `checkPackageEdit` and its `exit(2)`)
+- `version-bump-guard.js:101` (wraps the ENTIRE `run()` — every blocking path in the file)
+- `gate-check.js:181` (38 lines)
+- `edit-watcher.js:897` (whole module body)
+
+**Variant B — ENOENT and corrupt conflated on a REQUIRED input.** The literal ED-369 shape, and it
+has more instances than the sweep found:
+- `gate-check.js` `loadStore()` L48-52 — the sweep's own finding
+- `version-bump-guard.js:136` — `version.json` unreadable → allow commit
+- `ownership-guard.js:66` — store unreadable → allow; and L58-59 documents only the ABSENT half
+  ("No store = can't enforce ownership, allow"), so the corrupt half is undocumented as well as wrong
+- (`gauntlet-gate.js` L87-93 has the absent-half only; its corrupt path already blocks)
+
+**Variant C — "cannot DETERMINE applicability" treated as "not applicable".** A discriminator read
+fails, so the gate concludes there is no obligation:
+- `retro-presence-check.js:50` — `git branch --show-current` fails → exit 0, so no retro obligation
+- `version-bump-guard.js:160` — `git diff --cached` fails → treated as nothing staged
+
+This is exactly the line the product-lead consult drew unprompted: *"SKIP is allowed only when the
+invocation is provably outside the check's declared applicability."* A failed discriminator is not a
+proof of non-applicability.
+
+**Defensible (3 of 12):** `edit-watcher.js:674` (narrow hook-payload parse on a PostToolUse
+observer), `ownership-guard.js:66`'s absent-half *as documented*, and the narrow
+`version-bump-guard.js` bypass sentinels (which are explicit, logged operator bypasses, not silent).
+
+**The three remedies follow from the three variants, and generalize:**
+- **A** → split the catch: payload parse in its own narrow `try` (fail-open, documented); policy
+  evaluation OUTSIDE it (fail-closed). Mechanically checkable: no `catch` may span both.
+- **B** → partition ENOENT from every other error at each required-input read — the
+  `ed-dup-id-lint.js` shape, already in-repo.
+- **C** → a failed discriminator read is FAIL-CLOSED, never "not applicable".
+
+**Coverage honesty:** 12 of 65 sites are read. **53 remain untriaged.** The three variants are
+derived from 12 sites and I do not claim they exhaust the population's shapes — a thirteenth site
+could present a fourth variant. What I can say is that the twelve highest-concern sites, selected by
+a stated mechanical filter (live-wired AND has-a-blocking-path AND no-justifying-comment), contain
+no shape outside these three.
+
+## 4. The three carried ED premises — RE-VERIFIED (were `asserted_from_ed_row`)
+
+The plan contract flagged these as unverified and required the design phase to re-verify before any
+brief asserts them. All three hold at `8d15c162`:
+
+- **ED-374 (1)** — `scripts/checks/security-pass-count.js`: `--strict` gates the runtime assertion
+  (L111 parse, L157 `if (warns.length && strict) return 1`), and `.claude/commands/scan/full.md:129`
+  invokes it **without** `--strict`. L79 `if (!sec.length) return warns` — zero reviews asserts
+  nothing. CONFIRMED.
+- **ED-374 (2)** — `scripts/checks/coverage-gate-scan.js:21`: "RAMP: REPORT-ONLY this sprint — it
+  reports gaps and ALWAYS exits 0". No machine-readable flip trigger or flip date. CONFIRMED.
+- **ED-356** — `scripts/checks/doc-ref-integrity.js:66`
+  `const ROOT = process.env.CLAUDE_PROJECT_DIR || path.resolve(__dirname,"..","..")` — it scans the
+  WarpOS canonical root regardless of which tree is being committed; `merge-guard.js:278` invokes it
+  `--enforce` on commits. CONFIRMED.
+- **ED-363** — `scripts/dispatch-claude.js:319`
+  `promptStr = promptArg === "-" ? readFileSync(0) : readFileSync(promptArg)` — the prompt is passed
+  through **verbatim**; no ENVIRONMENT header is prepended and no preflight compares a brief's
+  asserted cwd against `runCwd`. The wrapper computes `runCwd` (L415-420, L466) and stamps it on the
+  completion record (L789) but never tells the builder. CONFIRMED (absence proved by reading the
+  prompt-construction path, not inferred).
+
+## 5. The record-trust gate — APPLICABLE, and this is where it bites
+
+ε's design-phase record-trust gate applies: these gates are readers that trust a record (a store
+file, a validator's JSON) to admit an irreversible action (builder dispatch, session end).
+
+1. **Single choke-point + structural guard.** Proposed: one shared `readGateInput()` that returns a
+   three-way discriminated result (`PASS`-eligible / `SKIP` with a stated applicability reason /
+   `FAIL-CLOSED` with a reason), plus a guard that fails any registered gate reading its input
+   outside it. Un-routed readers must fail, or the choke-point is advisory.
+2. **Partition the surface.** Same-session (store files this session wrote) vs cross-session (a
+   validator subprocess, a ledger another session appended). The Stop-hook case is cross-session and
+   is the one where fail-closed has real operational cost.
+3. **Adversarial falsifier fixtures, required-present, BEFORE build.** One per repaired site:
+   truncated JSON, unreadable file (permission), an injected throw, and — for the Stop hook — a
+   crashing and a timing-out validator. Each must be observed RED against the OLD code and GREEN
+   against the new; a fixture never observed failing proves nothing.
+4. **Named enforcer.** The enumerating audit is that enforcer. Whether it ships blocking is β Q3.
+
+## 6. Open, and NOT mine to close
+
+- **β Q1** — scope. Both plan consults said cut below the briefed minimum; my stake points the same
+  way, so I will not self-rule.
+- **β Q3** — blocking vs report-only, now load-bearing rather than a detail: blocking over the live
+  population reds `/scan:full` on up to 45 files this sprint cannot triage; report-only instantiates
+  ED-374. A third path exists (blocking over a declared registry seeded with only the triaged sites,
+  untriaged population reported as a counted residual) but that is a criteria decision.
+- **Lane concurrency** — the team lead holds `[S05 β-auth] q3`.
+- **Build authorization** — the team lead's, not mine.
+
+## 6b. CONDUCTOR-SIDE DEFECTS in this sprint's own conduct — recorded, not quietly corrected
+
+Two of mine, both caught by others, both the class this sprint is about. Recorded here because a
+correction that leaves no trace teaches nothing.
+
+**(1) BRIEF-PRIMING — the framing shaped what the gate saw (AP-15/P-097 shape).** I told β "neither
+consult was primed with a preferred scope." **That was false.** α checked and found it: my
+director-of-product brief line 79 says *"Push back if `recommended` is the overbuild reflex"* and my
+product-lead brief lines 81-82 ask *"what would you cut first?"*. Both frame toward narrowing — the
+answer I wanted and had a stake in. β had flagged exactly this as the falsifier on its Q1 verdict
+(*"'Neither was primed' is your account, and it is the load-bearing premise of the whole Q1 answer"*)
+and the falsifier **fired**. The consults' *reasoning* still holds independently (both argued from
+"enumerate the registered population", without knowing the population was 65 across 45 live files),
+so the substance survives; but Q1's ratification now rests on α's merits ruling, **not** on my
+priming claim. I do not get to keep the credit for an unprimed consult I did not run.
+
+**(2) FALSE MECHANISM IN AN ED FILING — inaccurate disclosure of a real gap (P-110/AP-17).** I
+reported `secret-guard.js:94` as *"the outer catch wraps the entire scan including the file read, so
+an unreadable target file silently permits the write."* **There is no file read in that file at all**
+— `grep -n "readFileSync\|readFile\|fs\." scripts/hooks/secret-guard.js` returns zero lines;
+`content` comes from the hook payload at L11-12. β caught it; I then verified β's correction against
+the source myself rather than taking it. The **actual** mechanism is `JSON.parse(input)` at L9
+throwing into `catch { process.exit(0) }` at L94-95, permitting the write unscanned. The conclusion
+survives (a credential control converting could-not-check into permit, ED-369 class); the description
+did not — and the description is what a builder would have implemented, wrapping a read that does not
+exist while the real throw path stayed open. **ED-379 was filed on my false mechanism and needs
+amending.** Severity per β, discriminator first: HIGH by class (the guard genuinely does not guard and
+reports nothing), with reachability stated honestly alongside — the trigger is a malformed
+harness-generated payload, not demonstrably attacker-reachable; the low reachability does not
+downgrade the class and the class does not make it a live exploitable hole.
+
+Fix polarity for that site: an unparseable payload on a credential guard is **could-not-check** and
+must fail closed; the absent-input path (L15 `!filePath || !content`) and the `.env` skip (L18) are
+**nothing-to-check** and must stay exit 0 — the same partition as `tracker-completion-gate.js` L48 vs
+L69.
+
+**Both are the sprint's own thesis committed by its conductor**: (1) is a claim whose frame was wrong
+while its data was right; (2) is an accurate finding wrapped in an inaccurate mechanism. That is
+S4-1a's shape and S-VLADW1-05 exists to end it — landing in lane B, inside the sprint scoped to fix
+the same family.
+
+## 6c. PER-SITE DISPOSITION TABLE (β d0c5b2e7 §2 — gates the registry seed)
+
+β blocked the registry seed because my variant lists enumerated twelve sites while I reported
+"nine defects / three defensible", and the three were unmarked. **β was right, and the reconciliation
+found two errors of mine plus a defect in my own extractor.** Every number below is derived from this
+table. No number in any artifact of this sprint is typed.
+
+**Discriminator (β's property, not a category list):** *does the error path land on the PERMISSIVE or
+the RESTRICTIVE side of the decision THIS gate makes?* A file with no blocking path makes no decision
+and is therefore not a gate.
+
+**Blocking-path verification, per file** (`grep -c 'process\.exit(2)'`): dependency-admission-guard 1 ·
+gate-check 1 · ownership-guard 1 · retro-presence-check 1 · secret-guard 1 · version-bump-guard 1 ·
+worktree-preflight 1 · **edit-watcher 0**.
+
+| # | site | disposition | variant | justification — quoting this gate's own decision semantics |
+|---|---|---|---|---|
+| 1 | `dependency-admission-guard.js:33` | **defect** | A | Decision: `decision:"block"` + `exit(2)` when a package.json edit adds deps with no admission record. The catch spans `checkPackageEdit` **and** that decision → error = dep admitted. Permissive. |
+| 2 | `edit-watcher.js:674` | **not-a-gate** | — | **`grep -c 'process.exit(2)'` = 0.** Every exit is `exit(0)`; PostToolUse observer. The `"deny"` my extractor matched is a *string literal inside the `BEHAVIORAL_KEYWORDS` array* (L276), not a decision. No permissive/restrictive side exists. |
+| 3 | `edit-watcher.js:897` | **not-a-gate** | — | Same file, same reason. |
+| 4 | `gate-check.js:181` | **defect** | A | Decision: `exit(2)` "BLOCKED: Builder for X cannot start" on unmet deps. A 38-line try wraps that decision → any throw = dispatch allowed. Permissive. |
+| 5 | `ownership-guard.js:66` | **defect** | B | Decision: `exit(2)` at L135. `JSON.parse(readFileSync(storePath))` → `exit(0)`; ENOENT and corrupt take the same path, and the comment above documents only the ABSENT half ("No store = can't enforce ownership, allow"). Permissive on the undocumented half. |
+| 6 | `retro-presence-check.js:50` | **defect** | C | Decision: `exit(2)` under `--enforce`/`RETRO_ENFORCE`. `git branch --show-current` fails → `exit(0)`, concluding *no retro obligation*. Failure to DETERMINE applicability rendered as not-applicable. Permissive. |
+| 7 | `retro-presence-check.js:81` | **defect** | A | Outer catch spans 36 lines including the `if (enforce) process.exit(2)`. Permissive. |
+| 8 | `secret-guard.js:94` | **defect** | A | Decision: `exit(2)` "BLOCKED: File contains a <secret>". An 86-line try wraps `JSON.parse(input)` (L9) **and** the pattern loop **and** that decision → a malformed payload permits the write unscanned. Permissive. **ED-379** (mechanism corrected: the throw source is L9's parse, NOT a file read — this file contains no file read). |
+| 9 | `version-bump-guard.js:101` | **defect** | A | Catch wraps `run(JSON.parse(input))` — i.e. the ENTIRE decision function including its `exit(2)`. Permissive. |
+| 10 | `version-bump-guard.js:136` | **defect** | B | `version.json` unreadable → `return process.exit(0)`; ENOENT and corrupt conflated on a required input. Permissive. |
+| 11 | `version-bump-guard.js:160` | **defect** | C | `git diff --cached --name-only` fails → `exit(0)`, treated as *nothing staged*. Cannot-determine rendered as not-applicable. Permissive. |
+| 12 | `worktree-preflight.js:160` | **defect** | A | Decision: `exit(2)` "BLOCKED: No worktree smoke test this session". A 41-line try wraps it. Permissive. Note the same file handles a narrow git failure CORRECTLY at L131-133 (inner try, documented non-blocking) — the wide outer catch is the defect, not the pattern. |
+
+**Derived from the table:** high-concern filter output **12** · not-a-gate (filter false positives)
+**2** · defects **10** · variant A **6**, variant B **2**, variant C **2** (6+2+2 = 10).
+
+### Two errors of mine that β's block surfaced
+
+1. **"nine defects / three defensible" was wrong.** The correct figures are **10 defects and 2
+   not-a-gate**. My three "defensible" were mis-derived: `edit-watcher:674` is not defensible but
+   *not-a-gate*; `ownership-guard:66`'s absent-half is a **sub-path of a site I simultaneously
+   called a defect**, not a separate site; and the `version-bump-guard` bypass sentinels are
+   explicit early returns, **not `catch` sites at all** and never population members. I counted
+   sub-paths and non-members as if they were sites.
+2. **My variant B listed `gate-check` `loadStore` (L48-52), which is NOT a member of the 65.** Its
+   catch returns `null`, not `exit(0)`, so the probe's pattern never matched it. It is a real defect
+   (the sweep's original finding, verified by β at source) and it IS a repair target — but it must be
+   carried as an **in-scope repair outside the enumerated population**, not smuggled into a variant
+   list as though the probe had found it. Repair set = 10 population members + `gate-check` loadStore
+   = **11 sites**, and the two figures must never be merged into one number.
+
+### A defect in my own extractor — load-bearing, because it is the audit's ancestor
+
+`triage-failopen.js`'s `has_blocking_path` predicate is
+`/process\.exit\(2\)/ || /"deny"|'deny'|permissionDecision/ || /return\s*\{\s*ok:\s*false/` over raw
+source. On `edit-watcher.js` it matched the **string `"deny"` in a keyword-list array** and declared
+a file with zero blocking paths to be gate-like. **A shape predicate matched text where semantics
+were required** — the same class this sprint exists to close, inside the instrument built to find it.
+
+The audit enforcer must not inherit this. Its "is this a gate" test must be a real blocking-path
+determination (at minimum `process.exit(2)` / an emitted block decision outside a data literal), and
+it needs a near-miss fixture in which a keyword-shaped **string literal** must NOT register as a
+blocking path.
+
+### Standing conditions honored here
+
+No typed counts: every figure above is derived from the table. The 53 untriaged sites are to be
+**emitted by name** (the probe emits them; no "counted residual" phrasing anywhere). β has read 4 of
+the 12 and none of the other 53 — **this table is my account and is owed an independent lane re-read
+BEFORE the registry is sealed** (β d0c5b2e7 §6), which is the right order precisely because I author
+both the registry and the enforcer that reads it.
+
+## 7. What I would file regardless of scope
+
+`secret-guard.js:94` is a real, unfiled fail-open on a credential control. Whatever scope β rules,
+that should get an ED row so it is not lost with this sprint's context. I have not filed it — filing
+is a ledger write and the lead appends rows.
