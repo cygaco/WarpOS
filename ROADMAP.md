@@ -848,6 +848,7 @@ Every sprint that has been planned, executed, released, or retrospected — one 
 
 | Sprint | Title | Status | Started | Closed | Release |
 |---|---|---|---|---|---|
+| [SP-20260829-001](.claude/project/sprint/sprints/SP-20260829-001/) | Fail-closed enforcer sprint: gates that cannot swallow could-not-check into pass | planning | 2026-08-29T20:02:12.838Z |  |  |
 | [S-VLADW1-04](.claude/project/sprint/sprints/S-VLADW1-04/) | Vlad Wave-1 custody claims made un-invertible | planning | 2026-08-28T22:20:03.841Z |  |  |
 | [S-VLADW1-03](.claude/project/sprint/sprints/S-VLADW1-03/) | Vlad Wave-1 custody residuals to release | planning | 2026-08-19T19:23:19.551Z |  |  |
 | [S-VLADW1-01](.claude/project/sprint/sprints/S-VLADW1-01/) | SP-VLAD-W1-ENGINE — Engine skeleton: plain-node TS Agent SDK app + MCP stdio server + 4-core tool surface + job state machine + journal + permission-level config port + API-key model-access seam (ToS NO-GO forced; credential-custody enforcer) | planning | 2026-07-30T00:52:06.179Z |  |  |

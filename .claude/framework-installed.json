@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "cdf107b0d2261a91493f033511238adb32a00944",
-  "installedAt": "2026-08-19T22:39:17.218Z",
+  "installedCommit": "c3b8654f4845042c28c80a0799edfdb0ca637185",
+  "installedAt": "2026-08-29T20:02:27.368Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -144,8 +144,8 @@
       "dest": ".claude/agents/_system/guides/agent-dispatch-guide.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03",
-      "currentHashAtInstall": "88899f68c4cff68d4c06894f7f05d7fc078df4a3e0dbce0d8c090d0ca31d8a03",
+      "installedHash": "8a6bd1fee1eea235aed54d95885681075499456a38a9e037722f59a8d78f1b1f",
+      "currentHashAtInstall": "8a6bd1fee1eea235aed54d95885681075499456a38a9e037722f59a8d78f1b1f",
       "introducedIn": "0.0.0"
     },
     {
@@ -434,8 +434,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model-recommendations.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
-      "currentHashAtInstall": "15dad0daf9e5ea03a385483c1a0cdad817a192fcc686a8aeace00c22e7e5fc2a",
+      "installedHash": "3f895e903f632bbab3de1c0154b659800d635ade0f305e65a0444fa73e294dd4",
+      "currentHashAtInstall": "3f895e903f632bbab3de1c0154b659800d635ade0f305e65a0444fa73e294dd4",
       "introducedIn": "0.0.0"
     },
     {
@@ -444,8 +444,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
-      "currentHashAtInstall": "47a7f49645a2f2edf144a11f02c5df4d575882c0d14ccca2003c0d4b2f50cf4e",
+      "installedHash": "14ba97a85cae20379e1833f80d3ec4e8cac8d3e7263ca8efa69f4d984829fb6f",
+      "currentHashAtInstall": "14ba97a85cae20379e1833f80d3ec4e8cac8d3e7263ca8efa69f4d984829fb6f",
       "introducedIn": "0.0.0"
     },
     {
@@ -1054,8 +1054,8 @@
       "dest": ".claude/agents/president/beta.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "c7372d9a762032257f6fed388b117c95e66c4769e438dc54219e2d06869ef56f",
-      "currentHashAtInstall": "c7372d9a762032257f6fed388b117c95e66c4769e438dc54219e2d06869ef56f",
+      "installedHash": "ab94231501e28c49ac833c37464071ae3c8ef10c3ee27ee18f534d541511c4b0",
+      "currentHashAtInstall": "ab94231501e28c49ac833c37464071ae3c8ef10c3ee27ee18f534d541511c4b0",
       "introducedIn": "0.0.0"
     },
     {
@@ -2304,8 +2304,8 @@
       "dest": ".claude/commands/permissions/authorized.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "a3a440c4106e181b688bac1cd1fc2a57bb0172cdd85c085df5c2f3929b45d69c",
-      "currentHashAtInstall": "a3a440c4106e181b688bac1cd1fc2a57bb0172cdd85c085df5c2f3929b45d69c",
+      "installedHash": "e90f5287c7af19cea23d3d6b4673fb057c1b96be48d0c104981645174677b53b",
+      "currentHashAtInstall": "e90f5287c7af19cea23d3d6b4673fb057c1b96be48d0c104981645174677b53b",
       "introducedIn": "0.0.0"
     },
     {
@@ -4174,8 +4174,8 @@
       "dest": ".claude/project/reference/reasoning-frameworks.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "d9996dcafdd57e6edefe114f1ed7550793ee89edf162840e60928980cdaae54e",
-      "currentHashAtInstall": "d9996dcafdd57e6edefe114f1ed7550793ee89edf162840e60928980cdaae54e",
+      "installedHash": "4b3efc87bc2d75362e50feccb0fdf948f7021fd0ecb2f38ee2d96bedcddd097b",
+      "currentHashAtInstall": "4b3efc87bc2d75362e50feccb0fdf948f7021fd0ecb2f38ee2d96bedcddd097b",
       "introducedIn": "0.0.0"
     },
     {
@@ -4184,8 +4184,8 @@
       "dest": ".claude/project/reference/record-trust-gate.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343",
-      "currentHashAtInstall": "3a7a06e647d241c1b659842ee4751b78fbefd8d29701f4255791c4f203d2f343",
+      "installedHash": "51884c85f8e2a6cbe5e2ac63e95df3da27c740183211f5c055710a943d90ed10",
+      "currentHashAtInstall": "51884c85f8e2a6cbe5e2ac63e95df3da27c740183211f5c055710a943d90ed10",
       "introducedIn": "0.0.0"
     },
     {
