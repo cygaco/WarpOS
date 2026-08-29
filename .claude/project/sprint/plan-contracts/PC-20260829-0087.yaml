@@ -1,0 +1,147 @@
+schema: warpos/sprint/plan-contract/v1
+id: PC-20260829-0087
+created_at: "2026-08-29T20:06:05.639Z"
+updated_at: "2026-08-29T20:06:05.639Z"
+sprint: SP-20260829-001
+source_request: "Enforcer sprint from DUMP.md #2 — fail-closed gates."
+source_request_verbatim: "ED-353/354/356/358/359/361/362/363/364/366/367/368 all name concrete enforcer shapes and recurred within one session. The 2026-08-29 /enforcement:sweep (report runtime/enforcement-sweep/2026-08-29/REPORT.md, 48 candidates) added ED-369..376 + RI-010 — and ED-369 outranks everything: four LIVE gates swallow \"could not check\" into \"passed\" (scripts/hooks/gate-check.js and gauntlet-gate.js: corrupt store == absent store → allow; tracker-completion-gate.js: a validate.js crash is indistinguishable from GREEN even under TRACKER_GATE_ENFORCE=1; sprint/design.js: catch → ok:true around fail-closed logic) — the first three are wired in settings.json. Highest leverage order: ED-369 → ED-374 → ED-356 → ED-363 → ED-359 → ED-364 → ED-366. Plan as its own sprint; do not fold into S-05."
+request_type: enforcement_hardening
+interpreted_intent: "Make WarpOS's own admission gates unable to report a pass they did not verify: partition 'absent' from 'unreadable/threw' at every gate, fail closed on the latter, and prove each fix with a seeded corrupt-input fixture that RED-tests the old fail-open path. Then close the adjacent enforcement-debt rows whose shape is the same false-green family."
+user_or_business_outcome: "A green gate means the gate checked. Today deleting or corrupting one JSON file silently disables the builder-dispatch admission gates and the only signal is a stderr WARN inside a hook whose output nobody reads — so every 'gauntlet green' claim in this framework rests on gates that cannot distinguish a pass from a failure to look."
+affected_surfaces:
+  - surface: scripts/hooks/gate-check.js
+    evidence_level: verified_from_repo
+    notes: "LIVE PreToolUse matcher=Agent in .claude/settings.json. TWO fail-open paths, both verified at 8d15c162: (1) loadStore() lines 48-52 'try { return JSON.parse(fs.readFileSync(storePath)) } catch { return null }' — ENOENT and a parse error return the SAME null, consumed at lines 153-158 'WARNING: Could not read store.json, allowing dispatch' -> process.exit(0); (2) the outer handler at lines 181-182 'catch { process.exit(0) }' — ANY unexpected throw allows the dispatch."
+  - surface: scripts/hooks/gauntlet-gate.js
+    evidence_level: verified_from_repo
+    notes: "LIVE PreToolUse matcher=Agent. ABSENT-store half only: lines 87-93 '!fs.existsSync(storePath)' -> WARN 'store.json not found, allowing dispatch' -> exit 0, printed as a WARN rather than a SKIP. IMPORTANT CORRECTION to the sweep report's framing: this file's outer catch at lines 219-224 is ALREADY fail-CLOSED ('Fail-closed: infrastructure errors block dispatch' -> BLOCKED). So gauntlet-gate does NOT conflate corrupt with absent; only gate-check.js does. The sweep's sentence 'gate-check.js and gauntlet-gate.js: corrupt store == absent store -> allow' is true of the first and false of the second."
+  - surface: scripts/hooks/tracker-completion-gate.js
+    evidence_level: verified_from_repo
+    notes: "LIVE Stop matcher=*. Line 69 'if (!res) process.exit(0); // runner error -> never trap the session' sits INSIDE the catch around execFileSync(validate.js --json); ENFORCE (line 31, TRACKER_GATE_ENFORCE=1) is only consulted at the FINAL exit (line 84), so a crashed or timed-out validator exits 0 even under enforce. Also line 48 'if (!fs.existsSync(TRACKER.md)) process.exit(0)' — a defensible SKIP case, but unprinted and unpartitioned."
+  - surface: scripts/sprint/design.js
+    evidence_level: verified_from_repo
+    notes: "NOT hook-wired — a CLI path. Lines 193-194 'catch { return { ok: true }; // fail-open for unexpected errors }' wraps the R-id trace-integrity check whose own body (lines 181-192) deliberately returns ok:false with a detailed message for born-broken traceability. The fail-open swallows the hardening in the same function."
+  - surface: scripts/enforcement/ed-dup-id-lint.js
+    evidence_level: verified_from_repo
+    notes: "THE POSITIVE SHAPE to copy, not a defect. Lines 42-47: 'if (e && e.code === ENOENT) { print SKIP — register absent; exit 0 }' then unconditional 'process.exit(2)' for any other error. Absent is an explicit printed SKIP; present-but-unreadable is a hard exit 2. Every gate fixed this sprint should be readable against this file."
+  - surface: "scripts/checks/security-pass-count.js + .claude/commands/scan/full.md"
+    evidence_level: asserted_from_ed_row
+    notes: "ED-374 (1): the assertion that the 3-provider security review actually FIRED is behind --strict, and /scan:full invokes without it; evaluateRuntime() early-returns on an empty review set so ZERO reviews reads as no-finding. NOT yet re-verified by me from the repo — the ED row is the source and the design must attach its own grep proof."
+  - surface: scripts/checks/coverage-gate-scan.js
+    evidence_level: asserted_from_ed_row
+    notes: "ED-374 (2): module header declares 'RAMP: REPORT-ONLY this sprint — ALWAYS exits 0'; the ramp names no flip-trigger and 'this sprint' is long past. NOT yet re-verified by me from the repo."
+  - surface: the merge-guard doc-ref-integrity PreToolUse path
+    evidence_level: asserted_from_ed_row
+    notes: "ED-356: runs --enforce REPO-WIDE and blocks a builder's commit on broken refs outside the committing worktree's tree; deterministic for any builder in a foreign worktree; blocked 2 builders in one session (RI-010 counts 56 blocks of the sibling node -e idiom since 2026-07-23). NOT yet re-verified by me from the repo."
+  - surface: "scripts/dispatch-claude.js (brief environment injection)"
+    evidence_level: asserted_from_ed_row
+    notes: "ED-363: the wrapper must inject the TRUE cwd (the WarpOS isolation worktree it creates) and the target repo path as authoritative prompt fields, plus a preflight that fails a brief asserting a different cwd. NOT yet re-verified by me from the repo."
+current_behavior:
+  evidence_level: verified_from_repo
+  notes: "Verified at 8d15c162. Three of the four ED-369 sites are wired live in .claude/settings.json (gate-check + gauntlet-gate as PreToolUse matcher=Agent; tracker-completion-gate as Stop matcher=*). A gate that cannot read its input prints a WARN to stderr and exits 0, which is byte-identical to a pass for every consumer. No audit anywhere asserts that a script registered as a gate exits non-zero on unreadable or throwing input (ED-369 missing_enforcer: 'none')."
+desired_behavior: "Every gate partitions its input into three outcomes and says which one it took: PASS (checked, satisfied) / SKIP (the checked thing is legitimately ABSENT — printed explicitly, exit 0) / FAIL-CLOSED (present-but-unreadable, parse error, runner crash, unexpected throw — non-zero exit, never silent). The partition is enforced by an audit that plants corrupt input at each registered gate and RED-tests any that exits 0, so a future gate cannot regress into fail-open without the audit failing."
+scope:
+  size: l
+  risk_level: high
+  complexity_drivers:
+    - "Three of the four sites are LIVE hooks on the builder-dispatch and session-Stop paths — a fix that fails closed too eagerly can trap every session in the framework (the exact reason each fail-open was written)."
+    - "The SKIP-vs-FAIL partition is a judgment per site: an absent oneshot store when not in oneshot mode is legitimately absent; an absent TRACKER.md is not the same as an unreadable one."
+    - "The audit enforcer must enumerate gates from settings.json wiring, so it inherits the wiring's shape and must not silently enumerate zero (the ED-366 blind-scanner class, landing inside the enforcer built to fix the blind-gate class)."
+    - "ED-374's fix changes what /scan:full asserts, so it can turn the repo's own scan RED on pre-existing debt — the flip needs a named trigger, not a quiet enable."
+scope_variants:
+  minimal_safe:
+    summary: "ED-369 only: partition absent/unreadable/threw at all four verified sites, plus the gate-failclosed-audit enforcer and one seeded corrupt-input fixture per site proving the old path now exits non-zero."
+    included:
+      - ED-369
+  recommended:
+    summary: "ED-369 + ED-374 (enforcer-wiring-strictness: a check invoked in a mode that cannot fail is not enforcement; machine-readable flip_trigger/flip_by on every report-only ramp) + ED-356 (scope doc-ref-integrity --enforce to the committing worktree's tree / staged paths, print the scanned root) + ED-363 (dispatch-claude.js injects the authoritative ENVIRONMENT block; preflight fails a brief that names a different cwd)."
+    included:
+      - ED-369
+      - ED-374
+      - ED-356
+      - ED-363
+  expanded:
+    summary: "recommended + ED-359 (close-unreleased.js + the sprint-state layer accepting the harness-conducted path as first-class) + ED-364 (consult-text frame lint: 'every lane'/'all lanes' without a per-lane citation) + ED-366 (reap-orphans.js scanned==0 -> UNKNOWN exit 2 + enumerator self-test). Candidates behind these, in priority order: ED-353, ED-354, ED-358, ED-361, ED-362, ED-367, ED-368."
+    included:
+      - ED-369
+      - ED-374
+      - ED-356
+      - ED-363
+      - ED-359
+      - ED-364
+      - ED-366
+assumptions:
+  safe:
+    - "The four ED-369 sites and the ed-dup-id-lint.js positive shape are as described — I read each at 8d15c162 and quote line numbers."
+    - "The hook wiring in .claude/settings.json is the authoritative list of live gates for the audit's enumeration seed."
+  unsafe:
+    - "That the four ED-369 sites EXHAUST the fail-open class. They do not: the sweep's own lens found them, and I have not swept scripts/checks/** or the remaining scripts/hooks/** for the same shape. The audit enforcer is the answer to this, not a list of four fixes — if the sprint ships four repairs and no enumerating audit, the class is open and the sprint has claimed it closed. (This is the S-VLADW1-04/05 coverage-granularity class landing on WarpOS's own surface.)"
+    - "That ED-374/356/363's descriptions still hold at HEAD — they are carried from their ED rows at evidence_level asserted_from_ed_row and are NOT re-verified by me; the design phase must re-verify each before any brief asserts them."
+    - "That failing closed is safe at every site. It is not obviously safe at the Stop hook (tracker-completion-gate): a validator that crashes for an unrelated reason would begin trapping session end. The design must decide per site whether FAIL-CLOSED means a non-zero exit or a loud non-blocking UNKNOWN, and say why."
+  needs_beta_review:
+    - "Whether a Stop-hook gate may fail closed at all, given 'never trap the session' is the stated reason the fail-open exists — or whether UNKNOWN-but-loud is the honest ceiling there."
+    - "Whether the audit enforcer ships blocking in /scan:full this sprint or report-only with a named flip trigger — noting that shipping it report-only would instantiate ED-374, the very debt this sprint is closing."
+    - "Scope: recommended (4 EDs) vs minimal_safe, given the session's remaining time and the parallel S-05 lane."
+open_questions:
+  blocking: []
+  non_blocking:
+    - "Does the audit plant fixtures against the real gate files in a sandbox copy, or run each gate with an env-var-redirected input path? The former is truer, the latter is safer to run inside /scan:full."
+non_goals:
+  - "Fixing every open ED row. The ledger is at 300+ rows; this sprint takes the false-green family and stops."
+  - "Touching the vlad surface or anything in S-VLADW1-05's scope — the two lanes are on independent surfaces by construction."
+  - "Rewriting the hook architecture. Each fix is a partition at the existing site, not a redesign."
+requirement_areas:
+  - "R-1 gate input partition (absent / unreadable / threw) at the four verified ED-369 sites"
+  - "R-2 the enumerating audit enforcer + its own blind-scanner guard (scanned==0 is UNKNOWN, not clean)"
+  - "R-3 seeded corrupt-input falsifier fixtures, required-present, one per repaired site"
+  - "R-4 enforcer-wiring strictness (ED-374): a check invoked in a non-failing mode carries a machine-readable flip trigger"
+  - "R-5 guard-scope correctness (ED-356) and brief-environment authority (ED-363)"
+high_level_story_candidates: []
+granular_story_candidates: []
+workstream_candidates: []
+preliminary_ticket_candidates:
+  allowed: false
+  candidates: []
+  notes: "Tickets are minted during /sprint:design unless this is documentation_scale=xs."
+external_service_dependencies:
+  status: none_expected
+  required: []
+  possible: []
+  notes: ""
+approval_boundaries:
+  - "Build authorization for this sprint came from the team lead relaying the operator's in-session authorization to run sprints via /sprint:full including parallel sprints where safe; the design->build boundary additionally waits on beta's lane-concurrency answer relayed by the lead."
+  - "No push to origin without the operator's word (autonomy table: push = ask first)."
+  - "Any change to .claude/settings.json hook wiring is an operator-visible change to what runs on every tool call — surface it before landing rather than folding it into a build commit."
+design_required: true
+execution_allowed_without_design: false
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+lane:
+  type: worktree
+  value: off session/2026-08-29
+  isolation_notes: "Lane B of a two-lane session. Lane A (S-VLADW1-05) is on the vlad engine-lane surface; this lane is WarpOS-side only. The two lanes share no files. Build runs in a worktree off session/2026-08-29."
+beta_review:
+  required: true
+  likely_founder_rejection_risks:
+    - "Shipping four point-fixes and calling the fail-open class closed, when the class's size is unknown and only an enumerating audit could bound it."
+  overbuild_risks:
+    - "Building a general gate-contract framework when the actual need is a three-way partition plus one audit script; the ED rows name ~30-line enforcers and the sprint should stay near that size."
+  missing_context_risks:
+    - "ED-374/356/363 are carried from their rows unverified; if any premise has gone stale the design will brief a false 'X is missing'."
+plan_quality:
+  status: needs_design
+  confidence: high
+  evidence_gaps:
+    - "ED-374, ED-356, ED-363 surfaces not re-verified from the repo (asserted_from_ed_row)."
+    - "No sweep yet of scripts/checks/** and the rest of scripts/hooks/** for additional fail-open sites — the unsafe assumption above."
+  fail_reasons: []
+next_recommended_command: "/sprint:design"
+resume_instructions: "Sprint SP-20260829-001 has Plan Contract PC-20260829-0087. Run the next_recommended_command. If interrupted, read .claude/project/sprint/sprint-progress.yaml#resume_command."
+tracker_paths:
+  current_sprint: ".claude/project/sprint/current-sprint.yaml"
+  sprint_progress: ".claude/project/sprint/sprint-progress.yaml"
+  plan_contract: ".claude/project/sprint/plan-contracts/PC-20260829-0087.yaml"
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260829-0087.report.md"
+created_by: epsilon
+updated_by: epsilon

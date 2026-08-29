@@ -1,17 +1,17 @@
 schema: warpos/sprint/current-sprint/v1
-id: "SP-20260829-001"
+id: SP-20260829-001
 title: "Fail-closed enforcer sprint: gates that cannot swallow could-not-check into pass"
 objective: "Run /sprint:plan to set this."
-status: not_started
+status: planning
 created_at: "2026-08-29T20:02:12.838Z"
-updated_at: "2026-08-29T20:02:12.838Z"
-source_request: ""
-interpreted_intent: ""
-plan_contract: null
-risk_level: low
+updated_at: "2026-08-29T20:06:05.642Z"
+source_request: "Enforcer sprint from DUMP.md #2 — fail-closed gates."
+interpreted_intent: "Make WarpOS's own admission gates unable to report a pass they did not verify: partition 'absent' from 'unreadable/threw' at every gate, fail closed on the latter, and prove each fix with a seeded corrupt-input fixture that RED-tests the old fail-open path. Then close the adjacent enforcement-debt rows whose shape is the same false-green family."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260829-0087.yaml"
+risk_level: high
 approval_state: none_required
-current_phase: idle
-recommended_mode: no_recommendation
+current_phase: plan
+recommended_mode: sprint
 mode_invocation_required_by_user: true
 external_services:
   identified: []
@@ -49,20 +49,53 @@ requirements:
   redteam_plan: null
   release_plan: null
 checks:
-  lint: { status: not_run, last_run: null, evidence: "" }
-  typecheck: { status: not_run, last_run: null, evidence: "" }
-  tests: { status: not_run, last_run: null, evidence: "" }
-  build: { status: not_run, last_run: null, evidence: "" }
-  qa: { status: not_run, last_run: null, evidence: "" }
-  redteam: { status: not_run, last_run: null, evidence: "" }
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
 approvals:
-  plan: { required: false, state: not_required, ref: null }
-  design: { required: false, state: not_required, ref: null }
-  execution: { required: false, state: not_required, ref: null }
-  release: { required: false, state: not_required, ref: null }
-  external_services: { required: false, state: not_required, ref: null }
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
 reports:
-  plan: null
+  plan: ".claude/project/sprint/plan-contracts/PC-20260829-0087.report.md"
   design: null
   execution: null
   release: null
@@ -74,10 +107,14 @@ ralph:
   last_checkpoint: null
   next_action: null
 crash_recovery:
-  last_checkpoint: null
-  resume_command: "/sprint:plan"
-  resume_summary: "Tracker initialized. No sprint started yet. Run /sprint:plan to begin."
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Plan Contract PC-20260829-0087 created. Next: /sprint:design."
   active_files: []
   dirty_state: false
   blockers: []
   safe_to_continue: true
+lane:
+  type: worktree
+  value: off session/2026-08-29
+  isolation_notes: "Lane B of a two-lane session. Lane A (S-VLADW1-05) is on the vlad engine-lane surface; this lane is WarpOS-side only. The two lanes share no files. Build runs in a worktree off session/2026-08-29."
