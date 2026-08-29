@@ -41,8 +41,13 @@ The diagnostic run reviewed `b9b8df3`. `git diff b9b8df3..<<<COMMIT_SHA>>>` is t
     J  `createRequire` banned outside `src/spawn-shim.js`; the enforcer's ceiling stated in its own
        header; a standing EXPECTED-BYPASS witness committed, re-pointed to a route still open
     K  CUSTODY.md's description of the transform rewritten to match the transform as built
-    L  P2's heading scoped to matched shapes; its ceiling's named example re-pointed to the
-       execution-proven open route  <<<DROP THIS LINE IF L DID NOT RUN>>>
+    L1 internal process vocabulary scrubbed from the shipped surface; the NOT-bound enumeration
+       completed; a count of disclosure surfaces dropped from a paragraph that argues such counts
+       are unavailable; the confusable disclosure calibrated (mistake-reachable vs attacker-only);
+       the anti-staleness test's failure message told to say "update the disclosure, THEN this test"
+    L2 P2's heading scoped to what half (b)'s body actually enumerates; that clause's bound ceiling
+       re-pointed from the now-closed createRequire-alias example to the execution-proven
+       process.binding("spawn_sync") route, with the standing fixture as its witness
 
 **Conductor-measured at this commit, for you to CHECK rather than trust:** suite exit 0,
 **<<<PASS>>> pass / 0 fail / 0 skipped / 0 todo**; `npm run check:ship` exit 0; `npm run check:pointers`
@@ -134,6 +139,10 @@ say so, and say so loudly if you can prove it.
    the comma**, whose measured false-RED cost was the reason; **RT-2's NBSP tolerance** remains open and its
    control fires correctly; **RT-8's rollup blindness** remains open by decision (row 309 Q6 — DISCLOSE,
    because a rollup claim must be reviewed, not linted, and S4-1 is the actual control).
+   **A residual counts as a re-confirmation ONLY if its shipped disclosure is TRUE and in CLASS form; a
+   disclosure that is inaccurate, instance-form, or on the wrong surface is a NEW S4-1/S4-6 finding, not a
+   re-confirmation.** Disclosure does not buy silence — check each of these disclosures against the code
+   rather than accepting that it exists.
 4. **A committed EXPECTED-BYPASS witness exists on purpose.**
    `engine/test/fixtures/J-expected-bypass/reflective-launcher.js` is SUPPOSED to get past
    `spawn-env-allowlist.js`, and its test asserts the scanner finds nothing there. It launches a real child

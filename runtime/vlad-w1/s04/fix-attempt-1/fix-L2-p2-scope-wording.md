@@ -1,10 +1,19 @@
-# Fix brief — bundle L — P2's scope wording vs the execution-proven bypass
+# Fix brief — bundle L2 — P2's scope wording vs the execution-proven bypass
 
 You are a **backend-fixer** working in the vlad engine worktree.
 
 - **Worktree (your cwd):** `C:\Users\Vlad\Desktop\Claude\Projects\vlad\.worktrees\engine-lane`
 - **Branch:** `wt/S-VLADW1-01-engine` — already checked out. Do NOT create a branch, do NOT merge, do NOT push.
 - **Package root:** `engine/`
+
+Bundle **L1** edited `CUSTODY.md` immediately before you and has finished. You are the only editor of that
+file now. **L1's regions are not yours** — it touched the preamble's NOT-bound enumeration, the rollup-class
+paragraph, the preload Ceiling's surface count, and the transform paragraph's confusable disclosure. Leave
+all four alone. Yours is P2 and only P2.
+
+**Every premise below carries a proof line, and you are entitled to refuse any of them with evidence** —
+that is a correct return, not a failure. Two briefs earlier in this attempt asserted "X is missing/required"
+from belief rather than a read and were rightly refused by their builders. Check; do not inherit.
 
 ## scopeContract
 
@@ -13,7 +22,7 @@ You are a **backend-fixer** working in the vlad engine worktree.
 - `engine/scripts/checks/custody-claim-lint.js` — the `BOUND_PARAGRAPHS` canonical copy of that ONE ceiling paragraph, and nothing else in the file
 
 **forbiddenFiles** (do not edit, for any reason)
-- Every other paragraph of `engine/CUSTODY.md` — in particular anything describing `canonicalizeClaimText`, the transform, P1, P3, P4, A5–A8, or any other Ceiling paragraph. A parallel bundle (K) has just edited this file; you are the only editor now, but you own two paragraphs of it, not the file.
+- Every other paragraph of `engine/CUSTODY.md` — in particular anything describing `canonicalizeClaimText`, the transform, P1, P3, P4, A5–A8, or any other Ceiling paragraph. In particular the four regions bundle L1 has just edited: the preamble's NOT-bound enumeration, the rollup-class paragraph, the preload Ceiling's disclosure-surface sentence, and the transform paragraph's confusable disclosure. You are the only editor of this file now, but you own two paragraphs of it, not the file.
 - Every other file in the repo. No test files, no `src/`, no `driver/`, no fixtures.
 - Anything under `.claude/`.
 
@@ -45,6 +54,13 @@ Rewrite the heading so it says what the enforcer does — matched call-site SHAP
 asserting that raw bypasses are refused as a class. Do not fix it by deleting the second half and leaving the
 clause half-described; the reader needs to know half (b) exists. Do not smuggle the universal back in with a
 softer word ("effectively", "in practice", "generally") — those are the same claim wearing a hedge.
+
+**RUN THE ATTACK BEFORE YOU WRITE THE REPLACEMENT — the attack IS the shipped fixture.** Execute
+`reflectiveLaunch()` from `engine/test/fixtures/J-expected-bypass/reflective-launcher.js`, show that a real
+child ran (status and the echoed placeholder), and show the scanner finds zero violations in that file. That
+pair — "the scanner sees nothing" AND "a child really started" — is what contradicts the heading's universal.
+Report the raw output. Only then write the scoped heading. A heading claim rewritten without its attack run
+is exactly the process this bundle is correcting.
 
 Constraint: the heading is the section's anchor. Other prose in this file refers to "P2" and to "half (b)";
 grep for those references and make sure your new heading does not leave any of them describing something that
