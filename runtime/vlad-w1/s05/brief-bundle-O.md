@@ -29,8 +29,31 @@ report with the output.
 **Do not edit what you cannot commit.** If you cannot commit at all, make NO edits and halt.
 
 **Gates, each as its OWN command with its real exit code read**: suite from `engine/` (floor = the
-post-N pass count, 0 fail) and `npm run check:ship` (exit 0). `check:pointers` exits 1 by design,
-outside `check:ship`, not a defect.
+post-N pass count, 0 fail — it was 377 after M; verify the current number yourself) and
+`npm run check:ship` (exit 0). `check:pointers` exits 1 by design, outside `check:ship`, not a defect.
+
+## WHAT M AND N ALREADY LANDED — build on this, do not re-litigate it
+
+**Bundle M (`3596c2d`)** added **fold (8)** to `canonicalizeClaimText`: markdown emphasis, alphabet
+`` [*_`~] ``, replaced with a **SPACE** (not deletion — deletion was measured and rejected because it
+would collapse `**only**place` → `onlyplace` and reopen an adjacent fixed evasion). It applies by
+default, with **one disclosed opt-out**: `resemblesBindableLeadIn` passes `{ emphasisFold: false }`
+because it needs the raw emphasis run as shape data. That opt-out is guarded by M's M-1 falsifier —
+**do not remove or bypass it.**
+
+Three consequences for you:
+- **Fold ORDER matters to your work.** The confusable fold (4) runs at ~250 and case-folding runs
+  **LAST** at ~254. That ordering is exactly why the case-asymmetry gaps below are real: an
+  uppercase-only map entry gives the lowercase letter no protection.
+- **M disclosed an open residual** (a token split mid-word by emphasis, `ASS**ERTED**`, is not closed
+  by SPACE semantics). It is M's, disclosed and pinned. **Not yours to close, not yours to restate.**
+- **A FOURTH emphasis site exists** and M scoped it out with reasoning: `BOLD_LEAD_IN` (~554),
+  used once at `extractBindableParagraphs` (~745) on raw text for structural id-derivation, not for
+  comparison-hiding. Do not treat it as an unhandled site; if your work touches it, say so.
+
+**Do not restate M's yield number.** M re-derived it as six-close / one-already-red / one-open against
+the transform as built, correcting the earlier provisional "seven". Any sentence about the fold's
+yield belongs to bundle P and must be sourced from the emitted set, never typed.
 
 Never `--no-verify`. Never allowlist past a guard. No credential-shaped literals.
 
