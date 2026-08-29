@@ -310,6 +310,60 @@ the 12 and none of the other 53 — **this table is my account and is owed an in
 BEFORE the registry is sealed** (β d0c5b2e7 §6), which is the right order precisely because I author
 both the registry and the enforcer that reads it.
 
+## 6c-bis. INDEPENDENT RE-READ OF THE DISPOSITIONS — A2, and a mechanism correction it forced
+
+Lane A2 (`d-mtevftkp-f2166a8f`, cabinet/gpt-5.6-sol, `ok:true`, 380591 ms, all four ED-377 fields
+present) fixed its thirteen dispositions in Phase 1 before being shown §6c.
+
+**DISPOSITION DISAGREEMENTS: NONE.** All thirteen match.
+
+**The count reconciles exactly, and A2 named the framing difference itself:** it reports **11 defects /
+2 not-a-gate over THIRTEEN sites**; §6c reports **10 defects / 2 not-a-gate over TWELVE table
+members**. The difference is precisely `gate-check.js:48-52` (`loadStore`), which §6c deliberately
+carries OUTSIDE the probe population because its `catch` returns `null` rather than `exit(0)`. A2's
+words: *"its '10 defects / 2 not-a-gate' count is correct only for its twelve table members, not for
+this thirteen-site instrument."* 10 + 1 = 11. **Not a disagreement — two different denominators, both
+stated.** This is why the emitted set matters more than the count: the numbers differ while the
+underlying facts are identical.
+
+### Two places A2 agrees for a BETTER reason than mine — both are corrections
+
+**(i) My evidence for `edit-watcher` not-a-gate was insufficient.** I ran
+`grep -c 'process.exit(2)'` → 0. A2: *"zero matches for `process.exit(2)` is not sufficient
+evidence. My conclusion follows from reading the complete control flow and finding no blocking form
+of any kind, plus its PostToolUse placement."* It is right, and this is **the same class lane B
+found in my instrument** — grepping for a *form* is not determining *semantics*. The disposition
+survives; the justification behind it has been upgraded from mine to A2's.
+
+**(ii) ⚠️ VARIANT A's MECHANISM DESCRIPTION IS IMPRECISE — this changes the remedy.** §3b describes
+variant A as *"one catch spans both the infra-parse and the policy evaluation"*, implying the `catch`
+intercepts the blocking decision. **It does not.** A2:
+
+> *"the catches do not intercept `process.exit(2)` — `process.exit` terminates rather than throws. The
+> defect is that preceding parsing/checking failures are converted into exit 0 before the deny
+> decision can be reached."*
+
+That is correct and it is my **third** mechanism-description error this sprint (after the
+`secret-guard` file-read that does not exist, and "neither consult was primed"). The dispositions are
+unaffected; the **fix shape is not**:
+
+- **Wrong remedy** (implied by my wording): move the `exit(2)` out of the `try`, or narrow the `try` so
+  it stops "covering" the decision. The decision was never at risk — it terminates the process.
+- **Correct remedy:** the failures that occur *before* the decision is reachable — payload parse, store
+  read, validator run, discriminator read — must **fail closed on their own**, so control never
+  silently arrives at `exit(0)` having skipped the decision.
+
+Variant A should therefore be stated as **"a pre-decision failure is converted into a permissive exit
+before the gate's decision can be reached"**, not as "a catch spanning the decision". The variant-A
+remedy in §3b ("no catch may span both") is consequently the wrong mechanical test and must not ship
+as written; the testable property is that **every pre-decision failure path terminates non-zero**.
+
+**Residual A2 names honestly:** no hook was behaviourally executed; all thirteen dispositions are
+source-derived. Its `what_would_confirm_or_refute` asks for fault injection through the real hook
+harness — forcing each named parse/read/git failure on a valid event and asserting the resulting
+allow/block. **That is the right shape for the enforcer's own fixtures**, and it is stronger than
+anything currently planned.
+
 ## 6d. ED-353 SECOND INSTANCE — the clamp on the `dispatch-agent.js` route (2026-08-29)
 
 Filed here so the enforcer sprint's successor sees the **route gap**, not just the recurrence.
