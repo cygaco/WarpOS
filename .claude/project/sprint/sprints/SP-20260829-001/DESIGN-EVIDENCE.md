@@ -329,6 +329,41 @@ lanes cannot cross-reference, so a disagreement with §6c found by lane A cannot
 lane to a probe defect found by lane B. The conductor reconciles them and must say so, rather than
 presenting the pair as a single independent read.
 
+## 6e. A SECOND, DIFFERENT DISPATCH CEILING — the two wrappers disagree (2026-08-29)
+
+Distinct from §6d and worth its own enforcer candidate. After the clamp death was fixed with
+`WARPOS_DISPATCH_BACKGROUND=1`, the re-fired lane died AGAIN at **`elapsed_ms 900663`**, exit 1,
+zero bytes — **not** the clamp. Read at source from `scripts/dispatch/timeout-policy.js#WRAPPER_DEFAULTS`:
+
+| wrapper | key | background bound |
+|---|---|---|
+| `dispatch-claude.js` (builders) | `dispatch-claude` / `epsilon-claude` | **1200000 ms** |
+| `dispatch-agent.js` (cross-provider reviewers) | `epsilon-agent` / `run-provider` | **900000 ms** |
+
+`foregroundAwareTimeout(900000, {background:true})` returns 900000, so the env var worked exactly as
+intended; the brief simply exceeded the route's real maximum. Its sibling lane survived at
+**814785 ms — 85 seconds of headroom**, so both halves were sized against a ceiling (1200s) that does
+not apply to their route.
+
+**Two distinct signatures that call for OPPOSITE fixes:**
+- `elapsed ≈ 540xxx` → the foreground clamp; the fix is the env var.
+- `elapsed ≈ 900xxx` on a `dispatch-agent.js` lane → the background ceiling itself; the fix is a
+  smaller brief. Treating this as the clamp case buys another death.
+
+**Enforcer candidates for the successor:**
+1. Nothing surfaces WHICH ceiling applies at brief-authoring time — the wrapper knows its own
+   `WRAPPER_DEFAULTS` key and could print the resolved effective bound at spawn.
+2. Tag a completion row whose `elapsed_ms` lands within a small epsilon of the resolved bound with
+   `death_cause: "bound-exhausted"` (distinct from ED-353's `"foreground-clamp"`), so
+   `gauntlet-verify` reports a TIMEOUT with the right remedy rather than a generic reap.
+3. **Nothing tells the dispatched agent its own deadline.** A cross-provider lane at high reasoning
+   effort optimises for completeness right up to the moment it is killed with zero bytes salvaged.
+   The wrapper could inject the effective bound into the prompt; until it does, the conductor must
+   write the budget into every brief by hand — *"your route is killed at N minutes; a partial answer
+   returned beats a complete answer killed; spend at most half your time analysing, then stop and
+   write."* That instruction was added to the re-split briefs and is the lever that should have been
+   pulled on the first re-fire.
+
 ## 7. What I would file regardless of scope
 
 `secret-guard.js:94` is a real, unfiled fail-open on a credential control. Whatever scope β rules,
