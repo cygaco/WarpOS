@@ -412,3 +412,61 @@ and its disclosed-enumeration residual marked as N's and not to be re-opened; th
   honest-looking emitted sentence.
 - **ED-363 environment block applies to every bundle**: cwd is a WarpOS isolation worktree, the target is
   the vlad path, plain single `git -C "<abs>"` commands only.
+
+### Bundle P′ — LANDED `f77b474` · Bundle Q — LANDED `4d15e4b`. LANE A'S BUILD IS COMPLETE.
+
+Chain: M `3596c2d` → N `1fb5b31` → O `fbda0dc` → P `de1f3f3` → P′ `f77b474` → Q `4d15e4b`.
+
+**P′** (`d-mtex3niv-a1519b18`, 377044 ms): corrected the audit-coverage FRAME. Selection criterion
+now stated as *what the lanes did* ("the src/driver files every gauntlet-2 lane SAMPLED RATHER THAN
+READ END TO END"), completeness declared UNTESTED, the `S06-Fnn` table partitioned by aboutness.
+`S06-F01` ships on the sound reason (fixed-constant default, verifiable from L102 alone) with
+"credential-free" appearing only inside its own withdrawal, and the residual in BOTH directions.
+**`S06-F02` went further than briefed** — it read `initCredentialCustody(ENV_DENYLIST)` **at the call
+site (L330)** rather than resting on β's comment-block inference, closing β's own stated caveat.
+
+**Q** (`d-mtexglbg-fe70e32b`, **1189086 ms — 11 seconds inside the 1200 s bound**): all four tasks.
+Suite **398/0**, `check:ship` 0, `custody-claim-lint` 0 violations with **16** canonical copies (15
+before — the new bind).
+- **Task 1 is structurally non-decorative:** the fixture builder partitions keys by **complement**
+  (`!ceiling && !asserted`), not a third hand-typed list, so a future non-derived bind lands in the
+  fixture automatically. Observed the predicted RED before writing the fix.
+- **It found a Rule 4b ceiling BY EXECUTION and corrected its own overclaim before shipping.** Rule 4b
+  is a pure substring check, so text **appended after** a bound span is invisible; only in-place
+  reword/deletion is caught. Its doc comment first said *"an edit … now goes RED"*; it ran an
+  append-mutation probe, observed `[]`, and **fixed its own sentence before committing.**
+- **Task 4** verified backtick/tilde evasion **directly against the shipped function** rather than
+  assuming P's finding, with a positive control isolating the gap to the emphasis alphabet. It did
+  **not** touch `CUSTODY.md` (P's surface) and reported the pin's sha for a future prose bundle.
+- Its own RF-Q1 helper tripped the repo's P2 static enforcer; it **rephrased rather than suppressed**.
+
+#### The 393-vs-402 test count — RESOLVED, and NEITHER builder was wrong
+
+Q flagged *"measured floor was 393, not P′'s claimed 402 — unresolved discrepancy"* and named the
+likely cause without spending budget on it. ε ran both invocations:
+`node --test "test/*.test.js"` → **398**; bare `node --test` → **407** (it collects **9** more files).
+Q added 5 tests, so bare at P′'s commit = 407 − 5 = **402** — exactly P′'s figure.
+
+**Both were right; the invocations differed.** No false claim was shipped. **The real defect is the
+conductor's:** the briefs specify a floor *number* without specifying the *command*, which makes the
+floor ambiguous by construction. Future briefs pin the exact invocation.
+
+#### ⚠️ DISPATCH DEFECT — worktrees are cut from a STALE BASE (verified independently)
+
+Bundle B2′ reported, and ε confirmed by `git merge-base --is-ancestor`, that its isolation worktree
+branched from **`c3b8654f`** — this session's *starting* commit — although B1, B2, a reviewed
+allowlist commit and three manifest regens had already landed on `session/2026-08-29`.
+
+**Observed consequences, not theorised:** the builder had to hand-sync prerequisites; it re-applied an
+already-reviewed allowlist decision (correctly flagging *"I did not author a new allowlist decision;
+I re-applied an accepted one this worktree was missing"*); and **every one of the conductor's four
+merges hit generated-file conflicts** for this reason. Dispatch infrastructure is handing builders a
+tree that no longer exists. Belongs in the enforcer sprint's own findings.
+
+#### OPEN, needs α: `CUSTODY.md` still says "UNPINNED"
+
+Q pinned the backtick/tilde evasion at `4d15e4b`, but `CUSTODY.md`'s sentence still reads
+*"CONFIRMED BY EXECUTION, AND UNPINNED"* — correct when P′ wrote it, **now false**. Q was right not to
+edit it (prose is P's surface). Correcting it needs a small P″; leaving it ships a sentence known to
+be stale. **α's call**, and it is precisely the "a disclosure is a claim" shape this sprint keeps
+finding.
