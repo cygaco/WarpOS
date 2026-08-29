@@ -107,3 +107,14 @@ deliberate empty, not an absent key:**
   this bundle specifically: whether you OBSERVED RF-Q1 red, or only wrote it.
 - **`what_would_confirm_or_refute`** — for anything you are unsure of, the specific check that would
   settle it.
+- **`read_outside_the_quoted_region`** — **REQUIRED.** Whenever you rate a claim or assert a mechanism,
+  state **what you read OUTSIDE the lines you quote.**
+
+  **Why this field exists.** Three ratings in this sprint moved the moment someone finally opened the
+  file — including one where the quotations were **exact** and the rating still changed, because the
+  load-bearing fact sat 350 lines above the quoted region. **An excerpt is a frame, and a frame chosen
+  by the person making the claim will tend to contain the evidence for it.** That is not carelessness;
+  it is what excerpting *is*, and the person quoting is the least able to notice it.
+
+  Usable: *"I read L440-471 and the constants at L97-102, and nothing else in that file."*
+  Not usable: *"I read the relevant section."*
