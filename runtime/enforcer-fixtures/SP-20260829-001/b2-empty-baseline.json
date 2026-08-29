@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "sprint": "SP-20260829-001",
+  "bundle": "B2",
+  "purpose": "S6-6b fixture baseline: deliberately does not contain fresh-hook.js's site, so scanning b2-new-entrant-root/ must surface exactly one new, untriaged entrant.",
+  "detector_sha": "fixture",
+  "root_scanned": "runtime/enforcer-fixtures/SP-20260829-001/b2-new-entrant-root",
+  "files_scanned": 0,
+  "files_unreadable": [],
+  "site_count": 0,
+  "site_ids": []
+}

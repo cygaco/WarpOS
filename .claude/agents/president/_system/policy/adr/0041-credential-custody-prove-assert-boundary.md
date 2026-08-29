@@ -314,7 +314,7 @@ Amendment 3 (the ED-340 closing-condition rider) and does not modify it.
 gauntlet rounds proved the enumeration is unbounded in practice. Each round widened the patterns; each
 round a fresh composite got through — an interposed comment (`spawn /* c8 ignore */ (`, which defeats
 every call-site matcher in all three scanners, verified 6 of 6), computed member access
-(`cp['spawnSync'](`), `createRequire`, `globalThis['fetch']`. The reviewing lane's conclusion, and it is
+(`cp['spawnSync'](`), `createRequire`, `globalThis['fetch']`. <!-- doc-ref-ignore --> The reviewing lane's conclusion, and it is
 the right one: *"The individual patterns were widened; the CLASS was not. Fixing these four patterns
 alone will reproduce this finding a third time."*
 
