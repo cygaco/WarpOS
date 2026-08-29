@@ -42,7 +42,90 @@ passed, and one carried β's recommendation and α's approval. **The approval ch
 3. **"Unbound" does not mean re-wrapping is free** — header substrings are pinned across wraps independently of the canonical-copy bind.
 4. **A stale assertion MESSAGE in a non-shipping test** ("reviewer read" vs "human review"); cannot fail S4-1 because the file does not ship.
 
-## Scope (proposed — β mints the rule, α authorizes the build)
+## Release rule — PRE-COMMITTED, β row 317 (`2f8c15e6-9d43-4a70-b1c9-84e06fa3d7b2`)
+
+Minted 2026-08-29 at the combined plan→design / design→build boundary, **before any build result
+existed**. Full text: `runtime/beta-consult/S-VLADW1-05-r1r2-release-rule-2f8c15e6.md`, and in this
+sprint's own directory at `runtime/vlad-w1/s05/BETA-CONSULT-design-to-build.md`.
+**Numbering is S5-n. S4-1…S4-6 do not carry and must never be mis-cited into this sprint.**
+
+> **AMENDED by row 318 (`7b3e6d21-c48f-4e95-a012-3f9d5c07b6ea`,
+> `runtime/beta-consult/S-VLADW1-05-r2-amendment-7b3e6d21.md`), before any result exists.** S5-1…S5-7
+> stand; **one scope clause changes and the terminal gains an honesty sentence.**
+>
+> **S5-2, amended scope — replaces the scope sentence only; clauses (a)(b)(c) unchanged:**
+> > S5-2 applies **in full** to every coverage claim the sprint **authors or edits**, and to **all of
+> > `CUSTODY.md`**. For shipped coverage claims in files the sprint does **not** touch, the requirement
+> > is **disclosure, not repair**: their un-audited status is stated, naming `src/env-scrub.js`,
+> > `src/model-seam.js`, `driver/host-free-driver.js` and `src/server-entry.js` as carrying custody
+> > prose no lane has read end to end.
+>
+> β: *"This is not 'we did not look, so it passes': the un-audited status must be STATED, and stating it
+> is itself a coverage claim, so S5-2(b) governs its frame."*
+>
+> **TERMINAL, amended (added sentence):**
+> > Whatever the outcome, the close must state the class's status honestly: **this sprint fixes three
+> > known instances of a class whose size is unknown**, with the four un-audited shipped surfaces named
+> > and carried to the successor. A close that reads as "the coverage-granularity class is closed" is
+> > the class one layer out, in the sprint that exists to end it.
+>
+> Also binding from row 318: **bundle O's emission is a REQUIREMENT, not a design choice** (S5-2(a)
+> demands it), and the diagnostic lanes take the four un-audited files as a **secondary objective** —
+> findings there are free information for the successor and **cannot grow this sprint's scope or fire
+> its gate.**
+
+RELEASE iff ALL SEVEN hold at the qualifying close — carried verbatim:
+
+> **S5-1 — TRUTH.** Every claim string on the shipped surface (`npm pack --dry-run`) is TRUE of the code at close, by reviewer read. **Never satisfiable by mechanism evidence — and never by an approval chain:** β's recommendation, α's approval, and a prior round's pass are not truth evidence. (Carried verbatim from row 316, written about β's own false sentence.)
+>
+> **S5-2 — GRANULARITY (the keystone).** Every coverage claim on the shipped surface — **including enforcer comments** — must satisfy all three: **(a)** where the mechanism has an enumerable extension (a fold map, a prefix set, a bound-paragraph key set), the claim's coverage set is **EMITTED from that data**, never hand-typed; **(b)** the claim's **frame names the unit** the mechanism enumerates (letters, prefix shapes, paragraph keys) and does not round up to a coarser noun — "scripts", "all", "the class" — nor to a count; **(c)** a **closure** claim is admissible only if the mechanism closes by a **named property** (a Unicode property, a structural invariant) or by an **emitted exhaustive extension over an explicitly stated finite domain**. Otherwise state the probed sample and refuse the closure word.
+>
+> **S5-3 — ONE TRANSFORM, MECHANIZED.** RF-M2 observed RED: the two comparison sites cannot silently stop sharing the transform — a comment stating an invariant is not an enforcer of it. Plus RF-M1 (removing the emphasis fold turns the R3 near-misses GREEN — **claimed over seven, not eight; strikethrough was already RED as-is**), RF-N1, RF-O1, and over-refusal preserved in both directions (`## Proven`, keyword prose, `**Status:** PROVEN` stay GREEN; the disclosed comma residual unchanged).
+>
+> **S5-4 — BATTERY RE-RUN BY A LANE, AGAINST THE PREDICATE AS BUILT.** Not by ε; population including every newly authored or edited paragraph; controls first. **The design battery is design evidence and does not discharge this.**
+>
+> **S5-5 — FALSIFIERS OBSERVED.** RF-M1, RF-M2, RF-N1, RF-O1, RF-Q1 and the atomicity observation: present, committed, each OBSERVED RED under its own mutation at close, no-op⇒FAIL guard on every mutant.
+>
+> **S5-6 — ATOMICITY.** Any bound paragraph edited moves with its canonical copy in the same commit; at close no shipped claim string diverges from its canonical copy.
+>
+> **S5-7 — RESIDUALS TRAVEL.** Every residual named in the build spec's items appears at close on the surface where its claim's reader is; an internal-only disclosure does not satisfy it for a shipped claim.
+
+**Deliberately NOT a criterion: `falsification_attempts`** — an envelope/process artifact, not a property
+of the shipped surface. **Binding as standing discipline and a DoD item.**
+
+**ATTEMPT COUNT: ONE.** gauntlet-1 (diagnostic, NON-qualifying) → fix attempt 1 → gauntlet-2 =
+**QUALIFYING**. Anchored to evidence dirs under `runtime/vlad-w1/s05/`, never an ordinal.
+**No exception clause, deliberately.**
+
+**TERMINAL:** any one of S5-1…S5-7 fails at that close → **NO RELEASE, no attempt 2**; close at honest
+state, residuals named, ED-340 / ED-354 / ED-358 restated, remainder → named successor.
+**α applies this verbatim — not ε, not β.**
+
+**DISCRIMINATORS.** Re-confirmation ≠ new finding · **an INACCURATE DISCLOSURE IS A NEW FINDING, never
+shielded by the residual it misdescribes** (row 316) · lane verdicts do not decide, criteria do ·
+present-but-never-observed-RED fails S5-5; NO_DATA ≠ pass; `t.skip()` ≠ pass; **pass-total ≠
+observation-count** — count DESCRIBED mutations · mechanism evidence and approval chains never satisfy
+S5-1 or S5-2 · **NO STACKING — one defect fires ONE criterion**, routing specific-before-general: a false
+sentence whose falsehood IS a granularity mismatch fires **S5-2 only**; a residual that travels but travels
+inaccurately fires S5-2, not S5-7 · both reshape directions barred.
+
+## Scope — RATIFIED `recommended` by β row 317 (DECIDE 0.89)
+
+**`recommended`, NOT `expanded`. Do not vendor a confusables table this sprint.** β's reasoning, which
+corrects the instinct rather than just the choice:
+
+> *The lesson of S4-1a is not "the fold was too small" — it is "the sentence was too broad." A 36-of-52 map
+> with a sentence naming those 36 letters is TRUE and passes; chasing a complete mechanism is the overbuild
+> reflex answering a truth failure with more surface, and a vendored table has its own version and curated
+> ceiling — it relocates the discipline.* If a table is vendored later, **S5-2 applies unchanged: name the
+> version and the ceiling.**
+
+**The unsafe assumption is CONFIRMED UNSAFE and answered structurally.** S4-1a/b/c do **not** exhaust the
+class — the same shape is available in every `Proof scope` line, every A1–A8 paragraph, and every enforcer
+header. β added no separate machinery for it: **S5-2 is scoped to EVERY coverage claim on the shipped
+surface, so the sweep IS the criterion.**
+
+## Scope (design detail — see the build spec for bundles)
 
 - **One transform, both sites.** The emphasis fold moves INSIDE `canonicalizeClaimText`, or `containsStatusToken` routes through `flattenForAssertionScan`. G's own comment already requires this; the sprint is making the code obey it. Battery gains emphasis-split status-token variants, controls first.
 - **Refuse-not-skip on the LEAD-IN path for every prefix class**, heading markers included.
@@ -58,6 +141,10 @@ passed, and one carried β's recommendation and α's approval. **The approval ch
 - **β mints a FRESH rule before any result exists.** S4-1…S4-6 do NOT carry over automatically; the predecessor's numbering must never be mis-cited into this sprint.
 - **A brief may not assert "X is missing" or "X is required" without an attached grep/read proof** (ED-363), and a builder is entitled to refuse a false premise with evidence — that is a correct return, not a failed bundle.
 - **A finding from a read-scope-limited lane is reconciled against the full file before it is graded** (ED-362).
+- **Emission is necessary but NOT sufficient, and hand-written prose is not forbidden** (β row 317 Q2). β's own S4-1a sentence had the **data right** — Cyrillic and Greek genuinely are what the fold samples — and its **FRAME** was the falsehood. Emission fixes the data; **S5-2(b) fixes the frame.** Do not mistake an emitted number for a true sentence.
+- **A sample is asymmetric evidence: it can prove a class OPEN, never CLOSED** (β row 317 Q3, encoded as S5-2(c)). The design battery's 12/12 and 3/3 prove those classes OPEN. They do not close them, and no number of probes ever will.
+- **`falsification_attempts` is a DoD item and standing discipline, NOT a release criterion** (β row 317) — an envelope/process artifact rather than a property of the shipped surface. Every envelope still carries one entry per shipped or relied-on claim, and an entry whose `attack_run` is a description rather than something RUN is not an entry.
+- **NO STACKING — one defect fires ONE criterion**, routed specific-before-general: a false sentence whose falsehood IS a granularity mismatch fires **S5-2 only**, and a residual that travels but travels inaccurately fires **S5-2, not S5-7**.
 - **A text-matching enforcer cannot distinguish a violation from a description of one.** Prose about a banned primitive trips the ban. Two bundles hit this from opposite directions; document it in the scanner header.
 
 ## Definition of Done
