@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T22:05:43.868Z",
+  "generatedAt": "2026-08-29T22:07:28.113Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -11743,8 +11743,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/doc-ref-integrity.allowlist.json",
-      "sha256": "23a50e6d401feba18adabedb45b42d3dcf654a28853a20a3afdd1d43a1c4c93c",
-      "installedSha": "23a50e6d401feba18adabedb45b42d3dcf654a28853a20a3afdd1d43a1c4c93c"
+      "sha256": "a1e0df9dd2612dc14f71891ff4147c679bb7ff8a879044a1f50a9976c28ec94f",
+      "installedSha": "a1e0df9dd2612dc14f71891ff4147c679bb7ff8a879044a1f50a9976c28ec94f"
     },
     "scripts/checks/doc-ref-integrity.js": {
       "owner": "framework",
@@ -11934,6 +11934,34 @@
       "source": "scripts/checks/gate-failclosed-audit.test.js",
       "sha256": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641",
       "installedSha": "2fc490fae0f967957e9e4a0246461e6779f2aba6ae013c1b93e4bf0cfa38d641"
+    },
+    "scripts/checks/gate-failclosed-baseline.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-baseline.json",
+      "sha256": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6",
+      "installedSha": "59a0129aef85d9177b7ec09df6edb3f7602427917d19651557aa367de90c67b6"
+    },
+    "scripts/checks/gate-failclosed-enforcer.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-enforcer.js",
+      "sha256": "0c9765ea5c465584f018fbf06370586f8e7760718240198b2c5782c69f176b79",
+      "installedSha": "0c9765ea5c465584f018fbf06370586f8e7760718240198b2c5782c69f176b79"
+    },
+    "scripts/checks/gate-failclosed-enforcer.test.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-enforcer.test.js",
+      "sha256": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4",
+      "installedSha": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4"
+    },
+    "scripts/checks/gate-failclosed-registry.json": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/checks/gate-failclosed-registry.json",
+      "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
+      "installedSha": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42"
     },
     "scripts/checks/greek-office-parity.js": {
       "owner": "framework",
@@ -28559,8 +28587,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/adr/0041-credential-custody-prove-assert-boundary.md",
       "kind": "md",
-      "sha256": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df",
-      "installedSha": "c0ab57ac8dddebd3c4ca452c90f41990eb01cdfd1df145778a537a749da943df"
+      "sha256": "eae63740864f850c2a7d98444b54828b710e999b2e32724b4e3c71f655aae936",
+      "installedSha": "eae63740864f850c2a7d98444b54828b710e999b2e32724b4e3c71f655aae936"
     },
     ".claude/agents/president/_system/policy/adr/INDEX.md": {
       "owner": "framework",
