@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "3e5ba8a08ac8e9168acd0a69e759381923d63c71",
-  "installedAt": "2026-08-29T21:46:13.565Z",
+  "installedCommit": "ef25ec3f269186a5cb40d441c1e82ae0834b239f",
+  "installedAt": "2026-08-29T22:05:43.638Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7054,8 +7054,8 @@
       "dest": "scripts/checks/doc-ref-integrity.allowlist.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "82f20cf3cd971453f3eeafdb0af7a25dc3816bb352490e6a4865bb3dcc238dc9",
-      "currentHashAtInstall": "82f20cf3cd971453f3eeafdb0af7a25dc3816bb352490e6a4865bb3dcc238dc9",
+      "installedHash": "23a50e6d401feba18adabedb45b42d3dcf654a28853a20a3afdd1d43a1c4c93c",
+      "currentHashAtInstall": "23a50e6d401feba18adabedb45b42d3dcf654a28853a20a3afdd1d43a1c4c93c",
       "introducedIn": "0.0.0"
     },
     {

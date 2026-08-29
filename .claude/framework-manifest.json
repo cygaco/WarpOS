@@ -8547,7 +8547,7 @@
         "src": "scripts/checks/doc-ref-integrity.allowlist.json",
         "dest": "scripts/checks/doc-ref-integrity.allowlist.json",
         "kind": "check_tool",
-        "sha256": "82f20cf3cd971453f3eeafdb0af7a25dc3816bb352490e6a4865bb3dcc238dc9",
+        "sha256": "23a50e6d401feba18adabedb45b42d3dcf654a28853a20a3afdd1d43a1c4c93c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

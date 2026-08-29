@@ -24,7 +24,12 @@
     "../sprints/SP-"
   ],
 
+  "_note_adr0041_owed_enforcers": "The three scripts/checks/*.js literals immediately below are ADR-0041's own P1/P2/P4 enforcer rows, each marked '**OWED** — ED-340' in that ADR's own status table (lines 170/171/173) — planned-but-unbuilt, i.e. the '_comment' category 'planned/aspirational scripts'. They read as 'this path is SUPPOSED to be absent', which is this file's stated honesty test. Added 2026-08-29 by the SP-20260829-001 conductor as an EXPLICIT REVIEWED ACT, not by a builder: bundle B2 hit these pre-existing breaks when merge-guard ran doc-ref-integrity --enforce repo-wide over a commit that did not create them (ED-356 instance #4), and a builder adding allowlist entries to pass a guard is the shape two prior builders correctly refused. Verified before adding: the breaks reproduce on session/2026-08-29 independently of B2 (4 broken refs, 3 of them these), and each of the three is OWED in the ADR table. Ruling: alpha, this session. If these enforcers are ever built, DELETE these three entries — they are not permanent.",
+
   "literals": [
+    "scripts/checks/no-held-secret-in-surface.js",
+    "scripts/checks/spawn-env-allowlist.js",
+    "scripts/checks/no-secret-on-outbound.js",
     ".claude/scheduled_tasks.lock",
     ".claude/paths.local.json",
     ".claude/project/reference/SPEC_GRAPH.json",
