@@ -577,7 +577,34 @@ Neither will be re-fired reshaped: the security lane gets a brief with **no shel
 `--dangerously-skip-permissions` was available and refused — that is reshaping past a permission
 boundary, not fixing a brief.
 
-## 🔴 STRUCTURAL — `dispatch-review.js` IS ABSENT; the 3-pass security review has never fired
+## ~~🔴 STRUCTURAL — `dispatch-review.js` IS ABSENT; the 3-pass security review has never fired~~
+## ❌ RETRACTED IN FULL — THIS SECTION WAS FALSE (retraction `b4137777`)
+
+> **The section below is preserved verbatim as the error record. Every load-bearing claim in it is
+> false. Do not cite it.** `scripts/dispatch-review.js` **exists** and the 3-pass panel **has fired**
+> — twice this round (`panel-s05-g1-1788045412`).
+>
+> **How it was wrong, which is the part worth keeping.** I labelled it *"verified three ways"* and
+> **two of the three were TRUNCATED queries**:
+> - `find . -name "dispatch-review*" … | head -5` — **the real file was line 40 of that output.**
+> - `rows.filter(r => r.role === 'security-reviewer').slice(-6)` — **six rows out of 288**, which I
+>   described as *"every `security-reviewer` dispatch."* Full counts: openai 157, antigravity 77,
+>   gemini 52, claude 2. Every family had fired, many times.
+>
+> **A truncated query is an excerpt, and I chose the truncation.** Absence of a result inside a frame
+> I chose is not absence. A negative claim needs an unbounded query — a full count, never a tail.
+> Worse, I built a further conclusion on it (that the lane's cross-family diversity was fictional) and
+> sent it onward **as a correction of my own earlier error** — the position that should carry the most
+> care, because a correction is trusted more than an original claim.
+>
+> **What actually IS true, established later by execution** (panel run 2, `out-security-panel2.json`):
+> the **claude third pass** is dead by contract — `ok:false`, `reason:"dispatch_contract_violation"`,
+> *"shape 'subprocess-claude' is not allowed for role 'security-reviewer' (class
+> `cross_provider_reviewer`). Allowed: subprocess-cross-provider."* — while `passes_run:3` counts it
+> anyway. That is β row 337's finding, and it is a much narrower defect than the one I invented.
+> The two cross-provider lanes ran and returned real FAIL content.
+
+<details><summary>Preserved false text (do not cite)</summary>
 
 Verified three ways: `epsilon-runtime.js:601` routes multi-pass roles to `scripts/dispatch-review.js`,
 which **does not exist in the live tree** (`find` locates it only inside a *failed* install-matrix
@@ -596,3 +623,96 @@ describing a mechanism from its DECLARATION rather than its EXECUTION.** Correct
 (`27935e94`); it bears on β's Q3, where β had carefully directed *different-reader-reading-bytes*
 rather than *different-family* — a distinction that turns out to be load-bearing, since the roster's
 only non-Claude gauntlet lane was never firing.
+
+</details>
+
+---
+
+# DIAGNOSTIC ROUND — CLOSE. All lanes returned or honestly declared dead.
+
+**WG-19 telemetry gate: PASS, real exit 0** (re-run unpiped — the first run went through `head`, which
+returns the tail's status; my own CLAUDE.md rule, violated and caught in the same minute).
+`--roles qa-reviewer,backend-reviewer,security-reviewer,security_claude_hunter,cabinet` → 5/5
+well-formed, 21 records in window.
+
+| lane | dispatch_id | ok | elapsed | outcome |
+|---|---|---|---|---|
+| qa-reviewer | `d-mteznt8t-9c9195c3` | true | 1254960ms | S5-4 discharged |
+| backend-reviewer | `d-mtezntaw-91171dbc` | true | 677921ms | FAIL (45), three HIGH |
+| security_claude_hunter | `d-mtf0fkse-4353fd5a` | true | 351816ms | **FAIL / CRITICAL** (F1+F3 chain) |
+| claim-grader A | `d-mtezzzt4-d260ac92` | true | 820776ms | executed mutation probes; multiple falses |
+| claim-grader B | `d-mtf001ay-9377bcb1` | true | 744460ms | C-02 false; **A-30 refutes S06-F01** |
+| security panel run 2 | `d-mtf02m8o-88b4fcff` / `-72c33f65` | true | 663328 / 168664ms | 2 live lanes, both FAIL |
+| ~~security (1st)~~ | `d-mteysgfj-da9ae60c` | false | 11095ms | dead — **my** `git log` instruction |
+| ~~claim-grader (1st)~~ | `d-mteyshu3-f7a5b7cf` | false | 900274ms | dead — **my** oversized brief |
+
+## ⚠️ THE CONDUCTOR DEFECT OF THIS ROUND — my brief chose the frame for three lanes (ED-384)
+
+`brief-security-reviewer.md` L85-86 named `createModelSession` as the evidence for S06-F01's
+"unreachable in production" mitigation. **Three of four lanes then grepped exactly that symbol and
+confirmed it** — the hunter (F5, executed), the openai panel lane (read the module end to end), and me.
+**claim-grader B, the one lane whose brief did not carry the frame, refuted it** (A-30): the defect is
+in `resolveAuthMode` (`model-seam.js` L455-456), reached in production twice via `describeAuth`
+(L473-474) at `spawn-shim.js:253` and `driver/host-free-driver.js:288`. Verified at source by me.
+
+Two aggravating facts: the brief **explicitly invited refutation** and the invitation did not
+counteract the frame; and the brief carried, as a required envelope field forty lines below the
+violation, *"an excerpt is a frame, and a frame chosen by the person making the claim will tend to
+contain the evidence for it."*
+
+**Three lanes agreeing raised my confidence when it should have raised suspicion. N lanes sharing a
+frame is ONE observation.** ED-384 filed (high, open, missing_enforcer: lint).
+
+**Rating consequence contained:** S06-F01 stays MEDIUM on a *corrected* reason — neither production
+site consumes the returned `mode`; `SECRET_SHAPES` (L156) and `ENV_DENYLIST` (L269) are frozen and
+mode-independent. The shipped mitigation is the wrong sentence for the right rating, which is this
+sprint's own failure family. A reachable consequence no lane named: an unrecognized `VLAD_AUTH_MODE`
+(L114) makes `describeAuth()` throw at both sites — fail-closed at `spawn-shim:253`; at
+`host-free-driver:363` inside a `child.stderr.on("data")` listener with no enclosing catch (the `try`
+at L368 does not enclose it). **Availability, not confidentiality** — the raw chunk is retained at
+L361 before redaction, so nothing ships unredacted. Stated at that strength and no higher.
+
+## The panel record is FAIL-SILENT (row-338 / ED-369 class, observed live)
+
+Both live lanes returned real FAIL content with `ok:true` — agy *"vulnerable to bypass"*, openai
+*"VERDICT: FAIL"* with four MEDIUM findings each carrying a derivation rule (β row 332 honoured). The
+rollup records `verdict:"error"`, `mergedVerdict:"error"`, **`surviving_verdict:null`.** Two explicit
+FAIL verdicts recorded as no-verdict. **Trusting the envelope over the lane evidence would have lost
+both.** Panel 1 had 1 live lane; panel 2 had 2 — the re-fire gained agy.
+
+## A single root under a five-finding cluster
+
+Item (3) / `TRANSFORM_DESCRIPTION_KEY` as a **non-derived** 16th `BOUND_PARAGRAPHS` entry held by Rule
+4b alone is load-bearing in five findings across four lanes: cg-A L12-15 (the "if and only if" is
+false), cg-A L24-31, hunter F3, openai S05-SR-04, and backend's 15-vs-16 denominator. cg-A executed
+both directions: reword item (3) → refused; append after its canonical span → exit 0.
+
+## Bundle O's headline claim is FALSE — two independent lanes, differently briefed
+
+cg-B C-02 and cg-A L125-129 independently graded false the shipped sentence that coverage is *"sourced
+from the map's own live entries via `getTokenAlphabetCoverage()` … rather than hand-typed."* The
+function emits live coverage; **nothing in lint or `main` calls it to check the prose**, which is a
+hand-typed literal duplicated as a second literal in `BOUND_PARAGRAPHS`. (These two briefs did **not**
+share a frame — this corroboration is real, unlike the S06-F01 agreement above.)
+
+## A false negative I caught before it became a claim
+
+Querying the completion ledger filtered on `r.ts` returned *"0 rows since 22:30Z."* **Zero rows in that
+file carry a `ts` field** (1370 rows; 1026 carry `completed_at`). I was one step from reporting that no
+lanes had fired. Re-queried on `completed_at` → 13 rows. **`gauntlet-verify.js` is NOT affected** —
+L135-136 and L161 read `completed_at` with a `started_at` fallback. **The defect was my query, not the
+gate, and it is not filed as a tool finding.**
+
+## Fix brief
+
+Drafted at `runtime/vlad-w1/s05/FIX-BRIEF-round-1.md`, scoped by β row 340 as an **enumerated
+inventory**, not a defect list. Task 1 is the inventory and the brief forbids starting Task 2 until it
+is written. β's stated open premise settled at source: the forbidden-claim family reaches the transform
+by **no** path — `findForbiddenClaimHits` (L1369-1376) matches the raw line, zero references to
+`canonicalizeClaimText`, and all three call sites (L1417, L1445, L1493) pass raw while **L1415
+canonicalizes the same line in the same loop.** Census by stated rule: **5 transform call sites across
+4 functions; 13 other claim-text functions do not route** (not 13 defects — several compare verbatim by
+design; exactly one, `findForbiddenClaimHits`, has no justification at all).
+
+**Not fired. Awaiting β's scope ruling.** Task 5b (the S06-F01 sentence) widens past the a/b/c I
+offered β and is flagged to β as strikeable. Nothing merged, nothing pushed; B3 remains fenced.
