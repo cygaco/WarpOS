@@ -254,7 +254,44 @@ premise-refusal by a builder in this sprint family, third time correct.
   `what_would_confirm_or_refute` names UTS #39 as the check that would settle it. That is S5-2(c)
   arriving unprompted.
 
-### Bundle P — HELD, not dispatched. A sequencing gap found before firing.
+### The four-file read — DONE, and it changed what P must say
+
+`d-mtew0q7m-70d95fa2` (cabinet/gpt-5.6-sol, `ok:true`, exit 0, 752719 ms, at `fbda0dc`).
+**Gate met in the honest form:** `files_i_could_not_see: none`, with line counts confirming end-to-end
+— `src/env-scrub.js` 520/520 · `src/model-seam.js` 732/732 · `driver/host-free-driver.js` 499/499 ·
+`src/server-entry.js` 522/522. All four ED-377 fields present.
+
+**122 coverage claims assessed — 64 true · 30 FALSE · 28 cannot-determine.** Per file: env-scrub
+16/4/6 · model-seam 20/8/8 · host-free-driver 12/8/4 · server-entry 16/10/10. *Cannot-determine* means
+the claim depends on another file, a test, a runtime trace or a package-wide search a **static**
+four-file read cannot establish — not a defect verdict.
+
+**The 30 are this sprint family's class verbatim** — "false by wrong frame", "false count/frame",
+"false as an absolute guarantee", closure flags `EVERY`/`ONLY`/`NEVER`/`no other`. Three worth naming:
+- `model-seam.js` *"Every secret CLASS either mode can carry … Both entries exist"* — the array has
+  **six** entries. Wrong count and a false closure in one sentence.
+- `model-seam.js` *"An unrecognized mode FAILS CLOSED — never silently defaulted"* — but
+  `explicitMode || process.env[...] || DEFAULT_AUTH_MODE` **silently defaults** on an explicitly
+  supplied empty string. A false fail-closed claim on a custody surface.
+- `host-free-driver.js` and `server-entry.js` each say *"Stated deliberately WITHOUT a count"* in prose
+  that says **"Exactly two"** ~19 lines earlier.
+
+#### ⚠️ P'S OWN DISCLOSURE SENTENCE WAS FALSE, AND ONLY THE GATE CAUGHT IT
+
+P task 5 was briefed to state the four files *"carry custody prose no lane has read end to end."*
+**After this read that sentence is false** — and it would have shipped as the disclosure written to
+prevent this exact class. Rewritten before P was dispatched: it now states the read happened (by
+dispatch_id), carries the 64/30/28 tally **with its per-file table** (no bare count), records that the
+read **ran nothing** so the 28 cannot-determines are *unresolved* rather than benign, and drops
+"un-audited" as the now-false frame — they were audited, once, statically, by one lane. The
+disclosure-not-repair ruling is unchanged; P repairs none of them.
+
+**Not discharged by this lane:** β's own read of the four files at close (row 318 residual) is β's
+item and stays open. **Raised to α and β rather than filed quietly:** 30 false shipped claims is a
+large residual to carry as one sentence; it likely wants its own successor sprint. S6-7 / S5-7 carry
+it by name either way.
+
+### Bundle P — DISPATCHED `d-mtewjw6n-88034685` after the gate was met.
 
 β row 319 Q2 (reaffirmed row 324) requires the four un-audited files be **resolved by read before P
 task 5's sentence is drafted**, and assigned that read to the *diagnostic lane's* secondary
