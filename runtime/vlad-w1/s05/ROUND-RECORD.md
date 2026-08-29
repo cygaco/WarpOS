@@ -107,11 +107,48 @@ The builder states it did not adjust code to preserve "seven".
 *"S5-3's seven-not-eight bound is contingent on that choice; no shipped sentence may restate the
 number until it is re-derived against the built transform."* The re-derivation is the required act.
 
-**Why ε does not resolve it:** S5-3's literal text says seven, results now exist, and the rule is
-frozen in both directions after results. Whether S5-3 binds the **literal number** or the **property**
-(no shipped sentence overstates the fold's yield) is α's application call at the close, not the
-conductor's. **Bundle P must not write "seven" under either reading**, and any sentence about the
-fold's yield must be sourced from the executed six/one/one with the open residual named.
+**Why ε did not resolve it:** S5-3's literal text says seven, results now exist, and the rule is frozen
+in both directions after results. Whether S5-3 binds the **literal number** or the **property** was
+α's application call, not the conductor's.
+
+**RESOLVED — β row 324 (`b6e1d90f`), pre-close reading, explicitly NOT criterion-firing.** S5-3 binds
+the **PROPERTY**: no shipped sentence overstates the fold's yield, stated as an emitted set derived
+against the transform as built. **S5-3 is NOT failed.** β declared the conflict first — β authored
+"seven", so a property reading is the reading β benefits from — ran the position-swap in both
+directions, and re-derived the decomposition at source rather than accepting the relay: tilde is a
+member of `SEPARATOR_VARIANCE` (`[\-:~|/\s]*`, L974) so strikethrough was caught by the separator
+class independent of any fold; fold (8) is `/[*_`~]+/g` → SPACE (L280/L303) so `ASS**ERTED**` →
+`ass erted` and mid-word bold stays OPEN. **6 + 1 + 1 = 8; the arithmetic closes.** The original
+"seven" was right for the design battery's *simulated* fix (empty replacement) and wrong for the
+*built* one — contingency, not a defect the sprint introduced.
+
+Two of β's grounds are worth carrying into the retro: **a literal reading would have mandated shipping
+a known falsehood** ("seven closed by design" is false), which no criterion can require when its own
+siblings forbid it; and **the property reading is STRICTER** — under the literal, "seven" satisfies;
+under the property, "seven" fails *and so does "six"*, because a bare count is an exhaustiveness claim.
+A reading that raises the bar is not a softening reshape.
+
+**β on the builder, recorded because it is the behaviour the rules exist to produce:** the refusal was
+the right call — *"goalpost-moving is changing the rule to fit the result; this is correcting a number
+to fit reality while holding the rule fixed."*
+
+**β also confirmed the `{emphasisFold:false}` opt-out does NOT reintroduce S4-2(c)** (row 320 had
+warned a per-caller opt-in might): the fold lives INSIDE `canonicalizeClaimText`, every caller gets it
+by default, there is exactly one implementation (`EMPHASIS_FOLD_PATTERN`, exported so tests can assert
+a shared alphabet), and one caller opts out with the reason documented. S4-2(c) was a fold implemented
+*beside* the shared transform; this is a parameterised shared transform — a different thing.
+
+**Consequence for bundle P — now its task 4b, four conditions, all required:** ship the emitted set BY
+NAME (never "seven", never "six", never a bare count); disclose the mid-word residual as OPEN with both
+halves of its mechanism; do NOT credit strikethrough to the fold, stating the separator-class reason;
+and ship no "one place" / "single site" sentence — one shared fold, one documented opt-out, plus
+shape-recognition uses that are a different mechanism.
+
+**β's not-read, carried as a gauntlet obligation:** β verified the transform's *behaviour* by reading
+it and deriving the eight rows itself, but did **not** read `engine/test/custody-claim-lint.test.js` —
+so the 377/0 suite, the 86/86 restoration, the 13 RF-M2 tests and the 4 genuine failures are ε's relay
+of the builder's envelope, unverified. **A gauntlet lane must verify the tests assert what they are
+said to assert.**
 
 ### Bundle N — dispatched `d-mteukug9-b8ccf260`, in flight
 Brief updated against M's actual return before firing: suite floor raised 366 → 377, and an explicit
