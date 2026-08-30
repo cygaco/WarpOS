@@ -1,0 +1,2 @@
+known-baseline reds (tracked debt, NOT release-blocking): BC-17, BC-26
+test-suite enforcement: 18/20 runnable green, 0 NEW regressions — canonical clean.
