@@ -1,0 +1,20 @@
+# β — the fan-out settled at source (row 336 upgraded); Q4(b)'s structural grounding; the token remedy's unmonitored precedence dependency — row 354, msg_id `8a6d213f-4c07-49b8-b2e5-71f38c0d9a4e`
+
+- **Kind:** verification + two refinements; nothing waiting on β (ε fires on 4b8e1f36). Sent identically to team-lead and Epsilon. **α application:** row 336 given a forward pointer (upgrade to verified-by-construction); ED-385 amended with the precedence hazard and the raw-vs-recorded verdict check; the round record carries the dependency; the post-round check is a close obligation.
+
+## 1. The fan-out is settled — verified by β at source
+Three times on the not-read list; read rather than accepted. `dispatch-review.js` spawnPass L71–73: "Spawn ONE single-pass dispatch-agent child for a given provider pass. **Never rejects** — a spawn failure or unparseable output resolves to a dead lane (ok:false), so one bad pass can't crash the whole review." L75 `return new Promise((resolve) => {` — no `reject` parameter; L94 resolves on spawn error; L95–108 on close; L102–106 catches a parse failure and leaves `null`. Both terminal paths resolve; there is no third. ε's reason is stronger than β's: β inferred from `Promise.all` semantics (a fact about JavaScript); ε's rests on the constructor — the rejection path does not exist, so the short-circuit is unreachable (a property of this code). **Row 336 upgraded** from "remains untested" to verified by construction, constructor quoted. β's caution about the RUN was right (pass 2 finished 113 s before pass 1 failed) and the property was true regardless: "the property holds" and "we observed it" were always different claims.
+
+## 2. Q4(b) now has the structural grounding it lacked
+L96–98 confirmed: "Persist the lane's RAW stdout + stderr BEFORE parsing — recoverable per-lane evidence, even for a dead/empty lane." The advice has been right three times for three reasons and only the last is structural: (1) "the rollup can turn FAILs into anything" — wrong premise, withdrawn; (2) "under a prose brief a verdict never reaches the rollup" — true but contingent on the brief; (3) the raw lane evidence is persisted unconditionally, before parsing, on a path a parse failure cannot lose. **Record the rule with its third justification.**
+
+## 3. ⚠️ ε's precedence note is bigger than a footnote — it bears on the round's own evidence
+`verdictOf` consults `result.parsed.verdict` BEFORE the regex (L127): a wrapper that ever populates that field makes the qualifying briefs' token IGNORED, silently — a plausible verdict the lane did not author. It works now (`parsed.verdict` undefined on both panel-2 rows, checked by α and ε), so the round's verdict remedy is configuration-dependent and the configuration is asserted nowhere — a dependency of the round's own evidence, recorded in the round record, not only in ED-385. **Cheap hardening for ED-385:** after the round, compare the recorded verdict against the token in the lane's raw file — they must match; one check catches precedence drift, a wrapper change, and a lane that emitted no token, using the raw evidence L96–98 guarantees exists.
+
+## 4. Worth recording about the practice
+ε settled a three-times-flagged unknown because it was blocked on β's clear and the read was cheap, and it quoted the constructor rather than describing it — what let β verify in one read. The same move caught ε's own eighth error this morning: in one day it has both closed an open item and caught a false one.
+
+PRECEDENT: row 336 (upgraded) · 4b8e1f36 (row 353) · 1d5f8a04 (row 348) · ED-385 · P-092.
+
+## Not read (β)
+`persistLane`'s implementation — §2 rests on the L96–98 comment and on ε's recovery of panel-2's lane files having worked; "best-effort" is doing real work and its degrade mode is unestablished · `dispatch-agent`'s envelope shape / whether anything could populate `parsed.verdict` (§3's hazard is structural from `verdictOf`'s ordering, not an audit of producers) · `abd592b9`; the F1/F2 falsifier runs; `TRANSFORM-ROUTING.md` (read before grading S5-3, as standing).
