@@ -1,0 +1,108 @@
+ok=true provider=openai model=gpt-5.6-sol bytes=7821
+{
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "high",
+      "rule": "S6-1",
+      "claim": "\"status\": \"ok\", \"exitCode\": 0",
+      "why_wrong": "The enforcer converts UNKNOWN into PASS. gate-failclosed-audit.js:625-638 returns status \"unknown\" and exitCode 2 when zero files are readable, but gate-failclosed-enforcer.js:196-204 ignores that status and decides success solely from empty regressed/newEntrants arrays. Executing it against a nonexistent root produced status ok, process exit 0, live_files_scanned 0, and an ENOENT entry in live_files_unreadable. Separately, unreadable repaired sites return checked:false, but are not regressions; the enforcer still reports checked_repaired_count as their count and exits 0.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-2",
+      "severity": "high",
+      "rule": "S6-1",
+      "claim": "\"1 of the 79 sites ... are under enforcement\" with \"status\": \"ok\"",
+      "why_wrong": "The seal changes no hook JavaScript. It adds all three formerly blocking new entrants to the baseline, including ownership-guard.js:146, whose seal registry row explicitly remains disposition defect, expected_finding present. The enforcer labels that row \"under enforcement\", but its success predicate never blocks a live defect/present row. Thus the pin's exit 1 becomes exit 0 by moving the expected set; the actual repair exists only in HELD commit 51d70d42.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-3",
+      "severity": "high",
+      "rule": "S6-2",
+      "claim": "\"triaged_not_enforced\": 3, \"K\": 75",
+      "why_wrong": "Registry row edit-watcher.js:674 says tool_correlated:false, yet the seal baseline emits edit-watcher.js:675 and the committed audit explicitly emits line 675—the process.exit(0) inside that exact catch. This read and dispositioned site is therefore wrongly counted as untriaged. The seal partition is N=1, triaged_not_enforced=4, K=74, not 1/3/75. The envelope compounds this by saying every K-bucket site was unread and undispositioned.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-4",
+      "severity": "high",
+      "rule": "S6-1",
+      "claim": "\"A failure anywhere on this path (payload parse at L102, orphan-cleanup fs/git errors) means Step 2's smoke-marker check was never reached\"",
+      "why_wrong": "worktree-preflight.js:25-32 catches every execSync error inside git() and returns an empty string. Orphan cleanup uses that helper repeatedly, so git failures do not reach the repaired outer catch; execution can continue through the smoke-marker check and report OK. The row assigns not-a-defect from a false mechanism description.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-5",
+      "severity": "high",
+      "rule": "S6-1",
+      "claim": "\"shared fail-closed path for this gate's three read/parse failure sites ... so a read failure never silently produces a stronger fail-open guarantee\"",
+      "why_wrong": "version-bump-guard.js:181-188 contains another decision-critical read: every fs.statSync(capsuleDir) error, including EACCES, is collapsed into capsuleExists=false and then a silent exit 0 as though the capsule were absent. The claim that there are three such sites and that read failure never silently passes is false. This contests the claim, not the lexer's stated ceiling.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-6",
+      "severity": "medium",
+      "rule": "S6-3",
+      "claim": "\"1 of the 79 sites the detector at 06669fbe enumerated...\"",
+      "why_wrong": "The committed enforcer output carries the detector SHA but neither the ceiling nor its named limits; runEnforcer drops liveReport.property and liveReport.ceiling. A separate audit artifact and an envelope pointer to CEILING_TEXT do not put the limits at the point of this coverage claim, as S6-3 requires.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-7",
+      "severity": "medium",
+      "rule": "S6-2",
+      "claim": "\"Every not-a-defect/absent row above (8 of them...)\"",
+      "why_wrong": "The seal contains 6 expected_finding:absent rows and HELD contains 7 unique rows. The envelope reaches 8 only by counting ownership-guard.js:144 twice. Its table also substitutes the HELD not-a-defect/absent/false state for the seal's actual defect/present/true state.",
+      "confidence": "certain"
+    },
+    {
+      "id": "F-8",
+      "severity": "high",
+      "rule": "S6-7",
+      "claim": "\"Repair prepared as HELD commit B5-R, not part of this seal — see runtime/enforcement-sweep/2026-08-29/b5/ENVELOPE.md.\"",
+      "why_wrong": "The seal leaves ownership-guard.js:144 as a live defect but gives that residual no ledger id. ENVELOPE.md is absent from both commits and remains untracked, while the repair is HELD. The residual is therefore neither shipped with a ledger id nor closed in the seal.",
+      "confidence": "certain"
+    }
+  ],
+  "attacks_attempted": [
+    {
+      "attack": "A site was absorbed rather than triaged",
+      "outcome": "not found",
+      "what_i_checked": "Compared the 88-site pre-baseline with the 79-site seal baseline. The only additions are ownership-guard.js:146 and retro-presence-check.js:70/:108; all three have registry rows and read accounts. Ownership was still improperly made expected, but not without triage."
+    },
+    {
+      "attack": "A disposition was assigned from something other than a read of the site",
+      "outcome": "found",
+      "what_i_checked": "Read all 14 rows against the corresponding hook code. The worktree-preflight disposition ignores its error-swallowing git helper, and the version-bump disposition omits its fail-open statSync branch."
+    },
+    {
+      "attack": "A number is true of nothing",
+      "outcome": "found",
+      "what_i_checked": "Re-derived the seal partition from the emitted baseline and registry, finding 1/4/74 rather than 1/3/75. Also counted 6 absent rows in the seal and 7 in HELD, never the envelope's 8."
+    },
+    {
+      "attack": "A green was obtained by moving the thing being measured",
+      "outcome": "found",
+      "what_i_checked": "Verified that 128cf0af changes no hook code but adds the three blocking entrants to the baseline. The unrepaired ownership defect thereby stops being a new entrant and the enforcer turns green; its repair is only in HELD."
+    },
+    {
+      "attack": "A could not check was resolved into a pass",
+      "outcome": "found",
+      "what_i_checked": "Executed the enforcer with an unreadable root and with an unreadable repaired-site base. Both returned status ok and process exit 0. Code reads also found swallowed git failure in worktree-preflight and swallowed stat failure in version-bump-guard."
+    },
+    {
+      "attack": "Instrument-ceiling claim compliance",
+      "outcome": "found",
+      "what_i_checked": "Confirmed that the audit artifact emits a ceiling, but the baseline/enforcer coverage outputs do not carry named limits at their own points of claim."
+    }
+  ],
+  "could_not_check": [
+    "The historical node --test counts for 128cf0af, 51d70d42 and the pin, plus the claimed testsuite/enforce exits: no committed execution transcripts exist, and nested child spawning is denied with EPERM in the current sandbox.",
+    "Whether the two S6-6 CLI demonstrations ran at the qualifying close: the envelope shows command/result summaries but no committed raw transcript. Both failure modes reproduce now.",
+    "The identity of every file behind files_scanned:951: no 951-file emitted set is present; only the 79 finding records are committed.",
+    "scripts/sprint/fs.js end-to-end semantics, the symlink blindness-guard skip, and the remaining 74 genuinely untriaged baseline sites were not fully read or dispositioned in this review."
+  ]
+}
