@@ -1,101 +1,128 @@
 # SP-20260829-001 — bundle B6 — CORRECTIONS
 
-You are the B6 builder. **B6 is the last fix bundle of this sprint.** Its enumeration is closed: seven items, listed below, and nothing else. Anything you discover that is not on this list is **registered and carried**, never repaired here — you name it in your envelope and you leave it alone.
+You are the B6 builder. **B6 is the last fix bundle of this sprint.** Its list is closed: nine items, below, and nothing else. Anything you discover that is not on the list is **reported in your envelope and left alone** — not repaired, however small or however serious it looks.
 
 ## Where you work
 
-A worktree detached at `12d2aef0`, path given in the dispatch envelope. Work only there. Do not switch branches, merge, push, or touch any other checkout.
+A worktree detached at `12d2aef0`, path in the dispatch envelope. Work only there. One commit. Do not switch branches, merge, push, or touch any other checkout.
 
-## THE ONE RULE THAT GOVERNS EVERY ITEM
+## THE TWO RULES THAT GOVERN EVERY ITEM
 
-> **Every item on this list changes what is STATED. No item may change what is TRUE of the gate's behaviour.**
+**1. Every item changes what is STATED. No item may change what is TRUE of the gate's behaviour.**
+The enforcer's success predicate is `regressed.length === 0 && newEntrants.length === 0`. Nothing you do may change that predicate or alter any pass/fail outcome. If a fix you are about to make would, stop, leave it, and say so in your envelope.
 
-The enforcer's success predicate is `regressed.length === 0 && newEntrants.length === 0`. **Nothing you do may change that predicate, or the inputs that feed it in a way that alters a pass/fail outcome.** If a fix you are about to make would, stop, leave it, and say so in your envelope — it has left the fence and becomes a carried item, however small it looks.
+**2. The list is closed because a fix bundle repairs only what its own phase introduced.**
+Pre-existing defects are not yours to fix here, even correct-looking ones. This is not tidiness — repairing a defect in order to make an old sentence true **erases the instance of the class this sprint exists to study.** You are correcting sentences to match facts. You are never manufacturing facts to match sentences.
 
-This is not a formality. The sprint's subject is claims that exceed what was done. Repairing a defect in order to make an old sentence true **erases the instance of the very class this sprint exists to study.** You are correcting sentences to match facts, not manufacturing facts to match sentences.
+## THE TWO ARTIFACT RULES — read these before you edit anything
 
-## THE SEVEN ITEMS
+**The registry ships, so its own prose is edited in place — and the superseded text is KEPT, marked superseded, never deleted.** A correction is a new claim and the record must be able to show both states.
 
-Each one is a sentence **this sprint's own bundle B5 wrote** that is false read against the code it describes. Each was found by a review lane, not by the bundle's author.
+**⚠️ A QUOTED SENTENCE embedded in the registry is a record of something else. Annotate it; never rewrite it.** If you are told a quoted sentence is false, the false sentence is in the thing being quoted. Editing the quote would falsify the record of what that thing says — strictly worse than leaving it. **Quotes get a note beside them. They do not get corrected.**
 
-### Item 1 — the `edit-watcher.js:674` correlation field
+**The bundle envelope from the previous bundle is a returned artifact — annotate it in a new file, never edit it.**
 
-`scripts/checks/gate-failclosed-registry.json`'s `tool_correlation_note` currently ends:
+## THE NINE ITEMS
 
-> "edit-watcher.js:674 remains genuinely uncorrelated (not-a-gate, a PostToolUse hook with no admit/deny decision — the tool's pattern-match simply has nothing polarity-relevant to find there, independent of the nested-try fix)."
+### 1 — the `edit-watcher.js:674` correlation
 
-Read `scripts/hooks/edit-watcher.js` around that catch, and read the sibling row `edit-watcher.js:897` in the same registry, and read the committed audit capture under `runtime/enforcement-sweep/2026-08-29/b5/`. Then decide what the row's `tool_correlated` and `tool_finding_line` should actually be, and correct both the field and the note.
+That registry row asserts the site is uncorrelated, and its `tool_correlation_note` says so in prose. Read `scripts/hooks/edit-watcher.js` around that catch, read the sibling row `edit-watcher.js:897` and what relation it records, and read the committed audit capture under `runtime/enforcement-sweep/2026-08-29/b5/`. Correct the row's correlation fields and rewrite the note's claim about it.
 
-**Then RE-MEASURE the coverage numbers by running the enforcer.** Do not type any recomputed figure from any report, including this brief — the numbers in the sealed output move when that field moves, and the only admissible values are the ones your own run prints.
+**Then re-measure every coverage figure by running the enforcer yourself.** Do not copy any figure from any report, including this brief.
 
-### Item 2 — the baseline's provenance sentence
+### 2 — the baseline's `purpose` field
 
-**Print `scripts/checks/gate-failclosed-baseline.json`'s `purpose` field in full into your envelope BEFORE you touch it.** A faithful correction cannot be written of text that was not read.
+**Print the whole field into your envelope before you touch it.** A faithful correction cannot be written of text that was not read.
 
-Then read that field against the actual departed and arrived sets, which you derive yourself by diffing the site_id sets between the relevant commits. Two of its statements about the same site cannot both be true; find that for yourself rather than taking my word for which. Rewrite the paragraph so every sentence in it is true of the sets you measured, and **name the endpoints of every departure claim** — a "12 sites left" claim means nothing without saying left *from what* and *to what*.
+It is false twice over — in count and in kind — and it contradicts itself within one paragraph about a single site. Find that contradiction by reading it; do not take anyone's word for where it is.
 
-### Item 3 — the `worktree-preflight.js:160` row's mechanism
+Rewrite it from **measured sets with their endpoints named in the text**. The endpoints are commits, not detector stamps — note that a baseline carries three distinct shas (the commit the file lives in, the commit it was emitted at, and the *detector version* its `detector_sha` names), and that diffing baseline files by the stamp lands on the wrong file. Give each departed id a reason drawn from the sets and the registry:
+- **line-shift with return** — left under one id, came back under another;
+- **line-shift, never tracked** — moved, was never a registry row;
+- **no longer detected** — the detector stops finding it after an edit.
 
-Its `decision_semantics_quote` asserts that a failure anywhere on that path means a later check "was never reached". Read `scripts/hooks/worktree-preflight.js` — in particular how the file's own git helper handles an `execSync` failure — and rewrite the quote so its mechanism is true. **The disposition itself is not in question here; the mechanism account is.** A true finding with a false mechanism is a defect in this sprint.
+**"No longer detected" is a statement about the INSTRUMENT, not about the site.** It does not mean repaired and it does not mean the permissive path is gone. For any id whose row keeps `expected_finding: "present"`, use exactly: **"no longer detected; the permissive path is retained by design per the row's own disclosure"**. A bare "no longer detected" would be a second understatement inside the sentence written to fix the first one.
 
-### Item 4 — the three `version-bump-guard.js` rows' claim
+### 3 — the B5-R repair's "standard" claim
 
-Their shared `decision_semantics_quote` makes a claim about how many read/parse failure sites this gate has and about what a read failure never does. Read `scripts/hooks/version-bump-guard.js` end to end — every `try` on a path the commit/allow decision depends on, not only the ones the detector found — and correct the claim.
+It claims the repair was prepared to the same demonstrated standard as the earlier hook repairs. Compare what those repairs each carry as executed evidence against what this one carries. Rewrite the claim to state what was actually done — a bounded-window check, plus an injection executed by the reviewer, **attributed to reviewer `d-mtfb42md-46a6f456`**.
 
-Two constraints on the rewrite:
-- The permissive path in those three rows is **retained by design**; say so in the row's own terms, in the form *"no longer detected; the permissive path is retained by design per the row's own disclosure"*.
-- If you find a read-failure site the claim does not cover, **do not repair it.** Withdraw the claim, name the site in your envelope as a carried finding, and leave the code alone. Repairing it is outside the fence and would change the predicate.
+**Do NOT add a test to make the old claim true.** The gap is the finding; closing it would erase it. The claim lives in an immutable commit message, so the correction goes in `CORRECTIONS.md` and in the relevant registry row's note.
 
-### Item 5 — the stale line citation
+### 4 — a stale line citation
 
-One row's `decision_semantics_quote` cites a payload-parse line number that is not that line at the sha the row is stamped with. Find it by checking each cited line number against the file at the stamped sha, and correct it. Note *why* it drifted, briefly, in your envelope.
+One row's `decision_semantics_quote` cites a payload-parse line that is not that line at the sha the row is stamped with. Check each cited line number against the file at the stamped sha, correct it, and say briefly in your envelope why it drifted.
 
-### Item 6 — the `CEILING_TEXT` attribution
+### 5 — a ceiling attribution
 
-A row attributes a limitation to `gate-failclosed-audit.js`'s stated ceiling. Read `CEILING_TEXT` and check whether it says that. If it does not, correct the attribution — **without** editing `CEILING_TEXT` itself, which belongs to another bundle and is out of scope.
+A row attributes a limitation to `gate-failclosed-audit.js`'s stated ceiling. Read `CEILING_TEXT` and check whether it says that. If not, correct the attribution — **without editing `CEILING_TEXT`**, which belongs to another bundle.
 
-### Item 7 — the "standard" claim on the B5-R repair
+### 6 — `worktree-preflight.js`: a sound disposition resting on a false quoted sentence, plus a new site
 
-The bundle envelope claims its repair was prepared "to the same demonstrated standard" as the earlier hook repairs. Compare what those repairs each carry as executed evidence against what this one carries. **Rewrite the claim to be true. Do NOT add a test to make the old claim true** — the gap is the finding, and closing it would erase it. Where an injection was in fact executed against the repair, attribute it to the reviewer that ran it (`d-mtfb42md-46a6f456`), not to the bundle.
+**(a)** The row at `:160` **keeps its disposition** — the catch there is genuinely repaired and was verified non-permissive by execution. What is false is the sentence the row quotes as its decision semantics: that comment is the **code's own comment**, authored by an earlier bundle's repair, and B5 quoted it **faithfully**. Read the file's git helper near the top and see what it does with an `execSync` failure, then add a note beside the quote with three parts, in this order:
+1. the quoted sentence is the code's own comment, authored by the earlier repair — **quote it, do not edit it**;
+2. it is false about the function, with the helper's actual behaviour stated;
+3. **this row's disposition rests on the executed check, not on the quoted comment.**
 
-## Two evidence files get ANNOTATED, never edited
+**Part 3 must not be dropped.** Without it the row reads as a disposition whose only justification has been discredited.
 
-Two further findings concern the committed bundle envelope. **Evidence is annotated, never rewritten.** Create `CORRECTIONS.md` beside the envelope recording, for each: what the envelope says, what is actually the case at which commit, and who found it. Leave the envelope's own bytes untouched.
+**(b)** Add a **new row** for the helper's own catch. Disposition **`contested`** — never `defect`: this is a correction bundle, not a grading pass, and the substance belongs to later lanes. `expected_finding: "present"`. `tool_correlated: false`, **with the reason stated by naming which sentence of the detector's stated ceiling covers it** (a catch that *returns* rather than exits is outside the detector's predicate). `polarity_provenance: "manual-by-read"` with a real quote of the helper. **Not repaired.**
 
-- Its emitted disposition table states one row in a state that is true of a later commit, not of the commit the table describes.
-- Its count of `expected_finding: "absent"` rows does not match either commit; derive both real counts yourself.
+Include this sentence verbatim in the row: **"contested; not tool-correlated, so this disposition does not enter the enforcer's enforcement count."** Shipping "contested fails closed as enforced" unqualified would be a decision semantics that does not fire — this sprint's own class, in the row written to correct a previous instance of it.
 
-## OUT OF SCOPE — do not repair, do not "improve"
+**(c)** **Do not touch the code comment itself.** It was authored by an earlier bundle and is outside this fence. Name it in your envelope as a carried item, and name **both** places the false sentence now ships — the hook and the registry's quote of it — so a later repair of one does not leave the other stale.
 
-- `scripts/checks/gate-failclosed-enforcer.js` and `scripts/checks/gate-failclosed-audit.js` and their test files. **This is absolute.** If you notice a defect in either — including one that looks serious, including one that looks like exactly what this sprint is about — **name it in your envelope as a carried finding and leave it.** It is out of the fence by construction, and repairing it here would change the predicate the round is about to test.
-- Any hook's behaviour. B6 touches no `process.exit`, no control flow, no guard logic. If an item seems to require a code change to a hook, you have misread the item — re-read it.
-- Anything under `runtime/enforcement-sweep/` except the new `CORRECTIONS.md`.
+### 7 — `version-bump-guard.js`: a false claim, plus a new site
 
-## Verification — B6 has no review lane, so your own evidence is all there is
+**(a)** The three rows share a B5-authored note claiming a specific number of read/parse failure sites and that a read failure never silently produces a fail-open outcome. Read the file end to end — **every `try` on a path the allow/refuse decision depends on**, not only the ones the detector found — and correct the claim. Superseded text kept.
 
-1. Run `node scripts/checks/gate-failclosed-enforcer.js` as its own command. Print the full JSON and the real exit code.
-2. Run each of these individually with `node --test` and print the counts you observed: `scripts/checks/gate-failclosed-audit.test.js`, `scripts/checks/gate-failclosed-enforcer.test.js`, `runtime/enforcer-fixtures/SP-20260829-001/b3-fault-injection.test.js`.
-3. Regenerate the three manifests LAST, in order: `node scripts/generate-framework-manifest.js`, then `node scripts/warpos/snapshot-installed.js`, then `node scripts/warpos/manifest/build.js`.
-4. Run `node scripts/testsuite/enforce.js` as its own command and read its real exit code. **Never pipe a gate's exit through `tail` or `head` in an `&&` chain** — the pipeline's status is `tail`'s, and a red gate passes silently.
+**(b)** Add a **new row** for the site that claim misses. Same shape as 6(b): **`contested`**, `expected_finding: "present"`, `tool_correlated: false` with the ceiling sentence that explains why, `manual-by-read` with a real quote, the same disclosure sentence verbatim, **not repaired**.
 
-One commit. Message prefix `fix(SP-20260829-001 B6):`.
+### 8 — `CORRECTIONS.md`, beside the previous bundle's envelope
+
+One entry per false sentence in that envelope: the sentence quoted, the correction, and who found it. The envelope's own bytes stay untouched. Where two reviewers found the same thing, say so as a **union** — never "both reviewers confirmed", because they read different prompts and answered different questions.
+
+### 9 — a resolved pointer, stated as resolved
+
+One registry pointer to the previous envelope now resolves because the landing committed that file. State it as **resolved when the landing committed the file** — not as repaired. Nobody fixed it, and a record saying "cured" will read as though someone did.
+
+## Then
+
+- Re-emit the baseline after items 1, 6 and 7, and **state plainly in the bundle record what the `detector_sha` field actually is** — it is `git rev-parse --short HEAD`, the repository's HEAD, **not** an identity of the detector, so a baseline emitted before its own commit carries the parent's sha. Say which case yours is. **Refuse to seal if the value is `unknown`.** Do not repair the function that produces it — outside the fence.
+- Every coverage figure moves again. **Re-measure all of them; carry none forward**, including any hardcoded count in a test file, which you must update to the runner's own `actual:` value with before/after quoted.
+- Run, each as its own command, and print real exit codes: the enforcer; `node --test` on `scripts/checks/gate-failclosed-audit.test.js`, `scripts/checks/gate-failclosed-enforcer.test.js`, and `runtime/enforcer-fixtures/SP-20260829-001/b3-fault-injection.test.js`; then `node scripts/testsuite/enforce.js`.
+- Re-run the sprint's fooling-input fixtures against the lexer **as built at your landed sha**, sha recorded beside each result.
+- Regenerate the three manifests **LAST**: `node scripts/generate-framework-manifest.js`, then `node scripts/warpos/snapshot-installed.js`, then `node scripts/warpos/manifest/build.js`.
+- **Never pipe a gate's exit through `tail` or `head` in an `&&` chain** — the pipeline's status is `tail`'s and a red gate passes silently.
+
+One commit, message prefix `fix(SP-20260829-001 B6):`.
+
+## OUT OF SCOPE — absolute
+
+- `scripts/checks/gate-failclosed-enforcer.js` and `scripts/checks/gate-failclosed-audit.js`. **If you notice a defect in either — including one that looks serious, including one that looks like exactly what this sprint is about — name it in your envelope and leave it.** Repairing it would change the predicate the round is about to test.
+- Any hook's behaviour, any `process.exit`, any control flow. B6 changes sentences and registry rows. If an item seems to need a code change to a hook, you have misread it.
+- Any code comment authored by an earlier bundle.
+- Anything under `runtime/enforcement-sweep/` except your own envelope and `CORRECTIONS.md`.
 
 ## Prohibitions
 
-- Never `git commit --no-verify`; never disable, weaken, or allowlist past a guard. If a guard blocks you, quote the block in your envelope and stop.
-- Never hand-edit a registry, baseline or manifest value to make a gate pass. Every number you write must be one your own run printed.
+- Never `git commit --no-verify`; never disable, weaken or allowlist past a guard. If a guard blocks you, quote the block and stop.
+- Never hand-edit a registry, baseline or manifest value to make a gate pass. Every number you write is one your own run printed.
 - Never place a credential-shaped literal anywhere; labelled placeholders only.
 - Never push, merge, or delete a branch or worktree.
 
-## Your envelope
+## Your envelope — write it to `runtime/enforcement-sweep/2026-08-29/b6/ENVELOPE.md` AND COMMIT IT
 
-Write `runtime/enforcement-sweep/2026-08-29/b6/ENVELOPE.md` **and commit it** (a pointer to an uncommitted file resolves to nothing — that happened last bundle). Return eight lines or fewer pointing at it. It contains:
+A pointer to an uncommitted file resolves to nothing; that happened last bundle. Return eight lines or fewer pointing at it. It contains:
 
 - the commit sha;
-- **item by item**: the sentence as it was, printed in full before the rewrite, and the sentence as it now reads;
-- for item 1, the coverage figures **as your own enforcer run printed them**, with the run's output beside them;
-- the enforcer's full JSON and exit code; the three suites' observed counts; `enforce.js`'s real exit code;
-- **every carried finding, by name** — anything you noticed and deliberately did not repair, with why it is outside the fence;
-- **what you could not check, by name.** An empty section here is itself a claim, and this sprint exists because gates swallow "could not check" into "pass".
+- **item by item**: the sentence as it was, printed in full **before** the rewrite, and the sentence as it now reads;
+- every coverage figure **as your own run printed it**, with the run's output beside it;
+- the enforcer's full JSON and exit code; the three suites' observed counts; `enforce.js`'s real exit code; the fixture re-run results with their sha;
+- the `detector_sha` statement;
+- **every carried finding by name** — anything you noticed and deliberately did not repair, and why it is outside the fence;
+- **what you could not check, by name.** An empty section is itself a claim, and this sprint exists because gates swallow "could not check" into "pass".
 
-Nothing in this brief tells you what any corrected sentence should say. If you find yourself writing what the brief seems to want rather than what the file says, stop and go read the file.
+You may read the two reviewer output files under `runtime/enforcement-sweep/2026-08-29/b5/` as evidence of **what** is false. **Do not copy their wording** — they are claims, and you rewrite from the artifacts and the sets you measured yourself. Where a reviewer names a line number, check it; the line number is part of its claim, not a fact.
+
+Nothing here tells you what any corrected sentence should say. If you find yourself writing what the brief seems to want rather than what the file says, stop and go read the file.
