@@ -66,10 +66,15 @@ died at a hard ceiling with work in flight; assume you might.
 
 ## THE PROCEDURE — per fixture and per test
 
-1. Run the suite unmutated at the pin, with `node --test`, **each suite file as its own command**.
-   **Record pass/fail/skip counts as numbers you measured**, not numbers you were told. These suite
-   files are the binaries this lane runs and the only ones its counts may come from — no other runner's
-   exit code is a result of this lane.
+1. Run the suites unmutated at the pin, with `node --test`, **each file as its own command**. They are,
+   by path from your checkout's root:
+   - `scripts/checks/gate-failclosed-audit.test.js`
+   - `scripts/checks/gate-failclosed-enforcer.test.js`
+   - `runtime/enforcer-fixtures/SP-20260829-001/b3-fault-injection.test.js`
+
+   **Record pass/fail/skip counts as numbers you measured**, not numbers you were told. **These three
+   files are the only binaries this lane's counts may come from** — no other runner's exit code is a
+   result of this lane, whatever it reports.
 2. **Remove or neutralise the mechanism the test protects** — the smallest edit that undoes the
    behaviour, **not** a deletion of the test.
 3. Re-run. **The test must fail.** Record the observed result as behaviour or an exit code.

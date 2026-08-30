@@ -7,11 +7,13 @@ Content markers for that pin — verify these in your own checkout rather than t
   - the fail-closed registry holds 16 rows, including two whose disposition is `contested`
 If either is absent, the tree you are standing in is not the tree this envelope names. Say so and stop.
 
-Repository root (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS
-Your checkout (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/worktrees/enf-e3-teeth
-Fixture directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001
-Sprint evidence directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcement-sweep/2026-08-29
-Enforcement-debt ledger (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/project/memory/enforcement-debt.jsonl
+Repository root (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS
+Your checkout (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/worktrees/enf-e3-teeth
+Fixture directory (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001
+Sprint evidence directory (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcement-sweep/2026-08-29
+Enforcement-debt ledger (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/project/memory/enforcement-debt.jsonl
+
+Paths above are native Windows paths and resolve as written. Use them verbatim.
 
 Environment note: In this checkout `node scripts/testsuite/enforce.js` exits 1. That is a property of this checkout, not of the artifacts you grade, and its cause is recorded outside this round — do not spend budget diagnosing it. Your control runs are on `scripts/checks/gate-failclosed-enforcer.js` and the three suites.
 
@@ -88,10 +90,15 @@ died at a hard ceiling with work in flight; assume you might.
 
 ## THE PROCEDURE — per fixture and per test
 
-1. Run the suite unmutated at the pin, with `node --test`, **each suite file as its own command**.
-   **Record pass/fail/skip counts as numbers you measured**, not numbers you were told. These suite
-   files are the binaries this lane runs and the only ones its counts may come from — no other runner's
-   exit code is a result of this lane.
+1. Run the suites unmutated at the pin, with `node --test`, **each file as its own command**. They are,
+   by path from your checkout's root:
+   - `scripts/checks/gate-failclosed-audit.test.js`
+   - `scripts/checks/gate-failclosed-enforcer.test.js`
+   - `runtime/enforcer-fixtures/SP-20260829-001/b3-fault-injection.test.js`
+
+   **Record pass/fail/skip counts as numbers you measured**, not numbers you were told. **These three
+   files are the only binaries this lane's counts may come from** — no other runner's exit code is a
+   result of this lane, whatever it reports.
 2. **Remove or neutralise the mechanism the test protects** — the smallest edit that undoes the
    behaviour, **not** a deletion of the test.
 3. Re-run. **The test must fail.** Record the observed result as behaviour or an exit code.

@@ -7,11 +7,13 @@ Content markers for that pin — verify these in your own checkout rather than t
   - the fail-closed registry holds 16 rows, including two whose disposition is `contested`
 If either is absent, the tree you are standing in is not the tree this envelope names. Say so and stop.
 
-Repository root (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS
-Your checkout (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/worktrees/enf-e2-adversarial
-Fixture directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001
-Sprint evidence directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcement-sweep/2026-08-29
-Enforcement-debt ledger (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/project/memory/enforcement-debt.jsonl
+Repository root (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS
+Your checkout (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/worktrees/enf-e2-adversarial
+Fixture directory (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001
+Sprint evidence directory (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcement-sweep/2026-08-29
+Enforcement-debt ledger (absolute): C:/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/project/memory/enforcement-debt.jsonl
+
+Paths above are native Windows paths and resolve as written. Use them verbatim.
 
 Environment note: In this checkout `node scripts/testsuite/enforce.js` exits 1. That is a property of this checkout, not of the artifacts you grade, and its cause is recorded outside this round — do not spend budget diagnosing it. Your control runs are on `scripts/checks/gate-failclosed-enforcer.js` and the three suites.
 
