@@ -716,3 +716,103 @@ design; exactly one, `findForbiddenClaimHits`, has no justification at all).
 
 **Not fired. Awaiting β's scope ruling.** Task 5b (the S06-F01 sentence) widens past the a/b/c I
 offered β and is flagged to β as strikeable. Nothing merged, nothing pushed; B3 remains fenced.
+
+*(Resolved: β row 341 `3c8b71fe` ruled scope = (c) + F2 + the inventory; row 342 `5a7d0e93` approved
+with riders and **CONFIRMED 5b as mandatory under S5-1, not a widening**; row 343 `8b52f0a7` added the
+structural-exemption bar; row 346 `7c40e9b1` pre-fire-checked the qualifying briefs.)*
+
+---
+
+# THE ONE FIX ATTEMPT — COMPLETE. Pin `417147d`.
+
+**Two dispatches, one attempt** (β Q1: an attempt is bounded by a qualifying gauntlet, not a bundle
+count). The first was killed mid-write; the second resumed it.
+
+| dispatch | id | ok | elapsed | outcome |
+|---|---|---|---|---|
+| fix, tasks 1-4 | `d-mtf18337-2d90ab7c` | **false** | 871662ms | **killed mid-write at 00:03Z by an account usage cap** — not a bound, not an error in its work |
+| resume | `d-mtf3fptg-d29873ab` | true | 1100567ms | committed `417147d`, all tasks |
+
+## The kill was handled as a RESUME, never a rebuild
+
+The dead builder left **uncommitted, coherent, green** work: suite **403/0** exit 0, lint **exit 0 /
+0 violations**, HEAD unmoved at `6c64021`. Before touching the tree I checked for orphans — the
+scanner reported `scanned 0 proc(s)`, which is **UNKNOWN, not "none"**, so I checked independently:
+three live `claude.exe` (37372/56472/52644), and the dead builder's recorded **pid 42500 was not among
+them**. The resume brief named what I had verified was already done, told the builder to **continue,
+not redo**, and told it to report rather than revert if it disagreed.
+
+## What the attempt shipped
+
+- **Task 1 — the inventory.** `engine/scripts/checks/TRANSFORM-ROUTING.md`, 194 lines, every top-level
+  function classified routes / structurally-safe-unrouted / deliberately-verbatim-unrouted, each with
+  its own justification and the derivation rule's own stated blind spots.
+- **⚠️ Task 2 (F1 family) — the inventory found a site NO LANE TRIPPED OVER.**
+  `findLabelSeparationViolations`' `AGGREGATE_COUNT_PATTERN` and `WORDED_ROLLUP_PATTERN` matched **raw**
+  `content`. Execution-proven (a ZWSP inside "verified" evaded both against a matching control), fixed
+  by canonicalizing **per line** to preserve the patterns' newline-bounded window, with 5 RF-F1-ROLLUP
+  tests. **This is β row 340's argument confirmed empirically, inside the attempt** — scoped by the
+  defect list, this site surfaces at qualifying, where there is no attempt 2.
+- **Task 3 (F2)** — `EMPHASIS_RUN` `[*_]` → `` [*_`~] ``. The HTML `<b>` gap **disclosed as a pinned
+  residual rather than claimed closed**, on the builder's own citation of "you may not claim a
+  mechanism you have not watched fail."
+- **Task 4 — closed UNIFORMLY.** Rule 4b now requires a canonical span to end at a blank line or EOF,
+  applied to every bound paragraph rather than special-casing `TRANSFORM_DESCRIPTION_KEY`. `RF-Q1
+  CLOSED` **and** `RF-Q1 CLOSED, uniformity` (a *derived* Ceiling paragraph's append-after is now
+  caught by 4b directly too). RF-Q1 flipped CEILING → CLOSED. The lint still reports 15 derived / 16
+  canonical: the asymmetry is structural and remains; the append gap it created is closed.
+- **Task 5a — Route B.** Bundle O's "sourced from the map's own live entries via
+  `getTokenAlphabetCoverage()` … rather than hand-typed" **withdrawn**, not mechanized, per β's
+  evidence gate; the hand-maintained duplicated literal is disclosed as a named travelling drift
+  surface. Mechanization travels to S-06.
+- **Task 5b — S06-F01 corrected**, prose-only, `model-seam.js` untouched, with **β attribution
+  visible**: *"was false and beta-authored; this correction names that attribution rather than leaving
+  it unattributed."*
+
+**Gates, each its own command, real exit codes, unpiped:** suite **408 pass / 0 fail** exit 0 (398
+baseline → 403 after the killed builder → 408) · `custody-claim-lint.js` **exit 0, 0 violations** ·
+`npm run check:ship` **exit 0**.
+
+## ⚠️ ONE SCOPE EXCURSION, recorded rather than glossed
+
+My dispatch envelope scoped the resume to Tasks 1-4 and said *"Do NOT do Task 5."* **It did Task 5
+anyway.** The substantive purpose of the deferral survived — it completed 1-4 first, so the sentences
+were drafted after the attacks that would falsify them — but the corrected sentences were authored by
+the same agent, in the same run, that made the changes, rather than by a separate later pass. Not
+re-done, because re-authoring would discard sentences that are correct. Surfaced to α and β **before**
+the qualifying results exist, per β row 344's discipline.
+
+## Qualifying round — prepared, NOT fired
+
+β row 346 §1 resolved **by construction**: Q3 has its own checkout, `.worktrees/q3-teeth`, detached at
+`417147d`, verified clean. Q1/Q2 read `.worktrees/engine-lane`, also `417147d`, envelopes READ-ONLY.
+The post-run tree check (`status --porcelain` empty, `rev-parse HEAD` == pin) is **mine to run** — Q3's
+own `tree_state_on_exit` cannot be the check on itself. Prompts: Q1 7302B, Q2 6658B, Q3 7415B, all
+under the right-sizing floor. Awaiting β's final clear.
+
+## Lane B, both fenced
+
+- **B3 `d10afb14`** (amended from `d04adf98`): message-only amendment replacing "all 8 registry
+  site_ids" — a count with no valid unit, against **11** defect rows across **7** files — with the
+  emitted list, plus `ownership-guard.js:136` named as deliberately untouched.
+- **B4 `ffd88e3e`** (builder `d-mtf3mjeh-c8d0d2ad`, ok:true): the builder hit a **Bash lockout** and
+  honestly reported everything as *"REASONED ONLY, NEVER RUN"* — the correct return. I ran what it
+  could not and **observed the teeth**: without the fixes 212 passed / **3 FAILED** exit 1 and 8 tests
+  / 5 pass / **3 fail** exit 1; with them, 215/0 and 8/8/0. `enforce.js` exit 1 before the manifest
+  regens, **exit 0 after** — "18/20 runnable green, 0 NEW regressions — canonical clean".
+  **ED-381 reproduced** on its worktree (base `c3b8654f`, not HEAD) and **proven harmless for this
+  bundle**: `git diff c3b8654f HEAD` over all three target files is empty.
+
+## The conductor's own errors this round, both caught before shipping
+
+1. **ED-384 — my brief named the symbol** (`createModelSession`), and three of four lanes then grepped
+   exactly it and confirmed a false mitigation. The one lane without the frame refuted it.
+2. **The fail-silent rollup finding was WRONG and I retracted it.** I called it the ED-369 fail-open
+   class. `dispatch-review.js` is **fail-CLOSED and correct**: `anyFail` is evaluated FIRST (L430/L438),
+   so `mergedVerdict:"error"` *proves* no lane's verdict field said "fail"; `verdictOf` (L118-133)
+   recognises a verdict only from a JSON-shaped token and fail-closes otherwise **by design**; the
+   `anyError` branch carries a prior hardening against exactly this. **The defect was my brief asking
+   for prose the parser cannot read** — grep: zero JSON verdict tokens in either lane file. Nothing
+   went green; the loss was *conservative*, which is why nobody noticed. Caught by opening the merge
+   lines **to quote them for the ED** — the quote refuted the ED being written. Remedy: all three
+   qualifying briefs now require a machine-readable `{"verdict":"…"}` first line.
