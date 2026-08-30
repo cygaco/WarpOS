@@ -157,7 +157,15 @@ process.stdin.on("end", () => {
       `${GREEN}[worktree-preflight] OK: infra checks passed for builder dispatch.${RESET}\n`,
     );
     process.exit(0);
-  } catch {
-    process.exit(0);
+  } catch (e) {
+    // ED-379-class: "Exit 0 = allow, Exit 2 = block" (this file's own header).
+    // A failure anywhere on this path (payload parse at L102, orphan-cleanup
+    // fs/git errors) means Step 2's smoke-marker check was never reached —
+    // could-not-check, not nothing-to-check. Fail closed rather than silently
+    // allowing a builder dispatch this session never actually smoke-tested.
+    process.stderr.write(
+      `${RED}[worktree-preflight] BLOCKED: could not complete the infra preflight (${e && e.message ? e.message : "unknown error"}) — failing closed.${RESET}\n`,
+    );
+    process.exit(2);
   }
 });

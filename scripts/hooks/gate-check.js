@@ -45,11 +45,20 @@ function loadStore() {
   const storePath = agentsDir
     ? path.join(agentsDir, "store.json")
     : path.resolve(__dirname, "..", "..", ".claude", "agents", "store.json");
+  // ED-379-class: partition ENOENT (store legitimately absent — the caller's
+  // existing "could not read store.json, allowing dispatch" WARNING path is
+  // the intended skip) from present-but-unreadable/corrupt (a store integrity
+  // failure on the very path this gate's decision depends on) — rethrow the
+  // latter so the outer catch can fail closed instead of silently returning
+  // the same `null` for both. Pattern: scripts/enforcement/ed-dup-id-lint.js.
+  let raw;
   try {
-    return JSON.parse(fs.readFileSync(storePath, "utf8"));
-  } catch {
-    return null;
+    raw = fs.readFileSync(storePath, "utf8");
+  } catch (e) {
+    if (e && e.code === "ENOENT") return null;
+    throw e;
   }
+  return JSON.parse(raw);
 }
 
 function isBuilderDispatch(prompt) {
@@ -178,7 +187,17 @@ process.stdin.on("end", () => {
       `${GREEN}[gate-check] OK: "${feature}" deps satisfied, builder allowed.${RESET}\n`,
     );
     process.exit(0);
-  } catch {
-    process.exit(0);
+  } catch (e) {
+    // ED-379-class: this gate's decision is "block builder dispatch if
+    // dependency features haven't passed evaluation" — restrictive = block
+    // (exit 2). Every remaining throw reaching here (payload parse at L144,
+    // a rethrown present-but-corrupt store from loadStore(), or a checkDeps()
+    // failure reading a malformed store) is "could not evaluate the gate",
+    // never "nothing to gate" (those paths already exit 0 explicitly above,
+    // outside this catch) — fail closed.
+    process.stderr.write(
+      `${RED}[gate-check] BLOCKED: could not evaluate the dependency gate (${e && e.message ? e.message : "unknown error"}) — failing closed.${RESET}\n`,
+    );
+    process.exit(2);
   }
 });

@@ -19,6 +19,14 @@ const path = require("path");
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
+  // Computed before the try so both catches below can apply the governance
+  // ruling: under an explicit enforce flag, a runner failure must block;
+  // the absent-input path (not on a skeleton branch, or advisory mode's
+  // by-design non-blocking nature) stays a legitimate SKIP.
+  const enforce =
+    process.argv.includes("--enforce") ||
+    process.env.RETRO_ENFORCE === "1" ||
+    process.env.RETRO_ENFORCE === "true";
   try {
     const PROJECT = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
@@ -47,12 +55,24 @@ process.stdin.on("end", () => {
         cwd: PROJECT,
         encoding: "utf8",
       }).trim();
-    } catch {
+    } catch (e) {
+      // ED-379-class: this is a RUNNER failure (git unavailable/errored), not
+      // an absent-input case. Under an explicit enforce flag, a runner
+      // failure must block (we cannot rule out being on a skeleton branch
+      // with a missing retro); under default advisory mode this hook never
+      // blocks by design, so skip is the mode-consistent behavior.
+      if (enforce) {
+        process.stderr.write(
+          `\n[retro-presence-check] BLOCKED (Rule 64 enforced): could not determine the current branch (${e && e.message ? e.message.split("\n")[0] : "runner failure"}) — failing closed; cannot verify retro obligation.\n\n`,
+        );
+        process.exit(2);
+      }
       process.exit(0);
     }
     const m = branch.match(/^skeleton-test(\d+)$/);
     if (!m) {
-      // Not on a skeleton branch — no retro obligation
+      // Not on a skeleton branch — no retro obligation (legitimate skip,
+      // true regardless of enforce mode)
       process.exit(0);
     }
     const runN = m[1];
@@ -60,11 +80,6 @@ process.stdin.on("end", () => {
     const retroFile = path.join(retroDir, "RETRO.md");
 
     if (!fs.existsSync(retroFile)) {
-      const enforce =
-        process.argv.includes("--enforce") ||
-        process.env.RETRO_ENFORCE === "1" ||
-        process.env.RETRO_ENFORCE === "true";
-
       const header = enforce
         ? `[retro-presence-check] BLOCKED (Rule 64 enforced): session ending on ${branch} but ${retroDir}/RETRO.md does not exist.`
         : `[retro-presence-check] WARNING (Rule 64 advisory): session ending on ${branch} but ${retroDir}/RETRO.md does not exist.`;
@@ -78,7 +93,18 @@ process.stdin.on("end", () => {
       if (enforce) process.exit(2);
     }
     process.exit(0);
-  } catch {
+  } catch (e) {
+    // Same governance ruling as the branch-detection catch above: enforce
+    // mode fails closed on a runner failure (paths.json read is already its
+    // own inner try with a safe fallback, so what reaches here is a real
+    // unexpected error); advisory mode's by-design non-blocking nature makes
+    // skip the mode-consistent behavior.
+    if (enforce) {
+      process.stderr.write(
+        `\n[retro-presence-check] BLOCKED (Rule 64 enforced): unexpected error while checking retro presence (${e && e.message ? e.message.split("\n")[0] : "unknown error"}) — failing closed.\n\n`,
+      );
+      process.exit(2);
+    }
     process.exit(0);
   }
 });

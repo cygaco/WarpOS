@@ -30,8 +30,23 @@ process.stdin.on("end", () => {
       );
       process.exit(2);
     }
-  } catch {
-    process.exit(0);
+  } catch (e) {
+    // ED-379-class: this gate blocks package.json dependency additions
+    // without an admission record — restrictive = block (exit 2). A payload-
+    // parse or checkPackageEdit() failure is "could not evaluate this edit",
+    // never "nothing to admit" (that path already exits 0 explicitly above,
+    // outside this catch). Fail closed rather than silently admitting an
+    // unreviewed dependency.
+    console.log(
+      JSON.stringify({
+        decision: "block",
+        reason:
+          "dependency-admission-guard: could not evaluate this edit (" +
+          (e && e.message ? e.message : "unknown error") +
+          ") — failing closed.",
+      }),
+    );
+    process.exit(2);
   }
   process.exit(0);
 });

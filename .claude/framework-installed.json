@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "292a63d1e9c314ed32096091a06230979b204792",
-  "installedAt": "2026-08-30T03:27:01.470Z",
+  "installedCommit": "654fcd529ee039895caa2b99655149d9bae7c11b",
+  "installedAt": "2026-08-30T03:30:49.563Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4644,8 +4644,8 @@
       "dest": "scripts/hooks/dependency-admission-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9010472bc033e15174c01f9cd3116e0da5d0f8efcce5ea986c04451fe76d92bc",
-      "currentHashAtInstall": "9010472bc033e15174c01f9cd3116e0da5d0f8efcce5ea986c04451fe76d92bc",
+      "installedHash": "756bec70763519fac6400588391308cb8a1f8a6a9f4f398d6fc8ed7ecfbb9f9c",
+      "currentHashAtInstall": "756bec70763519fac6400588391308cb8a1f8a6a9f4f398d6fc8ed7ecfbb9f9c",
       "introducedIn": "0.0.0"
     },
     {
@@ -4744,8 +4744,8 @@
       "dest": "scripts/hooks/gate-check.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d3d2447b891bf13adc45fc40f25dab6e4ce6758d4d71681945c0215d386fd727",
-      "currentHashAtInstall": "d3d2447b891bf13adc45fc40f25dab6e4ce6758d4d71681945c0215d386fd727",
+      "installedHash": "d9409a8b4437db76023498f8b6c2c4936f5221d93e3f11708b88664684855569",
+      "currentHashAtInstall": "d9409a8b4437db76023498f8b6c2c4936f5221d93e3f11708b88664684855569",
       "introducedIn": "0.0.0"
     },
     {
@@ -4874,8 +4874,8 @@
       "dest": "scripts/hooks/ownership-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "16fa08eb4d29aa6d015f28d66ace075a00f520765654bfd4b04773b0c43ffa82",
-      "currentHashAtInstall": "16fa08eb4d29aa6d015f28d66ace075a00f520765654bfd4b04773b0c43ffa82",
+      "installedHash": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0",
+      "currentHashAtInstall": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0",
       "introducedIn": "0.0.0"
     },
     {
@@ -5004,8 +5004,8 @@
       "dest": "scripts/hooks/retro-presence-check.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "fe409bc0795d74d1fe6b9b36594f138a1bc63e7b4e4bd751bf92bff648471693",
-      "currentHashAtInstall": "fe409bc0795d74d1fe6b9b36594f138a1bc63e7b4e4bd751bf92bff648471693",
+      "installedHash": "209f30b1516ce21893de416467de487ba35486912cc1c6a4d9b06a4c030177e1",
+      "currentHashAtInstall": "209f30b1516ce21893de416467de487ba35486912cc1c6a4d9b06a4c030177e1",
       "introducedIn": "0.0.0"
     },
     {
@@ -5044,8 +5044,8 @@
       "dest": "scripts/hooks/secret-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "5ae145c1996970206b000cdafde1b602c013ed94ce158e6cdcc38239b7f812ca",
-      "currentHashAtInstall": "5ae145c1996970206b000cdafde1b602c013ed94ce158e6cdcc38239b7f812ca",
+      "installedHash": "81f7d802dbfeabef4b92ca8fcca979f02e2d1952472378f5af3a91c38422d653",
+      "currentHashAtInstall": "81f7d802dbfeabef4b92ca8fcca979f02e2d1952472378f5af3a91c38422d653",
       "introducedIn": "0.0.0"
     },
     {
@@ -5354,8 +5354,8 @@
       "dest": "scripts/hooks/version-bump-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ea4af553bec4263a989522f92662861cc849d63bfd1945f99c18ccbbdd339184",
-      "currentHashAtInstall": "ea4af553bec4263a989522f92662861cc849d63bfd1945f99c18ccbbdd339184",
+      "installedHash": "20be1a4f857f79bc93a5e610df37516361f58c4824b771689e6fcecb9ce04b85",
+      "currentHashAtInstall": "20be1a4f857f79bc93a5e610df37516361f58c4824b771689e6fcecb9ce04b85",
       "introducedIn": "0.0.0"
     },
     {
@@ -5364,8 +5364,8 @@
       "dest": "scripts/hooks/worktree-preflight.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "9336f2ec2f342185caecf96ef6f3eb32da3b08f4f18ca60aa188449b6571e0e7",
-      "currentHashAtInstall": "9336f2ec2f342185caecf96ef6f3eb32da3b08f4f18ca60aa188449b6571e0e7",
+      "installedHash": "6091fbf28f1dc0cd805b030d7f90b9ca0889d01e7db998068fac17b6f893346f",
+      "currentHashAtInstall": "6091fbf28f1dc0cd805b030d7f90b9ca0889d01e7db998068fac17b6f893346f",
       "introducedIn": "0.0.0"
     },
     {

@@ -91,7 +91,16 @@ process.stdin.on("end", () => {
     }
 
     process.exit(0);
-  } catch {
-    process.exit(0);
+  } catch (e) {
+    // ED-379: this catch's only reachable causes are JSON.parse(input) failing
+    // (L9) or a property read on a non-object payload — both "could not check"
+    // on a credential guard's own decision path, never "nothing to check"
+    // (the absent-input L15 and .env-skip L18 paths already exit 0 explicitly,
+    // outside this catch). Fail closed: an unparseable payload must not let a
+    // secret slip through unscanned.
+    process.stderr.write(
+      `BLOCKED: secret-guard could not parse/read the tool-call payload (${e && e.message ? e.message : "unknown error"}) — failing closed; content was not scanned for secrets.\n`,
+    );
+    process.exit(2);
   }
 });

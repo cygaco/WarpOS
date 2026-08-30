@@ -63,8 +63,16 @@ process.stdin.on("end", () => {
     let store;
     try {
       store = JSON.parse(fs.readFileSync(storePath, "utf8"));
-    } catch {
-      process.exit(0);
+    } catch (e) {
+      // ED-379-class: existence was already confirmed at the fs.existsSync
+      // check above — this is a present-but-unreadable/corrupt store, not
+      // the legitimate "no store = can't enforce, allow" absent-store skip.
+      // Fail closed: a corrupt ownership record must not silently permit an
+      // out-of-scope edit.
+      process.stderr.write(
+        `BLOCKED: ownership-guard could not read/parse store.json at "${storePath}" (${e && e.message ? e.message : "unknown error"}) — failing closed; file ownership could not be verified.\n`,
+      );
+      process.exit(2);
       return;
     }
 

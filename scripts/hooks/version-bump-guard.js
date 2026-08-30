@@ -34,13 +34,20 @@
  *   - env: WARPOS_VERSION_GUARD=off
  *   - sentinel: .warpos/version-bump-guard-disable
  *
- * Fail-open conditions (NEVER block):
+ * Fail-open conditions (legitimate "nothing to check" — always exit 0):
  *   - Not a `git commit` command.
- *   - Cannot read version.json.
- *   - Cannot run `git diff --cached --name-only` (not a git repo, git error).
- *   - Policy file unreadable.
+ *   - No framework-prefix files staged.
+ *   - version.json#version resolves but framework/releases/<version>/ doesn't
+ *     exist yet (mid-release, not yet capsuled).
+ *   - Policy file unreadable (loadPolicy() defaults to warn mode).
  *   - Bypass env var or sentinel present.
- *   - Any unexpected exception.
+ *
+ * Fail-CLOSED conditions (ED-379-class — "could not check" is never silent;
+ * treated as if the bump condition applied, gated by the SAME warn/block
+ * policy mode the rest of this file uses — see failClosed()):
+ *   - Payload doesn't parse as JSON.
+ *   - Cannot read/parse version.json.
+ *   - Cannot run `git diff --cached --name-only` (not a git repo, git error).
  *
  * Policy file: .claude/agents/president/_system/policy/version-bump-guard.json
  *   { "enforcement": { "mode": "warn"|"block",
@@ -98,10 +105,38 @@ process.stdin.on("data", (chunk) => (input += chunk));
 process.stdin.on("end", () => {
   try {
     run(JSON.parse(input || "{}"));
-  } catch {
-    process.exit(0);
+  } catch (e) {
+    failClosed(
+      resolveProject(),
+      `could not parse the tool-call payload (${e && e.message ? e.message : "unknown error"})`,
+    );
   }
 });
+
+/**
+ * ED-379-class: shared fail-closed path for this gate's three read/parse
+ * failure sites (payload parse, version.json read, git diff exec). This
+ * gate's own decision is "refuse (or warn) when framework files are staged
+ * against an already-capsuled version" — restrictive side = act as though
+ * that condition held, resolved through the SAME warn/block policy mode
+ * computeEffectiveMode() already uses for the normal detection path, so a
+ * read failure never silently produces a *stronger* fail-open guarantee
+ * than a successful detection would under the same policy.
+ */
+function failClosed(project, reason) {
+  let effectiveMode = "warn";
+  try {
+    effectiveMode = computeEffectiveMode(loadPolicy(project));
+  } catch {
+    effectiveMode = "warn";
+  }
+  process.stderr.write(
+    `[version-bump-guard] WARNING: ${reason} — cannot verify whether a version bump is required; failing closed per policy (mode=${effectiveMode}).\n` +
+      `  Bypass (logged): WARPOS_VERSION_GUARD=off, or touch .warpos/version-bump-guard-disable\n`,
+  );
+  if (effectiveMode === "block") return process.exit(2);
+  return process.exit(0);
+}
 
 function run(event) {
   if (!event || event.tool_name !== "Bash") return process.exit(0);
@@ -133,8 +168,11 @@ function run(event) {
       fs.readFileSync(path.join(project, "version.json"), "utf8"),
     );
     version = vj.version;
-  } catch {
-    return process.exit(0);
+  } catch (e) {
+    return failClosed(
+      project,
+      `could not read/parse version.json (${e && e.message ? e.message : "unknown error"})`,
+    );
   }
   if (!version || typeof version !== "string") return process.exit(0);
 
@@ -157,8 +195,11 @@ function run(event) {
       stdio: ["ignore", "pipe", "ignore"],
       encoding: "utf8",
     });
-  } catch {
-    return process.exit(0);
+  } catch (e) {
+    return failClosed(
+      project,
+      `could not run "git diff --cached --name-only" (${e && e.message ? e.message : "unknown error"})`,
+    );
   }
   const staged = stagedRaw.split(/\r?\n/).filter(Boolean);
   if (staged.length === 0) return process.exit(0);
