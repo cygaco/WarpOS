@@ -31,3 +31,14 @@ Written by α at 2026-08-30T05:46:07Z.
 - E1 is unaffected: `assembled-E1.md` was piped as the prompt bytes to `dispatch-agent.js`; containment holds there (the wrapper's stdin = the file — ε's route line; the completion record for CLI dispatches carries `prompt_bytes`, to be compared against 9120 on E1's terminal row).
 - ED-407 confirming instance: `prompt_bytes: 0` on an in-process row + a by-reference prompt ⇒ no artifact binds E2's prompt to `assembled-E2.md` except the lane's own quotation of its contents.
 - Harness agentIds (ε's): E2 = `a6b0e660114e407fa`; E3 = `a34e63055bcb9f731` (resumed; no record id until `record-inprocess` writes one).
+
+## E1 — terminal row, appended 2026-08-30T06:13Z (α), from the record as it exists
+
+| lane | dispatch_id | started_at | completed_at | elapsed_ms | exit_code | stdout_bytes | stderr_bytes | ok | prompt_bytes | prompt_digest (record) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| E1 | `d-mtfdwwch-491effca` | `2026-08-30T05:44:20.417Z` | `2026-08-30T06:09:20.655Z` | 1500238 | 1 | 0 | 4020 | false | 9120 | `sha256:bf8dfae73dd38a75…` = `assembled-E1.md` — **byte-containment holds for E1 from the ledger** |
+
+- Death at the bound: 1500238 ms against `DISPATCH_BUILDER_TIMEOUT_MS=1500000`. `out-E1.raw` (681 B) is the wrapper's death envelope with `output: ""`; the 4020 B stderr is head-truncated into it and persisted nowhere else (`out-E1.err` 0 B). No verdict token exists → **not-reached** under AG-3.
+- Codex's own session file (id `01a05132-8548-7d91-bc23-388193013fbc`): copied verbatim to `out-E1.rollout.jsonl` (1516758 B, 466 events; NOT committed — size; path + size recorded here). First event 05:44:20.710Z, last 06:09:17.263Z (3 s before the kill). Derived, marked timeline: `out-E1.rollout-DERIVED-timeline.md`.
+- E3 (`a34e63055bcb9f731`, in-process, resumed once after a 20-turn ceiling): completed ~06:09Z per the harness notification; its `record-inprocess` row and `out-E3.raw.md` are ε's and pending — its `started_at` is appended here when the record exists.
+- Ordering unchanged: row 386 `03:43:05.000Z` < E1 `05:44:20.417Z` < E2 `05:48:31.703Z` < E3 (pending).
