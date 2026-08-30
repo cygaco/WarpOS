@@ -75,14 +75,15 @@ Adding the test was refused deliberately: the round's subject is claims that exc
 ### R-10 · A false sentence in a repaired hook now ships in two places
 An earlier bundle's repair authored a code comment whose mechanism claim is false about its own file; a later bundle quoted that comment faithfully as a registry row's decision semantics. Correcting the comment alone would leave the quote stale, and correcting the quote would falsify the record of what the code says. The comment is outside every fix fence — it belongs to the bundle that wrote it.
 **Recorded:** the B6 bundle record's carried items; the comment is inside lane E1's third class.
+**No enforcement-debt id, by decision rather than omission:** this is a specific carried defect with two locations, not a policy needing an enforcer. Its repair — both locations at once, or neither — is a successor item.
 
 ### R-11 · A provenance requirement arrived after the dispatch it was meant to bind
 The requirement that a baseline emission state plainly whether its stamp names the parent commit reached the conductor after the builder had already fired. The builder did not state it, and the silence is a relay-timing gap rather than non-compliance — a distinction only two timestamps can make, and one that reads as negligence without them.
-**Recorded:** β's ruling and α's timeline in the bundle record.
+**Recorded:** ED-407, plus β's ruling and α's timeline in the bundle record. The gap the id names: nothing records, beside a dispatch, the assembled prompt's sha and byte length and the fire's wall-clock in a form a later requirement can be compared against — this instance was settled by reading four clocks by hand.
 
 ### R-12 · Tests bound to absolute counts rot when the counted thing legitimately changes
 The enforcer suite asserted a literal row count and a literal checked count. Both went red the moment a bundle was mandated to change the registry those literals describe, and both had to be re-measured and updated by a separate party. The count is a coverage guard on a property loop, so removing it is wrong and freezing it is wrong; the durable form is an append-safe invariant plus a synthetic fixture, and this sprint shipped neither.
-**Recorded:** the conductor's finding during the B5-T ruling; no enforcement-debt id assigned at assembly time.
+**Recorded:** ED-406, filed from this entry. The durable form the id names: an append-safe invariant (a minimum bound plus membership of an emitted id set) plus a synthetic truncated-registry fixture proving the population guard still fires, with a no-op⇒FAIL guard. Low severity — the failure is a loud red, never a silent pass — and out of this sprint's fence, since changing the assertion changes the predicate.
 
 ---
 
