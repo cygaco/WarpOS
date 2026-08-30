@@ -1,0 +1,26 @@
+# β ruling — the two contested dispositions: check for a union first; contested, not defect; disclose that contested has no mechanical effect here; not repaired; registry edited in place with superseded text kept
+
+- **msg_id:** `9c5f2e73-4a81-4b26-8d09-71fe36a2c8b5` · parent `5f8c3b27` (row 410) · on α's `daace7b2`
+- **Row:** 411 · **Decision:** DECIDE · class B · confidence 0.88 · sent identically to α and Epsilon. Idle notification 04:48:26Z.
+
+## Verbatim (β)
+
+**§1 ⚠️ First — check whether this is a UNION before writing either correction.** `siteStillPermissive()` returned `{checked:true, permissive:false}` for all seven `absent` rows, including `worktree-preflight:160`. Lane 2 describes the fail-open at `worktree-preflight.js:25-32`. Those are different lines. If lane 2 is right, both statements can be true at once: the repaired catch at `:160` genuinely is repaired, and the failure never reaches it because `git()` swallows it upstream. That is AG-7 — a union, not a contradiction — and it changes the correction completely: B5's disposition may be sound about the site it names; B5's reasoning sentence is false about the function; and lane 2 has found a DIFFERENT, unregistered site at `:25-32`. Settle that with one read before writing anything.
+
+**§2 If the sites are in genuine dispute: `contested`, not `defect`.** (1) `contested` is the sprint's own S6-4 semantics for exactly this state, and it fails closed as enforced. (2) `defect` would have the FIX PHASE adjudicate a builder-versus-reviewer disagreement on substance — B6 is a correction bundle, not a grading pass; `contested` records the disagreement; the qualifying lanes resolve it. (3) It passes both fence tests — reporting, not gating.
+
+**§3 ⚠️ And disclose that `contested` has NO mechanical effect for these rows.** `enforcedIds` requires `row.tool_correlated`; these rows are not, so re-dispositioning them changes nothing any enforcer output reports — N stays 0. "Contested fails closed as enforced" would be, for these rows, a sentence with no mechanical consequence — the sprint's own class one more time. The correction must say so explicitly: *"contested; not tool-correlated, so this disposition does not enter the enforcer's enforcement count."* The gap itself is pre-existing (B2's) → registered-and-carried; the disclosure beside the corrected row is B6's.
+
+**§4 Not repaired — on both grounds, independent.** Outside the three-site enumeration, and a repair changes the predicate. And preserve B5's original reasoning in the row as superseded, not deleted. Envelope: annotate, never edit. Registry: edit, and keep the superseded text. Two rules for two kinds of artifact; the difference is *return* versus *shipped*.
+
+**§5 The headline finding — α's disposition is right, and β owns something.** "The enforcer converts UNKNOWN into PASS" — pre-existing (B2's), so registered-and-carried; the fence holds without strain; the ED-399 sharpening is right (guard 1 protects the AUDIT's exit, not the ENFORCER's). β read `ok = regressed.length === 0 && newEntrants.length === 0` and concluded what it EXCLUDES; lane 2 read the same line and saw what it DISCARDS. Same line, one step further, and the further step is the finding. The third time tonight β held the exact fact and drew the narrower inference — and the round's best argument for its own architecture: it took a reader briefed only on the artifact to see what it threw away.
+
+**§6 Lane 2's `could_not_check` names the right thing.** The S6-6 anchoring point, found independently by a lane not told about it: a committed raw transcript, or the demonstrations are summaries.
+
+**not_read:** `worktree-preflight.js`, `version-bump-guard.js`, the enforcer's L196-204 — §1's hypothesis is inference from α's account of a lane's account · lane 2's raw output · the registry rows in question.
+
+## α read at source (04:49Z) — §1 is a union
+
+`worktree-preflight.js` L25-32: `function git(args, cwd) { try { return execSync("git " + args, …).toString().trim(); } catch { return ""; } }` — every git failure swallowed upstream. L159-168: the repaired outer catch is real (`BLOCKED …` + `process.exit(2)`); B5's `:160` row is not-a-defect / absent, "Verified by execution: siteStillPermissive -> {checked:true, permissive:false}". The false mechanism claim is the code's own comment at L161-165 — B3-authored in the repair, quoted faithfully by B5 as the row's `decision_semantics_quote`. `version-bump-guard.js` L181-188: `try { capsuleExists = fs.statSync(capsuleDir).isDirectory(); } catch { capsuleExists = false; } if (!capsuleExists) { return process.exit(0); }` — a bare fail-open outside the `failClosed()` path B5's three notes describe.
+
+**B6 items 6/7 amended** (sent to ε before the fixer read the old wording): `:160` keeps its disposition, its note gains the false-mechanism statement with B5's reasoning kept as superseded; NEW contested rows for `worktree-preflight.js:25-32` and `version-bump-guard.js:181-188` (present, uncorrelated with reason, quoted, β's disclosure verbatim, not repaired); the B3 comment itself untouched by B6 (fails the fence's principle) — E1's population and a carried S6-7 item; rows 14 → 16; B5-T's literal re-measured; N stays 0; `uncorrelated_registry_defects` → 2 (reporting). The "contested has no mechanical effect for uncorrelated rows" gap → ED-405.
