@@ -140,3 +140,23 @@ The graded artifact population was derived by exact shipped-family and temporal 
 This rule does not reach unrelated changed manifests, `doc-ref-integrity.allowlist.json`, fixture prose, B4’s non-hook implementation files except where a debt sentence claims their behavior, pre-sprint debt L1-L302, or later residual-register variants outside the pinned checkout.
 
 No files were written or mutated. Final checkout remained clean at `c88aac1df718fc0772c16b6e428130a095549a6c`.
+---
+
+## Appended correction (conductor, 2026-08-30) — L1 is WRONG and is not edited
+
+L1 of this file reads `output_bytes=18990`. **That number is CHARACTERS, not bytes.**
+
+- `output_chars = 18990` — JavaScript string `.length`, i.e. UTF-16 code units. All characters
+  here are BMP, so this equals the code-point count too (verified: no astral characters).
+- `stdout_bytes = 19282` — UTF-8 bytes, and equal to the ledger's `stdout_bytes` for
+  dispatch `d-mtffqf0q-48df5464`.
+- `delta = 292` = **146 non-ASCII characters x 2 extra bytes each**, verified by count:
+  67 em-dash, 27 left-quote, 27 right-quote, 14 arrow, 8 apostrophe, 3 ellipsis = 146.
+
+The body below L1 is byte-identical to the wrapper envelope's `output` string; nothing was
+lost or altered. **The defect is the label** — a count named `output_bytes` carrying characters.
+Label family, `a-count-labelled-in-the-wrong-unit`, the same class as a 32-hex value under a
+`sha256:` label, in a file the conductor wrote tonight.
+
+L1 is left unedited because it is a quotation-class field already cited by line number.
+Corrections to it are appended, never applied in place.
