@@ -162,9 +162,20 @@ function main() {
       return true;
     }),
     check("sprint autonomy config valid", () => {
+      // SP-20260829-001 B4 T3 / ED-380: validate-autonomy-config.js now exits
+      // 3 (not 0) when ajv is unavailable and only contract checks ran — a
+      // deliberate, visible distinction from a full schema+contract pass.
+      // This repo has no root package.json/node_modules (by design), so ajv
+      // is never resolvable here and this install-health check would flip
+      // permanently red without --allow-schema-skip. This check has always
+      // only verified contract/hard-ceiling checks in practice (schema
+      // validation never ran even before this fix); --allow-schema-skip
+      // makes that pre-existing scope explicit instead of silently assumed.
+      // Self-pulling: if this repo ever gains ajv, schema validation runs
+      // for real and this flag becomes a no-op.
       try {
         require("child_process").execSync(
-          "node scripts/sprint/validate-autonomy-config.js",
+          "node scripts/sprint/validate-autonomy-config.js --allow-schema-skip",
           { cwd: REPO_ROOT, stdio: "pipe", timeout: 30000 },
         );
         return true;

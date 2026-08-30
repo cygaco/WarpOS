@@ -7,10 +7,30 @@
  * against schemas/sprint/sprint-full-autonomy.schema.json AND against
  * the hardcoded hard-ceiling rules.
  *
- * Exits 0 on valid, 1 on any failure (with details on stderr).
+ * Exit codes (SP-20260829-001 B4 T3 / ED-380):
+ *   0 — fully validated: schema check ran (ajv available) AND passed, AND
+ *       contract checks passed. Also used when --allow-schema-skip is
+ *       passed and only the schema half was skipped (see below).
+ *   1 — a check FAILED (schema validation failed, or a contract/hard-ceiling
+ *       check failed).
+ *   3 — contract checks PASSED but schema validation was SKIPPED because
+ *       ajv is not installed (require.resolve("ajv") threw). This is
+ *       DELIBERATELY distinct from 0: a caller reading only the exit code
+ *       must not conclude "fully schema-validated" when the schema half
+ *       never ran. Pass --allow-schema-skip to fold this into exit 0 for
+ *       callers that have explicitly reviewed and accepted contract-only
+ *       validation (see install.js for the one currently-known caller that
+ *       does this, with its own comment on why).
+ *
+ * Self-pulling note: exit 3 / --allow-schema-skip only matter while ajv is
+ * unresolvable. The day this repo gains a package.json + node_modules with
+ * ajv installed, `ajvAvailable` becomes true, schema validation runs for
+ * real, and the exit-3 branch below is never reached again — no one has to
+ * remember to remove --allow-schema-skip call sites or this comment; they
+ * simply become inert.
  *
  * Usage:
- *   node scripts/sprint/validate-autonomy-config.js [--file <path>]
+ *   node scripts/sprint/validate-autonomy-config.js [--file <path>] [--allow-schema-skip]
  *
  * Defaults to reading paths.sprintFullAutonomy from the path registry.
  */
@@ -39,9 +59,10 @@ const FORBIDDEN_PRE_AUTH = Object.freeze([
 ]);
 
 function parseArgs(argv) {
-  const out = { file: null };
+  const out = { file: null, allowSchemaSkip: false };
   for (let i = 2; i < argv.length; i++) {
     if (argv[i] === "--file") out.file = argv[++i];
+    else if (argv[i] === "--allow-schema-skip") out.allowSchemaSkip = true;
   }
   return out;
 }
@@ -91,12 +112,20 @@ function main() {
   const schema = loadJson(schemaPath);
 
   // Try ajv if available; otherwise fall back to structural sanity check.
+  // ED-380: verified true for THIS repo at the time of this fix — there is
+  // no root package.json / node_modules, so require.resolve("ajv") ALWAYS
+  // throws here, meaning the schema half below has likely never actually
+  // run. The skip is now surfaced explicitly at the bottom of main() rather
+  // than silently folded into exit 0 (see the exit-code doc comment above).
   let ajvAvailable = false;
   try {
     require.resolve("ajv");
     ajvAvailable = true;
   } catch {
-    /* ajv not installed — skip schema validation, keep contract checks */
+    /* ajv not installed — skip schema validation, keep contract checks.
+       Visibility of this skip is handled at the exit-code boundary below,
+       not here — a message on a path that still exits 0 is the exact shape
+       ED-380 flags as insufficient (gates read exit codes, not stdout). */
   }
 
   if (ajvAvailable) {
@@ -170,8 +199,29 @@ function main() {
     return 1;
   }
 
+  if (!ajvAvailable) {
+    const skipMsg =
+      `autonomy config: contract checks passed (${presetNames.length} presets ` +
+      `[${presetNames.join(", ")}] + ${declared.length} hard ceilings), but ` +
+      `SCHEMA VALIDATION WAS SKIPPED — ajv is not installed. This is NOT the ` +
+      `same as full validation (ED-380).`;
+    if (args.allowSchemaSkip) {
+      process.stdout.write(
+        `${skipMsg} --allow-schema-skip was passed — exiting 0 (caller has ` +
+          `explicitly accepted contract-only validation).\n`,
+      );
+      return 0;
+    }
+    process.stderr.write(
+      `${skipMsg} Exiting 3 (distinct from 0/1) so a caller reading only the ` +
+        `exit code cannot mistake this for a full pass. Pass ` +
+        `--allow-schema-skip if contract-only validation is acceptable here.\n`,
+    );
+    return 3;
+  }
+
   process.stdout.write(
-    `autonomy config OK: ${presetNames.length} presets [${presetNames.join(", ")}] + ${declared.length} hard ceilings\n`,
+    `autonomy config OK (schema + contract checks both ran): ${presetNames.length} presets [${presetNames.join(", ")}] + ${declared.length} hard ceilings\n`,
   );
   return 0;
 }

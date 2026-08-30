@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "654fcd529ee039895caa2b99655149d9bae7c11b",
-  "installedAt": "2026-08-30T03:30:49.563Z",
+  "installedCommit": "1960c6709eb85ce3a9fa2ffdfe5e990e71627149",
+  "installedAt": "2026-08-30T03:31:29.562Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -9074,8 +9074,8 @@
       "dest": "scripts/sprint/design.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "835da1d570761689d101b76f02d79d181127438f1f1c0b6d58f46d4c9202ae55",
-      "currentHashAtInstall": "835da1d570761689d101b76f02d79d181127438f1f1c0b6d58f46d4c9202ae55",
+      "installedHash": "543f96d60eb9f6fc566cfbda554e0888217af40162b77b9b69a114710426a73b",
+      "currentHashAtInstall": "543f96d60eb9f6fc566cfbda554e0888217af40162b77b9b69a114710426a73b",
       "introducedIn": "0.0.0"
     },
     {
@@ -9134,8 +9134,18 @@
       "dest": "scripts/sprint/fs.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "ec52f90420294d518a5f4308c823515ca408b39b1ab408053d5a252b944df6c7",
-      "currentHashAtInstall": "ec52f90420294d518a5f4308c823515ca408b39b1ab408053d5a252b944df6c7",
+      "installedHash": "14efffdef07122e92ba391d968c32a66cae9ce952a7dada0b6acc36a7b58b421",
+      "currentHashAtInstall": "14efffdef07122e92ba391d968c32a66cae9ce952a7dada0b6acc36a7b58b421",
+      "introducedIn": "0.0.0"
+    },
+    {
+      "id": "sprint_engine.fs.readyaml-corruption.test.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/fs.readyaml-corruption.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "c589ad77e2a61a06ed2531a336dd58e9b85aed4706056eac577c04b307910960",
+      "currentHashAtInstall": "c589ad77e2a61a06ed2531a336dd58e9b85aed4706056eac577c04b307910960",
       "introducedIn": "0.0.0"
     },
     {
@@ -9374,8 +9384,8 @@
       "dest": "scripts/sprint/test-sprint-full.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "e85e19fb8b1fd5cdd49b398c0a1c353f6b23cc244013f8f0b7b743c849a577f0",
-      "currentHashAtInstall": "e85e19fb8b1fd5cdd49b398c0a1c353f6b23cc244013f8f0b7b743c849a577f0",
+      "installedHash": "0df0537359f75d056ce91a0ea8f355a067938254c09f45cbef4c181c5fbf4ef9",
+      "currentHashAtInstall": "0df0537359f75d056ce91a0ea8f355a067938254c09f45cbef4c181c5fbf4ef9",
       "introducedIn": "0.0.0"
     },
     {
@@ -9409,13 +9419,23 @@
       "introducedIn": "0.0.0"
     },
     {
+      "id": "sprint_engine.validate-autonomy-config.exitcodes.test.js",
+      "kind": "sprint_engine",
+      "dest": "scripts/sprint/validate-autonomy-config.exitcodes.test.js",
+      "owner": "framework",
+      "mergeStrategy": "replace_if_unmodified",
+      "installedHash": "ba6207e5e388e666b1fc2887085702056b4f4e4a47c50de4465cfe5f3731f88b",
+      "currentHashAtInstall": "ba6207e5e388e666b1fc2887085702056b4f4e4a47c50de4465cfe5f3731f88b",
+      "introducedIn": "0.0.0"
+    },
+    {
       "id": "sprint_engine.validate-autonomy-config.js",
       "kind": "sprint_engine",
       "dest": "scripts/sprint/validate-autonomy-config.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "84c1043cbcb8081a0ff7951061a76df47acdadc6ad06e289fa75a4ea3dad8b17",
-      "currentHashAtInstall": "84c1043cbcb8081a0ff7951061a76df47acdadc6ad06e289fa75a4ea3dad8b17",
+      "installedHash": "f13df858fd45e98fe5dc5c611060cf6be35bf743baa8f9b65bd75d5035dff632",
+      "currentHashAtInstall": "f13df858fd45e98fe5dc5c611060cf6be35bf743baa8f9b65bd75d5035dff632",
       "introducedIn": "0.0.0"
     },
     {
@@ -11334,8 +11354,8 @@
       "dest": "scripts/check/install.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "aaf12db594c1a58d6b9e2713151f433c0b68a4adf78ca350d6c02d56a8a6d5f6",
-      "currentHashAtInstall": "aaf12db594c1a58d6b9e2713151f433c0b68a4adf78ca350d6c02d56a8a6d5f6",
+      "installedHash": "ed504dcf0ffa2888d3598a4db782672970652919cb7c6fcf9afaea7f82d17cef",
+      "currentHashAtInstall": "ed504dcf0ffa2888d3598a4db782672970652919cb7c6fcf9afaea7f82d17cef",
       "introducedIn": "0.0.0"
     },
     {

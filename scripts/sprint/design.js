@@ -145,7 +145,9 @@ function buildTraceEntries(areas) {
 
 // T-298: Trace-integrity check — every R-id referenced in granular-stories.md and
 // trace.md must be defined in prd.md. FAIL-CLOSED for newly scaffolded sprints
-// (not legacy-waived). Fail-open for file-read errors.
+// (not legacy-waived). SP-20260829-001 B4 T1: also FAIL-CLOSED (ok:false,
+// errored:true) for unexpected errors — see the catch block below for why
+// this comment used to say "fail-open" and no longer does.
 function checkTraceIntegrity(outDir, sprintId) {
   try {
     const prdPath = path.join(outDir, "prd.md");
@@ -190,8 +192,31 @@ function checkTraceIntegrity(outDir, sprintId) {
       };
     }
     return { ok: true };
-  } catch {
-    return { ok: true }; // fail-open for unexpected errors
+  } catch (err) {
+    // SP-20260829-001 B4 T1: this used to fail-open ({ ok: true }) on ANY
+    // unexpected error, making an unchecked sprint indistinguishable from a
+    // verified one. The caller (scaffold(), below) treats any `!ok` as a
+    // hard block (`process.stderr.write(...); return 1;`) — the same
+    // fail-closed shape already used elsewhere in this file for genuine
+    // content failures (WG-10 template-missing, the R-id mismatch case
+    // above, runFixtureGate's refusals). An infrastructure failure here
+    // (e.g. an unreadable file, a filesystem race) means the trace-integrity
+    // check could NOT run — that is strictly less trustworthy than "it ran
+    // and passed", so it must land on the same restrictive side as a real
+    // failure, not the permissive side. The message is prefixed distinctly
+    // from a content-failure message so operators can tell "the check
+    // errored" from "the check ran and found a mismatch".
+    return {
+      ok: false,
+      errored: true,
+      message:
+        `R-id trace-integrity check ERRORED for sprint ${sprintId} (did not ` +
+        `complete — this is NOT a content failure, it is an infrastructure ` +
+        `failure): ${err && err.message ? err.message : String(err)}\n` +
+        `Treating this as fail-closed rather than a silent pass: the check's ` +
+        `whole job is integrity, and an unchecked sprint must never report ` +
+        `identically to a verified one. Investigate and re-run /sprint:design.`,
+    };
   }
 }
 

@@ -1637,6 +1637,40 @@ function testRIdSingleSourcing() {
     try { fs.rmSync(tmp, { recursive: true, force: true }); } catch { /* best-effort */ }
   }
 
+  // O-9 (SP-20260829-001 B4 T1): an UNEXPECTED error (not a content mismatch)
+  // inside checkTraceIntegrity must NOT fail-open (ok:true) — the caller
+  // (scaffold()) treats any !ok as a hard block, and an unchecked sprint
+  // must never report identically to a verified one.
+  const tmp9 = fs.mkdtempSync(path.join(os.tmpdir(), "trace-int-err-"));
+  try {
+    fs.writeFileSync(path.join(tmp9, "prd.md"), "| R-1 |\n");
+    fs.writeFileSync(path.join(tmp9, "granular-stories.md"), "cites R-1\n");
+    const realReadFileSync = fs.readFileSync;
+    fs.readFileSync = function (p, ...rest) {
+      if (String(p).endsWith("granular-stories.md")) {
+        throw new Error("EACCES: injected fault (O-9 fixture)");
+      }
+      return realReadFileSync.call(fs, p, ...rest);
+    };
+    let r9;
+    try {
+      r9 = design.checkTraceIntegrity(tmp9, "SP-TEST");
+    } finally {
+      fs.readFileSync = realReadFileSync;
+    }
+    ok("O-9: unexpected read error is NOT fail-open (ok:false, not ok:true)", r9.ok === false);
+    ok("O-9: errored result carries the underlying error text", /injected fault/.test(r9.message || ""));
+    ok("O-9: errored result is distinguishable from a content failure (errored flag)", r9.errored === true);
+
+    // No-op guard: with the SAME fixture but the fault REMOVED, the check must
+    // pass ok:true — proves the fault injection above actually fired the throw
+    // path (not a fixture that never triggers, or a check that always fails).
+    const rClean = design.checkTraceIntegrity(tmp9, "SP-TEST");
+    ok("O-9 no-op guard: same fixture with fault removed is ok:true (fault injection was real)", rClean.ok === true);
+  } finally {
+    try { fs.rmSync(tmp9, { recursive: true, force: true }); } catch { /* best-effort */ }
+  }
+
   // O-8 (gauntlet fix-cycle 2026-06-10): normalizeExisting must PRESERVE unknown
   // fields (crash_recovery/ralph/reports sub-objects) — strict literal dropped them.
   const checkpoint = require("./checkpoint.js");

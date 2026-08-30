@@ -254,18 +254,71 @@ function readYamlMaybe(file) {
   const text = readText(file);
   if (text === null) return null;
   // First try js-yaml if available (better robustness).
+  //
+  // SP-20260829-001 B4 T2: this catch used to collapse TWO different facts
+  // into one silent fall-through:
+  //   (a) require("js-yaml") itself threw (MODULE_NOT_FOUND) — an
+  //       ENVIRONMENT fact (the library is absent). Legitimate fall-through;
+  //       verified true for THIS repo (no package.json / node_modules — same
+  //       fact ED-380 records for ajv). No signal needed.
+  //   (b) require succeeded but yaml.load(text) itself threw — a CONTENT
+  //       fact: a real YAML parser rejected this text as malformed. That is
+  //       corruption, not "needs the next parser", and must be visible.
+  // Only (a) is a legitimate silent fall-through; (b) never was, and is kept
+  // distinct below even though it is currently unreachable in this repo
+  // (verified: require.resolve("js-yaml") fails MODULE_NOT_FOUND here) so the
+  // distinction holds the moment js-yaml becomes available.
   try {
     const yaml = require("js-yaml");
     return yaml.load(text);
-  } catch {
-    // fall through to JSON.parse for json-mode tracker files
+  } catch (err) {
+    if (!(err && err.code === "MODULE_NOT_FOUND")) {
+      process.stderr.write(
+        `readYamlMaybe: ${file} — js-yaml rejected this file as malformed ` +
+          `YAML (${err && err.message}). Falling back to JSON/mini-YAML, but ` +
+          `this file should be treated as SUSPECT/CORRUPT, not merely ` +
+          `"needed a different parser".\n`,
+      );
+    }
+    // else: js-yaml module not installed — environment fact, legitimate
+    // fall-through, no signal needed.
   }
   try {
     return JSON.parse(text);
   } catch {
-    // fall through to mini-yaml
+    // JSON.parse failing is the EXPECTED, normal path for the yaml-ish
+    // (non-JSON) text writeYaml() itself emits for every multi-line/nested
+    // tracker file — NOT a corruption signal on its own. (Verified: every
+    // sprint tracker file in this repo is written by writeYaml() in this
+    // dialect, not raw JSON, so this catch fires on the overwhelming
+    // majority of NORMAL reads. Flagging it here would be a false-positive
+    // flood, not a meaningful defect repair.) Fall through to the mini-YAML
+    // parser below, where the REAL reachable signal lives.
   }
-  return parseMiniYaml(text);
+  const { value, dropped } = parseMiniYaml(text);
+  // This is the failure that is actually reachable and live in this repo
+  // today (js-yaml/JSON.parse both legitimately miss on every real tracker
+  // file): parseMiniYaml's line loop silently dropped ANY line it could not
+  // interpret as blank/comment, array, or key:value — previously with zero
+  // signal, so a genuinely corrupt or truncated file became "whatever
+  // survived" with no trace. Surface it.
+  if (dropped.length > 0) {
+    const warning =
+      `readYamlMaybe: ${file} — mini-YAML parser could not interpret ` +
+      `${dropped.length} line(s) (line ${dropped.map((d) => d.line).join(", ")}) ` +
+      `and silently dropped them. This file may be CORRUPT or use syntax ` +
+      `outside the writeYaml() subset — verify it manually before trusting ` +
+      `its parsed contents.`;
+    process.stderr.write(`${warning}\n`);
+    if (value && typeof value === "object") {
+      Object.defineProperty(value, "__parseDroppedLines", {
+        value: dropped,
+        enumerable: false,
+        configurable: true,
+      });
+    }
+  }
+  return value;
 }
 
 // Very small yaml subset parser — only handles scalar/array/object/
@@ -276,6 +329,11 @@ function parseMiniYaml(text) {
   const lines = text.split(/\r?\n/);
   const root = {};
   const stack = [{ indent: -1, value: root, key: null }];
+  // SP-20260829-001 B4 T2: lines that match neither the array pattern nor
+  // the key:value pattern used to hit the generic `i++` below and vanish
+  // with zero trace — a corrupt/truncated/garbled file became "whatever
+  // survived" indistinguishably from a well-formed one. Record them instead.
+  const dropped = [];
 
   function setValue(parent, key, val) {
     if (Array.isArray(parent)) {
@@ -391,9 +449,12 @@ function parseMiniYaml(text) {
       i++;
       continue;
     }
+    // Neither an array item nor a key:value line — genuinely unrecognized.
+    // This is the real silent-drop site: record it instead of discarding.
+    dropped.push({ line: i + 1, text: raw });
     i++;
   }
-  return root;
+  return { value: root, dropped };
 }
 
 function parseInlineValue(s) {
