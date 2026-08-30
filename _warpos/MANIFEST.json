@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T03:31:29.786Z",
+  "generatedAt": "2026-08-30T04:16:16.097Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -11953,8 +11953,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-baseline.json",
-      "sha256": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
-      "installedSha": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62"
+      "sha256": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
+      "installedSha": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707"
     },
     "scripts/checks/gate-failclosed-enforcer.js": {
       "owner": "framework",
@@ -11974,8 +11974,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-registry.json",
-      "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
-      "installedSha": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42"
+      "sha256": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
+      "installedSha": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce"
     },
     "scripts/checks/greek-office-parity.js": {
       "owner": "framework",
