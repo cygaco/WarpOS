@@ -141,8 +141,20 @@ process.stdin.on("end", () => {
         `Only modify files in your own feature scope.\n`,
     );
     process.exit(2);
-  } catch {
-    // Graceful failure
-    process.exit(0);
+  } catch (e) {
+    // ED-379-class: this is the OUTER catch, wrapping the entire handler —
+    // including the initial `JSON.parse(input)` payload parse above and
+    // every other read in this function. This gate's own decision is
+    // "block edits to files owned by other features" — restrictive = block
+    // (exit 2). A malformed hook payload, a PATHS/paths.json read failure,
+    // or any other unexpected exception reaching here means ownership could
+    // not be verified — "could not check", never "nothing to check" (the
+    // absent-store skip and the no-owner-in-store warn path already exit 0
+    // explicitly, above, outside this catch). Fail closed rather than
+    // silently allowing an edit whose ownership was never actually checked.
+    process.stderr.write(
+      `BLOCKED: ownership-guard could not evaluate this edit (${e && e.message ? e.message : "unknown error"}) — failing closed; file ownership could not be verified.\n`,
+    );
+    process.exit(2);
   }
 });
