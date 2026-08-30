@@ -1173,3 +1173,84 @@ same ping would not be misclassified; it is not validation of the run that passe
 **Breaker:** expired by **TTL at 02:07:35Z**; **no `clear()` call was made.** Q2's two earlier deaths
 (97 s, 314 s) stay **cause-unknown** regardless of the ping — the head cap destroyed whatever text would
 have explained them.
+
+---
+
+# ALL FIVE LANES IN — and the round's FIRST GENUINE CONTRADICTION
+
+**Q1 in-process returned `{"verdict":"fail"}`** (60469 B; the token appears **exactly once**, at line 1
+— the ED-385 check, recorded verdict vs the token in the lane's own raw file, is clean).
+
+| lane | id | route | token, read from that lane's own raw file |
+|---|---|---|---|
+| Q1 claim-truth | `d-mtf67lqj-8cad4634` | codex | `{"verdict":"fail"}` |
+| Q1 claim-truth | α's in-process spawn | in-process | `{"verdict":"fail"}` |
+| Q2 adversarial | `d-mtf6pwa2-69d952e6` | codex | `{"verdict":"fail"}` |
+| Q2 adversarial | `d-mtf6zdid-a5ed5f0c` | in-process | `{"verdict":"fail"}` |
+| Q3 teeth | `d-mtf5rc6t-08cc5b00` | in-process | `{"verdict":"pass"}` |
+
+## β's frozen rule (d) FIRES — on exactly the two items β had contested
+
+The two Q1 lanes **contradict each other on the same items**, having never seen one another.
+
+**S19 — `CUSTODY.md` L131-133.** codex: **FALSE** (*"section headings, P-tags, canonical paragraph
+markers … are raw comparisons"*, evidenced by `## Pro<U+200B>ven` → `missing-proven-section`).
+in-process: **TRUE** — *"true, on the precise reading of 'token comparison.' `containsStatusToken`
+(L1315) transforms both sides; `resemblesBindableLeadIn` transforms the line (L888) and the separator
+(L906); `findForbiddenClaimHits` (L1550) and the two rollup patterns (L1449) canonicalize the line …
+The byte-for-byte binds (Rules 2, 2b, 4, 4b) deliberately use `normalizeWhitespace` only — **but those
+are paragraph-verbatim comparisons, not token comparisons** … The sentence's frame is exact and I
+credit it."*
+
+**S31 — L188-192.** codex: **FALSE** (*"`statusTokenPattern` and `containsStatusToken` forward the
+public `emphasisFold` option"*). in-process: **TRUE** — *"I grepped every occurrence of `emphasisFold`
+in the file: the option is read once at L367 and passed `false` at exactly **one** call site, L888,
+inside `resemblesBindableLeadIn`. One opt-out, as claimed."*
+
+**β hypothesised both readings from the definitions alone (`a2f47b90` §3); an independent lane reached
+them from the source.**
+
+## THE SETTLING READ (β `9e7c3f15` §3 — the quote is the protection, not the identity of the quoter)
+
+**S31 — SETTLED BY MEASUREMENT. The codex lane OVER-GRADED; the shipped sentence is TRUE.**
+Every `emphasisFold` occurrence in `custody-claim-lint.js`:
+```
+187, 357, 879    comments
+362, 1291, 1312  JSDoc @param annotations
+367   const emphasisFold = opts.emphasisFold !== false;     <- the option is READ
+374   if (emphasisFold) folded = folded.replace(EMPHASIS_FOLD_PATTERN, " ");
+888   const canonical = canonicalizeClaimText(line, { caseFold: false, emphasisFold: false });
+```
+**L888 is the only line of CODE that passes `emphasisFold: false`** — exactly as the sentence claims.
+The codex reason concerns **reachability through the public API** (L1291/L1312 being JSDoc showing the
+functions *accept* opts), not a call site. The sentence says *"call-site population"*, and it is one.
+
+> **A count would have confirmed the wrong answer here.** `grep -c "emphasisFold: *false"` returns
+> **4**; three of the four are comments. The emitted list gets it right and the count does not — on the
+> day this sprint spent proving that a number is a claim with its unit stripped off.
+
+**S19 — the evidence favours TRUE; the definitional call is β's, not the conductor's.**
+`findForbiddenClaimHits` **L1548**, verbatim: `const canonical = canonicalizeClaimText(line);` …
+`canonical.match(pattern)` — it **does** canonicalize, so the twin's enumeration is accurate. The codex
+counterexample runs against **`PROVEN_HEADING_PATTERN = /^##\s+Proven\b/i` (L385)**, whose failure
+raises **`missing-proven-section` (L451)** — a **section locator**, which finds a region rather than
+comparing a claim token. Whether that is a "token comparison" is the interpretive question; the bytes
+are recorded so β can rule on them rather than on anyone's summary.
+
+## CONSEQUENCE FOR THE CLOSE — "fourteen" is withdrawn
+
+**"Fourteen false sentences" is wrong, and the conductor is the one who put that number into
+circulation.** S31 does not survive measurement; S19 probably does not survive β's read; S26 (the
+disjunction, surfaced by the conductor) is a third. **At most eleven, possibly fewer — and no number is
+stated here until β rules.**
+
+This is β's `a2f47b90` §4 landing on the conductor's own reporting: *"a lane over-grading is a finding
+too; neither of us gets the count checked only in the direction that hurts."* **The lane that graded 29
+sentences TRUE was more careful than the conductor's summary of it.**
+
+## The duplicate-lane composition paid out a SECOND, different way
+
+The two **Q2** lanes produced **disjoint findings** — that is **coverage**. The two **Q1** lanes
+produced a **contradiction** — that is **correction**. **Had only the codex Q1 run, two over-gradings
+would have entered the close as fact.** Measured, not argued; the second measurable return on the
+composition after the frame ruling.
