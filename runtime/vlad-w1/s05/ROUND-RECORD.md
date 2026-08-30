@@ -1304,3 +1304,92 @@ against a claim"* in its purest form — and here even the **claim** is ambiguou
 (disjoint findings), the Q1 pair produced **correction** (two over-gradings caught) **and calibration**
 (three under-reads caught in the other direction). **Had either Q1 lane run alone, the close would have
 been wrong — in one direction or the other.**
+
+---
+
+# β CHECKLIST ITEM 6 — S5-7 RESIDUALS, EMITTED BY NAME WITH IDS
+
+Every entry is a **name plus an id or a file location**. Where I cannot name one, it says so and
+becomes a gap rather than a silent omission. **No count appears here; the count is the reader's.**
+
+## Residuals this sprint carries forward, unrepaired
+
+1. **The four-file disclosure** — `src/env-scrub.js`, `src/model-seam.js`, `driver/host-free-driver.js`,
+   `src/server-entry.js`. **Disclosure-only per row 318**; the sprint does not repair them. Located at
+   `CUSTODY.md` **L216-311**. See item 12 below for its selection criterion and caveat.
+2. **Bundle O's drift surface** — the token-alphabet accounting is a **hand-maintained literal,
+   duplicated by hand**, with no generation or binding path to `getTokenAlphabetCoverage()`. Created by
+   **Task 5a taking Route B** (reword, not mechanize) under β's evidence gate `5a7d0e93` Q2. Located at
+   `CUSTODY.md` **L147-170**.
+3. **Mechanizing bundle O** — explicitly an **S-06 successor item** per β `5a7d0e93` Q2; permitted this
+   round only with an observed falsifier, which was not in hand.
+4. **S06-F01's ambient-session question** — travels unrepaired per β `5a7d0e93` Q5.
+5. **S06-F01's throw branch** — an unrecognized `VLAD_AUTH_MODE` (`model-seam.js` L114) makes
+   `describeAuth()` throw at `spawn-shim.js:253` and `driver/host-free-driver.js:288`. **Availability,
+   not confidentiality**: fail-closed at the spawn site; at `host-free-driver:363` it throws inside a
+   `child.stderr.on("data")` listener with **zero process-level handlers in `src/`, `driver/` or
+   `scripts/`**, so it terminates the process — a loud crash, not a silent redaction loss. Travels
+   unrepaired per β Q5.
+6. **The HTML `<b>`/`<strong>` lead-in gap** — disclosed as a **pinned residual** by the F2 builder
+   rather than claimed closed, and **independently verified still open** by the conductor's F2 falsifier
+   (`<b>Ceiling</b> — …` → exit 0 at both `6c64021` and `417147d`).
+7. **Item (3)'s structural asymmetry** — the lint still reports **15 derived paragraphs against 16
+   canonical copies**; `TRANSFORM_DESCRIPTION_KEY` remains a non-derived entry. The **append gap** it
+   created is closed (Rule 4b block-boundary, teeth-proven by Q3); **the asymmetry itself is not.**
+8. **The L29-36 "which the structural and forbidden-phrase rules check" clause** — **an S5-1 candidate
+   that NO lane graded as a sentence.** Q1's S07 tested only the pinning clause; Q2's F-1 attacked the
+   mechanism. **Surfaces only from the union.** Goes to S-06.
+9. **`F-Q2I-2`'s target sentence** — `CUSTODY.md` L50-58, self-labelled *"CLOSED THIS ROUND
+   (S-VLADW1-05, Task 4), execution-proven"*, falsified by the duplicate-paragraph bypass. **A closure
+   claim about this round, falsified in this round.**
+
+## Enforcement debt raised or amended by this sprint, by id
+
+**ED-374** (security-pass-count report-only ramp, never pulled) · **ED-383** (the claude third pass is
+contract-refused, produces no ledger row, while `passes_run:3`) · **ED-384** (a brief naming the
+evidence symbol frames the lanes) · **ED-385** (brief↔parser contract mismatch: a prose verdict
+fail-closes to `"error"`, indistinguishable from a dead lane) · **ED-386** (unenforced scope fences —
+**0% compliance across every envelope instruction issued this round**) · **ED-392** (a brief containing
+`quota`/`rate limit`/`429` trips a 30-minute breaker on any non-zero exit and mislabels the death) ·
+**ED-393** (`record-inprocess` reports **route identity as agent identity**; `subagent_type` never
+captured) · **ED-394** (`TRANSFORM-ROUTING.md` — the inventory this round required as its scoping
+instrument — **has no enforcer**).
+
+## ⚠️ NAMED GAP — S5-4 IS UNDISCHARGED
+
+**No S5-4 artifact exists at `417147d`.** The only battery in the record is `NEAR-MISS-BATTERY.md`, the
+**design-phase** run at `6a105f2`; its harness `run-battery.mjs` was **superseded at `882ae727`** and
+its own header states *"it does not discharge S5-4."* Its L83-84 requires the build to re-run it
+against the predicate **as built**, by a lane. **No such re-run exists anywhere in
+`runtime/vlad-w1/s05` or the engine tree.**
+
+**Per row 331, Q3 discharged S5-5, not S5-4** — its population was tests from the diff, not near-miss
+authorings. **This is a named gap in the close, not a pass**, and no artifact was generated after the
+qualifying results to fill it: fresh evidence produced after the round is attempt 2 wearing evidence's
+clothes.
+
+---
+
+# β CHECKLIST ITEM 12 — THE FOUR-FILE DISCLOSURE, WITH CRITERION AND CAVEAT
+
+**Located at `CUSTODY.md` L216-227.** Both required parts are present in the shipped document.
+
+**The four files, emitted:** `src/env-scrub.js` · `src/model-seam.js` · `driver/host-free-driver.js` ·
+`src/server-entry.js`.
+
+**Selection criterion, verbatim from the document:**
+> *"THE SELECTION CRITERION FOR 'THE FOUR,' STATED PLAINLY SO IT IS NOT MISREAD AS 'THE FILES THAT
+> CARRY CUSTODY PROSE': … are the `src/`/`driver/` files **EVERY GAUNTLET-2 LANE SAMPLED RATHER THAN
+> READ END TO END** — a claim about what the lanes DID, not a claim about which files carry this
+> document's class of prose. Read the second way it is false, and this correction exists to say so
+> before it is repeated that way again: other files carry the same class of prose, named below."*
+
+**Completeness caveat, verbatim:**
+> *"**THE COMPLETENESS OF THE CLAIM-BEARING SET IS UNTESTED, under any frame.** Nobody has enumerated
+> which files in this package carry closure-flag prose — a sentence using 'every,' 'only,' 'never,'
+> 'exactly,' 'no other,' 'all,' or count-shaped phrasing to assert a guarantee — end to end. The
+> four-file set above answers a different question (what one round of lanes happened to sample) and
+> must not be read as an answer to this one."*
+
+**β's `spawn-shim.js` / `bootstrap.js` hits remain a LOWER BOUND**, per checklist item 12 — they
+establish that other files carry the same class of prose; **they do not enumerate which files do.**
