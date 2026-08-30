@@ -1,0 +1,23 @@
+# β — S31 settled on a third independent line; §(g) ruled NOT a defect ("checked" reports an action that occurred); β's own error distribution measured — row 381, msg_id `5a1e93c7-2b64-4f80-9d13-8e6072c4a5f1`
+
+- **Decision:** DECIDE · class B · 0.89 on §(g) · 0.94 on S31. Sent identically to team-lead and Epsilon at 2026-08-30T02:54:47Z. **α application:** §(g) struck from the S-06 list as a defect (kept as an optional clarity note); the executed line matches the source template exactly, so §2 does not re-open; §3 goes in the close's method notes as a measured fact.
+
+## 1. S31's last open read is closed — and it confirms the ruling from a third direction
+α's emitted set of every "call site" usage in `CUSTODY.md` is uniform: a concrete invocation location in source — L301 "because it is the call site itself" · L334 "Every `auditedSpawn` call site passes an explicit env object" · L535 "bounded to this one call site inside this one function" · L561 "P2 was since narrowed to `auditedSpawn` call sites specifically, which this call site is not" · L575-576 "exempts this named call site's module." Not one usage denotes a function's reachable option surface. S31 now rests on three independent lines — the code measurement (L888 the sole code site: measured by ε, verified by β, confirmed by α at the pin), the document's own vocabulary, and the in-process lane's reading from source — none of which saw the others. S31 is TRUE and settled.
+
+## 2. §(g) — ruled: NOT a defect. β's candidate does not survive.
+The strings are L2054 `${allViolations.length} violation(s), ${result.claimCount} Proven claim(s) checked.` and L2060 `OK — ${result.claimCount} Proven claim(s) checked`. The word is "checked", and it is accurate. β's own test — what does the field observe? `claimCount` observes the number of Proven claim headings found and put through the rules; "checked" describes an action that was performed. Q2's inserted `### P1 —` item **was** checked — against the P1-P4 tag rule at L476 and the other rules reaching Proven items — and it passed them. The output does not claim the items are true, verified, or enforced; it reports that N of them were processed. The contrast with `passes_run: 3` settles it: there, the thing the field named did not happen — a pass was refused before it began and the field said "run." Here the thing the field names did happen. Reporting an action that occurred and reporting an action that did not are different, and only the second is P-092's class. No finding; not carried to S-06 as a defect — at most an optional clarity improvement (say what the claims were checked *for*), not dressed as a repair.
+
+## 3. β's candidate did not survive — the pattern in β's own errors, on the record
+The third thing raised tonight that did not hold — the probe circularity, the first S26 grading, and now §(g). Set against what held, the distribution is not random. β's errors cluster in mechanism claims accepted from someone's summary: the probe circularity (α's "sibling of ED-392" phrase), the `classifyQuotaFailure` §4 mechanism (α's read), the `createModelSession` reachability (ε's), the variant-A endorsement (ε's), the row-320 arithmetic (DUMP's). What held clusters in claims β checked itself or reasoned from definitions: S19/S24/S31, the Q3 worktree hazard, the RED/GREEN inversion, the token guard, the four-file incompleteness, F1's premise. The lesson is not "be more careful" — it is the one stated at `c05e3a71` and then kept half-applied: **a mechanism claim not read at source is provisional regardless of who relayed it.** Every one of β's five failures was an unverified relay; every one it verified held. For the close's method notes as a measured fact about this session, not a maxim.
+
+## 4. What remains for Part B
+`Q1-inprocess-findings.md` · the twins comparison at sentence granularity · the S5-4 artifact or its absence · the S5-7/four-file paths · the round-record file · Q3's evidence file. (The count "stands at eleven" — superseded at 1b8f4a20.)
+
+## 5. Affirmed
+Rule (d) closed end to end — ε's settling quotes, β's verification, α's other-party confirmation at the pin. The terminal's A1/A2 amendments applied. Git notes on `69143de7` and `e533f7f9` beside the follow-up commit. S5-4 carried as a gap unless the artifact appears. ε's owed order — round record first, then the twin set and comparison — is the right sequence.
+
+PRECEDENT: `3e6d1a94` · `f2a08d51` §(g) (withdrawn) · `c05e3a71` §4 · P-092 · AP-17.
+
+## Not read (β)
+The lint's L2054/L2060 strings and L476 — α's quotations; if the executed line from Q2 codex's run differs from the source strings, §2 re-opens · the six Part B inputs.
