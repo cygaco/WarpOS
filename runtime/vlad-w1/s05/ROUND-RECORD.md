@@ -1254,3 +1254,53 @@ The two **Q2** lanes produced **disjoint findings** — that is **coverage**. Th
 produced a **contradiction** — that is **correction**. **Had only the codex Q1 run, two over-gradings
 would have entered the close as fact.** Measured, not argued; the second measurable return on the
 composition after the frame ruling.
+
+---
+
+# THE SETTLING READS — all nine contradictions worked at source
+
+Method per β `9e7c3f15` §3: **the quote is the protection, not the identity of the quoter.** Each row
+below carries the byte that settles it so either party can check rather than take the conductor's word.
+
+| item | settlement | the byte that settles it |
+|---|---|---|
+| L12 | **FALSE — both lanes agree** | — |
+| L13-17 | **FALSE — both agree; the twin's own HEADLINE FINDING** | the *"if and only if"* sentence the sprint **corrected this round** |
+| L123-127 | **FALSE — both agree** | — |
+| L132-137 | **FALSE — both agree** | — |
+| L7-11 | **FALSE — codex right** | `▪ **Ceiling — …**` IS a bolded Ceiling lead-in and derives nothing. The twin verified the 15 paragraphs that **exist**; it never tested the "EVERY" closure against newly-added forms. |
+| L64-73 | **FALSE — codex right** | the sentence names **classes** ("list items"); `BLOCK_PREFIX` enumerates `[-*+•‣◦]`. The twin verified each named class has *an* alternative present, not that the alternative **covers** the class. |
+| L115-116 | **FALSE — codex right** | `AGGREGATE_COUNT_PATTERN` = ``/\b\d+\s*(?:\/|of)\s*\d+\b[^.\n]{0,40}\b(?:verified|proven|controls?|claims?)\b/i`` — a bare digit count does **not** match; `WORDED_ROLLUP_PATTERN` likewise requires `all` **+** `controls|claims` **+** `verified`. The twin quoted each regex's leading portion and wrote *"Nothing else."* |
+| L171-174 | **FALSE — codex right** | same class-vs-enumeration defect as L64-73 |
+| **L188-192** | **TRUE — codex OVER-GRADED** | `emphasisFold: false` appears at exactly one line of CODE, **L888**; the other hits are comments (L187/357/879) and JSDoc (L362/1291/1312) |
+| **L154-157** | **leaning TRUE — codex over-graded** | the sentence is a **DISJUNCTION**; the twin and the conductor's own read both find the second disjunct true, and codex falsified only the first |
+| L6 | **DEFINITIONAL — β's call** | *"every run"* = every invocation targets this file (codex) vs this file is the default target (twin). **Both read `main()` correctly.** |
+| L131-133 (S19) | **DEFINITIONAL — β's call**, evidence favours TRUE | is a section **locator** (`PROVEN_HEADING_PATTERN`, L385) a "token comparison"? |
+| L150-152 (S24) | **DEFINITIONAL — β's call** | ⚠️ **both lanes found the SAME facts.** Twin: *"nothing in `scripts/checks/` invokes it to validate the prose; it is exercised only by the test suite's own coverage assertions."* Codex: *"tests L2403-2450 call it and assert exactly…"* **Identical observation, opposite verdicts** — it turns entirely on whether a **test** is a **"check."** |
+| L80-83 | **UNRESOLVED** | ranges do not align (the twin's nearest is L83-90); the lanes may have graded **different sentences**, which would be a union rather than a conflict. **Deliberately not forced into a verdict.** |
+
+## The count, at the strength the evidence supports
+
+**Floor: EIGHT false** (four agreed + four settled codex-right). **Ceiling: twelve**, if all three
+definitional items and the unresolved one go against the document. **Two of the original fourteen are
+over-gradings.** **"Fourteen" is withdrawn and no number is carried forward pending β.**
+
+## What the split shows — and it is not a quality gradient
+
+**Neither lane is the better lane.**
+- **Codex over-graded twice**, by treating a **reachable surface** (S31) and a **single disjunct**
+  (S26) as the whole claim.
+- **The twin under-read three times**, by verifying *presence of a mechanism* rather than *coverage of
+  the class the sentence names* — including quoting a regex's leading half and writing *"Nothing
+  else."*
+
+**Both failures are this sprint's own wrong-unit family, committed by the graders themselves.**
+
+**L150-152 is the sharpest item of the round:** two lanes, the same facts, opposite verdicts, because
+the word *"check"* is undefined. β's *"an executed result is evidence; it becomes a finding only
+against a claim"* in its purest form — and here even the **claim** is ambiguous.
+
+**The duplicate-lane composition is now measured three ways:** the Q2 pair produced **coverage**
+(disjoint findings), the Q1 pair produced **correction** (two over-gradings caught) **and calibration**
+(three under-reads caught in the other direction). **Had either Q1 lane run alone, the close would have
+been wrong — in one direction or the other.**
