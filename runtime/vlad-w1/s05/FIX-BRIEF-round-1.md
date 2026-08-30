@@ -191,6 +191,22 @@ these very patterns. Expect new trips on the document's own prose and **rephrase
 suppress**. If canonicalizing a given site produces false matches you cannot rephrase away, that is a
 finding — record it in the inventory with its reason; do not silently skip the site.
 
+### ⛔ THE STRUCTURAL EXEMPTION IS BARRED (β row 343, `8b52f0a7`) — read this before you reach for it
+
+When `CUSTODY.md`'s own prose trips the widened check, there is a third fix that will look principled
+and is not: a **structural exemption** — skip fenced code blocks, skip quoted spans, skip anything
+after a `>` — on the reasoning that *a description of a forbidden pattern is not an instance of one.*
+
+**That reasoning is correct, and the fix creates a new invisible bypass immediately: put the forbidden
+claim inside a code fence.** That is F1's own family, reappearing, authored by the fix for F1, in the
+same round that closed it.
+
+**So: any structural exemption may ship ONLY with its own observed falsifier** — a forbidden claim
+placed *inside* the exempted construct must still be caught, and you must have watched that happen. If
+you cannot produce that falsifier, the exemption does not ship. Your two legitimate options remain:
+**rephrase** the prose, or **record the trip as a finding** in the inventory with its reason. Never a
+per-instance allowlist entry, never a silent skip.
+
 ---
 
 ## TASK 3 — F2 (HIGH). The two emphasis alphabets.

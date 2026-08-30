@@ -49,15 +49,37 @@ claim quoted — including one where the quotations were **exact** and the ratin
 the deciding fact sat hundreds of lines away. **An excerpt is a frame, and the person making the claim
 chose it.** That applies to the document's own citations, and to any excerpt you take.
 
-### Where claims and mechanism can drift apart
+### The method
 
-Without telling you what to find: a claim can be false because the mechanism never runs, because it
-runs on a different input than the sentence implies, because it covers a narrower set than the sentence
-names, or because the sentence describes an intention the code did not implement. **Check that the
-thing a sentence says is checked is actually reached** — a function that exists is not a function that
-is called.
+**For each sentence, first state what would have to be true of the code for it to be true. Then verify
+that thing directly.** Do that before you form an opinion about the sentence — deciding what would make
+it true is a different act from deciding whether it is true, and doing them in that order is what stops
+you finding support for a reading you already have.
+
+Ways a claim and its mechanism can drift apart include: the mechanism never runs; it runs on a
+different input than the sentence implies; it covers a narrower set than the sentence names; the
+sentence describes an intention the code did not implement. **These are examples, not the classes —
+a kind not listed here is exactly what this lane exists to find.** Do not treat the list as the space
+of possibilities; it is a sample, and it was written by someone who has already looked.
 
 ## RETURN — plain text, as your final message. No report files.
+
+### ⚠️ FIRST LINE, EXACTLY: a machine-readable verdict token
+
+Your reply must BEGIN with a line of exactly this shape, and nothing before it:
+
+```
+{"verdict":"pass"}
+```
+
+…with `pass`, `warn` or `fail` — **that spelling, those quotes, lower-case.** Then your prose.
+
+**This is not bureaucracy and it is not optional.** The consuming parser recognises a verdict ONLY from
+this token; a verdict written as prose (`VERDICT: FAIL`) is unparseable to it and is recorded as
+`"error"` — indistinguishable from a lane that died. On this sprint, two lanes returned genuine FAIL
+findings in prose and **both were recorded as `error`**, because the brief asked for prose and the
+parser reads a token. The failure is silent and it is fail-closed, so nothing goes green to warn
+anyone — the findings simply vanish. **Emit the token, then say everything else however you like.**
 
 Per sentence: line, quoted text, **true / false / cannot-determine**, and the reason.
 

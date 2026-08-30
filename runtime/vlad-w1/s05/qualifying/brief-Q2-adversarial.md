@@ -32,8 +32,9 @@ Find it yourself and read it. **Read files freely — that is your primary instr
 the repo, never add an allowlist entry, never disable a check to observe what happens.
 
 **Do not spend a tool call confirming the commit sha by `git log`** — it is given, and a lane on this
-sprint died in 11 seconds on exactly that instruction. If you want to confirm the tree, do it by
-**content**: read the mechanism and check it looks like what you were told you have. If it does not,
+sprint died in 11 seconds on exactly that instruction. If you want an anchor that the tree is the one
+you were told you have, use a structural one that is not a finding: the checks directory contains a
+custody-claim lint that exports a check entry point and runs to completion. If you cannot find that,
 say so and stop.
 
 ## WHAT "FALSE" MEANS HERE
@@ -63,6 +64,23 @@ evidence"*, and **that was the correct return.** An honest "I could not run it" 
 reasoned from a brief rather than from bytes is not.
 
 ## RETURN — plain text, final message. No report files.
+
+### ⚠️ FIRST LINE, EXACTLY: a machine-readable verdict token
+
+Your reply must BEGIN with a line of exactly this shape, and nothing before it:
+
+```
+{"verdict":"pass"}
+```
+
+…with `pass`, `warn` or `fail` — **that spelling, those quotes, lower-case.** Then your prose.
+
+**This is not bureaucracy and it is not optional.** The consuming parser recognises a verdict ONLY from
+this token; a verdict written as prose (`VERDICT: FAIL`) is unparseable to it and is recorded as
+`"error"` — indistinguishable from a lane that died. On this sprint, two security lanes returned
+genuine FAIL findings in prose and **both were recorded as `error`**, because the brief asked for prose
+and the parser reads a token. The failure is silent and fail-closed, so nothing goes green to warn
+anyone — the findings simply vanish. **Emit the token, then say everything else however you like.**
 
 A verdict, plus every finding with its reproduction.
 
