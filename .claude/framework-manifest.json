@@ -7,7 +7,7 @@
     "skill": 237,
     "kernel": 42,
     "reference": 30,
-    "maps_baseline": 26,
+    "maps_baseline": 25,
     "hook": 83,
     "hook_lib": 25,
     "tool": 2,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1744,
+  "total": 1743,
   "assets": {
     "agent": [
       {
@@ -5457,18 +5457,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -8907,7 +8895,7 @@
         "src": "scripts/checks/gate-failclosed-baseline.json",
         "dest": "scripts/checks/gate-failclosed-baseline.json",
         "kind": "check_tool",
-        "sha256": "a027d1e854854172c44ebc599b9fe3fa3e24a1d2d4ead914f3728582fa70b7a2",
+        "sha256": "c0565d903feb114088f0935e94fbdbf8b62eabbbaf3d41644265598e023aec5c",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8931,7 +8919,7 @@
         "src": "scripts/checks/gate-failclosed-enforcer.test.js",
         "dest": "scripts/checks/gate-failclosed-enforcer.test.js",
         "kind": "check_tool",
-        "sha256": "76fc00205ffb3fe425547fbbef3c66f02efe0dc238469ae3d2b33c3426c720a6",
+        "sha256": "4016b111dede038cb5758286c834c78bcf47cb068a2e29bbdf103c3dfd03ced1",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8943,7 +8931,7 @@
         "src": "scripts/checks/gate-failclosed-registry.json",
         "dest": "scripts/checks/gate-failclosed-registry.json",
         "kind": "check_tool",
-        "sha256": "179dde40b43d4297c9d1be49baef97ca07b0f775c232f32656dd3152b2270037",
+        "sha256": "00e37188fece574ca9acf518c1448baabe658ac1d2027a9d3576c12b96e355c1",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
