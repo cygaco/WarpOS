@@ -67,3 +67,15 @@ Written by α at 2026-08-30T05:46:07Z.
 - Terminal row awaited; bound expiry ≈ `07:25:17Z`.
 - Pairing statement (β d4b62f18 §5, Label family, name-as-address): **`out-E1-2.raw` / `out-E1-2.err` are the outputs of `assembled-E1-3.md` (9226 B, `ddb6a669…`), dispatch `d-mtffqf0q-48df5464`.** `assembled-E1-2.md` (9190 B, `20e8aca5…`) exists beside them and NEVER FIRED. Nothing is renamed while the lane writes to that handle.
 - Containment for this dispatch is a PREFIX match (ED-413): the terminal row's `prompt_digest` carries 32 hex under a `sha256:` label; expected `sha256:ddb6a669dd04f3d6fc9d413c949e7d1d`; full sha `ddb6a669dd04f3d6fc9d413c949e7d1def49a5b959b89e7420d652e3836167b6`.
+
+## E1 — second dispatch TERMINAL (returned), appended 2026-08-30T06:58Z (α), from the record as it exists
+
+| dispatch_id | started_at | completed_at | elapsed_ms | exit_code | ok | stdout_bytes | stderr_bytes | prompt_bytes | prompt_digest (record) | output_digest (record) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `d-mtffqf0q-48df5464` | `2026-08-30T06:35:17.258Z` | `2026-08-30T06:57:18.104Z` | 1320846 | 0 | true | 19282 | 4020 | 9226 | `sha256:ddb6a669dd04f3d6fc9d413c949e7d1d` | `sha256:7e59c42409d2a833b3854f44340e7daf` |
+
+- **Containment, from the ledger, as a prefix match (ED-413):** `prompt_bytes` 9226 = `assembled-E1-3.md`'s bytes; the record's `prompt_digest` carries 32 hex under a `sha256:` label and equals the first 32 characters of the file's full sha256 `ddb6a669dd04f3d6fc9d413c949e7d1def49a5b959b89e7420d652e3836167b6` (α's computation, 06:57:50Z). The truncated side is the ledger's.
+- **Raw file:** `out-E1-2.raw`, 19680 B, sha256 `a29dce0088fd92b3f871dafd9948f3118e131d6048916d75ca69bfb6066874a1` — the wrapper's JSON envelope; the lane's text is its `output` string, 19282 B decoded = `stdout_bytes`. `out-E1-2.err` 0 B (the wrapper captured stderr; 4020 B = the head cap, ED-392 second half). **Pairing:** `out-E1-2.raw` is the output of `assembled-E1-3.md`, dispatch `d-mtffqf0q-48df5464`; `assembled-E1-2.md` exists beside it and never fired.
+- **Token, read by α by regex only:** one occurrence, `{"verdict":"fail"}`, at output byte 0. β reads the token itself and all prose in its pre-committed order (row 427; E1 at position 1 on its original start per row 434).
+- **E1 as one lane across two dispatches:** `d-mtfdwwch-491effca` (assembled-E1.md, 9120 B, died at the 1500 s bound, elapsed 1500238, no token) → `d-mtffqf0q-48df5464` (assembled-E1-3.md, 9226 B, returned at 1320846 ms, token `fail`). Reading-order position unchanged: first, at `05:44:20.417Z`.
+- Bound as fired: 3000000 ms (α's; 2× the observed 1500 s; β's margin note beside it; 3600 s the bound of a path not taken). The lane finished with 1679 s of the bound unused.
