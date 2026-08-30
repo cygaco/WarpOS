@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "5f5112149d115f7b1e791397263f9c9c80916d49",
-  "installedAt": "2026-08-30T05:22:54.645Z",
+  "installedCommit": "973d28245d00b786915db7c329ffe5317ff5aa40",
+  "installedAt": "2026-08-30T05:24:51.678Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -7354,8 +7354,8 @@
       "dest": "scripts/checks/gate-failclosed-baseline.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "c0565d903feb114088f0935e94fbdbf8b62eabbbaf3d41644265598e023aec5c",
-      "currentHashAtInstall": "c0565d903feb114088f0935e94fbdbf8b62eabbbaf3d41644265598e023aec5c",
+      "installedHash": "ff3ddc795d369c47c54d1f57cba70e9847a3cba8e5ee93279b7050c3a0adc094",
+      "currentHashAtInstall": "ff3ddc795d369c47c54d1f57cba70e9847a3cba8e5ee93279b7050c3a0adc094",
       "introducedIn": "0.0.0"
     },
     {

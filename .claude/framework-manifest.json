@@ -8907,7 +8907,7 @@
         "src": "scripts/checks/gate-failclosed-baseline.json",
         "dest": "scripts/checks/gate-failclosed-baseline.json",
         "kind": "check_tool",
-        "sha256": "c0565d903feb114088f0935e94fbdbf8b62eabbbaf3d41644265598e023aec5c",
+        "sha256": "ff3ddc795d369c47c54d1f57cba70e9847a3cba8e5ee93279b7050c3a0adc094",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
