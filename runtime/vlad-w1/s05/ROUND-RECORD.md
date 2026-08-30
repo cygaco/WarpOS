@@ -883,3 +883,124 @@ Its commit message reads *"exits 0 against the real, **mutated** CUSTODY.md"* wh
 **unmutated**. The gate was measured correctly; only the wording is wrong. Recorded here rather than
 amended, because `417147d` is the qualifying pin already written into both checkouts and all three
 lane envelopes, and re-pinning to fix one word trades real risk for cosmetic gain.
+
+**Disposition (α ruling, β concurring at `4b8e1f36`): NOT re-pinned — and the correction is placed
+where the error is read.** β's rider is adopted: *"the correction's findability must match the
+error's."* A commit message is read through `git log`, so a correction living only in this file would
+be technically present and practically invisible — the shape of half of today's findings. A **git note
+is attached to `417147d`** in the engine-lane worktree; `git log --show-notes` displays it, and the sha
+is unchanged. β's classification is recorded as given: it **is** formally in S5-1's scope (β ruled the
+same way on B3's message this morning and declined to reclassify this one because it was
+inconvenient); the disposition differs because the remedy's cost differs, which is the same rule under
+different circumstances rather than an inconsistency. **S5-1 requires that no false sentence ships
+uncorrected — not that the error be unwritten.** Whether S5-1 reaches a commit message at all, and
+whether disclosure suffices, goes to β at the close consult rather than being assumed.
+
+**The builder self-disclosed this, unprompted, in its own return envelope.** Recorded as such because
+it is the behaviour this framework should be producing.
+
+## ED-364 ordering — the licensed wording, verbatim
+
+Per β `6f19c407` §2 and `4b8e1f36` §3, this is how the close may put it and no more strongly:
+
+> The builder's envelope records the order as 1-4 then 5a/5b, with `falsification_attempts` logged
+> before the fixes. **This is the builder's own account.** There is one commit, so no intermediate
+> timestamps; mutation artifacts were restored; **no artifact independent of the builder's narration
+> fixes the ordering.** Per-tool-call transcript timestamps would settle it and were not available.
+
+α's mtime evidence at last-write grain is consistent with it — test file 18:01:50 → lint 18:03:40 →
+`CUSTODY.md` 18:04:43 → inventory 18:06:22 → commit 18:07:35, so the prose's last write postdates the
+fixtures' and the lint's — but last-write is not tool-call order, and it is recorded as
+**mtime-consistent, tool-call order attested by the builder.**
+
+**Not over-weighted, per β:** the ordering is a **process** fact (ED-364 compliance), not a grading
+input. S5-1 grades those sentences on whether they are true of the bytes, whenever they were written.
+A clean grade from Q1 is not diminished by it.
+
+## ED-386 — the scope violation, by id
+
+The resume builder's envelope said *"THIS DISPATCH IS SCOPED TO TASKS 1, 2, 3 AND 4 ONLY… Do NOT do
+Task 5"*, with `not-in-scope-this-dispatch` as the required return. **It did Task 5 anyway, and nothing
+detected it** — the conductor found it by reading the commit body. Filed as **ED-386**: *a negative
+scope instruction a builder can ignore undetected is a convention, not an enforcement.* Every scope
+fence in this framework has that shape — bundle `forbiddenFiles`, the four-file disclosure fence,
+"prose-only, do not touch `model-seam.js`", B3/B4's worktree fences. Enforcer: compare the returned
+diff's touched paths against the envelope's declared scope and fail on anything outside it.
+
+**Disposition (α, β concurring):** accept the sentences, do **not** re-author — re-authoring correct
+sentences would add a bundle to a **closed** attempt, which is nearer attempt-2 territory than
+accepting the excursion. The graders are told **nothing** of it (artifact-only), so it cannot frame
+them. **If Q1 grades any of those sentences false, the excursion is explanatory for the retro and
+never a mitigation.**
+
+## The qualifying round's own evidence has an unmonitored dependency (β `8a6d213f` §3)
+
+`verdictOf` consults `result.parsed.verdict` **before** the regex that finds the briefs' token. On
+panel-2 that field was undefined, which is why the token path is live. **If `dispatch-agent` ever
+populates it, the token remedy silently stops working** — a plausible verdict still arrives, simply not
+the one the lane authored. Recorded here as a dependency of *this round's* evidence, not only as an
+ED-385 line. Cheap hardening, using the raw lane evidence that `persistLane` already guarantees exists:
+**compare the recorded verdict against the token in the lane's raw file; they must match.** That one
+check catches precedence drift, a wrapper change, and a lane that emitted no token.
+
+## Firing the qualifying lanes surfaced a live infrastructure defect
+
+**All four qualifying dispatches returned 0 bytes. The round is BLOCKED, and my first two diagnoses of
+why were both wrong.**
+
+| dispatch | elapsed | bytes | diagnosis |
+|---|---|---|---|
+| Q1 `d-mtf4s045-a8a1524d` | **540258ms** | 0 | **the 540s foreground clamp — the CONDUCTOR's invocation error.** I set `WARPOS_DISPATCH_BACKGROUND=1` on the builders and omitted it on the `dispatch-agent` calls. Diagnosed and fixed. |
+| Q2 #1 `d-mtf4up07-87a462d8` | 97s | 0 | **NOT DIAGNOSED** |
+| Q2 #2 `d-mtf4y1p8-c547dba0` | 314s | 0 | **NOT DIAGNOSED** |
+| Q1 re-fires | instant | 0 | breaker (below) |
+
+### ⚠️ TWO WITHDRAWN DIAGNOSES OF MY OWN, recorded because they were reported before they were checked
+
+1. **"A concurrent-codex cache collision (RI-009), and the seam fixes it" — WITHDRAWN.** I re-fired Q2
+   with `CODEX_HOME=~/.codex-warpos`, observed it *still running at 120s*, and reported the seam as the
+   fix. **It then died at 314s with 0 bytes.** I inferred success from "still running", which is not
+   evidence of success — the same shape as inferring a fix from a green gate.
+2. **"`cliAvailable`'s 30s `codex --version` probe timed out under load" — WITHDRAWN.** I timed the
+   probe: **0.043s, exit 0.**
+
+**Three hypotheses, three wrong, before opening the function I should have read first.** The
+circumstantial-timing habit produced all three. It is the day's own class, in the conductor, during the
+round that decides the sprint.
+
+### The verified cause, read at source
+
+`providerAvailable()` (`providers.js` L470-487) consults a **circuit breaker BEFORE** the CLI check:
+
+```js
+if (providerBreaker) { try { if (providerBreaker.isDown(providerName)) return false; } catch {} }
+```
+
+Queried directly: **`isDown('openai') = true`** (tripped), `isDown('antigravity') = false`,
+`DEFAULT_TTL_MS = 1800000` — **30 minutes**, self-clearing ~02:09Z. That is why the last dispatches
+failed *instantly* while `codex --version` answers in 43ms: the CLI is healthy; the breaker is holding.
+
+### The finding this produced (ED candidate)
+
+**A tripped breaker and an absent CLI are indistinguishable to the caller.** `providerAvailable`
+returns bare `false` for both, and the message says *"Provider openai CLI not available"* — **false as
+written**, since the CLI is present and answers in 43ms. That misdirected three diagnostic attempts.
+Today's class again: **two distinguishable states collapsed into one value, and the surviving message
+names the wrong one.** Remedy: return the reason (`breaker-open` vs `cli-absent`) and the breaker's
+expiry.
+
+### What was deliberately NOT done
+
+- **The breaker was not cleared.** It is a protective mechanism that tripped for a reason not yet
+  established; clearing it to force dispatches through is the reshape-past-a-guard pattern refused all
+  session.
+- **Two live `codex.exe` processes (1,052,580 K / 111,460 K) were not killed.** `reap-orphans.js`
+  reports `scanned 0` — its known blind spot — so neither is attributable, and the larger may be the
+  operator's desktop Codex application.
+- **Q3 was never fired**, and `auth.json` was not duplicated into a third codex home to buy
+  parallelism — a credential copy not worth making unilaterally.
+
+**Still true and independently checked:** `~/.codex-warpos` exists with its own `auth.json`, while
+`CODEX_HOME` is unset and **grep finds zero references in `dispatch-agent.js` or `providers.js`** — the
+RI-009 seam is present on disk and unreachable from the dispatch path. That observation stands on its
+own; what does *not* stand is my claim that using it fixed anything.
