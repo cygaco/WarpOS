@@ -18,9 +18,9 @@ const {
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const FIXTURES = path.join(REPO_ROOT, "runtime", "enforcer-fixtures", "SP-20260829-001");
 
-test("real registry loads, all 13 rows carry provenance + quote for manual dispositions", () => {
+test("real registry loads, all 14 rows carry provenance + quote for manual dispositions", () => {
   const registry = loadRegistry(path.join(__dirname, "gate-failclosed-registry.json"));
-  assert.equal(registry.rows.length, 13);
+  assert.equal(registry.rows.length, 14);
   for (const row of registry.rows) {
     assert.equal(row.polarity_provenance, "manual-by-read");
     assert.ok(row.decision_semantics_quote && row.decision_semantics_quote.length > 10);
@@ -51,10 +51,10 @@ test("S6-6a: registry member marked repaired but still fail-open IS caught (regr
   assert.equal(regressed[0].site_id, "b2-regressed-site.js:11");
 });
 
-test("S6-6a control: same check on the REAL registry (nothing marked repaired yet) finds zero regressions", () => {
+test("S6-6a control: same check on the REAL registry (7 rows marked repaired by the B5 seal) finds zero regressions", () => {
   const registry = loadRegistry(path.join(__dirname, "gate-failclosed-registry.json"));
   const { regressed, checkedRepaired } = checkRegistryRegressions(registry.rows, REPO_ROOT);
-  assert.equal(checkedRepaired.length, 0); // none of the 13 seeded rows claim expected_finding: absent yet
+  assert.equal(checkedRepaired.length, 7); // the 7 rows the B5 seal (128cf0af) + repair (51d70d42) marked expected_finding: absent — measured from this runner at the landed tree, SP-20260829-001 B5-T
   assert.equal(regressed.length, 0);
 });
 

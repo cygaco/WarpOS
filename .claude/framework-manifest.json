@@ -8931,7 +8931,7 @@
         "src": "scripts/checks/gate-failclosed-enforcer.test.js",
         "dest": "scripts/checks/gate-failclosed-enforcer.test.js",
         "kind": "check_tool",
-        "sha256": "2e1602cab32d85e635554b58ad4cc6baf4d0978224f96d2815f8ee1a11d1dff4",
+        "sha256": "76fc00205ffb3fe425547fbbef3c66f02efe0dc238469ae3d2b33c3426c720a6",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
