@@ -18,9 +18,13 @@ const {
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const FIXTURES = path.join(REPO_ROOT, "runtime", "enforcer-fixtures", "SP-20260829-001");
 
-test("real registry loads, all 14 rows carry provenance + quote for manual dispositions", () => {
+test("real registry loads, all 16 rows carry provenance + quote for manual dispositions", () => {
+  // B6: updated 14 -> 16 to the runner's own actual: value (2 new contested
+  // rows added by B6: scripts/hooks/worktree-preflight.js:30 and
+  // scripts/hooks/version-bump-guard.js:183). Before this edit the runner
+  // printed `actual: 16, expected: 14` at this landed tree.
   const registry = loadRegistry(path.join(__dirname, "gate-failclosed-registry.json"));
-  assert.equal(registry.rows.length, 14);
+  assert.equal(registry.rows.length, 16);
   for (const row of registry.rows) {
     assert.equal(row.polarity_provenance, "manual-by-read");
     assert.ok(row.decision_semantics_quote && row.decision_semantics_quote.length > 10);
