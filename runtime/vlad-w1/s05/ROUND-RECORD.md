@@ -1336,9 +1336,13 @@ becomes a gap rather than a silent omission. **No count appears here; the count 
 7. **Item (3)'s structural asymmetry** — the lint still reports **15 derived paragraphs against 16
    canonical copies**; `TRANSFORM_DESCRIPTION_KEY` remains a non-derived entry. The **append gap** it
    created is closed (Rule 4b block-boundary, teeth-proven by Q3); **the asymmetry itself is not.**
-8. **The L29-36 "which the structural and forbidden-phrase rules check" clause** — **an S5-1 candidate
-   that NO lane graded as a sentence.** Q1's S07 tested only the pinning clause; Q2's F-1 attacked the
-   mechanism. **Surfaces only from the union.** Goes to S-06.
+8. **The L29-36 "which the structural and forbidden-phrase rules check" clause** — **GRADED, and it
+   fires S5-2(b), not S5-1** (β `4d8e9c05` §6; this entry previously called it an ungraded S5-1
+   candidate and that is corrected). **F-Q2I-1's position X — the A5 commentary — IS this clause:**
+   5/5 controls exit 1, 10/10 attacks exit 0, and the `## Asserted` span is skipped **by construction**
+   at lint L1583. **What stands unchanged is the provenance: it surfaces ONLY from the union** — Q1's
+   S07 tested only the pinning clause, Q2's F-1 attacked the mechanism, and no lane graded this clause
+   as a sentence. Goes to S-06.
 9. **`F-Q2I-2`'s target sentence** — `CUSTODY.md` L50-58, self-labelled *"CLOSED THIS ROUND
    (S-VLADW1-05, Task 4), execution-proven"*, falsified by the duplicate-paragraph bypass. **A closure
    claim about this round, falsified in this round.**
@@ -1372,7 +1376,12 @@ clothes.
 
 # β CHECKLIST ITEM 12 — THE FOUR-FILE DISCLOSURE, WITH CRITERION AND CAVEAT
 
-**Located at `CUSTODY.md` L216-227.** Both required parts are present in the shipped document.
+**ONE SPAN FOR ONE DISCLOSURE (β `4d8e9c05` §6): the disclosure is `CUSTODY.md` L216-311.** Entry 1
+above cites the same span. Within it: **selection criterion L216-221 · completeness caveat L223-226 ·
+the capped grep with its stated method L228-238 · four named misses L240-248.** A residual list is a
+citation instrument, so the sub-locations are named rather than a second competing span.
+
+Both required parts are present in the shipped document.
 
 **The four files, emitted:** `src/env-scrub.js` · `src/model-seam.js` · `driver/host-free-driver.js` ·
 `src/server-entry.js`.
