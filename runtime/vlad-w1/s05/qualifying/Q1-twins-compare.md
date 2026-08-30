@@ -50,6 +50,11 @@ union on the defect.**
 
 ## STATUS: CONTRADICTION-SETTLED — codex right, sentence FALSE
 
+**⚠️ ALL FOUR ROWS IN THIS SECTION ARE CONFIRMED AT THE PIN BY α** (msg `α-4e8a1c53`), applying rule
+(d)'s other-party check to each rather than only to the first. α's confirmation adds one mechanism the
+settling reads had not named: **`BOLD_LEAD_IN` (L678) requires the line to START with `**`**, which is
+the second half of why the `▪`-prefixed and `<b>`-wrapped forms in L7-11 and L171-174 derive nothing.
+
 **`L7-11`** — codex FALSE, twin TRUE. **Settled: codex right.** `▪ **Ceiling — …**` **is** a bolded
 Ceiling lead-in and derives nothing. **The twin verified the 15 paragraphs that EXIST; it never tested
 the "EVERY" closure against newly-added forms**, and its own note — *"the claim names a subset of what
@@ -97,12 +102,20 @@ function's **own return values** and do not parse the paragraph. **The lane quot
 graded against a version without it** — the misreading is the **lane's**, not the relay's (α verified
 the extraction carries it).
 
-**`L154-157`** *(S26, codex F-Q1-12)* — **β RULED: STANDS, on AP-17 rather than falsity**
-(`3e6d1a94` §4). The sentence is a **disjunction** and is logically true because its second disjunct is
-true — **so grading it a false sentence was wrong** — but it **is a residual disclosure whose first
-clause is inaccurate** (`bound-paragraph-missing` catches drift between the copies), and an inaccurate
-disclosure is a new finding. **Repair is to strike the first clause, not rewrite the sentence.**
-β recorded 0.84, its closest call.
+**`L154-157`** *(S26, codex F-Q1-12)* — **TWO SEPARATE THINGS, both recorded, per α's reconciliation.**
+
+- **Truth-value (ε's reading):** the sentence is a **disjunction** — *"can drift from each other, **or**
+  from what `getTokenAlphabetCoverage()` would actually report, without anything here noticing"* — and
+  is **logically TRUE**, because the second disjunct is true and the lane's own reason grants it.
+  **Grading it a false sentence was wrong**, and β withdrew its earlier grading on this argument
+  (`f2a08d51` §0).
+- **Finding status (β's ruling, `3e6d1a94` §4, 0.84 — its closest call):** the finding **STANDS on
+  AP-17**, not on falsity. S26 **is a residual disclosure**, and its first clause tells the reader that
+  drift between the copies goes unnoticed — which **`bound-paragraph-missing` catches**. An inaccurate
+  disclosure is a new finding whether or not the sentence is logically true.
+- **Repair: strike the first clause, not rewrite the sentence.**
+- **Note the shape:** the false half is falsified by **the binding mechanism this same round
+  strengthened** — a disclosure contradicted by its own sprint's fix.
 
 ## STATUS: DEFINITIONAL → β
 
@@ -111,6 +124,24 @@ disclosure is a new finding. **Repair is to strike the first clause, not rewrite
 - twin: *"`main()` (L2028) defaults `targetPath` to `DEFAULT_CUSTODY_PATH` (L86). It says nothing about how often anyone runs it."*
 - **Turns on whether *"checks this file on every run"* claims *every invocation targets this file* or
   *this file is what a run checks by default*.** Not graded here.
+
+**⚠️ THE DOCUMENT'S OWN USAGE, gathered for β by the method that settled S19 — it points at the twin:**
+`CUSTODY.md` **L9** uses the identical phrase two lines later:
+> *"The population of both is DERIVED from this file's own structure **on every run** rather than read
+> from a hand-kept list…"*
+
+There *"on every run"* unambiguously means **each execution of the lint** — it describes what the lint
+*does* per execution, not which file an invocation targets. **Same construction, same passage, two
+lines apart.** Every other `run` in the file is this sense or ordinary English (*"a leading run of
+markdown prefixes"*, *"whitespace runs collapsed"*, *"a capped grep run"*); **no usage anywhere denotes
+"an invocation that may target an arbitrary path."**
+
+**But the twin's STATED REASON does not bear on the disagreement.** It argued *"it says nothing about
+how often anyone runs it"* — **frequency**, where the axis in dispute is **targeting**. So the twin
+**reached the verdict the document's usage supports, for a reason that does not support it** — the
+inverse of S24, where the lane quoted the right bytes and reasoned wrong. **Both show that a verdict
+and its stated reason are separable, and only one of them is checkable against the file.**
+**The ruling remains β's.**
 
 ## STATUS: RANGE-MISALIGNED → reported honestly as unresolved
 
