@@ -1316,7 +1316,7 @@ becomes a gap rather than a silent omission. **No count appears here; the count 
 
 1. **The four-file disclosure** — `src/env-scrub.js`, `src/model-seam.js`, `driver/host-free-driver.js`,
    `src/server-entry.js`. **Disclosure-only per row 318**; the sprint does not repair them. Located at
-   `CUSTODY.md` **L216-311**. See item 12 below for its selection criterion and caveat.
+   `CUSTODY.md` **L216-227**. See item 12 below for its selection criterion and caveat.
 2. **Bundle O's drift surface** — the token-alphabet accounting is a **hand-maintained literal,
    duplicated by hand**, with no generation or binding path to `getTokenAlphabetCoverage()`. Created by
    **Task 5a taking Route B** (reword, not mechanize) under β's evidence gate `5a7d0e93` Q2. Located at
@@ -1376,10 +1376,10 @@ clothes.
 
 # β CHECKLIST ITEM 12 — THE FOUR-FILE DISCLOSURE, WITH CRITERION AND CAVEAT
 
-**ONE SPAN FOR ONE DISCLOSURE (β `4d8e9c05` §6): the disclosure is `CUSTODY.md` L216-311.** Entry 1
-above cites the same span. Within it: **selection criterion L216-221 · completeness caveat L223-226 ·
-the capped grep with its stated method L228-238 · four named misses L240-248.** A residual list is a
-citation instrument, so the sub-locations are named rather than a second competing span.
+**ONE SPAN FOR ONE DISCLOSURE (β `4d8e9c05` §6; span chosen by α): `CUSTODY.md` **L216-227**.** Entry 1
+above cites the same span. Within it: **selection criterion L216-221 · completeness caveat L223-226.**
+The surrounding block continues to L311 (capped grep L228-238, four named misses L240-248) but is not
+cited as this item's span — **a residual list is a citation instrument and carries one span per item.**
 
 Both required parts are present in the shipped document.
 
@@ -1439,17 +1439,44 @@ document — L223-226's completeness caveat, the capped grep with its stated met
 **ceiling on where to look**, two files as an explicit **LOWER BOUND**, four named misses. **The defect
 is the one sentence that generalizes a lane, not the disclosure.**
 
-### ⚠️ THIS RECORD'S OWN EARLIER READ WAS ALSO WRONG — twice, and both are the conductor's
+### ⚠️ TWO CONDUCTOR ERRORS — and β corrected the framing of one, in the conductor's favour
 
-1. **A three-lane population where four exist.** The earlier note that *"the security lane does NOT say
-   it"* is true of security-claude and **false of security-agy**, which names two of the four.
-2. **A `grep -A6` window reported as the field.** The conductor searched `evidence-qa.md`'s
-   `files_i_could_not_see` and reported *"none of the four"*. **That array runs L97-L113; the six-line
-   window reached ~L103; the sentence naming all four is at L112** — fifteen lines past the window.
-   The stated bound (*"I read the `files_i_could_not_see` arrays"*) was **true of the field named and
-   false of the field read.**
+**Stated as β `4d8e9c05` §3 and `2b7f6e34` require, because an inaccurate self-criticism is still an
+inaccuracy and this record is the wrong place for one:**
 
-**Third truncation-produced false absence by the conductor in this sprint**, after `find … | head -5`
-and the two-file grep. **The distinguishing feature this time: the right field was named, and the
-window cut inside it** — so naming the bound did not save the claim, because the bound described the
-intent rather than the query.
+1. **This record was ACCURATE on the qa lane and INCOMPLETE on the population.** Its qa citation at
+   **L39 correctly cites `what_i_could_not_assess`** — β checked and *"does not want a correction
+   carried against your record that the bytes do not support."* What is wrong is the **population**: it
+   worked **three lanes where four ran**, so *"the security lane does NOT say it"* is true of
+   security-claude and **false of security-agy**, which names two of the four.
+2. **A `grep -A6` window reported as a field — in the conductor's FRESH read this round, not in this
+   record.** Searching `evidence-qa.md`'s `files_i_could_not_see` and reporting *"none of the four"*:
+   that array runs **L97-L113**, the six-line window reached ~L103, and the sentence naming all four is
+   at **L112**. The stated bound (*"I read the `files_i_could_not_see` arrays"*) was **true of the field
+   named and false of the field read** — third truncation-produced false absence this sprint, after
+   `find … | head -5` and the two-file grep. **The distinguishing feature: the right field was named
+   and the window cut inside it**, so naming the bound did not save the claim, because the bound
+   described the intent rather than the query.
+
+### ⚠️ AND THE TWO READS ARE DIFFERENT FIELDS — the composite, per β `2b7f6e34`
+
+**Neither reading alone may be stated as "the lanes' fields."** The conductor read
+`files_i_could_not_see`; β read `evidence-qa.md` **L112, which sits in `what_i_could_not_assess`.**
+**Both are right**, and collapsing them would put a coverage fact at a coarser grain than its evidence
+— **this sprint's own class, inside the sentence correcting an instance of it.** The accurate
+composite, β's wording:
+
+> *"Across both disclosure fields of all four lanes, no file was named by every lane; `model-seam.js`
+> is named by exactly one lane in one field (qa's `what_i_could_not_assess`) and by none in any
+> `files_i_could_not_see` array; two lanes named none of the four in either field; and one of those two
+> verified named lines in three of them."*
+
+**Strength, stated once so the close neither overstates nor hedges:** the disclosure fields **do not
+support** *"EVERY GAUNTLET-2 LANE SAMPLED"*, and **security-claude's positive verified reads make it
+affirmatively FALSE in the "too much" direction** — it credits a lane with sampling where that lane
+read and cited. **False, not merely unsupported.**
+
+**Why the composite was reachable at all:** the conductor stated plainly that it had read **one field
+in three files** and that the agy figures were α's. **That bound is what let two partial reads compose
+into one accurate sentence instead of two competing summaries** — the same discipline that failed in
+error 2 above, working here.
