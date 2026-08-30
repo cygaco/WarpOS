@@ -92,15 +92,15 @@
       "site_id": "scripts/hooks/ownership-guard.js:144",
       "file": "scripts/hooks/ownership-guard.js",
       "line": 144,
-      "disposition": "defect",
+      "disposition": "not-a-defect",
       "polarity_provenance": "manual-by-read",
-      "decision_semantics_quote": "PreToolUse hook: blocks edits to files owned by other features. Reads FILE-OWNERSHIP from store.json to determine who owns what.",
+      "decision_semantics_quote": "this is the OUTER catch, wrapping the entire handler — including the initial `JSON.parse(input)` payload parse above and every other read in this function. This gate's own decision is \"block edits to files owned by other features\" — restrictive = block (exit 2). A malformed hook payload, a PATHS/paths.json read failure, or any other unexpected exception reaching here means ownership could not be verified — \"could not check\", never \"nothing to check\" (the absent-store skip and the no-owner-in-store warn path already exit 0 explicitly, above, outside this catch). Fail closed rather than silently allowing an edit whose ownership was never actually checked.",
       "instrument": "manual-by-read",
       "sha": "06669fbe",
-      "expected_finding": "present",
-      "tool_correlated": true,
-      "tool_finding_line": 146,
-      "b5_note": "NEW ROW (B5). This is the file's OUTER catch — `} catch {\\n  // Graceful failure\\n  process.exit(0);\\n}` (lines 144-147) — wrapping the entire stdin.on(\"end\") handler, including the initial `JSON.parse(input)` payload parse (line 36) and every subsequent read. Its own comment reads only \"// Graceful failure\"; there is no ENOENT/absent-input partition here the way the sibling catch at line 66 now has. This means a malformed hook payload, a PATHS/paths.json read failure, or any other unexpected exception anywhere in the handler is swallowed and the edit is silently ALLOWED (process.exit(0)) — exactly the payload-parse failure kind the audit module's own PROPERTY_TEXT names as a case that must terminate on the restrictive side. Untouched by B3 (B3's diff to this file only touched lines 63-70, the inner store-parse catch above); its old baseline site_id was ownership-guard.js:138 (untriaged, never a registry row before now) and shifted to :146 purely because B3's unrelated +8-line edit sits earlier in the same file. Read by hand at 06669fbe. Repair prepared as HELD commit B5-R, not part of this seal — see runtime/enforcement-sweep/2026-08-29/b5/ENVELOPE.md."
+      "expected_finding": "absent",
+      "tool_correlated": false,
+      "tool_finding_line": null,
+      "b5_note": "NEW ROW (B5), REPAIRED by B5-R (HELD commit, same worktree). At triage time (commit 128cf0af) this was the file's OUTER catch — `} catch {\\n  // Graceful failure\\n  process.exit(0);\\n}` (lines 144-147) — wrapping the entire stdin.on(\"end\") handler, including the initial JSON.parse(input) payload parse (line 36) and every subsequent read, with no ENOENT/absent-input partition the way the sibling catch at line 66 has. Untouched by B3 (B3's diff to this file only touched lines 63-70, the inner store-parse catch); its old baseline site_id was ownership-guard.js:138 (untriaged, never a registry row before B5) and shifted to :146 purely because B3's unrelated +8-line edit sits earlier in the same file. B5-R replaced the unconditional `process.exit(0)` with a stderr message plus unconditional `process.exit(2)`, the same shape as B3's repair to this file's other catch. Verified by execution: siteStillPermissive(cwd, {file, line:144}) -> {checked:true, permissive:false}. HELD pending a ruling on whether this repair belongs in this phase — see the B5-R commit body and runtime/enforcement-sweep/2026-08-29/b5/ENVELOPE.md."
     },
     {
       "site_id": "scripts/hooks/retro-presence-check.js:58",

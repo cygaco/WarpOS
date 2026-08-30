@@ -1,0 +1,22 @@
+{
+  "status": "ok",
+  "exitCode": 0,
+  "coverage": {
+    "detector_sha": "128cf0af",
+    "M": 78,
+    "N": 0,
+    "triaged_not_enforced": 3,
+    "K": 75,
+    "uncorrelated_registry_defects": 0,
+    "phrasing": "0 of the 78 sites the detector at 128cf0af enumerated are under enforcement, 75 untriaged (3 further baseline site(s) are triaged non-enforced [not-a-defect/not-a-gate]; 0 registry defect row(s) have no live-detector counterpart at this sha — see gate-failclosed-registry.json's tool_correlation_note)."
+  },
+  "regressed": [],
+  "checked_repaired_count": 7,
+  "new_entrants": [],
+  "live_files_scanned": 951,
+  "live_files_unreadable": [],
+  "live_detector_sha": "128cf0af",
+  "baseline_detector_sha": "128cf0af",
+  "baseline_site_count": 78,
+  "registry_row_count": 14
+}

@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "06669fbe7e1a933995e412a7c556be6d656f406e",
-  "installedAt": "2026-08-30T04:02:31.771Z",
+  "installedCommit": "128cf0af35a530de705a5d26e222b610383d35ea",
+  "installedAt": "2026-08-30T04:05:11.685Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4864,8 +4864,8 @@
       "dest": "scripts/hooks/ownership-guard.js",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0",
-      "currentHashAtInstall": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0",
+      "installedHash": "b47d6ebd936e12c8e62263f783de3474a4671e848310873b2146a1cf29e507e5",
+      "currentHashAtInstall": "b47d6ebd936e12c8e62263f783de3474a4671e848310873b2146a1cf29e507e5",
       "introducedIn": "0.0.0"
     },
     {
@@ -7344,8 +7344,8 @@
       "dest": "scripts/checks/gate-failclosed-baseline.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
-      "currentHashAtInstall": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
+      "installedHash": "a027d1e854854172c44ebc599b9fe3fa3e24a1d2d4ead914f3728582fa70b7a2",
+      "currentHashAtInstall": "a027d1e854854172c44ebc599b9fe3fa3e24a1d2d4ead914f3728582fa70b7a2",
       "introducedIn": "0.0.0"
     },
     {
@@ -7374,8 +7374,8 @@
       "dest": "scripts/checks/gate-failclosed-registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
-      "currentHashAtInstall": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
+      "installedHash": "179dde40b43d4297c9d1be49baef97ca07b0f775c232f32656dd3152b2270037",
+      "currentHashAtInstall": "179dde40b43d4297c9d1be49baef97ca07b0f775c232f32656dd3152b2270037",
       "introducedIn": "0.0.0"
     },
     {

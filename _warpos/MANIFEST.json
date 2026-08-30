@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T04:02:35.201Z",
+  "generatedAt": "2026-08-30T04:05:11.897Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -9280,8 +9280,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/hooks/ownership-guard.js",
-      "sha256": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0",
-      "installedSha": "4690286a2ed8fd28a7588afda4eb238043a16ac68865a5bcfc7fd91b0161cda0"
+      "sha256": "b47d6ebd936e12c8e62263f783de3474a4671e848310873b2146a1cf29e507e5",
+      "installedSha": "b47d6ebd936e12c8e62263f783de3474a4671e848310873b2146a1cf29e507e5"
     },
     "scripts/hooks/path-guard.js": {
       "owner": "framework",
@@ -11933,8 +11933,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-baseline.json",
-      "sha256": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
-      "installedSha": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707"
+      "sha256": "a027d1e854854172c44ebc599b9fe3fa3e24a1d2d4ead914f3728582fa70b7a2",
+      "installedSha": "a027d1e854854172c44ebc599b9fe3fa3e24a1d2d4ead914f3728582fa70b7a2"
     },
     "scripts/checks/gate-failclosed-enforcer.js": {
       "owner": "framework",
@@ -11954,8 +11954,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-registry.json",
-      "sha256": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
-      "installedSha": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce"
+      "sha256": "179dde40b43d4297c9d1be49baef97ca07b0f775c232f32656dd3152b2270037",
+      "installedSha": "179dde40b43d4297c9d1be49baef97ca07b0f775c232f32656dd3152b2270037"
     },
     "scripts/checks/greek-office-parity.js": {
       "owner": "framework",
@@ -25521,6 +25521,10 @@
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/events/requirements.jsonl": {
       "owner": "runtime",
       "managed": false
     },
