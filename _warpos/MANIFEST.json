@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T05:24:51.924Z",
+  "generatedAt": "2026-08-30T07:20:01.862Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "fc96b0add43f894939ef19435c6c26952136af605ef5677c0de4c4c7b94ae398",
-      "installedSha": "fc96b0add43f894939ef19435c6c26952136af605ef5677c0de4c4c7b94ae398"
+      "sha256": "4ec25cadcc8bc806c0199441c64e8ecf0e616e04e722a6cf0cd744f71fb3b9c8",
+      "installedSha": "4ec25cadcc8bc806c0199441c64e8ecf0e616e04e722a6cf0cd744f71fb3b9c8"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -16649,6 +16649,18 @@
       "managed": false
     },
     ".claude/project/sprint/sprints/_no-active-sprint/reasoning-auto-approval.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260830-001/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260830-001/INHERITED-OBLIGATIONS.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/SP-20260830-001/progress.yaml": {
       "owner": "runtime",
       "managed": false
     },
