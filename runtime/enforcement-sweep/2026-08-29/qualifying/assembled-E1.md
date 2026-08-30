@@ -2,6 +2,11 @@
 
 QUALIFYING_PIN: c88aac1d
 
+Content markers for that pin — verify these in your own checkout rather than trusting the sha:
+  - the fail-closed baseline's `purpose` field OPENS with: SUPERSEDED by `b6_correction_of_purpose`
+  - the fail-closed registry holds 16 rows, including two whose disposition is `contested`
+If either is absent, the tree you are standing in is not the tree this envelope names. Say so and stop.
+
 Repository root (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS
 Your checkout (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS (READ-ONLY; do not write, commit or mutate anything anywhere)
 Fixture directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001

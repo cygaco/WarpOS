@@ -25,7 +25,9 @@ would have left the tree dirty.
 The sprint ships a gate whose whole purpose is to refuse a class of defect. **An enforcer that has
 never been observed to refuse anything is asserted, not demonstrated.**
 
-**CONTROLS FIRST — before any mutation.** Run the gate unmutated and **record its exit code and output
+**CONTROLS FIRST — before any mutation.** The gate you are attacking is
+**`scripts/checks/gate-failclosed-enforcer.js`**, and that is the binary this step and every
+demonstration below refer to — no other. Run **it** unmutated and **record its exit code and output
 verbatim**. **If it does not exit 0, STOP and report that** — your demonstrations cannot be attributed
 against a gate that is already refusing, because every run afterwards returns the same refusal for a
 reason that is not yours. There is no green control and therefore no transition to show. Report the

@@ -2,11 +2,18 @@
 
 QUALIFYING_PIN: c88aac1d
 
+Content markers for that pin — verify these in your own checkout rather than trusting the sha:
+  - the fail-closed baseline's `purpose` field OPENS with: SUPERSEDED by `b6_correction_of_purpose`
+  - the fail-closed registry holds 16 rows, including two whose disposition is `contested`
+If either is absent, the tree you are standing in is not the tree this envelope names. Say so and stop.
+
 Repository root (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS
 Your checkout (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/worktrees/enf-e2-adversarial
 Fixture directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcer-fixtures/SP-20260829-001
 Sprint evidence directory (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/runtime/enforcement-sweep/2026-08-29
 Enforcement-debt ledger (absolute): /c/Users/Vlad/Desktop/Claude/Projects/WarpOS/.claude/project/memory/enforcement-debt.jsonl
+
+Environment note: In this checkout `node scripts/testsuite/enforce.js` exits 1. That is a property of this checkout, not of the artifacts you grade, and its cause is recorded outside this round — do not spend budget diagnosing it. Your control runs are on `scripts/checks/gate-failclosed-enforcer.js` and the three suites.
 
 The brief follows this envelope, verbatim and unedited. Where the brief says "the pin" it means
 QUALIFYING_PIN above. Where it says "your checkout" it means the absolute path above and no other.
@@ -40,7 +47,9 @@ would have left the tree dirty.
 The sprint ships a gate whose whole purpose is to refuse a class of defect. **An enforcer that has
 never been observed to refuse anything is asserted, not demonstrated.**
 
-**CONTROLS FIRST — before any mutation.** Run the gate unmutated and **record its exit code and output
+**CONTROLS FIRST — before any mutation.** The gate you are attacking is
+**`scripts/checks/gate-failclosed-enforcer.js`**, and that is the binary this step and every
+demonstration below refer to — no other. Run **it** unmutated and **record its exit code and output
 verbatim**. **If it does not exit 0, STOP and report that** — your demonstrations cannot be attributed
 against a gate that is already refusing, because every run afterwards returns the same refusal for a
 reason that is not yours. There is no green control and therefore no transition to show. Report the
