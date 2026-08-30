@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T03:31:29.786Z",
+  "generatedAt": "2026-08-30T04:02:35.201Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -4939,26 +4939,6 @@
       "class": "data"
     },
     "_docs/imports/roundtrip-skipped/roundtrip-skipped.answers.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "data"
-    },
-    "_docs/clones/.gitkeep": {
-      "owner": "project",
-      "managed": false,
-      "class": "data"
-    },
-    "_docs/clones/.provenance.json": {
-      "owner": "project",
-      "managed": false,
-      "class": "data"
-    },
-    "_docs/briefs/.gitkeep": {
-      "owner": "project",
-      "managed": false,
-      "class": "data"
-    },
-    "_docs/briefs/.provenance.json": {
       "owner": "project",
       "managed": false,
       "class": "data"
@@ -11953,8 +11933,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-baseline.json",
-      "sha256": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
-      "installedSha": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62"
+      "sha256": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
+      "installedSha": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707"
     },
     "scripts/checks/gate-failclosed-enforcer.js": {
       "owner": "framework",
@@ -11974,8 +11954,8 @@
       "owner": "framework",
       "managed": true,
       "source": "scripts/checks/gate-failclosed-registry.json",
-      "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
-      "installedSha": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42"
+      "sha256": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
+      "installedSha": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce"
     },
     "scripts/checks/greek-office-parity.js": {
       "owner": "framework",
@@ -15084,10 +15064,6 @@
       "source": null,
       "sha256": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a",
       "installedSha": "6952f8b5ed7d9e7214351fa3caf865315f810b4b6161d1601fa5162ba56ff61a"
-    },
-    ".claude/.agent-result-hashes.json": {
-      "owner": "runtime",
-      "managed": false
     },
     ".claude/.last-checkpoint": {
       "owner": "runtime",
@@ -25444,38 +25420,6 @@
       "sha256": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1",
       "installedSha": "264e46f1b55b145cdcc54bf8c91294f060cd297ee367e0d28a275a91e5b0bdc1"
     },
-    ".claude/project/memory/beta-honesty-waivers.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/enforcement-debt.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/enforcement-debt.jsonl.bak-011748": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/learnings.jsonl.bak-20260829-sleepdeep": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/recurring-issues.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/systems.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/memory/traces.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/.stale.json": {
       "owner": "runtime",
       "managed": false
@@ -25572,27 +25516,11 @@
       "owner": "runtime",
       "managed": false
     },
-    ".claude/project/maps/tools.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
     ".claude/project/maps/tools.md": {
       "owner": "runtime",
       "managed": false
     },
     ".claude/project/events/events.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/events.jsonl.1": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/manager-consult.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/events/requirements.jsonl": {
       "owner": "runtime",
       "managed": false
     },
@@ -25609,14 +25537,6 @@
       "managed": false
     },
     ".claude/project/decisions/decision-ledger.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/decisions/provider-trace.jsonl": {
-      "owner": "runtime",
-      "managed": false
-    },
-    ".claude/project/builds/builder-fixture-57d0677ea6/transaction.json": {
       "owner": "runtime",
       "managed": false
     },
@@ -26011,12 +25931,6 @@
       "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
     },
     ".claude/dreams/2026-07-30.md": {
-      "owner": "project",
-      "managed": false,
-      "class": "guide",
-      "_note": "Operator's dream journal — written by /sleep:* skills + manual edits. Project-owned; never overwritten."
-    },
-    ".claude/dreams/2026-08-29.md": {
       "owner": "project",
       "managed": false,
       "class": "guide",
@@ -28672,11 +28586,6 @@
       "sha256": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012",
       "installedSha": "b835148fc6d199a008a125cd18b23e714090708105d72554a3dc430b7bf21012"
     },
-    ".claude/agents/president/_system/gamma/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
-    },
     ".claude/agents/president/_system/beta/beta-source-data.md": {
       "owner": "framework",
       "managed": true,
@@ -28684,11 +28593,6 @@
       "kind": "md",
       "sha256": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f",
       "installedSha": "0ae9c868c8edb0933cef6bb88214b3080c13cdb126368d7243c990f62db3f60f"
-    },
-    ".claude/agents/president/_system/beta/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/beta/judgement-model-recommendations-archive.md": {
       "owner": "framework",
@@ -28713,11 +28617,6 @@
       "kind": "md",
       "sha256": "14ba97a85cae20379e1833f80d3ec4e8cac8d3e7263ca8efa69f4d984829fb6f",
       "installedSha": "14ba97a85cae20379e1833f80d3ec4e8cac8d3e7263ca8efa69f4d984829fb6f"
-    },
-    ".claude/agents/president/_system/alpha/events.jsonl": {
-      "owner": "runtime",
-      "managed": false,
-      "kind": "jsonl"
     },
     ".claude/agents/president/_system/adhoc/protocol.md": {
       "owner": "framework",

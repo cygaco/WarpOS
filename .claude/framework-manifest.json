@@ -7,7 +7,7 @@
     "skill": 237,
     "kernel": 42,
     "reference": 30,
-    "maps_baseline": 26,
+    "maps_baseline": 25,
     "hook": 83,
     "hook_lib": 25,
     "tool": 2,
@@ -69,7 +69,7 @@
     "module_scope": 1,
     "framework_doc": 6
   },
-  "total": 1744,
+  "total": 1743,
   "assets": {
     "agent": [
       {
@@ -5457,18 +5457,6 @@
         "replaces": null
       },
       {
-        "id": "maps_baseline.system-coherence.graph.json",
-        "src": ".claude/project/maps/system-coherence.graph.json",
-        "dest": ".claude/project/maps/system-coherence.graph.json",
-        "kind": "maps_baseline",
-        "sha256": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-        "owner": "generated",
-        "mergeStrategy": "regenerate",
-        "introducedIn": "0.0.0",
-        "removedIn": null,
-        "replaces": null
-      },
-      {
         "id": "maps_baseline.systems-inventory.jsonl",
         "src": ".claude/project/maps/systems-inventory.jsonl",
         "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -8907,7 +8895,7 @@
         "src": "scripts/checks/gate-failclosed-baseline.json",
         "dest": "scripts/checks/gate-failclosed-baseline.json",
         "kind": "check_tool",
-        "sha256": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
+        "sha256": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",
@@ -8943,7 +8931,7 @@
         "src": "scripts/checks/gate-failclosed-registry.json",
         "dest": "scripts/checks/gate-failclosed-registry.json",
         "kind": "check_tool",
-        "sha256": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
+        "sha256": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
         "owner": "framework",
         "mergeStrategy": "replace_if_unmodified",
         "introducedIn": "0.0.0",

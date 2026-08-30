@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "1960c6709eb85ce3a9fa2ffdfe5e990e71627149",
-  "installedAt": "2026-08-30T03:31:29.562Z",
+  "installedCommit": "06669fbe7e1a933995e412a7c556be6d656f406e",
+  "installedAt": "2026-08-30T04:02:31.771Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -4489,16 +4489,6 @@
       "introducedIn": "0.0.0"
     },
     {
-      "id": "maps_baseline.system-coherence.graph.json",
-      "kind": "maps_baseline",
-      "dest": ".claude/project/maps/system-coherence.graph.json",
-      "owner": "generated",
-      "mergeStrategy": "regenerate",
-      "installedHash": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-      "currentHashAtInstall": "668670a3dcf435ac422e8a7637136401179e1ece2992cb175b479ef31cb42fb8",
-      "introducedIn": "0.0.0"
-    },
-    {
       "id": "maps_baseline.systems-inventory.jsonl",
       "kind": "maps_baseline",
       "dest": ".claude/project/maps/systems-inventory.jsonl",
@@ -7354,8 +7344,8 @@
       "dest": "scripts/checks/gate-failclosed-baseline.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
-      "currentHashAtInstall": "d3d3257acba3083451d7431f26ce16fcf6906f5ab729afbaf9314b91f0b2da62",
+      "installedHash": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
+      "currentHashAtInstall": "dad1a1275030974a8dd07d79d6b0ffb7e3a24259241210711f487b73588f9707",
       "introducedIn": "0.0.0"
     },
     {
@@ -7384,8 +7374,8 @@
       "dest": "scripts/checks/gate-failclosed-registry.json",
       "owner": "framework",
       "mergeStrategy": "replace_if_unmodified",
-      "installedHash": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
-      "currentHashAtInstall": "c38bc897016d51ffd588953a317787c0b690059ef8403f2cc1c1856fb919ad42",
+      "installedHash": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
+      "currentHashAtInstall": "4765944b00e137f4022e7763cf431480c0c13e86cfd67563c1f23466228187ce",
       "introducedIn": "0.0.0"
     },
     {
