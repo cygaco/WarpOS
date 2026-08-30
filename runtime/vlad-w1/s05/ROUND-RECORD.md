@@ -1393,3 +1393,54 @@ clothes.
 
 **β's `spawn-shim.js` / `bootstrap.js` hits remain a LOWER BOUND**, per checklist item 12 — they
 establish that other files carry the same class of prose; **they do not enumerate which files do.**
+
+## ⚠️ AND THE SELECTION CRITERION ITSELF IS FALSE — β `9f4b2a17`, resolved at source
+
+**`CUSTODY.md` L218-219 fails in BOTH directions**, and it is the **eleventh** S5-2(b) hit. There are
+**FOUR** S-04 gauntlet-2 evidence files, not three. Per lane, from their own coverage fields:
+
+| lane | what it actually says about the four files |
+|---|---|
+| **qa** | L112 — names **all four**: *"…carry substantial custody prose in comments that I **sampled rather than read end to end**."* |
+| **backend** | names **two**: `src/env-scrub.js` (*"header comments and greps only"*), `src/server-entry.js` (*"greps and the RF-7-adjacent region only"*). |
+| **security-agy** | names **two, and NOT as sampling**: `src/server-entry.js` and `driver/host-free-driver.js` — *"**entire file**"*, i.e. **never opened**. |
+| **security-claude** | names **none** in its coverage fields; its mentions are **verified reads** of named lines in three of the four. |
+
+- **Too much, for one lane:** security-claude did not *sample* them — it **verified named lines**.
+- **Too little, for another:** security-agy **never opened** two of them; *"sampled"* credits contact
+  that did not occur.
+- **Only qa names all four.** **One lane's disclosure generalized to every lane**, in a sentence whose
+  own words say it is *"a claim about what the lanes DID."*
+
+**Fourth instance of this sprint's class, in the sentence written to prevent it — and this record called
+the shot in advance** (L67-69): *"bundle P task 5's disclosure must name what each lane actually said,
+not 'the lanes said'. A disclosure about un-audited files that itself over-claims its evidence would be
+the class a third time in the same sprint."* **It shipped saying "EVERY … LANE."**
+
+**Second, independent defect in the same sentence:** *"gauntlet-2"* is an **unanchored deictic on a
+shipped surface** — it never names which sprint's gauntlet-2, and a reader of the installed package
+cannot resolve it. Under NO STACKING it is one sentence firing one criterion; the anchor is the
+**repair's** second requirement, not a second hit.
+
+**Repair (a rewrite, not a new investigation — the artifacts already hold it):** replace the quantifier
+with the **emitted per-lane facts, anchored to S-VLADW1-04**, exactly as tabulated above.
+
+**Everything else in that block holds** and is, in β's words, the best disclosure writing in the
+document — L223-226's completeness caveat, the capped grep with its stated method, 14-of-16 as a
+**ceiling on where to look**, two files as an explicit **LOWER BOUND**, four named misses. **The defect
+is the one sentence that generalizes a lane, not the disclosure.**
+
+### ⚠️ THIS RECORD'S OWN EARLIER READ WAS ALSO WRONG — twice, and both are the conductor's
+
+1. **A three-lane population where four exist.** The earlier note that *"the security lane does NOT say
+   it"* is true of security-claude and **false of security-agy**, which names two of the four.
+2. **A `grep -A6` window reported as the field.** The conductor searched `evidence-qa.md`'s
+   `files_i_could_not_see` and reported *"none of the four"*. **That array runs L97-L113; the six-line
+   window reached ~L103; the sentence naming all four is at L112** — fifteen lines past the window.
+   The stated bound (*"I read the `files_i_could_not_see` arrays"*) was **true of the field named and
+   false of the field read.**
+
+**Third truncation-produced false absence by the conductor in this sprint**, after `find … | head -5`
+and the two-file grep. **The distinguishing feature this time: the right field was named, and the
+window cut inside it** — so naming the bound did not save the claim, because the bound described the
+intent rather than the query.
