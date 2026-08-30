@@ -309,8 +309,16 @@ attacked the mechanism rather than grading the prose. It exists only in the unio
 **⚠️ THE HEADLINE NUMBER IS WITHDRAWN. This file emitted fourteen lane-graded-false entries; β has
 since adjudicated four of them.** The correct form is: **fourteen graded false by the lane; three
 over-graded on β's read (F-Q1-09/S19, F-Q1-11/S24, F-Q1-14/S31); one standing on revised grounds
-(F-Q1-12/S26, on AP-17 rather than falsity); at most eleven pending β's Part B mapping.** No bare
-number belongs in any record line.
+(F-Q1-12/S26, on AP-17 rather than falsity).** **No number is carried.**
+
+**"At most eleven" is withdrawn from this file** (it stood here until α flagged it). β withdrew
+*"eleven"* at `1b8f4a20` as a **METHOD error, not an arithmetic one**: it was obtained by subtracting
+over-gradings from **the codex lane's fourteen**, which silently makes **one lane's set the baseline
+and the other an adjustment to it** — and the twin's own false set is four. The union is built item by
+item and can land outside either lane's count. **The honest forms are:** *"the two Q1 lanes agree on
+four items and disagree on nine; of the nine, four settled codex-right, two settled as codex
+over-gradings, three are definitional and one was mis-populated"*, or **floor eight / ceiling twelve
+with no number carried**. β's Part B fills the slot.
 
 1. **The four adjudications are annotated in place above, beside the lane's own grade** — the lane's
    verdict and the adjudication side by side, neither deleted.

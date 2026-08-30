@@ -143,12 +143,36 @@ inverse of S24, where the lane quoted the right bytes and reasoned wrong. **Both
 and its stated reason are separable, and only one of them is checkable against the file.**
 **The ruling remains β's.**
 
-## STATUS: RANGE-MISALIGNED → reported honestly as unresolved
+## STATUS: CORRECTED — the "range-misaligned" row was TWO items, and NEITHER is a contradiction
 
-**`L80-83` (codex) vs `L83-90` (twin)** — **the spans do not align and I did not force a verdict.**
-The lanes may have graded **different sentences**, in which case this is a **union, not a conflict**.
-Recorded as unresolved rather than adjudicated, because manufacturing a contradiction to resolve is
-the failure this file exists to avoid.
+**β `7c1e4d92` §3 corrected my method here and was right about the method: I compared the twin's entry
+against the codex lane's FALSE list only — the wrong population.** Re-run against **both** lists:
+
+**`L80-83`** — **codex FALSE (F-Q1-06); the twin has NO entry.** → a **SINGLE-LANE FINDING**, not a
+misalignment and not a contradiction. It stands on the codex lane alone.
+
+**`L83-90`** — **⚠️ β's conclusion here is INVERTED, and the bytes correct it.** β wrote *"codex TRUE,
+twin FALSE → rule (d) FIRES. The fifth contradiction."* **The twin graded it TRUE.** Verbatim:
+> *"**L83–L90** (F2, the `EMPHASIS_RUN` widening) — 'it is closed now, by widening `EMPHASIS_RUN` from
+> `[*_]` to ``[*_`~]`` — the same four-character alphabet fold (8) (`EMPHASIS_FOLD_PATTERN`) already
+> used…' — **true.** `EMPHASIS_RUN` and `EMPHASIS_FOLD_PATTERN` are the same four-character alphabet.
+> **Probed directly:** a backtick-emphasised and a tilde-emphasised lead-in both return the candidate
+> `"Ceiling"` from `resemblesBindableLeadIn`; the bare unemphasised `Ceiling — the claim.` returns
+> `null`. The `Q-1 CLOSED (F2, this round …)` test exists and passes."*
+
+`L83-90` is also in **the codex lane's graded-TRUE list** (`Q1-codex-findings.md` L33). **So both lanes
+graded it TRUE. It is an AGREEMENT. Rule (d) does NOT fire, and there is no fifth contradiction.**
+
+**The twin added a qualification it explicitly declined to call a defect**, which is worth carrying:
+> *"a third notion of markdown emphasis does exist in the file — `BOLD_LEAD_IN` (`/^\*\*…\*\*/`,
+> asterisk-only) — but item (4) at L193-198 names it explicitly as a separate mechanism answering a
+> separate question, so it is not held 'under one name'. **I read that as disclosed, not drifted.**"*
+
+**This matters beyond bookkeeping:** `L83-90` is **sprint-authored this round** and asserts *"it is
+closed now."* **Two independent lanes agree the assertion is true**, and β's own settled reading of
+`EMPHASIS_FOLD_PATTERN` (L351) and `EMPHASIS_RUN` (L838) as the same four-character alphabet agrees
+with both. **A closure claim this round made, and it holds** — the counterpart to `L50-58`, which is
+also sprint-authored, also claims closure, and does not.
 
 ---
 
