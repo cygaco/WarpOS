@@ -1110,3 +1110,66 @@ transform-routing question the sprint scoped it to.**
 engine-lane are pre-existing untracked `.claude` session artifacts — Q2's "target checkout remained
 untouched" holds). Q2's reproduction artifacts preserved at `runtime/scratch-q2-custody-417147d/`.
 Both evidence files carry a marked redaction of machine paths and nothing else.
+
+---
+
+# ⚠️ CORRECTIONS TO THE SECTION ABOVE — three, all α's, all accepted
+
+**1. "QUALIFYING ROUND CLOSED" was PREMATURE and is withdrawn.** When I wrote it, α's two in-process
+lanes were still out and **my lane table omitted both of them.** A round is not closed while lanes are
+in flight, and declaring it closed from an incomplete table is the same shape as reading a rollup
+instead of the lanes. **The round closes when every lane has returned or been honestly declared dead,
+and that is α's call to confirm, not mine to announce.**
+
+**2. "The round has FAILED S5-1 and S5-2" is MY CHARACTERISATION, not a finding.** The round record
+carries **lane verdicts**; the criterion mapping is **β's at the close, per finding, under NO
+STACKING** (row 369 §4). A lane's FAIL is **evidence, not an adjudication** — the same distinction as
+"accepted is not graded." Direction not disputed; the wording was mine to fix.
+
+**3. "Both checkouts pristine" is REPLACED.** The accurate form: **tracked tree clean; 65 untracked
+hook artifacts under `.claude/` (62 under `.claude/runtime`), mtimes 2026-08-28 15:38-18:31 —
+yesterday's vlad session, predating this round, not lane writes.** Never "pristine" bare. I verified 0
+tracked modifications and 0 changes under `engine/`; the bare word overstated what I measured.
+
+## THE LANE TABLE, complete — verdicts only, no criterion mapping
+
+| lane | id | route | ok | elapsed | token (read from the lane's own raw file) |
+|---|---|---|---|---|---|
+| Q1 claim-truth | `d-mtf67lqj-8cad4634` | codex | true | 831585 ms | **`{"verdict":"fail"}`** |
+| Q2 adversarial | `d-mtf6pwa2-69d952e6` | codex | true | 530600 ms | **`{"verdict":"fail"}`** |
+| Q2 adversarial | `d-mtf6zdid-a5ed5f0c` | in-process (α) | true | ~11.4 min | **`{"verdict":"fail"}`** |
+| Q3 teeth | `d-mtf5rc6t-08cc5b00` | in-process (ε) | true | 429838 ms | **`{"verdict":"pass"}`** |
+| Q1 claim-truth | α's in-process spawn | in-process (α) | — | out since 02:17Z | **pending** |
+
+**Composition change and its causes, recorded:** Q3 went in-process because `codex exec` runs
+`--sandbox workspace-write` with `cwd: AGENT_ROOT`, putting its checkout outside the writable
+workspace (caught pre-fire). Q1/Q2 gained in-process twins because of the **ED-392 false breaker trip**
+plus the **540 s clamp**. Codex Q1/Q2 were **added inside the round**, never after.
+
+**Attempt boundary (β `7b2f4e91` §0), recorded verbatim in substance:** none of the three earlier
+deaths is a verdict — **no output, no result, no qualifying round.** Re-firing a lane that never
+returned is **not attempt 2**; the one-attempt rule counts qualifying **rounds**.
+
+**Codex-death rider (β `a6f31d84` §1), live and recorded BEFORE any codex lane fired:** should a codex
+lane die, its recorded cause is **unreliable** — Q1's brief contains "quotations", so `classifyQuotaFailure`'s
+substring match will label its death a quota event whatever killed it. **Carry any such death as
+cause-unknown with the classifier's label explicitly marked untrustworthy (ED-392).**
+
+**Fresh-spawn establishment (β `c8d5f2a1` §2):** the *"read `subagent_type` back from the completion
+record"* check **was NOT performed — no such field exists** (ED-393; `record-inprocess` derives `role`
+and `model` from the registry route and never captures `subagent_type`). Fresh-spawn was established
+instead by **ε's falsification test** (Q3 independently rediscovered the `node_modules` blocker and
+solved it with a stub rather than the junction ε had already built) **and by α's read of the harness
+transcript** (`subagent_type: general-purpose`, `model: sonnet`, non-fork). Per β `d92b4c17` §1:
+**identity is sourced from the harness, which stamps it, not from the record, which derives it from its
+own arguments.**
+
+**Q1's ping, forward-looking fact (β `c05e3a71` §2):** prompt verbatim
+`Reply with exactly this and nothing else: PING-OK`, 50 bytes, **0 hits across `quota`, `rate limit`,
+`429`, `too many requests`, `ratelimit`, `rate_limit`, `resource_exhausted`**. Wrapper-routed and it
+**succeeded**, so the catch-path classifier never ran — the clean text means a **future** failure of the
+same ping would not be misclassified; it is not validation of the run that passed.
+
+**Breaker:** expired by **TTL at 02:07:35Z**; **no `clear()` call was made.** Q2's two earlier deaths
+(97 s, 314 s) stay **cause-unknown** regardless of the ping — the head cap destroyed whatever text would
+have explained them.
