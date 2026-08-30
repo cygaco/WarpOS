@@ -42,3 +42,14 @@ Written by α at 2026-08-30T05:46:07Z.
 - Codex's own session file (id `01a05132-8548-7d91-bc23-388193013fbc`): copied verbatim to `out-E1.rollout.jsonl` (1516758 B, 466 events; NOT committed — size; path + size recorded here). First event 05:44:20.710Z, last 06:09:17.263Z (3 s before the kill). Derived, marked timeline: `out-E1.rollout-DERIVED-timeline.md`.
 - E3 (`a34e63055bcb9f731`, in-process, resumed once after a 20-turn ceiling): completed ~06:09Z per the harness notification; its `record-inprocess` row and `out-E3.raw.md` are ε's and pending — its `started_at` is appended here when the record exists.
 - Ordering unchanged: row 386 `03:43:05.000Z` < E1 `05:44:20.417Z` < E2 `05:48:31.703Z` < E3 (pending).
+
+## E3 — terminal, appended 2026-08-30T06:21:04.000Z (α), from ε's measurements (ε's; α verifies the files below)
+
+| lane | dispatch_id | harness agentId | role as spawned | leg 1 started | 20-turn ceiling → resumed | final message | wall-clock | raw file |
+|---|---|---|---|---|---|---|---|---|
+| E3 | **none — `record-inprocess` REFUSED** | `a34e63055bcb9f731` | `test-runner` (registry: a subprocess route → the in-process recorder refused to mint a row; ε did not re-run under another role) | `2026-08-30T06:02:33.770Z` | `06:05:20.174Z` | `06:08:39.367Z` | 365597 ms across two legs | `out-E3.raw.md` (token `{"verdict":"fail"}`) |
+
+- The refusal, verbatim (ε): *"record-inprocess is for in-process routes only (CLAUDE_AGENT / AGENT_TOOL); role 'test-runner' resolves to route 'claude-raw', a CLI/subprocess role — dispatch it via node scripts/dispatch-agent.js test-runner <prompt-file> (or spawnAgent)…"* — the runtime failing closed against its own conductor's dispatch error. E3 has no `dispatch_id`; its identity is the harness transcript (ED-393).
+- Containment: FALSE by arithmetic (prompt legs 1863 B / 2352 B < `assembled-E3.md` 10693 B) — ED-407 instance 2. E2's transcript is 0 B — instance 3. **Only E1's containment holds** (ledger `prompt_digest` = `assembled-E1.md`).
+- Ordering: row 386 `03:43:05.000Z` < E1 `05:44:20.417Z` < E2 `05:48:31.703Z` < E3 `06:02:33.770Z`. The freeze precedes every lane start.
+- E1 resume ordered under β 1d7f3a86 (row 430): a continuation of `d-mtfdwwch-491effca`, transport only; its id/started_at appended here when it exists; the close reports E1 as one lane across two dispatches.
