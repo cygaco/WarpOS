@@ -816,3 +816,70 @@ under the right-sizing floor. Awaiting β's final clear.
    went green; the loss was *conservative*, which is why nobody noticed. Caught by opening the merge
    lines **to quote them for the ED** — the quote refuted the ED being written. Remedy: all three
    qualifying briefs now require a machine-readable `{"verdict":"…"}` first line.
+
+---
+
+# CONDUCTOR VERIFICATION OF THE FIX — seeded falsifiers, OBSERVED at both commits
+
+β row 349 §4: *"0 violations" is a COHERENCE check, not VALIDATION.* Routing the forbidden-claim
+family through the transform **widens** what matches, so zero violations on the same document is
+equally consistent with a clean document, the routing not taking effect, or the matches being
+suppressed. **The evidence is the seeded bypass.** Run in a THIRD scratch worktree — never either
+lane's checkout — with `CUSTODY.md` restored byte-identically after every run (asserted by the
+harness, not assumed).
+
+## F1 — one sentence, two forms that render identically, four U+200B apart
+
+| | control (plain ASCII) | attack (4× U+200B) |
+|---|---|---|
+| **`6c64021` before** | exit 1, 4 violations | **exit 0, 0 violations — evaded** |
+| **`417147d` after** | exit 1, 4 violations | **exit 1, 4 violations — caught** |
+
+Rules named in both catches: `worded-rollup-conflation`, `out-of-section-forbidden-claim`.
+**The control is what makes this evidence** — it establishes that the *obfuscation*, not the phrase,
+is what changed status.
+
+## F2 — the same false Ceiling claim behind four lead-in shapes
+
+| shape | `6c64021` | `417147d` |
+|---|---|---|
+| `**bold**` (control) | exit 1 `unbound-paragraph` | exit 1 `unbound-paragraph` |
+| `` `code` `` | **exit 0** | **exit 1 `unbindable-paragraph-shape`** |
+| `~~strike~~` | **exit 0** | **exit 1 `unbindable-paragraph-shape`** |
+| `<b>tag</b>` | exit 0 | **exit 0 — still passes** |
+
+Backtick and tilde are **refused by name** now and were silently skipped before. **The `<b>` residual
+is real** — it still passes, exactly as the builder disclosed rather than claimed closed. Its restraint
+in declining to claim an unbuilt mechanism now has independent confirmation.
+
+## ⚠️ AN INSTRUMENT DEFECT, caught before it became a result
+
+The first F1 run reported **exit=1 for BOTH forms** — which reads as *"both caught, F1 fixed."*
+Dumping the raw output before believing it showed **`ERR_MODULE_NOT_FOUND`**: a fresh `git worktree`
+has no `node_modules`, so both exit codes were **infrastructure failure, not verdicts.** Reporting
+that as the falsifier would have hand-signed a green from a gate that never ran — inside the round
+verifying a sprint about exactly that. Fixed by junctioning `node_modules`; the F2 harness carries an
+explicit infrastructure-failure detector so the confusion cannot recur silently.
+**Gate-red-is-infra cuts both ways: infra can read as GREEN too.**
+
+## Inventory vs the conductor's census — it DISAGREES with me, and it is right
+
+The inventory classifies **32 top-level functions**; my census said **30 functions / 5 transform call
+sites**. My derivation rule was `grep '^\(export \)\?function'`, whose *stated* blind spots — arrow
+functions, methods, nested functions — are exactly where a 30-vs-32 gap lives. **The inventory
+supersedes the census**, as the brief instructed the builder it should.
+
+## ED-364 ordering — ATTESTED, NOT VERIFIED
+
+The builder's envelope carries a *"What I did, in order"* list and records attacks run before fixes.
+**That is its own account.** One commit, no intermediate timestamps, mutation artifacts restored —
+nothing independent fixes 5a/5b's order relative to the attacks. **It enters the close as
+attested-not-verified.** Splitting into two dispatches would have made it structurally provable from
+timestamps; collapsing to one traded that for a narration. (β `6f19c407` §2.)
+
+## Self-disclosed by the builder, unamended
+
+Its commit message reads *"exits 0 against the real, **mutated** CUSTODY.md"* where it should read
+**unmutated**. The gate was measured correctly; only the wording is wrong. Recorded here rather than
+amended, because `417147d` is the qualifying pin already written into both checkouts and all three
+lane envelopes, and re-pinning to fix one word trades real risk for cosmetic gain.
