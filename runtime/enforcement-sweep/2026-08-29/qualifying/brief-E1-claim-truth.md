@@ -28,6 +28,9 @@ report files.
 - the **hook files** the sprint repaired, under `scripts/hooks/`
 - the **enforcement-debt rows this sprint authored** (in the project's enforcement-debt ledger) —
   their `policy`, `source` and `note` fields are shipped sentences like any other
+- the sprint's **close-time residual register** — the artifact the sprint emits to carry its residuals
+  forward, under the sprint's evidence directory. Its entries and its stated derivation rule are
+  shipped claims, and its claim to completeness is a coverage claim like any other
 
 ## YOUR TASK
 

@@ -9,6 +9,21 @@ envelope as `QUALIFYING_PIN`, and every result you record carries that commit in
 beside the result.** If the envelope does not state a `QUALIFYING_PIN`, say so and stop: an obligation
 anchored to "the pin" without a commit is the exact shape that failed on the sibling sprint.
 
+**Three more lines, and they close the ways this obligation is usually defeated:**
+
+1. **Verify the pin; do not assume it.** Run `git rev-parse HEAD` in your checkout. **If it does not
+   equal `QUALIFYING_PIN`, say so and stop** — you are standing on a different commit from the one this
+   obligation is anchored to. An absent pin and a *wrong* pin are different failures and the
+   stop-condition above only catches the first; on the sibling sprint the fixtures were not un-pinned,
+   they were pinned to the wrong commit.
+2. **Record the commit you MEASURED, never the one you were told.** The commit written beside each
+   result is the output of your own `rev-parse`, not the envelope's literal. If the two ever diverge,
+   a measured value makes the divergence visible afterwards; a copied one hides it forever.
+3. **Report skipped tests explicitly as `not-reached`.** A guard that cannot be assessed on this lane's
+   platform is an **unverified** guard, never a passing one. The suite you are about to run exits 0
+   with a skip inside it — **do not inherit that convention.** A skipped test is a test of unknown
+   teeth, which is precisely what this lane exists to measure.
+
 ## THE TWO QUESTIONS, and the second is the one that is usually skipped
 
 **A. EXISTENCE.** Every input that was executed during this sprint's diagnostic work and shown to fool
