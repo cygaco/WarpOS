@@ -1,1 +1,33 @@
-CORRECTION (beta row 375 §7 / row 378 (b); S5-1 reaches commit messages): this commit's message and its round-record table name THREE lanes (Q1 codex fail, Q2 codex fail, Q3 pass) and declare the qualifying round closed. At the time of this commit the round had FIVE lanes — Q2 in-process d-mtf6zdid-a5ed5f0c (returned FAIL) was omitted and Q1 in-process d-mtf79ol1-93a9e0e4 was still out; the round was NOT closed. Corrected record: 68c7fefb (withdraws the premature close; five-lane table) and 0a3fd916 (all five lanes in; the Q1-twins contradiction settled at source; 'fourteen' withdrawn). The direction of the outcome was unaffected (any-fail-holds had already triggered); the count-completeness defect is the correction. Note added by alpha 2026-08-30 per the git-notes findability rider (row 353 §4).
+CORRECTION (conductor, 2026-08-30) — this commit's round-record content carries a
+THREE-LANE table and a premature closure declaration. Both are superseded.
+
+1. THE ROUND WAS NOT CLOSED when this was written. Two in-process lanes were
+   outstanding or unlisted. The qualifying round has FIVE lanes:
+     Q1 codex        d-mtf67lqj-8cad4634   FAIL
+     Q1 in-process   d-mtf79ol1-93a9e0e4   FAIL
+     Q2 codex        d-mtf6pwa2-69d952e6   FAIL
+     Q2 in-process   d-mtf6zdid-a5ed5f0c   FAIL
+     Q3 in-process   d-mtf5rc6t-08cc5b00   PASS
+   A close declared on an incomplete lane table is the count-completeness defect
+   this round exists to grade, appearing in the round's own closing act - and the
+   more insidious form, because the conclusion (NO-RELEASE) happened to be right.
+   Nobody checks the arithmetic of a tally that reaches the expected answer.
+
+2. "THE ROUND HAS FAILED S5-1 AND S5-2" was the conductor's characterisation, not
+   a finding. The record carries LANE VERDICTS; criterion mapping is beta's at the
+   close, per finding, under NO STACKING. A lane's FAIL is evidence, not an
+   adjudication.
+
+3. "FOURTEEN FALSE SENTENCES" IS WITHDRAWN. Beta has since adjudicated four of the
+   fourteen: S19, S24 and S31 are OVER-GRADED (the sentences are true), and S26
+   stands on AP-17 rather than falsity. At most eleven pending beta's Part B. No
+   bare number should be quoted from this commit.
+
+4. "BOTH CHECKOUTS PRISTINE" overstated the measurement. Accurate: tracked tree
+   clean; 65 untracked hook artifacts under .claude/ dated 2026-08-28, predating
+   the round.
+
+The corrected record is later in runtime/vlad-w1/s05/ROUND-RECORD.md on this same
+branch, with the five-lane table, the settling reads and their quotes. This note
+exists because a correction that lives only in a later commit is technically
+present and practically invisible: a git log reader meets the error here.
