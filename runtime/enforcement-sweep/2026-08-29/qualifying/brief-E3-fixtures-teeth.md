@@ -1,5 +1,14 @@
 # QUALIFYING LANE E3 — do the fixtures exist, and do they have teeth?
 
+## YOU ARE THE NAMED OWNER OF THIS OBLIGATION
+
+**This lane — E3 — is the single named owner of the re-run obligation below. Nobody else discharges
+it.** Work done by a builder on its own bundle, or by a conductor at an earlier commit, is evidence
+about that commit and does not discharge anything here. **The qualifying pin is stated in the dispatch
+envelope as `QUALIFYING_PIN`, and every result you record carries that commit in the artifact itself,
+beside the result.** If the envelope does not state a `QUALIFYING_PIN`, say so and stop: an obligation
+anchored to "the pin" without a commit is the exact shape that failed on the sibling sprint.
+
 ## THE TWO QUESTIONS, and the second is the one that is usually skipped
 
 **A. EXISTENCE.** Every input that was executed during this sprint's diagnostic work and shown to fool
