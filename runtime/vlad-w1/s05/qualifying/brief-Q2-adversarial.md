@@ -82,6 +82,17 @@ genuine FAIL findings in prose and **both were recorded as `error`**, because th
 and the parser reads a token. The failure is silent and fail-closed, so nothing goes green to warn
 anyone — the findings simply vanish. **Emit the token, then say everything else however you like.**
 
+**⚠️ AND THE TOKEN MUST NOT BECOME A DEFAULT.** An enum invites one: a lane that assessed nothing can
+emit `pass` *because the schema demanded a value*, where prose would have hedged. That trades a
+conservative loss for a **false green**, which is worse than the problem the token solves — and it
+would quietly undo this brief's "there is no reward for a clean report."
+
+- **`"pass"` means an AFFIRMATIVE finding that the thing is correct** — here, that you attacked it and
+  it held. Never "I found nothing." Never "I could not assess."
+- **A lane that could not assess emits `"error"`** and explains why in `what_i_could_not_assess`.
+- **NO_DATA is not a pass.**
+- The token is **in addition to** your prose findings, never a replacement for them.
+
 A verdict, plus every finding with its reproduction.
 
 **Required fields — an omitted field reads as UNKNOWN, never "nothing to report":**

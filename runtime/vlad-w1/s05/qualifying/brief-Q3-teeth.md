@@ -85,6 +85,18 @@ findings in prose and **both were recorded as `error`**, because the brief asked
 parser reads a token. The failure is silent and fail-closed, so nothing goes green to warn anyone —
 the findings simply vanish. **Emit the token, then say everything else however you like.**
 
+**⚠️ AND THE TOKEN MUST NOT BECOME A DEFAULT.** An enum invites one: a lane that assessed nothing can
+emit `pass` *because the schema demanded a value*, where prose would have hedged. That trades a
+conservative loss for a **false green**, which is worse than the problem the token solves — and it
+would quietly undo this brief's "there is no reward for reporting that every test has teeth."
+
+- **`"pass"` means an AFFIRMATIVE finding that the thing is correct** — here, that you ran the
+  mutations and every test you checked actually failed without its fix. Never "I found nothing."
+  Never "I could not assess."
+- **A lane that could not assess emits `"error"`** and explains why in `what_i_could_not_assess`.
+- **NO_DATA is not a pass.** A test you did not get to is `not-reached`, never a passing one.
+- The token is **in addition to** your prose findings, never a replacement for them.
+
 Per test: what it protects, the mutation you made, **what you observed**, and whether it has teeth.
 
 **Required fields — an omitted field reads as UNKNOWN, never "nothing to report":**
