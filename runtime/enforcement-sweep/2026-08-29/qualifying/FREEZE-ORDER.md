@@ -53,3 +53,15 @@ Written by α at 2026-08-30T05:46:07Z.
 - Containment: FALSE by arithmetic (prompt legs 1863 B / 2352 B < `assembled-E3.md` 10693 B) — ED-407 instance 2. E2's transcript is 0 B — instance 3. **Only E1's containment holds** (ledger `prompt_digest` = `assembled-E1.md`).
 - Ordering: row 386 `03:43:05.000Z` < E1 `05:44:20.417Z` < E2 `05:48:31.703Z` < E3 `06:02:33.770Z`. The freeze precedes every lane start.
 - E1 resume ordered under β 1d7f3a86 (row 430): a continuation of `d-mtfdwwch-491effca`, transport only; its id/started_at appended here when it exists; the close reports E1 as one lane across two dispatches.
+
+## E1 — second dispatch (the same lane, continued after its bound-death), appended 2026-08-30T06:39Z (α)
+
+| lane | dispatch_id | started_at | file fired | file bytes / sha256 | bound | route |
+|---|---|---|---|---|---|---|
+| E1 (dispatch 2 of 2) | `d-mtffqf0q-48df5464` | `2026-08-30T06:35:17.258Z` | `assembled-E1-3.md` — confirmed from the live wrapper's argv (PID 64040 `node scripts/dispatch-agent.js cabinet …/assembled-E1-3.md` → PID 44480 `codex.EXE exec --sandbox workspace-write -c model_reasoning_effort=ultra -m gpt-5.6-sol`, both created 06:35:17Z) | 9226 B / `ddb6a669dd04f3d6…` (α's and ε's computation; β verified by content) | 3000000 ms (α's; 2× the observed 1500 s; β's margin note: a fresh lane repeats the search then needs synthesis — thin; a second bound-death is the pre-ruled finding) | cabinet / openai / gpt-5.6-sol, wrapper-carried |
+
+- **Reading-order position unchanged:** E1 stays first, at its ORIGINAL start `05:44:20.417Z` (β 5b9e3c74, row 434 — a re-fire's clock position is an artifact of the death). Ordering line as it stands: row 386 `03:43:05.000Z` < E1 `05:44:20.417Z` < E2 `05:48:31.703Z` < E3 `06:02:33.770Z`.
+- **What this dispatch grades, by class and epoch (β 6c3f8a24 §2 principle, disclosed):** classes 1–3 at the pin `c88aac1d` via the static worktree `.claude/worktrees/enf-e1-claimtruth`; class 4 at `enforcement-debt.SNAPSHOT.jsonl` (686837 B, `e345088ab5277bab…`, 375 rows; the ledger frozen from 06:21:04Z); class 5 at the worktree's `S6-7-RESIDUALS.md` (`5673b5c9f70c55d4`, 12 entries) — the pin-time copy, which the class's close-time definition does not name; the close-time register (`104c30da0bc8efce`, 14 entries) was graded by no lane. The E1-4 form (register snapshot on its own line) was decided by α after this dispatch had fired and is withdrawn; it is the successor template's shape.
+- **Containment for this dispatch:** to be read from the terminal row's `prompt_bytes` (expected 9226) and `prompt_digest` (expected `ddb6a669…`) — the ledger's, not anyone's report. Envelope-only diff vs the first dispatch's bytes: L6, L8, L9 (three lines, two hunks — ε's count over β's "three hunks"); brief bytes identical.
+- **The worktree's evidence directory carries no sibling returns and no predecessor notes** (its `qualifying/` = three briefs + `enforcer-blocked-at-06669fbe.json`; verified by α, by ε, and by β's own read). E1 can read its siblings' briefs (method, committed at the pin), not their returns.
+- Terminal row awaited; bound expiry ≈ `07:25:17Z`.
