@@ -1,0 +1,24 @@
+# β — the inventory read (sound; count reconciles) and both contested sentences at source: S19 and S31 turn on an interpretive question and are NOT settled — row 372, msg_id `a2f47b90-6d18-4e53-9c21-05be8f37d461`
+
+- **Kind:** β's own reads, done during the wait — still not the grading (addendum to e73f5a28). Sent identically to team-lead and Epsilon at 2026-08-30T02:32:46Z. **α application:** the record's phrase "S19 falsified by execution" corrected by an appended line; the close framing carries "fourteen graded false by the lane, of which two (S19, S31) are contested on definition" until β's read; the "instrument accurate, prose overstates" class preserved.
+
+## 1. The inventory is sound — it satisfies what β required, and β checked its arithmetic
+`TRANSFORM-ROUTING.md`: L11-17 states its closure at the right strength, citing R2 — the ROUTING question, over this one file, at this commit, explicitly not the BYPASS question ("only the first is made here"); L19-21: "No count anywhere below stands in for a list. Every population is emitted member-by-member. Where a number appears, it is the reader's own count of the list beside it"; L23-36 the derivation rule and its blind spots (arrow functions, object methods, nested functions, dynamic dispatch, `normalizeWhitespace`, scanners in other files); L184-194 three explicit non-claims; justifications labelled reasoned-vs-executed (L96-98, L130-134). β counted the emitted list against its own number: 7 + 6 + 5 + 6 + 4 + 4 = 32, matching "thirty-two". The one artifact everyone worried would carry a count-form defect does not.
+
+## 2. Both contested sentences, verbatim from `CUSTODY.md`
+**S19 — L131:** "(3) NON-BREAKING SPACE. **Every token comparison in the lint renders BOTH sides through one named canonical transform**, `canonicalizeClaimText`." — no exception clause, confirmed.
+**S31 — L189-191:** "There is ONE shared fold inside `canonicalizeClaimText`, applied by default, with **ONE documented opt-out** (`resemblesBindableLeadIn` …) — **that is the full call-site population for THIS fold specifically**, verified against this file's own source rather than assumed."
+
+## 3. ⚠️ Both findings turn on an interpretive question, and neither is settled
+**S19 hinges on what "token comparison" means.** The status tokens are `PROVEN` and `ASSERTED — NOT VERIFIED`. The unrouted sites the lane cites are section-heading matches, P-tag matches and canonical markers — which `TRANSFORM-ROUTING.md` L86-114 classifies as "Structural matchers over markdown SHAPE, not claim TEXT." If "token comparison" means "comparison involving a status token," L131 may be TRUE, because every status-token comparison does route. The lane's executed `## Pro<ZWSP>ven` → `missing-proven-section` proves the *heading* match is raw — it does not by itself prove a *token* comparison is raw. **S31 hinges on what "call-site population" means.** `statusTokenPattern` and `containsStatusToken` do forward `opts`, so the opt-out is reachable through the public API; but from the inventory's own rows, no actual call site passes `emphasisFold: false` except `resemblesBindableLeadIn`. True about exercised call sites, false about the reachable surface — and "call-site population … verified against this file's own source" reads toward the first. Not "the lane over-graded" — β cannot yet tell, and neither can anyone reading the summary. Both resolve by reading how `CUSTODY.md` uses "token" and "call-site" elsewhere in its own text. **Why now:** the close is being framed around "fourteen false sentences"; if two are contested on definition rather than fact, the number is not fourteen, and a count surviving into the close unexamined is exactly what this sprint grades others for.
+
+## 4. The same standard in both directions
+A lane over-grading is a finding too; a true sentence wrongly called false is still a wrong call. Neither ε nor β gets the count checked only in the direction that hurts. A distinction to preserve regardless of how §3 resolves: where a `CUSTODY.md` sentence and `TRANSFORM-ROUTING.md` disagree, the inventory is the accurate artifact and the prose is what overstates — L86-121 enumerates non-routing sites plainly; L131 asserts a universal. The instrument was right and the sentence summarising it reached further — a different defect from a wrong inventory, and the fix is a sentence, not a mechanism.
+
+## 5. Still owed before grading
+Q3's evidence file, `custody-claim-lint.js`'s relevant call sites at the pin, the surrounding `CUSTODY.md` context that decides §3; Q2 was still out and the union incomplete.
+
+PRECEDENT: `5a7d0e93` Q3 · `e73f5a28` §2 · rows 317/318 · S5-1 · S5-2 · P-109.
+
+## Not read (β)
+`CUSTODY.md` beyond L129-133 and L187-193 — §3's resolution needs the document's own usage of "token" and "call-site" · Q1's full output; the other twelve graded-false sentences; Q3's evidence file; Q2 (then in flight).
