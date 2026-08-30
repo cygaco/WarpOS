@@ -21,7 +21,7 @@ Every sentence you write here is judged against the release rule's three clauses
 **Your process cwd is NOT the target repo.** Dispatch starts you in a WarpOS agent worktree. Expected;
 this brief asserts no cwd.
 
-- **TARGET REPO:** `C:/Users/Vlad/Desktop/Claude/Projects/vlad/.worktrees/engine-lane`
+- **TARGET REPO:** the `vlad` project's `engine-lane` worktree (absolute path supplied in the dispatch envelope)
 - **TARGET BRANCH:** `wt/S-VLADW1-01-engine`. Do NOT branch, merge, or push. **Package root:** `engine/`
 
 Plain single `git -C "<abs>"` commands; commit with `-F <abs msgfile>`; absolute paths. Never
@@ -144,9 +144,57 @@ scope-out being correct, disclose it rather than relying on it silently.
 
 ## TASK 5 — DISCLOSE the un-audited surfaces (β row 318, amended scope)
 
-State on the shipped surface that **`src/env-scrub.js`, `src/model-seam.js`,
-`driver/host-free-driver.js` and `src/server-entry.js` carry custody prose no lane has read end to
-end**, and that their coverage claims are therefore un-audited.
+⚠️ **THE SENTENCE THIS TASK WAS ORIGINALLY GOING TO SHIP IS NOW FALSE. READ THIS BEFORE DRAFTING.**
+
+The original wording was: *"these four files carry custody prose no lane has read end to end."*
+**A lane has now read all four end to end**, so that sentence would be false the day it shipped —
+which is the exact defect this sprint exists to end, and it would have been introduced by the
+disclosure written to prevent it.
+
+**THE READ (dispatch_id `d-mtew0q7m-70d95fa2`, at commit `fbda0dc`):** all four read end to end, with
+line counts confirming it — `src/env-scrub.js` 520/520, `src/model-seam.js` 732/732,
+`driver/host-free-driver.js` 499/499, `src/server-entry.js` 522/522; its `files_i_could_not_see`
+reports **none**.
+
+**WHAT IT FOUND — 122 coverage claims assessed:**
+
+| file | true | false | cannot-determine |
+|---|---|---|---|
+| `src/env-scrub.js` | 16 | **4** | 6 |
+| `src/model-seam.js` | 20 | **8** | 8 |
+| `driver/host-free-driver.js` | 12 | **8** | 4 |
+| `src/server-entry.js` | 16 | **10** | 10 |
+| **total** | **64** | **30** | **28** |
+
+"Cannot-determine" means the claim depends on another file, a test, a runtime trace or a package-wide
+search that a four-file **static** read did not establish — it is not a defect verdict.
+
+**The 30 false ones are this sprint's own class**, which is why they matter: they fail as *"false by
+wrong frame"*, *"false count/frame"*, *"false as an absolute guarantee"* — with closure flags
+`EVERY` / `ONLY` / `NEVER` / `no other` / `exactly two`. Two of them literally say *"Stated
+deliberately WITHOUT a count"* in prose that says *"Exactly two"* nineteen lines earlier.
+
+**YOUR TASK 5 IS NOW THIS.** State on the shipped surface that `src/env-scrub.js`,
+`src/model-seam.js`, `driver/host-free-driver.js` and `src/server-entry.js` **were read end to end by
+one lane at `fbda0dc`, which assessed 122 coverage claims and judged 64 true, 30 false and 28
+not-determinable from a static read — and that THIS SPRINT DOES NOT REPAIR THEM.** The governing
+ruling is **disclosure, not repair** for files this sprint does not touch; that ruling is unchanged
+and you must not repair them.
+
+**Constraints on how you write it:**
+- **The numbers may not travel without their table.** Ship the per-file breakdown above, or a pointer
+  to the lane's output by dispatch_id — never "30 false claims" as a bare figure.
+- **Cite the provenance by dispatch_id** (`d-mtew0q7m-70d95fa2`) so a reader can find the read.
+- **Do not call the files "un-audited" any more.** They were audited, once, statically, by one lane.
+  Say that. "Un-audited" is now the false frame.
+- **Say what the read could NOT do**: it ran nothing — no tests, no probes, no mutants — so every
+  verdict is static reasoning, and the 28 cannot-determines are *unresolved*, not benign.
+- **Name what EACH lane said, never "the lanes said."** For the earlier gauntlet-2 provenance: the
+  **qa lane** named all four verbatim in `what_i_could_not_assess`; the **backend lane** corroborated
+  **two** (`env-scrub.js` header-and-greps only; `server-entry.js` greps and the RF-7 region only);
+  the **security lane did NOT say it.** The conductor's earlier framing of that as "every lane said
+  so" was false — data right, frame rounded up — and is on the record as a conductor-side instance of
+  this sprint's class. Do not reproduce it.
 
 **⚠️ SEQUENCING CONSTRAINT (β row 319 Q2) — BINDING, and it gates this task:** the four-file list must
 be **RESOLVED BY READ before this sentence is DRAFTED.** The diagnostic gauntlet lane carries that
@@ -206,3 +254,22 @@ deliberate empty, not an absent key:**
 - **`execution_proven`** — which of your claims you RAN versus reasoned about. Separate them.
 - **`what_would_confirm_or_refute`** — for anything you are unsure of, the specific check that would
   settle it.
+
+---
+
+## ⏱ HARD BUDGET — read this
+
+Your route is killed at **20 minutes**. A partial answer with a written envelope beats a complete
+answer killed with none. **Write your envelope BEFORE optional depth.** If you are running long,
+commit what is green and report the rest as `not-reached`. Do not polish.
+
+## MEASURE EVERY NUMBER YOURSELF
+
+Every figure in this brief — the 122/64/30/28 tally, the per-file line counts, anything sourced from
+an earlier bundle — is a **relayed** number. Bundle O refused two relayed figures in this sprint
+today and was right both times: an alphabet asserted as 22 letters measured **15**, and a gap set
+asserted as seven omitted a letter entirely. Both had been marked "verified at source" by a reader.
+
+**If a number is load-bearing for a sentence you ship, re-derive it yourself and use YOUR value.**
+If yours differs from this brief's, **report the difference with your evidence and use yours** — that
+is a correct return, not a failed bundle.

@@ -14,12 +14,31 @@ evidence is worse than a messy one you can.
 
 ## THE SURFACE — pin it first
 
-**Repo:** `C:/Users/Vlad/Desktop/Claude/Projects/vlad/.worktrees/engine-lane`, package root `engine/`.
-**Pinned commit: `6c64021`.**
+**Repo:** the `vlad` project's `engine-lane` worktree (absolute path supplied in the dispatch envelope), package root `engine/`.
+**Pinned commit: `6c64021`** — **given to you, not for you to verify by command.**
 
-**FIRST ACTION:** `git -C "C:/Users/Vlad/Desktop/Claude/Projects/vlad/.worktrees/engine-lane" log --oneline -1`.
-**If it is not `6c64021`, STOP and report the actual sha.** Name the sha on every finding.
-**Read-only** — no commits, no edits.
+**READ FILES FREELY — that is your primary instrument.** Use whatever your toolchain gives you to read
+source. **Do not spend a tool call on `git log` to confirm the sha**: it is given above, one lane
+already died in 11 seconds on that single instruction, and it is not worth a permission prompt your
+route may not be able to answer.
+
+**Corroborate the tree by CONTENT instead:** `engine/scripts/checks/custody-claim-lint.js` should
+contain `EMPHASIS_FOLD_PATTERN`, `tokenAlphabetDomain` and a `TRANSFORM_DESCRIPTION_KEY` entry. If any
+is missing, the tree is not what you were told — **say so and stop.**
+
+⚠️ **IF YOUR ENVIRONMENT DENIES YOU FILE ACCESS, SAY SO AND RETURN THAT.** A previous lane on this
+brief returned *"BLOCKED / NOT ASSESSED — the lane could not access local text files … I did not
+substitute unverifiable conclusions for source evidence"*, and **that was the correct return.** An
+honest "I could not read the source" is a usable result. A security verdict reasoned from a brief
+rather than from bytes is not, and will be treated as a finding against the lane.
+
+**⚠️ SAY WHAT YOU COULD NOT VERIFY.** Because you cannot execute, several things in this brief are
+**assertions you are receiving, not facts you can check**: the sha, any test result, any claim that
+something "was observed". **List every such item in `what_i_could_not_assess`.** A finding you reason
+to from source is worth reporting; a finding that silently depends on an unverifiable assertion is
+not. Distinguish them.
+
+**Read-only** — no commits, no edits, no files written.
 
 ---
 
@@ -116,6 +135,9 @@ reach**. "I tried a range of shapes" is not a frame. An attack set without its d
 support any claim about what remains unreachable — and this sprint exists because a coverage claim
 outran its mechanism.
 
-**And the mutation is what gives an assertion content:** if you claim the mechanism catches something,
-also run it with that mechanism removed and report both results. If the two runs agree, your probe is
-not discriminating — say so rather than reporting a pass.
+**And an assertion needs content.** Normally I would ask you to run the mechanism with and without the
+part you are testing. **You cannot execute, so do not pretend to.** Instead: **trace the code path by
+reading**, and state your conclusion as a reasoned claim with the lines that support it — then put it
+in `what_would_confirm_or_refute` as the run that would settle it. **A reasoned finding labelled as
+reasoned is valuable. A reasoned finding phrased as if it were observed is the defect this sprint
+exists to end.**
