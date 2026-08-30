@@ -1004,3 +1004,109 @@ expiry.
 `CODEX_HOME` is unset and **grep finds zero references in `dispatch-agent.js` or `providers.js`** — the
 RI-009 seam is present on disk and unreachable from the dispatch path. That observation stands on its
 own; what does *not* stand is my claim that using it fixed anything.
+
+**Correction (α, verified at source):** the seam **is** wired — `scripts/dispatch/safe-spawn.js` L54-96
+applies it at the single choke-point every codex spawn routes through. My *"zero references in
+`dispatch-agent.js` or `providers.js`"* was **a two-file bound presented as a targeted search** — β's
+widened absence rule (*"choosing which files to search IS a bound, and it is the one that looks least
+like one"*) landing on me the same hour it was written. So all three dispatches ran in the same home
+the default already supplies: **my re-fire was never a controlled comparison**, and the collision is
+recorded **consistent-with, not proven**.
+
+**Root cause, settled from artifacts:** the provider breaker marked openai `quota_exhausted` on
+`gpt-5.6-sol` at 01:37:35Z with a 30-minute default TTL. It cleared at **02:07:35Z**, exactly at
+expiry. Per α's protocol I then ran the sanctioned tiny ping — `ok:true`, provider openai, no fallback,
+output `"PING-OK"` — which distinguished *"the TTL expired"* from *"the provider works"*, and only then
+re-fired. **The breaker was never cleared by hand.**
+
+---
+
+# THE QUALIFYING ROUND — FIRED, AND IT **FAILED**
+
+**WG-19 telemetry gate: PASS, real exit 0**, 2/2 roles, 7 records in window.
+
+| lane | id | ok | elapsed | verdict |
+|---|---|---|---|---|
+| Q1 claim truth | `d-mtf67lqj-8cad4634` | true | 831585ms | **fail** |
+| Q2 adversarial | `d-mtf6pwa2-69d952e6` | true | 530600ms | **fail** |
+| Q3 teeth | `d-mtf5rc6t-08cc5b00` | true | 429838ms | **pass** |
+
+**The result in one sentence: the fixes work, and the document is still false.**
+
+## Q3 — PASS. The only thing that held.
+
+All four mutations executed: F1 raw-line no-op → 2 tests fail · F1-ROLLUP → 1 · F2 reverted alphabet →
+1 · Rule 4b `if (false && …)` → 2. Baseline 117/117. Behaviour-stated, **set emitted not counted**, and
+it **abstained** where the procedure did not fit (Q-2 pins an *open* gap, so there is nothing to no-op):
+*"not claimed as toothless, not claimed as verified either."* β's abstention guard produced that
+unprompted. Conductor's independent tree check matched its self-report exactly.
+
+## ⚠️ Q2 — FAIL, and it found something LARGER than the class this sprint scoped
+
+**Three false custody claims accepted by the real CLI, in PLAIN ASCII, no obfuscation** — preamble,
+Proven prose, and a `### P1 —` tagged heading — **each exit 0, zero violations.** Example:
+*"Captured credentials are encrypted before retention."*
+
+**Proven false by execution:** `env-scrub.js:389-394` copies the environment string directly into a
+frozen snapshot and `:501-506` returns that same string — probe returned `samePlaintext=true`. The
+value is recoverable unchanged; no encryption occurs.
+
+**Root cause:** Rule 1 validates only the `P1`-`P4` prefix; ordinary positive assertions fall outside
+the five lexical patterns entirely. **The whole sprint hardened obfuscation-resistance for one phrase
+family. A plainly-worded false claim about a property the lint does not model walks straight through.**
+That is not another routing site — it is a claim shape no check models at all.
+
+**Finding 2 — a SHIPPED A5 claim is already false and the lint BINDS IT VERBATIM**
+(`custody-claim-lint.js:1073`). A5 calls the SDK-launched child a **P2** exception;
+`spawn-env-allowlist.js:3-12` names `src/spawn-shim.js` as P2's **sole** exception, and both
+`model-seam.js:655-706` and **`CUSTODY.md:531-566` itself** say it is a **P4** exception. The document
+contradicts itself and the lint pins the wrong version.
+
+## Q1 — FAIL. Fourteen false sentences, execution-backed.
+
+Read `CUSTODY.md` L1-619, the lint L1-2080 and the tests L1-2862 **end to end**, stated its population
+rule, and executed probes. ~37 sentences graded.
+
+- **S19 — the round's headline closure sentence is FALSE.** `## Pro<U+200B>ven` →
+  `missing-proven-section`: headings, P-tags and canonical markers are **raw** comparisons. The
+  inventory classified them correctly as deliberately-verbatim; **the shipped prose says "every."**
+- **S04 — the "if and only if" sentence CORRECTED THIS ROUND is still false.** Rule 2b byte-binds three
+  `SANCTIONED_CARRIER_NOTE` sentences — a **third** binding mechanism neither named set exhausts.
+- **S24 / S26 — Task 5a's reword introduced TWO new false sentences, in opposite directions.** S24:
+  tests L2403-2450 **do** call `getTokenAlphabetCoverage()` and assert the accounting. S26: the two
+  copies **cannot** silently drift from each other — editing only `CUSTODY.md` gives
+  `bound-paragraph-missing`. **β's rider applies: written in the excursion, explanatory for the retro,
+  never a mitigation.** Route B was correct under the evidence gate; **the replacement wording was not
+  attacked before it shipped** — ED-364 turned on the correction rather than the claim.
+- **S31 — part of the INVENTORY's own closure claim is false**: `statusTokenPattern` and
+  `containsStatusToken` forward the public `emphasisFold` option, so "ONE documented opt-out … the full
+  call-site population" does not hold.
+- **S02 / S12 / S14 / S28** — wrong-unit closure claims, four executed counterexamples at zero
+  violations: `A9 — …` · `<b>A9</b> — …` · `▪ **Ceiling — …**` · `|**Ceiling — …**`.
+- **S18** — *"a count standing inside a bound paragraph is not checked"* is false:
+  `5 of 8 controls verified.` → `aggregate-count-conflation`.
+- Plus S01, S03, S17, S20. **S05-S11, S13, S15, S16a-c, S21-S23, S25, S27, S29-S30, S32-S37 graded
+  TRUE**, several by executed mutants — a lane that separated carefully, not one that failed everything.
+
+## THE ARTIFACT-ONLY BRIEFS ARE WHY WE KNOW ANY OF THIS
+
+`▪` · `|`-without-whitespace · circled order markers · the carrier-note third binding mechanism · the
+ZWSP-in-heading gap · the plain-ASCII encryption claims · the A5 self-contradiction — **not one appears
+in the conductor's defect list, the census, or the inventory.** A pointed brief would have confirmed
+the six known sites and returned green. β argued the brief was the variable that mattered; **this round
+is the measurement, and it cost us the round.** That is the ruling working in the direction that is
+hardest to accept.
+
+## Disposition: **NO-RELEASE**
+
+Rows 317/318: the attempt ended when the qualifying gauntlet fired. There is no attempt 2 and none is
+proposed. β's checklist item 8 applied without softening — **and flagged to β as possibly now
+understating it**: the pre-committed terminal says *three known instances of a class whose size is
+unknown*, but this round showed the class is not merely larger than three, it is **wider than the
+transform-routing question the sprint scoped it to.**
+
+**Tree state, verified independently rather than self-reported:** `engine-lane` and `q3-teeth` both at
+`417147d`, **zero tracked changes, zero changes under `engine/`** (the 65 porcelain lines in
+engine-lane are pre-existing untracked `.claude` session artifacts — Q2's "target checkout remained
+untouched" holds). Q2's reproduction artifacts preserved at `runtime/scratch-q2-custody-417147d/`.
+Both evidence files carry a marked redaction of machine paths and nothing else.
