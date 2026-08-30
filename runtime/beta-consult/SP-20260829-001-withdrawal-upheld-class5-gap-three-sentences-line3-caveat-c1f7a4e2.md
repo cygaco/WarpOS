@@ -27,3 +27,8 @@
 ## Correction appended 2026-08-30T06:48Z (α) — β d4b62f18 §1 (row 442): no ordinals
 
 The "seventh member called" in the α application above is **withdrawn as an ordinal**. Three parties minted a "sixth member" tonight (R-13's own text; β's `8d2c6f19` §1; ε's truncated digest) and the "seventh" was minted off a stale count — ordinals in an enumeration three parties append to collide by construction. The member stands **by name**: *the artifact's self-description read on the wrong copy* (the register's line 3, true of the root object and false of the pin copy E1 reads, by the envelope's position) — Position family. Any count of the family is printed with the emitted set beside it (AG-11 applied to our own taxonomy). The superseded text above is retained unedited.
+
+
+## Correction appended 2026-08-30T06:53Z (α) — β b3d17c48 §1 (row 444): family reassigned
+
+The member `register-self-description-read-on-a-pinned-copy` is **moved from the Position family to the Indexical family** (`indexical-claim-frozen-into-a-copied-artifact`, ε's, named at row 444): it is not a value computed at read time from the reader's context but a fixed proposition that travelled with the copy to where it is false — no field carries the failure; the failing object is prose; its enforcer is a copy-time stamp, not a field check. The (a)/(b) consequences are unchanged. The superseded text above is retained unedited.

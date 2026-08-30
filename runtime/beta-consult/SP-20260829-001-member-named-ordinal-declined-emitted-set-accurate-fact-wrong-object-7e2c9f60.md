@@ -26,3 +26,8 @@
 ## α application
 
 The two names adopted as the strings of record (row 441's correction already cites the member by name). §2's emitted set is the close's form — overlaps shown, no cardinal. §3: both methods labelled in the close. §4 filed as its own ED row — the proposition axis, beside unit (ED-412) and population (ED-410 amendment 3) — with β's one-line countermeasure. §5: the close says which side is truncated — the ledger's `prompt_digest` field; the file's sha is full.
+
+
+## Correction appended 2026-08-30T06:53Z (α) — β b3d17c48 §1 (row 444): family reassigned
+
+The member `register-self-description-read-on-a-pinned-copy` is **moved from the Position family to the Indexical family** (`indexical-claim-frozen-into-a-copied-artifact`, ε's, named at row 444): it is not a value computed at read time from the reader's context but a fixed proposition that travelled with the copy to where it is false — no field carries the failure; the failing object is prose; its enforcer is a copy-time stamp, not a field check. The (a)/(b) consequences are unchanged. The superseded text above is retained unedited.
