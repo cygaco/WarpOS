@@ -162,11 +162,20 @@ is complete with nothing ungraded.
 > comparisons. Replacing the real `## Proven` heading with `## Pro<U+200B>ven` produced
 > `missing-proven-section`, proving that token was not canonicalized."*
 
-**⚠️ β has this contested and it is NOT settled.** The execution is not in doubt; what it falsifies is.
-Per β: the result proves a **heading match** is raw; whether that makes *"every token comparison"*
-false turns on whether a heading match is a token comparison — which `TRANSFORM-ROUTING.md` L86-114
-classifies as *"Structural matchers over markdown SHAPE, not claim TEXT."* **The framing must not
-harden on "falsified by execution."**
+**⚠️ ADJUDICATED — β RULES THE SENTENCE **TRUE**; THE LANE OVER-GRADED** (β `d4a91c67` §1,
+`3e6d1a94` §2). The lane's grade above is preserved as the lane's; this is the adjudication beside it.
+
+`CUSTODY.md` **defines the term itself**:
+> L174-175: *"The **token comparison** that consumes the transform also tolerates separator variance
+> between the words of a multi-word **status token**."*
+> L186-187: *"…before the **status-token comparison** Rule 3 runs."*
+
+So *"every token comparison"* means **every status-token comparison**, and they all route. The lane's
+counterexample runs against `PROVEN_HEADING_PATTERN` (L385) → `missing-proven-section` (L451) — a
+**section locator**, which finds a region rather than comparing a claim token. **The execution is real
+and it does not falsify this sentence.** Three independent convergences: the document's own vocabulary
+(β), the Q1 twin from source, and this sprint's own `TRANSFORM-ROUTING.md` L86-114 (*"Structural
+matchers over markdown SHAPE, not claim TEXT"*).
 
 ### F-Q1-10 — L132-137 — class: incomplete-transform-description
 **Shipped, verbatim:**
@@ -192,6 +201,17 @@ harden on "falsified by execution."**
 **This sentence was authored by Task 5a in this round** (the Route-B reword of bundle O's withdrawn
 sourcing claim).
 
+**⚠️ ADJUDICATED — β RULES THE SENTENCE **TRUE**; THE LANE OVER-GRADED** (β `d4a91c67` §2). The
+shipped sentence carries the qualifier **"to verify the numbers in THIS paragraph"** — quoted verbatim
+above. The tests at L2403-2450 call the function and assert **its own return values**; they do **not**
+parse this paragraph and compare its bytes. **That is exactly what the sentence says.**
+
+**The lane quoted the qualifier and then graded against a version without it** — its own *"the narrower
+statement … is true, but that is not what this sentence says"* is materially the same claim as the
+shipped sentence, so it distinguished two statements that say the same thing and graded on the
+distinction. **α verified this extraction carries the qualifier, so the misreading is the LANE's, not
+the relay's.**
+
 ### F-Q1-12 — L154-157 — class: contradicted-by-mechanism ⚠️ sprint-authored this round · CONTESTED by ε
 **Shipped, verbatim:**
 > *"No generation or binding path connects either copy to the function's live return value, so the two
@@ -202,10 +222,20 @@ sourcing claim).
 > *"changing only CUSTODY.md's `NFKD` wording produced `bound-paragraph-missing`. The two copies can
 > jointly drift from the live function, but they cannot drift from each other silently."*
 
-**⚠️ Conductor observation, flagged not graded (see final section): the shipped sentence is a
-DISJUNCTION.** The lane's reason grants the second disjunct (*"can jointly drift from the live
-function"*) while falsifying only the first. Whether a disjunction with one true disjunct is a false
-sentence is an interpretive question of the same family as S19/S31 — **β's to settle, not mine.**
+**⚠️ Conductor observation, flagged not graded: the shipped sentence is a DISJUNCTION.** The lane's
+reason grants the second disjunct (*"can jointly drift from the live function"*) while falsifying only
+the first.
+
+**⚠️ ADJUDICATED — β RULES IT **STANDS**, but on AP-17 rather than falsity** (β `3e6d1a94` §4, its
+closest call at 0.84; β withdrew its earlier grading in `f2a08d51` §0 on the conductor's argument).
+> *"Logically 'A or B' is true when B is true — and B is true. **Grading it as a false sentence was
+> wrong.** But the applicable standard is AP-17: a residual disclosure that is itself inaccurate is a
+> new finding. S26 **is** a disclosure, and its first clause tells the reader drift between the copies
+> goes unnoticed — which `bound-paragraph-missing` catches."*
+
+**So it stands as a finding, and the repair is to STRIKE THE FIRST CLAUSE, not rewrite the sentence.**
+Note the shape: the false half is falsified by **the binding mechanism this same round strengthened**
+— a disclosure contradicted by its own sprint's fix.
 
 ### F-Q1-13 — L171-174 — class: wrong-unit / closure
 **Shipped, verbatim:**
@@ -226,9 +256,24 @@ sentence is an interpretive question of the same family as S19/S31 — **β's to
 > additional transform calls. The committed tests invoke `containsStatusToken(..., {emphasisFold:false})`;
 > direct execution showed the default matched a formatted token while the opt-out did not."*
 
-**⚠️ β has this contested and it is NOT settled** — true about *exercised* call sites, false about the
-*reachable* surface, and the phrase *"call-site population … verified against this file's own source"*
-reads toward the first.
+**⚠️ ADJUDICATED — β RULES THE SENTENCE **TRUE**; THE LANE OVER-GRADED** (β `3e6d1a94` §1, measured by
+β independently, confirmed by α at the pin, and reached separately by the Q1 twin from source).
+
+Every occurrence of `emphasisFold` in the file:
+```
+187, 357, 879    comments
+362, 1291, 1312  JSDoc @param annotations
+367   const emphasisFold = opts.emphasisFold !== false;      <- the option is READ
+374   if (emphasisFold) folded = folded.replace(EMPHASIS_FOLD_PATTERN, " ");
+888   const canonical = canonicalizeClaimText(line, { caseFold: false, emphasisFold: false });
+```
+**Nine occurrences, ONE call site.** The sentence says *"call-site population"*, and the call-site
+population is one. **The lane's reason concerns API reachability** — L1291/L1312 are JSDoc showing the
+functions *accept* opts — **which is a different claim.**
+
+> `grep -c "emphasisFold: *false"` returns **4**, three of them comments. **A bare count reports four
+> opt-outs; the emitted list reports one** — the emitted-set discipline vindicating itself inside the
+> settling read of a finding about a closure claim.
 
 ---
 
@@ -261,15 +306,22 @@ attacked the mechanism rather than grading the prose. It exists only in the unio
 
 ## Conductor observations — NOT gradings, NOT findings, quarantined here deliberately
 
-1. **F-Q1-09 (S19) and F-Q1-14 (S31) are contested by β on definitional grounds** and are recorded
-   above as contested. I am not defending my earlier "falsified by execution" phrasing — β is right
-   that it imports the conclusion into the evidence.
-2. **F-Q1-12 (S26) is a third item of the same family**, and I surfaced it from the bytes rather than
-   waiting for it to be found at the close: the shipped sentence is a **disjunction**, and the lane
-   falsified one disjunct while its own reason grants the other. β's to settle.
-3. **Three of the fourteen therefore turn on interpretation rather than fact.** Per β `a2f47b90` §3:
-   *"if two are contested on definition rather than fact, the number is not fourteen"* — on my reading
-   it is three, not two, and **the close must not harden on any count until β has read the document's
-   own usage.**
-4. **Two of the fourteen (F-Q1-11, F-Q1-12) are sentences the sprint authored in THIS round** (Task
-   5a's Route-B reword). β's rider: explanatory for the retro, **never a mitigation**.
+**⚠️ THE HEADLINE NUMBER IS WITHDRAWN. This file emitted fourteen lane-graded-false entries; β has
+since adjudicated four of them.** The correct form is: **fourteen graded false by the lane; three
+over-graded on β's read (F-Q1-09/S19, F-Q1-11/S24, F-Q1-14/S31); one standing on revised grounds
+(F-Q1-12/S26, on AP-17 rather than falsity); at most eleven pending β's Part B mapping.** No bare
+number belongs in any record line.
+
+1. **The four adjudications are annotated in place above, beside the lane's own grade** — the lane's
+   verdict and the adjudication side by side, neither deleted.
+2. **All three over-gradings are this sprint's own wrong-unit family, committed by the grader of it:**
+   a **reachable surface** read as a call-site population (S31), a **defined term** graded against its
+   general meaning (S19), and **a qualifier the lane quoted and then dropped** (S24). The lane read
+   the file end to end, quoted correctly, and misgraded anyway — which is β `8c4f0b23` §2's point that
+   **a quote makes an error checkable by the next reader; it does not prevent it.**
+3. **F-Q1-11 and F-Q1-12 are sentences the sprint authored in THIS round** (Task 5a's Route-B reword).
+   β's rider: explanatory for the retro, **never a mitigation** — and note that after adjudication one
+   of the two (S24) is **not** a defect at all, while the other (S26) stands on a revised ground.
+4. **The conductor put "fourteen" into circulation and it did not survive.** It was reduced by β's
+   reads, by a settling read the conductor ran on its own headline findings, and by the Q1 twin — none
+   of which would have happened had the number been accepted.
