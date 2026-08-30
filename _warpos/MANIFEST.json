@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-29T22:24:22.175Z",
+  "generatedAt": "2026-08-30T03:27:01.700Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "3906955b543d0c665e96cd273de5e4b5f1f4d852cba5e35d3d7fcb1dc4a21dd9",
-      "installedSha": "3906955b543d0c665e96cd273de5e4b5f1f4d852cba5e35d3d7fcb1dc4a21dd9"
+      "sha256": "fc96b0add43f894939ef19435c6c26952136af605ef5677c0de4c4c7b94ae398",
+      "installedSha": "fc96b0add43f894939ef19435c6c26952136af605ef5677c0de4c4c7b94ae398"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -17606,6 +17606,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/sprints/S-VLADW1-06/current.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/sprints/S-VLADW1-06/progress.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/sprints/S-VLADW1-05/current.yaml": {
       "owner": "runtime",
       "managed": false
@@ -21826,6 +21834,14 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/sprint/plan-contracts/PC-20260830-0089.report.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    ".claude/project/sprint/plan-contracts/PC-20260830-0089.yaml": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/sprint/issues/I-20260513-001.yaml": {
       "owner": "runtime",
       "managed": false
@@ -25422,6 +25438,10 @@
       "owner": "runtime",
       "managed": false
     },
+    ".claude/project/memory/enforcement-debt.jsonl.bak-011748": {
+      "owner": "runtime",
+      "managed": false
+    },
     ".claude/project/memory/learnings.jsonl": {
       "owner": "runtime",
       "managed": false
@@ -28235,8 +28255,8 @@
       "managed": true,
       "source": ".claude/agents/president/_system/policy/sprint-routing.json",
       "kind": "json",
-      "sha256": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
-      "installedSha": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c"
+      "sha256": "14e820c6fb3c15754486b8fa19b45042760c25e3de71dbe1f3b11ba733b6c2cd",
+      "installedSha": "14e820c6fb3c15754486b8fa19b45042760c25e3de71dbe1f3b11ba733b6c2cd"
     },
     ".claude/agents/president/_system/policy/validation-backlog-policy.md": {
       "owner": "framework",

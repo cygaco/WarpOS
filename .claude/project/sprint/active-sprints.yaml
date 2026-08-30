@@ -1,5 +1,5 @@
 schema: warpos/sprint/active-sprints/v1
-primary: S-VLADW1-05
+primary: S-VLADW1-06
 sprints:
   - id: SP-20260512-001
     title: Multi-sprint parallelism for Sprint Workflow
@@ -1354,5 +1354,16 @@ sprints:
     pointer: ".claude/project/sprint/sprints/S-VLADW1-05"
     created_at: "2026-08-29T20:24:02.261Z"
     updated_at: "2026-08-30T03:23:34.000Z"
+  - id: S-VLADW1-06
+    title: "Vlad Wave-1: the truthfulness question, carried as an emitted list (successor to S-VLADW1-05's unreleased close)"
+    status: planning
+    lane:
+      type: default
+      value: null
+      isolation_notes: ""
+    layout: per_sprint_subdir
+    pointer: ".claude/project/sprint/sprints/S-VLADW1-06"
+    created_at: "2026-08-30T03:25:41.543Z"
+    updated_at: "2026-08-30T03:25:41.543Z"
 created_at: "2026-05-12T22:57:35.667Z"
-updated_at: "2026-08-29T20:24:02.261Z"
+updated_at: "2026-08-30T03:25:41.543Z"

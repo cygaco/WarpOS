@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "f0a232b404cf50e50a98995a4bae401bc9cfd7be",
-  "installedAt": "2026-08-29T22:24:21.943Z",
+  "installedCommit": "292a63d1e9c314ed32096091a06230979b204792",
+  "installedAt": "2026-08-30T03:27:01.470Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -1004,8 +1004,8 @@
       "dest": ".claude/agents/president/_system/policy/sprint-routing.json",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
-      "currentHashAtInstall": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
+      "installedHash": "14e820c6fb3c15754486b8fa19b45042760c25e3de71dbe1f3b11ba733b6c2cd",
+      "currentHashAtInstall": "14e820c6fb3c15754486b8fa19b45042760c25e3de71dbe1f3b11ba733b6c2cd",
       "introducedIn": "0.0.0"
     },
     {

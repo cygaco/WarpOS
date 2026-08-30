@@ -1,0 +1,120 @@
+schema: warpos/sprint/current-sprint/v1
+id: S-VLADW1-06
+title: "Vlad Wave-1: the truthfulness question, carried as an emitted list (successor to S-VLADW1-05's unreleased close)"
+objective: "Run /sprint:plan to set this."
+status: planning
+created_at: "2026-08-30T03:25:41.543Z"
+updated_at: "2026-08-30T03:25:41.646Z"
+source_request: "S-VLADW1-06 — the truthfulness question, carried as an emitted list. Successor to S-VLADW1-05's honest close (NO-RELEASE at its one attempt)."
+interpreted_intent: "Make every sentence CUSTODY.md ships true of the bytes at the grain its mechanism has, starting from the qualifying round's union of findings — and make the correction discipline itself mechanical: a correction is a new claim and inherits the full claim discipline (drafted after the attack that would falsify it)."
+plan_contract: ".claude/project/sprint/plan-contracts/PC-20260830-0089.yaml"
+risk_level: medium
+approval_state: none_required
+current_phase: plan
+recommended_mode: sprint
+mode_invocation_required_by_user: true
+external_services:
+  identified: []
+  blocked: []
+  ready: []
+  mocked: []
+  deferred: []
+tickets:
+  proposed: []
+  planned: []
+  designed: []
+  ready_for_execution: []
+  in_progress: []
+  blocked: []
+  waiting_on_human: []
+  waiting_on_external_service: []
+  in_review: []
+  qa_failed: []
+  redteam_failed: []
+  done: []
+  released: []
+  deferred: []
+  abandoned: []
+  reopened: []
+  superseded: []
+requirements:
+  prd: null
+  high_level_stories: null
+  granular_stories: null
+  copy: null
+  inputs: null
+  trace: null
+  acceptance_criteria: null
+  qa_plan: null
+  redteam_plan: null
+  release_plan: null
+checks:
+  lint:
+    status: not_run
+    last_run: null
+    evidence: ""
+  typecheck:
+    status: not_run
+    last_run: null
+    evidence: ""
+  tests:
+    status: not_run
+    last_run: null
+    evidence: ""
+  build:
+    status: not_run
+    last_run: null
+    evidence: ""
+  qa:
+    status: not_run
+    last_run: null
+    evidence: ""
+  redteam:
+    status: not_run
+    last_run: null
+    evidence: ""
+approvals:
+  plan:
+    required: false
+    state: not_required
+    ref: null
+  design:
+    required: false
+    state: not_required
+    ref: null
+  execution:
+    required: false
+    state: not_required
+    ref: null
+  release:
+    required: false
+    state: not_required
+    ref: null
+  external_services:
+    required: false
+    state: not_required
+    ref: null
+reports:
+  plan: ".claude/project/sprint/plan-contracts/PC-20260830-0089.report.md"
+  design: null
+  execution: null
+  release: null
+ralph:
+  active: false
+  current_ticket: null
+  current_loop: null
+  status: idle
+  last_checkpoint: null
+  next_action: null
+crash_recovery:
+  last_checkpoint: ".claude/project/sprint/sprint-progress.yaml"
+  resume_command: "/sprint:design"
+  resume_summary: "Plan Contract PC-20260830-0089 created. Next: /sprint:design."
+  active_files: []
+  dirty_state: false
+  blockers: []
+  safe_to_continue: true
+lane:
+  type: default
+  value: null
+  isolation_notes: "vlad engine worktree at the new pin; qualifying lanes in dedicated checkouts; node_modules by real copy, never a junction (S-05's walker finding)."

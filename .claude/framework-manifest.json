@@ -1265,7 +1265,7 @@
         "src": ".claude/agents/president/_system/policy/sprint-routing.json",
         "dest": ".claude/agents/president/_system/policy/sprint-routing.json",
         "kind": "agent",
-        "sha256": "70afa288ceca4b70ef1224fd51b98d0df92d41b018790ff11bbde1fe0f07eb8c",
+        "sha256": "14e820c6fb3c15754486b8fa19b45042760c25e3de71dbe1f3b11ba733b6c2cd",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",
