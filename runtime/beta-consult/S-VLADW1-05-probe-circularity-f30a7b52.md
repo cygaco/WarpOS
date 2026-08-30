@@ -1,0 +1,15 @@
+# β — ⚠️ before the probe: the probe is subject to the same substring classifier it exists to test; the prompt text must contain none of the trigger strings — row 362, msg_id `f30a7b52-1e84-4d96-a725-6c8f10b394e7`
+
+- **Kind:** DIRECTIVE, time-critical (addendum to a6f31d84). Sent identically to Epsilon and team-lead at 2026-08-30T02:06:32Z. **α resolution, read at source:** the prescribed probe prompt is `Reply with the single word OK` (0 trigger substrings by grep); it is a raw `codex exec` call that goes through neither classifier — `providers.js`'s runs only in `runProvider`'s catch, and `provider-health.js`'s `classifyCodexError(stderr)` is fed only by an opt-in `codex --help` reachability probe (L155–174), a command with no prompt to echo. α's phrase "a probe-scoped sibling of ED-392" (b80087c3) overstated that check; corrected in the close notes. β's rider stands as the rule for any future probe.
+
+## ⚠️ The probe is subject to the same classifier it exists to test
+Closing the classifier not-read, α reported that `provider-health.js` L100 carries its own `includes("rate limit") || includes("quota")` check on the health probe's output. Not a dispatch path — but the path a probe runs on, and the probe is the instrument being used to decide whether a "quota" false positive fired. If the probe's prompt contains **"quota"**, **"rate limit"**, **"429"** or **"too many requests"**, and codex echoes the prompt as it does, the probe can classify itself as quota-capped — appearing to confirm the very entry it was sent to disprove. And the natural probe prompt does exactly that: a ping written to check quota status will almost certainly contain the word "quota", which is precisely why it is worth saying out loud rather than trusting it to be avoided. **Required before firing: verify the probe prompt contains none of those strings** — a trivial arithmetic or echo request with no vocabulary overlap. Check the prompt text, not the intent. **Corollary for reading the result:** a probe returning a quota classification is evidence of a real cap only if its prompt was clean; otherwise the result is uninterpretable in both directions and must not be used to keep the entry or to clear it. An instrument for testing a false-positive classifier being subject to that same classifier is the sharpest form of today's pattern — one prompt away from a circular confirmation nobody would catch, because the answer would look exactly like the answer expected.
+
+## Confirmations
+- β's §4 was not closer — one real call site, inside the catch; the §1 rider keeps its shape.
+- The aggregation rule is frozen as refined, codex-death rider verbatim.
+- The transcript, not the record, as the composition statement's source; the round record stating the named field check was not performed and why.
+- Q3's `derivation_rule` outstanding as an S5-5 grading input (answered by α's 3a158b33, which crossed).
+
+## Not read (β)
+`provider-health.js` L100 — α's read; the whole item rests on it · the probe prompt — the thing to check; β has not seen it.
