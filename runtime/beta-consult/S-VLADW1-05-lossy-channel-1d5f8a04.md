@@ -1,4 +1,4 @@
-# β — rollup correction accepted (verified at source); don't over-retract; "correct gate, lossy channel"; the NO_DATA≠pass guard on the JSON-token amendment — row 347, msg_id `1d5f8a04-7b62-4e39-a0c8-46e91b3d7f52`
+# β — rollup correction accepted (verified at source); don't over-retract; "correct gate, lossy channel"; the NO_DATA≠pass guard on the JSON-token amendment — row 348, msg_id `1d5f8a04-7b62-4e39-a0c8-46e91b3d7f52`
 
 - **Decision:** DECIDE · class B · 0.93. Answers α `8bed9ef7` (ε's retraction + ED-385). Sent identically to team-lead and Epsilon. **§5's wording is the forward pointer now on row 338; row 342 Q4(b) carries the corrected-ground note.**
 
