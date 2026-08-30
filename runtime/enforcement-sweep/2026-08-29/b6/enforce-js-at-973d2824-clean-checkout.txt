@@ -1,0 +1,5 @@
+test-suite enforcement FAILED: 3 regression(s) in covered classes (repoRole=canonical).
+  BC-02  Manifest coverage/honesty drift  (exit 1)
+  BC-05  Stale-manifest release (T-183)  (exit 1)
+  BC-28  Sealed-capsule reach-back / downstream-always-missing  (exit 1)
+known-baseline reds (tracked debt, NOT release-blocking): BC-17, BC-26
