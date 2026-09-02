@@ -123,7 +123,7 @@
 ## Evidence log
 ### 2026-09-02 — S-OS-02 front-page cleanup
 - Evidence type: Commit + command output.
-- Detail/location: branch cleanup/open-source, commit recorded in the Verification log row below (filled at commit); staged summary at record time: 1781 deleted, 91 modified, 3 added; BASELINE files rewritten: 62.
+- Detail/location: branch cleanup/open-source, commit `032aaaef` (1,877 files changed, +3,203 / −147,802); staged summary at record time: 1781 deleted, 91 modified, 3 added; BASELINE files rewritten: 62.
 - Verified by: alpha · Supports: § Definition of Done items 2–4; gate G1 → G2 prerequisite.
 
 ### 2026-09-02 — S-OS-01 anchor
@@ -143,6 +143,7 @@
 | ROADMAP § Epics entry for E-OPEN-SOURCE-001 | Yes | Verified Exists | ROADMAP.md | landed in 5f0edc50 | 2026-09-02 | alpha |
 | GitHub Release pre-cleanup-snapshot → 5f0edc50 | Yes | Verified Exists | github.com/cygaco/WarpOS/releases | gh release view (published 2026-09-02T18:51:40Z) | 2026-09-02 | alpha |
 | Private mirror cygaco/WarpOS-pre-cleanup-mirror (224 heads / 50 tags) | Yes | Verified Exists | github.com (PRIVATE) | git ls-remote mirror; gh repo view visibility=PRIVATE | 2026-09-02 | alpha |
+| S-OS-02 cleanup commit 032aaaef on cleanup/open-source (1,877 files, +3,203/−147,802) | Yes | Verified Exists | branch cleanup/open-source (unmerged) | git show --stat 032aaaef; gates in the commit message | 2026-09-02 | alpha |
 
 ## Current next action
 S-OS-02 front-page cleanup on branch cleanup/open-source (in progress 2026-09-02); then S-OS-03 targeted rewrite ONLY after the operator approves the exact diff (gate G2).
