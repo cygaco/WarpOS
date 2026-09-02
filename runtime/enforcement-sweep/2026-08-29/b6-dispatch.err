@@ -1,1 +1,0 @@
-[dispatch-claude] WARN (ED-257 right-sizing): build-chain prompt for 'backend-builder' is 12968B (> 12000B floor) — implies a >15-min unit that may reap read-only with zero worktree diff (SP-20260721-002). Extract an interface/spec pass first, then chunk to <=15-min units with a per-chunk savepoint.

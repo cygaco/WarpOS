@@ -1,4 +1,4 @@
-# Jobzooka — Error Recovery (Regen Spec)
+# Pantry Pilot — Error Recovery (Regen Spec)
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. The existing client-side + server-side recovery patterns below remain correct; **new sections at the bottom** cover the async ticket model: idempotency-key deduplication, worker redelivery after crash, client abort after debit, stuck-ticket sweep cron, and Redis connection failures during idempotency checks.
 
@@ -15,20 +15,20 @@ Fallback logic, retry strategies, and graceful degradation patterns across the p
 | HTTP 429 (rate limit)           | Wait 3s \* (attempt + 1), retry | 2           |
 | HTTP 502 + "overloaded"         | Wait 3s \* (attempt + 1), retry | 2           |
 | Network error (TypeError)       | Wait 2s \* (attempt + 1), retry | 2           |
-| HTTP 402 (insufficient rockets) | Throw immediately, no retry     | 0           |
+| HTTP 402 (weekly quota exceeded)| Throw immediately, no retry     | 0           |
 | HTTP 401 (auth error)           | Throw immediately, no retry     | 0           |
 | Caller abort (signal)           | Throw "Cancelled" immediately   | 0           |
 | Client timeout (100s)           | Throw "Request timed out"       | 0           |
 | All retries exhausted           | Throw "Failed after retries"    | —           |
 
-### fetchJobs() (BD Scraper)
+### fetchRecipes() (Recipe Index)
 
 | Phase   | Timeout    | Behavior                                               |
 | ------- | ---------- | ------------------------------------------------------ |
 | Trigger | —          | Fire all queries in parallel; collect errors per-query |
 | Poll    | 360s total | Poll every 10s                                         |
 | Force   | After 180s | Set `force: true` — accept partial results             |
-| Timeout | After 360s | Throw "Job search timed out"                           |
+| Timeout | After 360s | Throw "Recipe search timed out"                        |
 
 Progress callback: `onProgress(pending, total)` called each poll cycle.
 
@@ -46,28 +46,28 @@ Prevents internal details from leaking to users:
 
 ---
 
-## Two-Phase Market Pipeline (Step6Analysis.tsx)
+## Two-Phase Menu Pipeline (Step6Analysis.tsx)
 
-### Phase 1: MARKET_PREP
+### Phase 1: MENU_PREP
 
 ```
-try runMarketPrep(data)
+try runMenuPrep(data)
   → success: prepReport string (feeds into Phase 2)
   → failure: log warning, return null (Phase 2 runs without prep)
 ```
 
-### Phase 2: MARKET
+### Phase 2: MENU
 
 ```
-try callClaude("MARKET", input)
+try callClaude("MENU", input)
   → failure: retry with smaller input (slim profile only, no raw data)
     → failure: throw to user
 ```
 
-### buildMarketSummary Fallback
+### buildMenuSummary Fallback
 
 ```
-try JSON.parse(data) → buildMarketSummary()
+try JSON.parse(data) → buildMenuSummary()
   → failure: silently skip summary (/* ignore */)
 ```
 
@@ -77,7 +77,7 @@ On error: error card with retry button + hint "If this keeps failing, go back an
 
 ---
 
-## BD API Error Handling (src/app/api/jobs/route.ts)
+## Recipe Index API Error Handling (src/app/api/recipes/route.ts)
 
 ### Trigger Phase
 
@@ -88,7 +88,7 @@ On error: error card with retry button + hint "If this keeps failing, go back an
 ### Poll Phase
 
 - Each snapshot polled independently
-- BD error records separated from job records (`include_errors=true`)
+- Index error records separated from recipe records (`include_errors=true`)
 - Error codes and samples logged for debugging
 
 ### Force-Complete
@@ -101,7 +101,7 @@ When `force: true` (client sends after 3 min):
 
 ### Thin Data Warnings
 
-- BD error records → `"query": N listings returned errors (error_code)`
+- Index error records → `"query": N results returned errors (error_code)`
 - Timeout skips → `"N query(s) timed out and were skipped"`
 - Deduplication applied to all results
 
@@ -139,11 +139,11 @@ try await request.json()
 
 ---
 
-## Rocket Debit Atomicity (src/lib/rockets.ts)
+## Quota Debit Atomicity (src/lib/usage.ts)
 
 ### Atomic Debit via Lua Script
 
-The `debitRockets()` function uses a Lua script executed atomically in Redis to prevent race conditions where concurrent requests could debit more rockets than available:
+The `debitUsage()` function uses a Lua script executed atomically in Redis to prevent race conditions where concurrent requests could debit more of the weekly quota than remains:
 
 ```lua
 local bal = tonumber(redis.call('GET', KEYS[1]))
@@ -152,7 +152,7 @@ if bal < tonumber(ARGV[1]) then return -2 end  -- insufficient
 return redis.call('DECRBY', KEYS[1], ARGV[1])  -- new balance
 ```
 
-Return codes: `-1` = no account (needs init), `-2` = insufficient balance, positive number = new balance after debit.
+Return codes: `-1` = no account (needs init), `-2` = quota exhausted, positive number = new balance after debit.
 
 The in-memory fallback (dev without Redis) uses simple check-then-subtract since concurrency isn't an issue locally.
 
@@ -182,8 +182,8 @@ BEGIN;
   -- If no rows affected, another deliverer is processing → return 200 with note
 
   -- Do the actual side effects inside the same transaction
-  INSERT INTO rockets_ledger (user_id, delta: $2, reason: $3, stripe_event_id: $1);
-  -- trigger updates rockets_balances
+  INSERT INTO usage_ledger (user_id, delta: $2, reason: $3, stripe_event_id: $1);
+  -- trigger updates usage_balances
 
   UPDATE stripe_webhook_idempotency SET state = 'done', finished_at = now() WHERE event_id = $1;
 COMMIT;
@@ -231,25 +231,25 @@ Neither save failure blocks the UI.
 
 ---
 
-## Resume Generation (Step10Resumes.tsx)
+## Meal Plan Generation (Step10Plans.tsx)
 
-### Base Resume Failure
+### Base Plan Failure
 
 ```
-try callClaude("RESUME_GEN", ...)
+try callClaude("PLAN_GEN", ...)
   → success: set master + general, move to "selecting" phase
   → failure: show error message, move to "done" phase (user can retry)
 ```
 
-### Targeted Resume Failure
+### Targeted Plan Failure
 
 ```
 try callClaude("TARGETED", ...)
-  → success: apply diffs, set targeted resumes
-  → failure: show "Targeted resume generation failed. Your base resumes are ready."
+  → success: apply diffs, set targeted plans
+  → failure: show "Targeted plan generation failed. Your base plans are ready."
 ```
 
-Partial success: base resumes are preserved even if targeted generation fails.
+Partial success: base plans are preserved even if targeted generation fails.
 
 ### Download Failure
 
@@ -258,16 +258,16 @@ try generateDocxBlob() / generateZipBlob()
   → failure: "Download failed — try again." (non-destructive, can retry)
 ```
 
-### Rocket Balance Fetch
+### Quota Fetch
 
 ```
-try fetch("/api/rockets")
-  → failure: silent fallback to initial balance (150)
+try fetch("/api/usage")
+  → failure: silent fallback to the Free-plan weekly allowance (3)
 ```
 
 ---
 
-## Resume Parsing (Step1Resume.tsx)
+## Recipe Import Parsing (Step1Recipes.tsx)
 
 ### File Extraction
 
@@ -280,7 +280,7 @@ try extractText(file)
 
 ```
 try callClaude("PARSE", text) → JSON.parse(cleanJson(r))
-  → failure: "Resume parsing failed. Please try again."
+  → failure: "Recipe parsing failed. Please try again."
   → cancel: "Cancelled. You can try again."
 ```
 
@@ -292,24 +292,24 @@ Both errors are surfaced inline with the upload form.
 
 ```
 try callClaude("PROFILE", ...)
-  → failure: safeErrorMessage(err, "Profile generation failed. Try again or go back to edit your resume.")
+  → failure: safeErrorMessage(err, "Profile generation failed. Try again or go back to edit your recipes.")
 ```
 
 ---
 
-## Apply Prompt (Step13Apply.tsx)
+## Cart Prompt (Step13Cart.tsx)
 
 ### Prompt Generation
 
 ```
-try callClaude("APPLY", ...)
-  → failure: "Apply prompt generation failed. Please try again."
+try callClaude("CART", ...)
+  → failure: "Cart prompt generation failed. Please try again."
 ```
 
 ### Extension Communication
 
 ```
-try chrome.runtime.sendMessage(extensionId, { type: "start_apply", ... })
+try chrome.runtime.sendMessage(extensionId, { type: "start_cart", ... })
   → response.status !== "ok": show response.error
   → catch: "Extension communication failed. Is the extension still loaded?"
 
@@ -322,7 +322,7 @@ try chrome.runtime.sendMessage(extensionId, { type: "ping" })
 
 ## Data Truncation Fallbacks (src/lib/utils.ts)
 
-### preprocessMarketData()
+### preprocessCatalogData()
 
 ```
 1. Try JSON.parse → build summary header + concat objects
@@ -331,49 +331,49 @@ try chrome.runtime.sendMessage(extensionId, { type: "ping" })
 3. If text > 30,000 chars: substring truncate
 ```
 
-### buildMarketPrepPayload()
+### buildMenuPrepPayload()
 
 ```
-1. Build compact jobs with 300-char description excerpts
+1. Build compact recipes with 300-char description excerpts
 2. If payload > 35,000 chars: retry with 150-char excerpts
 ```
 
 ---
 
-## Hourly Rate Extraction (src/lib/utils.ts)
+## Unit Price Extraction (src/lib/utils.ts)
 
-### extractHourlyRates()
+### extractUnitPrices()
 
-Workaround for BD returning annual salaries for contract roles:
+Workaround for the Recipe Index returning pack prices for items sold by weight:
 
-- Regex: `$XX-$YY/hr` patterns from job description text
-- Filters: $15-$500 range (rejects unreasonable values)
-- Source: `buildMarketPrepPayload()` passes these as `hourlyRatesFound` to MARKET_PREP prompt
+- Regex: `$X.XX/lb` and `$X.XX/oz` patterns from item description text
+- Filters: $0.10-$50 range (rejects unreasonable values)
+- Source: `buildMenuPrepPayload()` passes these as `unitPricesFound` to the MENU_PREP prompt
 
 ---
 
 ## Extension Error Recovery (content.js)
 
-### Per-Job Error
+### Per-Item Error
 
 ```
-try processJob(card)
-  → catch: reportJobResult('failed', { reason: err.message }), closeModal()
+try processItem(card)
+  → catch: reportItemResult('failed', { reason: err.message }), closeModal()
 ```
 
-Individual job failures don't stop the loop — processing continues with the next card.
+Individual item failures don't stop the loop — processing continues with the next card.
 
 ### Page-Level
 
 ```
-try waitForElement(SEL.jobCards, 15000)
-  → timeout: updateStatus({ state: 'error', error: 'No job cards found' })
+try waitForElement(SEL.productCards, 15000)
+  → timeout: updateStatus({ state: 'error', error: 'No product cards found' })
 ```
 
 ### Loop Completion
 
 ```
-runApplyLoop().catch(err => {
+runCartLoop().catch(err => {
   updateStatus({ state: 'error', error: err.message })
   showStatusBadge('Error — check console', '#ff4444')
 })
@@ -381,7 +381,7 @@ runApplyLoop().catch(err => {
 
 ### Modal Cleanup
 
-On any error during job processing, `closeModal()` is called to dismiss any open Easy Apply modal, including handling the "Discard application?" confirmation dialog.
+On any error during item processing, `closeModal()` is called to dismiss any open Quick Add modal, including handling the "Discard this item?" confirmation dialog.
 
 ---
 
@@ -391,17 +391,17 @@ On any error during job processing, `closeModal()` is called to dismiss any open
 | -------------------- | ------------------------------------------------------------------------- |
 | Network              | 2x retry with exponential backoff + X-Idempotency-Key (dedup on retry)    |
 | Claude API           | Retry on 429/502, immediate fail on 401/402. Prompt Caching on every call |
-| BD Scraper           | Async ticket; force-complete after 3 min; warnings for skipped             |
-| Market Pipeline      | `/claude/chain` async; worker checkpoints after MARKET_PREP; resume on crash |
-| Rocket Debit         | **Postgres transactional** — ledger + job enqueue in one BEGIN/COMMIT      |
+| Recipe Index         | Async ticket; force-complete after 3 min; warnings for skipped             |
+| Menu Pipeline        | `/claude/chain` async; worker checkpoints after MENU_PREP; resume on crash |
+| Quota Debit          | **Postgres transactional** — ledger + job enqueue in one BEGIN/COMMIT      |
 | Stripe Webhook       | Postgres three-state idempotency + stale-claim steal + stuck-sweep cron   |
 | Session              | Server → localStorage → null (never blocks UI)                             |
-| Resume Gen           | Base preserved if targeted fails; async ticket with R2 signed URL         |
+| Plan Generation      | Base preserved if targeted fails; async ticket with R2 signed URL         |
 | Ticket Failure       | Refund ledger entry, audit log, stuck-sweep transition                    |
 | Worker Crash         | SIGTERM drain (270s) + Postgres checkpoint + QStash redelivery            |
 | Client Abort         | Abort signal checked post-debit; refund + QStash cancel                   |
 | Redis Failure        | Worker returns non-200 to QStash (retry) if idempotency check unconfirmed |
-| Extension            | Per-job error isolation; modal cleanup; `/apply/outcomes` for durable trail |
+| Extension            | Per-item error isolation; modal cleanup; `/cart/outcomes` for durable trail |
 | User Messages        | safeErrorMessage() contract: code + short message + requestId only        |
 
 ---
@@ -413,13 +413,13 @@ Every ticket-creating endpoint accepts `X-Idempotency-Key: <uuid>` header. The b
 **Flow:**
 
 ```
-POST /jobs/scrape with X-Idempotency-Key: k1
+POST /recipes/search with X-Idempotency-Key: k1
   → Redis GET idempotency:{userId}:k1
      If exists → return stored {ticketId}  (no debit, no enqueue)
      If absent → continue
   → BEGIN;
      INSERT idempotency record (Redis SET with NX + 5min TTL)
-     INSERT INTO rockets_ledger (debit)
+     INSERT INTO usage_ledger (debit)
      SELECT graphile_worker.add_job(...)
     COMMIT
   → Return {ticketId}
@@ -453,7 +453,7 @@ Client-side retry on network error uses the **same idempotency key**, so the sec
 
 ## Client Abort After Debit (v3 — new, RT-017 fix)
 
-**Scenario:** Client calls `POST /jobs/scrape`; server receives request, debits rockets, enqueues job; before the response is sent, the client closes the TCP connection (network partition, tab closed, etc.). Client never receives ticketId → retries → double-debit.
+**Scenario:** Client calls `POST /recipes/search`; server receives request, debits quota, enqueues job; before the response is sent, the client closes the TCP connection (network partition, tab closed, etc.). Client never receives ticketId → retries → double-debit.
 
 **Fix:**
 

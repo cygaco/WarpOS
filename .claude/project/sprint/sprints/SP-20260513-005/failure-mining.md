@@ -274,7 +274,7 @@ versions because there is always issues and tons of troubleshooting.`
 
 **Cited example:**
 - PC-20260513-0006 `source_request_verbatim` (the founding evidence).
-- events.jsonl line 918 (2026-05-12 00:13:38): `<verbatim operator prompt withheld — profane>`
+- events.jsonl line 918 (2026-05-12 00:13:38): `<verbatim operator prompt withheld — profane; the full text is PC-20260513-0006 source_request_verbatim>`
 
 **Frequency:** This is the whole sprint.
 

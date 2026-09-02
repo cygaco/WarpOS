@@ -1,6 +1,6 @@
-# Jobzooka — Master Copy Strategy
+# Pantry Pilot — Master Copy Strategy
 
-This document defines the non-negotiable principles that govern **all in-app copy** at Jobzooka.
+This document defines the non-negotiable principles that govern **all in-app copy** at Pantry Pilot.
 
 It applies to:
 
@@ -14,17 +14,17 @@ If there is a conflict between documents, **this document wins**.
 
 ## Purpose
 
-The purpose of in-app copy at Jobzooka is to:
+The purpose of in-app copy at Pantry Pilot is to:
 
 - Help users understand what is happening immediately
-- Reduce anxiety around job searching
+- Reduce the daily decision load around feeding a household
 - Guide users toward the next meaningful action
 - Do so in a way that feels competent and direct, not corporate or patronizing
-- Reflect Jobzooka's personality without sacrificing clarity
+- Reflect Pantry Pilot's personality without sacrificing clarity
 
-Jobzooka copy is not marketing copy.
-Jobzooka copy is not documentation.
-Jobzooka copy is a **product interface**.
+Pantry Pilot copy is not marketing copy.
+Pantry Pilot copy is not documentation.
+Pantry Pilot copy is a **product interface**.
 
 ---
 
@@ -32,15 +32,15 @@ Jobzooka copy is a **product interface**.
 
 Primary audience:
 
-- Job seekers under stress (unemployed, underemployed, or anxious about career change)
-- Mix of technical and non-technical professionals
-- Range from recent graduates to senior professionals
+- Home cooks under time pressure (weeknight dinner decisions, tight budgets, picky households)
+- Mix of confident and reluctant cooks
+- Range from solo cooks to households of six
 - Mobile and desktop users
 
 Implications:
 
 - Copy must be readable at a standard comprehension level
-- Users are stressed — they need reassurance, not pressure
+- Users are rushed — they need reassurance, not pressure
 - Users are goal-oriented — they want to get things done, not read explanations
 - If copy feels condescending, users disengage
 - If copy feels confusing, users lose trust in the AI outputs
@@ -78,9 +78,9 @@ A "unit" is:
 
 If a line requires "and," "but," or multiple clauses, it should be split.
 
-### 3. Reduce Anxiety, Don't Create It
+### 3. Reduce Pressure, Don't Create It
 
-Job searching is inherently stressful. Jobzooka copy must never add to that stress.
+Feeding a household every night is already relentless. Pantry Pilot copy must never add to that pressure.
 
 Therefore:
 
@@ -97,9 +97,9 @@ Copy should make action feel:
 
 #### 3a. Do Not Undercut Momentum
 
-Reducing anxiety does not mean removing confidence.
+Reducing pressure does not mean removing confidence.
 
-When the product signal is strong (e.g., market data loaded, resume generated, score increased), copy should:
+When the product signal is strong (e.g., catalog data loaded, list generated, score increased), copy should:
 
 - State what happened clearly
 - Invite the next step
@@ -115,13 +115,13 @@ The goal is calm confidence, not reassurance-by-withdrawal.
 
 ### 4. Personality Is a Tool, Not the Goal
 
-Jobzooka has a direct, competent personality — like a skilled recruiter who cuts through the noise.
+Pantry Pilot has a direct, competent personality — like a calm head chef who cuts through the noise.
 
 However:
 
 - Personality exists to **help the user**, not entertain itself
-- Military metaphors (READY/AIM/FIRE) are structural, not decorative
-- Rocket imagery is functional (credits), not whimsical
+- Flight-plan metaphors (PLAN/PREP/SHOP) are structural, not decorative
+- Pantry imagery is functional (stock levels), not whimsical
 
 If removing personality does not reduce effectiveness, it should be removed.
 
@@ -138,27 +138,27 @@ All copy decisions must follow this order:
    - Conversion
 
 2. **Audience constraints**
-   - Stress level
+   - Time pressure
    - Goal orientation
    - Trust sensitivity
-   - Varied technical literacy
+   - Varied cooking confidence
 
 3. **Surface-specific rules**
    - CTA vs modal vs toast vs tooltip
    - Stakes of the moment
 
-4. **Jobzooka personality**
+4. **Pantry Pilot personality**
    - Direct, competent tone
-   - Military/tactical metaphors (sparingly)
-   - Rocket/launch imagery (where relevant)
+   - Flight-plan metaphors (sparingly)
+   - Kitchen/pantry imagery (where relevant)
 
-Jobzooka personality may **never override** items 1–3.
+Pantry Pilot personality may **never override** items 1–3.
 
 ---
 
-## What "Good Copy" Means at Jobzooka
+## What "Good Copy" Means at Pantry Pilot
 
-Good Jobzooka copy is:
+Good Pantry Pilot copy is:
 
 - Immediately understandable
 - Shorter than expected
@@ -173,13 +173,13 @@ Good copy does **not**:
 - Try to be clever at the expense of meaning
 - Sound like marketing
 - Sound like a chatbot trying to be your friend
-- Use job-search jargon the user doesn't know
+- Use culinary jargon the user doesn't know
 
 ---
 
 ## Conversion Philosophy
 
-At Jobzooka, conversion does not mean pressure.
+At Pantry Pilot, conversion does not mean pressure.
 
 Conversion means:
 
@@ -187,18 +187,18 @@ Conversion means:
 - Making that step feel easy and low-risk
 - Removing uncertainty, not adding urgency
 
-Jobzooka optimizes for:
+Pantry Pilot optimizes for:
 
 - Completing the current step
 - Moving forward in the wizard
 - Generating one more output
 - Coming back to finish later
 
-Jobzooka does **not** optimize for:
+Pantry Pilot does **not** optimize for:
 
 - Forcing commitment
 - Artificial urgency
-- FOMO-based pressure ("others are applying NOW")
+- FOMO-based pressure ("other households are planning NOW")
 - Loud hype language
 
 Copy should make users think:
@@ -218,9 +218,10 @@ There are moments where personality actively harms trust.
 In these contexts, copy must be neutral and direct:
 
 - Error messages (API failures, parsing errors)
-- Payment and rocket transactions
+- Payment and subscription changes
 - Authentication and account access
 - Data privacy and export
+- Allergen and dietary restriction warnings
 - Destructive or irreversible actions (data clearing, session reset)
 - Rate limiting or budget exhaustion messages
 
@@ -229,7 +230,7 @@ In these moments:
 - Use full sentences
 - Use plain language
 - Do not joke
-- Do not reference rockets metaphorically
+- Do not reference the pantry metaphorically
 - Do not soften seriousness with humor
 
 Trust > tone.
@@ -238,25 +239,25 @@ Trust > tone.
 
 ## Emotional Safety
 
-Jobzooka copy must never:
+Pantry Pilot copy must never:
 
 - Shame the user
 - Blame the user
 - Imply incompetence
-- Create guilt about job search progress
+- Create guilt about how the household eats
 - Suggest the user is behind or failing
 
 Avoid phrasing like:
 
 - "You failed to…"
-- "Your resume is missing…"
+- "Your recipe box is missing…"
 - "You should have…"
-- "Other candidates are…"
+- "Other households are…"
 
 Prefer phrasing like:
 
 - "That didn't work."
-- "We didn't find any results."
+- "We didn't find any matches."
 - "Try again with different terms."
 - "You can update this anytime."
 
@@ -268,7 +269,7 @@ The app is always on the user's side.
 
 A piece of copy is successful if:
 
-1. A job seeker under stress can understand it instantly
+1. A rushed home cook can understand it instantly
 2. The next step is obvious
 3. The user does not feel judged or pressured
 4. The copy feels intentional and competent
@@ -309,7 +310,7 @@ If a future document contradicts this strategy, this strategy takes precedence.
 
 ## Final Principle
 
-Jobzooka copy should feel:
+Pantry Pilot copy should feel:
 
 - Easy to read
 - Easy to trust

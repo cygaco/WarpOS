@@ -20,7 +20,7 @@ Last verified: 2026-04-28.
 |---|---|---|
 | Test config | `playwright.config.ts` | testDir `./requirements`, testMatch `**/tests/**/*.spec.ts`. Projects: chromium + mobile (375x812). webServer: `npm run dev`. baseURL: localhost:3000. trace on-first-retry, screenshot on failure. |
 | E2E specs | `_requirements/<feature>/tests/*.spec.ts` | One folder per feature, mirroring `_requirements/04-features/`. Existing: `_requirements/onboarding/tests/{smoke,step-walk}.spec.ts`, `_requirements/backend/tests/gate-dodger.spec.ts`. |
-| Shared fixtures | `_requirements/_shared/fixtures/dummy-session.json` | Alexandra Chen persona pre-built session |
+| Shared fixtures | `_requirements/_shared/fixtures/dummy-session.json` | Family Planner persona pre-built session |
 | Shared helpers | `_requirements/_shared/helpers/{dummy-plug,assertions,upload}.ts` | DM-mode jump, no-flash assertion, file-upload patterns |
 | MCP runs | `runtime/qa/runs/<timestamp>.json` | Output of MCP-driven flows (gitignored) |
 
@@ -55,7 +55,7 @@ Project-scope registration creates `.mcp.json` (or settings entry) in the repo s
 
 ### Recommended config
 
-Launch with `--vision auto --headed` for jobzooka work — accessibility tree by default + screenshots when the layout matters + visible browser for the user to watch.
+Launch with `--vision auto --headed` for Pantry Pilot work — accessibility tree by default + screenshots when the layout matters + visible browser for the user to watch.
 
 ### Tool surface (selected)
 
@@ -78,16 +78,16 @@ Launch with `--vision auto --headed` for jobzooka work — accessibility tree by
     { "action": "navigate", "url": "http://localhost:3000", "ok": true },
     { "action": "snapshot", "tree": { "headings": [...], "buttons": [...] } },
     { "action": "screenshot", "path": "runtime/qa/runs/2026-04-28T20-00-00/step-1.png" },
-    { "action": "click", "ref": "Upload Resume", "ok": true }
+    { "action": "click", "ref": "Import Recipe", "ok": true }
   ],
   "result": "pass",
-  "notes": "Step 1 → 5 walked clean; resume parse triggered Turnstile; Alexandra Chen profile populated"
+  "notes": "Step 1 → 5 walked clean; recipe parse triggered Turnstile; Family Planner household populated"
 }
 ```
 
 ## Project conventions
 
-- **Use Alexandra Chen** (Director-level PM) dummy data from `src/lib/dummy-data.ts` for any walking-test. Persona is calibrated for fixture grounding rules.
+- **Use the Family Planner persona** (household of four, shared list) dummy data from `src/lib/dummy-data.ts` for any walking-test. Persona is calibrated for fixture grounding rules.
 - **Pair Phase B shadcn migration with MCP visual diff:** snapshot before swapping bespoke component → swap → snapshot after → compare. Catches layout regressions during the shadcn rollout.
 - **Don't commit screenshots.** `runtime/qa/runs/` is gitignored.
 

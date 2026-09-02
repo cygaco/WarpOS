@@ -39,7 +39,7 @@ labeled so it is never consumed as a proof. That boundary currently lives only i
 things make prose an inadequate home, and they are the ADR-0040 argument in a second instance:
 
 1. **The control ships to a different repository.** It is a product-layer control that must run on the user's
-   machine, inside the sibling `vlad` product repo (registered in `paths.portfolioRegistry`) — a repo that will
+   machine, inside the sibling `vlad` product repo (registered in the HOME-anchored portfolio registry, `~/.warpos/portfolio.json`) — a repo that will
    never contain WarpOS's sprint trackers. A boundary defined only in `trackers/sprints/` does not resolve
    where the control runs.
 2. **Its two strongest citations are machine-local.** β's verdict is canonical at `paths.betaEvents` line 293,

@@ -1,4 +1,4 @@
-# Jobzooka — Shared Granular Stories
+# Pantry Pilot — Shared Granular Stories
 
 ## Purpose
 
@@ -81,18 +81,18 @@ Shared stories are **not standalone** — they are inherited by feature-specific
 
 ---
 
-## CS-006: Rocket Cost Guard
+## CS-006: Plan Entitlement Guard
 
-> As a System, I want to verify sufficient rocket balance before executing a paid operation, so that the credit system cannot be bypassed.
+> As a System, I want to verify the household's plan entitlement before executing a gated operation, so that plan limits cannot be bypassed.
 
 **Acceptance Criteria:**
 
-- Balance check occurs server-side before the operation executes
-- Insufficient balance returns an error with the required cost and remaining balance
-- No partial work is performed or persisted when balance is insufficient
-- The debit is atomic — balance is not reduced if the operation fails
+- The entitlement check occurs server-side before the operation executes
+- An over-limit request returns an error naming the plan limit and the current usage
+- No partial work is performed or persisted when the household is over its limit
+- The usage increment is atomic — usage is not incremented if the operation fails
 
-**Verifiable by:** API returns 402 with `{ required, remaining }` when balance is insufficient; balance unchanged after failed operation; balance reduced by exact cost after successful operation.
+**Verifiable by:** API returns 402 with `{ limit, used }` when the household is over its plan limit; usage unchanged after failed operation; usage incremented by exactly one after successful operation.
 
 ---
 
@@ -103,10 +103,10 @@ Shared stories are **not standalone** — they are inherited by feature-specific
 **Acceptance Criteria:**
 
 - Requests exceeding the rate limit receive a 429 response with a `Retry-After` header
-- Rate-limited requests do not consume rockets or trigger downstream processing
+- Rate-limited requests do not count against plan usage or trigger downstream processing
 - Rate limits reset after the specified window
 
-**Verifiable by:** Nth+1 request within window returns 429; `Retry-After` header is present; rocket balance unchanged for rate-limited requests.
+**Verifiable by:** Nth+1 request within window returns 429; `Retry-After` header is present; plan usage unchanged for rate-limited requests.
 
 ---
 

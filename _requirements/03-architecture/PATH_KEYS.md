@@ -18,7 +18,7 @@ Markdown convention: reference paths as `paths.X` in prose. Code: `const { PATHS
 | `auditsRoot` | `_requirements/_audits` | dir | framework | yes | 0.2.0 |  |
 | `betaEvents` | `.claude/agents/president/_system/beta/events.jsonl` | jsonl | runtime | yes | 0.0.0 |  |
 | `betaHonestyWaivers` | `.claude/project/memory/beta-honesty-waivers.jsonl` | jsonl | runtime | yes | 0.17.0 | Append-only triage ledger for scan:sprint-beta-honesty findi |
-| `betaSourceData` | `.claude/agents/president/_system/beta/beta-source-data.md` | md | runtime | yes | 0.0.0 |  |
+| `betaSourceData` | `.claude/agents/president/_system/beta/mined/beta-source-data.md` | md | runtime | yes | 0.0.0 |  |
 | `betaSystem` | `.claude/agents/president/_system/beta` | dir | framework | yes | 0.0.0 |  |
 | `briefs` | `_docs/briefs` | dir | project | yes | 0.5.1 |  |
 | `briefsCurrent` | `_docs/briefs` | dir | runtime | yes | 0.5.1 |  |

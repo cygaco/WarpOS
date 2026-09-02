@@ -78,7 +78,7 @@ const PATHS = {
   "specGraph": path.join(PROJECT, ".claude", "project", "maps", "SPEC_GRAPH.json"),
   "judgmentModel": path.join(PROJECT, ".claude", "agents", "president", "_system", "beta", "judgement-model.md"),
   "judgmentRecommendations": path.join(PROJECT, ".claude", "agents", "president", "_system", "beta", "judgement-model-recommendations.md"),
-  "betaSourceData": path.join(PROJECT, ".claude", "agents", "president", "_system", "beta", "beta-source-data.md"),
+  "betaSourceData": path.join(PROJECT, ".claude", "agents", "president", "_system", "beta", "mined", "beta-source-data.md"),
   "betaEvents": path.join(PROJECT, ".claude", "agents", "president", "_system", "beta", "events.jsonl"),
   "lexicon": path.join(PROJECT, ".claude", "agents", "president", "_system", "lexicon.md"),
   "pathsLib": path.join(PROJECT, "scripts", "hooks", "lib", "paths.js"),

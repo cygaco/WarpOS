@@ -2,97 +2,97 @@
   "version": 1,
   "description": "Single source of truth for values that appear in multiple files. When a value here changes, all appears_in files are flagged STALE. edit-watcher checks for drift.",
 
-  "rocket_costs": {
-    "market_rerun": {
+  "usage_costs": {
+    "catalog_rerun": {
       "value": 50,
-      "unit": "rockets",
+      "unit": "quota",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md",
-        "_requirements/04-features/market-research/PRD.md"
+        "_requirements/04-features/catalog-research/PRD.md"
       ]
     },
-    "targeted_tier1": {
+    "store_list_tier1": {
       "value": 50,
-      "unit": "rockets",
-      "context": "1-3 categories",
+      "unit": "quota",
+      "context": "1-3 meal themes",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md",
-        "_requirements/04-features/resume-generation/PRD.md"
+        "_requirements/04-features/list-generation/PRD.md"
       ]
     },
-    "targeted_tier2": {
+    "store_list_tier2": {
       "value": 35,
-      "unit": "rockets",
-      "context": "4-6 categories",
+      "unit": "quota",
+      "context": "4-6 meal themes",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md"
       ]
     },
-    "targeted_tier3": {
+    "store_list_tier3": {
       "value": 25,
-      "unit": "rockets",
-      "context": "7+ categories",
+      "unit": "quota",
+      "context": "7+ meal themes",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md"
       ]
     },
-    "linkedin_rewrite": {
+    "recipe_card_pack": {
       "value": 75,
-      "unit": "rockets",
+      "unit": "quota",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md",
-        "_requirements/04-features/linkedin/PRD.md"
+        "_requirements/04-features/recipe-cards/PRD.md"
       ]
     },
     "free_tier": {
       "value": 150,
-      "unit": "rockets",
+      "unit": "quota",
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         ".claude/agents/INTEGRATION-MAP.md",
-        "src/lib/rockets.ts"
+        "src/lib/usage.ts"
       ]
     }
   },
 
-  "rocket_packs": {
-    "scout": { "rockets": 100, "price_usd": 4.99 },
-    "strike": { "rockets": 300, "price_usd": 12.99 },
-    "arsenal": { "rockets": 750, "price_usd": 24.99 }
+  "plan_quotas": {
+    "free": { "quota": 150, "price_usd": 0 },
+    "plus": { "quota": 600, "price_usd": 5 },
+    "family": { "quota": 1500, "price_usd": 9 }
   },
 
-  "competitiveness_thresholds": {
+  "readiness_thresholds": {
     "low_max": { "value": 39, "label": "Low" },
     "moderate_max": { "value": 69, "label": "Moderate" },
     "strong_max": { "value": 89, "label": "Strong" },
     "exceptional_min": { "value": 90, "label": "Exceptional" },
     "appears_in": [
-      "_requirements/04-features/competitiveness/PRD.md",
-      "_requirements/04-features/competitiveness/STORIES.md",
-      "_requirements/04-features/competitiveness/COPY.md",
-      "src/lib/competitiveness.ts"
+      "_requirements/04-features/readiness/PRD.md",
+      "_requirements/04-features/readiness/STORIES.md",
+      "_requirements/04-features/readiness/COPY.md",
+      "src/lib/readiness.ts"
     ]
   },
 
-  "competitiveness_weights": {
+  "readiness_weights": {
     "deep_dive_qa": { "weight": 0.15, "step": 6 },
-    "target_categories": { "weight": 0.05, "step": 5 },
-    "skill_curation": { "weight": 0.05, "step": 7 },
-    "master_resume": { "weight": 0.1, "step": 8 },
-    "general_resume": { "weight": 0.05, "step": 8 },
-    "targeted_resumes": { "weight": 0.25, "step": 8, "note": "uncapped" },
-    "linkedin": { "weight": 0.15, "step": 9 },
-    "auto_apply": { "weight": 0.1, "step": 10 },
+    "target_themes": { "weight": 0.05, "step": 5 },
+    "ingredient_curation": { "weight": 0.05, "step": 7 },
+    "master_list": { "weight": 0.1, "step": 8 },
+    "weekly_list": { "weight": 0.05, "step": 8 },
+    "store_lists": { "weight": 0.25, "step": 8, "note": "uncapped" },
+    "recipe_cards": { "weight": 0.15, "step": 9 },
+    "auto_cart": { "weight": 0.1, "step": 10 },
     "form_answers": { "weight": 0.1, "step": 10 },
     "appears_in": [
       ".claude/agents/INTEGRATION-MAP.md",
-      "_requirements/04-features/competitiveness/STORIES.md",
-      "src/lib/competitiveness.ts"
+      "_requirements/04-features/readiness/STORIES.md",
+      "src/lib/readiness.ts"
     ]
   },
 
@@ -116,8 +116,8 @@
       "value": 30,
       "appears_in": ["_requirements/04-features/onboarding/STORIES.md"]
     },
-    "hours_per_year": {
-      "value": 2080,
+    "weeks_per_year": {
+      "value": 52,
       "appears_in": [
         "_requirements/00-canonical/GLOSSARY.md",
         "_requirements/04-features/onboarding/INPUTS.md"
@@ -140,61 +140,60 @@
   },
 
   "enums": {
-    "employment_types": {
-      "values": ["Full-time", "Part-time", "Contract"],
+    "meal_types": {
+      "values": ["Breakfast", "Lunch", "Dinner"],
       "appears_in": [
         "_requirements/04-features/onboarding/INPUTS.md",
         "src/lib/types.ts"
       ]
     },
-    "location_types": {
-      "values": ["Remote", "Hybrid", "On-site"],
+    "shopping_modes": {
+      "values": ["Pickup", "Delivery", "In-store"],
       "appears_in": [
         "_requirements/04-features/onboarding/INPUTS.md",
         "src/lib/types.ts"
       ]
     },
-    "seniority_levels": {
+    "skill_levels": {
       "values": [
-        "Internship",
-        "Entry level",
-        "Associate",
-        "Mid-Senior level",
-        "Director",
-        "Executive"
+        "Beginner",
+        "Home cook",
+        "Confident cook",
+        "Advanced",
+        "Professional"
       ],
       "appears_in": [
         "_requirements/04-features/onboarding/INPUTS.md",
         "src/lib/types.ts"
       ]
     },
-    "start_dates": {
+    "plan_start_dates": {
       "values": [
-        "Immediately",
-        "2 weeks notice",
-        "1 month notice",
-        "2 months notice"
+        "This week",
+        "Next week",
+        "In 2 weeks",
+        "In 1 month"
       ],
       "appears_in": ["_requirements/04-features/onboarding/INPUTS.md"]
     },
-    "degree_types": {
+    "diet_types": {
       "values": [
-        "Associate's",
-        "Bachelor's",
-        "Master's",
-        "MBA",
-        "PhD",
-        "JD",
-        "MD",
+        "None",
+        "Vegetarian",
+        "Vegan",
+        "Pescatarian",
+        "Gluten-free",
+        "Dairy-free",
+        "Low-sodium",
         "Other"
       ],
       "appears_in": ["_requirements/04-features/onboarding/INPUTS.md"]
     },
-    "rocket_tiers": {
-      "values": ["free", "scout", "strike", "arsenal"],
+    "plan_tiers": {
+      "values": ["free", "plus", "family"],
       "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "src/lib/types.ts"]
     },
-    "job_match_strength": {
+    "theme_match_strength": {
       "values": ["high", "mid", "low"],
       "appears_in": ["src/lib/types.ts"]
     },
@@ -202,7 +201,7 @@
       "values": ["answered", "unanswered", "not-relevant"],
       "appears_in": ["src/lib/types.ts"]
     },
-    "accepted_resume_formats": {
+    "accepted_import_formats": {
       "values": ["PDF", "DOCX", "TXT", "MD"],
       "appears_in": [
         "_requirements/04-features/onboarding/PRD.md",
@@ -217,7 +216,7 @@
       "value": 20,
       "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "CLAUDE.md"]
     },
-    "bright_data_per_minute": {
+    "recipe_index_per_minute": {
       "value": 10,
       "appears_in": ["_requirements/00-canonical/GLOSSARY.md", "CLAUDE.md"]
     },
@@ -232,12 +231,12 @@
       "PARSE",
       "PROFILE",
       "QUERY_GEN",
-      "MARKET_PREP",
-      "MARKET",
-      "RESUME_GEN",
-      "TARGETED",
-      "LINKEDIN",
-      "APPLY"
+      "MENU_PREP",
+      "MENU",
+      "PLAN_GEN",
+      "TAILORED",
+      "GROCERY",
+      "SHOP"
     ],
     "appears_in": [
       ".claude/agents/INTEGRATION-MAP.md",

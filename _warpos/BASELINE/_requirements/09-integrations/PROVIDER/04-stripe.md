@@ -27,6 +27,8 @@ Frontend: no `@stripe/stripe-js` yet (Hosted Checkout doesn't require it for the
 |---|---|---|
 | `STRIPE_SECRET_KEY` | Backend (Fly) | Server-side API auth |
 | `STRIPE_WEBHOOK_SECRET` | Backend (Fly) | HMAC verification for incoming webhook |
+| `STRIPE_PRICE_PLUS_MONTHLY` | Backend (Fly) | Price ID for the Plus plan ($5/month) |
+| `STRIPE_PRICE_FAMILY_MONTHLY` | Backend (Fly) | Price ID for the Family plan ($9/month) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Frontend (Vercel) | Only if/when Elements is added; not required for Hosted Checkout |
 
 The `/api/stripe/config` endpoint reports `configured: true` only when all required vars are present — keeps the UI from showing pay buttons that would 500.
@@ -34,31 +36,31 @@ The `/api/stripe/config` endpoint reports `configured: true` only when all requi
 ## Project conventions
 
 - **Hosted Checkout, not Elements.** Zero PCI-DSS surface. Stripe-hosted UI handles 3DS, wallets, disputes. The frontend only redirects.
-- **3-state webhook idempotency** via Postgres `stripe_events` table: `pending → applied → failed`, gated by `ON CONFLICT (event_id) DO NOTHING`. See `_requirements/03-architecture/DATA_FLOW.md` (Rocket Economy section).
-- **Single transaction** for webhook → ledger: `UPDATE stripe_events SET status='applied' WHERE id=$1 AND status='pending' RETURNING *; INSERT INTO rockets_ledger; UPDATE rockets_balance`. If the UPDATE returns no rows, the event was already processed — return 200 (replay-safe).
-- **Metadata convention:** every Checkout session carries `metadata: { userId, packId }` so webhooks can map the event back to a user.
+- **3-state webhook idempotency** via Postgres `stripe_events` table: `pending → applied → failed`, gated by `ON CONFLICT (event_id) DO NOTHING`. See `_requirements/03-architecture/DATA_FLOW.md` (Plan Quota Economy section).
+- **Single transaction** for webhook → ledger: `UPDATE stripe_events SET status='applied' WHERE id=$1 AND status='pending' RETURNING *; INSERT INTO usage_ledger; UPDATE usage_balances`. If the UPDATE returns no rows, the event was already processed — return 200 (replay-safe).
+- **Metadata convention:** every Checkout session carries `metadata: { userId, planId }` so webhooks can map the event back to a user.
 - **Test-mode keys for all preview deploys.** Live keys never leave production environment.
 
-## Rocket packs
+## Plan tiers
 
-| Pack | Rockets | Price |
+| Tier | Weekly quota | Price |
 |---|---|---|
-| Scout | 100 | $4.99 |
-| Strike | 300 | $12.99 |
-| Arsenal | 750 | $24.99 |
+| Free | 3 planned meals, 1 list | $0 |
+| Plus | Unlimited plans, store lists | $5/month |
+| Family | Everything in Plus + shared household | $9/month |
 
-Defined in product code (search for `BILLABLE_PROMPTS` and pack definitions in `src/lib/rockets.ts`).
+Defined in product code (search for `BILLABLE_PROMPTS` and the `PLAN_TIERS` constants in `src/lib/plans.ts`).
 
 ## Known issues
 
 - `STRIPE_WEBHOOK_SECRET` per environment: dev, staging, production all need separate webhook endpoints in the Stripe dashboard. Each generates its own secret. Document in env-vars table per Fly app.
-- Stripe Customer Portal (subscription management) is **post-MVP** — current rocket model is one-time pack purchases only.
+- Stripe Customer Portal (self-serve plan changes and cancellation) is **post-MVP** — current model is Hosted Checkout subscription creation only.
 
 ## Failure modes
 
 | Failure | Behavior |
 |---|---|
 | Webhook signature mismatch | 400 + log + alert. No state mutation. |
-| Webhook delayed | Success page polls `GET /api/rockets/balance` for ~30s. Ledger is source of truth. |
+| Webhook delayed | Success page polls `GET /api/usage` for ~30s. Ledger is source of truth. |
 | Replay (same event_id) | UPDATE returns 0 rows → 200, no double-credit |
 | Network error post-Checkout, pre-redirect | User stays on Stripe page; Stripe retries internally. No client-side retry needed. |

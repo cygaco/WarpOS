@@ -1,4 +1,4 @@
-# Jobzooka — Environment Variables
+# Pantry Pilot — Environment Variables
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Backend env vars now live on Fly (secrets), not Vercel. Frontend keeps only `NEXT_PUBLIC_*` and OAuth callback URLs. The v2 `NEXT_PUBLIC_DUMMY_PLUG_CODE` gate is **deprecated and removed** per backend PRD §16 decision 16.
 
@@ -18,10 +18,10 @@
 
 | Variable                      | Purpose                                                                         |
 | ----------------------------- | ------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL`    | Backend origin (e.g. `https://<slug>.jobzooka.app`). Empty string = legacy `/api/*` same-origin routes during rollback window. |
+| `NEXT_PUBLIC_API_BASE_URL`    | Backend origin (e.g. `https://<slug>.pantrypilot.example`). Empty string = legacy `/api/*` same-origin routes during rollback window. |
 | `NEXT_PUBLIC_APP_URL`         | App URL for OAuth callback construction                                         |
 | `NEXT_PUBLIC_OAUTH_GOOGLE`    | Show Google OAuth button in auth modals (any truthy value)                      |
-| `NEXT_PUBLIC_OAUTH_LINKEDIN`  | Show LinkedIn OAuth button in auth modals (any truthy value)                    |
+| `NEXT_PUBLIC_OAUTH_APPLE`     | Show Apple OAuth button in auth modals (any truthy value)                       |
 
 **Client bundle rule:** only `NEXT_PUBLIC_*` vars ship to the client. All secrets remain server-side only. The v2 `NEXT_PUBLIC_DUMMY_PLUG_CODE` bypass is **gone** — admin/dev access is gated server-side via `ENABLE_DEV_TOOLS` + admin-scope JWT.
 
@@ -34,9 +34,9 @@
 | Variable                       | Purpose                                          | Used By                                |
 | ------------------------------ | ------------------------------------------------ | -------------------------------------- |
 | `ANTHROPIC_API_KEY`            | Claude API authentication                        | `/claude`, `/claude/chain`, worker     |
-| `BRIGHTDATA_API_KEY`           | Bright Data scraper authentication               | `/jobs/scrape` (worker-side)           |
+| `RECIPE_INDEX_API_KEY`         | Recipe Index provider authentication             | `/recipes/search` (worker-side)        |
 | `UPSTASH_REDIS_REST_URL`       | Redis connection URL                             | Rate limits, cache, scope cache        |
-| `UPSTASH_REDIS_REST_TOKEN`     | Redis master token (API process)                 | `/claude`, `/rockets/*`, `/session`    |
+| `UPSTASH_REDIS_REST_TOKEN`     | Redis master token (API process)                 | `/claude`, `/usage/*`, `/session`      |
 | `UPSTASH_REDIS_WORKER_TOKEN`   | **Scoped ACL token for worker (research F7)**    | Worker process only; cannot touch ledger/scope/admin keys |
 | `DATABASE_URL`                 | Postgres connection string                       | Ledger, Stripe idempotency, audit log  |
 | `DATABASE_URL_WORKER`          | Worker-scoped Postgres role (tickets + audit only) | Worker process                       |
@@ -71,16 +71,16 @@
 | `R2_ACCOUNT_ID`               | Cloudflare account ID                         |
 | `R2_ACCESS_KEY_ID`            | R2 API key (scoped to single bucket)          |
 | `R2_SECRET_ACCESS_KEY`        | R2 API secret                                 |
-| `R2_BUCKET_NAME`              | Bucket name (e.g., `jobzooka-results`)         |
+| `R2_BUCKET_NAME`              | Bucket name (e.g., `pantrypilot-results`)     |
 | `R2_SIGNED_URL_TTL_SECONDS`   | Signed URL TTL (default 900 = 15 min)         |
 
 ### WebAuthn + admin
 
 | Variable                                 | Purpose                                            |
 | ---------------------------------------- | -------------------------------------------------- |
-| `WEBAUTHN_RP_ID`                         | Relying Party ID (`jobzooka.app`)                  |
+| `WEBAUTHN_RP_ID`                         | Relying Party ID (`pantrypilot.example`)           |
 | `WEBAUTHN_RP_NAME`                       | Relying Party display name                         |
-| `WEBAUTHN_ORIGIN`                        | Expected origin (`https://<slug>.jobzooka.app`)    |
+| `WEBAUTHN_ORIGIN`                        | Expected origin (`https://<slug>.pantrypilot.example`) |
 | `ADMIN_RECOVERY_CODE_ARGON2_MEMORY`      | Argon2id memory parameter (default 64MB)           |
 | `GRAPHILE_WORKER_CONCURRENCY`            | Worker concurrency (default 5)                     |
 | `LEGACY_ROUTES_ENABLED`                  | Boolean (default false). Gates 7-day rollback window on legacy `/api/*` routes. |
@@ -94,20 +94,20 @@
 | ------------------------ | ---------------------------- | ------------------------------ |
 | `GOOGLE_CLIENT_ID`       | Google OAuth client ID       | `/auth/oauth/google`            |
 | `GOOGLE_CLIENT_SECRET`   | Google OAuth client secret   | `/auth/oauth/google`, callback  |
-| `LINKEDIN_CLIENT_ID`     | LinkedIn OAuth client ID     | `/auth/oauth/linkedin`          |
-| `LINKEDIN_CLIENT_SECRET` | LinkedIn OAuth client secret | `/auth/oauth/linkedin`, callback|
+| `APPLE_CLIENT_ID`        | Apple OAuth client ID        | `/auth/oauth/apple`             |
+| `APPLE_CLIENT_SECRET`    | Apple OAuth client secret    | `/auth/oauth/apple`, callback   |
 
 ---
 
-## Stripe (Optional — rocket purchases disabled if not set)
+## Stripe (Optional — plan upgrades disabled if not set)
 
-| Variable                  | Purpose                                 | Used By                         |
-| ------------------------- | --------------------------------------- | ------------------------------- |
-| `STRIPE_SECRET_KEY`       | Stripe API authentication (test or live, per `ENVIRONMENT`) | `/stripe/checkout`, webhook |
-| `STRIPE_WEBHOOK_SECRET`   | Stripe webhook signature verify         | `/stripe/webhook`               |
-| `STRIPE_PRICE_SCOUT`      | Price ID for Scout pack                 | `/stripe/checkout`              |
-| `STRIPE_PRICE_STRIKE`     | Price ID for Strike pack                | `/stripe/checkout`              |
-| `STRIPE_PRICE_ARSENAL`    | Price ID for Arsenal pack               | `/stripe/checkout`              |
+| Variable                        | Purpose                                 | Used By                         |
+| ------------------------------- | --------------------------------------- | ------------------------------- |
+| `STRIPE_SECRET_KEY`             | Stripe API authentication (test or live, per `ENVIRONMENT`) | `/stripe/checkout`, webhook |
+| `STRIPE_WEBHOOK_SECRET`         | Stripe webhook signature verify         | `/stripe/webhook`               |
+| `STRIPE_PRICE_PLUS_MONTHLY`     | Price ID for the Plus plan ($5/month)   | `/stripe/checkout`              |
+| `STRIPE_PRICE_FAMILY_MONTHLY`   | Price ID for the Family plan ($9/month) | `/stripe/checkout`              |
+| `STRIPE_PORTAL_CONFIG_ID`       | Billing-portal configuration for plan changes / cancellation | `/stripe/checkout` |
 
 **Staging enforcement:** `STRIPE_SECRET_KEY` in staging Fly secrets must begin with `sk_test_`; CI deploy step asserts this.
 
@@ -117,15 +117,15 @@
 
 | Variable                       | Purpose                               | Default                    |
 | ------------------------------ | ------------------------------------- | -------------------------- |
-| `BRIGHTDATA_DATASET_ID`        | BD dataset identifier                 | `gd_lpfll7v5hcqtkxl6l`     |
+| `RECIPE_INDEX_DATASET_ID`      | Recipe Index dataset identifier       | `ri_lpfll7v5hcqtkxl6l`     |
 | `CLAUDE_MODEL`                 | Claude model                          | `claude-sonnet-4-6`        |
 | `CLAUDE_MODEL_CLASSIFIER`      | Optional second-pass classifier model | `claude-haiku-4-5-20251001`|
 | `ANTHROPIC_PROMPT_CACHE_ENABLED` | Enable cache_control block in calls | `true`                     |
-| `DAILY_JOB_REQUEST_LIMIT`      | Max BD triggers per day               | `100`                      |
+| `DAILY_INDEX_REQUEST_LIMIT`    | Max Recipe Index triggers per day     | `100`                      |
 | `DAILY_REQUEST_LIMIT`          | Max Claude requests per day           | `500`                      |
 | `DAILY_TOKEN_LIMIT`            | Max Claude output tokens per day      | `2,000,000`                |
 | `DAILY_QSTASH_MESSAGES_PER_ACCOUNT` | Per-account QStash cap           | `100`                      |
-| `FREE_TIER_ROCKETS`            | Initial rocket grant for new accounts | `150`                      |
+| `FREE_TIER_WEEKLY_MEALS`       | Planned meals per week on the Free plan | `3`                      |
 
 **Removed:** `NEXT_PUBLIC_DUMMY_PLUG_CODE` and `ENABLE_TEST_API` are deprecated. Replaced by server-only `ENABLE_DEV_TOOLS`. `ADMIN_SECRET` is replaced by admin-scope JWT + WebAuthn.
 
@@ -140,7 +140,7 @@ Both environments run the same Fly image; only secret values differ.
 | `ENVIRONMENT`                | `staging`                                  | `production`                                    |
 | Stripe keys                  | `sk_test_*` / `whsec_test_*`               | `sk_live_*` / `whsec_live_*`                    |
 | Upstash Redis                | Separate project                           | Production project                              |
-| Fly Postgres                 | Separate app `jobzooka-pg-staging`         | `jobzooka-pg`                                   |
+| Fly Postgres                 | Separate app `pantrypilot-pg-staging`      | `pantrypilot-pg`                                |
 | QStash signing keys          | Separate pair                              | Production pair                                 |
 | CF AOP cert                  | Separate per-zone cert                     | Production per-zone cert                        |
 | GitHub Actions access        | Production secrets never in staging runners| Production runners separate                      |

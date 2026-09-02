@@ -128,7 +128,7 @@ Every screen with editable fields must have a "Downstream data contracts" table.
 
 | Field(s) | Consumed by |
 |---|---|
-| The session field name or description | Feature + specific usage (e.g., "Resume generation — skills section") |
+| The session field name or description | Feature + specific usage (e.g., "Meal plans — ingredients section") |
 
 Rules for these contracts live in `_requirements/03-architecture/DATA-CONTRACTS.md`.
 

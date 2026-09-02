@@ -7,7 +7,7 @@
 - **status:** active
 - **version:** 1.0.0
 - **changeType:** none
-- **used by:** onboarding, resume-generation, auto-apply, dashboard
+- **used by:** onboarding, list-generation, auto-cart, dashboard
 
 ## 1. Shape
 
@@ -15,17 +15,17 @@
 interface WorkspaceState {
   userId: string;
   onboardingProgress: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;  // 7-step onboarding gate
-  savedResumes: Array<{
+  savedLists: Array<{
     id: string;
     title: string;
     s3Key: string;
   }>;
-  applicationHistory: Array<{
-    jobId: string;
-    status: "READY" | "AIM" | "FIRE" | "REJECTED";
-    appliedAt: string;
+  cartHistory: Array<{
+    listId: string;
+    status: "PLAN" | "PREP" | "SHOP" | "SKIPPED";
+    ranAt: string;
   }>;
-  profileVector: Record<string, number>;  // Embedding vector for skill matching
+  profileVector: Record<string, number>;  // Embedding vector for ingredient matching
 }
 ```
 
@@ -36,19 +36,19 @@ interface WorkspaceState {
 
 ## 3. Consumers
 
-- `src/app/dashboard/page.tsx` (determines READY / AIM / FIRE layout)
+- `src/app/dashboard/page.tsx` (determines PLAN / PREP / SHOP layout)
 - `src/components/workspace/*` (UI rendering)
-- `services/backend/src/services/auto-apply.ts`
+- `services/backend/src/services/auto-cart.ts`
 
 ## 4. Breaking changes
 
 - Altering the 0-7 `onboardingProgress` scale (adds / removes steps without migration)
-- Changing application status enums from the READY / AIM / FIRE domain model
+- Changing cart status enums from the PLAN / PREP / SHOP domain model
 - Changing `profileVector` from a key-value embedding shape to an array
 
 ## 5. Required tests
 
-- State machine transitions for `applicationHistory` statuses
+- State machine transitions for `cartHistory` statuses
 - Enforced validation that `profileVector` meets expected dimensionality bounds
 - Schema validation mapping exact JSON response fields to frontend types
 
@@ -61,5 +61,5 @@ interface WorkspaceState {
 
 - Patch: documentation or display-only field.
 - Minor: optional field with default values and no permission change.
-- Major: onboarding progress scale, application status, saved resume shape, or profile vector semantics change.
-- On any version bump, notify: onboarding, resume-generation, auto-apply, dashboard.
+- Major: onboarding progress scale, cart status, saved list shape, or profile vector semantics change.
+- On any version bump, notify: onboarding, list-generation, auto-cart, dashboard.

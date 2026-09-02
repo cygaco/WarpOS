@@ -1,0 +1,28 @@
+{
+  "name": "warpos",
+  "version": "1.2.0",
+  "description": "Autonomous AI operating system for software engineering — registry-driven hooks, transactional updates, honest release gates, generic promotion. (Rebrand to Master Console in progress: E-OPEN-SOURCE-001.)",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cygaco/WarpOS.git"
+  },
+  "homepage": "https://github.com/cygaco/WarpOS#readme",
+  "bugs": {
+    "url": "https://github.com/cygaco/WarpOS/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"scripts/**/*.test.js\"",
+    "check:license": "node --test scripts/checks/license-match.test.js",
+    "paths:build": "node scripts/paths/build.js",
+    "trackers:validate": "node scripts/trackers/validate.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md"
+  ],
+  "private": false
+}

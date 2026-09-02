@@ -349,7 +349,7 @@
     },
     "betaSourceData": {
       "type": "string",
-      "const": ".claude/agents/president/_system/beta/beta-source-data.md",
+      "const": ".claude/agents/president/_system/beta/mined/beta-source-data.md",
       "description": "md (runtime) — paths.betaSourceData"
     },
     "betaEvents": {

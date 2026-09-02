@@ -47,8 +47,9 @@ Thumbs.db
 # Per-agent teammate memory store (runtime; local like the home memory dir, not committed).
 .claude/agent-memory/
 
-# Session handoff dump (regenerable via /session:dump — do NOT commit)
-DUMP.md
+# Session handoff dump (regenerable via /session:dump — do NOT commit). Anchored: an unanchored
+# `DUMP.md` also matched .claude/commands/session/dump.md on case-insensitive filesystems.
+/DUMP.md
 # Operator-requested session export/report (local handoff, not a shipped artifact —
 # was tripping warpos-ship-coverage as an unclassified root .md). E-DISPATCH-PERFECT-001 W5.
 REPORT-JULY-18.md
@@ -119,7 +120,9 @@ runtime/scan-runs/
 runtime/skill-runs/
 runtime/sprint/
 runtime/notes/
-runtime/agent-system-plan/
+# agent-system-plan is scratch EXCEPT tooltest/ (the seeded fixture for the scan:tools self-test)
+runtime/agent-system-plan/*
+!runtime/agent-system-plan/tooltest/
 
 # ── Secrets / keys / credentials / backups — defense-in-depth (operator-requested) ──
 # Real credentials live OUTSIDE the repo (~/.gemini/.env, ~/.codex/auth.json, etc.).
@@ -211,3 +214,31 @@ runtime/sp-dp-w1/dc-test.err.log
 runtime/sp-dp-w1/probe.err.log
 runtime/sp-dp-w1/probe2.err.log
 runtime/sp-dp-w2/dop-probe.err.log
+
+# ── E-OPEN-SOURCE-001 / S-OS-02 front-page cleanup (2026-09-02) ──
+# Per-run sprint/gauntlet/consult artifacts and private planning material are per-machine.
+# They were untracked (index only) on 2026-09-02; the untouched history is in the private
+# mirror taken at release pre-cleanup-snapshot. Never re-track these.
+_private/
+_planning/ingest/
+_planning/vlad-*.md
+_planning/reviews/*.log
+_docs/*-brief-v4.*
+_warpos/BASELINE/_docs/*-brief-v4.*
+runtime/vlad-w1/
+runtime/enforcement-sweep/
+runtime/sp004-gauntlet/
+runtime/epsilon-prompts/
+runtime/beta-consult/
+# transient extensions anywhere under runtime/ (enforcer: S-OS-04 tracked-transients gate)
+runtime/**/*.jsonl
+runtime/**/*.log
+runtime/**/*.diff
+runtime/**/*.err
+runtime/**/*.out
+# sprint per-run state (crash-recovery checkpoints, full reports, ticket files) — local only
+.claude/project/sprint/checkpoints/
+.claude/project/sprint/full-reports/
+.claude/project/sprint/tickets/
+# raw /beta:mine output — verbatim operator prompts; the distilled judgement-model.md is what ships
+.claude/agents/president/_system/beta/mined/

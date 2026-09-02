@@ -1,4 +1,4 @@
-# Jobzooka — Validation Rules (Regen Spec)
+# Pantry Pilot — Validation Rules (Regen Spec)
 
 Field constraints, input sanitization, and output validation scattered across components and lib files. A regen agent needs these to reproduce the same guardrails.
 
@@ -19,7 +19,7 @@ Field constraints, input sanitization, and output validation scattered across co
 
 | Constraint         | Value         | Location                             |
 | ------------------ | ------------- | ------------------------------------ |
-| Max file size      | 10 MB         | `upload.ts:25`, `Step1Resume.tsx:60` |
+| Max file size      | 10 MB         | `upload.ts:25`, `Step1Recipes.tsx:60` |
 | Max PDF pages      | 50            | `upload.ts:26`                       |
 | Max extracted text | 500,000 chars | `upload.ts:27`                       |
 | Parse timeout      | 15,000 ms     | `upload.ts:28`                       |
@@ -32,15 +32,15 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ---
 
-## Personal Info (Step1Resume.tsx)
+## Household Info (Step1Recipes.tsx)
 
-| Field     | Rule                                                      | Error Message                                                    |
-| --------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| Name      | Required, non-empty                                       | "Name is required"                                               |
-| Email     | Required, non-empty                                       | "Email is required"                                              |
-| Phone     | Required, non-empty                                       | "Phone is required"                                              |
-| Location  | Required, non-empty                                       | "Location is required"                                           |
-| Portfolio | Optional; if set, must parse as valid URL with http/https | "Portfolio link must be a valid URL (e.g. https://yoursite.com)" |
+| Field          | Rule                                                      | Error Message                                                     |
+| -------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| Household name | Required, non-empty                                       | "Household name is required"                                      |
+| Email          | Required, non-empty                                       | "Email is required"                                               |
+| Phone          | Required, non-empty                                       | "Phone is required"                                               |
+| Location       | Required, non-empty                                       | "Location is required"                                            |
+| Store link     | Optional; if set, must parse as valid URL with http/https | "Store link must be a valid URL (e.g. https://yourstore.example)" |
 
 ---
 
@@ -66,11 +66,11 @@ Field constraints, input sanitization, and output validation scattered across co
 
 ---
 
-## ATS Output Sanitization (src/lib/validators.ts)
+## Export Output Sanitization (src/lib/validators.ts)
 
-### sanitizeAts()
+### sanitizeExport()
 
-Applied to all Claude resume/LinkedIn output before use:
+Applied to all Claude plan/grocery-list output before use:
 
 | Input Character           | Replacement |
 | ------------------------- | ----------- |
@@ -95,9 +95,9 @@ Shared utility imported by all mutation API routes. Checks `Origin` header (prim
 | Route                | Method            | Since                             |
 | -------------------- | ----------------- | --------------------------------- |
 | `/api/claude`        | POST              | Original (inline, same logic)     |
-| `/api/jobs`          | POST              | Original (inline, same logic)     |
-| `/api/rockets/debit` | POST              | Security fix                      |
-| `/api/rockets/grant` | POST              | Security fix                      |
+| `/api/recipes`       | POST              | Original (inline, same logic)     |
+| `/api/quota/consume` | POST              | Security fix                      |
+| `/api/subscription/grant` | POST         | Security fix                      |
 | `/api/session`       | GET, POST, DELETE | Security fix (DELETE was missing) |
 | `/api/auth/login`    | POST              | Security fix                      |
 | `/api/auth/logout`   | POST              | Security fix                      |
@@ -113,18 +113,18 @@ Shared utility imported by all mutation API routes. Checks `Origin` header (prim
 
 ### validateExclusions()
 
-Checks that skills the user marked as "exclude" do not appear in any output. Scanned areas:
+Checks that ingredients the user marked as "exclude" do not appear in any output. Scanned areas:
 
-- Master resume: summary, core competencies, role bullets
-- General resume: summary, core competencies, role bullets
-- Targeted resumes: summary, core competencies, role bullets, diff fields (summary_replacement, core_competencies_reorder, bullets_rewrite replacements)
-- LinkedIn: headline, about, skills
-- Chrome apply prompt
+- Master plan: summary, staples, meal steps
+- Weekly plan: summary, staples, meal steps
+- Tailored plans: summary, staples, meal steps, diff fields (summary_replacement, staples_reorder, steps_rewrite replacements)
+- Grocery list: list name, overview, staples
+- Chrome shop prompt
 - Form answers
 
-Uses both `skillMatch()` and case-insensitive `includes()`.
+Uses both `ingredientMatch()` and case-insensitive `includes()`.
 
-**`skillMatch()` algorithm:** Normalizes both strings by lowercasing and stripping all non-alphanumeric characters (`/[^a-z0-9]/g`), then compares for exact equality. No fuzzy matching for MVP.
+**`ingredientMatch()` algorithm:** Normalizes both strings by lowercasing and stripping all non-alphanumeric characters (`/[^a-z0-9]/g`), then compares for exact equality. No fuzzy matching for MVP.
 
 ---
 
@@ -132,11 +132,11 @@ Uses both `skillMatch()` and case-insensitive `includes()`.
 
 ### validateOutputFidelity()
 
-| Check                    | Pass Condition              | Fail Condition           |
-| ------------------------ | --------------------------- | ------------------------ |
-| Search queries in prompt | All queries appear verbatim | None appear              |
-| Excluded skills          | Zero violations             | Any excluded skill found |
-| Form answers populated   | All populated               | 4+ empty                 |
+| Check                    | Pass Condition              | Fail Condition                |
+| ------------------------ | --------------------------- | ----------------------------- |
+| Search queries in prompt | All queries appear verbatim | None appear                   |
+| Excluded ingredients     | Zero violations             | Any excluded ingredient found |
+| Form answers populated   | All populated               | 4+ empty                      |
 
 ### validateContracts()
 
@@ -144,7 +144,7 @@ Checks that required session fields exist and are non-null before each prompt ca
 
 ### validateAliases()
 
-Checks common abbreviations (PM, ML, AI, UX, UI, FE, BE, SWE, SRE, DevOps, CI/CD, K8s, etc.) — if an abbreviation appears in the resume, either it or its expansion should appear in the output.
+Checks common abbreviations (tbsp, tsp, oz, lb, qt, pt, gal, ml, g, kg, EVOO, AP flour, etc.) — if an abbreviation appears in the recipe collection, either it or its expansion should appear in the output.
 
 ---
 
@@ -156,59 +156,59 @@ Full end-to-end session validation:
 
 | Check                | Expected                                  |
 | -------------------- | ----------------------------------------- |
-| Resume parsed        | `resumeStructured` exists                 |
-| Personal data        | `personal.name` non-empty                 |
+| Recipes parsed       | `recipesStructured` exists                |
+| Household data       | `household.name` non-empty                |
 | Profile generated    | `profile` exists                          |
-| Market data          | `marketRaw` exists                        |
-| Market analysis      | `marketAnalysis` exists                   |
+| Catalog data         | `catalogRaw` exists                       |
+| Menu analysis        | `menuAnalysis` exists                     |
 | Categories ranked    | `rankedCategories.length > 0`             |
-| Master resume        | Exists, has summary and roles             |
-| General resume       | `generalResume` exists                    |
-| Targeted resumes     | `targetedResumes` has 1+ entries          |
-| LinkedIn             | `linkedin.headline` exists                |
+| Master plan          | Exists, has summary and meals             |
+| Weekly plan          | `weeklyPlan` exists                       |
+| Tailored plans       | `tailoredPlans` has 1+ entries            |
+| Grocery list         | `grocery.listName` exists                 |
 | Form answers         | `formAnswers.length > 0`                  |
-| Apply data           | `applyData.chromePrompt` exists (SKIP ok) |
+| Shopping data        | `shopData.chromePrompt` exists (SKIP ok)  |
 | Exclusion compliance | Zero violations                           |
 | Data contracts       | All prompt contracts satisfied (WARN ok)  |
 
 ---
 
-## Market Data Limits (src/lib/utils.ts)
+## Catalog Data Limits (src/lib/utils.ts)
 
-| Constraint               | Value                                     | Location                   |
-| ------------------------ | ----------------------------------------- | -------------------------- |
-| Max market text          | 30,000 chars                              | `preprocessMarketData()`   |
-| Max MARKET_PREP payload  | 35,000 chars                              | `buildMarketPrepPayload()` |
-| Description excerpt      | 300 chars (default), 150 chars (fallback) | `buildMarketPrepPayload()` |
-| High-volume company flag | 2+ listings                               | `buildMarketPrepPayload()` |
+| Constraint              | Value                                     | Location                   |
+| ----------------------- | ----------------------------------------- | -------------------------- |
+| Max catalog text        | 30,000 chars                              | `preprocessCatalogData()`  |
+| Max MENU_PREP payload   | 35,000 chars                              | `buildMenuPrepPayload()`   |
+| Description excerpt     | 300 chars (default), 150 chars (fallback) | `buildMenuPrepPayload()`   |
+| High-volume source flag | 2+ listings                               | `buildMenuPrepPayload()`   |
 
 ---
 
-## Rate Limits (src/app/api/claude/route.ts, src/app/api/jobs/route.ts)
+## Rate Limits (src/app/api/claude/route.ts, src/app/api/recipes/route.ts)
 
 | Limit                 | Value               | Scope        |
 | --------------------- | ------------------- | ------------ |
 | Claude per-IP         | 20/min              | Per IP       |
-| BD per-IP             | 10/min              | Per IP       |
+| RD per-IP             | 10/min              | Per IP       |
 | Global Claude         | 60/min              | All users    |
 | Daily Claude requests | 500 (default)       | ENV override |
 | Daily Claude tokens   | 2,000,000 (default) | ENV override |
-| Daily BD requests     | 100 (default)       | ENV override |
+| Daily RD requests     | 100 (default)       | ENV override |
 
 ---
 
-## Resume Length Heuristic (Step10Resumes.tsx)
+## Plan Length Heuristic (Step10Plans.tsx)
 
 ```typescript
-function isLongResume(resume: ResumeOutput): boolean {
-  return (resume.roles || []).length > 3 || totalBullets > 20;
+function isLongPlan(plan: PlanOutput): boolean {
+  return (plan.meals || []).length > 3 || totalSteps > 20;
 }
 ```
 
-If the master resume is "long", a separate trimmed general resume is used. Otherwise, the master serves as both.
+If the master plan is "long", a separate trimmed weekly plan is used. Otherwise, the master serves as both.
 
 ---
 
-## Skill Exclusion Warning (Step8Skills.tsx)
+## Ingredient Exclusion Warning (Step8Ingredients.tsx)
 
-If > 50% of skills in a category are excluded, a warning is shown to the user. Minimum 3 skills in a category before this check fires.
+If > 50% of ingredients in a category are excluded, a warning is shown to the user. Minimum 3 ingredients in a category before this check fires.

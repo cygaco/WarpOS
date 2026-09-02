@@ -82,7 +82,7 @@ const out = {
   schema: "warpos.skill-sweep/2",
   compiled: "2026-08-28",
   revision: "v2 — restructured per operator priority: PRIMARY axis is Anthropic + OpenAI; Google/industry demoted to a secondary 'also' axis",
-  repo: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS",
+  repo: path.resolve(DIR, "..", ".."),
   builds_on: "runtime/prior-art/PRIOR-ART-EVIDENCE-2026-08-28.md",
   primary_axis: "Anthropic (Claude Code / Claude API / claude.ai) and OpenAI (Codex CLI+cloud+app / ChatGPT / Agents SDK / Responses API)",
   secondary_axis: "Google (Gemini CLI / ADK) and any other company — widest field",

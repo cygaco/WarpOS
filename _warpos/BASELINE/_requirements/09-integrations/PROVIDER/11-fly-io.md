@@ -9,7 +9,7 @@ Last verified: 2026-04-28.
 
 ## What runs on Fly
 
-The jobzooka backend (`services/backend/`) — a Hono app + Graphile Worker on a single Docker image, two process groups.
+The Pantry Pilot backend (`services/backend/`) — a Hono app + Graphile Worker on a single Docker image, two process groups.
 
 ## Where wired
 
@@ -26,9 +26,9 @@ The jobzooka backend (`services/backend/`) — a Hono app + Graphile Worker on a
 
 | App | Purpose |
 |---|---|
-| `jobzooka-backend` | Production (region: `iad`) |
-| `jobzooka-backend-staging` | Staging (currently main-only deploys per workflow line 22) |
-| `jobzooka-backend-pr-<N>` (planned) | Per-PR review apps via `.github/workflows/fly-review.yml` (user-data plan Phase 2) |
+| `pantrypilot-backend` | Production (region: `iad`) |
+| `pantrypilot-backend-staging` | Staging (currently main-only deploys per workflow line 22) |
+| `pantrypilot-backend-pr-<N>` (planned) | Per-PR review apps via `.github/workflows/fly-review.yml` (user-data plan Phase 2) |
 
 ## Process groups
 
@@ -59,7 +59,7 @@ Per GS-BK-33 + PRD §8.14, the CI lint script `scripts/check-fly-toml.js` enforc
 | Group | Size | Memory | Why |
 |---|---|---|---|
 | api | shared-cpu-1x | 512mb | Hono is light |
-| worker | shared-cpu-1x | 1024mb | Claude chain + DOCX/PDF generation needs headroom |
+| worker | shared-cpu-1x | 1024mb | Claude chain + grocery-list DOCX/PDF export needs headroom |
 
 ## Cloudflare AOP mTLS
 
@@ -73,7 +73,7 @@ Per GS-BK-33 + PRD §8.14, the CI lint script `scripts/check-fly-toml.js` enforc
 
 Non-secret in `fly.toml [env]`:
 - `NODE_ENV=production`, `PORT=3000`, `WORKER_PORT=4000`
-- `WEBAUTHN_RP_ID=jobzooka.app`, `WEBAUTHN_RP_NAME=Jobzooka`
+- `WEBAUTHN_RP_ID=pantrypilot.example`, `WEBAUTHN_RP_NAME="Pantry Pilot"`
 - `GRAPHILE_WORKER_CONCURRENCY=5`
 - `ANTHROPIC_PROMPT_CACHE_ENABLED=true`
 
@@ -115,7 +115,7 @@ GitHub Actions uses `FLY_API_TOKEN` secret. Deploy currently runs only on `main`
 
 | Failure | Behavior |
 |---|---|
-| Worker crash mid-chain | QStash redelivers; worker reads `ticket.checkpointedStep` and resumes |
-| Worker stuck > 2× expected | `cron.stuck-ticket-sweep` transitions to `failed` + emits refund ledger |
+| Worker crash mid-chain | QStash redelivers; worker reads `ticket.checkpointedStep` and continues from there |
+| Worker stuck > 2× expected | `cron.stuck-ticket-sweep` transitions to `failed` + emits a usage-restore ledger entry |
 | API crash | Fly restarts immediately; loadbalancer drains gracefully |
 | Cloudflare AOP cert rotation | Update both `CF_AOP_CERT` + `CF_AOP_CERT_FINGERPRINT` together; no double-rotation lockout |

@@ -1,3 +1,0 @@
-known-baseline reds (tracked debt, NOT release-blocking): BC-26
-STALE baseline marker(s) — class no longer failing, remove baseline:"red" so future regressions block again (warning): BC-17
-test-suite enforcement: 19/20 runnable green, 0 NEW regressions — canonical clean.

@@ -1,4 +1,4 @@
-# Jobzooka — Auth Schemas (Regen Spec)
+# Pantry Pilot — Auth Schemas (Regen Spec)
 
 Authentication and session management. Canonical auth primitives now live in `packages/shared/auth.ts` so legacy routes and the dedicated backend can share JWT, password, session, user, OAuth-state, cookie, origin, and scope behavior. Client-side encrypted session persistence remains in `src/lib/storage.ts`.
 
@@ -39,13 +39,13 @@ interface JWTPayload {
 
 | Setting  | Value                    |
 | -------- | ------------------------ |
-| Name     | `jz_token` by default; `__Host-jz_token` when `JZ_USE_HOST_COOKIE_PREFIX=true` |
+| Name     | `pp_token` by default; `__Host-pp_token` when `PP_USE_HOST_COOKIE_PREFIX=true` |
 | HttpOnly | `true`                   |
 | Secure   | `true` in production     |
 | SameSite | `Lax`                    |
 | Path     | `/`                      |
 | MaxAge   | 604,800 seconds (7 days) |
-| Domain   | `.jobzooka.app` by default via `JZ_COOKIE_DOMAIN`; omitted in `__Host-` mode |
+| Domain   | `.pantrypilot.example` by default via `PP_COOKIE_DOMAIN`; omitted in `__Host-` mode |
 
 ### Functions
 
@@ -84,7 +84,7 @@ interface StoredUser {
   email: string; // Normalized (lowercase, trimmed)
   passwordHash?: string; // Optional for OAuth-only users
   passwordSalt?: string; // Optional for OAuth-only users
-  oauthProviders?: string[]; // e.g. ["google", "linkedin"]
+  oauthProviders?: string[]; // e.g. ["google", "apple"]
   tier?: UserAccount["tier"];
   usage?: UserAccount["usage"];
   createdAt: string; // ISO 8601 timestamp
@@ -131,10 +131,10 @@ Scopes are not embedded in JWTs. `getUserScope(userId)` reads from an authoritat
 
 ### Supported Providers
 
-| Provider | Env Vars                                       | UI Toggle Env                |
-| -------- | ---------------------------------------------- | ---------------------------- |
-| Google   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`     | `NEXT_PUBLIC_OAUTH_GOOGLE`   |
-| LinkedIn | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` | `NEXT_PUBLIC_OAUTH_LINKEDIN` |
+| Provider | Env Vars                                   | UI Toggle Env                |
+| -------- | ------------------------------------------ | ---------------------------- |
+| Google   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | `NEXT_PUBLIC_OAUTH_GOOGLE`   |
+| Apple    | `APPLE_CLIENT_ID`, `APPLE_CLIENT_SECRET`   | `NEXT_PUBLIC_OAUTH_APPLE`    |
 
 OAuth buttons are hidden if the toggle env var is not set.
 
@@ -143,8 +143,8 @@ OAuth buttons are hidden if the toggle env var is not set.
 1. **State generation:** `generateOAuthState()` returns `crypto.randomUUID()` for CSRF protection. **State tokens MUST be single-use.** After validation in the callback, delete the state from the cookie/store immediately. Reject any re-presented state token to prevent replay attacks.
 2. **findOrCreateOAuthUser(email, provider):**
    - If user exists: links provider if not already linked, issues JWT
-   - If user doesn't exist: creates new user (no password), calls `initFreeRocketsIfMissing(id)`, issues JWT
-     > **Idempotency:** Free rocket initialization checks whether a balance already exists before crediting. This prevents double-crediting on OAuth callback retries.
+   - If user doesn't exist: creates new user (no password), calls `initFreePlanIfMissing(id)`, issues JWT
+     > **Idempotency:** Free-plan quota initialization checks whether a balance already exists before crediting. This prevents double-crediting on OAuth callback retries.
    - In both cases: sets auth cookie, returns `{ id, email }`
 
 > **Security:** OAuth callbacks MUST validate the redirect URL against ALLOWED_ORIGINS before issuing any redirect. Use `new URL(path, baseURL).href` to construct redirect URLs — never trust user-supplied redirect parameters.
@@ -163,16 +163,16 @@ Routes that require auth parse cookies with `parseAuthCookies()` and then call `
 
 | Route            | Auth Required | Notes                                        |
 | ---------------- | ------------- | -------------------------------------------- |
-| `/api/claude`    | No\*          | Rate-limited by IP; rocket billing if authed |
-| `/api/jobs`      | No\*          | Rate-limited by IP                           |
+| `/api/claude`    | No\*          | Rate-limited by IP; quota billing if authed  |
+| `/api/recipes`   | No\*          | Rate-limited by IP                           |
 | `/api/auth/*`    | Varies        | Login/register: no; logout/session: yes      |
 | `/api/session`   | Yes           | Load/save/clear server session               |
-| `/api/rockets`   | Yes           | Balance queries                              |
+| `/api/usage`     | Yes           | Quota queries                                |
 | `/api/stripe/*`  | Varies        | Checkout: yes; webhook: Stripe signature     |
 | `/api/extension` | No            | Public ZIP download                          |
 | `/api/test`      | No            | Gated by `ENABLE_TEST_API` env               |
 
-\*Claude and Jobs routes use rocket billing when the user is authenticated, but allow anonymous usage with rate limits.
+\*Claude and Recipes routes use quota billing when the user is authenticated, but allow anonymous usage with rate limits.
 
 ### Anti-Enumeration Rules
 
@@ -198,11 +198,11 @@ The login route must NOT reveal whether an account exists, whether it's OAuth-on
 | Algorithm  | AES-GCM (Web Crypto API)                   |
 | Key source | Derived from static salt + device          |
 | IV         | Random 12 bytes per encryption             |
-| Storage    | `localStorage` key: `jobSearchApp_session` |
+| Storage    | `localStorage` key: `pantryPilot_session`  |
 
 ### Key Derivation and Persistence
 
-The AES-GCM encryption key is derived via PBKDF2 from two inputs: a device fingerprint (user agent, screen size, timezone, etc.) and a random 16-byte salt stored in `localStorage` under `jobSearchApp_cryptoSalt`. The salt is generated once and persists across sessions. If the salt is cleared (e.g., user clears localStorage), a new salt is generated and all previously encrypted session data becomes unreadable -- this is acceptable as sessions are ephemeral and can be re-created from server-side session storage if authenticated.
+The AES-GCM encryption key is derived via PBKDF2 from two inputs: a device fingerprint (user agent, screen size, timezone, etc.) and a random 16-byte salt stored in `localStorage` under `pantryPilot_cryptoSalt`. The salt is generated once and persists across sessions. If the salt is cleared (e.g., user clears localStorage), a new salt is generated and all previously encrypted session data becomes unreadable -- this is acceptable as sessions are ephemeral and can be re-created from server-side session storage if authenticated.
 
 ### Persistence Strategy
 

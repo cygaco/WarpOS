@@ -22,8 +22,8 @@ Tooling is production-ready. All 3 linters pass clean (344 stories, 0 errors). B
 | # | Severity | Finding | Location | Fix |
 |---|---|---|---|---|
 | 1 | HIGH | `NEXT_PUBLIC_APP_URL` used in OAuth callbacks but missing from .env.local.example and CLAUDE.md | OAuth routes + .env config | Add to .env.local.example with description |
-| 2 | MEDIUM | `ADMIN_SECRET` used by /api/rockets/grant but undocumented | .env.local.example | Add to env example |
-| 3 | MEDIUM | Stripe fallback price ID names (STARTER/PRO/POWER) undocumented — differ from primary names (SCOUT/STRIKE/ARSENAL) | stripe/checkout route | Document fallbacks or use primary names only |
+| 2 | MEDIUM | `ADMIN_SECRET` used by /api/usage/grant but undocumented | .env.local.example | Add to env example |
+| 3 | MEDIUM | Stripe fallback price ID names (STARTER/PRO) undocumented — differ from primary names (PLUS/FAMILY) | stripe/checkout route | Document fallbacks or use primary names only |
 | 4 | MEDIUM | /protected/prompts/ directory exists but is empty — intended prompt isolation not implemented | protected/prompts/ | Populate or remove |
 | 5 | MEDIUM | Playwright browsers not installed note missing from docs | playwright.config.ts | Add `npx playwright install` to CLAUDE.md dev setup |
 

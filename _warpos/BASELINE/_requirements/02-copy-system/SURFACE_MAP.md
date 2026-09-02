@@ -1,6 +1,6 @@
-# Jobzooka — Copy Surface Map
+# Pantry Pilot — Copy Surface Map
 
-This document defines **every copy surface** in the Jobzooka product and the rules that apply to each.
+This document defines **every copy surface** in the Pantry Pilot product and the rules that apply to each.
 
 Its purpose is to:
 
@@ -33,11 +33,11 @@ Each surface includes:
 
 These surfaces prioritize trust, clarity, and user safety. Personality must never override seriousness here.
 
-### Payment & Rocket Transactions
+### Payment & Subscription Changes
 
-- **Intent:** Confirm cost, execute purchase
+- **Intent:** Confirm cost, execute upgrade or downgrade
 - **Stakes:** High
-- **Structure:** Full sentences, explicit amounts
+- **Structure:** Full sentences, explicit amounts and billing period
 - **Tone range:** Neutral, factual
 
 ### Authentication & Account Access
@@ -46,6 +46,13 @@ These surfaces prioritize trust, clarity, and user safety. Personality must neve
 - **Stakes:** High
 - **Structure:** Full sentences, 1–2 lines max
 - **Tone range:** Reassuring, transparent
+
+### Allergen & Dietary Warnings
+
+- **Intent:** Flag an ingredient that violates a declared restriction
+- **Stakes:** High
+- **Structure:** Explicit statement of the ingredient and the restriction it breaks
+- **Tone range:** Neutral, unambiguous, never softened
 
 ### Data Privacy & Export
 
@@ -74,14 +81,14 @@ These surfaces prioritize trust, clarity, and user safety. Personality must neve
 
 These surfaces make up most of the app. Clarity and consistency matter more than personality.
 
-### Phase Pills (READY / AIM / FIRE)
+### Phase Pills (PLAN / PREP / SHOP)
 
 - **Intent:** Orient the user in the flow
 - **Stakes:** Medium
 - **Structure:** Single word, ALL CAPS (structural convention)
 - **Tone range:** Neutral
 
-### Step Labels (Search, Analyze, Deep Dive, Skills, Resumes, LinkedIn, Launch)
+### Step Labels (Search, Analyze, Deep Dive, Ingredients, Lists, Recipes, Shop)
 
 - **Intent:** Name the current activity
 - **Stakes:** Medium
@@ -131,9 +138,9 @@ Notes:
 
 Examples:
 
-- "Analyzing market data..."
-- "Generating resume..."
-- "Scraping job listings..."
+- "Reading shelf prices..."
+- "Building your list..."
+- "Walking the aisles..."
 
 ### Success Messages (Toasts, Inline)
 
@@ -162,13 +169,13 @@ These surfaces influence perception of progress and momentum.
 - **Structure:** Fragment header + 1 sentence body
 - **Tone range:** Calm, honest, encouraging
 
-### Competitiveness Score Labels
+### Readiness Score Labels
 
 - **Intent:** Contextualize the score
 - **Stakes:** Medium
 - **Structure:** 1–3 words
 - **Tone range:** Neutral to encouraging
-- **Labels (from code):** "Getting started" (0–39), "Building momentum" (40–69), "Strong arsenal" (70–89), "Maximum firepower" (90–100), "OVERKILL" (>100)
+- **Labels (from code):** "Getting started" (0–39), "Building momentum" (40–69), "Well stocked" (70–89), "Fully provisioned" (90–100), "OVERSTOCKED" (>100)
 
 ### Celebration Messages (GlazeToast, ConfettiBurst)
 
@@ -177,37 +184,37 @@ These surfaces influence perception of progress and momentum.
 - **Structure:** Short fragment or sentence
 - **Tone range:** Positive, energetic (the ONE place for enthusiasm)
 
-### Discovery Recommendations
+### Discovery Recipes
 
-- **Intent:** Suggest non-obvious opportunities
+- **Intent:** Suggest non-obvious meals worth trying
 - **Stakes:** Medium
 - **Structure:** Title + short explanation
 - **Tone range:** Informative, intriguing
 
-### Market Intelligence Summaries
+### Price Intelligence Summaries
 
-- **Intent:** Present data insights
+- **Intent:** Present catalog data insights
 - **Stakes:** Medium
 - **Structure:** Structured data with labels
 - **Tone range:** Factual, authoritative
 
-### Competitiveness Gain Indicators
+### Readiness Gain Indicators
 
-- **Intent:** Show score impact of pending actions (e.g., "+12%" next to a category toggle)
+- **Intent:** Show score impact of pending actions (e.g., "+12%" next to a theme toggle)
 - **Stakes:** Low
 - **Structure:** Fragment with delta indicator ("+X%")
 - **Tone range:** Neutral, motivating
 
-### Category Selection & Ranking
+### Meal Theme Selection & Ranking
 
-- **Intent:** Let user prioritize job categories
+- **Intent:** Let user prioritize meal themes
 - **Stakes:** Medium
-- **Structure:** Category name + short descriptor + toggle controls
+- **Structure:** Theme name + short descriptor + toggle controls
 - **Tone range:** Neutral, informative
 
-### Deep-Dive QA (Mining Accordion)
+### Deep-Dive QA (Taste Accordion)
 
-- **Intent:** Surface hidden career strengths through targeted questions
+- **Intent:** Surface household tastes and constraints through targeted questions
 - **Stakes:** Medium
 - **Structure:** Question (1–2 sentences) + text area for answer
 - **Tone range:** Conversational, curious
@@ -253,7 +260,7 @@ Notes:
 
 ---
 
-## TIER 4 — CHROME EXTENSION & AUTO-APPLY
+## TIER 4 — CHROME EXTENSION & AUTO-CART
 
 ### Extension Status Messages
 
@@ -262,34 +269,34 @@ Notes:
 - **Structure:** Short status fragment
 - **Tone range:** Neutral, factual
 
-### Application Heuristics Display
+### Substitution Rules Display
 
-- **Intent:** Show apply/skip reasoning
+- **Intent:** Show buy/skip reasoning
 - **Stakes:** Medium
 - **Structure:** Bullet list, short fragments
 - **Tone range:** Factual, direct
 
 ### Chrome Prompt (Generated)
 
-- **Intent:** Instruct Claude for Chrome
+- **Intent:** Instruct the browser agent
 - **Stakes:** High
 - **Structure:** Structured markdown, explicit instructions
 - **Tone range:** Technical, precise (not user-facing)
 
 ---
 
-## TIER 5 — DEV TOOLS (Deus Mechanicus)
+## TIER 5 — DEV TOOLS (Test Kitchen)
 
 ### Dev Tool Labels & Status
 
 - **Intent:** Developer information
 - **Stakes:** Low
 - **Structure:** Technical labels
-- **Tone range:** Warhammer 40K themed (brass, void, Omnissiah references — allowed ONLY in DM context)
+- **Tone range:** Line-kitchen themed (tickets, mise en place, 86'd — allowed ONLY in Test Kitchen context)
 
 Notes:
 
-- Deus Mechanicus is the only surface where themed personality is unrestricted
+- Test Kitchen is the only surface where themed personality is unrestricted
 - These are never shown to end users
 
 ---

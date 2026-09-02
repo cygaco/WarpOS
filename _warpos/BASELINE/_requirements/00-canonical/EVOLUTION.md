@@ -1,4 +1,4 @@
-# Jobzooka — Product Evolution Spec
+# Pantry Pilot — Product Evolution Spec
 
 Future ideas and post-MVP vision. Nothing in this document is canonical — these are possibilities, not commitments.
 
@@ -17,99 +17,99 @@ Some items listed below have already been implemented. This table distinguishes 
 | PDF export | DONE | `src/lib/pdf-generator.ts` |
 | DOCX export | DONE | `src/lib/docx-generator.ts` |
 | Mobile responsive | FUTURE | Desktop-first per FLOW_SPEC |
-| Cover letter generation | FUTURE | Not in current feature backlog |
-| Multi-platform scraping | FUTURE | Only LinkedIn via Bright Data |
-| Application tracking | FUTURE | No tracking beyond apply history |
+| Nutrition summaries | FUTURE | Not in current feature backlog |
+| Multi-store catalogs | FUTURE | Only one partner chain via Fresh Feed |
+| Shopping-trip tracking | FUTURE | No tracking beyond cart history |
 
 ---
 
 ## Near-Term Improvements (Enhance What Exists)
 
-### Multi-Platform Job Scraping
+### Multi-Store Catalog Lookups
 
-- Add Indeed, Glassdoor, and other job boards alongside LinkedIn
-- Normalize data across sources
-- Richer market intelligence from broader data set
+- Add a second and third partner chain alongside the current one
+- Normalize pack sizes and units across sources
+- Richer price intelligence from a broader catalog set
 
-### Application Tracking
+### Shopping-Trip Tracking
 
-- Track which jobs were applied to (from auto-apply logs)
-- Status tracking: applied → interview → offer → rejected
-- Follow-up reminders
+- Track which lists were actually shopped (from auto-cart logs)
+- Status tracking: planned → shopped → cooked → restocked
+- Restock reminders for staples
 
-### Resume Format Options
+### List Format Options
 
-- Multiple DOCX templates (modern, traditional, ATS-optimized)
+- Multiple printable layouts (aisle order, category order, compact)
 - PDF export alongside DOCX
 - Custom formatting controls (font, spacing, sections)
 
-### Improved Market Re-Runs
+### Improved Catalog Re-Runs
 
-- Show diff between old and new market analysis
-- Track how the market has changed over time
-- Alert when new high-match categories appear
+- Show diff between old and new price analysis
+- Track how prices have changed over time
+- Alert when a staple drops below its usual range
 
 ### Mobile Responsive
 
 - Full mobile support for the wizard
-- Touch-optimized interactions
+- Touch-optimized interactions, built for use in the aisle
 - Mobile-first onboarding flow
 
 ---
 
 ## Medium-Term Features (Expand Scope)
 
-### Cover Letter Generation
+### Nutrition Summaries
 
-- Context-aware cover letters per category or per company
-- Templated sections with personalized content
-- Tone control (formal, conversational, technical)
+- Per-meal and per-week nutrition rollups from the plan
+- Templated sections with household-specific targets
+- Detail control (simple, standard, full macros)
 
-### Interview Prep
+### Leftover Planning
 
-- Generated interview questions based on job categories
-- Suggested answer frameworks using user's experience
-- Company research summaries
+- Suggested second-day meals from the week's surplus portions
+- Portion math that accounts for pack sizes bought
+- Freezer-batch recommendations for the meal-prep cohort
 
-### Networking Recommendations
+### Household Sharing Recommendations
 
-- Identify companies where user's connections work
-- Generate outreach message templates
-- LinkedIn connection request copy
+- Identify which household members can own which prep tasks
+- Generate assignment message templates
+- Shared-list invitation copy
 
 ### Multi-Language Support
 
-- Resume generation in multiple languages
-- Market analysis for non-US markets
-- Localized form answers
+- Recipe cards and lists in multiple languages
+- Price analysis for non-US stores
+- Localized units (metric pack sizes)
 
 ---
 
 ## Long-Term Vision (Transform the Product)
 
-### Continuous Market Intelligence
+### Continuous Price Intelligence
 
-- Ongoing market monitoring (not just one-time analysis)
-- Alerts when new matching jobs appear
-- Market trend reports over time
+- Ongoing catalog monitoring (not just one-time analysis)
+- Alerts when a planned ingredient goes on sale
+- Price trend reports over time
 
-### Team / Enterprise Features
+### Team / Small-Business Features
 
-- Recruiter-side view for staffing agencies
-- Batch resume processing
-- Team analytics and reporting
+- Caterer-side view for small meal businesses
+- Batch plan processing across many households
+- Household analytics and reporting
 
 ### API / Integration Layer
 
-- Jobzooka as a service (API access to resume generation, market analysis)
-- Integration with ATS systems
-- Webhook notifications for job alerts
+- Pantry Pilot as a service (API access to list generation, price analysis)
+- Integration with grocery delivery platforms
+- Webhook notifications for price drops
 
 ### AI Agent Improvements
 
-- Smarter auto-apply with learning from user feedback
-- A/B testing of resume variants (track which gets more responses)
-- Autonomous job search with user-defined criteria
+- Smarter auto-cart with learning from user substitutions
+- A/B testing of list variants (track which gets shopped fully)
+- Autonomous restocking with user-defined criteria
 
 ---
 
@@ -118,15 +118,15 @@ Some items listed below have already been implemented. This table distinguishes 
 ### Architecture
 
 - Replace prop-drilling with proper state management (Zustand or Context)
-- Fix component naming inconsistencies (AimPage ↔ ReadyPage mismatch)
+- Fix component naming inconsistencies (PrepPage ↔ PlanPage mismatch)
 - Standardize styling approach (one system: CSS custom properties OR Tailwind, not both)
 - Add proper error boundaries at the step level
 
 ### Performance
 
 - Upgrade from Vercel Hobby to Pro (longer function timeouts)
-- Implement proper caching for market data
-- Optimize large component re-renders (Step10Resumes is very large)
+- Implement proper caching for catalog data
+- Optimize large component re-renders (Step10Lists is very large)
 
 ### Quality
 
@@ -141,8 +141,8 @@ Some items listed below have already been implemented. This table distinguishes 
 
 For clarity, these ideas have been considered and rejected:
 
-1. **Social features** — Jobzooka is a personal tool, not a social platform
-2. **Gamification beyond competitiveness score** — No achievements, streaks, or leaderboards
-3. **Resume templates / visual editor** — Content-first, not design-first
-4. **Free unlimited access** — Rocket economy is fundamental to sustainability
-5. **B2B enterprise play** — Focus on individual job seekers first
+1. **Social features** — Pantry Pilot is a household tool, not a social platform
+2. **Gamification beyond the readiness score** — No achievements, streaks, or leaderboards
+3. **Recipe photo editor / visual layout tool** — Content-first, not design-first
+4. **Free unlimited access** — Subscription tiers are fundamental to sustainability
+5. **B2B enterprise play** — Focus on individual households first

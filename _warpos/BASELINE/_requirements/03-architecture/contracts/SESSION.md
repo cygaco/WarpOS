@@ -7,7 +7,7 @@
 - **status:** active
 - **version:** 2.0.0
 - **changeType:** major
-- **used by:** auth, dashboard, profile, rockets-economy
+- **used by:** auth, dashboard, profile, subscription
 
 > **2.0.0 (breaking, 2026-05-04):** shape rewritten to reflect product-specific session contract promoted into canonical at v0.2.0. Consumers that depended on the framework-template SessionContract must adopt the new shape.
 
@@ -64,4 +64,4 @@ interface SessionContract {
 - Patch: clarification only; no consumer migration.
 - Minor: backward-compatible field addition with default handling.
 - Major: cookie name, token claims, signing algorithm, or expiry semantics change.
-- On any version bump, notify: auth, dashboard, profile, rockets-economy.
+- On any version bump, notify: auth, dashboard, profile, subscription.

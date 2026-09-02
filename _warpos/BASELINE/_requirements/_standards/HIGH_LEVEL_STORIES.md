@@ -1,8 +1,8 @@
-# Jobzooka — High-Level Story Standards
+# Pantry Pilot — High-Level Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for Jobzooka.
+This document defines the mandatory rules for writing and reviewing **High-Level User Stories** for Pantry Pilot.
 
 High-Level Stories establish **product intent, scope, and outcomes**. They describe _what success means_ without prescribing UI, interaction patterns, sequencing, or implementation details.
 
@@ -95,7 +95,7 @@ High-Level Stories must use **normalized, generic roles** only.
 
 ### Disallowed
 
-- UI- or surface-specific roles (e.g., "resume uploader", "rocket purchaser")
+- UI- or surface-specific roles (e.g., "recipe uploader", "plan subscriber")
 - Persona-style roles encoding context or motivation
 - Roles that imply implementation detail
 

@@ -40,6 +40,7 @@ const WALK_SKIP_DIRS = new Set([
   "worktrees", // .claude/worktrees/ — agent scratch clones; not framework
   ".worktrees", // repo-root builder isolation worktrees (.worktrees/wt-*) — agent scratch; never framework, must never enter the shipping manifest nor break its build
   "_planning", // operator planning scratch for in-flight system updates; not framework, not shipped
+  "_private", // operator-private material withheld from the public tree (E-OPEN-SOURCE-001 S-OS-02); gitignored, local only, never framework
   "_archive", // tracked archive tier for retired root docs (archive-never-delete); kept in the repo + pushed, but never shipped framework content. Added 2026-07-26 root-cleanup.
   "WarpOS-v1", // operator's v1-rebuild charter corpus (root, in-flight planning scratch, same class as _planning / WarpOS-Update); kept local + gitignored, never shipped. Clears the 24-file --strict unmanifested delta (crud-sweep 2026-07-16).
   "_reports", // per-project report OUTPUT (sprint/milestone/session/checkpoint reports via /report); created on use like runtime/ — NOT framework content. The /report skill (.claude/commands/) + framework/templates/report/ ship and seed it; the emitted reports themselves never ship. (SP-20260531-001)

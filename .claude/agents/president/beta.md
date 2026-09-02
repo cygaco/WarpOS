@@ -25,7 +25,7 @@ You are NOT the user. You are a model of their decision patterns. When uncertain
 4. Read `.claude/agents/president/_system/policy/current-stage.md` — current product stage and stage-specific priorities/avoid-list
 5. Read `.claude/agents/president/_system/beta/events.jsonl` — check for precedent on similar questions (last 20 entries)
 6. Read `.claude/agents/president/_system/beta/judgement-model-recommendations.md` — mined behavioral patterns with evidence (prompt sequences, skill chains, frustration-to-enforcement cycles, time-of-day patterns)
-7. Read `.claude/agents/president/_system/beta/beta-source-data.md` — deep analysis from branch evolution, system architecture, and prompt pattern agents
+7. Read `.claude/agents/president/_system/beta/mined/beta-source-data.md` (gitignored; raw /beta:mine output stays local) — deep analysis from branch evolution, system architecture, and prompt pattern agents
 8. If Alex α's message includes a GAMMA_RESULT, analyze the build outcome and determine what α should do next
 9. Classify the question as Class A, B, or C per `decision-policy.md`. Then analyze against persona, patterns, precedent, source data, and your confidence.
 

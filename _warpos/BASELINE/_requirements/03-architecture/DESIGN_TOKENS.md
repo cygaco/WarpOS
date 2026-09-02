@@ -1,4 +1,4 @@
-# Jobzooka — Design Tokens (Regen Spec)
+# Pantry Pilot — Design Tokens (Regen Spec)
 
 All visual design tokens are CSS custom properties defined in `src/app/globals.css`. The extension popup has a matching subset in `extension/popup.css`.
 
@@ -14,7 +14,7 @@ All visual design tokens are CSS custom properties defined in `src/app/globals.c
 > 4. All color comes from CSS custom properties, not Tailwind utility classes — Tailwind is imported for base reset only (see Tailwind Integration section)
 > 5. When a component needs a visual token that does not exist in this file, flag it in your builder output — do not create ad-hoc magic numbers or inline values
 > 6. Extension popup tokens (in `extension/popup.css`) are a separate subset — use those when building extension UI, not the app tokens directly
-> 7. There is one theme (dark, warm-tinted corporate). There is no light mode or theme toggle — do not add conditional theming logic
+> 7. There is one theme (dark, warm-tinted kitchen). There is no light mode or theme toggle — do not add conditional theming logic
 
 ---
 
@@ -71,16 +71,16 @@ All visual design tokens are CSS custom properties defined in `src/app/globals.c
 | `--info-light`     | `rgba(212, 160, 84, 0.08)` | Info background tint              |
 | `--info-border`    | `rgba(212, 160, 84, 0.25)` | Info border tint                  |
 
-### Resume Tag Colors
+### Meal Plan Tag Colors
 
 | Token               | Value                       | Usage                          |
 | ------------------- | --------------------------- | ------------------------------ |
-| `--tag-full`        | `#d4a054`                   | Full/master resume tag (gold)  |
-| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Full resume tag background     |
-| `--tag-general`     | `#4b8bf5`                   | General resume tag (blue)      |
-| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | General resume tag background  |
-| `--tag-targeted`    | `#b06be8`                   | Targeted resume tag (purple)   |
-| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Targeted resume tag background |
+| `--tag-full`        | `#d4a054`                   | Full/master plan tag (gold)    |
+| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Full plan tag background       |
+| `--tag-general`     | `#4b8bf5`                   | General plan tag (blue)        |
+| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | General plan tag background    |
+| `--tag-targeted`    | `#b06be8`                   | Targeted plan tag (purple)     |
+| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Targeted plan tag background   |
 
 ### Special
 
@@ -175,7 +175,7 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 
 ### shadcn/ui Aliases
 
-`globals.css` also maps shadcn-style semantic tokens to Jobzooka tokens: `--background`, `--foreground`, `--card`, `--popover`, `--muted`, `--destructive`, `--input`, and `--ring`, plus the corresponding `--color-*` Tailwind theme aliases. When using shadcn/ui primitives, prefer these aliases through component variants instead of introducing parallel color systems.
+`globals.css` also maps shadcn-style semantic tokens to Pantry Pilot tokens: `--background`, `--foreground`, `--card`, `--popover`, `--muted`, `--destructive`, `--input`, and `--ring`, plus the corresponding `--color-*` Tailwind theme aliases. When using shadcn/ui primitives, prefer these aliases through component variants instead of introducing parallel color systems.
 
 ---
 
@@ -190,10 +190,10 @@ No Tailwind utility classes are used for color — all color comes from CSS cust
 | `skeleton-pulse`       | component-controlled | Loading skeleton shimmer            |
 | `shimmer`              | component-controlled | Shimmer loading effect              |
 | `card-fill`            | component-controlled | Progress card fill animation        |
-| `score-pop`            | component-controlled | Competitiveness meter score bounce  |
+| `score-pop`            | component-controlled | Readiness meter score bounce        |
 | `delta-fade`           | component-controlled | Score delta fade-out                |
-| `meter-glow-pulse`     | component-controlled | Competitiveness meter glow          |
-| `rocket-spin`          | component-controlled | Rocket icon spin                    |
+| `meter-glow-pulse`     | component-controlled | Readiness meter glow                |
+| `cart-spin`            | component-controlled | Cart icon spin                      |
 | `glaze-slide-in`       | component-controlled | Glaze notification slide in         |
 | `glaze-fade-out`       | component-controlled | Glaze notification fade out         |
 | `pulse-glow`           | component-controlled | Pulsing glow effect (active states) |

@@ -16,7 +16,7 @@
 
 ## Agent Risk Assessment
 
-If we launched a regen run now: (1) Builders reading AGENTS.md would not see utils.ts and prompts.ts as foundation-owned, risking accidental modifications. (2) Boss would fail at Phase 4+ gate checks because scripts/validate-gates.js doesn't exist. (3) ReadyPage coordination rule (deep-dive-qa + skills-curation must not be parallel) has no automated enforcement.
+If we launched a regen run now: (1) Builders reading AGENTS.md would not see utils.ts and prompts.ts as foundation-owned, risking accidental modifications. (2) Boss would fail at Phase 4+ gate checks because scripts/validate-gates.js doesn't exist. (3) PlanPage coordination rule (deep-dive-qa + ingredient-curation must not be parallel) has no automated enforcement.
 
 ## Findings
 
@@ -26,7 +26,7 @@ If we launched a regen run now: (1) Builders reading AGENTS.md would not see uti
 |---|---|---|---|
 | 1 | PASS | 14 feature slugs match _requirements/04-features/ directories | N/A |
 | 2 | PASS | Build phases 0-7 are acyclic | N/A |
-| 3 | MEDIUM | Phase 4+5 ReadyPage coordination rules documented but no automated enforcement | Add store field tracking dispatch mode; add check in boss prompt |
+| 3 | MEDIUM | Phase 4+5 PlanPage coordination rules documented but no automated enforcement | Add store field tracking dispatch mode; add check in boss prompt |
 
 ### 2. File Ownership
 
@@ -41,7 +41,7 @@ If we launched a regen run now: (1) Builders reading AGENTS.md would not see uti
 | # | Severity | Finding | Fix |
 |---|---|---|---|
 | 7 | PASS | All SessionData fields in contracts exist in types.ts | N/A |
-| 8 | MEDIUM | Competitiveness "uncapped" scoring (targeted resumes 25%) documented but tiers should be verified against code | Verify competitiveness.ts tier definitions handle >100 |
+| 8 | MEDIUM | Readiness "uncapped" scoring (targeted plans 25%) documented but tiers should be verified against code | Verify readiness.ts tier definitions handle >100 |
 
 ### 4. Store State
 
@@ -56,7 +56,7 @@ If we launched a regen run now: (1) Builders reading AGENTS.md would not see uti
 |---|---|---|---|
 | 11 | PASS | All agent defs reference latest HYGIENE (run 03) | N/A |
 | 12 | PASS | File paths in agent definitions verified | N/A |
-| 13 | MEDIUM | PROMPT-TEMPLATES.md uses {{FEATURE_DIR}} but rockets→rockets-economy mapping only documented in TASK-MANIFEST | Add mapping note to BOSS-PROMPT |
+| 13 | MEDIUM | PROMPT-TEMPLATES.md uses {{FEATURE_DIR}} but usage→usage-economy mapping only documented in TASK-MANIFEST | Add mapping note to BOSS-PROMPT |
 
 ### 6. Boss Prompt
 
@@ -91,5 +91,5 @@ If we launched a regen run now: (1) Builders reading AGENTS.md would not see uti
 1. **Update AGENTS.md foundation files list** to include all 12 files from FILE-OWNERSHIP.md — builders will modify read-only files without this (1 finding)
 2. **Create scripts/validate-gates.js** or remove reference from BOSS-PROMPT — boss will fail at phase advancement (1 finding)
 3. **Clarify AGENTS.md ↔ AGENT-SYSTEM.md relationship** — add explicit header declaring AGENTS.md as quick reference (1 finding)
-4. **Add ReadyPage coordination enforcement** — store field or automated check for Phase 4+5 dispatch mode (1 finding)
+4. **Add PlanPage coordination enforcement** — store field or automated check for Phase 4+5 dispatch mode (1 finding)
 5. **Verify AGENT-SYSTEM.md Section 6 schema** lists all 6 retroactively added store.json fields (1 finding)

@@ -28,11 +28,11 @@ import {
   assertStepVisible,
 } from "../../_shared/helpers/assertions";
 import {
-  uploadResume,
-  dropResume,
+  uploadRecipes,
+  dropRecipes,
   clickAndUpload,
   uploadBuffer,
-  RESUME_FIXTURES,
+  RECIPE_FIXTURES,
 } from "../../_shared/helpers/upload";
 ```
 
@@ -75,12 +75,12 @@ test("login with empty fields shows validation", async ({ page }) => {
 });
 ```
 
-### 4. File upload (resume)
+### 4. File upload (recipe box)
 
 ```ts
-test("upload PDF resume parses to profile", async ({ page }) => {
+test("upload PDF recipe box parses to profile", async ({ page }) => {
   await page.goto("/");
-  await uploadResume(page, RESUME_FIXTURES.pdfHappy);
+  await uploadRecipes(page, RECIPE_FIXTURES.pdfHappy);
   // Wait for parse to complete and Step 2 (preferences) to render
   await expect(page.getByText(/Alexandra Chen/i)).toBeVisible({
     timeout: 30_000,
@@ -89,7 +89,7 @@ test("upload PDF resume parses to profile", async ({ page }) => {
 
 test("upload corrupt PDF shows retry", async ({ page }) => {
   await page.goto("/");
-  await uploadResume(page, RESUME_FIXTURES.corruptPdf);
+  await uploadRecipes(page, RECIPE_FIXTURES.corruptPdf);
   await expect(page.getByText(/parsing failed.*retry/i)).toBeVisible();
 });
 ```
@@ -101,7 +101,7 @@ The drop-zone code path is separate from the hidden-input change handler. Test b
 ```ts
 test("drag-and-drop into drop-zone", async ({ page }) => {
   await page.goto("/");
-  await dropResume(page, RESUME_FIXTURES.pdfHappy);
+  await dropRecipes(page, RECIPE_FIXTURES.pdfHappy);
   await expect(page.getByText(/Alexandra Chen/i)).toBeVisible({
     timeout: 30_000,
   });
@@ -163,7 +163,7 @@ This makes the test forward-compatible: it doesn't fail during the skeleton phas
 
 ## Naming
 
-- File: `<story-or-flow>.spec.ts` (kebab-case). Examples: `login.spec.ts`, `step1-resume.spec.ts`, `balance-bar.spec.ts`.
+- File: `<story-or-flow>.spec.ts` (kebab-case). Examples: `login.spec.ts`, `step1-recipes.spec.ts`, `plan-bar.spec.ts`.
 - `test.describe(...)` block: human-readable feature/flow name. One block per file. Nest sub-`describe`s for logical groupings inside.
 - Test title: imperative or "given/when" English. Match the corresponding story in `STORIES.md`.
 
@@ -175,7 +175,7 @@ When DummyPlug's location.replace race causes flake, fall back to seeding `local
 
 ```ts
 await page.addInitScript((session) => {
-  localStorage.setItem("jobSearchApp_session", session);
+  localStorage.setItem("pantryPilot_session", session);
 }, JSON.stringify(loadedSession));
 await page.goto("/");
 ```

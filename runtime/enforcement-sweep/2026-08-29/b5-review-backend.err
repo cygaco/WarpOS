@@ -1,1 +1,0 @@
-{"ok":false,"provider":"claude","role":"backend-reviewer","error":"Provider is Claude — dispatch natively via Claude Code Agent tool or `claude -p --agent backend-reviewer`. This bridge handles OpenAI and Gemini only."}

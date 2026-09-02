@@ -4,7 +4,7 @@ When a user edits a field anywhere in the app, that edit must reach every featur
 
 ## The problem
 
-A field is editable in the UI. The user changes it. But downstream — when a resume gets generated, a job search runs, or a prompt goes to Claude — the old value is used, or the new value is never read at all, because nobody wired it up.
+A field is editable in the UI. The user changes it. But downstream — when a grocery list gets generated, a catalog search runs, or a prompt goes to Claude — the old value is used, or the new value is never read at all, because nobody wired it up.
 
 This has two failure modes:
 
@@ -19,7 +19,7 @@ This has two failure modes:
 
 3. **Document the wire.** If a prompt payload includes any of these fields, the prompt template's contract must list which session fields it reads. This makes missing wires auditable.
 
-4. **Wire ownership belongs to the consumer.** The builder of a consuming feature (e.g., resume generation) is responsible for reading the fields it needs from the session. The builder of the producing screen (e.g., Direction) is only responsible for saving the field to the session correctly.
+4. **Wire ownership belongs to the consumer.** The builder of a consuming feature (e.g., list generation) is responsible for reading the fields it needs from the session. The builder of the producing screen (e.g., Direction) is only responsible for saving the field to the session correctly.
 
 5. **Post-build wire check.** After all builders complete, the evaluator must verify every wire listed in every contract table across the app. For each row: grep the consumer's code for an explicit read of the session field. If the read doesn't exist, flag it as a bug. No wire = broken feature, not a future task.
 
@@ -27,22 +27,22 @@ This has two failure modes:
 
 Each feature spec that produces editable fields includes a "Downstream data contracts" section with a table mapping fields to consumers. These are the current locations:
 
-- [onboarding/INPUTS.md](../05-features/onboarding/INPUTS.md) — all onboarding screens (Resume, Direction, Work Type, Compensation, Location, Quick Check, Dealbreakers, Profile Review)
+- [onboarding/INPUTS.md](../05-features/onboarding/INPUTS.md) — all onboarding screens (Recipes, Direction, Meal Types, Budget, Store, Quick Check, Dealbreakers, Profile Review)
 - [auth/INPUTS.md](../05-features/auth/INPUTS.md) — sign up, sign in, OAuth
-- [market-research/INPUTS.md](../05-features/market-research/INPUTS.md) — query editor, analysis, category locking
+- [catalog-research/INPUTS.md](../05-features/catalog-research/INPUTS.md) — query editor, analysis, theme locking
 - [deep-dive-qa/INPUTS.md](../05-features/deep-dive-qa/INPUTS.md) — mining Q&A answers
-- [skills-curation/INPUTS.md](../05-features/skills-curation/INPUTS.md) — skill include/exclude, priorities, custom exclusions
-- [resume-generation/INPUTS.md](../05-features/resume-generation/INPUTS.md) — category selection, inline editing, download
-- [linkedin/INPUTS.md](../05-features/linkedin/INPUTS.md) — headline selection, form answer editing, export
-- [rockets-economy/INPUTS.md](../05-features/rockets-economy/INPUTS.md) — pack selection, purchase flow
-- [auto-apply/INPUTS.md](../05-features/auto-apply/INPUTS.md) — resume selection, fire mode, extension setup, heuristics
+- [ingredient-curation/INPUTS.md](../05-features/ingredient-curation/INPUTS.md) — ingredient include/exclude, priorities, custom exclusions
+- [list-generation/INPUTS.md](../05-features/list-generation/INPUTS.md) — theme selection, inline editing, download
+- [recipe-cards/INPUTS.md](../05-features/recipe-cards/INPUTS.md) — card selection, swap answer editing, export
+- [subscription-tiers/INPUTS.md](../05-features/subscription-tiers/INPUTS.md) — plan selection, upgrade flow
+- [auto-cart/INPUTS.md](../05-features/auto-cart/INPUTS.md) — list selection, cart mode, extension setup, heuristics
 - [profile/INPUTS.md](../05-features/profile/INPUTS.md) — post-onboarding profile editing
 
 **Features with no user inputs (no INPUTS.md needed):**
-- `competitiveness` — pure calculation/display, no user input
+- `readiness` — pure calculation/display, no user input
 - `shell` — navigation and layout only
-- `deus-mechanicus` — dev tools (not user-facing)
-- `extension` — covered by auto-apply INPUTS.md
+- `test-kitchen` — dev tools (not user-facing)
+- `extension` — covered by auto-cart INPUTS.md
 
 All contract tables follow the same format:
 
@@ -54,8 +54,8 @@ All contract tables follow the same format:
 
 For each row in every contract table:
 
-1. Identify the session field name (e.g., `session.preferences.employmentTypes`)
-2. Identify the consumer (e.g., "job search queries — BD API `job_type` param")
+1. Identify the session field name (e.g., `session.preferences.mealTypes`)
+2. Identify the consumer (e.g., "catalog search queries — Recipe Index API `meal_type` param")
 3. Grep the consumer's code for an explicit read of that session field
 4. If found: wire exists, pass
 5. If not found: flag as bug — "Field X is edited on [screen] but never read by [consumer]"

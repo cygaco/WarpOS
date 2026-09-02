@@ -1,4 +1,4 @@
-# Jobzooka — Persistence Model
+# Pantry Pilot — Persistence Model
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. Storage is **three-tier**: client-side encrypted localStorage, Postgres (financial + audit + admin, authoritative), and Redis (cache + scratch + rate limits, eventually-consistent). The v2 statement "no traditional database" is overturned in v3 per research F1 — Postgres is now in MVP for any state that must survive a Redis failover.
 
@@ -7,7 +7,7 @@
 ## Overview
 
 - **Encrypted client-side localStorage** — always. Survives offline. Device-fingerprint-derived key. Full SessionData.
-- **Postgres (Fly)** — authoritative for financial state, admin identity, durable audit, apply outcomes. Failover-durable. ACID.
+- **Postgres (Fly)** — authoritative for financial state, admin identity, durable audit, shopping outcomes. Failover-durable. ACID.
 - **Redis (Upstash)** — cache, ticket scratch, rate-limit counters, WebAuthn challenges, scope cache (read-through). Eventually-consistent only — **never the authoritative store for payment-bearing state**.
 - **Cloudflare R2** — blob store for oversized results (>256KB) and nightly audit-log archive with Object Lock.
 
@@ -112,18 +112,18 @@ On app initialization:
 
 `validateSession(data)` checks:
 
-| Field            | Validation          |
-| ---------------- | ------------------- |
-| currentStep      | Integer, 0–10       |
-| maxStep          | Integer, 0–10       |
-| personal         | Object (if present) |
-| resumeStructured | Object (if present) |
-| profile          | Object (if present) |
-| generatedQueries | Array (if present)  |
-| rankedCategories | Array (if present)  |
-| formAnswers      | Array (if present)  |
-| resumeRaw        | String, max 500KB   |
-| marketRaw        | String, max 1MB     |
+| Field             | Validation          |
+| ----------------- | ------------------- |
+| currentStep       | Integer, 0–10       |
+| maxStep           | Integer, 0–10       |
+| household         | Object (if present) |
+| recipesStructured | Object (if present) |
+| profile           | Object (if present) |
+| generatedQueries  | Array (if present)  |
+| rankedCategories  | Array (if present)  |
+| formAnswers       | Array (if present)  |
+| recipesRaw        | String, max 500KB   |
+| catalogRaw        | String, max 1MB     |
 
 Invalid data is rejected — falls back to the next source or starts fresh.
 
@@ -171,18 +171,18 @@ Three-store split. **Every value that must survive a Redis failover lives in Pos
 
 | Table                           | Purpose                                                                  | Partitioning       |
 | ------------------------------- | ------------------------------------------------------------------------ | ------------------ |
-| `rockets_ledger`                | Append-only ledger entries: debit, refund, grant, Stripe top-up          | Monthly            |
-| `rockets_balances`              | Denormalized current balance per user; kept in sync by trigger           | —                  |
+| `billing_ledger`                | Append-only ledger entries: charge, refund, quota grant, Stripe payment  | Monthly            |
+| `plan_state`                    | Denormalized current tier + seat count per household; kept in sync by trigger | —              |
 | `stripe_webhook_idempotency`    | Three-state (queued / processing / done) for Stripe event replay safety  | —                  |
 | `admin_users`                   | User IDs with `admin` scope, plus who granted and when                   | —                  |
 | `passkey_credentials`           | WebAuthn credentials: credential_id, public_key, counter, device_name    | —                  |
 | `admin_recovery_codes`          | Argon2id-hashed one-time recovery codes (10 per admin)                   | —                  |
-| `apply_outcomes`                | Per-user applied/skipped/failed job records from the extension           | Monthly            |
-| `audit_log`                     | All auth, rocket, admin, Stripe events (durable, compliance-grade)       | Monthly + R2 archive |
+| `shopping_outcomes`             | Per-household purchased/skipped/unavailable item records from the extension | Monthly         |
+| `audit_log`                     | All auth, billing, admin, Stripe events (durable, compliance-grade)      | Monthly + R2 archive |
 | `graphile_worker.jobs`          | Transactional job queue (internal; Graphile Worker library-managed)      | —                  |
 
 **Key guarantees:**
-- Every debit + job enqueue happens in one `BEGIN; ... COMMIT;` transaction — no dual-write hazards.
+- Every quota consume + job enqueue happens in one `BEGIN; ... COMMIT;` transaction — no dual-write hazards.
 - Stripe webhooks use `ON CONFLICT (event_id) DO NOTHING` for replay idempotency.
 - Monthly partitions on append-only tables keep index depth manageable; `audit_log` is archived nightly to R2 with Object Lock for tamper-evidence.
 
@@ -198,7 +198,7 @@ Three-store split. **Every value that must survive a Redis failover lives in Pos
 | `ticket:{id}`                     | Ticket progress scratch (authoritative is Postgres)      | 24 hours           |
 | `idempotency:{userId}:{key}`      | `X-Idempotency-Key` dedup window                         | 5 min              |
 | `qstash:last_rotation_deployed_at`| Guard flag for QStash signing-key rotation (F5)          | —                  |
-| `rockets:ledger:{userId}` (stream)| Ops-UI live-tail cache (Postgres is authoritative)       | `XADD MAXLEN ~ 500000` |
+| `billing:ledger:{userId}` (stream)| Ops-UI live-tail cache (Postgres is authoritative)       | `XADD MAXLEN ~ 500000` |
 | `audit:events` (stream)           | Ops-UI live-tail of `audit_log` (Postgres authoritative) | `XADD MAXLEN ~ 500000` |
 
 ### R2 — blob storage
@@ -242,7 +242,7 @@ Ticket state machine: `queued → running → (done | failed)`. State + progress
 
 **Ownership:** `ticket.owner_user_id` is checked on every `GET /tickets/{id}` — mismatch → 403 with no metadata.
 
-**Stuck recovery:** `cron.stuck-ticket-sweep` (every minute) transitions tickets in `running` for >2× expected duration to `failed` + emits a refund ledger entry.
+**Stuck recovery:** `cron.stuck-ticket-sweep` (every minute) transitions tickets in `running` for >2× expected duration to `failed` + emits a quota-restore ledger entry.
 
 ---
 

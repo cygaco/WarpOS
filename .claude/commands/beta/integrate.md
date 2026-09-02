@@ -46,7 +46,7 @@ For each recommendation:
 ### Step 5: Archive and clear
 
 After all recommendations are processed:
-1. Archive the recommendations file — append its contents to `.claude/agents/president/_system/beta/judgement-model-recommendations-archive.md` with a date header
+1. Archive the recommendations file — append its contents to `.claude/agents/president/_system/beta/mined/judgement-model-recommendations-archive.md` with a date header
 2. Clear the recommendations file (write empty)
 
 ### Step 6: Report

@@ -1,12 +1,12 @@
-# Jobzooka — Color Semantics
+# Pantry Pilot — Color Semantics
 
 This document defines the CSS custom properties and their semantic meanings. Colors are not just values — they carry meaning about state, hierarchy, and user action.
 
 ---
 
-## Theme: Dark Corporate
+## Theme: Warm Dark
 
-Jobzooka uses a dark theme with warm undertones. The palette is built around deep reds/browns for backgrounds, bright orange for primary actions, and lime green for success states.
+Pantry Pilot uses a dark theme with warm undertones. The palette is built around deep browns for backgrounds, bright orange for primary actions, and lime green for stocked/complete states.
 
 ---
 
@@ -63,23 +63,23 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 
 | Variable           | Value                      | Meaning                                                                                            |
 | ------------------ | -------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--success`        | `#acd229`                  | Success/completed state. Lime green. Used for: done checkmarks, completed phases, unlocked labels. |
+| `--success`        | `#acd229`                  | Success/completed state. Lime green. Used for: checked-off items, completed phases, unlocked labels. |
 | `--success-light`  | `rgba(172, 210, 41, 0.1)`  | Success background tint.                                                                           |
 | `--success-border` | `rgba(172, 210, 41, 0.25)` | Success border.                                                                                    |
 
 ### Warning (Amber)
 
-| Variable           | Value                    | Meaning                                                                                  |
-| ------------------ | ------------------------ | ---------------------------------------------------------------------------------------- |
-| `--warning`        | `#eab308`                | Warning/in-progress state. Amber/yellow. Used for: low rocket balance, caution messages. |
-| `--warning-light`  | `rgba(234, 179, 8, 0.1)` | Warning background tint.                                                                 |
-| `--warning-border` | `rgba(234, 179, 8, 0.3)` | Warning border.                                                                          |
+| Variable           | Value                    | Meaning                                                                                     |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------- |
+| `--warning`        | `#eab308`                | Warning/in-progress state. Amber/yellow. Used for: approaching a free-tier limit, caution messages. |
+| `--warning-light`  | `rgba(234, 179, 8, 0.1)` | Warning background tint.                                                                    |
+| `--warning-border` | `rgba(234, 179, 8, 0.3)` | Warning border.                                                                             |
 
 ### Error (Red)
 
 | Variable         | Value                    | Meaning                                                                                                  |
 | ---------------- | ------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `--error`        | `#ef4444`                | Error/destructive state. Standard red. Used for: error messages, required field markers, danger buttons. |
+| `--error`        | `#ef4444`                | Error/destructive state. Standard red. Used for: error messages, allergen markers, danger buttons.        |
 | `--error-light`  | `rgba(239, 68, 68, 0.1)` | Error background tint.                                                                                   |
 | `--error-border` | `rgba(239, 68, 68, 0.3)` | Error border.                                                                                            |
 
@@ -87,16 +87,16 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 
 ## Specialized Colors
 
-### Resume Tags
+### List Tags
 
-| Variable            | Value                       | Meaning                         |
-| ------------------- | --------------------------- | ------------------------------- |
-| `--tag-full`        | `#d4a054`                   | Full/master resume tag. Gold.   |
-| `--tag-full-bg`     | `rgba(212, 160, 84, 0.12)`  | Master resume tag background.   |
-| `--tag-general`     | `#4b8bf5`                   | General resume tag. Blue.       |
-| `--tag-general-bg`  | `rgba(75, 139, 245, 0.12)`  | General resume tag background.  |
-| `--tag-targeted`    | `#b06be8`                   | Targeted resume tag. Purple.    |
-| `--tag-targeted-bg` | `rgba(176, 107, 232, 0.12)` | Targeted resume tag background. |
+| Variable          | Value                       | Meaning                       |
+| ----------------- | --------------------------- | ----------------------------- |
+| `--tag-master`    | `#d4a054`                   | Master list tag. Gold.        |
+| `--tag-master-bg` | `rgba(212, 160, 84, 0.12)`  | Master list tag background.   |
+| `--tag-weekly`    | `#4b8bf5`                   | Weekly list tag. Blue.        |
+| `--tag-weekly-bg` | `rgba(75, 139, 245, 0.12)`  | Weekly list tag background.   |
+| `--tag-store`     | `#b06be8`                   | Store list tag. Purple.       |
+| `--tag-store-bg`  | `rgba(176, 107, 232, 0.12)` | Store list tag background.    |
 
 ### Magic / AI
 
@@ -138,9 +138,9 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 ## Semantic Usage Rules
 
 1. **Primary orange (`--primary`)** = "do this" — the main action the user should take
-2. **Success green (`--success`)** = "done" — completed, achieved, unlocked
-3. **Warning amber (`--warning`)** = "attention" — low balance, caution, in-progress
-4. **Error red (`--error`)** = "problem" — errors, required fields, destructive actions
+2. **Success green (`--success`)** = "done" — checked off, stocked, unlocked
+3. **Warning amber (`--warning`)** = "attention" — near a tier limit, caution, in-progress
+4. **Error red (`--error`)** = "problem" — errors, allergens, destructive actions
 5. **Muted text (`--text-muted`)** = "secondary" — helper text, disabled, less important
 6. **Info gold (`--info`)** = "notice" — informational, non-urgent callouts
 7. **Purple (`--magic`)** = "AI-generated" — content created by the system
@@ -150,5 +150,5 @@ Jobzooka uses a dark theme with warm undertones. The palette is built around dee
 ## Known Issues (Flagged for Regen)
 
 1. `--secondary` and `--accent` are identical (`#d4a054`) — one should be removed
-2. `--magic` and `--tag-targeted` are identical (`#b06be8`) — potentially confusing
+2. `--magic` and `--tag-store` are identical (`#b06be8`) — potentially confusing
 3. Several variables defined but unused in components (see UI audit)

@@ -1,5 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
-import { uploadResume, RESUME_FIXTURES } from "../../_shared/helpers/upload";
+import { uploadRecipes, RECIPE_FIXTURES } from "../../_shared/helpers/upload";
 
 // Full-flow E2E — exercises the 12-step user journey end-to-end.
 // Generated 2026-05-02 alongside ISSUES.md as part of the QA sweep.
@@ -12,9 +12,9 @@ const SCAN_TIMEOUT = 90_000;
 async function uploadAndAdvanceFromIntro(page: Page): Promise<void> {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  await uploadResume(page, RESUME_FIXTURES.docxHappy);
+  await uploadRecipes(page, RECIPE_FIXTURES.docxHappy);
   // After drop, page advances to step 2 (CONFIRM) automatically.
-  await expect(page.getByText(/Resume parsed/i)).toBeVisible({
+  await expect(page.getByText(/Recipes parsed/i)).toBeVisible({
     timeout: STEP_TIMEOUT,
   });
 }
@@ -22,29 +22,29 @@ async function uploadAndAdvanceFromIntro(page: Page): Promise<void> {
 test.describe("Full E2E — happy path", () => {
   test.setTimeout(180_000);
 
-  test("intro → upload → search → market scan → dashboard", async ({
+  test("intro → import → search → catalog sweep → dashboard", async ({
     page,
   }) => {
     await uploadAndAdvanceFromIntro(page);
 
-    // Step 2 sub-flow: direction → work-type → comp → location → quick-check → skip-list → confirm.
+    // Step 2 sub-flow: direction → mealtype → budget → store → quick-check → dealbreakers → confirm.
     // Defaults are pre-selected; just hit Next through each.
     // The disabled "Next step" progress-bar arrow at the top has the same
     // role+name pattern as the page's actual "Next →" button. Filter to the
     // enabled one only — that's the one we click.
     const nextBtn = page.locator('button:has-text("Next →"):not([disabled])');
 
-    // Direction page (Same or similar role pre-selected)
+    // Direction page (Same or similar meals pre-selected)
     await nextBtn.first().click();
-    // Work type page (Full-time + Immediately pre-selected)
+    // Meal type page (Dinners + This week pre-selected)
     await nextBtn.first().click();
-    // Comp page (open to discussion default)
+    // Budget page (open to suggestions default)
     await nextBtn.first().click();
-    // Location page (Remote default)
+    // Store page (Any store default)
     await nextBtn.first().click();
     // Quick-check page
     await page.getByRole("button", { name: /Looks good, let's go/i }).click();
-    // Skip-list page
+    // Dealbreakers page
     await page.getByRole("button", { name: /^Looks good$/ }).click();
     // Confirm profile page
     await expect(page.getByText(/Confirm your info/i)).toBeVisible({
@@ -54,32 +54,30 @@ test.describe("Full E2E — happy path", () => {
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
 
-    // Interstitial → recon
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await expect(page.getByText(/Recon Mission/i)).toBeVisible({
+    // Interstitial → menu mission
+    await page
+      .getByRole("button", { name: /Continue to recipe search/i })
+      .click();
+    await expect(page.getByText(/Menu Mission/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
 
-    // Launch recon
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    // Launch the catalog sweep
+    await page.getByRole("button", { name: /Build My Week/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
 
-    // Targets → lock → deep dive → skip → skills → dashboard
-    await page
-      .getByRole("button", { name: /View your target categories/i })
-      .click();
+    // Menu → lock → deep dive → skip → ingredients → dashboard
+    await page.getByRole("button", { name: /View Your Menu/i }).click();
     await expect(
-      page.getByRole("heading", { name: /Lock Your Targets/i }),
+      page.getByRole("heading", { name: /Lock Your Menu/i }),
     ).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
-    await page
-      .getByRole("button", { name: /Lock your target categories/i })
-      .click();
+    await page.getByRole("button", { name: /Lock Menu/i }).click();
 
     await expect(page.getByText(/Deep Dive/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
@@ -87,18 +85,18 @@ test.describe("Full E2E — happy path", () => {
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
 
-    await expect(page.getByText(/Here are your skills/i)).toBeVisible({
+    await expect(page.getByText(/Here are your ingredients/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
     await page
       .getByRole("button", {
-        name: /Save skill selections and continue to dashboard/i,
+        name: /Save ingredient selections and continue to dashboard/i,
       })
       .click();
 
-    // Dashboard — Command Console visible
+    // Dashboard — Kitchen Console visible
     await expect(
-      page.getByRole("heading", { name: /Command Console/i }),
+      page.getByRole("heading", { name: /Kitchen Console/i }),
     ).toBeVisible({ timeout: STEP_TIMEOUT });
   });
 });
@@ -121,9 +119,9 @@ test.describe("Regression — BUG-001 (toggle pill style shorthand)", () => {
     await uploadAndAdvanceFromIntro(page);
     const next = page.locator('button:has-text("Next →"):not([disabled])');
 
-    // Direction → Work-type page → click "Contract" pill (a known repro)
+    // Direction → Meal-type page → click "Vegetarian" pill (a known repro)
     await next.first().click();
-    await page.getByRole("button", { name: /^Contract$/ }).click();
+    await page.getByRole("button", { name: /^Vegetarian$/ }).click();
 
     // BUG-001: this assertion fails on current (unfixed) code.
     // After fix, it passes.
@@ -131,10 +129,10 @@ test.describe("Regression — BUG-001 (toggle pill style shorthand)", () => {
   });
 });
 
-test.describe("Regression — BUG-004 (Dashboard vs Resumes pts mismatch)", () => {
+test.describe("Regression — BUG-004 (Dashboard vs Meal Plans pts mismatch)", () => {
   test.setTimeout(180_000);
 
-  test("Dashboard Competitiveness == Resumes Competitiveness for same session", async ({
+  test("Dashboard Readiness == Meal Plans Readiness for same session", async ({
     page,
   }) => {
     await uploadAndAdvanceFromIntro(page);
@@ -150,66 +148,62 @@ test.describe("Regression — BUG-004 (Dashboard vs Resumes pts mismatch)", () =
     await page
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    await page
+      .getByRole("button", { name: /Continue to recipe search/i })
+      .click();
+    await page.getByRole("button", { name: /Build My Week/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
-    await page
-      .getByRole("button", { name: /View your target categories/i })
-      .click();
-    await page
-      .getByRole("button", { name: /Lock your target categories/i })
-      .click();
+    await page.getByRole("button", { name: /View Your Menu/i }).click();
+    await page.getByRole("button", { name: /Lock Menu/i }).click();
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
     await page
       .getByRole("button", {
-        name: /Save skill selections and continue to dashboard/i,
+        name: /Save ingredient selections and continue to dashboard/i,
       })
       .click();
 
     // Read the Dashboard pts value
     await expect(
-      page.getByRole("heading", { name: /Command Console/i }),
+      page.getByRole("heading", { name: /Kitchen Console/i }),
     ).toBeVisible({ timeout: STEP_TIMEOUT });
-    // Locator the competitiveness number in Command Console.
+    // Locate the readiness number in Kitchen Console.
     const dashPts = await page
-      .locator("text=/Competitiveness/i")
+      .locator("text=/Readiness/i")
       .locator("..")
       .locator("..")
       .innerText();
 
-    // Navigate to Resumes page
-    await page.getByRole("button", { name: /Open Resumes section/i }).click();
-    await expect(page.getByText(/Load Your Warheads/i)).toBeVisible({
+    // Navigate to Meal Plans page
+    await page.getByRole("button", { name: /Open Meal Plans section/i }).click();
+    await expect(page.getByText(/Load Your Recipe Box/i)).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
-    const resumesPts = await page
-      .locator('[role="status"][aria-label*="Competitiveness"]')
+    const plansPts = await page
+      .locator('[role="status"][aria-label*="Readiness"]')
       .innerText()
       .catch(() => "");
 
-    // BUG-004: Dashboard reads "0 pts Rookie", Resumes reads "140 pts Elite".
-    // After fix: both should agree on the baseline number.
+    // BUG-004: Dashboard reads "0 pts Getting started", Meal Plans reads
+    // "140 pts OVERSTOCKED". After fix: both should agree on the baseline number.
     const dashHas140 = /140/.test(dashPts);
-    const resumesHas140 = /140/.test(resumesPts);
+    const plansHas140 = /140/.test(plansPts);
 
     expect(
-      dashHas140 === resumesHas140,
-      `Dashboard pts text="${dashPts}", Resumes pts text="${resumesPts}" — they disagree on whether 140 pts is the current score.`,
+      dashHas140 === plansHas140,
+      `Dashboard pts text="${dashPts}", Meal Plans pts text="${plansPts}" — they disagree on whether 140 pts is the current score.`,
     ).toBe(true);
   });
 });
 
-test.describe("Regression — BUG-005 (skill miscategorization)", () => {
+test.describe("Regression — BUG-005 (ingredient miscategorization)", () => {
   test.setTimeout(180_000);
 
-  test("Mixpanel is categorized as a Tool, not Methodology", async ({
-    page,
-  }) => {
+  test("Paprika is categorized as a Spice, not Pantry", async ({ page }) => {
     await uploadAndAdvanceFromIntro(page);
     const next = page.locator('button:has-text("Next →"):not([disabled])');
     // Skip onboarding fast
@@ -221,35 +215,33 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
     await page
       .getByRole("button", { name: /Confirm profile and continue/i })
       .click();
-    await page.getByRole("button", { name: /Continue to job search/i }).click();
-    await page.getByRole("button", { name: /Launch recon/i }).click();
+    await page
+      .getByRole("button", { name: /Continue to recipe search/i })
+      .click();
+    await page.getByRole("button", { name: /Build My Week/i }).click();
     await expect(
       page.getByRole("heading", { name: /Analysis Complete/i }),
     ).toBeVisible({
       timeout: SCAN_TIMEOUT,
     });
-    await page
-      .getByRole("button", { name: /View your target categories/i })
-      .click();
-    await page
-      .getByRole("button", { name: /Lock your target categories/i })
-      .click();
+    await page.getByRole("button", { name: /View Your Menu/i }).click();
+    await page.getByRole("button", { name: /Lock Menu/i }).click();
     await page.getByRole("button", { name: /Skip all/i }).click();
     await page.getByRole("button", { name: /Skip & finish/i }).click();
 
-    await expect(page.getByText(/Here are your skills/i)).toBeVisible({
+    await expect(page.getByText(/Here are your ingredients/i)).toBeVisible({
       timeout: STEP_TIMEOUT,
     });
 
-    // BUG-005: Mixpanel appears under "Methodology", should be under "Tools".
-    const mixpanelButton = page.getByRole("button", { name: /^Mixpanel/i });
-    if ((await mixpanelButton.count()) === 0) {
-      // Resume parser is non-deterministic (BUG-006); skip if Mixpanel didn't
+    // BUG-005: Paprika appears under "Pantry", should be under "Spices".
+    const paprikaButton = page.getByRole("button", { name: /^Paprika/i });
+    if ((await paprikaButton.count()) === 0) {
+      // Recipe parser is non-deterministic (BUG-006); skip if Paprika didn't
       // show up this run.
       test.skip();
     }
     // Walk up the DOM to find the category heading sibling.
-    const category = await mixpanelButton.evaluate((el) => {
+    const category = await paprikaButton.evaluate((el) => {
       // Find the closest container whose first child is a category label.
       let cur: HTMLElement | null = el;
       while (cur && cur.parentElement) {
@@ -257,7 +249,7 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
         const firstChild = cur.firstElementChild as HTMLElement | null;
         if (
           firstChild?.textContent &&
-          /^(Leadership|Domain|Technical|Tools|Methodology|Other)$/i.test(
+          /^(Produce|Dairy|Protein|Pantry|Spices|Other)$/i.test(
             firstChild.textContent.trim(),
           )
         ) {
@@ -269,7 +261,7 @@ test.describe("Regression — BUG-005 (skill miscategorization)", () => {
 
     expect(
       category.toLowerCase(),
-      `Mixpanel was categorized under "${category}"`,
-    ).toBe("tools");
+      `Paprika was categorized under "${category}"`,
+    ).toBe("spices");
   });
 });

@@ -40,7 +40,7 @@
 
 | Step | Display Name | Component | Prerequisites |
 |------|-------------|-----------|--------------|
-| <!-- e.g., 1 --> | <!-- e.g., Upload Resume --> | <!-- e.g., Step1Resume.tsx --> | <!-- None --> |
+| <!-- e.g., 1 --> | <!-- e.g., Import Recipes --> | <!-- e.g., Step1Import.tsx --> | <!-- None --> |
 
 ---
 

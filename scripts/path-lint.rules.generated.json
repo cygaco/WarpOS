@@ -202,7 +202,7 @@
       "key": "betaEvents"
     },
     {
-      "match": "\\.claude/agents/president/_system/beta/beta-source-data\\.md",
+      "match": "\\.claude/agents/president/_system/beta/mined/beta-source-data\\.md",
       "key": "betaSourceData"
     },
     {

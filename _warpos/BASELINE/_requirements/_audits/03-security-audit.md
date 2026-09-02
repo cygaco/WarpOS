@@ -29,7 +29,7 @@
 
 ## Agent Risk Assessment
 
-If builders ran now: (1) /api/test would ship with client-discoverable gate value, (2) OAuth callbacks would be vulnerable to state replay, (3) no security event logging means incidents go undetected, (4) Stripe webhook could grant rockets to wrong user.
+If builders ran now: (1) /api/test would ship with client-discoverable gate value, (2) OAuth callbacks would be vulnerable to state replay, (3) no security event logging means incidents go undetected, (4) Stripe webhook could grant plan quota to the wrong user.
 
 ## Findings
 
@@ -45,7 +45,7 @@ If builders ran now: (1) /api/test would ship with client-discoverable gate valu
 
 | # | Category | Finding | Location | Fix |
 |---|---|---|---|---|
-| 4 | A01 | No per-user rate limits; no role-based access for billable prompts | /api/claude, /api/jobs | Add per-user rate limits (10/min), role checks for BILLABLE_PROMPTS |
+| 4 | A01 | No per-user rate limits; no role-based access for billable prompts | /api/claude, /api/recipes | Add per-user rate limits (10/min), role checks for BILLABLE_PROMPTS |
 | 5 | A07 | Session nonce format-validated only, not server-bound (spec acknowledged as accepted risk) | /api/claude route | Document explicitly; optionally log nonce reuse for abuse detection |
 | 6 | A08 | Stripe webhook trusts metadata.userId without verification | /api/stripe/webhook | Verify against Stripe Customer ID or HMAC-sign userId in checkout |
 | 7 | A09 | No structured security event logging; console.error leaks stack traces | All API routes | Create centralized logSecurityEvent(); never log tokens/passwords/stacks |
@@ -55,8 +55,8 @@ If builders ran now: (1) /api/test would ship with client-discoverable gate valu
 | # | Category | Finding | Location | Fix |
 |---|---|---|---|---|
 | 8 | A04 | CSRF validateOrigin() missing on /api/auth/logout | src/app/api/auth/logout/route.ts | Add validateOrigin() call |
-| 9 | A04 | Daily rocket spend limit (500/day per user) specified but not enforced | /api/claude, /api/rockets/debit | Add per-user daily counter in Redis |
-| 10 | A04 | Concurrent rocket debit race condition in in-memory fallback (local dev) | src/lib/rockets.ts lines 183-190 | Require Redis in production; mark in-memory as dev-only |
+| 9 | A04 | Daily quota spend limit (500 units/day per user) specified but not enforced | /api/claude, /api/usage/debit | Add per-user daily counter in Redis |
+| 10 | A04 | Concurrent quota debit race condition in in-memory fallback (local dev) | src/lib/usage.ts lines 183-190 | Require Redis in production; mark in-memory as dev-only |
 | 11 | A07 | Password validation asymmetric: register enforces 8-128, login only rejects >128 | register + login routes | Both routes enforce 8 <= length <= 128 |
 | 12 | A01 | Server session has 30-day TTL but no expiry audit logging | src/lib/auth.ts | Document behavior; optionally log session_expired |
 | 13 | A04 | No abuse detection for anonymous endpoints (PARSE/PROFILE can be called without auth) | /api/claude | Spec future abuse detection story |
@@ -65,7 +65,7 @@ If builders ran now: (1) /api/test would ship with client-discoverable gate valu
 
 | # | Finding | Fix |
 |---|---|---|
-| SG-1 | No security AC on rocket-spending stories (TARGETED, LINKEDIN, MARKET_PREP rerun) | Add 402 insufficient-balance AC to all billable stories |
+| SG-1 | No security AC on quota-spending stories (TARGETED, EXPORT, MENU_PREP rerun) | Add 402 insufficient-balance AC to all billable stories |
 | SG-2 | No CORS configuration documentation | Document CORS policy in SECURITY.md |
 | SG-3 | No security checklist for extension content script DOM interaction | Add security checklist to EXTENSION_SPEC.md |
 | SG-4 | No builder security checklist ("check these before marking done") | Add to AGENT_GUIDE.md or builder.md |
@@ -76,4 +76,4 @@ If builders ran now: (1) /api/test would ship with client-discoverable gate valu
 2. **Implement single-use OAuth state tokens** — store in Redis, reject replays (1 finding)
 3. **Verify Stripe webhook userId** — link to Stripe Customer ID or HMAC-sign (1 finding)
 4. **Create structured security event logger** — centralize logging, eliminate stack trace leaks (1 finding)
-5. **Add security AC to billable stories** — ensure all rocket-spending operations have 402 acceptance criteria (1 finding)
+5. **Add security AC to billable stories** — ensure all quota-spending operations have 402 acceptance criteria (1 finding)

@@ -1,1 +1,0 @@
-[providers.js] QUOTA: openai (gpt-5.6-sol) hit quota_exhausted. Falling back to claude. For a 2nd security pass on a different family use runProvider(role, prompt, {provider:'openai'}).

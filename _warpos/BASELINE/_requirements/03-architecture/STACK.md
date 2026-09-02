@@ -1,4 +1,4 @@
-# Jobzooka — Stack & Deployment
+# Pantry Pilot — Stack & Deployment
 
 > **v3 (2026-04-23)** — Aligned with `_requirements/04-features/backend/PRD.md` v3. The v1 stack was Vercel-only with a hard 60s function-timeout constraint; v3 splits into **Vercel frontend + Fly backend (API + worker) + Fly Postgres** behind Cloudflare, which removes the 60s cap entirely.
 
@@ -24,15 +24,15 @@
 | Framework          | Hono                             | latest       | TypeScript, runs on Node. Two Fly processes: `api` + `worker` in one image.           |
 | Runtime            | Node                             | 22 LTS       | Exec-form Dockerfile (`CMD ["node", ...]`) — shell wrappers swallow SIGTERM (F4).     |
 | TLS termination    | Nginx sidecar                    | 1.28         | Terminates Cloudflare Authenticated Origin Pulls (mTLS); proxies plaintext to Hono on localhost:3000. Required because no all-Hono+Fly+AOP example exists as of April 2026. |
-| Database           | Postgres (Fly Postgres)          | 16           | Authoritative for financial state: ledger, Stripe idempotency, admin users, recovery codes, apply outcomes, audit log. Added in v3 per research F1 (Upstash is eventually-consistent only). |
+| Database           | Postgres (Fly Postgres)          | 16           | Authoritative for financial state: ledger, Stripe idempotency, admin users, recovery codes, shopping outcomes, audit log. Added in v3 per research F1 (Upstash is eventually-consistent only). |
 | Job queue (internal) | Graphile Worker                | latest       | Runs inside Postgres — enables transactional enqueue (`BEGIN; INSERT INTO ledger; ADD JOB; COMMIT;`).                                                   |
 | Job queue (egress) | Upstash QStash                   | —            | For webhooks + cross-service job dispatch. HMAC-signed; double-rotation lockout guarded via `qstash:last_rotation_deployed_at` flag. |
 | Cache / scratch    | Upstash Redis                    | —            | Rate limit, WebAuthn challenges, scope cache (read-through), ticket scratch, ops-UI audit live-tail. Not financial-state authoritative. |
 | Blob store         | Cloudflare R2                    | —            | Signed URLs ≤15 min TTL, private bucket, object-key `{userId}/{ticketId}/result.{ext}`, Object Lock for audit-log archives. Free egress. |
 | AI                 | Anthropic Claude                 | claude-sonnet-4-6 / claude-opus-4-7 | Prompt Caching mandatory from day 1 (research F14 — ~90% input cost reduction). Batch API for non-interactive chains. |
-| Job scraping       | Bright Data                      | LinkedIn Jobs Scraper | Dataset: `gd_lpfll7v5hcqtkxl6l`. Called from worker, not API.                  |
-| Auth               | JWT + OAuth + WebAuthn           | `arctic` ^3.7.0, `@simplewebauthn/server` latest | Google/LinkedIn OAuth, email/password, cookie-based JWT on apex (`__Host-` prefix preferred), WebAuthn for admin (≥2 passkeys + 10 Argon2id recovery codes). |
-| Payments           | Stripe                           | `stripe-js` ^8.11.0 | Three-state idempotency in Postgres `stripe_webhook_idempotency`.               |
+| Recipe catalog     | Recipe Data Co                   | Recipe & Grocery Catalog API | Dataset: `rc_7k3np9v2hd4tqx1`. Called from worker, not API.             |
+| Auth               | JWT + OAuth + WebAuthn           | `arctic` ^3.7.0, `@simplewebauthn/server` latest | Google/Apple OAuth, email/password, cookie-based JWT on apex (`__Host-` prefix preferred), WebAuthn for admin (≥2 passkeys + 10 Argon2id recovery codes). |
+| Payments           | Stripe                           | `stripe-js` ^8.11.0 | Three-state idempotency in Postgres `stripe_webhook_idempotency`; Free / Plus / Family subscription tiers. |
 | Rate limiting      | `@upstash/ratelimit`             | latest       | Sliding window; per-IP, per-user, per-ASN (CF), global, daily budget.                 |
 
 ### Edge (Cloudflare)
@@ -108,7 +108,7 @@
 
 **Required** per research F18 / backend PRD §9:
 
-- Separate Fly app (`jobzooka-backend-staging`)
+- Separate Fly app (`pantrypilot-backend-staging`)
 - Separate Upstash Redis + QStash projects
 - Separate Fly Postgres cluster
 - Stripe **test-mode keys** (production keys never in staging; CI enforces)
@@ -159,11 +159,11 @@
 │       ├── api.ts                 # Boundary — every fetch uses ${API_BASE_URL} prefix
 │       ├── storage.ts             # Client AES-GCM encrypted localStorage
 │       ├── pipeline.ts            # Pipeline tracer
-│       ├── competitiveness.ts     # Client-side scoring (reads apply outcomes)
-│       └── …                      # dummy data, test harness, DM helpers
+│       ├── basket-score.ts        # Client-side scoring (reads shopping outcomes)
+│       └── …                      # dummy data, test harness, share-link helpers
 ├── packages/
 │   └── shared/                    # NEW in v3 — shared across Next.js + backend
-│       ├── rockets.ts             # ROCKET_COSTS, ROCKET_PACKS (migrated from src/lib/)
+│       ├── plans.ts               # PLAN_TIERS, PLAN_LIMITS (migrated from src/lib/)
 │       ├── prompts.ts             # PROMPTS, wrapUntrustedData()
 │       ├── types.ts               # Server-relevant types
 │       ├── errors.ts              # safeErrorMessage(), error code enum
@@ -176,7 +176,7 @@
 │       ├── src/
 │       │   ├── api.ts             # Hono entrypoint
 │       │   ├── worker.ts          # QStash + Graphile consumer + drain handler
-│       │   ├── routes/            # auth, rockets, stripe, claude, jobs, tickets, apply, extension, admin, health
+│       │   ├── routes/            # auth, plans, stripe, claude, recipes, tickets, shopping, extension, admin, health
 │       │   ├── middleware/        # origin-pin, qstash-verify, scope, idempotency
 │       │   ├── ledger.ts          # Postgres-backed atomic ledger
 │       │   ├── tickets.ts         # Ticket lifecycle + ownership check

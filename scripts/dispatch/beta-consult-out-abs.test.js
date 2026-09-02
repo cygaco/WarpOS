@@ -15,7 +15,7 @@ const { harness } = require("../checks/lib/fixture-harness");
 const { resolveOutPath } = require("./beta-consult");
 
 const h = harness("beta-consult-out-abs");
-const ROOT = "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS";
+const ROOT = path.resolve(__dirname, "..", "..");
 
 h.test("resolveOutPath honors an ABSOLUTE --out exactly (no ROOT prefix)", () => {
   const abs = path.join("C:\\", "tmp", "verdict.json");

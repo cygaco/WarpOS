@@ -42,7 +42,7 @@ verify the install postflight before declaring success.
 `MERGE_SAFE` semantics, and a transaction-record stub (lines 336-369).
 Ten `check:warpos-*` skills exist as standalone diagnostics but are not
 composed into the update lifecycle. The operator's verbatim experience
-("<verbatim operator prompt withheld — profane>",
+("[expletive removed] Just warp:update shouldn't be useless like this.",
 events.jsonl line 918, 2026-05-12) confirms the gates exist as skills
 but are not gating the update.
 

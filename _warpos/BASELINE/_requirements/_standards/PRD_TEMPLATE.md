@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This template defines the mandatory structure for every Product Requirements Document in Jobzooka. PRDs define **what a feature is, what it does, and how to build it**. They do not contain user stories — those live in separate files written in subsequent passes.
+This template defines the mandatory structure for every Product Requirements Document in Pantry Pilot. PRDs define **what a feature is, what it does, and how to build it**. They do not contain user stories — those live in separate files written in subsequent passes.
 
 ## Resolution Cascade
 
@@ -44,9 +44,9 @@ Feature name. MVP or Post-MVP.
 
 ### 2. Screen
 
-Which step, screen, or phase this feature lives on. Include phase (Onboarding / READY / AIM / FIRE) and step number(s).
+Which step, screen, or phase this feature lives on. Include phase (Onboarding / PLAN / SHOP / STOCK) and step number(s).
 
-Component filenames MUST match `_requirements/00-canonical/GLOSSARY.md`. When referencing composite pages (`OnboardingPage`, `AimPage`, `ReadyPage`), also list the step components hosted within them.
+Component filenames MUST match `_requirements/00-canonical/GLOSSARY.md`. When referencing composite pages (`OnboardingPage`, `PlanPage`, `ShopPage`), also list the step components hosted within them.
 
 ### 3. Context
 
@@ -54,13 +54,13 @@ Why this feature exists. The problem or gap it addresses. What prompted it. Who 
 
 ### 4. JTBD (Jobs To Be Done)
 
-The core job(s) the user is hiring this feature to do. Use the JTBD format:
+The core job(s) the user brings this feature in to do. Use the JTBD format:
 
 > When [situation], I want to [motivation], so I can [expected outcome].
 
 Multiple jobs are fine. Each job should capture a distinct motivation.
 
-JTBDs must be **platform-neutral** — describe the outcome the user is hiring the feature for, not the delivery mechanism. "I want to apply to jobs automatically" not "I want to use the Chrome extension to apply." Platform specifics belong in Feature Description.
+JTBDs must be **platform-neutral** — describe the outcome the user brings the feature in for, not the delivery mechanism. "I want my grocery list to build itself from the week I planned" not "I want to use the Chrome extension to build my list." Platform specifics belong in Feature Description.
 
 ### 5. Emotional Framing
 
@@ -80,7 +80,7 @@ What success looks like for this feature. Concrete, measurable outcomes. Each go
 
 Examples:
 
-- "User can download all resumes in under 3 seconds"
+- "User can export the week's grocery list in under 3 seconds"
 - "Zero Claude API calls required for this step"
 - "User completes onboarding in under 5 minutes on average"
 
@@ -88,10 +88,10 @@ Examples:
 
 What we are taking as given without explicit validation. Includes:
 
-- User behavior assumptions (e.g., "users have Word or Google Docs installed")
+- User behavior assumptions (e.g., "households shop at one primary store per week")
 - Technical assumptions (e.g., "jsPDF renders all Unicode characters correctly")
 - Business assumptions (e.g., "PDF and DOCX are sufficient — no other formats needed")
-- Data assumptions (e.g., "resume data always includes at least a summary field")
+- Data assumptions (e.g., "recipe data always includes at least an ingredient list")
 
 Assumptions that later prove false become bugs or scope changes. Documenting them now creates a traceable decision trail.
 
@@ -103,7 +103,7 @@ The complete target state of the feature. This is the meat of the PRD.
 
 Write this as if building from scratch — no references to "current state," "before," or "what changed." A reader (or a generation model) should understand the entire feature from this section alone.
 
-**This is where platform specifics live.** JTBD, Emotional Framing, Goals, and HL Stories describe intent platform-neutrally. Feature Description names concrete technologies, platforms, and delivery mechanisms (Chrome extension, Manifest V3, LinkedIn Easy Apply, etc.). During one-shot code generation, the model gets intent from stories and implementation specifics from this section.
+**This is where platform specifics live.** JTBD, Emotional Framing, Goals, and HL Stories describe intent platform-neutrally. Feature Description names concrete technologies, platforms, and delivery mechanisms (Chrome extension, Manifest V3, recipe-site structured-data scraping, etc.). During one-shot code generation, the model gets intent from stories and implementation specifics from this section.
 
 Describe:
 
@@ -119,15 +119,15 @@ It represents the final, complete feature as it should exist after implementatio
 
 What must exist before this feature can be built. Other features, API integrations, data prerequisites, third-party services. `n/a` if none.
 
-### 10. Rocket Cost
+### 10. Plan Tier
 
-How many rocket credits this feature consumes per use. Include the cost breakdown if multiple operations are involved. `n/a` if the feature is free.
+Which subscription tiers unlock this feature — Free, Plus, or Family — and the per-tier limits that apply (e.g., planned meals per week, number of lists, household member seats). Include the breakdown if limits differ per operation. `n/a` if the feature is available on every tier with no limit.
 
-Cost tables MUST cross-reference the canonical implementation file (e.g., `src/lib/rockets.ts`). If PRD and code disagree, update the PRD -- code is the source of truth for runtime values.
+Tier tables MUST cross-reference the canonical implementation file (e.g., `src/lib/plans.ts`). If PRD and code disagree, update the PRD -- code is the source of truth for runtime values.
 
-### 11. Competitiveness Impact
+### 11. Week Readiness Impact
 
-Whether this feature affects the user's 0-100 competitiveness score, and how. Describe which scoring factors change and in what direction. `n/a` if no impact.
+Whether this feature affects the household's 0-100 week-readiness score, and how. Describe which scoring factors change and in what direction. `n/a` if no impact.
 
 ### 12. UI Reference
 

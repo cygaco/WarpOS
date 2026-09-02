@@ -234,6 +234,9 @@ test("filterAgyLogToRunWindow: drops cross-run stale + untimestamped lines, keep
 //    transcript carries the whole false-green scenario (unauth tells + keyring expired=true + deceptive
 //    ChainedAuth/OAuth + fake backend-label serve of the display name), so ANY regression that re-trusted a
 //    client line would flip this to attested:true and the test would catch it. Evaluate the exact bytes. ──
+// 2026-09-02 (E-OPEN-SOURCE-001 S-OS-02): both pinned fixtures were REDACTED — the operator's personal email was
+// replaced by operator@example.com (same byte-length class of line, no auth tell touched). Pre-redaction SHAs, for
+// anyone diffing against the private pre-cleanup mirror: full transcript c7333f4e…ae66b9, 22:16 spike 1c5136bb…e2726.
 test("FULL-transcript false-green fixture (deceptive auth + fake backend-label + unauth tells) → attested:false, SHA-pinned", () => {
   const fs = require("fs");
   const path = require("path");
@@ -241,7 +244,7 @@ test("FULL-transcript false-green fixture (deceptive auth + fake backend-label +
   const fixturePath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "fixtures", "agy-full-transcript-false-green.txt");
   const bytes = fs.readFileSync(fixturePath);
   const sha = crypto.createHash("sha256").update(bytes).digest("hex");
-  assert.equal(sha, "c7333f4e9e884bde782add82d2fbe8a447b6a35a20bc7c7bc4a209a318ae66b9", "fixture SHA-256 pinned — the transcript must not drift (it is the full false-green exemplar)");
+  assert.equal(sha, "e8757531d5e1d5537b31c7e713efd9e9f9c001c2972d070b472d43cd2a3afc5f", "fixture SHA-256 pinned — the transcript must not drift (it is the full false-green exemplar)");
   const out = bytes.toString("utf8");
   // Sanity: the fixture really does carry BOTH the deceptive positive markers a regression would trust.
   assert.ok(/ChainedAuth: authenticated/.test(out) && /Propagating selected model override to backend: label="Gemini 3\.1 Pro \(High\)"/.test(out), "fixture carries the deceptive auth line + fake backend-label (else it can't catch a label-trust regression)");
@@ -268,7 +271,7 @@ test("ADR-0027 rider-2 teeth-check: the REAL 22:16 spike log (canonical=attested
   const fixturePath = path.join(__dirname, "..", "..", "runtime", "cert-attest", "fixtures", "agy-spike-22-16-false-green.txt");
   const bytes = fs.readFileSync(fixturePath);
   const sha = crypto.createHash("sha256").update(bytes).digest("hex");
-  assert.equal(sha, "1c5136bb60d00a5b55ba9ffb0cbb935a53e83b6c45e3f55e6fa0a6f5931e2726", "spike fixture SHA-256 pinned — it must not drift (the real 22:16 authenticated-round-trip log)");
+  assert.equal(sha, "ee6ff952f3d8949457a9eb7a07c796369c6df95a021af319331462851e87af09", "spike fixture SHA-256 pinned — it must not drift (the real 22:16 authenticated-round-trip log)");
   const full = bytes.toString("utf8");
   // Sanity: the fixture really carries the GENUINE-serve markers a naive gate would trust as proof.
   assert.ok(/OAuth: authenticated successfully/.test(full) && /Propagating selected model override to backend: label="Gemini 3\.1 Pro \(High\)"/.test(full) && /streamGenerateContent/.test(full), "fixture carries auth-success + correct backend-label + real round-trip (else it can't be a teeth-check)");

@@ -1,4 +1,4 @@
-# Jobzooka — Data Pipelines
+# Pantry Pilot — Data Pipelines
 
 > **Scope:** Pipeline stages, inputs, outputs, fallback logic, and error handling. For session state structure and data flow between steps, see `DATA_FLOW.md`. For retry strategies, see `ERROR_RECOVERY.md`.
 
@@ -11,9 +11,9 @@ This document describes every data pipeline in the application: stages, inputs, 
 **Trigger:** User completes profile (step 3) and enters Search (step 4)
 
 ```
-Profile + Preferences + avoidTerms
+Profile + Preferences + avoidIngredients
   → QUERY_GEN prompt
-  → 4–6 LinkedIn search query strings
+  → 4–6 recipe-catalog search query strings
 ```
 
 **Fallback:** None — if query generation fails, user is shown error and can retry.
@@ -22,17 +22,17 @@ Profile + Preferences + avoidTerms
 
 ---
 
-## Pipeline 2: Job Scraping (Bright Data)
+## Pipeline 2: Recipe Catalog Fetch (Recipe Data Co)
 
 **Trigger:** User confirms search queries in step 4
 
 ```
-Queries + Location + Employment Types + Remote flag
-  → POST /api/jobs (trigger)
-  → BD creates snapshot per query × employment type
-  → Client polls POST /api/jobs (poll) every 10 seconds
-  → BD processes listings (~30–120 seconds)
-  → Deduplicated, normalized JobListing[] returned
+Queries + Store Region + Meal Types + Diet flag
+  → POST /api/recipes (trigger)
+  → RD creates snapshot per query × meal type
+  → Client polls POST /api/recipes (poll) every 10 seconds
+  → RD processes listings (~30–120 seconds)
+  → Deduplicated, normalized RecipeListing[] returned
 ```
 
 **Timing:**
@@ -45,89 +45,89 @@ Queries + Location + Employment Types + Remote flag
 
 - HTML stripped from descriptions
 - Descriptions truncated to 2,000 chars
-- Deduplication by title + company (case-insensitive)
-- Flexible field mapping (handles BD's inconsistent field names)
-- Error records separated from job records
+- Deduplication by title + source (case-insensitive)
+- Flexible field mapping (handles RD's inconsistent field names)
+- Error records separated from recipe records
 
 **Fallback:** If all snapshots fail, user sees warning with specific error messages.
 
-**Pipeline trace stages:** `BD_TRIGGER` → `BD_POLL` → `BD_RESULTS`
+**Pipeline trace stages:** `RD_TRIGGER` → `RD_POLL` → `RD_RESULTS`
 
 ---
 
-## Pipeline 3: Two-Phase Market Analysis
+## Pipeline 3: Two-Phase Menu Analysis
 
-**Trigger:** Job scraping completes in step 4, analysis begins in step 5
+**Trigger:** Catalog fetch completes in step 4, analysis begins in step 5
 
-### Phase 1: MARKET_PREP (Raw → Intelligence Report)
+### Phase 1: MENU_PREP (Raw → Intelligence Report)
 
 ```
-JobListing[] + Profile (slim) + Employment Types + Query Stats
-  → preprocessMarketData() → normalized, truncated text (max 30K chars)
-  → buildMarketPrepPayload() → compact job records in <untrusted_job_data> tags
-  → extractHourlyRates() → hourly rate matches from descriptions
-  → buildMarketSummary() → markdown summary (top companies, seniority, industry)
-  → POST /api/claude (MARKET_PREP prompt)
-  → marketPrepReport (structured intelligence)
+RecipeListing[] + Profile (slim) + Meal Types + Query Stats
+  → preprocessCatalogData() → normalized, truncated text (max 30K chars)
+  → buildMenuPrepPayload() → compact recipe records in <untrusted_recipe_data> tags
+  → extractServingCosts() → per-serving cost matches from descriptions
+  → buildCatalogSummary() → markdown summary (top sources, difficulty, cuisine)
+  → POST /api/claude (MENU_PREP prompt)
+  → menuPrepReport (structured intelligence)
 ```
 
-**Payload Assembly (`buildMarketPrepPayload`):**
+**Payload Assembly (`buildMenuPrepPayload`):**
 
-- Jobs compacted to minimal schema: `{ t, c, loc, et, sal, sq, ea, sen, desc }`
+- Recipes compacted to minimal schema: `{ t, s, reg, mt, cost, sq, qa, dif, desc }`
 - Description excerpt: first 300 chars (trimmed to 150 if payload > 35KB)
-- High-volume companies flagged (2+ listings)
-- Profile slimmed: first 5 domains, 15 hard skills
-- Wrapped in `<untrusted_job_data nonce="...">` tags
+- High-volume sources flagged (2+ listings)
+- Profile slimmed: first 5 cuisines, 15 staple ingredients
+- Wrapped in `<untrusted_recipe_data nonce="...">` tags
 - Max payload: 35,000 chars
 
-### Phase 2: MARKET (Report → Final Analysis)
+### Phase 2: MENU (Report → Final Analysis)
 
 ```
-marketPrepReport (preferred) OR raw market data (fallback)
-  → POST /api/claude (MARKET prompt)
-  → MarketAnalysis JSON
+menuPrepReport (preferred) OR raw catalog data (fallback)
+  → POST /api/claude (MENU prompt)
+  → MenuAnalysis JSON
     ├── keywords[] (top 20–30 by frequency)
-    ├── compRanges (compensation data)
-    ├── jobTypes[] (up to 10 categories, ranked)
+    ├── costRanges (per-serving + weekly basket data)
+    ├── mealTypes[] (up to 10 categories, ranked)
     ├── miningQuestions[] (5–8 questions)
     ├── discoveryRecs[] (1–3 pivots)
     ├── exclusionTags[]
-    └── educationVisibility
+    └── pantryVisibility
 ```
 
 **Fallback Logic:**
 
-1. If MARKET_PREP fails → skip to single-phase MARKET with raw data
-2. If MARKET detects old single-phase output (no categories, stale format) → auto-rerun full pipeline
+1. If MENU_PREP fails → skip to single-phase MENU with raw data
+2. If MENU detects old single-phase output (no categories, stale format) → auto-rerun full pipeline
 3. If both fail → user sees error with retry option
 
-**Pipeline trace stages:** `MARKET_PREP_INPUT` → `MARKET_PREP_OUTPUT` → `MARKET_INPUT` → `MARKET_OUTPUT`
+**Pipeline trace stages:** `MENU_PREP_INPUT` → `MENU_PREP_OUTPUT` → `MENU_INPUT` → `MENU_OUTPUT`
 
 ---
 
-## Pipeline 4: Resume Generation
+## Pipeline 4: Meal Plan Generation
 
-**Trigger:** User initiates resume generation in step 8
+**Trigger:** User initiates plan generation in step 8
 
-### Master + General (Single Call)
+### Master + Weekly (Single Call)
 
 ```
-Profile + MarketAnalysis + miningResults (optional) + exclusions
-  → POST /api/claude (RESUME_GEN prompt)
-  → { master: ResumeOutput, general: ResumeOutput }
+Profile + MenuAnalysis + miningResults (optional) + exclusions
+  → POST /api/claude (PLAN_GEN prompt)
+  → { master: PlanOutput, weekly: PlanOutput }
 ```
 
-> **Spec-ahead-of-code note:** In the target state, `miningResults` is optional. Deep-Dive Q&A is a dashboard activity the user may or may not have completed before generating resumes. The RESUME_GEN prompt must handle an empty/partial `miningResults` gracefully. Shipped code treats it as a required input.
+> **Spec-ahead-of-code note:** In the target state, `miningResults` is optional. Deep-Dive Q&A is a dashboard activity the user may or may not have completed before generating plans. The PLAN_GEN prompt must handle an empty/partial `miningResults` gracefully. Shipped code treats it as a required input.
 
-### Targeted (Per Category, User-Triggered)
+### Tailored (Per Category, User-Triggered)
 
 ```
 For each selected category:
-  masterResume + category details (from jobTypes)
-    → POST /api/claude (TARGETED prompt)
-    → ResumeDiff
-    → applyDiff(masterResume, diff)
-    → Targeted ResumeOutput
+  masterPlan + category details (from mealTypes)
+    → POST /api/claude (TAILORED prompt)
+    → PlanDiff
+    → applyDiff(masterPlan, diff)
+    → Tailored PlanOutput
 ```
 
 **applyDiff safety:**
@@ -135,44 +135,44 @@ For each selected category:
 - Deep clones master (frozen)
 - Blocks prototype pollution (`__proto__`, `constructor`, `prototype`)
 - Only allows known diff keys
-- Normalizes skill matching (lowercase, alphanumeric)
+- Normalizes ingredient matching (lowercase, alphanumeric)
 
 **Cost:**
 
-- Master + General: Free
-- Targeted: 50 rockets per category (bulk: 4–6 @ 35, 7–10 @ 25)
+- Master + Weekly: included on Free (capped at 3 planned meals/week)
+- Tailored: Plus ($5/month) or Family ($9/month) only — unlimited plans
 
-**Pipeline trace stages:** `RESUME_INPUT` → `RESUME_OUTPUT`
+**Pipeline trace stages:** `PLAN_INPUT` → `PLAN_OUTPUT`
 
 ---
 
-## Pipeline 5: LinkedIn Generation
+## Pipeline 5: Grocery List Generation
 
-**Trigger:** User initiates LinkedIn content generation in step 9
+**Trigger:** User initiates grocery list generation in step 9
 
 ```
-Profile + Preferences + Demographics + miningResults + #1 ranked category
-  → POST /api/claude (LINKEDIN prompt)
-  → { headline, about, experience, education, skills, formAnswers }
+Profile + Preferences + Household details + miningResults + #1 ranked category
+  → POST /api/claude (GROCERY prompt)
+  → { listName, overview, sections, pantryAdds, staples, formAnswers }
 ```
 
-**Cost:** 75 rockets
+**Cost:** Plus ($5/month) or Family ($9/month) — Free is capped at 1 list
 
 **No fallback** — failure shows error with retry option.
 
 ---
 
-## Pipeline 6: Apply Heuristics Generation
+## Pipeline 6: Shopping Heuristics Generation
 
 **Trigger:** User enters step 10
 
 ```
-Profile + Resume + formAnswers + rankedCategories + exclusions + preferences + demographics
-  → POST /api/claude (APPLY prompt)
+Profile + MealPlan + formAnswers + rankedCategories + exclusions + preferences + household details
+  → POST /api/claude (SHOP prompt)
   → { heuristics, manualGuide }
 
 Code-assembled (not AI):
-  → buildApplyPrompt(session, heuristics, uploadedResumes)
+  → buildShopPrompt(session, heuristics, uploadedPlans)
   → chromePrompt (markdown text)
 ```
 
@@ -190,15 +190,15 @@ All pipelines are traced via `src/lib/pipeline.ts`.
 type PipelineStage =
   | "USER_INPUT"
   | "QUERY_GEN"
-  | "BD_TRIGGER"
-  | "BD_POLL"
-  | "BD_RESULTS"
-  | "MARKET_PREP_INPUT"
-  | "MARKET_PREP_OUTPUT"
-  | "MARKET_INPUT"
-  | "MARKET_OUTPUT"
-  | "RESUME_INPUT"
-  | "RESUME_OUTPUT";
+  | "RD_TRIGGER"
+  | "RD_POLL"
+  | "RD_RESULTS"
+  | "MENU_PREP_INPUT"
+  | "MENU_PREP_OUTPUT"
+  | "MENU_INPUT"
+  | "MENU_OUTPUT"
+  | "PLAN_INPUT"
+  | "PLAN_OUTPUT";
 ```
 
 ### Trace Buffer
@@ -206,7 +206,7 @@ type PipelineStage =
 - In-memory array, max 50 entries
 - Console logged with `[PIPELINE]` prefix
 - Auto-truncates large fields (arrays >10 items, strings >200 chars)
-- Available in Deus Mechanicus Pipeline Tracer module
+- Available in the ops-console Pipeline Tracer module
 - Not persisted — cleared on page reload
 
 ---
@@ -216,10 +216,10 @@ type PipelineStage =
 | Pipeline         | On Failure              | Retry        | Fallback                   |
 | ---------------- | ----------------------- | ------------ | -------------------------- |
 | Query Generation | Show error              | Manual retry | None                       |
-| Job Scraping     | Show warnings per query | Manual retry | Partial results after 3min |
-| MARKET_PREP      | Skip to single-phase    | Automatic    | MARKET with raw data       |
-| MARKET           | Show error              | Manual retry | None                       |
-| Resume Gen       | Show error              | Manual retry | None                       |
-| Targeted Diff    | Show error per category | Manual retry | None                       |
-| LinkedIn         | Show error              | Manual retry | None                       |
-| Apply Heuristics | Show error              | Manual retry | None                       |
+| Catalog Fetch    | Show warnings per query | Manual retry | Partial results after 3min |
+| MENU_PREP        | Skip to single-phase    | Automatic    | MENU with raw data         |
+| MENU             | Show error              | Manual retry | None                       |
+| Plan Gen         | Show error              | Manual retry | None                       |
+| Tailored Diff    | Show error per category | Manual retry | None                       |
+| Grocery List     | Show error              | Manual retry | None                       |
+| Shop Heuristics  | Show error              | Manual retry | None                       |

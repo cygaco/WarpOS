@@ -14,25 +14,25 @@ Sources of truth:
 |---|---|---|---|
 | onboarding | `onboarding/tests/smoke.spec.ts` | ✓ | App loads, intro renders, health check |
 | onboarding | `onboarding/tests/step-walk.spec.ts` | ✓ | Dummy-plug walks all 10 steps + dark theme + persistence |
-| onboarding | `onboarding/tests/step1-resume.spec.ts` | ✓ | Upload PDF/DOCX/corrupt/empty/PNG/drop-zone — 7 tests |
-| onboarding | `onboarding/tests/step2-preferences.spec.ts` | ✗ | Location, employment type, comp filters |
-| onboarding | `onboarding/tests/step3-profile.spec.ts` | ✗ | Parsed-resume editing |
-| onboarding | `onboarding/tests/step4-search.spec.ts` | ✗ | StepCollect — job listing collection |
-| onboarding | `onboarding/tests/step5-analysis.spec.ts` | ✗ | Step6Analysis — market analysis |
+| onboarding | `onboarding/tests/step1-recipes.spec.ts` | ✓ | Import PDF/DOCX/corrupt/empty/PNG/drop-zone — 7 tests |
+| onboarding | `onboarding/tests/step2-preferences.spec.ts` | ✗ | Store, meal type, budget filters |
+| onboarding | `onboarding/tests/step3-profile.spec.ts` | ✗ | Parsed-recipe editing |
+| onboarding | `onboarding/tests/step4-search.spec.ts` | ✗ | StepCollect — recipe catalog collection |
+| onboarding | `onboarding/tests/step5-analysis.spec.ts` | ✗ | Step6Analysis — catalog analysis |
 | onboarding | `onboarding/tests/step6-deep-dive.spec.ts` | ✗ | DeepDiveQA |
-| onboarding | `onboarding/tests/step7-skills.spec.ts` | ✗ | Step8Skills — exclusions |
-| onboarding | `onboarding/tests/step8-resumes.spec.ts` | ✗ | Step10Resumes — generation |
-| onboarding | `onboarding/tests/step9-linkedin.spec.ts` | ✗ | Step11LinkedIn |
-| onboarding | `onboarding/tests/step10-apply.spec.ts` | ✗ | Step13Apply — extension setup |
+| onboarding | `onboarding/tests/step7-ingredients.spec.ts` | ✗ | Step8Ingredients — exclusions |
+| onboarding | `onboarding/tests/step8-plans.spec.ts` | ✗ | Step10Plans — generation |
+| onboarding | `onboarding/tests/step9-export.spec.ts` | ✗ | Step11Export |
+| onboarding | `onboarding/tests/step10-cart.spec.ts` | ✗ | Step13Cart — extension setup |
 | backend | `backend/tests/gate-dodger.spec.ts` | ✓ | API security; 13 tests including BUG-009 regression |
 | auth | `auth/tests/login.spec.ts` | ✓ | Login API + intro CTA — 5 tests including non-leak |
-| auth | `auth/tests/register.spec.ts` | ✗ | Email/password registration + initial 150 rockets |
-| auth | `auth/tests/oauth.spec.ts` | ✗ | Google + LinkedIn OAuth round-trip |
+| auth | `auth/tests/register.spec.ts` | ✗ | Email/password registration + initial Free-tier quota |
+| auth | `auth/tests/oauth.spec.ts` | ✗ | Google + Apple OAuth round-trip |
 | auth | `auth/tests/logout.spec.ts` | ✗ | Cookie clear + Redis session delete |
 | auth | `auth/tests/session-persist.spec.ts` | ✗ | Cookie survives reload |
-| rockets-economy | `rockets-economy/tests/balance-bar.spec.ts` | ✓ | Bar renders + API auth surface — 5 tests |
-| rockets-economy | `rockets-economy/tests/store-modal.spec.ts` | ✗ | Pricing modal opens, tier selection |
-| rockets-economy | `rockets-economy/tests/grant-debit.spec.ts` | ✗ | Granting on signup, debit on Claude call |
+| usage-economy | `usage-economy/tests/plan-bar.spec.ts` | ✓ | Bar renders + API auth surface — 5 tests |
+| usage-economy | `usage-economy/tests/plan-store-modal.spec.ts` | ✗ | Pricing modal opens, tier selection |
+| usage-economy | `usage-economy/tests/grant-debit.spec.ts` | ✗ | Granting on signup, debit on Claude call |
 | stripe | `stripe/tests/checkout.spec.ts` | ✗ | Tier-redirect + success callback (Redis-gated) |
 | shell | `shell/tests/nav.spec.ts` | ✗ | Header nav + dashboard mount |
 | shell | `shell/tests/theme-toggle.spec.ts` | ✗ | Dark/light theme switch + no flash |
@@ -41,30 +41,30 @@ Sources of truth:
 
 | Feature | Spec file | Status |
 |---|---|---|
-| market-research | `market-research/tests/job-collection.spec.ts` | ✗ |
-| market-research | `market-research/tests/listings-display.spec.ts` | ✗ |
-| market-research | `market-research/tests/filters.spec.ts` | ✗ |
+| catalog-research | `catalog-research/tests/recipe-collection.spec.ts` | ✗ |
+| catalog-research | `catalog-research/tests/results-display.spec.ts` | ✗ |
+| catalog-research | `catalog-research/tests/filters.spec.ts` | ✗ |
 | deep-dive-qa | `deep-dive-qa/tests/qa-mining.spec.ts` | ✗ |
-| skills-curation | `skills-curation/tests/exclusions.spec.ts` | ✗ |
-| skills-curation | `skills-curation/tests/lock-propagation.spec.ts` | ✗ |
-| competitiveness | `competitiveness/tests/score-display.spec.ts` | ✗ |
-| competitiveness | `competitiveness/tests/glaze-toast.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/master-resume.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/targeted-resume.spec.ts` | ✗ |
-| resume-generation | `resume-generation/tests/download.spec.ts` | ✗ |
-| linkedin | `linkedin/tests/content-package.spec.ts` | ✗ |
-| linkedin | `linkedin/tests/copy-buttons.spec.ts` | ✗ |
+| ingredient-curation | `ingredient-curation/tests/exclusions.spec.ts` | ✗ |
+| ingredient-curation | `ingredient-curation/tests/lock-propagation.spec.ts` | ✗ |
+| week-readiness | `week-readiness/tests/score-display.spec.ts` | ✗ |
+| week-readiness | `week-readiness/tests/glaze-toast.spec.ts` | ✗ |
+| meal-plans | `meal-plans/tests/master-plan.spec.ts` | ✗ |
+| meal-plans | `meal-plans/tests/targeted-plan.spec.ts` | ✗ |
+| meal-plans | `meal-plans/tests/download.spec.ts` | ✗ |
+| grocery-export | `grocery-export/tests/content-package.spec.ts` | ✗ |
+| grocery-export | `grocery-export/tests/copy-buttons.spec.ts` | ✗ |
 | profile | `profile/tests/edit-fields.spec.ts` | ✗ |
 
 ## P2 (extension + debug surfaces)
 
 | Feature | Spec file | Status |
 |---|---|---|
-| auto-apply | `auto-apply/tests/extension-handshake.spec.ts` | ✗ |
-| auto-apply | `auto-apply/tests/queue-render.spec.ts` | ✗ |
+| auto-cart | `auto-cart/tests/extension-handshake.spec.ts` | ✗ |
+| auto-cart | `auto-cart/tests/queue-render.spec.ts` | ✗ |
 | extension | `extension/tests/manifest-load.spec.ts` | ✗ |
 | extension | `extension/tests/popup-render.spec.ts` | ✗ |
-| deus-mechanicus | `deus-mechanicus/tests/dm-modules.spec.ts` | ✗ |
+| kitchen-console | `kitchen-console/tests/kc-modules.spec.ts` | ✗ |
 
 ## Coverage at Phase D close
 

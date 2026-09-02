@@ -2,7 +2,7 @@
 const fs = require("fs");
 
 const inPath =
-  process.argv[2] || "C:\\Users\\VLADIS~1\\AppData\\Local\\Temp\\run12.jsonl";
+  process.argv[2] || require("path").join(require("os").tmpdir(), "run12.jsonl");
 const lines = fs.readFileSync(inPath, "utf8").split("\n").filter(Boolean);
 const events = lines
   .map((l) => {

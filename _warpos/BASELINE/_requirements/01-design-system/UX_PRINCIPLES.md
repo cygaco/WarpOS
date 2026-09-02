@@ -1,4 +1,4 @@
-# Jobzooka — UX Principles & Emotional Design
+# Pantry Pilot — UX Principles & Emotional Design
 
 ---
 
@@ -10,14 +10,14 @@ The user must always know:
 
 - What step they're on (PhaseBar, SidePanel, progress pill)
 - What's happening right now (loading states, progress indicators)
-- What they've accomplished (competitiveness score, completed phases)
+- What they've accomplished (readiness score, completed phases)
 - What comes next (step labels, CTA buttons)
 
 **Current implementation:**
 
-- PhaseBar with READY/AIM/FIRE pills + step indicators
+- PhaseBar with PLAN/PREP/SHOP pills + step indicators
 - ProgressSteps component during multi-phase operations
-- Competitiveness meter showing cumulative progress
+- Readiness meter showing cumulative progress
 - Loading text with ellipsis during API calls
 
 ### 2. User Control & Freedom
@@ -67,9 +67,9 @@ The system should prevent errors before they happen:
 The user shouldn't have to remember information:
 
 - Step labels describe what each step does
-- Market analysis surfaces keywords and categories (user selects, doesn't generate)
-- Form answers are pre-filled from earlier data
-- Profile is AI-generated from resume (user verifies, doesn't write from scratch)
+- Catalog analysis surfaces staples and meal themes (user selects, doesn't generate)
+- Swap answers are pre-filled from earlier data
+- Taste profile is AI-generated from the recipe box (user verifies, doesn't write from scratch)
 
 ### 6. Flexibility & Efficiency
 
@@ -77,7 +77,7 @@ Power users should be able to move faster:
 
 - Keyboard shortcuts (Backspace, "?")
 - Direct step navigation via SidePanel
-- Bulk operations (Download All resumes, Select All categories)
+- Bulk operations (Export All lists, Select All themes)
 - Dirty tracking skips invalidation when nothing changed
 
 ### 7. Aesthetic & Minimalist Design
@@ -99,8 +99,8 @@ What the user should FEEL at each phase of the wizard.
 
 **Target emotion:** "This is going to work."
 
-- Resume parsing should feel like magic (fast, accurate extraction)
-- Profile generation should validate the user's experience ("It understood my career")
+- Recipe parsing should feel like magic (fast, accurate ingredient extraction)
+- Taste profile generation should validate how the household eats ("It understood our meals")
 - Preferences should feel comprehensive but not overwhelming
 - Celebration at onboarding completion reinforces commitment
 
@@ -110,53 +110,53 @@ What the user should FEEL at each phase of the wizard.
 - AI badge on generated content (shows intelligence, not templates)
 - Celebration overlay with confetti after step 3
 
-### READY Phase (Steps 4–5): Curiosity
+### PLAN Phase (Steps 4–5): Curiosity
 
-**Target emotion:** "Show me what's out there."
+**Target emotion:** "Show me what we could eat this week."
 
 - Search queries should feel targeted (not generic)
-- Market analysis should reveal insights the user didn't know
-- Categories should feel like real opportunities, not abstract groupings
-- Compensation data should give context ("Am I being paid fairly?")
+- Catalog analysis should reveal meals the household didn't think of
+- Meal themes should feel like real weeks, not abstract cuisine groupings
+- Price data should give context ("Are we overspending?")
 
 **Design signals:**
 
-- Real job count from real scraping (not synthetic)
-- Category descriptions explain WHY each is relevant to the user
-- Discovery recommendations spark "I hadn't thought of that"
-- Competitiveness score gives a baseline ("Here's where I stand")
+- Real item counts from a real catalog fetch (not synthetic)
+- Theme descriptions explain WHY each fits this household
+- Discovery recipes spark "I hadn't thought of that"
+- Readiness score gives a baseline ("Here's where we stand")
 
-### AIM Phase (Steps 6–9): Control
+### PREP Phase (Steps 6–9): Control
 
 **Target emotion:** "I'm in the driver's seat."
 
-- Deep-Dive QA lets the user add context the resume missed
-- Skills curation gives direct control over keyword inclusion
-- Resume generation produces tangible, downloadable output
-- LinkedIn content is ready to use immediately
+- Deep-Dive QA lets the user add context the recipe box missed
+- Ingredient curation gives direct control over what lands on the list
+- List generation produces tangible, printable output
+- Recipe cards are ready to hand to the household immediately
 
 **Design signals:**
 
-- Toggle controls for every skill (include/exclude)
-- Category selection (toggle on/off) at Step 5 lock
-- DOCX download = real, usable artifact
-- Competitiveness score climbing with each completed step
+- Toggle controls for every ingredient (include/exclude)
+- Theme selection (toggle on/off) at Step 5 lock
+- PDF download = real, usable artifact
+- Readiness score climbing with each completed step
 - Score celebrations reinforce progress
 
-### FIRE Phase (Step 10): Momentum
+### SHOP Phase (Step 10): Momentum
 
 **Target emotion:** "Let's go. I'm ready."
 
-- Everything is assembled: resumes, LinkedIn, form answers, heuristics
-- Auto-apply path is clear and straightforward
-- Manual guide provides fallback if extension isn't used
-- The system has done the hard work; user just needs to execute
+- Everything is assembled: lists, recipe cards, swap answers, substitution rules
+- Auto-cart path is clear and straightforward
+- Manual guide provides fallback if the extension isn't used
+- The system has done the hard work; user just needs to shop
 
 **Design signals:**
 
 - Chrome prompt is one click to copy
-- Heuristics are concrete (apply-if/skip-if lists)
-- Resume selection is automatic per category
+- Substitution rules are concrete (buy-if/skip-if lists)
+- List selection is automatic per theme
 - Session summary shows everything that was generated
 
 ---
@@ -170,14 +170,14 @@ What the user should FEEL at each phase of the wizard.
 3. **Active content** — Cards, data displays, form fields
 4. **Secondary actions** — Ghost/outline buttons, text links
 5. **Helper text** — Muted color, smaller font
-6. **System chrome** — PhaseBar, RocketBar, SidePanel (present but not attention-grabbing)
+6. **System chrome** — PhaseBar, PilotBar, SidePanel (present but not attention-grabbing)
 
 ### Progressive Disclosure Pattern
 
 - **Default visible:** Primary content, main CTA, current step
 - **Expand to see:** Details, sub-sections, additional options
-- **Modal/overlay:** Confirmations, settings, purchases, auth
-- **Hidden:** Dev tools (Deus Mechanicus), keyboard shortcuts
+- **Modal/overlay:** Confirmations, settings, upgrades, auth
+- **Hidden:** Dev tools (Test Kitchen), keyboard shortcuts
 
 ---
 
@@ -194,7 +194,7 @@ What the user should FEEL at each phase of the wizard.
 
 - No ARIA labels on custom components
 - No skip-to-content link
-- CompetitivenessMeter (SVG arc) has no text alternative
+- ReadinessMeter (SVG arc) has no text alternative
 - Color alone used for some state indicators (should add icons/text)
 - Tab order not explicitly managed
 - No reduced-motion media query support

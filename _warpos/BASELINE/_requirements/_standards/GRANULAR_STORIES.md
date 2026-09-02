@@ -1,8 +1,8 @@
-# Jobzooka — Granular Story Standards
+# Pantry Pilot — Granular Story Standards
 
 ## Purpose
 
-This document defines the mandatory rules for writing and reviewing **Granular User Stories** for Jobzooka.
+This document defines the mandatory rules for writing and reviewing **Granular User Stories** for Pantry Pilot.
 
 Granular Stories translate approved High-Level intent into **explicit, testable system behavior**. They are written so that design, engineering, and QA teams can implement and validate functionality **without inference, interpretation, or follow-up questions**.
 
@@ -53,9 +53,9 @@ Every Granular Story **must** follow this format:
 Each story includes structured metadata lines after the blockquote, before Acceptance Criteria:
 
 - **`Depends on:`** — List of GS IDs that must be implemented first. `none` if the story is self-contained. Enables agents to resolve implementation order and identifies which stories can be built in parallel.
-- **`Data:`** — TypeScript interface(s) and field(s) this story reads or writes, with file path. e.g., `SessionData.profile → src/lib/types.ts`. Tells the agent exactly what data shapes to work with.
-- **`Entry state:`** — **Required for stories that implement step/screen components.** Optional for validation-only or utility stories. Describes the session/UI condition under which this behavior applies. Valid values: `Fresh`, `Returning`, `Async-complete`, `Error-recovery`, `Any`. Multiple entry states mean multiple conditions must be handled. Reference `_requirements/03-architecture/FLOW_SPEC.md` for the canonical entry state tables. e.g., `"Fresh — first arrival at Step 1, no resume uploaded yet"` or `"Returning — resumeStructured exists, show parsed preview"`. Place after `Data:` and before `Verifiable by:` in the metadata block.
-- **`Verifiable by:`** — How to programmatically confirm the behavior works. e.g., "session storage contains `personal.name`", "error element with class `.upload-error` is visible", "API `/api/claude` was called with action `PARSE`". Gives agents enough to write their own tests.
+- **`Data:`** — TypeScript interface(s) and field(s) this story reads or writes, with file path. e.g., `SessionData.household → src/lib/types.ts`. Tells the agent exactly what data shapes to work with.
+- **`Entry state:`** — **Required for stories that implement step/screen components.** Optional for validation-only or utility stories. Describes the session/UI condition under which this behavior applies. Valid values: `Fresh`, `Returning`, `Async-complete`, `Error-recovery`, `Any`. Multiple entry states mean multiple conditions must be handled. Reference `_requirements/03-architecture/FLOW_SPEC.md` for the canonical entry state tables. e.g., `"Fresh — first arrival at Step 1, no recipes imported yet"` or `"Returning — recipeStructured exists, show parsed preview"`. Place after `Data:` and before `Verifiable by:` in the metadata block.
+- **`Verifiable by:`** — How to programmatically confirm the behavior works. e.g., "session storage contains `household.name`", "error element with class `.upload-error` is visible", "API `/api/claude` was called with action `PARSE`". Gives agents enough to write their own tests.
 
 ### Parallel Clusters
 
@@ -140,10 +140,10 @@ Every Granular Story must include **at least one explicit boundary** defining:
 
 Examples:
 
-- Preventing resume generation without market analysis
+- Preventing grocery-list generation without a planned week
 - Blocking navigation to a step whose prerequisites are unmet
-- Disallowing targeted resume generation while master is absent
-- Preventing auto-submission without user review
+- Disallowing targeted week-plan generation while the master plan is absent
+- Preventing auto-checkout without user review
 
 If no prevention or boundary exists, the story is incomplete.
 
@@ -198,7 +198,7 @@ When the behavior works the same regardless of platform, use behavioral language
 | popup (generic) | overlay                             |
 | "in one click"  | "with a single action" (or omit)    |
 
-**Exception:** Named platform elements are allowed when the story defines platform-dependent behavior (e.g., "Easy Apply button" on LinkedIn, Chrome extension popup, `chrome.runtime` APIs). See Platform & Implementation References below.
+**Exception:** Named platform elements are allowed when the story defines platform-dependent behavior (e.g., a recipe site's "Save recipe" button, Chrome extension popup, `chrome.runtime` APIs). See Platform & Implementation References below.
 
 Granular Stories define **what happens**, not how it looks.
 
@@ -212,14 +212,14 @@ Unlike High-Level Stories (which must be platform-neutral), Granular Stories des
 
 ### Rules
 
-- Reference platforms only when the behavior differs by platform (e.g., "Extension sends a message to the web app via chrome.runtime")
+- Reference platforms only when the behavior differs by platform (e.g., "Extension sends a captured recipe to the web app via chrome.runtime")
 - If the behavior is the same regardless of platform, keep it generic
 - Platform details in Granular Stories must not contradict the parent HL story's platform-neutral framing — they refine it
 
 ### Example
 
-- HL Story: "As a User, I want to launch automated job applications through an automation agent"
-- Granular Story: "As a User, I want the Chrome extension to navigate to the next Easy Apply listing after submitting an application" — platform-specific behavior that implements the generic outcome
+- HL Story: "As a User, I want to capture recipes I find online through an automation agent"
+- Granular Story: "As a User, I want the Chrome extension to add every captured ingredient to the active grocery list after a recipe is saved" — platform-specific behavior that implements the generic outcome
 
 ---
 

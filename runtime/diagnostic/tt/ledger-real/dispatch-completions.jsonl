@@ -1,1 +1,0 @@
-{"dispatch_id":"d-mq34s61r-cf7261b9","pid":34300,"role":"qa","domain":null,"provider":"openai","model":"gpt-5.5","started_at":"2026-06-07T01:56:22.048Z","completed_at":"2026-06-07T01:56:27.957Z","elapsed_ms":5909,"prompt_bytes":48,"cmdline_checksum":"sha256:bf240c43126543e7859bbf0d8615de1f","exit_code":0,"stdout_bytes":4,"stderr_bytes":375,"fallback":false,"ok":true}

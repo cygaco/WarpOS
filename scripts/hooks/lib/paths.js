@@ -167,6 +167,7 @@ function LEGACY_FALLBACK_PATHS() {
       "president",
       ".system",
       "beta",
+      "mined",
       "beta-source-data.md",
     ),
     betaEvents: path.join(

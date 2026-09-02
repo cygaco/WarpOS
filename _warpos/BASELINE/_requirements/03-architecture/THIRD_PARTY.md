@@ -1,20 +1,20 @@
-# Jobzooka — Third-Party Integrations
+# Pantry Pilot — Third-Party Integrations
 
 > **v3 (2026-04-23)** — Four new integrations added for the backend split: Fly.io (hosting), Cloudflare (edge + WAF + R2 + AOP mTLS), Upstash QStash (job queue egress), Cloudflare R2 (blob store). Anthropic usage gains Prompt Caching requirements per research F14.
 
 ---
 
-## Bright Data (Job Scraping)
+## Recipe Data Co (Recipe Catalog)
 
 ### Overview
 
-| Field      | Value                                                 |
-| ---------- | ----------------------------------------------------- |
-| Service    | Bright Data LinkedIn Jobs Scraper                     |
-| Dataset ID | `gd_lpfll7v5hcqtkxl6l` (env: `BRIGHTDATA_DATASET_ID`) |
-| Mode       | Discovery (keyword-based search)                      |
-| Base URL   | `https://api.brightdata.com/datasets/v3`              |
-| Auth       | Bearer token (`BRIGHTDATA_API_KEY`)                   |
+| Field      | Value                                                  |
+| ---------- | ------------------------------------------------------ |
+| Service    | Recipe Data Co — Recipe & Grocery Catalog API          |
+| Dataset ID | `rc_7k3np9v2hd4tqx1` (env: `RECIPEDATA_DATASET_ID`)    |
+| Mode       | Discovery (keyword-based search)                       |
+| Base URL   | `https://api.recipedata.example/datasets/v3`           |
+| Auth       | Bearer token (`RECIPEDATA_API_KEY`)                    |
 
 ### API Flow
 
@@ -33,65 +33,65 @@
 ```json
 {
   "keyword": "search query",
-  "location": "City, State",
+  "store_region": "City, State",
   "country": "US",
   "time_range": "",
-  "job_type": "Full-time",
-  "experience_level": "",
-  "remote": "Remote",
-  "company": "",
+  "meal_type": "Weeknight",
+  "difficulty": "",
+  "diet": "Vegetarian",
+  "source": "",
   "selective_search": false,
-  "jobs_to_not_include": "",
-  "location_radius": ""
+  "ingredients_to_exclude": "",
+  "store_radius": ""
 }
 ```
 
 ### Valid Values
 
-| Field    | Valid Values (case-sensitive)                                                                       |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| job_type | `"Full-time"`, `"Part-time"`, `"Contract"`, `"Temporary"`, `"Internship"`, `"Volunteer"`, `"Other"` |
-| remote   | `"Remote"` (capital R) or `""` (empty for on-site)                                                  |
-| country  | `"US"`                                                                                              |
+| Field     | Valid Values (case-sensitive)                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| meal_type | `"Weeknight"`, `"Batch"`, `"Make-ahead"`, `"One-pot"`, `"Freezer"`, `"Slow-cooker"`, `"Other"` |
+| diet      | `"Vegetarian"` (capital V) or `""` (empty for no diet filter)                                   |
+| country   | `"US"`                                                                                          |
 
 ### Output Fields (Flexible Mapping)
 
-BD returns inconsistent field names. Jobzooka maps flexibly:
+RD returns inconsistent field names. Pantry Pilot maps flexibly:
 
-| Our Field      | BD Field(s)                                                                 |
-| -------------- | --------------------------------------------------------------------------- |
-| title          | `title` or `job_title`                                                      |
-| company        | `company` or `company_name`                                                 |
-| location       | `location` or `job_location`                                                |
-| description    | `job_summary` > `job_description_formatted` (HTML stripped) > `description` |
-| salary         | `compensation` (JSON stringified) > `job_base_pay_range` > `base_salary`    |
-| seniority      | `job_seniority_level`                                                       |
-| employmentType | `employment_type` or `job_employment_type`                                  |
-| easyApply      | `is_easy_apply` or `easy_apply`                                             |
-| url            | `apply_link` > `job_url` > `url`                                            |
-| industries     | `job_industries`                                                            |
-| jobFunction    | `job_function`                                                              |
-| applicants     | `job_num_applicants`                                                        |
-| postedDate     | `job_posted_date` (first 10 chars → YYYY-MM-DD)                             |
+| Our Field     | RD Field(s)                                                                     |
+| ------------- | --------------------------------------------------------------------------------- |
+| title         | `title` or `recipe_title`                                                         |
+| source        | `source` or `source_name`                                                         |
+| storeRegion   | `region` or `recipe_region`                                                       |
+| description   | `recipe_summary` > `recipe_steps_formatted` (HTML stripped) > `description`       |
+| cost          | `cost` (JSON stringified) > `recipe_cost_range` > `base_cost`                     |
+| difficulty    | `recipe_difficulty_level`                                                         |
+| mealType      | `meal_type` or `recipe_meal_type`                                                 |
+| quickAdd      | `is_quick_add` or `quick_add`                                                     |
+| url           | `recipe_link` > `recipe_url` > `url`                                              |
+| cuisines      | `recipe_cuisines`                                                                 |
+| course        | `recipe_course`                                                                   |
+| ratingCount   | `recipe_num_ratings`                                                              |
+| publishedDate | `recipe_published_date` (first 10 chars → YYYY-MM-DD)                             |
 
 ### Known Issues
 
-1. **Annual salary for contracts**: BD structured salary fields contain annual figures even for contract roles. Hourly rates must be extracted from description text via regex.
-2. **Thin non-FT data**: Part-time, Contract, Temporary, and other non-full-time types yield significantly fewer results.
-3. **Staffing agency noise**: Staffing agencies post high volumes across different queries, inflating category counts. Detected by: companies with 3+ listings across different queries.
-4. **Rate limiting**: BD has its own rate limits beyond Jobzooka's budget. Very rare in practice with current usage levels.
+1. **Whole-batch cost on single servings**: RD structured cost fields contain whole-batch totals even for single-serving recipes. Per-serving costs must be extracted from description text via regex.
+2. **Thin non-weeknight data**: Batch, Make-ahead, Freezer, and other non-weeknight types yield significantly fewer results.
+3. **Aggregator noise**: Content-farm aggregators publish high volumes across different queries, inflating category counts. Detected by: sources with 3+ listings across different queries.
+4. **Rate limiting**: RD has its own rate limits beyond Pantry Pilot's budget. Very rare in practice with current usage levels.
 
-### Hourly Rate Extraction
+### Per-Serving Cost Extraction
 
-`extractHourlyRates()` in `src/lib/utils.ts`:
+`extractServingCosts()` in `src/lib/utils.ts`:
 
 ```
-Pattern: $XX–$YY/hr (or per hour, /h, /hr, etc.)
-Range: $15–$500/hr (outside this range = filtered out)
+Pattern: $X.XX–$Y.YY/serving (or per serving, /svg, /serving, etc.)
+Range: $0.40–$40/serving (outside this range = filtered out)
 Context: ±80 characters around match
 ```
 
-Returns: `{ title, company, rate, context }[]`
+Returns: `{ title, source, cost, context }[]`
 
 ---
 
@@ -130,15 +130,15 @@ Returns: `{ title, company, rate, context }[]`
 
 ### Error Codes
 
-| Status | Meaning      | Jobzooka Handling    |
-| ------ | ------------ | -------------------- |
-| 200    | Success      | Extract text content |
-| 429    | Rate limited | Retry with backoff   |
-| 500    | Server error | Retry (transient)    |
-| 502    | Bad gateway  | Retry (transient)    |
-| 504    | Timeout      | Retry (transient)    |
-| 400    | Bad request  | Fail (prompt issue)  |
-| 401    | Auth error   | Fail (key issue)     |
+| Status | Meaning      | Pantry Pilot Handling |
+| ------ | ------------ | --------------------- |
+| 200    | Success      | Extract text content  |
+| 429    | Rate limited | Retry with backoff    |
+| 500    | Server error | Retry (transient)     |
+| 502    | Bad gateway  | Retry (transient)     |
+| 504    | Timeout      | Retry (transient)     |
+| 400    | Bad request  | Fail (prompt issue)   |
+| 401    | Auth error   | Fail (key issue)      |
 
 ---
 
@@ -156,7 +156,7 @@ Returns: `{ title, company, rate, context }[]`
 
 1. **Rate limiting**: Sliding window algorithm for per-IP and global limits
 2. **Daily budgets**: Atomic increment/check for daily request and token counts
-3. **Rocket balances**: `credits:{userId}` key for rocket counts
+3. **Plan state**: `plan:{userId}` key for current tier + remaining weekly quota
 4. **Usage tracking**: `usage:{userId}` key for operation counts
 5. **Server sessions**: `session:{userId}` key for SessionData (authenticated users)
 
@@ -165,7 +165,7 @@ Returns: `{ title, company, rate, context }[]`
 If Redis is unavailable:
 
 - Rate limiting: In-memory fallback (Map-based, resets on deploy)
-- Rockets: In-memory fallback (development only)
+- Plan state: In-memory fallback (development only)
 - Sessions: Falls back to localStorage only
 
 ---
@@ -174,12 +174,12 @@ If Redis is unavailable:
 
 ### Overview
 
-Used for rocket pack purchases. Integration details:
+Used for subscription billing. Integration details:
 
 - Checkout flow: Server creates Stripe Checkout Session → redirect to Stripe → callback
-- Return URL: `?rockets=success` query param triggers balance reload
+- Return URL: `?plan=success` query param triggers plan-state reload
 - Webhook: Verifies Stripe signature for payment confirmation; **three-state idempotency now in Postgres** (v3 — see ERROR_RECOVERY.md Stripe section)
-- Products: Scout ($4.99 / 100), Strike ($12.99 / 300), Arsenal ($24.99 / 750)
+- Products: Free ($0 — 3 planned meals/week, 1 list), Plus ($5/month — unlimited plans, pantry tracking), Family ($9/month — shared household, up to 6 members)
 - **v3 staging policy:** production + test-mode keys are separated by the `ENVIRONMENT` flag (staging / production). CI enforces that production keys are never in staging secrets or GitHub Actions.
 
 ---
@@ -210,7 +210,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 
 ### Postgres (Fly)
 
-- Separate Fly app `jobzooka-pg` (Fly-managed Postgres).
+- Separate Fly app `pantrypilot-pg` (Fly-managed Postgres).
 - Connection string via `DATABASE_URL` Fly secret.
 - Two DB roles: `api_role` (ledger/session/admin read-write), `worker_role` (tickets + audit write-only).
 - Daily backups + point-in-time recovery.
@@ -244,7 +244,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 | Bot Fight Mode  | Free         | Blocks known bot signatures; configurable severity                         |
 | Always Use HTTPS | Free        | HTTP→HTTPS upgrade at edge (no unencrypted leg reaches Fly)                |
 | Turnstile       | Free         | Invisible CAPTCHA on anonymous `/claude` endpoints (PARSE, PROFILE)        |
-| HSTS preload    | Free         | `jobzooka.app` submitted to hstspreload.org                                |
+| HSTS preload    | Free         | `pantrypilot.example` submitted to hstspreload.org                         |
 | ASN blocklist   | Free         | Cloudflare firewall rules blocking Tor / residential-proxy / flagged ASNs  |
 | Country blocklist | Free       | Rule-based (per-country block if needed)                                   |
 | **AOP mTLS**    | Free         | Per-zone custom cert upload; origin verifies fingerprint (research F2)     |
@@ -263,7 +263,7 @@ auto_stop_machines = false  # for worker process only — keep warm
 
 ### Turnstile integration
 
-- Frontend includes Turnstile widget (invisible) on AuthModal + resume-upload page.
+- Frontend includes Turnstile widget (invisible) on AuthModal + recipe-upload page.
 - On first anonymous `/claude` call, the frontend attaches the Turnstile token in a `CF-Turnstile-Response` header.
 - Backend validates the token with Cloudflare's Siteverify API before processing.
 - Upgrades v2's "accepted risk" on anonymous endpoint abuse → MVP requirement.
@@ -314,11 +314,11 @@ Expected input-token cost reduction: ~90% on cached portions. Cache hit rate exp
 
 ### Batch API (non-interactive chains)
 
-Async jobs that are not user-interactive (resume generation chain, market analysis chain) use Anthropic's Batch API for a further 50% discount.
+Async jobs that are not user-interactive (plan generation chain, menu analysis chain) use Anthropic's Batch API for a further 50% discount.
 
 ### Security (research F7 — blast-radius containment)
 
 - Worker gets a **scoped Upstash ACL token** that cannot touch ledger, scope cache, or admin keys.
-- Claude output is parsed as **action proposals**, validated against Zod schemas, routed to main API for authorization — no direct Stripe writes / no direct ledger debits / no direct user DMs from Claude output.
+- Claude output is parsed as **action proposals**, validated against Zod schemas, routed to main API for authorization — no direct Stripe writes / no direct ledger writes / no direct household-wide notifications from Claude output.
 - All Claude inputs + outputs audit-logged to Postgres `audit_log`.
 - Optional second-pass Haiku 4.5 classifier on output for high-privilege actions.

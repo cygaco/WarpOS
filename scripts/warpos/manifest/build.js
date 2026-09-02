@@ -513,6 +513,8 @@ function buildRules(sourcePrefix) {
         rel === ".gitignore" ||
         rel === ".gitattributes" ||
         rel === "INTERESTING.md" ||
+        // LICENSE — the AGPL-3.0 text added by E-OPEN-SOURCE-001 S-OS-02; same root-doc class.
+        rel === "LICENSE" ||
         rel === "version.json",
       entry: () => ({
         owner: "framework",

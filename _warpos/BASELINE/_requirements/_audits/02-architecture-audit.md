@@ -49,15 +49,15 @@ If agents used these docs as-is, the top risks are: (1) Field name mismatch `sea
 | 1 | CRITICAL | FLOW_SPEC.md (line 73) | market-research/STORIES.md GS-MKT-01 | `searchQueries` vs `generatedQueries` — different field names for same data | Standardize on `generatedQueries` (matches types.ts); update FLOW_SPEC |
 | 2 | CRITICAL | PROMPT_TEMPLATES.md (lines 3, 284) | Filesystem | References `PROMPTS.md` which does not exist | Create PROMPTS.md or remove references |
 | 3 | CRITICAL | FLOW_SPEC.md (line 82) | market-research/STORIES.md GS-MKT-11 | Step 5 says "Run two-phase market pipeline" but doesn't mention `marketPrepReport` intermediate field | Update FLOW_SPEC to show both pipeline phases and field names |
-| 4 | HIGH | FLOW_SPEC.md entry states | resume-generation/STORIES.md | Different entry state vocabulary ("Has master resume" vs "Fresh"/"Async-complete"/"Returning") | Add standard vocabulary definition to FLOW_SPEC or AGENT_GUIDE |
-| 5 | HIGH | COMPONENT_HIERARCHY.md | src/components/steps/ | Component naming debt: Step10Resumes = Step 8, Step11LinkedIn = Step 9, etc. | Add explicit "Component File column is source of truth" note |
+| 4 | HIGH | FLOW_SPEC.md entry states | meal-plans/STORIES.md | Different entry state vocabulary ("Has master plan" vs "Fresh"/"Async-complete"/"Returning") | Add standard vocabulary definition to FLOW_SPEC or AGENT_GUIDE |
+| 5 | HIGH | COMPONENT_HIERARCHY.md | src/components/steps/ | Component naming debt: Step10Plans = Step 8, Step11Export = Step 9, etc. | Add explicit "Component File column is source of truth" note |
 
 ### 4. Gaps
 
 | # | Severity | Missing item | Impact on agents | Suggested action |
 |---|---|---|---|---|
 | 1 | HIGH | AGENT_GUIDE.md not linked from CLAUDE.md or any index | Agents may not find it; miss read order and common mistakes | Link from CLAUDE.md § Key Files |
-| 2 | HIGH | DeusMechanicus outermost-wrapper constraint missing from COMPONENT_HIERARCHY.md | Agents might refactor it as sibling | Add bolded constraint note |
+| 2 | HIGH | KitchenConsole outermost-wrapper constraint missing from COMPONENT_HIERARCHY.md | Agents might refactor it as sibling | Add bolded constraint note |
 | 3 | MEDIUM | State persistence architecture not documented as unified doc | Agents unclear on when/how to save/load state | Create STATE_PERSISTENCE.md or expand PERSISTENCE.md |
 | 4 | MEDIUM | DATA-CONTRACTS.md has no backlinks to feature INPUTS.md files | Agents can't find actual contract tables | Add table linking features to their INPUTS.md |
 | 5 | MEDIUM | SECURITY.md prompt injection section doesn't cross-ref PROMPT_TEMPLATES.md | Agents may miss detailed injection defense | Add cross-reference |

@@ -590,7 +590,7 @@
       "docsToken": "paths.judgmentRecommendations"
     },
     "betaSourceData": {
-      "path": ".claude/agents/president/_system/beta/beta-source-data.md",
+      "path": ".claude/agents/president/_system/beta/mined/beta-source-data.md",
       "kind": "md",
       "owner": "runtime",
       "mutable": true,

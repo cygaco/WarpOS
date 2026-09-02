@@ -96,11 +96,11 @@ fs.writeFileSync(path.join(DIR, "_frag-skills.md"), skillTable);
 const out = {
   schema: "warpos.skill-sweep/1",
   compiled: "2026-08-28",
-  repo: "C:\\Users\\Vlad\\Desktop\\Claude\\Projects\\WarpOS",
+  repo: path.resolve(DIR, "..", ".."),
   builds_on: "runtime/prior-art/PRIOR-ART-EVIDENCE-2026-08-28.md (verdicts and vendor dates reused verbatim where a family maps to a pair it already established)",
   caveats: [
     "Repo history begins 2026-03-02; anything a vendor shipped before that is vendor-first by construction.",
-    "45 skills first land at cd37d410 (2026-04-12), the Jobzooka extraction commit — they were built EARLIER, in a private repo, and that is not provable here.",
+    "45 skills first land at cd37d410 (2026-04-12), the product-extraction commit — they were built EARLIER, in a private repo, and that is not provable here.",
     "Skills are Claude Code slash commands; hooks are Claude Code hooks; subagents are Claude Code subagents. The substrate is vendor-first and no priority is claimed on it.",
     "Git dates are author-supplied and every commit checked is unsigned.",
     "Family verdicts are INHERITED by their skills; per-skill notes flag the cases where the skill is materially different from its family.",
