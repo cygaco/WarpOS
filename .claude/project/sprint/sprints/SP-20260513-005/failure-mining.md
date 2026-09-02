@@ -34,7 +34,7 @@ talked about) but not on disk.
 - handoff `2026-05-13-0524.md` line 23: `[23:32:40] whats tag ready? I want to update my other projects to 0.4.0`
 - handoff `2026-05-13-0524.md` line 26: `Available release capsules under framework/releases/: 0.1.0 ... 0.2.2. There is no 0.3.x or 0.4.x capsule.`
 - handoff `2026-05-13-0524.md` line 27: `i did tell it to update to 0.4.0 specifically i aud warp:update --to 0.4.0 --apply`
-- handoff `2026-05-13-0524.md` line 28: `<verbatim operator prompt withheld — profane>`
+- handoff `2026-05-13-0524.md` line 28: `<verbatim operator prompt withheld — profane; gist: warp:update shouldn't be useless like this>`
 - events.jsonl line 1958 (learning, 2026-05-13): `/warp:update --to X.Y.Z must validate capsule exists under framework/releases/ before any work; if absent, print exact actionable next step`
 
 **Frequency:** at least 3 escalations in the 2026-05-12 window alone (the
@@ -255,7 +255,7 @@ source. The `&` is entity-encoded as `&amp;`. The shell tries to parse
 
 **Frequency:** 1 documented incident on 2026-05-13 02:13. This is more of
 a user-experience signal than an update-engine bug — but the operator's
-reaction ("<expletive withheld>") suggests it contributed to fear.
+reaction (verbatim withheld — profane) suggests it contributed to fear.
 
 **Current handling:** None.
 

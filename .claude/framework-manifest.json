@@ -569,7 +569,7 @@
         "src": ".claude/agents/president/_system/beta/judgement-model.md",
         "dest": ".claude/agents/president/_system/beta/judgement-model.md",
         "kind": "agent",
-        "sha256": "5f219b598ff4ff491329dd1ce766ec43d38f28eb4c0ec7bb14805c0c25db2803",
+        "sha256": "04cd153998ee37d56ea645eb40c6b0522faa6740bc1c2e2ed657280ae1cb9e2f",
         "owner": "framework",
         "mergeStrategy": "three_way_markdown",
         "introducedIn": "0.0.0",

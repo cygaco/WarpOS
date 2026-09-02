@@ -1,8 +1,8 @@
 {
   "$schema": "warpos/framework-installed/v2",
   "installedVersion": "1.2.0",
-  "installedCommit": "5bbd080bd8c500baf52022019288ff7e36dc75e6",
-  "installedAt": "2026-09-02T22:33:57.092Z",
+  "installedCommit": "e2d0b5eb58f2fd86f820882702e4aee4bfed9db3",
+  "installedAt": "2026-09-02T22:37:20.996Z",
   "source": "self",
   "target": ".",
   "pathRegistryVersion": "v5",
@@ -424,8 +424,8 @@
       "dest": ".claude/agents/president/_system/beta/judgement-model.md",
       "owner": "framework",
       "mergeStrategy": "three_way_markdown",
-      "installedHash": "5f219b598ff4ff491329dd1ce766ec43d38f28eb4c0ec7bb14805c0c25db2803",
-      "currentHashAtInstall": "5f219b598ff4ff491329dd1ce766ec43d38f28eb4c0ec7bb14805c0c25db2803",
+      "installedHash": "04cd153998ee37d56ea645eb40c6b0522faa6740bc1c2e2ed657280ae1cb9e2f",
+      "currentHashAtInstall": "04cd153998ee37d56ea645eb40c6b0522faa6740bc1c2e2ed657280ae1cb9e2f",
       "introducedIn": "0.0.0"
     },
     {
