@@ -36,6 +36,13 @@ WarpOS exists to help the maintainer ship real products faster while extracting 
 
 ### Active epics
 
+#### E-OPEN-SOURCE-001 — Open-source the engine as Master Console (AGPL-3.0): anchor · clean · rewrite · rebrand · announce — ⭐⭐ TOP (operator-directed 2026-09-02)
+- **Goal:** Make the already-public repo safe, honest and accurately described as **Master Console** (single brand, masterconsole.ai, slug `mc`; "WarpOS" and "Master Control" dropped after collision search), with the April-2026 prior-art evidence (cd37d410 · 29908188 · bb06646d · 38d771bf · tag `warpos@0.1.4`) provably untouched, so the operator can announce with the provenance page as receipts.
+- **Priority:** ⭐⭐ TOP (operator 2026-09-02). **State:** **Planned** — seven phases in strict order: (1) anchor (GitHub Release + private mirror) → (2) front-page cleanup → (3) targeted history rewrite (profanity + Gmail only, operator-approved force-push) → (4) leak enforcers (ED-417) → (5) brand-layer rebrand + repo rename → (7) announce; (6) identifier-layer rebrand `mc@2.0.0` may land after the announcement.
+- **Epic tracker:** [trackers/epics/E-OPEN-SOURCE-001-master-console-open-source.md](trackers/epics/E-OPEN-SOURCE-001-master-console-open-source.md) · plan artifact `_planning/epics/E-OPEN-SOURCE-001.md`.
+- **Source:** 2026-09-02 open-source readiness review (secrets clean; paid corpus, Confidential brief, private-product leakage, committed transcript, β operator profile, no LICENSE, stale README) · memory `project_open_source_master_control_plan` · enforcement debt ED-417.
+- **Reverses:** "engine is the moat" and "WarpOS never product-facing" (open-core: engine open under AGPL-3.0, Master Console UI sellable).
+
 #### E-VLAD-001 — Vlad v1: the agent+MCP virtual co-founder (install a co-founder) — ⭐⭐ TOP product priority (operator + DoP, 2026-07-28)
 - **Goal:** Ship installable v1 "Vlad": ONE installer → public agent face + closed local plain-node engine (Agent SDK) + MCP stdio seam, on the founder's own Claude account (BYOK), certified on Claude Code — readiness audit → roadmap → sprint jobs with honest receipts; propose-first approval enforced in engine code; branch-isolated writes, preflighted ff-only apply.
 - **Priority:** ⭐⭐ TOP product priority (DoP ruling 2026-07-28: "the next thing that reaches a user"; operator drove the 6-round grill to completion same day). **State:** **Active** (2026-08-11) — W1 pair executing: engine sprint 70% (built green 58/58, both custody mutants observed; gauntlet pending), audit sprint 30% (designed, build queued). **Completion:** 25%.

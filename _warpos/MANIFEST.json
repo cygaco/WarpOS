@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-08-30T07:20:01.862Z",
+  "generatedAt": "2026-09-02T18:43:05.078Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -137,8 +137,8 @@
       "managed": true,
       "source": null,
       "_note": "Root document — source path same as destination (canonical-side).",
-      "sha256": "4ec25cadcc8bc806c0199441c64e8ecf0e616e04e722a6cf0cd744f71fb3b9c8",
-      "installedSha": "4ec25cadcc8bc806c0199441c64e8ecf0e616e04e722a6cf0cd744f71fb3b9c8"
+      "sha256": "b4744658fbcf8eb459ca74da5f978edaf5e4c0c2441de0b5ed4f17393adb42d5",
+      "installedSha": "b4744658fbcf8eb459ca74da5f978edaf5e4c0c2441de0b5ed4f17393adb42d5"
     },
     "TRACKER.md": {
       "owner": "runtime",
@@ -5148,6 +5148,10 @@
       "managed": false
     },
     "trackers/epics/E-MULTIPRODUCT-001-multi-product-distribution.md": {
+      "owner": "runtime",
+      "managed": false
+    },
+    "trackers/epics/E-OPEN-SOURCE-001-master-console-open-source.md": {
       "owner": "runtime",
       "managed": false
     },
