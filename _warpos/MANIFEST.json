@@ -2,7 +2,7 @@
   "$schema": "warpos/manifest/v1",
   "version": 1,
   "schemaVersion": 1,
-  "generatedAt": "2026-09-02T22:37:21.237Z",
+  "generatedAt": "2026-09-02T22:45:35.154Z",
   "generatedBy": "scripts/warpos/manifest/build.js",
   "warposVersion": "1.2.0",
   "migrations": [],
@@ -8901,6 +8901,13 @@
       "source": "scripts/panel/roadmap.js",
       "sha256": "543f5cf8692396f95e91fc5b169e6b876d4d1badd6056ebe1fd953d11e5b8e30",
       "installedSha": "543f5cf8692396f95e91fc5b169e6b876d4d1badd6056ebe1fd953d11e5b8e30"
+    },
+    "scripts/open-source/assert-evidence.js": {
+      "owner": "framework",
+      "managed": true,
+      "source": "scripts/open-source/assert-evidence.js",
+      "sha256": "433e31b3d566d00e7fabaf74b71d26cfca4681cab56153824f2ee381e283bdce",
+      "installedSha": "433e31b3d566d00e7fabaf74b71d26cfca4681cab56153824f2ee381e283bdce"
     },
     "scripts/one-off/append-beta-event-007.js": {
       "owner": "framework",

@@ -33,7 +33,7 @@
 ## Related sprints
 - **S-OS-01** — done 2026-09-02 — Anchor: GitHub Release pre-cleanup-snapshot + private mirror repo; record both SHAs/timestamps in the repo
 - **S-OS-02** — built 2026-09-02, awaiting land (branch cleanup/open-source, unmerged) — Front-page cleanup on branch cleanup/open-source: removals, BASELINE synthetic example, Gmail scrub, β profile trim, LICENSE + package.json + license-match check, .gitignore fixes; merge to main
-- **S-OS-03** — candidate — Targeted history rewrite: git-filter-repo on profanity + Gmail only; SHA-preservation assertion; commit map + rules committed; operator approves diff; force-push; downstream re-clone notice
+- **S-OS-03** — prepared 2026-09-02, NOT executed (plan `runtime/open-source/S-OS-03-rewrite-plan.md`; assertion `scripts/open-source/assert-evidence.js`; rules gitignored under `_private/rewrite/`; awaiting operator decisions A (tool: install Python + git-filter-repo, or Node fast-export fallback) and B (public snapshot tag: delete after the rewrite + GitHub Support purge, or keep and accept the strings stay fetchable)) — Targeted history rewrite: git-filter-repo on profanity + Gmail only; SHA-preservation assertion; commit map + rules committed; operator approves diff; force-push; downstream re-clone notice
 - **S-OS-04** — candidate — Leak enforcers (ED-417): privacy.js exit 1, framework-purity full-tree fail-closed, tracked-transients gate, operator-quote detector, β mining output ignored, CI workflow, README drift check; seeded fixtures
 - **S-OS-05** — candidate — Rebrand brand layer: README rewrite, CONTRIBUTING/SECURITY/CODE_OF_CONDUCT/CHANGELOG, root clutter cleared, GitHub repo rename, provenance page + story 'formerly WarpOS'
 - **S-OS-06** — candidate — Rebrand identifier layer mc@2.0.0: slug applied (mc:*, MC_*, _mc/, .mc/, mc@ tags), aliases for one release, paths registry rename + build, migrations entry, cutover-completeness green, manifests regen
@@ -57,6 +57,8 @@
 - 2026-09-02 — Reverses prior rulings 'engine is the moat' and 'WarpOS never product-facing' (open-core: engine open, UI sellable).
 
 ## Open questions
+- S-OS-03 decision A (2026-09-02): rewrite tool — git-filter-repo needs Python installed by the operator (`winget install Python.Python.3.12`, `pip install git-filter-repo`); fallback is a dependency-free Node fast-export/fast-import stream rewrite. Recommendation: filter-repo.
+- S-OS-03 decision B (2026-09-02): the public `pre-cleanup-snapshot` release/tag keeps the pre-rewrite objects fetchable from the public repo; recommendation: delete it after the force-push (the private mirror + the captured release JSON under `runtime/open-source/anchor/` remain the timestamp record) and file the GitHub Support purge request. Finding behind the plan's range limit: commit `db6292e2` (2026-04-18) is GitHub-signed and an ancestor of the tag commit, so the rewrite must exclude everything reachable from `de9ba8eb` (`--refs ^de9ba8eb --all`) or the tag SHA changes.
 - Slug confirmation: `mc` for commands/dirs/env/tags (proposed; operator has not explicitly confirmed).
 - Optional trademark search on 'Master Console' before announce.
 - Which of the 8 downstream products are still live and need the re-clone / migration (portfolio registry check).
