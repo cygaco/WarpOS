@@ -12,11 +12,11 @@
 - **Background:** 2026-09-02 open-source readiness review (this session). The repo has been PUBLIC since 2026-03-02. Secrets are clean (tree + full history), but tracked files carry: a ~200KB paid third-party course corpus (_planning/ingest/), a brief marked Confidential (_docs/ai-web-brief-v4.*, duplicated into the BASELINE scaffold), six private product/venture names, Jobzooka pricing baked into _warpos/BASELINE/_requirements (byte-identical to EXAMPLES/Jobzooka), a 1.45MB committed Codex transcript, ~2,900 per-run runtime/sprint-state files, the operator's Gmail (4 files), a β-mined behavioral profile of the operator with verbatim profanity (7 files, 26 hits), no LICENSE, no root package.json, no CI, and a README four months / 41 releases stale (claims 0.8.0 / 140 commands / 57 hooks; actual 1.2.0 / 237 / 77). Name collisions found by search: warp-os/warpos on GitHub+PyPI and Warp (warp.dev) 'Warp Factories' (Aug 2026) → drop WarpOS; MasterControl Inc. (~$1.3B QMS software) + Master Control Systems Inc. (4 marks) → drop 'Master Control'. Operator decisions: single brand Master Console (masterconsole.ai owned), slug mc, license AGPL-3.0, operator's full name in old paths is FINE (public figure), trimmed β profile is FINE as part of the story. Evidence timing: profanity entered history a97d2f76 (2026-05-13) / 25415ce9 (05-14), Gmail 6317650e (07-19); the dossier entered 6779f6e6 (2026-05-01 13:44 -07:00) which PRECEDES tag commit de9ba8eb (2026-05-01 20:07 -07:00). All headline evidence (cd37d410, 29908188, bb06646d, 38d771bf, tag warpos@0.1.4) predates the first rewrite point. Enforcement debt logged: ED-417. Memory: project_open_source_master_control_plan. Provenance page: https://claude.ai/code/artifact/91d43fab-14e0-46bf-9e04-befbb52bcdff (data: runtime/prior-art/). Plan artifact: [../../_planning/epics/E-OPEN-SOURCE-001.md](../../_planning/epics/E-OPEN-SOURCE-001.md).
 - **Scope:** Seven phases in strict order. (1) ANCHOR (git-only): GitHub Release `pre-cleanup-snapshot` on the pre-rewrite HEAD + a PRIVATE mirror repo on the operator's GitHub holding the untouched history; OpenTimestamps optional in background; NOT Software Heritage. (2) FRONT-PAGE CLEANUP on a branch: remove _planning/ingest/ (paid corpus, videos.md, gdocs-A/B.md), _docs/ai-web-brief-v4.{md,html} + _warpos/BASELINE/_docs copy, _planning/vlad-*.md + _planning/epics/E-VLAD-001.md, runtime per-run dirs (enforcement-sweep incl. out-E1.rollout.jsonl, vlad-w1, sp004-gauntlet, epsilon-prompts, beta-consult), the 115 transient-extension files, .claude/project/sprint/{checkpoints,full-reports,tickets}, .claude/settings.local.json, the 4 executables with hardcoded C:/Users paths (runtime/prior-art/_gen.js, _gen3.js, runtime/vlad-w1/s04/gauntlet-2/assemble-agy-payload.js, scripts/dispatch/beta-consult-out-abs.test.js); replace _warpos/BASELINE/_requirements with a synthetic example product; scrub the operator Gmail (4 files); move raw /beta:mine output (beta-source-data.md, judgement-model-recommendations-archive.md) to an ignored dir and keep a distilled judgement-model.md without the hourly schedule or profanity quotes; remove profanity quotes from SP-20260513-005 prd.md + failure-mining.md; add LICENSE (AGPL-3.0), root package.json (name, license, repository, `test` = node --test), license-match check; fix .gitignore contradictions (runtime/notes, runtime/agent-system-plan). (3) TARGETED HISTORY REWRITE (git-filter-repo): remove ONLY the profanity strings and the Gmail from history; do NOT touch the dossier commit; assert headline SHAs unchanged; commit the old→new commit map + filter rules; force-push ONLY after operator approves the diff; notify the 8 downstream products. (4) LEAK ENFORCERS (close ED-417): privacy.js exit 1; framework-purity full-tree fail-closed on private slugs (jobzooka, dreamteams, companycam, aiweb, jobhunter) + operator email + Confidential marker; gitignore β mining output; tracked-transients gate over runtime/; operator-quote detector; .github/workflows CI on push; README numbers generated from manifests + drift check. (5) REBRAND brand layer: README rewrite, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md, CHANGELOG.md from RELEASES.md, root clutter cleared (agentic_os_tracker_system_improvements.md, issues.md, INTERESTING.md, HOW2CLEANMEMORY.md, GEMINI.md tombstone, WARP.md vs WARPOS.md), GitHub repo rename cygaco/WarpOS → cygaco/master-console, provenance page + story say 'Master Console (formerly WarpOS)' once. (6) REBRAND identifier layer as mc@2.0.0 with migration: ~32k 'warpos' occurrences / 3,559 files / 576 paths; 108 WARPOS_* env → MC_* (read both one release); warp:* → mc:* with deprecated aliases one release (precedents: warp:sync alias, check:→scan: SP-20260528-001); _warpos/ → _mc/, .warpos/ → .mc/, WARPOS.md, scan:warpos-* skills; paths registry values via /paths:rename + build.js; keep warpos@ tags forever; migrations/ entry for the 8 downstream products; /scan:cutover-completeness + framework-purity fail on 'warpos' post-cutover; regen both manifests last. (7) ANNOUNCE after phases 1–5; phase 6 may land after.
 - **Out of scope:** Scrubbing the operator's full name from history or old paths (operator: public figure, fine). Removing the β dossier from history (would change the tag SHA). Software Heritage archival of the pre-rewrite chain (would keep the profanity public forever). Rewriting the industry-analog caveats out of the provenance page (Letta et al. stay as footnotes). Building the Master Console UI. Changing the prior-art review's verdicts.
-- **Current state:** Planned
-- **Percent completion:** 0% — conservative; plan authored, no sprints landed.
+- **Current state:** Active
+- **Percent completion:** 10% — S-OS-01 (anchor) complete 2026-09-02; S-OS-02 in progress on branch cleanup/open-source.
 
 ## Definition of Done
-- [ ] GitHub Release `pre-cleanup-snapshot` exists on the pre-rewrite HEAD with GitHub's own created_at, and a private mirror repo on the operator's account holds the untouched pre-rewrite history (verified by comparing HEAD SHAs).
+- [x] GitHub Release `pre-cleanup-snapshot` exists on the pre-rewrite HEAD with GitHub's own created_at, and a private mirror repo on the operator's account holds the untouched pre-rewrite history (verified by comparing HEAD SHAs). — DONE 2026-09-02, see § Evidence log "S-OS-01 anchor".
 - [ ] `git grep` over the tree returns zero hits for: the operator Gmail, 'Mark Builds Brands', the Confidential brief marker, the profanity strings, out-E1.rollout.jsonl; and `git ls-files runtime/` matching .jsonl/.log/.diff/.err/.out is empty.
 - [ ] _warpos/BASELINE/_requirements contains no Jobzooka pricing or copy (framework-purity full-tree run exits 0 on the slug list).
 - [ ] LICENSE (AGPL-3.0) + root package.json present; `npm test` runs the node --test suite from root; a check fails when package.json license ≠ LICENSE.
@@ -31,8 +31,8 @@
 - None currently recorded.
 
 ## Related sprints
-- **S-OS-01** — candidate — Anchor: GitHub Release pre-cleanup-snapshot + private mirror repo; record both SHAs/timestamps in the repo
-- **S-OS-02** — candidate — Front-page cleanup on branch cleanup/open-source: removals, BASELINE synthetic example, Gmail scrub, β profile trim, LICENSE + package.json + license-match check, .gitignore fixes; merge to main
+- **S-OS-01** — done 2026-09-02 — Anchor: GitHub Release pre-cleanup-snapshot + private mirror repo; record both SHAs/timestamps in the repo
+- **S-OS-02** — active 2026-09-02 (branch cleanup/open-source) — Front-page cleanup on branch cleanup/open-source: removals, BASELINE synthetic example, Gmail scrub, β profile trim, LICENSE + package.json + license-match check, .gitignore fixes; merge to main
 - **S-OS-03** — candidate — Targeted history rewrite: git-filter-repo on profanity + Gmail only; SHA-preservation assertion; commit map + rules committed; operator approves diff; force-push; downstream re-clone notice
 - **S-OS-04** — candidate — Leak enforcers (ED-417): privacy.js exit 1, framework-purity full-tree fail-closed, tracked-transients gate, operator-quote detector, β mining output ignored, CI workflow, README drift check; seeded fixtures
 - **S-OS-05** — candidate — Rebrand brand layer: README rewrite, CONTRIBUTING/SECURITY/CODE_OF_CONDUCT/CHANGELOG, root clutter cleared, GitHub repo rename, provenance page + story 'formerly WarpOS'
@@ -63,6 +63,18 @@
 - Whether the trimmed β profile stays as a public feature demo (operator said 'part of the story is fine') — final wording at S-OS-02.
 
 ## Session log
+### 2026-09-02 — Session 54856530-26b0-4b30-b54e-f45962f38826 (S-OS-01 anchor)
+- Agent(s): alpha · Mode: solo (operator-gated operations, not a build)
+- Work performed: S-OS-01 executed under explicit in-session operator authorization: (a) GitHub Release `pre-cleanup-snapshot` created on HEAD `5f0edc503748a2bf5449e3e83575769db58bf799` (branch session/2026-08-29); (b) PRIVATE repo `cygaco/WarpOS-pre-cleanup-mirror` created and the full untouched history pushed (all origin branches as heads, all local branches, all tags).
+- Files changed: this epic file only (record of the anchor) · Paths changed: none · Wirings changed: none.
+- Decisions: mirror repo named `WarpOS-pre-cleanup-mirror` (Class A); local-only branches included in the mirror (superset of origin) so no local history is lost either.
+- Issues discovered: none.
+- Definitions added/changed: None.
+- State change: Planned → Active · Completion change: 0% → 10%
+- Verification performed: `gh release view pre-cleanup-snapshot` (target = 5f0edc50, published 2026-09-02T18:51:40Z); `git ls-remote mirror` (main=c3b8654f, session/2026-08-29=5f0edc50, tags pre-cleanup-snapshot=5f0edc50 and warpos@0.1.4=de9ba8eb; 224 heads, 50 tags vs origin 61 heads, 49 tags); `gh repo view` visibility=PRIVATE · Validation run: node scripts/trackers/validate.js · Validation result: recorded at commit.
+- Next action: S-OS-02 on branch cleanup/open-source.
+- Evidence/references: https://github.com/cygaco/WarpOS/releases/tag/pre-cleanup-snapshot · https://github.com/cygaco/WarpOS-pre-cleanup-mirror (private).
+
 ### 2026-09-02 — Session 720d9b71-f353-4077-9f25-5804ab0491bf
 - Agent(s): alpha · Mode: sprint
 - Work performed: authored E-OPEN-SOURCE-001 via /epic:plan (epic file + companion plan ../../_planning/epics/E-OPEN-SOURCE-001.md).
@@ -75,6 +87,13 @@
 - Evidence/references: ../../_planning/epics/E-OPEN-SOURCE-001.md.
 
 ## Change log
+### 2026-09-02 — Session 54856530-26b0-4b30-b54e-f45962f38826 (S-OS-01 anchor)
+- Changed: S-OS-01 marked done with both anchor SHAs + timestamps recorded; S-OS-02 marked active; state Planned → Active; DoD item 1 checked.
+- Reason: operator authorized the release + private mirror in-session on 2026-09-02 and directed S-OS-02 to start.
+- Affected: this epic file.
+- Previous state: Planned, 0%.
+- New state: Active, 10%, S-OS-01 done, S-OS-02 in progress.
+
 ### 2026-09-02 — Session 720d9b71-f353-4077-9f25-5804ab0491bf
 - Changed: created E-OPEN-SOURCE-001 (epic file + companion plan artifact) from the /epic:plan payload.
 - Reason: operator directed planning this epic via /epic:plan.
@@ -83,6 +102,11 @@
 - New state: Planned, 0%, plan authored.
 
 ## Evidence log
+### 2026-09-02 — S-OS-01 anchor
+- Evidence type: External record (GitHub) + command output.
+- Detail/location: GitHub Release `pre-cleanup-snapshot` — tag object type=commit, sha `5f0edc503748a2bf5449e3e83575769db58bf799`, GitHub created_at `2026-09-02T18:43:19Z`, published_at `2026-09-02T18:51:40Z`, https://github.com/cygaco/WarpOS/releases/tag/pre-cleanup-snapshot. Private mirror `https://github.com/cygaco/WarpOS-pre-cleanup-mirror` — visibility PRIVATE, created_at `2026-09-02T18:52:01Z`, pushed_at `2026-09-02T18:53:14Z`; refs verified by `git ls-remote mirror`: `refs/heads/main`=`c3b8654f4845042c28c80a0799edfdb0ca637185`, `refs/heads/session/2026-08-29`=`5f0edc503748a2bf5449e3e83575769db58bf799`, `refs/tags/pre-cleanup-snapshot`=`5f0edc50…`, `refs/tags/warpos@0.1.4`=`de9ba8ebdfd286a4fbf50113b379fce2f3c99899`; 224 heads / 50 tags on the mirror (origin: 61 / 49 — the mirror is a superset incl. local-only branches). Headline evidence at anchor time: cd37d410 (2026-04-12), 29908188 (2026-04-16), bb06646d (2026-04-16), 38d771bf (2026-04-18).
+- Verified by: alpha · Supports: § Definition of Done item 1; gate G1.
+
 ### 2026-09-02 — Epic plan authored
 - Evidence type: File changed.
 - Detail/location: trackers/epics/E-OPEN-SOURCE-001-master-console-open-source.md; _planning/epics/E-OPEN-SOURCE-001.md.
@@ -92,10 +116,12 @@
 | Item | Should exist? | State | Where / wired where | Proof (cmd/inspection) | Checked | By |
 | --- | --- | --- | --- | --- | --- | --- |
 | _planning/epics/E-OPEN-SOURCE-001.md (plan artifact) | Yes | Verified Exists | _planning/epics/ | written by /epic:plan | 2026-09-02 | alpha |
-| ROADMAP § Epics entry for E-OPEN-SOURCE-001 | Yes | Missing But Required | ROADMAP.md | pending α integration | 2026-09-02 | alpha |
+| ROADMAP § Epics entry for E-OPEN-SOURCE-001 | Yes | Verified Exists | ROADMAP.md | landed in 5f0edc50 | 2026-09-02 | alpha |
+| GitHub Release pre-cleanup-snapshot → 5f0edc50 | Yes | Verified Exists | github.com/cygaco/WarpOS/releases | gh release view (published 2026-09-02T18:51:40Z) | 2026-09-02 | alpha |
+| Private mirror cygaco/WarpOS-pre-cleanup-mirror (224 heads / 50 tags) | Yes | Verified Exists | github.com (PRIVATE) | git ls-remote mirror; gh repo view visibility=PRIVATE | 2026-09-02 | alpha |
 
 ## Current next action
-Mint the Wave-0 sprint candidate(s) via /sprint:plan, then wire E-OPEN-SOURCE-001 into ROADMAP § Epics + the TRACKER header (α at integration).
+S-OS-02 front-page cleanup on branch cleanup/open-source (in progress 2026-09-02); then S-OS-03 targeted rewrite ONLY after the operator approves the exact diff (gate G2).
 
 ## Completion record
 - Final state: Not yet complete.
