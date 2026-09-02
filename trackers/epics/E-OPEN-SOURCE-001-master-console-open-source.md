@@ -43,7 +43,7 @@
 - None currently recorded.
 
 ## Blockers
-- 2026-09-02 — LANDING LINEAGE: `cleanup/open-source` branches off `session/2026-08-29`, which still carries the SP-20260829-001 enforcer code ruled NOT-for-main on 2026-08-30 (registry status pending the operator ruling, ED-359 amend 4). Merging the cleanup branch as-is would land that code. Options: (a) operator lifts the no-land ruling; (b) rebase/cherry-pick the cleanup commit onto a branch off origin/main (expect conflicts in TRACKER.md/ROADMAP.md — 237 commits apart). Owner: operator ruling; α executes.
+- 2026-09-02 — LANDING LINEAGE — RESOLVED the same day. `cleanup/open-source` branches off `session/2026-08-29`, which carries the SP-20260829-001 enforcer code ruled NOT-for-main on 2026-08-30. The operator delegated the choice ("Whatever you think is best"); α lifted the restriction for landing only and merged the cleanup branch into `main` (TRACKER.md 2026-09-02 RULING entry). SP-20260829-001 stays CLOSED NO RELEASE and unwired; its registry-status question (ED-359 amend 4) is unchanged.
 
 ## Risks
 - None currently recorded.
