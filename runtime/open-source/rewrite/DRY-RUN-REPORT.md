@@ -1,5 +1,11 @@
 # S-OS-03 dry-run report — the exact change set the force-push would publish
 
+> **EXECUTED 2026-09-03.** The operator replied "go" to this report; the final run (fresh mirror of `main` = `a3bdaf81`,
+> same command) was force-pushed by the operator (`git push --mirror`), the public release `pre-cleanup-snapshot` was
+> deleted (`--cleanup-tag`), and a fresh public clone was re-verified: `assert-evidence-public-clone.txt` beside this file
+> (evidence OK; sweep 0 for 19 rules, the pre-tag dossier blob residual only; purged paths 0; notes 8/8; 1,893 branch+tag
+> commits = 1,892 + the dry-run commit). New `main` = `a83b5833`. Downstream notice: `DOWNSTREAM-NOTICE.md`.
+
 > Prepared 2026-09-03 (session 54856530-26b0-4b30-b54e-f45962f38826) from **run two** on a fresh bare mirror of
 > `cygaco/WarpOS` taken after `main` = `85530018`. **Nothing has been pushed.** This is the artifact the operator
 > approves at gate G2. Every number below was produced by the commands named in the plan

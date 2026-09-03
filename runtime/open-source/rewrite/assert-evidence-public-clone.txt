@@ -1,0 +1,38 @@
+assert-evidence — repo C:\Users\Vlad\AppData\Local\Temp\claude\C--Users-Vlad-Desktop-Claude-Projects-WarpOS\54856530-26b0-4b30-b54e-f45962f38826\scratchpad\public-clone.git — ref refs/heads/main
+  ok   cd37d410 exists as a commit (headline — 2026-04-12) — got commit
+  ok   29908188 exists as a commit (headline — 2026-04-16) — got commit
+  ok   bb06646d exists as a commit (headline — 2026-04-16) — got commit
+  ok   38d771bf exists as a commit (headline — 2026-04-18) — got commit
+  ok   de9ba8eb exists as a commit (tag warpos@0.1.4 commit — 2026-05-01) — got commit
+  ok   signed commit db6292e2 exists
+  ok   signed commit db6292e2 still carries its gpgsig header (a re-imported commit would have lost it)
+  ok   tag warpos@0.1.4 → de9ba8eb (expected de9ba8eb)
+  ok   cd37d410 is an ancestor of refs/heads/main
+  ok   29908188 is an ancestor of refs/heads/main
+  ok   bb06646d is an ancestor of refs/heads/main
+  ok   38d771bf is an ancestor of refs/heads/main
+  ok   de9ba8eb is an ancestor of refs/heads/main
+  ok   db6292e2 is an ancestor of refs/heads/main
+history sweep: 20 literal(s) from replace-rules.clean.txt (digests only)
+  ok   sha256 2a236c4341d636d6… (len 27) — 0 commit(s) touch it across --all
+  ok   sha256 c5cc22e510e748f2… (len 100) — 0 commit(s) touch it across --all
+  ok   sha256 21744d2eda70f167… (len 66) — 0 commit(s) touch it across --all
+  ok   sha256 9fde8bb9adb2d647… (len 116) — 0 commit(s) touch it across --all
+  ok   sha256 884af32f98398ab1… (len 95) — 0 commit(s) touch it across --all
+  ok   sha256 bc46a96daa49430d… (len 56) — 0 commit(s) touch it across --all
+  ok   sha256 ab3b7ee21d8c62c9… (len 29) — 0 commit(s) touch it across --all
+  ok   sha256 9b094ddf98756fe5… (len 21) — 0 commit(s) touch it across --all
+  ok   sha256 35c2b80f1671945e… (len 33) — 0 commit(s) touch it across --all
+  ok   sha256 b0620e7cf9668483… (len 22) — 0 commit(s) touch it across --all
+  ok   sha256 f9d8f4ee6231bac1… (len 17) — 0 commit(s) touch it across --all
+  ok   sha256 cac975e0b39886db… (len 11) — 0 commit(s) touch it across --all
+  ok   sha256 ffe5cec20c4b8d07… (len 16) — 0 commit(s) touch it across --all
+  FAIL sha256 96a7933697e8da14… (len 12) — 2 commit(s) touch it across --all
+  ok   sha256 1912ee8d718d978b… (len 36) — 0 commit(s) touch it across --all
+  ok   sha256 b95fd2a4f2905ad3… (len 36) — 0 commit(s) touch it across --all
+  ok   sha256 b49a3fa522f003e2… (len 22) — 0 commit(s) touch it across --all
+  ok   sha256 93299206531123c8… (len 25) — 0 commit(s) touch it across --all
+  ok   sha256 9aff63951f2f3fa2… (len 22) — 0 commit(s) touch it across --all
+  ok   sha256 69006337086a85f3… (len 20) — 0 commit(s) touch it across --all
+
+RESULT: FAIL (1 assertion(s))
