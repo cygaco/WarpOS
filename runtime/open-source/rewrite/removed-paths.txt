@@ -1,0 +1,9 @@
+_planning/ingest/
+_docs/*-brief-v4.md   (filename redacted in this committed copy: it carries a private product slug; the gitignored original under _private/rewrite/ has the literal)
+_docs/*-brief-v4.html   (filename redacted in this committed copy: it carries a private product slug; the gitignored original under _private/rewrite/ has the literal)
+_warpos/BASELINE/_docs/*-brief-v4.md   (same redaction)
+_warpos/BASELINE/_docs/*-brief-v4.html   (same redaction)
+runtime/enforcement-sweep/2026-08-29/qualifying/out-E1.rollout.jsonl
+_planning/vlad-agent-mcp-plan.md
+_planning/vlad-transferability.md
+_planning/vlad-why-us.md
